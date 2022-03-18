@@ -4128,8 +4128,8 @@ public class HiveConf extends Configuration {
         "  PAM: Pluggable authentication module\n" +
         "  NOSASL:  Raw transport\n" +
         "  SAML: SAML 2.0 compliant authentication. This is only supported in http transport mode.\n" +
-        "  JWT: JWT based authentication, JWT needs to contain the user name as subject. This is only supported in\n" +
-        "       http transport mode."),
+        "  JWT: JWT based authentication. HS2 expects JWT contains the user name as subject and was signed by an\n" +
+        "       asymmetric key. This is only supported in http transport mode."),
     HIVE_SERVER2_TRUSTED_DOMAIN("hive.server2.trusted.domain", "",
         "Specifies the host or a domain to trust connections from. Authentication is skipped " +
         "for any connection coming from a host whose hostname ends with the value of this" +

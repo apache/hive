@@ -79,6 +79,10 @@ public class TestHttpJwtAuthentication {
   @ClassRule
   public static final WireMockRule MOCK_JWKS_SERVER = new WireMockRule(MOCK_JWKS_SERVER_PORT);
 
+  /**
+   * This is a hack to make environment variables modifiable.
+   * Ref: https://stackoverflow.com/questions/318239/how-do-i-set-environment-variables-from-java.
+   */
   @BeforeClass
   public static void makeEnvModifiable() throws Exception {
     envMap = new HashMap<>();

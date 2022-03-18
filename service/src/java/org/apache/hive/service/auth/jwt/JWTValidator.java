@@ -47,8 +47,9 @@ import java.util.List;
 public class JWTValidator {
 
   private static final Logger LOG = LoggerFactory.getLogger(JWTValidator.class.getName());
+  private static final DefaultJWSVerifierFactory JWS_VERIFIER_FACTORY = new DefaultJWSVerifierFactory();
+
   private final URLBasedJWKSProvider jwksProvider;
-  private static final DefaultJWSVerifierFactory verifierFactory = new DefaultJWSVerifierFactory();
 
   public JWTValidator(HiveConf conf) throws IOException, ParseException {
     this.jwksProvider = new URLBasedJWKSProvider(conf);
@@ -56,8 +57,12 @@ public class JWTValidator {
 
   public String validateJWTAndExtractUser(String signedJwt) throws ParseException, AuthenticationException {
     Preconditions.checkNotNull(jwksProvider);
+    Preconditions.checkNotNull(signedJwt, "No token found");
     final SignedJWT parsedJwt = SignedJWT.parse(signedJwt);
     List<JWK> matchedJWKS = jwksProvider.getJWKs(parsedJwt.getHeader());
+    if (matchedJWKS.isEmpty()) {
+      throw new AuthenticationException("Failed to find matched JWKs with the JWT header: " + parsedJwt.getHeader());
+    }
 
     // verify signature
     Exception lastException = null;
@@ -72,8 +77,12 @@ public class JWTValidator {
         LOG.warn("Failed to verify JWT {} by JWK {}", parsedJwt.getPayload(), matchedJWK, e);
       }
     }
+    // We use only the last seven characters to let a user can differentiate exceptions for different JWT
+    int startIndex = Math.max(0, signedJwt.length() - 7);
+    String lastSevenChars = signedJwt.substring(startIndex);
     if (parsedJwt.getState() != JWSObject.State.VERIFIED) {
-      throw new AuthenticationException("Failed to verify JWT signature", lastException);
+      throw new AuthenticationException("Failed to verify the JWT signature (ends with " + lastSevenChars + ")",
+          lastException);
     }
 
     // verify claims
@@ -82,7 +91,8 @@ public class JWTValidator {
     if (expirationTime != null) {
       Date now = new Date();
       if (now.after(expirationTime)) {
-        throw new AuthenticationException("JWT has been expired");
+        LOG.warn("Rejecting an expired JWT: {}", parsedJwt.getPayload());
+        throw new AuthenticationException("JWT (ends with " + lastSevenChars + ") has been expired");
       }
     }
 
@@ -94,6 +104,6 @@ public class JWTValidator {
     Preconditions.checkArgument(jwk instanceof AsymmetricJWK,
         "JWT signature verification with symmetric key is not allowed.");
     Key key = ((AsymmetricJWK) jwk).toPublicKey();
-    return verifierFactory.createJWSVerifier(header, key);
+    return JWS_VERIFIER_FACTORY.createJWSVerifier(header, key);
   }
 }

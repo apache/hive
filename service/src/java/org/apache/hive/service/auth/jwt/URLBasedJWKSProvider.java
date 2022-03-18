@@ -27,13 +27,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.sasl.AuthenticationException;
 import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Provides a way to get JWKS json. Hive will use this to verify the incoming JWTs.
@@ -66,14 +65,16 @@ public class URLBasedJWKSProvider {
   /**
    * Returns filtered JWKS by one or more criteria, such as kid, typ, alg.
    */
-  public List<JWK> getJWKs(JWSHeader header) {
+  public List<JWK> getJWKs(JWSHeader header) throws AuthenticationException {
+    JWKMatcher matcher = JWKMatcher.forJWSHeader(header);
+    if (matcher == null) {
+      throw new AuthenticationException("Unsupported algorithm: " + header.getAlgorithm());
+    }
+
     List<JWK> jwks = new ArrayList<>();
-    JWKSelector selector = new JWKSelector(JWKMatcher.forJWSHeader(header));
+    JWKSelector selector = new JWKSelector(matcher);
     for (JWKSet jwkSet : jwkSets) {
-      List<JWK> selectedJwks = selector.select(jwkSet);
-      if (selectedJwks != null) {
-        jwks.addAll(selector.select(jwkSet));
-      }
+      jwks.addAll(selector.select(jwkSet));
     }
     return jwks;
   }

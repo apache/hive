@@ -827,7 +827,7 @@ public class HiveConnection implements java.sql.Connection {
     } else {
       int startIndex = Math.max(0, jwtCredential.length() - 7);
       String lastSevenChars = jwtCredential.substring(startIndex);
-      LOG.debug("Fetched JWT (ends with {}) from the env", lastSevenChars);
+      LOG.debug("Fetched JWT (ends with {}) from the env.", lastSevenChars);
     }
     return jwtCredential;
   }
@@ -837,8 +837,9 @@ public class HiveConnection implements java.sql.Connection {
     if (jwtCredential == null || jwtCredential.isEmpty()) {
       LOG.debug("No JWT is specified in connection string.");
     } else {
-      Optional<String> jwtHeader = Arrays.stream(jwtCredential.split("\\.")).findFirst();
-      LOG.debug("Fetched JWT(header={}) from the session.", jwtHeader.orElse(""));
+      int startIndex = Math.max(0, jwtCredential.length() - 7);
+      String lastSevenChars = jwtCredential.substring(startIndex);
+      LOG.debug("Fetched JWT (ends with {}) from the session.", lastSevenChars);
     }
     return jwtCredential;
   }

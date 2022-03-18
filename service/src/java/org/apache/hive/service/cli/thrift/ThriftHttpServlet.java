@@ -314,10 +314,6 @@ public class ThriftHttpServlet extends TServlet {
       throws HttpAuthenticationException {
     Preconditions.checkState(jwtValidator != null, "JWT validator should have been set");
     String signedJwt = extractBearerToken(request, response);
-    if (signedJwt == null) {
-      LOG.debug("No token found with the request {}", request);
-      return null;
-    }
     String user = null;
     try {
       user = jwtValidator.validateJWTAndExtractUser(signedJwt);
