@@ -3870,10 +3870,11 @@ void swap(DoubleColumnStatsData &a, DoubleColumnStatsData &b);
 std::ostream& operator<<(std::ostream& out, const DoubleColumnStatsData& obj);
 
 typedef struct _LongColumnStatsData__isset {
-  _LongColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false) {}
+  _LongColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false), histogram(false) {}
   bool lowValue :1;
   bool highValue :1;
   bool bitVectors :1;
+  bool histogram :1;
 } _LongColumnStatsData__isset;
 
 class LongColumnStatsData : public virtual ::apache::thrift::TBase {
@@ -3881,7 +3882,7 @@ class LongColumnStatsData : public virtual ::apache::thrift::TBase {
 
   LongColumnStatsData(const LongColumnStatsData&);
   LongColumnStatsData& operator=(const LongColumnStatsData&);
-  LongColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0), bitVectors() {
+  LongColumnStatsData() : lowValue(0), highValue(0), numNulls(0), numDVs(0), bitVectors(), histogram() {
   }
 
   virtual ~LongColumnStatsData() noexcept;
@@ -3890,6 +3891,7 @@ class LongColumnStatsData : public virtual ::apache::thrift::TBase {
   int64_t numNulls;
   int64_t numDVs;
   std::string bitVectors;
+  std::string histogram;
 
   _LongColumnStatsData__isset __isset;
 
@@ -3902,6 +3904,8 @@ class LongColumnStatsData : public virtual ::apache::thrift::TBase {
   void __set_numDVs(const int64_t val);
 
   void __set_bitVectors(const std::string& val);
+
+  void __set_histogram(const std::string& val);
 
   bool operator == (const LongColumnStatsData & rhs) const
   {
@@ -3920,6 +3924,10 @@ class LongColumnStatsData : public virtual ::apache::thrift::TBase {
     if (__isset.bitVectors != rhs.__isset.bitVectors)
       return false;
     else if (__isset.bitVectors && !(bitVectors == rhs.bitVectors))
+      return false;
+    if (__isset.histogram != rhs.__isset.histogram)
+      return false;
+    else if (__isset.histogram && !(histogram == rhs.histogram))
       return false;
     return true;
   }
@@ -4104,10 +4112,11 @@ void swap(Decimal &a, Decimal &b);
 std::ostream& operator<<(std::ostream& out, const Decimal& obj);
 
 typedef struct _DecimalColumnStatsData__isset {
-  _DecimalColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false) {}
+  _DecimalColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false), histogram(false) {}
   bool lowValue :1;
   bool highValue :1;
   bool bitVectors :1;
+  bool histogram :1;
 } _DecimalColumnStatsData__isset;
 
 class DecimalColumnStatsData : public virtual ::apache::thrift::TBase {
@@ -4115,7 +4124,7 @@ class DecimalColumnStatsData : public virtual ::apache::thrift::TBase {
 
   DecimalColumnStatsData(const DecimalColumnStatsData&);
   DecimalColumnStatsData& operator=(const DecimalColumnStatsData&);
-  DecimalColumnStatsData() : numNulls(0), numDVs(0), bitVectors() {
+  DecimalColumnStatsData() : numNulls(0), numDVs(0), bitVectors(), histogram() {
   }
 
   virtual ~DecimalColumnStatsData() noexcept;
@@ -4124,6 +4133,7 @@ class DecimalColumnStatsData : public virtual ::apache::thrift::TBase {
   int64_t numNulls;
   int64_t numDVs;
   std::string bitVectors;
+  std::string histogram;
 
   _DecimalColumnStatsData__isset __isset;
 
@@ -4136,6 +4146,8 @@ class DecimalColumnStatsData : public virtual ::apache::thrift::TBase {
   void __set_numDVs(const int64_t val);
 
   void __set_bitVectors(const std::string& val);
+
+  void __set_histogram(const std::string& val);
 
   bool operator == (const DecimalColumnStatsData & rhs) const
   {
@@ -4154,6 +4166,10 @@ class DecimalColumnStatsData : public virtual ::apache::thrift::TBase {
     if (__isset.bitVectors != rhs.__isset.bitVectors)
       return false;
     else if (__isset.bitVectors && !(bitVectors == rhs.bitVectors))
+      return false;
+    if (__isset.histogram != rhs.__isset.histogram)
+      return false;
+    else if (__isset.histogram && !(histogram == rhs.histogram))
       return false;
     return true;
   }
