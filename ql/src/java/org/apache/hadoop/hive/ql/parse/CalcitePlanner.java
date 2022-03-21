@@ -2913,13 +2913,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
         List<? extends StructField> fields = rowObjectInspector.getAllStructFieldRefs();
         ColumnInfo colInfo;
         String colName;
-        ArrayList<ColumnInfo> cInfoLst = new ArrayList<ColumnInfo>();
-        for (int i = 0; i < fields.size(); i++) {
-          colName = fields.get(i).getFieldName();
+        ArrayList<ColumnInfo> cInfoLst = new ArrayList<>();
+
+        final NotNullConstraint nnc = tabMetaData.getNotNullConstraint();
+        final PrimaryKeyInfo pkc = tabMetaData.getPrimaryKeyInfo();
+
+        for (StructField structField : fields) {
+          colName = structField.getFieldName();
           colInfo = new ColumnInfo(
-              fields.get(i).getFieldName(),
-              TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i).getFieldObjectInspector()),
-              tableAlias, false);
+                  structField.getFieldName(),
+                  TypeInfoUtils.getTypeInfoFromObjectInspector(structField.getFieldObjectInspector()),
+                  isNullable(colName, nnc, pkc), tableAlias, false);
           colInfo.setSkewedCol(isSkewedCol(tableAlias, qb, colName));
           rr.put(tableAlias, colName, colInfo);
           cInfoLst.add(colInfo);
@@ -3082,7 +3086,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         } else {
           // Build row type from field <type, name>
-          RelDataType rowType = inferNotNullableColumns(tabMetaData, TypeConverter.getType(cluster, rr, null));
+          RelDataType rowType = TypeConverter.getType(cluster, rr, null);
           // Build RelOptAbstractTable
           List<String> fullyQualifiedTabName = new ArrayList<>();
           if (tabMetaData.getDbName() != null && !tabMetaData.getDbName().isEmpty()) {
@@ -3119,65 +3123,24 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return tableRel;
     }
 
-    private RelDataType inferNotNullableColumns(Table tabMetaData, RelDataType rowType)
-        throws HiveException {
-      final NotNullConstraint nnc = tabMetaData.getNotNullConstraint();
-      final PrimaryKeyInfo pkc = tabMetaData.getPrimaryKeyInfo();
-      if ((nnc == null || nnc.getNotNullConstraints().isEmpty()) &&
-          (pkc == null || pkc.getColNames().isEmpty())) {
-        return rowType;
+    private boolean isNullable(String colName, NotNullConstraint notNullConstraints, PrimaryKeyInfo primaryKeyInfo) {
+      if (notNullConstraints == null && primaryKeyInfo == null) {
+        return true;
       }
 
-      // Build the bitset with not null columns
-      ImmutableBitSet.Builder builder = ImmutableBitSet.builder();
-      if (nnc != null) {
-        for (String nnCol : nnc.getNotNullConstraints().values()) {
-          int nnPos = -1;
-          for (int i = 0; i < rowType.getFieldNames().size(); i++) {
-            if (rowType.getFieldNames().get(i).equals(nnCol)) {
-              nnPos = i;
-              break;
-            }
-          }
-          if (nnPos == -1) {
-            LOG.error("Column for not null constraint definition " + nnCol + " not found");
-            return rowType;
-          }
-          builder.set(nnPos);
-        }
+      if (notNullConstraints != null &&
+              !notNullConstraints.getNotNullConstraints().isEmpty() &&
+              notNullConstraints.getNotNullConstraints().containsValue(colName)) {
+        return false;
       }
-      if (pkc != null) {
-        for (String pkCol : pkc.getColNames().values()) {
-          int pkPos = -1;
-          for (int i = 0; i < rowType.getFieldNames().size(); i++) {
-            if (rowType.getFieldNames().get(i).equals(pkCol)) {
-              pkPos = i;
-              break;
-            }
-          }
-          if (pkPos == -1) {
-            LOG.error("Column for not null constraint definition " + pkCol + " not found");
-            return rowType;
-          }
-          builder.set(pkPos);
-        }
-      }
-      ImmutableBitSet bitSet = builder.build();
 
-      RexBuilder rexBuilder = cluster.getRexBuilder();
-      RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
-
-      List<RelDataType> fieldTypes = new LinkedList<RelDataType>();
-      List<String> fieldNames = new LinkedList<String>();
-      for (RelDataTypeField rdtf : rowType.getFieldList()) {
-        if (bitSet.indexOf(rdtf.getIndex()) != -1) {
-          fieldTypes.add(dtFactory.createTypeWithNullability(rdtf.getType(), false));
-        } else {
-          fieldTypes.add(rdtf.getType());
-        }
-        fieldNames.add(rdtf.getName());
+      if (primaryKeyInfo != null &&
+              !primaryKeyInfo.getColNames().isEmpty() &&
+              primaryKeyInfo.getColNames().containsValue(colName)) {
+        return false;
       }
-      return dtFactory.createStructType(fieldTypes, fieldNames);
+
+      return true;
     }
 
     private TableType obtainTableType(Table tabMetaData) {

@@ -61,12 +61,20 @@ public class ColumnInfo implements Serializable {
 
   private String typeName;
 
+  private final boolean nullable;
+
   public ColumnInfo() {
+    nullable = true;
   }
 
   public ColumnInfo(String internalName, TypeInfo type, String tabAlias,
       boolean isVirtualCol) {
     this(internalName, type, tabAlias, isVirtualCol, false);
+  }
+
+  public ColumnInfo(String internalName, TypeInfo type, boolean nullable, String tabAlias,
+      boolean isVirtualCol) {
+    this(internalName, type, nullable, tabAlias, isVirtualCol, false);
   }
 
   public ColumnInfo(String internalName, Class type, String tabAlias,
@@ -80,6 +88,17 @@ public class ColumnInfo implements Serializable {
       boolean isVirtualCol, boolean isHiddenVirtualCol) {
     this(internalName,
          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(type),
+         true,
+         tabAlias,
+         isVirtualCol,
+         isHiddenVirtualCol);
+  }
+
+  public ColumnInfo(String internalName, TypeInfo type, boolean nullable, String tabAlias,
+      boolean isVirtualCol, boolean isHiddenVirtualCol) {
+    this(internalName,
+         TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(type),
+         nullable,
          tabAlias,
          isVirtualCol,
          isHiddenVirtualCol);
@@ -87,16 +106,17 @@ public class ColumnInfo implements Serializable {
 
   public ColumnInfo(String internalName, ObjectInspector objectInspector,
       String tabAlias, boolean isVirtualCol) {
-    this(internalName, objectInspector, tabAlias, isVirtualCol, false);
+    this(internalName, objectInspector, true, tabAlias, isVirtualCol, false);
   }
 
-  public ColumnInfo(String internalName, ObjectInspector objectInspector,
+  public ColumnInfo(String internalName, ObjectInspector objectInspector, boolean nullable,
       String tabAlias, boolean isVirtualCol, boolean isHiddenVirtualCol) {
     this.internalName = internalName;
     this.objectInspector = objectInspector;
     this.tabAlias = tabAlias;
     this.isVirtualCol = isVirtualCol;
     this.isHiddenVirtualCol = isHiddenVirtualCol;
+    this.nullable = nullable;
     setTypeName(getType().getTypeName());
   }
 
@@ -107,6 +127,7 @@ public class ColumnInfo implements Serializable {
     this.tabAlias = columnInfo.getTabAlias();
     this.isVirtualCol = columnInfo.getIsVirtualCol();
     this.isHiddenVirtualCol = columnInfo.isHiddenVirtualCol();
+    this.nullable = columnInfo.nullable;
     this.setType(columnInfo.getType());
   }
 
@@ -253,5 +274,9 @@ public class ColumnInfo implements Serializable {
 
   public void setObjectinspector(ObjectInspector writableObjectInspector) {
     this.objectInspector = writableObjectInspector;
+  }
+
+  public boolean isNullable() {
+    return nullable;
   }
 }
