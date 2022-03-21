@@ -132,7 +132,7 @@ public abstract class AbstractBaseAlterTableAnalyzer extends BaseSemanticAnalyze
       // See HIVE-16688 for use cases.
       return WriteType.DDL_EXCLUSIVE;
     }
-    return WriteEntity.determineAlterTableWriteType(op);
+    return WriteEntity.determineAlterTableWriteType(op, table, conf);
   }
 
   protected void validateAlterTableType(Table table, AlterTableType op, boolean expectView)

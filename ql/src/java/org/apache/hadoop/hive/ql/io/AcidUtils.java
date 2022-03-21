@@ -409,6 +409,11 @@ public class AcidUtils {
         + String.format(DELTA_DIGITS, visibilityTxnId);
   }
 
+  public static boolean isLocklessReadsSupported(Table table, Configuration conf) {
+    return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED)
+        && AcidUtils.isTransactionalTable(table);
+  }
+
   /**
    * Represents bucketId and copy_N suffix
    */
