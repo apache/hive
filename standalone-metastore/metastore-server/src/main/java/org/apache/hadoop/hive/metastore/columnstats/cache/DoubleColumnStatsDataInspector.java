@@ -59,19 +59,19 @@ public class DoubleColumnStatsDataInspector extends DoubleColumnStatsData {
   }
 
   @Override
-  public byte[] getHistogram() {
-    if (histogramEstimator != null) {
-      updateHistogram();
-    }
-    return super.getHistogram();
-  }
-
-  @Override
   public byte[] getBitVectors() {
     if (ndvEstimator != null) {
       updateBitVectors();
     }
     return super.getBitVectors();
+  }
+
+  @Override
+  public byte[] getHistogram() {
+    if (histogramEstimator != null) {
+      updateHistogram();
+    }
+    return super.getHistogram();
   }
 
   @Override

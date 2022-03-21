@@ -275,7 +275,8 @@ public class ColStatsProcessor implements IStatsProcessor {
             ColumnStatsField.MAX,
             ColumnStatsField.COUNT_NULLS,
             ColumnStatsField.NDV,
-            ColumnStatsField.BITVECTOR)),
+            ColumnStatsField.BITVECTOR,
+            ColumnStatsField.KLL_SKETCH)),
     DOUBLE(
         ImmutableList.of(
             ColumnStatsField.COLUMN_STATS_TYPE,
@@ -306,7 +307,8 @@ public class ColStatsProcessor implements IStatsProcessor {
             ColumnStatsField.MAX,
             ColumnStatsField.COUNT_NULLS,
             ColumnStatsField.NDV,
-            ColumnStatsField.BITVECTOR)),
+            ColumnStatsField.BITVECTOR,
+            ColumnStatsField.KLL_SKETCH)),
     DATE(
         ImmutableList.of(
             ColumnStatsField.COLUMN_STATS_TYPE,

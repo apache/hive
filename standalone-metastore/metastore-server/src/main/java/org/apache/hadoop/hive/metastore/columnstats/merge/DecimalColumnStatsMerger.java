@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.metastore.columnstats.merge;
 
+import org.apache.hadoop.hive.common.histogram.KllHistogramEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
@@ -64,6 +65,18 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger {
       LOG.debug("Use bitvector to merge column {}'s ndvs of {} and {} to be {}", aggregateColStats.getColName(),
           aggregateData.getNumDVs(), newData.getNumDVs(), ndv);
       aggregateData.setNumDVs(ndv);
+    }
+
+    if (aggregateData.getHistogramEstimator() != null && newData.getHistogramEstimator() != null) {
+      KllHistogramEstimator oldEst = aggregateData.getHistogramEstimator();
+      KllHistogramEstimator newEst = newData.getHistogramEstimator();
+      if (oldEst.canMerge(newEst)) {
+        LOG.trace("Merging old sketch {} with new sketch {}...", oldEst.getSketch(), newEst.getSketch());
+        oldEst.mergeEstimators(newEst);
+        aggregateData.setHistogramEstimator(oldEst);
+        LOG.trace("Resulting sketch is {}", oldEst.getSketch());
+      }
+      LOG.debug("Merging histograms of column {}", aggregateColStats.getColName());
     }
 
     aggregateColStats.getStatsData().setDecimalStats(aggregateData);

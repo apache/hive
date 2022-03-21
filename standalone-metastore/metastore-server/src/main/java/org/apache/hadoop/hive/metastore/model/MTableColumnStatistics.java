@@ -168,10 +168,12 @@ public class MTableColumnStatistics {
     this.numNulls = numNulls;
   }
 
-  public void setLongStats(Long numNulls, Long numNDVs, byte[] bitVector, Long lowValue, Long highValue) {
+  public void setLongStats(Long numNulls, Long numNDVs, byte[] bitVector, byte [] histogram,
+      Long lowValue, Long highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
     setBitVector(bitVector);
+    setHistogram(histogram);
     this.longLowValue = lowValue;
     this.longHighValue = highValue;
   }
@@ -186,11 +188,12 @@ public class MTableColumnStatistics {
     this.doubleHighValue = highValue;
   }
 
-  public void setDecimalStats(
-      Long numNulls, Long numNDVs, byte[] bitVector, String lowValue, String highValue) {
+  public void setDecimalStats(Long numNulls, Long numNDVs, byte[] bitVector, byte [] histogram,
+      String lowValue, String highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
     setBitVector(bitVector);
+    setHistogram(histogram);
     this.decimalLowValue = lowValue;
     this.decimalHighValue = highValue;
   }
