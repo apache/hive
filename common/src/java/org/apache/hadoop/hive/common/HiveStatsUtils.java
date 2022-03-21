@@ -82,6 +82,7 @@ public class HiveStatsUtils {
   }
 
   public static int getKParamForKllSketch(Configuration conf) throws Exception {
+    // TODO: AS - read from config and validate
     // is in [8, 65535], default value is 200
     return 200;
   }
