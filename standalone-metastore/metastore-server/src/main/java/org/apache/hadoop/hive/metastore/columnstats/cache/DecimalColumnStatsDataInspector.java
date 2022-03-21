@@ -197,7 +197,7 @@ public class DecimalColumnStatsDataInspector extends DecimalColumnStatsData {
         .getNumDistinctValueEstimator(super.getBitVectors());
     super.unsetBitVectors();
   }
-  
+
   private void updateHistogramEstimator() {
     this.histogramEstimator = HistogramEstimatorFactory
         .getHistogramEstimator(super.getHistogram());
