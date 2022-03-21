@@ -62,8 +62,10 @@ abstract class AbstractAddPartitionAnalyzer extends AbstractAlterTableAnalyzer {
         /* use DDL_EXCLUSIVE to cause X lock to prevent races between concurrent add partition calls with IF NOT EXISTS.
          * w/o this 2 concurrent calls to add the same partition may both add data since for transactional tables
          * creating partition metadata and moving data there are 2 separate actions. */
-        ifNotExists && AcidUtils.isTransactionalTable(table) ?
-            WriteType.DDL_EXCLUSIVE : WriteEntity.WriteType.DDL_SHARED));
+      ifNotExists && AcidUtils.isTransactionalTable(table) ? 
+        (AcidUtils.isLocklessReadsEnabled(table, conf) ? 
+            WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE) : 
+        WriteType.DDL_SHARED));
 
     List<AlterTableAddPartitionDesc.PartitionDesc> partitions = createPartitions(command, table, ifNotExists);
     if (partitions.isEmpty()) { // nothing to do
