@@ -498,9 +498,10 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     } catch (Exception e) {
       throw new SemanticException(e.getMessage());
     }
-    rewrittenQueryBuilder.append("ds_kll_sketch(")
+    // add cast($columnName as float) to make sure it works for other numeric types
+    rewrittenQueryBuilder.append("ds_kll_sketch(cast(")
         .append(columnName)
-        .append(", ")
+        .append(" as float), ")
         .append(k)
         .append(")");
   }
