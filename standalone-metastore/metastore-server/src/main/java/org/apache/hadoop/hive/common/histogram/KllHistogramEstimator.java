@@ -38,7 +38,6 @@ public class KllHistogramEstimator implements HistogramEstimator {
   }
 
   @Override public void reset() {
-    // TODO: AS - do we need reset?
   }
 
   @Override public byte[] serialize() {
