@@ -39,6 +39,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -480,6 +481,57 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .verifyResult("700")
             .run("select id from t4")
             .verifyResult("800");
+  }
+
+  @Test
+  public void testReplicationWithSnapshotsWithSourceStaging() throws Throwable {
+    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir, false);
+    withClauseOptions.add("'" + HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY.varname + "'='" + true + "'");
+    withClauseOptions.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK.varname + "'='" + true + "'");
+    WarehouseInstance.Tuple tuple = primary
+        .run("use " + primaryDbName)
+        .run("create external table t1 (id int)")
+        .run("insert into table t1 values (500)")
+        .run("create table t2 (id int)")
+        .run("insert into table t2 values (600)")
+        .dump(primaryDbName, withClauseOptions);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+        .run("use " + replicatedDbName)
+        .run("show tables like 't1'")
+        .verifyResult("t1")
+        .run("select id from t1")
+        .verifyResult("500")
+        .run("show tables like 't2'")
+        .verifyResult("t2")
+        .run("select id from t2")
+        .verifyResult("600");
+
+    tuple = primary.run("use " + primaryDbName)
+        .run("create external table t3 (id int)")
+        .run("insert into table t3 values (700)")
+        .run("create table t4 (id int)")
+        .run("insert into table t4 values (800)")
+        .dump(primaryDbName, withClauseOptions);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+        .run("use " + replicatedDbName)
+        .run("show tables like 't1'")
+        .verifyResult("t1")
+        .run("show tables like 't2'")
+        .verifyResult("t2")
+        .run("show tables like 't3'")
+        .verifyResult("t3")
+        .run("show tables like 't4'")
+        .verifyResult("t4")
+        .run("select id from t1")
+        .verifyResult("500")
+        .run("select id from t2")
+        .verifyResult("600")
+        .run("select id from t3")
+        .verifyResult("700")
+        .run("select id from t4")
+        .verifyResult("800");
   }
 
   @Test

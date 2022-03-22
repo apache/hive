@@ -406,9 +406,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (conf.getBoolVar(REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY)) {
       Path snapPath = SnapshotUtils.getSnapshotFileListPath(new Path(work.dumpDirectory));
       try {
-        SnapshotUtils.getDFS(getExternalTableBaseDir(conf), conf)
-            .rename(new Path(snapPath, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT),
-                new Path(snapPath, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD), Options.Rename.OVERWRITE);
+        SnapshotUtils.getDFS(snapPath, conf).rename(new Path(snapPath, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT),
+            new Path(snapPath, EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_OLD), Options.Rename.OVERWRITE);
       } catch (FileNotFoundException fnf) {
         // Ignore if no file.
       }
