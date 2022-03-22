@@ -89,6 +89,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.jdo.Query;
+import javax.xml.bind.DatatypeConverter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -668,6 +669,8 @@ public class TestObjectStore {
     Assert.assertEquals(2, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getNumDVs());
     Assert.assertEquals(3, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getLowValue());
     Assert.assertEquals(4, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getHighValue());
+    Assert.assertArrayEquals(DatatypeConverter.parseHexBinary("02020f04c80008000000803f"),
+        stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getHistogram());
   }
 
   /**
@@ -756,6 +759,7 @@ public class TestObjectStore {
         longStats.setNumDVs(2);
         longStats.setLowValue(3);
         longStats.setHighValue(4);
+        longStats.setHistogram(DatatypeConverter.parseHexBinary("02020f04c80008000000803f"));
         data.setLongStats(longStats);
 
         ColumnStatisticsObj partStats = new ColumnStatisticsObj("test_part_col", "int", data);
