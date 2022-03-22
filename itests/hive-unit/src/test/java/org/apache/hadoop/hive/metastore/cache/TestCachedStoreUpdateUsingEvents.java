@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.columnstats.ColStatsBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
@@ -41,10 +42,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertEqualStatistics;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 public class TestCachedStoreUpdateUsingEvents {
 
+  // the following constants are set as column statistics, and they are not expected to change,
+  // this is to keep the method signatures shorter, update is tested on a subset of the fields
+  private final static double LOW_VALUE = 50000.21;
+  private final static long NUM_NULLS = 3;
+  private final static long NUM_DVS = 22;
+  private final static long MAX_COL_LEN = 102;
   private RawStore rawStore;
   private SharedCache sharedCache;
   private Configuration conf;
@@ -555,8 +563,8 @@ public class TestCachedStoreUpdateUsingEvents {
     sharedCache.getSdCache().clear();
   }
 
-  private void updateTableColStats(String dbName, String tblName, String[] colName,
-                                   double highValue, double avgColLen, boolean isTxnTable) throws Throwable {
+  private void updateTableColStats(String dbName, String tblName, String[] colName, double highValue, double avgColLen,
+      boolean isTxnTable) throws Throwable {
     long writeId = -1;
     String validWriteIds = null;
     if (isTxnTable) {
@@ -594,8 +602,8 @@ public class TestCachedStoreUpdateUsingEvents {
     verifyStatString(colStatsCache.getStatsObj().get(0), colName[1], avgColLen);
   }
 
-  private void updatePartColStats(String dbName, String tblName, boolean isTxnTable, String[] colName,
-                                  String partName, double highValue, double avgColLen) throws Throwable {
+  private void updatePartColStats(String dbName, String tblName, boolean isTxnTable, String[] colName, String partName,
+      double highValue, double avgColLen) throws Throwable {
     long writeId = -1;
     String validWriteIds = null;
     List<Long> txnIds = null;
@@ -662,11 +670,7 @@ public class TestCachedStoreUpdateUsingEvents {
   }
 
   private List<ColumnStatisticsObj> getStatsObjects(String dbName, String tblName, String[] colName,
-                                                    double highValue, double avgColLen) throws Throwable {
-    double lowValue = 50000.21;
-    long numNulls = 3;
-    long numDVs = 22;
-    long maxColLen = 102;
+                                                    double highValue, double avgColLen) {
     boolean isTblLevel = true;
     String partName = null;
     List<ColumnStatisticsObj> statsObjs = new ArrayList<>();
@@ -681,14 +685,8 @@ public class TestCachedStoreUpdateUsingEvents {
     statsObj.setColName(colName[0]);
     statsObj.setColType(colType[0]);
 
-    ColumnStatisticsData statsData = new ColumnStatisticsData();
-    DoubleColumnStatsData numericStats = new DoubleColumnStatsData();
-    statsData.setDoubleStats(numericStats);
-
-    statsData.getDoubleStats().setHighValue(highValue);
-    statsData.getDoubleStats().setLowValue(lowValue);
-    statsData.getDoubleStats().setNumDVs(numDVs);
-    statsData.getDoubleStats().setNumNulls(numNulls);
+    ColumnStatisticsData statsData = new ColStatsBuilder<>(double.class).numNulls(NUM_NULLS).numDVs(NUM_DVS)
+        .low(LOW_VALUE).high(highValue).hll(1.1, 2.2, 3.3).kll(1.1, 2.2, 3.3).build();
 
     statsObj.setStatsData(statsData);
     statsObjs.add(statsObj);
@@ -697,13 +695,8 @@ public class TestCachedStoreUpdateUsingEvents {
     statsObj.setColName(colName[1]);
     statsObj.setColType(colType[1]);
 
-    statsData = new ColumnStatisticsData();
-    StringColumnStatsData stringStats = new StringColumnStatsData();
-    statsData.setStringStats(stringStats);
-    statsData.getStringStats().setAvgColLen(avgColLen);
-    statsData.getStringStats().setMaxColLen(maxColLen);
-    statsData.getStringStats().setNumDVs(numDVs);
-    statsData.getStringStats().setNumNulls(numNulls);
+    statsData = new ColStatsBuilder<>(String.class).numNulls(NUM_NULLS).numDVs(NUM_DVS)
+        .avgColLen(avgColLen).maxColLen(MAX_COL_LEN).hll("1.1", "2.2", "3.3").build();
 
     statsObj.setStatsData(statsData);
     statsObjs.add(statsObj);
@@ -711,25 +704,17 @@ public class TestCachedStoreUpdateUsingEvents {
   }
 
   private void verifyStatDouble(ColumnStatisticsObj colStats, String colName, double highValue) {
-    double lowValue = 50000.21;
-    long numNulls = 3;
-    long numDVs = 22;
     Assert.assertEquals(colStats.getColName(), colName);
-    Assert.assertEquals(colStats.getStatsData().getDoubleStats().getLowValue(), lowValue, 0.01);
-    Assert.assertEquals(colStats.getStatsData().getDoubleStats().getHighValue(), highValue, 0.01);
-    Assert.assertEquals(colStats.getStatsData().getDoubleStats().getNumNulls(), numNulls);
-    Assert.assertEquals(colStats.getStatsData().getDoubleStats().getNumDVs(), numDVs);
+    ColumnStatisticsData expectedColStats = new ColStatsBuilder<>(double.class).numNulls(NUM_NULLS).numDVs(NUM_DVS)
+        .low(LOW_VALUE).high(highValue).hll(1.1, 2.2, 3.3).kll(1.1, 2.2, 3.3).build();
+    assertEqualStatistics(expectedColStats, colStats.getStatsData());
   }
 
   private void verifyStatString(ColumnStatisticsObj colStats, String colName, double avgColLen) {
-    long numNulls = 3;
-    long numDVs = 22;
-    long maxColLen = 102;
-    Assert.assertEquals(colStats.getColName(), colName);
-    Assert.assertEquals(colStats.getStatsData().getStringStats().getMaxColLen(), maxColLen);
-    Assert.assertEquals(colStats.getStatsData().getStringStats().getAvgColLen(), avgColLen, 0.01);
-    Assert.assertEquals(colStats.getStatsData().getStringStats().getNumNulls(), numNulls);
-    Assert.assertEquals(colStats.getStatsData().getStringStats().getNumDVs(), numDVs);
+    Assert.assertEquals(colName, colStats.getColName());
+    ColumnStatisticsData expectedColStats = new ColStatsBuilder<>(String.class).numNulls(NUM_NULLS).numDVs(NUM_DVS)
+        .avgColLen(avgColLen).maxColLen(MAX_COL_LEN).hll("1.1", "2.2", "3.3").build();
+    assertEqualStatistics(expectedColStats, colStats.getStatsData());
   }
 
   private void verifyStat(List<ColumnStatisticsObj> colStats, String[] colName, double highValue, double avgColLen) {

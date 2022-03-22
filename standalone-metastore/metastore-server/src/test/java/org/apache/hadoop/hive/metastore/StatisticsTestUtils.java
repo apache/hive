@@ -18,26 +18,31 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.datasketches.kll.KllFloatsSketch;
+import org.apache.hadoop.hive.common.histogram.kll.KllUtils;
 import org.apache.hadoop.hive.common.ndv.fm.FMSketch;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
+import org.junit.Assert;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 public class StatisticsTestUtils {
 
-  private static final String HIVE_ENGINE = "hive";
+  public static final String HIVE_ENGINE = "hive";
 
   private StatisticsTestUtils() {
     throw new AssertionError("Suppress default constructor for non instantiation");
@@ -56,6 +61,27 @@ public class StatisticsTestUtils {
       FieldSchema column, String partName) {
     ColumnStatisticsObj statObj = new ColumnStatisticsObj(column.getName(), column.getType(), data);
     return new ColStatsObjWithSourceInfo(statObj, tbl.getCatName(), tbl.getDbName(), column.getName(), partName);
+  }
+
+  /**
+   * Creates a {@link ColumnStatistics} for a given table, partition and column information,
+   * using the given statistics data.
+   * @param data the column statistics data
+   * @param tbl the target table for stats
+   * @param column the target column for stats
+   * @param partName the target partition for stats
+   * @return column statistics object.
+   */
+  public static ColumnStatistics createColumnStatistics(ColumnStatisticsData data, Table tbl,
+      FieldSchema column, String partName) {
+    ColumnStatisticsObj statObj = new ColumnStatisticsObj(column.getName(), column.getType(), data);
+    ColumnStatistics colStats = new ColumnStatistics();
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, tbl.getDbName(), tbl.getTableName());
+    statsDesc.setPartName(partName);
+    colStats.setStatsDesc(statsDesc);
+    colStats.setStatsObj(Collections.singletonList(statObj));
+    colStats.setEngine(HIVE_ENGINE);
+    return colStats;
   }
 
   /**
@@ -108,5 +134,117 @@ public class StatisticsTestUtils {
       hll.addBytes(value.getBytes());
     }
     return hll;
+  }
+
+  /**
+   * Creates an HLL object initialized with the given values.
+   * @param values the values to be added
+   * @return an HLL object initialized with the given values.
+   */
+  public static HyperLogLog createHll(double... values) {
+    HyperLogLog hll = HyperLogLog.builder().build();
+    Arrays.stream(values).forEach(hll::addDouble);
+    return hll;
+  }
+
+  /**
+   * Creates a KLL object initialized with the given values.
+   * @param values the values to be added
+   * @return a KLL object initialized with the given values.
+   */
+  public static KllFloatsSketch createKll(float... values) {
+    KllFloatsSketch kll = new KllFloatsSketch();
+    for (float value : values) {
+      kll.update(value);
+    }
+    return kll;
+  }
+
+  /**
+   * Creates a KLL object initialized with the given values.
+   * @param values the values to be added
+   * @return a KLL object initialized with the given values.
+   */
+  public static KllFloatsSketch createKll(double... values) {
+    KllFloatsSketch kll = new KllFloatsSketch();
+    for (double value : values) {
+      kll.update(Double.valueOf(value).floatValue());
+    }
+    return kll;
+  }
+
+  /**
+   * Creates a KLL object initialized with the given values.
+   * @param values the values to be added
+   * @return a KLL object initialized with the given values.
+   */
+  public static KllFloatsSketch createKll(long... values) {
+    KllFloatsSketch kll = new KllFloatsSketch();
+    for (long value : values) {
+      kll.update(value);
+    }
+    return kll;
+  }
+
+  /**
+   * Checks if expected and computed statistics data are equal.
+   * @param expected expected statistics data
+   * @param computed computed statistics data
+   */
+  public static void assertEqualStatistics(ColumnStatisticsData expected, ColumnStatisticsData computed) {
+    if (expected.getSetField() != computed.getSetField()) {
+      throw new IllegalArgumentException("Expected data is of type " + expected.getSetField()
+          + " while computed data is of type " + computed.getSetField());
+    }
+
+    Class<?> dataClass = null;
+    switch (expected.getSetField()) {
+    case DATE_STATS:
+      dataClass = DateColumnStatsData.class;
+      break;
+    case LONG_STATS:
+      dataClass = LongColumnStatsData.class;
+      break;
+    case DOUBLE_STATS:
+      dataClass = DoubleColumnStatsData.class;
+      break;
+    case DECIMAL_STATS:
+      dataClass = DecimalColumnStatsData.class;
+      break;
+    case TIMESTAMP_STATS:
+      dataClass = TimestampColumnStatsData.class;
+      break;
+    default:
+      // it's an unsupported class for KLL, no special treatment needed
+      Assert.assertEquals(expected, computed);
+      return;
+    }
+    assertEqualStatistics(expected, computed, dataClass);
+  }
+
+  private static <X> void assertEqualStatistics(
+      ColumnStatisticsData expected, ColumnStatisticsData computed, Class<X> clazz) {
+    try {
+      final Object computedStats = computed.getFieldValue(computed.getSetField());
+      final Object expectedStats = expected.getFieldValue(computed.getSetField());
+      final boolean computedHasHistograms = (boolean) clazz.getMethod("isSetHistogram").invoke(computedStats);
+      final boolean expectedHasHistograms = (boolean) clazz.getMethod("isSetHistogram").invoke(expectedStats);
+
+      if (computedHasHistograms && expectedHasHistograms) {
+        // KLL data sketches serialization depends on the insertion order, we can only safely compare their string
+        // representation, we replace the serialized version and restore it back after comparison to not alter the input
+        byte[] expectedHistogram = (byte[]) clazz.getMethod("getHistogram").invoke(expectedStats);
+        byte[] computedHistogram = (byte[]) clazz.getMethod("getHistogram").invoke(computedStats);
+
+        Assert.assertEquals(KllUtils.deserializeKll(expectedHistogram).toString(),
+            KllUtils.deserializeKll(computedHistogram).toString());
+
+        clazz.getMethod("setHistogram", byte[].class).invoke(expectedStats, computedHistogram);
+        Assert.assertEquals(expected, computed);
+        clazz.getMethod("setHistogram", byte[].class).invoke(expectedStats, expectedHistogram);
+      }
+    } catch(NoSuchMethodException | IllegalAccessException | InvocationTargetException e){
+      throw new RuntimeException("Reflection error", e);
+    }
   }
 }
