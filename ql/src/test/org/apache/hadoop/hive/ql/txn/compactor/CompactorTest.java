@@ -77,6 +77,7 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -112,7 +113,7 @@ import javax.management.ObjectName;
 public abstract class CompactorTest {
   static final private String CLASS_NAME = CompactorTest.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-  public static final String WORKER_VERSION = "4.0.0-alpha-1";
+  public static final String WORKER_VERSION = HiveVersionInfo.getShortVersion();
 
   protected TxnStore txnHandler;
   protected IMetaStoreClient ms;

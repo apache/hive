@@ -430,7 +430,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     elements.add(generateElement(4,"db", "tb3", "p1", CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
 
     elements.add(generateElement(6,"db1", "tb", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE,
-            System.currentTimeMillis(), true, "4.0.0-alpha-1", "4.0.0-alpha-1", 10));
+            System.currentTimeMillis(), true, WORKER_VERSION, WORKER_VERSION, 10));
     elements.add(generateElement(7,"db1", "tb2", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
     elements.add(generateElement(8,"db1", "tb3", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
 
@@ -444,10 +444,10 @@ public class TestCompactionMetrics  extends CompactorTest {
     elements.add(generateElement(14,"db3", "tb4", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
             System.currentTimeMillis(), false, null, null,20));
     elements.add(generateElement(15,"db3", "tb5", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            System.currentTimeMillis(),true, "4.0.0-alpha-1", "4.0.0-alpha-1", 30));
+            System.currentTimeMillis(),true, WORKER_VERSION, WORKER_VERSION, 30));
     elements.add(generateElement(16,"db3", "tb6", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE));
     elements.add(generateElement(17,"db3", "tb7", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            System.currentTimeMillis(),true, "4.0.0-alpha-1", "4.0.0-alpha-1",40));
+            System.currentTimeMillis(),true, WORKER_VERSION, WORKER_VERSION,40));
 
     scr.setCompacts(elements);
     AcidMetricService.updateMetricsFromShowCompact(scr);
@@ -520,7 +520,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     long start = System.currentTimeMillis() - 1000L;
     List<ShowCompactResponseElement> elements = ImmutableList.of(
         generateElement(17, "db3", "tb7", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            System.currentTimeMillis(), true, "4.0.0-alpha-1", "4.0.0-alpha-1", start)
+            System.currentTimeMillis(), true, WORKER_VERSION, WORKER_VERSION, start)
     );
 
     scr.setCompacts(elements);
@@ -540,7 +540,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     long start = System.currentTimeMillis() - 1000L;
     List<ShowCompactResponseElement> elements = ImmutableList.of(
         generateElement(19, "db3", "tb7", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
-            System.currentTimeMillis(), true, "4.0.0-alpha-1", "4.0.0-alpha-1", -1L, start)
+            System.currentTimeMillis(), true, WORKER_VERSION, WORKER_VERSION, -1L, start)
     );
 
     scr.setCompacts(elements);
@@ -591,9 +591,9 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     List<ShowCompactResponseElement> elements = ImmutableList.of(
         generateElement(15, "db3", "tb5", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            start, false, "4.0.0-alpha-1", "4.0.0-alpha-1", start - 1_000L),
+            start, false, WORKER_VERSION, WORKER_VERSION, start - 1_000L),
         generateElement(16, "db3", "tb6", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            start, false, "4.0.0-alpha-1", "4.0.0-alpha-1", start - 15_000L)
+            start, false, WORKER_VERSION, WORKER_VERSION, start - 15_000L)
     );
 
     scr.setCompacts(elements);
@@ -604,9 +604,9 @@ public class TestCompactionMetrics  extends CompactorTest {
     // Check the reverse order
     elements = ImmutableList.of(
         generateElement(16, "db3", "tb6", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            start, false, "4.0.0-alpha-1", "4.0.0-alpha-1", start - 25_000L),
+            start, false, WORKER_VERSION, WORKER_VERSION, start - 25_000L),
         generateElement(15, "db3", "tb5", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            start, false, "4.0.0-alpha-1", "4.0.0-alpha-1", start - 1_000L)
+            start, false, WORKER_VERSION, WORKER_VERSION, start - 1_000L)
     );
     scr.setCompacts(elements);
     AcidMetricService.updateMetricsFromShowCompact(scr);
@@ -622,9 +622,9 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     List<ShowCompactResponseElement> elements = ImmutableList.of(
         generateElement(15, "db3", "tb5", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
-            start, false, "4.0.0-alpha-1", "4.0.0-alpha-1", -1L, start - 1_000L),
+            start, false, WORKER_VERSION, WORKER_VERSION, -1L, start - 1_000L),
         generateElement(16, "db3", "tb6", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
-            start, false, "4.0.0-alpha-1", "4.0.0-alpha-1", -1L, start - 15_000L)
+            start, false, WORKER_VERSION, WORKER_VERSION, -1L, start - 15_000L)
     );
 
     scr.setCompacts(elements);
@@ -635,9 +635,9 @@ public class TestCompactionMetrics  extends CompactorTest {
     // Check the reverse order
     elements = ImmutableList.of(
         generateElement(16, "db3", "tb6", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
-            start, false, "4.0.0-alpha-1", "4.0.0-alpha-1", -1L, start - 25_000L),
+            start, false, WORKER_VERSION, WORKER_VERSION, -1L, start - 25_000L),
         generateElement(15, "db3", "tb5", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
-            start, false, "4.0.0-alpha-1", "4.0.0-alpha-1", -1L, start - 1_000L)
+            start, false, WORKER_VERSION, WORKER_VERSION, -1L, start - 1_000L)
     );
     scr.setCompacts(elements);
     AcidMetricService.updateMetricsFromShowCompact(scr);
