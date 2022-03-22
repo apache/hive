@@ -2130,7 +2130,7 @@ class MetaStoreDirectSql {
     for (Object[] row : list) {
       // LastAnalyzed is stored per column but thrift has it per several;
       // get the lowest for now as nobody actually uses this field.
-      Object laObj = row[offset + 15];
+      Object laObj = row[offset + 16]; // 16 is the offset of "last analyzed" field
       if (laObj != null && (!csd.isSetLastAnalyzed() || csd.getLastAnalyzed() > MetastoreDirectSqlUtils
           .extractSqlLong(laObj))) {
         csd.setLastAnalyzed(MetastoreDirectSqlUtils.extractSqlLong(laObj));
