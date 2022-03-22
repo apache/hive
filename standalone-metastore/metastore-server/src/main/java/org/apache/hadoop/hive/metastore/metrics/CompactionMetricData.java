@@ -191,10 +191,11 @@ final class CompactionMetricData {
     long failed = unwrapToPrimitive(stateCount.get(TxnStore.FAILED_RESPONSE));
     long notInitiated = unwrapToPrimitive(stateCount.get(TxnStore.DID_NOT_INITIATE_RESPONSE));
     long succeeded = unwrapToPrimitive(stateCount.get(TxnStore.SUCCEEDED_RESPONSE));
+    long refused = unwrapToPrimitive(stateCount.get(TxnStore.REFUSED_RESPONSE));
 
-    long denominator = failed + notInitiated + succeeded;
+    long denominator = failed + notInitiated + refused + succeeded;
     if (denominator > 0) {
-      long numerator = failed + notInitiated;
+      long numerator = failed + notInitiated + refused;
       return Long.valueOf(numerator).doubleValue() / Long.valueOf(denominator).doubleValue();
     }
 
