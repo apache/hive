@@ -3881,7 +3881,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
   
-  private static String compactorStateToResponse(char s) {
+  protected static String compactorStateToResponse(char s) {
     switch (s) {
       case INITIATED_STATE: return INITIATED_RESPONSE;
       case WORKING_STATE: return WORKING_RESPONSE;
