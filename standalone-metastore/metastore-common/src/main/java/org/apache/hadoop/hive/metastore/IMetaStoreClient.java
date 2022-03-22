@@ -1294,24 +1294,6 @@ public interface IMetaStoreClient {
 
   /**
    * Get a list of partition names matching the specified filter and return in order if specified.
-   * @param dbName database name.
-   * @param tblName table name.
-   * @param defaultPartName default partition name.
-   * @param exprBytes expression, serialized from ExprNodeDesc.
-   * @param order ordered the resulting list.
-   * @param maxParts maximum number of partition names to return, or -1 to return all that are
-   *                  found.
-   * @return list of matching partition names.
-   * @throws MetaException error accessing the RDBMS.
-   * @throws TException thrift transport error.
-   * @throws NoSuchObjectException no such table.
-   */
-  List<String> listPartitionNames(String catName, String dbName, String tblName,
-      String defaultPartName, byte[] exprBytes, String order, short maxParts)
-      throws MetaException, TException, NoSuchObjectException;
-
-  /**
-   * Get a list of partition names matching the specified filter and return in order if specified.
    * @param request request
    * @return list of matching partition names.
    * @throws MetaException error accessing the RDBMS.
@@ -1530,9 +1512,28 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException No such partitions
    * @throws MetaException error accessing the RDBMS.
    * @throws TException thrift transport error
+   * @deprecated Use {@link #getPartitionsByNames(GetPartitionsByNamesRequest)} instead
    */
+  @Deprecated
   List<Partition> getPartitionsByNames(String db_name, String tbl_name,
       List<String> part_names) throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Get partitions by a list of partition names.
+   * @param catName catalog name
+   * @param db_name database name
+   * @param tbl_name table name
+   * @param part_names list of partition names
+   * @return list of Partition objects
+   * @throws NoSuchObjectException No such partitions
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error
+   * @deprecated Use {@link #getPartitionsByNames(GetPartitionsByNamesRequest)} instead
+   */
+  @Deprecated
+  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+                                       List<String> part_names)
+      throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get partitions by a list of partition names.
@@ -1544,115 +1545,6 @@ public interface IMetaStoreClient {
    */
   PartitionsResponse getPartitionsRequest(PartitionsRequest req)
           throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * Get partitions by a list of partition names.
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @param getColStats if true include statistics in the Partition object
-   * @param engine engine sending the request
-   * @return list of Partition objects
-   * @throws NoSuchObjectException No such partitionscatName
-   * @throws MetaException error accessing the RDBMS.
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
-      boolean getColStats, String engine) throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * Get partitions by a list of partition names.
-   * @param catName catalog name
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @return list of Partition objects
-   * @throws NoSuchObjectException No such partitions
-   * @throws MetaException error accessing the RDBMS.
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                       List<String> part_names)
-      throws NoSuchObjectException, MetaException, TException;
-
-    /**
-     * Get partitions by a list of partition names.
-     * @param catName catalog name
-     * @param db_name database name
-     * @param tbl_name table name
-     * @param part_names list of partition names
-     * @param getColStats if true, column statistics is added to the Partition objects
-     * @param engine engine sending the request
-     * @return list of Partition objects
-     * @throws NoSuchObjectException No such partitions
-     * @throws MetaException error accessing the RDBMS.
-     * @throws TException thrift transport error
-     */
-    List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-            List<String> part_names, boolean getColStats, String engine)
-            throws NoSuchObjectException, MetaException, TException;
-
-   /**
-   * Get partitions by a list of partition names.
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @param getColStats if true include statistics in the Partition object
-   * @param engine engine sending the request
-   * @return list of Partition objects
-   * @param validWriteIdList valid write Ids
-   * @param tableId table id
-   * @throws NoSuchObjectException No such partitionscatName
-   * @throws MetaException error accessing the RDBMS.
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names, boolean getColStats,
-      String engine, String validWriteIdList, Long tableId) throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * Get partitions by a list of partition names.
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @param validWriteIdList valid write Ids
-   * @param tableId table id
-   * @return list of Partition objects
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
-      String validWriteIdList, Long tableId) throws TException;
-
-   /**
-     * Get partitions by a list of partition names.
-     * @param catName catalog name
-     * @param db_name database name
-     * @param tbl_name table name
-     * @param part_names list of partition names
-     * @param getColStats if true, column statistics is added to the Partition objects
-     * @param engine engine sending the request
-     * @param validWriteIdList valid write Ids
-     * @param tableId table id
-     * @return list of Partition objects
-     * @throws TException thrift transport error
-     */
-    List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name, List<String> part_names,
-        boolean getColStats, String engine, String validWriteIdList, Long tableId)
-        throws TException;
-
-  /**
-   * Get partitions by a list of partition names.
-   * @param catName catalog name
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @param validWriteIdList valid write Ids
-   * @param tableId table id
-   * @return list of Partition objects
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                       List<String> part_names, String validWriteIdList, Long tableId)
-      throws TException;
 
     /**
    * Get partitions by a list of partition names.

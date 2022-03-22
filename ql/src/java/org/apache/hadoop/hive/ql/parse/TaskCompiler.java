@@ -284,7 +284,9 @@ public abstract class TaskCompiler {
           setLoadFileLocation(pCtx, lfd);
           oneLoadFileForCtas = false;
         }
-        mvTask.add(TaskFactory.get(new MoveWork(null, null, null, lfd, false)));
+        mvTask.add(TaskFactory.get(
+            new MoveWork(pCtx.getQueryProperties().isCTAS() && pCtx.getCreateTable().isExternal(), null, null, null,
+                lfd, false)));
       }
     }
 

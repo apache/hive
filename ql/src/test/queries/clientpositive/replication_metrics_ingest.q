@@ -39,7 +39,8 @@ alter scheduled query repl2 disabled;
 
 show databases;
 
-select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS, MESSAGE_FORMAT
-from sys.replication_metrics_orig order by dump_execution_id;
+use sys;
 
-select POLICY_NAME, DUMP_EXECUTION_ID, METADATA, PROGRESS from sys.replication_metrics order by dump_execution_id;
+select t1.POLICY_NAME, t1.DUMP_EXECUTION_ID, t1.METADATA, t1.PROGRESS, t2.PROGRESS, t1.MESSAGE_FORMAT
+from replication_metrics_orig as t1 join replication_metrics as t2 where
+t1.scheduled_execution_id=t2.scheduled_execution_id AND t2.progress not like ('%SKIPPED%') order by t1.dump_execution_id;

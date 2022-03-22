@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.File;
-import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Locale;
 
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.client.builder.GetTablesRequestBuilder;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -50,15 +50,14 @@ import org.apache.hadoop.fs.Path;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_NONE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READONLY;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.ACCESSTYPE_READWRITE;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.parse.WarehouseInstance;
 import org.apache.hadoop.util.StringUtils;
 
 import com.google.common.collect.Lists;
@@ -880,7 +879,8 @@ public class TestHiveMetastoreTransformer {
       for (int i = 1; i <= pCount; i++) {
         partValues.add("partcol=" + i);
       }
-      List<Partition> parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
+      GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(dbName, tblName, partValues);
+      List<Partition> parts = client.getPartitionsByNames(req).getPartitions();
       assertEquals("Return list size does not match expected size", pCount, parts.size());
 
       tblName = "test_gp_ext_bucketed_wc";
@@ -894,7 +894,8 @@ public class TestHiveMetastoreTransformer {
       tProps.put("PROPERTIES", properties.toString());
       table = createTableWithCapabilities(tProps);
 
-      parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
+      req = convertToGetPartitionsByNamesRequest(dbName, tblName, partValues);
+      parts = client.getPartitionsByNames(req).getPartitions();
       LOG.debug("Return list size=" + parts.size());
 
       for (Partition part : parts) {
@@ -905,7 +906,8 @@ public class TestHiveMetastoreTransformer {
       capabilities.clear();
       capabilities.add("HIVEBUCKET2");
       setHMSClient("TestGetPartitionByNames#2", (String[])(capabilities.toArray(new String[0])));
-      parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
+      req = convertToGetPartitionsByNamesRequest(dbName, tblName, partValues);
+      parts = client.getPartitionsByNames(req).getPartitions();
 
       for (Partition part : parts) {
         assertEquals("Partition bucket count does not match", bucketCount, part.getSd().getNumBuckets());
@@ -915,7 +917,8 @@ public class TestHiveMetastoreTransformer {
       capabilities.clear();
       capabilities.add("ACCEPTS_UNMODIFIED_METADATA");
       setHMSClient("TestGetPartitionByNames#3", (String[])(capabilities.toArray(new String[0])));
-      parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
+      req = convertToGetPartitionsByNamesRequest(dbName, tblName, partValues);
+      parts = client.getPartitionsByNames(req).getPartitions();
 
       for (Partition part : parts) {
         assertEquals("Partition bucket count does not match", bucketCount, part.getSd().getNumBuckets());
@@ -938,7 +941,8 @@ public class TestHiveMetastoreTransformer {
       capabilities.clear();
       capabilities.add("CONNECTORREAD");
       setHMSClient("TestGetPartitionByNames#3", (String[])(capabilities.toArray(new String[0])));
-      parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
+      req = convertToGetPartitionsByNamesRequest(dbName, tblName, partValues);
+      parts = client.getPartitionsByNames(req).getPartitions();
       assertEquals("Partition count does not match", pCount, parts.size());
 
       LOG.info("Test execution complete:testGetPartitionsByNames");

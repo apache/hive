@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.IOException;
@@ -52,7 +53,6 @@ import java.util.List;
 import java.util.Collections;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
@@ -93,12 +93,26 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (ast.getToken().getType()) {
       case TOK_REPL_DUMP: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: dump");
-        analyzeReplDump(ast);
+        try {
+          analyzeReplDump(ast);
+        } catch (SemanticException e) {
+          ReplUtils.reportStatusInReplicationMetrics("REPL_DUMP", ReplUtils.isErrorRecoverable(e)
+                  ? Status.FAILED_ADMIN : Status.FAILED, null, conf);
+          throw e;
+        }
         break;
       }
       case TOK_REPL_LOAD: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: load");
-        analyzeReplLoad(ast);
+        try {
+          analyzeReplLoad(ast);
+        } catch (SemanticException e) {
+          if (!e.getMessage().equals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg())) {
+            ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", ReplUtils.isErrorRecoverable(e)
+                    ? Status.FAILED_ADMIN : Status.FAILED, null, conf);
+          }
+          throw e;
+        }
         break;
       }
       case TOK_REPL_STATUS: {
@@ -143,7 +157,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void initReplDump(ASTNode ast) throws HiveException {
     int numChildren = ast.getChildCount();
-    boolean isMetaDataOnly = false;
 
     String dbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
     LOG.info("Current ReplScope: Set DB Name: {}", dbNameOrPattern);
@@ -160,7 +173,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           for (Map.Entry<String, String> config : replConfigs.entrySet()) {
             conf.set(config.getKey(), config.getValue());
           }
-          isMetaDataOnly = HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY);
         }
         break;
       case TOK_REPL_TABLES:
@@ -319,8 +331,12 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // tells us what is inside that dumpdir.
 
       //If repl status of target is greater than dumps, don't do anything as the load for the latest dump is done
-      if (ReplUtils.failedWithNonRecoverableError(ReplUtils.getLatestDumpPath(ReplUtils
-        .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf), conf)) {
+      Path latestDumpPath = ReplUtils.getLatestDumpPath(ReplUtils
+              .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf);
+      if (ReplUtils.failedWithNonRecoverableError(latestDumpPath, conf)) {
+        Path nonRecoverableFile = new Path(latestDumpPath, ReplAck.NON_RECOVERABLE_MARKER.toString());
+        ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED,
+                nonRecoverableFile.toString(), conf);
         throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
       }
       if (loadPath != null) {
@@ -342,6 +358,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               dmd.getDumpExecutionId()), dmd.isReplScopeModified());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
       } else {
+        ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED, null, conf);
         LOG.warn("Previous Dump Already Loaded");
       }
     } catch (Exception e) {

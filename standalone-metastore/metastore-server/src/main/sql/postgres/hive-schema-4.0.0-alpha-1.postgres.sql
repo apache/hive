@@ -1727,7 +1727,7 @@ INSERT INTO "TXNS" ("TXN_ID", "TXN_STATE", "TXN_STARTED", "TXN_LAST_HEARTBEAT", 
 CREATE TABLE "TXN_COMPONENTS" (
   "TC_TXNID" bigint NOT NULL REFERENCES "TXNS" ("TXN_ID"),
   "TC_DATABASE" varchar(128) NOT NULL,
-  "TC_TABLE" varchar(128),
+  "TC_TABLE" varchar(256),
   "TC_PARTITION" varchar(767) DEFAULT NULL,
   "TC_OPERATION_TYPE" char(1) NOT NULL,
   "TC_WRITEID" bigint
@@ -1757,7 +1757,7 @@ CREATE TABLE "HIVE_LOCKS" (
   "HL_LOCK_INT_ID" bigint NOT NULL,
   "HL_TXNID" bigint NOT NULL,
   "HL_DB" varchar(128) NOT NULL,
-  "HL_TABLE" varchar(128),
+  "HL_TABLE" varchar(256),
   "HL_PARTITION" varchar(767) DEFAULT NULL,
   "HL_LOCK_STATE" char(1) NOT NULL,
   "HL_LOCK_TYPE" char(1) NOT NULL,
@@ -1782,7 +1782,7 @@ INSERT INTO "NEXT_LOCK_ID" VALUES(1);
 CREATE TABLE "COMPACTION_QUEUE" (
   "CQ_ID" bigint PRIMARY KEY,
   "CQ_DATABASE" varchar(128) NOT NULL,
-  "CQ_TABLE" varchar(128) NOT NULL,
+  "CQ_TABLE" varchar(256) NOT NULL,
   "CQ_PARTITION" varchar(767),
   "CQ_STATE" char(1) NOT NULL,
   "CQ_TYPE" char(1) NOT NULL,
@@ -1801,7 +1801,8 @@ CREATE TABLE "COMPACTION_QUEUE" (
   "CQ_INITIATOR_ID" varchar(128),
   "CQ_INITIATOR_VERSION" varchar(128),
   "CQ_WORKER_VERSION" varchar(128),
-  "CQ_CLEANER_START" bigint
+  "CQ_CLEANER_START" bigint,
+  "CQ_RETRY_RETENTION" bigint not null default 0
 );
 
 CREATE TABLE "NEXT_COMPACTION_QUEUE_ID" (
@@ -1812,7 +1813,7 @@ INSERT INTO "NEXT_COMPACTION_QUEUE_ID" VALUES(1);
 CREATE TABLE "COMPLETED_COMPACTIONS" (
   "CC_ID" bigint PRIMARY KEY,
   "CC_DATABASE" varchar(128) NOT NULL,
-  "CC_TABLE" varchar(128) NOT NULL,
+  "CC_TABLE" varchar(256) NOT NULL,
   "CC_PARTITION" varchar(767),
   "CC_STATE" char(1) NOT NULL,
   "CC_TYPE" char(1) NOT NULL,
@@ -1836,7 +1837,7 @@ CREATE INDEX "COMPLETED_COMPACTIONS_RES" ON "COMPLETED_COMPACTIONS" ("CC_DATABAS
 -- HIVE-25842
 CREATE TABLE "COMPACTION_METRICS_CACHE" (
     "CMC_DATABASE" varchar(128) NOT NULL,
-    "CMC_TABLE" varchar(128) NOT NULL,
+    "CMC_TABLE" varchar(256) NOT NULL,
     "CMC_PARTITION" varchar(767),
     "CMC_METRIC_TYPE" varchar(128) NOT NULL,
     "CMC_METRIC_VALUE" integer NOT NULL,
@@ -1852,7 +1853,7 @@ CREATE TABLE "AUX_TABLE" (
 
 CREATE TABLE "WRITE_SET" (
   "WS_DATABASE" varchar(128) NOT NULL,
-  "WS_TABLE" varchar(128) NOT NULL,
+  "WS_TABLE" varchar(256) NOT NULL,
   "WS_PARTITION" varchar(767),
   "WS_TXNID" bigint NOT NULL,
   "WS_COMMIT_ID" bigint NOT NULL,
@@ -1944,7 +1945,7 @@ CREATE TABLE "TXN_WRITE_NOTIFICATION_LOG" (
   "WNL_TXNID" bigint NOT NULL,
   "WNL_WRITEID" bigint NOT NULL,
   "WNL_DATABASE" varchar(128) NOT NULL,
-  "WNL_TABLE" varchar(128) NOT NULL,
+  "WNL_TABLE" varchar(256) NOT NULL,
   "WNL_PARTITION" varchar(767) NOT NULL,
   "WNL_TABLE_OBJ" text NOT NULL,
   "WNL_PARTITION_OBJ" text,
@@ -2057,4 +2058,4 @@ ALTER TABLE ONLY "DC_PRIVS"
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------
-INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '4.0.0', 'Hive release version 4.0.0');
+INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '4.0.0-alpha-1', 'Hive release version 4.0.0-alpha-1');

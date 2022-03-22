@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
@@ -1245,31 +1246,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   public void createTable(Table tbl, EnvironmentContext envContext) throws AlreadyExistsException,
       InvalidObjectException, MetaException, NoSuchObjectException, TException {
-    if (!tbl.isSetCatName()) {
-      tbl.setCatName(getDefaultCatalog(conf));
+    CreateTableRequest request = new CreateTableRequest(tbl);
+    if (envContext != null) {
+      request.setEnvContext(envContext);
     }
-    HiveMetaHook hook = getHook(tbl);
-    if (hook != null) {
-      hook.preCreateTable(tbl);
-    }
-    boolean success = false;
-    try {
-      // Subclasses can override this step (for example, for temporary tables)
-      create_table_with_environment_context(tbl, envContext);
-      if (hook != null) {
-        hook.commitCreateTable(tbl);
-      }
-      success = true;
-    }
-    finally {
-      if (!success && (hook != null)) {
-        try {
-          hook.rollbackCreateTable(tbl);
-        } catch (Exception e){
-          LOG.error("Create rollback failed with", e);
-        }
-      }
-    }
+    createTable(request);
   }
 
   /**
@@ -1298,7 +1279,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     boolean success = false;
     try {
       // Subclasses can override this step (for example, for temporary tables)
-      client.create_table_req(request);
+      create_table(request);
       if (hook != null) {
         hook.commitCreateTable(tbl);
       }
@@ -2336,12 +2317,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, validWriteIdList, tableId);
-  }
-
-  @Override
   public PartitionsResponse getPartitionsRequest(PartitionsRequest req)
       throws NoSuchObjectException, MetaException, TException {
 
@@ -2356,92 +2331,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine)
-          throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
-          throws TException {
-    return getPartitionsByNames(getDefaultCatalog(conf), db_name, tbl_name, part_names, getColStats, engine,
-      validWriteIdList, tableId);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
+   * @deprecated Use {@link #getPartitionsByNames(GetPartitionsByNamesRequest)} instead
    */
   @Deprecated
   @Override
   public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
       List<String> part_names) throws TException {
-    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
-    return getPartitionsByNames(catName, db_name, tbl_name, part_names, false, null,
-      validWriteIdList, tableId);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine)
-            throws TException {
-    return getPartitionsByNames(catName, db_name, tbl_name, part_names, getColStats, engine,
-      null, null);
-  }
-
-  /**
-   * Deprecated: Use getPartitionsByNames using request argument instead
-   */
-  @Deprecated
-  @Override
-  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
-            throws TException {
-    checkDbAndTableFilters(catName, db_name, tbl_name);
-    GetPartitionsByNamesRequest gpbnr =
-            new GetPartitionsByNamesRequest(prependCatalogToDbName(catName, db_name, conf),
-                    tbl_name);
-    gpbnr.setNames(part_names);
-    gpbnr.setGet_col_stats(getColStats);
-    if( validWriteIdList != null) {
-      gpbnr.setValidWriteIdList(validWriteIdList);
-    }else {
-      gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
-    }
-    if( tableId != null) {
-      gpbnr.setId(tableId);
-    }
-    if (getColStats) {
-      gpbnr.setEngine(engine);
-    }
-    if (processorCapabilities != null)
-      gpbnr.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-    if (processorIdentifier != null)
-      gpbnr.setProcessorIdentifier(processorIdentifier);
-    List<Partition> parts = getPartitionsByNamesInternal(gpbnr).getPartitions();
-    return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
+    GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(
+        MetaStoreUtils.prependCatalogToDbName(catName, db_name, conf), tbl_name, part_names);
+    return getPartitionsByNames(req).getPartitions();
   }
 
   @Override
@@ -2939,31 +2837,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       List<String> part_vals, int max_parts) throws TException {
     return client.get_partition_names_ps(prependCatalogToDbName(catName, db_name, conf), tbl_name,
         part_vals, shrinkMaxtoShort(max_parts));
-  }
-
-  @Override
-  public List<String> listPartitionNames(String catName, String dbName, String tblName,
-      String defaultPartName, byte[] exprBytes, String order, short maxParts)
-      throws MetaException, TException, NoSuchObjectException {
-
-    PartitionsByExprRequest req = new PartitionsByExprRequest(
-        dbName, tblName, ByteBuffer.wrap(exprBytes));
-    if (defaultPartName != null) {
-      req.setDefaultPartitionName(defaultPartName);
-    }
-    if (maxParts >= 0) {
-      req.setMaxParts(maxParts);
-    }
-    if (order != null) {
-      req.setOrder(order);
-    }
-    if ( catName == null ) {
-      req.setCatName(getDefaultCatalog(conf));
-    }else {
-      req.setCatName(catName);
-    }
-    return FilterUtils.filterPartitionNamesIfEnabled(isClientFilterEnabled, filterHook, catName,
-        dbName, tblName, client.get_partition_names_req(req));
   }
 
   @Override
@@ -4435,21 +4308,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_all_functions();
   }
 
-  protected void create_table_with_environment_context(Table tbl, EnvironmentContext envContext)
-      throws AlreadyExistsException, InvalidObjectException,
-      MetaException, NoSuchObjectException, TException {
-    CreateTableRequest request = new CreateTableRequest(tbl);
-    if (envContext != null) {
-      request.setEnvContext(envContext);
-    }
-
-    if (processorCapabilities != null) {
-      request.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-      request.setProcessorIdentifier(processorIdentifier);
-    }
-
+  protected void create_table(CreateTableRequest request) throws
+      InvalidObjectException, MetaException, NoSuchObjectException, TException {
     client.create_table_req(request);
-}
+  }
 
   protected void drop_table_with_environment_context(String catName, String dbname, String name,
       boolean deleteData, EnvironmentContext envContext) throws TException {

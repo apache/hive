@@ -82,8 +82,8 @@ public class TestInitiator extends CompactorTest {
     rqst = new CompactionRequest("default", "rflw2", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    txnHandler.findNextToCompact(aFindNextCompactRequest(ServerUtils.hostname() + "-193892", "4.0.0"));
-    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", "4.0.0"));
+    txnHandler.findNextToCompact(aFindNextCompactRequest(ServerUtils.hostname() + "-193892", "4.0.0-alpha-1"));
+    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", "4.0.0-alpha-1"));
 
     startInitiator();
 
@@ -109,7 +109,7 @@ public class TestInitiator extends CompactorTest {
     CompactionRequest rqst = new CompactionRequest("default", "rfrw1", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", "4.0.0"));
+    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", "4.0.0-alpha-1"));
 
     conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, 1L, TimeUnit.MILLISECONDS);
 
@@ -1051,7 +1051,7 @@ public class TestInitiator extends CompactorTest {
     // need to mock the runtime version, because the manifest file won't be there in the mvn test setup
     Initiator initiator = Mockito.spy(new Initiator());
     initiator.setConf(conf);
-    String runtimeVersion = "4.0.0-SNAPSHOT";
+    String runtimeVersion = "4.0.0-alpha-1-SNAPSHOT";
     doReturn(runtimeVersion).when(initiator).getRuntimeVersion();
     initiator.init(new AtomicBoolean(true));
     initiator.run();

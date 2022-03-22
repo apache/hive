@@ -51,7 +51,7 @@ public class PostgresTPCDS extends Postgres {
   public void install() {
     // Upgrade the metastore to latest by running explicitly a script.
     try (InputStream script = PostgresTPCDS.class.getClassLoader()
-        .getResourceAsStream("sql/postgres/upgrade-3.1.3000-to-4.0.0.postgres.sql")) {
+        .getResourceAsStream("sql/postgres/upgrade-3.1.3000-to-4.0.0-alpha-1.postgres.sql")) {
       new MetastoreSchemaTool().runScript(
           buildArray(
               "-upgradeSchema",

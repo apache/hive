@@ -35,6 +35,40 @@ PREHOOK: query: drop table tmp1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tmp1
 POSTHOOK: type: DROPTABLE
+PREHOOK: query: create temporary table tmpdb.tmp_not_null_tbl (a int NOT NULL)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tmpdb
+PREHOOK: Output: tmpdb@tmp_not_null_tbl
+POSTHOOK: query: create temporary table tmpdb.tmp_not_null_tbl (a int NOT NULL)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tmpdb
+POSTHOOK: Output: tmpdb@tmp_not_null_tbl
+PREHOOK: query: show create table tmpdb.tmp_not_null_tbl
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: tmpdb@tmp_not_null_tbl
+POSTHOOK: query: show create table tmpdb.tmp_not_null_tbl
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: tmpdb@tmp_not_null_tbl
+CREATE TEMPORARY TABLE `tmpdb`.`tmp_not_null_tbl`(
+  `a` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2')
+PREHOOK: query: drop table tmpdb.tmp_not_null_tbl
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: tmpdb@tmp_not_null_tbl
+PREHOOK: Output: tmpdb@tmp_not_null_tbl
+POSTHOOK: query: drop table tmpdb.tmp_not_null_tbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tmpdb@tmp_not_null_tbl
+POSTHOOK: Output: tmpdb@tmp_not_null_tbl
 PREHOOK: query: drop database tmpdb
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:tmpdb

@@ -97,6 +97,11 @@ class CompactionInfoStruct
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        16 => array(
+            'var' => 'retryRetention',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
     );
 
     /**
@@ -159,6 +164,10 @@ class CompactionInfoStruct
      * @var int
      */
     public $enqueueTime = null;
+    /**
+     * @var int
+     */
+    public $retryRetention = null;
 
     public function __construct($vals = null)
     {
@@ -207,6 +216,9 @@ class CompactionInfoStruct
             }
             if (isset($vals['enqueueTime'])) {
                 $this->enqueueTime = $vals['enqueueTime'];
+            }
+            if (isset($vals['retryRetention'])) {
+                $this->retryRetention = $vals['retryRetention'];
             }
         }
     }
@@ -335,6 +347,13 @@ class CompactionInfoStruct
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 16:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->retryRetention);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -422,6 +441,11 @@ class CompactionInfoStruct
         if ($this->enqueueTime !== null) {
             $xfer += $output->writeFieldBegin('enqueueTime', TType::I64, 15);
             $xfer += $output->writeI64($this->enqueueTime);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->retryRetention !== null) {
+            $xfer += $output->writeFieldBegin('retryRetention', TType::I64, 16);
+            $xfer += $output->writeI64($this->retryRetention);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
