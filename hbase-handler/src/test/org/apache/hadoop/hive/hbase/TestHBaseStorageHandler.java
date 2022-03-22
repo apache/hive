@@ -54,43 +54,55 @@ public class TestHBaseStorageHandler {
   }
 
   @Test
-  public void testGetUriForAuth() {
-    try {
-      HBaseStorageHandler hbaseStorageHandler = new HBaseStorageHandler();
-      hbaseStorageHandler.setConf(new JobConf(new HiveConf()));
-      Table table = createMockTable(new HashMap<>());
-      URI uri = hbaseStorageHandler.getURIForAuth(table);
-      // If there is no tablename provided, the default "null" is still
-      // written out. At the time this test was written, this was the current
-      // behavior, so I left this test as/is. Need to research if a null
-      // table can be provided here.
-      Assert.assertEquals("hbase://localhost:2181/null", uri.toString());
+  public void testGetUriForAuthEmptyTableDefaultHostPort() throws URISyntaxException {
+    Table table = createMockTable(new HashMap<>());
+    URI uri = checkURIForAuth(table);
+    // If there is no tablename provided, the default "null" is still
+    // written out. At the time this test was written, this was the current
+    // behavior, so I left this test as/is. Need to research if a null
+    // table can be provided here.
+    Assert.assertEquals("hbase://localhost:2181/null", uri.toString());
+  }
 
-      Map<String, String> serdeParams = new HashMap<>();
-      serdeParams.put("hbase.zookeeper.quorum", "testhost");
-      serdeParams.put("hbase.zookeeper.property.clientPort", "8765");
-      table = createMockTable(serdeParams);
-      uri = hbaseStorageHandler.getURIForAuth(table);
-      Assert.assertEquals("hbase://testhost:8765/null", uri.toString());
+  @Test
+  public void testGetUriForAuthEmptyTable() throws URISyntaxException {
+    Map<String, String> serdeParams = new HashMap<>();
+    serdeParams.put("hbase.zookeeper.quorum", "testhost");
+    serdeParams.put("hbase.zookeeper.property.clientPort", "8765");
+    URI uri = checkURIForAuth(createMockTable(serdeParams));
+    Assert.assertEquals("hbase://testhost:8765/null", uri.toString());
+  }
 
-      serdeParams.put("hbase.table.name", "mytbl");
-      table = createMockTable(serdeParams);
-      uri = hbaseStorageHandler.getURIForAuth(table);
-      Assert.assertEquals("hbase://testhost:8765/mytbl", uri.toString());
+  @Test
+  public void testGetUriForAuthWithTable() throws URISyntaxException {
+    Map<String, String> serdeParams = new HashMap<>();
+    serdeParams.put("hbase.zookeeper.quorum", "testhost");
+    serdeParams.put("hbase.zookeeper.property.clientPort", "8765");
+    serdeParams.put("hbase.table.name", "mytbl");
+    URI uri = checkURIForAuth(createMockTable(serdeParams));
+    Assert.assertEquals("hbase://testhost:8765/mytbl", uri.toString());
+  }
 
-      serdeParams.put("hbase.columns.mapping", "mycolumns");
-      table = createMockTable(serdeParams);
-      uri = hbaseStorageHandler.getURIForAuth(table);
-      Assert.assertEquals("hbase://testhost:8765/mytbl/mycolumns", uri.toString());
+  @Test
+  public void testGetUriForAuthWithTableAndColumns() throws URISyntaxException {
+    Map<String, String> serdeParams = new HashMap<>();
+    serdeParams.put("hbase.zookeeper.quorum", "testhost");
+    serdeParams.put("hbase.zookeeper.property.clientPort", "8765");
+    serdeParams.put("hbase.table.name", "mytbl");
+    serdeParams.put("hbase.columns.mapping", "mycolumns");
+    URI uri = checkURIForAuth(createMockTable(serdeParams));
+    Assert.assertEquals("hbase://testhost:8765/mytbl/mycolumns", uri.toString());
+  }
 
-      serdeParams.put("hbase.table.name", "my#tbl");
-      serdeParams.put("hbase.columns.mapping", "myco#lumns");
-      table = createMockTable(serdeParams);
-      uri = hbaseStorageHandler.getURIForAuth(table);
-      Assert.assertEquals("hbase://testhost:8765/my%23tbl/myco%23lumns", uri.toString());
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
+  @Test
+  public void testGetUriForAuthWithTableAndEncodedColumns() throws URISyntaxException {
+    Map<String, String> serdeParams = new HashMap<>();
+    serdeParams.put("hbase.zookeeper.quorum", "testhost");
+    serdeParams.put("hbase.zookeeper.property.clientPort", "8765");
+    serdeParams.put("hbase.table.name", "my#tbl");
+    serdeParams.put("hbase.columns.mapping", "myco#lumns");
+    URI uri = checkURIForAuth(createMockTable(serdeParams));
+    Assert.assertEquals("hbase://testhost:8765/my%23tbl/myco%23lumns", uri.toString());
   }
 
   private TableDesc getHBaseTableDesc() {
@@ -104,15 +116,20 @@ public class TestHBaseStorageHandler {
     return tableDesc;
   }
 
-  private Table createMockTable(Map<String, String> serdeParams) {
+  private static URI checkURIForAuth(Table table) throws URISyntaxException {
+    HBaseStorageHandler hbaseStorageHandler = new HBaseStorageHandler();
+    hbaseStorageHandler.setConf(new JobConf(new HiveConf()));
+    return hbaseStorageHandler.getURIForAuth(table);
+  }
+
+  private static Table createMockTable(Map<String, String> serdeParams) {
     Table table = new Table();
     StorageDescriptor sd = new StorageDescriptor();
     SerDeInfo sdi = new SerDeInfo();
-    Map<String, String> params = new HashMap<>();
     sdi.setParameters(serdeParams);
     sd.setSerdeInfo(sdi);
     table.setSd(sd);
-    table.setParameters(params);
+    table.setParameters(new HashMap<>());
     return table;
   }
 }

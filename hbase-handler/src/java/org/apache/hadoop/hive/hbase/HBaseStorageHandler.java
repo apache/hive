@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -309,8 +310,12 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     return new URI(URIString);
   }
 
-  private static String encodeString(String encodedString) {
-    return encodedString != null ? URLEncoder.encode(encodedString): null;
+  private static String encodeString(String rawString) throws URISyntaxException {
+    try {
+      return rawString != null ? URLEncoder.encode(rawString, "UTF-8"): null;
+    } catch (UnsupportedEncodingException e) {
+      throw new URISyntaxException(rawString, "Could not URLEncode string");
+    }
   }
 
   /**
