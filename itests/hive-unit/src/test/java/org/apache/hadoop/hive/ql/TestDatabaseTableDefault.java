@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
+import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.junit.After;
@@ -41,9 +42,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-
-//import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 /**
  * This class resides in itests to facilitate running query using Tez engine, since the jars are
@@ -120,14 +118,13 @@ public class TestDatabaseTableDefault {
         MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
         client = new HiveMetaStoreClient(hiveConf);
 
-
         dropTables();
         runStatementOnDriver("create database " + database_with_default_table_type +" with DBPROPERTIES('defaultTableType'='EXTERNAL')");
         runStatementOnDriver("create database " + default_db);
     }
 
     /**
-     * this is to test differety types of Acid tables
+     * this is to test different types of Acid tables
      */
     String getTblProperties() {
         return "TBLPROPERTIES ('transactional'='true')";

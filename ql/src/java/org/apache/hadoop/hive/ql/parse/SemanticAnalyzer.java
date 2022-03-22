@@ -13272,6 +13272,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return retValue;
   }
 
+  /**
+   * This api is used to determine where to create acid tables are not.
+   * if the default table type is set to external, then create transcational table should result in acid tables,
+   * else create table should result in external table.
+   * */
   private boolean isExternalTableChanged (Map<String, String> tblProp, boolean isTransactional, boolean isExt, boolean isTableTypeChanged) {
     if (isTableTypeChanged && tblProp != null && tblProp.getOrDefault(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false").equalsIgnoreCase("true") || isTransactional) {
       isExt = false;
@@ -13634,11 +13639,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Database database  = getDatabase(qualifiedTabName.getDb());
     boolean isDefaultTableTypeChanged = false;
     if(database.getParameters() != null) {
-      String defaultTableType = database.getParameters().getOrDefault(DEFAULT_TABLE_TYPE, "none");
-      if (defaultTableType.equalsIgnoreCase("external")) {
+      String defaultTableType = database.getParameters().getOrDefault(DEFAULT_TABLE_TYPE, null);
+      if (defaultTableType != null && defaultTableType.equalsIgnoreCase("external")) {
         isExt = true;
         isDefaultTableTypeChanged = true;
-      } else if (defaultTableType.equalsIgnoreCase("acid")) {
+      } else if (defaultTableType != null && defaultTableType.equalsIgnoreCase("acid")) {
         isDefaultTableTypeChanged = true;
         if (isExt) { // create external table on db with default type as acid
           isTransactional = false;
