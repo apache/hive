@@ -67,6 +67,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -444,13 +447,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       serverSocket = new TServerSocketKeepAlive(serverSocket);
     }
 
+    ExecutorService executorService = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads,
+        60L, TimeUnit.SECONDS, new SynchronousQueue<>(), r -> {
+          Thread thread = new Thread(r);
+          thread.setDaemon(true);
+          thread.setName("Metastore-Handler-Pool: Thread-" + thread.getId());
+          return thread;
+        });
+
     TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverSocket)
         .processor(processor)
         .transportFactory(transFactory)
         .protocolFactory(protocolFactory)
         .inputProtocolFactory(inputProtoFactory)
-        .minWorkerThreads(minWorkerThreads)
-        .maxWorkerThreads(maxWorkerThreads);
+        .executorService(executorService);
 
     TServer tServer = new TThreadPoolServer(args);
     TServerEventHandler tServerEventHandler = new TServerEventHandler() {
