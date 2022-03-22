@@ -69,8 +69,8 @@ public class SSLTestUtils {
 
   public static void setMetastoreHttpsConf(HiveConf conf) {
     setMetastoreSslConf(conf);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TRANSPORT_MODE, "http");
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_TRANSPORT_MODE, "http");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_TRANSPORT_MODE, "http");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE, "http");
   }
 
   public static void clearSslConfOverlay(Map<String, String> confOverlay) {

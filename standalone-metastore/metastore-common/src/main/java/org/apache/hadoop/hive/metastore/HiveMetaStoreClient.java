@@ -591,32 +591,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setValidWriteIdList(validWriteIds);
     client.rename_partition_req(req);
   }
-
-  /**
-   * The config parameter can be like "path", "/path", "/path/", "path/*", "/path1/path2/*" and so on.
-   * httpPath should end up as "/*", "/path/*" or "/path1/../pathN/*"
-   * @param httpPath
-   * @return
-   */
-  private String getHttpPath(String httpPath) {
-    if(httpPath == null || httpPath.equals("")) {
-      httpPath = "/*";
-    }
-    else {
-      if(!httpPath.startsWith("/")) {
-        httpPath = "/" + httpPath;
-      }
-      if(httpPath.endsWith("/")) {
-        httpPath = httpPath + "*";
-      }
-      if(!httpPath.endsWith("/*")) {
-        httpPath = httpPath + "/*";
-      }
-    }
-    return httpPath;
-  }
-
-
+  
   private void open() throws MetaException {
     isConnected = false;
     TTransportException tte = null;
