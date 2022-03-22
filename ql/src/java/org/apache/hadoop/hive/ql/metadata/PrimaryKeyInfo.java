@@ -139,8 +139,4 @@ public class PrimaryKeyInfo implements Serializable {
   public static boolean isNotEmpty(PrimaryKeyInfo info) {
     return info != null && !info.getColNames().isEmpty();
   }
-
-  public boolean containsColumn(String columnName) {
-    return colNames.containsValue(columnName);
-  }
 }

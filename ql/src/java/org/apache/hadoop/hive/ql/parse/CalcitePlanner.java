@@ -3125,19 +3125,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private boolean isNullable(String colName, NotNullConstraint notNullConstraints, PrimaryKeyInfo primaryKeyInfo) {
-      if (notNullConstraints == null && primaryKeyInfo == null) {
-        return true;
-      }
-
-      if (notNullConstraints != null &&
-              !notNullConstraints.getNotNullConstraints().isEmpty() &&
-              notNullConstraints.getNotNullConstraints().containsValue(colName)) {
+      if (notNullConstraints != null && notNullConstraints.getNotNullConstraints().containsValue(colName)) {
         return false;
       }
 
-      if (primaryKeyInfo != null &&
-              !primaryKeyInfo.getColNames().isEmpty() &&
-              primaryKeyInfo.getColNames().containsValue(colName)) {
+      if (primaryKeyInfo != null && primaryKeyInfo.getColNames().containsValue(colName)) {
         return false;
       }
 
