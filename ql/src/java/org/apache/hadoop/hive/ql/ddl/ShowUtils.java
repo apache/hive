@@ -147,22 +147,23 @@ public final class ShowUtils {
           BinaryColumnStatsData binaryStats = statsData.getBinaryStats();
           values.addAll(Lists.newArrayList("", "", "" + binaryStats.getNumNulls(), "",
               "" + binaryStats.getAvgColLen(), "" + binaryStats.getMaxColLen(), "", "",
-              convertToString(binaryStats.getBitVectors())));
+              convertToString(binaryStats.getBitVectors()), ""));
         } else if (statsData.isSetStringStats()) {
           StringColumnStatsData stringStats = statsData.getStringStats();
           values.addAll(Lists.newArrayList("", "", "" + stringStats.getNumNulls(), "" + stringStats.getNumDVs(),
               "" + stringStats.getAvgColLen(), "" + stringStats.getMaxColLen(), "", "",
-              convertToString(stringStats.getBitVectors())));
+              convertToString(stringStats.getBitVectors()), ""));
         } else if (statsData.isSetBooleanStats()) {
           BooleanColumnStatsData booleanStats = statsData.getBooleanStats();
           values.addAll(Lists.newArrayList("", "", "" + booleanStats.getNumNulls(), "", "", "",
               "" + booleanStats.getNumTrues(), "" + booleanStats.getNumFalses(),
-              convertToString(booleanStats.getBitVectors())));
+              convertToString(booleanStats.getBitVectors()), ""));
         } else if (statsData.isSetDecimalStats()) {
           DecimalColumnStatsData decimalStats = statsData.getDecimalStats();
           values.addAll(Lists.newArrayList(convertToString(decimalStats.getLowValue()),
               convertToString(decimalStats.getHighValue()), "" + decimalStats.getNumNulls(),
-              "" + decimalStats.getNumDVs(), "", "", "", "", convertToString(decimalStats.getBitVectors())));
+              "" + decimalStats.getNumDVs(), "", "", "", "", convertToString(decimalStats.getBitVectors()),
+              convertHistogram(decimalStats.getHistogram())));
         } else if (statsData.isSetDoubleStats()) {
           DoubleColumnStatsData doubleStats = statsData.getDoubleStats();
           values.addAll(Lists.newArrayList("" + doubleStats.getLowValue(), "" + doubleStats.getHighValue(),
@@ -172,17 +173,17 @@ public final class ShowUtils {
           LongColumnStatsData longStats = statsData.getLongStats();
           values.addAll(Lists.newArrayList("" + longStats.getLowValue(), "" + longStats.getHighValue(),
               "" + longStats.getNumNulls(), "" + longStats.getNumDVs(), "", "", "", "",
-              convertToString(longStats.getBitVectors())));
+              convertToString(longStats.getBitVectors()), convertHistogram(longStats.getHistogram())));
         } else if (statsData.isSetDateStats()) {
           DateColumnStatsData dateStats = statsData.getDateStats();
           values.addAll(Lists.newArrayList(convertToString(dateStats.getLowValue()),
               convertToString(dateStats.getHighValue()), "" + dateStats.getNumNulls(), "" + dateStats.getNumDVs(),
-              "", "", "", "", convertToString(dateStats.getBitVectors())));
+              "", "", "", "", convertToString(dateStats.getBitVectors()), ""));
         } else if (statsData.isSetTimestampStats()) {
           TimestampColumnStatsData timestampStats = statsData.getTimestampStats();
           values.addAll(Lists.newArrayList(convertToString(timestampStats.getLowValue()),
               convertToString(timestampStats.getHighValue()), "" + timestampStats.getNumNulls(),
-              "" + timestampStats.getNumDVs(), "", "", "", "", convertToString(timestampStats.getBitVectors())));
+              "" + timestampStats.getNumDVs(), "", "", "", "", convertToString(timestampStats.getBitVectors()), ""));
         }
       } else {
         values.addAll(Lists.newArrayList("", "", "", "", "", "", "", "", ""));
