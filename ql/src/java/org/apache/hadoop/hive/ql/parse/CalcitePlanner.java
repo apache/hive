@@ -2936,7 +2936,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         for (FieldSchema part_col : tabMetaData.getPartCols()) {
           colName = part_col.getName();
           colInfo = new ColumnInfo(colName,
-              TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), tableAlias, true);
+                  TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()),
+                  isNullable(colName, nnc, pkc), tableAlias, true);
           rr.put(tableAlias, colName, colInfo);
           cInfoLst.add(colInfo);
           partitionColumns.add(colInfo);
