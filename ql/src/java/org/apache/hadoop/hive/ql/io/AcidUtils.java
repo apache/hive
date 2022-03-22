@@ -3243,6 +3243,19 @@ public class AcidUtils {
     return value.getDirInfo();
   }
 
+  public static void tryInvalidateDirCache(Table table) {
+    if (dirCacheInited.get()) {
+      String key = table.getFullTableName().getNotEmptyDbTable() + "_" + table.getDataLocation();
+      if (!table.isPartitioned()) {
+        dirCache.invalidate(key);
+      } else {
+        // Invalidate all partitions as the difference in the key is only the partition part at the end of the path.
+        dirCache.invalidateAll(
+          dirCache.asMap().keySet().stream().filter(k -> k.startsWith(key)).collect(Collectors.toSet()));
+      }
+    }
+  }
+
   static class DirInfoValue {
     private String txnString;
     private AcidDirectory dirInfo;

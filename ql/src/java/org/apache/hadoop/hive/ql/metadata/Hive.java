@@ -1357,6 +1357,7 @@ public class Hive {
     table.getTTable().setTxnId(txnId);
 
     dropTable(table.getTTable(), !tableWithSuffix, true, ifPurge);
+    AcidUtils.tryInvalidateDirCache(table);
   }
 
   /**
