@@ -58,6 +58,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEAN
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.getTimeVar;
+import static org.apache.hadoop.hive.ql.io.AcidUtils.addVisibilitySuffix;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doAnswer;
@@ -233,7 +234,7 @@ public class TestCleaner extends CompactorTest {
     // Check that the files are removed
     List<Path> paths = getDirectories(conf, t, null);
     Assert.assertEquals(1, paths.size());
-    Assert.assertEquals("base_25_v26", paths.get(0).getName());
+    Assert.assertEquals(addVisibilitySuffix("base_25", 26), paths.get(0).getName());
   }
 
   @Test
@@ -261,7 +262,7 @@ public class TestCleaner extends CompactorTest {
     // Check that the files are removed
     List<Path> paths = getDirectories(conf, t, null);
     Assert.assertEquals(1, paths.size());
-    Assert.assertEquals("base_25_v26", paths.get(0).getName());
+    Assert.assertEquals(addVisibilitySuffix("base_25", 26), paths.get(0).getName());
   }
   
   @Test
@@ -323,7 +324,7 @@ public class TestCleaner extends CompactorTest {
     // Check that the files are removed
     paths = getDirectories(conf, t, null);
     Assert.assertEquals(1, paths.size());
-    Assert.assertEquals("base_25_v26", paths.get(0).getName());
+    Assert.assertEquals(addVisibilitySuffix("base_25", 26), paths.get(0).getName());
   }
 
   @Test
@@ -714,7 +715,7 @@ public class TestCleaner extends CompactorTest {
     // Check that the files are removed
     paths = getDirectories(conf, t, p);
     Assert.assertEquals(1, paths.size());
-    Assert.assertEquals("base_23_v25", paths.get(0).getName());
+    Assert.assertEquals(addVisibilitySuffix("base_23", 25), paths.get(0).getName());
   }
 
   @Test
