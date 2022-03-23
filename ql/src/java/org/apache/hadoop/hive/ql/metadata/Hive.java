@@ -1259,7 +1259,7 @@ public class Hive {
       }
       if (tbl.getCols().size() == 0 || tbl.getSd().getColsSize() == 0) {
         tbl.setFields(HiveMetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(),
-            tbl.getDeserializer(), tbl.getStorageHandler().getDefaultColumnComment()));
+            tbl.getDeserializer(), HiveUtils.getDefaultComment(tbl.getStorageHandler())));
       }
       tbl.checkValidity(conf);
       if (tbl.getParameters() != null) {
@@ -1322,7 +1322,7 @@ public class Hive {
   public static List<FieldSchema> getFieldsFromDeserializerForMsStorage(
       Table tbl, Deserializer deserializer) throws SerDeException, MetaException {
     List<FieldSchema> schema = HiveMetaStoreUtils.getFieldsFromDeserializer(
-        tbl.getTableName(), deserializer, tbl.getStorageHandler().getDefaultColumnComment());
+        tbl.getTableName(), deserializer, HiveUtils.getDefaultComment(tbl.getStorageHandler()));
     for (FieldSchema field : schema) {
       field.setType(MetaStoreUtils.TYPE_FROM_DESERIALIZER);
     }

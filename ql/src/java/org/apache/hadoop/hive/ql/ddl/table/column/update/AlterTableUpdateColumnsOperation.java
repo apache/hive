@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -58,7 +59,7 @@ public class AlterTableUpdateColumnsOperation extends AbstractAlterTableOperatio
     try {
       LOG.info("Updating metastore columns for table: {}", table.getTableName());
       List<FieldSchema> fields = HiveMetaStoreUtils.getFieldsFromDeserializer(table.getTableName(), deserializer,
-          table.getStorageHandler().getDefaultColumnComment());
+          HiveUtils.getDefaultComment(table.getStorageHandler()));
       StorageDescriptor sd = getStorageDescriptor(table, partition);
       sd.setCols(fields);
     } catch (org.apache.hadoop.hive.serde2.SerDeException | MetaException e) {

@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -94,7 +95,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
           getColumnDataColPathSpecified(table, part, cols, colStats, deserializer);
         } else {
           cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer,
-              table.getStorageHandler().getDefaultColumnComment()));
+              HiveUtils.getDefaultComment(table.getStorageHandler())));
         }
       }
       fixDecimalColumnTypeName(cols);
@@ -206,12 +207,12 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
           getColumnDataForPartitionKeyColumn(table, cols, colStats, colNames, tableProps);
         } else {
           getColumnsForNotPartitionKeyColumn(cols, colStats, deserializer, colNames, tableName, tableProps,
-              table.getStorageHandler().getDefaultColumnComment());
+              HiveUtils.getDefaultComment(table.getStorageHandler()));
         }
         table.setParameters(tableProps);
       } else {
         cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer,
-            table.getStorageHandler().getDefaultColumnComment()));
+            HiveUtils.getDefaultComment(table.getStorageHandler())));
         colStats.addAll(
             context.getDb().getTableColumnStatistics(tableName.getDb().toLowerCase(),
                 tableName.getTable().toLowerCase(), colNames, false));
@@ -223,7 +224,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       String partName = HMSHandler.lowerCaseConvertPartName(part.getName());
       partitions.add(partName);
       cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer,
-          table.getStorageHandler().getDefaultColumnComment()));
+          HiveUtils.getDefaultComment(table.getStorageHandler())));
       Map<String, List<ColumnStatisticsObj>> partitionColumnStatistics = context.getDb().getPartitionColumnStatistics(
           tableName.getDb().toLowerCase(), tableName.getTable().toLowerCase(), partitions, colNames, false);
       List<ColumnStatisticsObj> partitionColStat = partitionColumnStatistics.get(partName);
