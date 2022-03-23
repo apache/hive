@@ -132,6 +132,8 @@ public abstract class HiveContextAwareRecordReader<K extends WritableComparable,
             ioCxtRef.setRecordIdentifier(recordIdentifier);
           }
           ioCxtRef.setDeletedRecord(recordIdentifier != null && recordIdentifier.isDeleteEvent());
+        } else if (recordReader.getClass().getName().contains("Iceberg")) {
+          ioCxtRef.parsePositionDeleteInfo(jobConf);
         } else {
           ioCxtRef.parseRecordIdentifier(jobConf);
         }

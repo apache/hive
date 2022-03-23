@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import com.google.gson.Gson;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
@@ -51,6 +52,7 @@ public class IOContext {
    */
   private  RecordIdentifier ri;
   private boolean isDeletedRecord;
+  private PositionDeleteInfo pdi;
 
   public static enum Comparison {
     GREATER,
@@ -187,6 +189,17 @@ public class IOContext {
     }
   }
 
+  public void parsePositionDeleteInfo(Configuration configuration) {
+    if (configuration.get(PositionDeleteInfo.CONF_KEY) != null) {
+      Gson gson = new Gson();
+      this.pdi = gson.fromJson(configuration.get(PositionDeleteInfo.CONF_KEY), PositionDeleteInfo.class);
+    }
+  }
+
+  public PositionDeleteInfo getPositionDeleteInfo() {
+    return pdi;
+  }
+
   public boolean isDeletedRecord() {
     return isDeletedRecord;
   }
@@ -207,4 +220,36 @@ public class IOContext {
     this.genericUDFClassName = null;
   }
 
+  public static class PositionDeleteInfo {
+
+    public static final String CONF_KEY = "hive.io.context.position.delete.info";
+
+    final int specId;
+    final long partitionHash;
+    final String filePath;
+    final long filePos;
+
+    public PositionDeleteInfo(int specId, long partitionHash, String filePath, long filePos) {
+      this.specId = specId;
+      this.partitionHash = partitionHash;
+      this.filePath = filePath;
+      this.filePos = filePos;
+    }
+
+    public int getSpecId() {
+      return specId;
+    }
+
+    public long getPartitionHash() {
+      return partitionHash;
+    }
+
+    public String getFilePath() {
+      return filePath;
+    }
+
+    public long getFilePos() {
+      return filePos;
+    }
+  }
 }

@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
@@ -263,6 +264,27 @@ public interface HiveStorageHandler extends Configurable {
    */
   default boolean alwaysUnpartitioned() {
     return false;
+  }
+
+  /**
+   * @return whether the storage handler supports DELETE, UPDATE and MERGE operations
+   */
+  default boolean supportsAcidOperations() {
+    return false;
+  }
+
+  /**
+   * {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer} rewrites DELETE queries into INSERT
+   * queries. As part of that, it writes out special delete files using virtual columns. For standard Hive ACID
+   * tables for example, it writes out the ROW__ID virtual column. The storage handler should define which virtual
+   * columns it needs to write out for its own delete files in these rewritten queries.
+   *
+   * Should only return a non-empty list if {@link HiveStorageHandler#supportsAcidOperations()} ()} returns true.
+   *
+   * @return the list of virtual columns to be used in the rewritten query
+   */
+  default List<VirtualColumn> acidVirtualColumns() {
+    return Collections.emptyList();
   }
 
   /**

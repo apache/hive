@@ -64,7 +64,7 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
     // Not doing any check.
   }
 
-  private static HiveIcebergRecordWriter writer(JobConf jc) {
+  private static HiveIcebergWriter writer(JobConf jc) {
     TaskAttemptID taskAttemptID = TezUtil.taskAttemptWrapper(jc);
     // It gets the config from the FileSinkOperator which has its own config for every target table
     Table table = HiveIcebergStorageHandler.table(jc, jc.get(hive_metastoreConstants.META_TABLE_NAME));
@@ -73,7 +73,7 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
     FileFormat fileFormat = FileFormat.valueOf(PropertyUtil.propertyAsString(table.properties(),
         TableProperties.DEFAULT_FILE_FORMAT, TableProperties.DEFAULT_FILE_FORMAT_DEFAULT).toUpperCase(Locale.ENGLISH));
     long targetFileSize = PropertyUtil.propertyAsLong(table.properties(), TableProperties.WRITE_TARGET_FILE_SIZE_BYTES,
-            TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT);
+        TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT);
     FileIO io = table.io();
     int partitionId = taskAttemptID.getTaskID().getId();
     int taskId = taskAttemptID.getId();
@@ -83,9 +83,19 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
         .operationId(operationId)
         .build();
     String tableName = jc.get(Catalogs.NAME);
-    HiveFileWriterFactory hfwf = new HiveFileWriterFactory(table, fileFormat, schema,
-        null, fileFormat, null, null, null, null);
-    return new HiveIcebergRecordWriter(schema, spec, fileFormat,
-        hfwf, outputFileFactory, io, targetFileSize, taskAttemptID, tableName);
+    if (!HiveIcebergStorageHandler.isDelete(jc)) {
+      HiveFileWriterFactory hfwf = new HiveFileWriterFactory(table, fileFormat, schema,
+          null, fileFormat, null, null, null, null);
+      return new HiveIcebergRecordWriter(schema, spec, fileFormat,
+          hfwf, outputFileFactory, io, targetFileSize, taskAttemptID, tableName);
+    } else {
+      // TODO: remove this Avro-specific logic once we have Avro writer function ready
+      // for now, this means that Avro delete files will not contain the 'row' column
+      Schema positionDeleteRowSchema = fileFormat == FileFormat.AVRO ? null : schema;
+      HiveFileWriterFactory hfwf = new HiveFileWriterFactory(table, fileFormat, schema,
+          null, fileFormat, null, null, null, positionDeleteRowSchema);
+      return new HiveIcebergDeleteWriter(hfwf, schema, spec, fileFormat, outputFileFactory, io, targetFileSize,
+          taskAttemptID, tableName);
+    }
   }
 }

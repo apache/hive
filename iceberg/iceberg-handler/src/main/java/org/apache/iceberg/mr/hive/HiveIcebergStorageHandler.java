@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -49,6 +50,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -89,6 +91,7 @@ import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTest
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
@@ -100,6 +103,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergStorageHandler.class);
 
   private static final String ICEBERG_URI_PREFIX = "iceberg://";
+  private static final String INSERT = "INSERT";
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
   /**
@@ -122,7 +126,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             }
           };
 
-  static final String WRITE_KEY = "HiveIcebergStorageHandler_write";
 
   private Configuration conf;
 
@@ -164,11 +167,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // For Tez, setting the committer here is enough to make sure it'll be part of the jobConf
     map.put("mapred.output.committer.class", HiveIcebergNoJobCommitter.class.getName());
     // For MR, the jobConf is set only in configureJobConf, so we're setting the write key here to detect it over there
-    map.put(WRITE_KEY, "true");
+    String opType = SessionStateUtil.getProperty(conf, Context.Operation.class.getSimpleName()).orElse(INSERT);
+    map.put(InputFormatConfig.OPERATION_TYPE, opType);
     // Putting the key into the table props as well, so that projection pushdown can be determined on a
     // table-level and skipped only for output tables in HiveIcebergSerde. Properties from the map will be present in
     // the serde config for all tables in the query, not just the output tables, so we can't rely on that in the serde.
-    tableDesc.getProperties().put(WRITE_KEY, "true");
+    tableDesc.getProperties().put(InputFormatConfig.OPERATION_TYPE, opType);
   }
 
   /**
@@ -198,7 +202,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     setCommonJobConf(jobConf);
     if (tableDesc != null && tableDesc.getProperties() != null &&
-        tableDesc.getProperties().get(WRITE_KEY) != null) {
+        tableDesc.getProperties().get(InputFormatConfig.OPERATION_TYPE) != null) {
+      // set operation type into job conf too
+      jobConf.set(InputFormatConfig.OPERATION_TYPE,
+          tableDesc.getProperties().getProperty(InputFormatConfig.OPERATION_TYPE));
       String tableName = tableDesc.getTableName();
       Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
           "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
@@ -445,6 +452,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
   }
 
+  @Override
+  public boolean supportsAcidOperations() {
+    return true;
+  }
+
+  @Override
+  public List<VirtualColumn> acidVirtualColumns() {
+    return ImmutableList.of(VirtualColumn.POS_DEL_SPEC, VirtualColumn.POS_DEL_PART,
+        VirtualColumn.POS_DEL_PATH, VirtualColumn.POS_DEL_POS);
+  }
+
   private void setCommonJobConf(JobConf jobConf) {
     jobConf.set("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
   }
@@ -482,6 +500,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // There is nothing to prune, or we could not use the filter
     LOG.debug("Not found Iceberg partition columns to prune with predicate {}", syntheticFilterPredicate);
     return false;
+  }
+
+  public static boolean isDelete(Configuration conf) {
+    return conf != null && Context.Operation.DELETE.name().equals(conf.get(InputFormatConfig.OPERATION_TYPE));
+  }
+
+  public static boolean isDelete(Properties props) {
+    return props != null && Context.Operation.DELETE.name().equals(props.get(InputFormatConfig.OPERATION_TYPE));
+  }
+
+  public static boolean isWrite(Properties props) {
+    return props != null && INSERT.equals(props.get(InputFormatConfig.OPERATION_TYPE));
   }
 
   /**
@@ -579,6 +609,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Table table = IcebergTableUtil.getTable(configuration, props);
     String schemaJson = SchemaParser.toJson(table.schema());
 
+    Schema deleteSchema = IcebergAcidUtil.createDeleteSchema(table.schema().columns());
+    String deleteSchemaJson = SchemaParser.toJson(deleteSchema);
+
     Maps.fromProperties(props).entrySet().stream()
         .filter(entry -> !map.containsKey(entry.getKey())) // map overrides tableDesc properties
         .forEach(entry -> map.put(entry.getKey(), entry.getValue()));
@@ -586,6 +619,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
     map.put(InputFormatConfig.TABLE_LOCATION, table.location());
     map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+    map.put(InputFormatConfig.TABLE_DELETE_SCHEMA, deleteSchemaJson);
     props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(table.spec()));
 
     // serialize table object into config
@@ -601,6 +635,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
     // this is an exception to the interface documentation, but it's a safe operation to add this property
     props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+    props.put(InputFormatConfig.TABLE_DELETE_SCHEMA, deleteSchemaJson);
   }
 
   /**

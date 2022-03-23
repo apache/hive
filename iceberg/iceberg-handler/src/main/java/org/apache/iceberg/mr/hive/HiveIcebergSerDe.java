@@ -71,10 +71,13 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
   private ObjectInspector inspector;
   private Schema tableSchema;
+  private Schema deleteSchema;
   private Collection<String> partitionColumns;
   private Map<ObjectInspector, Deserializer> deserializers = Maps.newHashMapWithExpectedSize(1);
   private Container<Record> row = new Container<>();
+  private boolean isDelete = false;
 
+  @SuppressWarnings("checkstyle:CyclomaticComplexity")
   @Override
   public void initialize(@Nullable Configuration configuration, Properties serDeProperties,
                          Properties partitionProperties) throws SerDeException {
@@ -91,7 +94,10 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     // the resulting properties are serialized and distributed to the executors
 
     if (serDeProperties.get(InputFormatConfig.TABLE_SCHEMA) != null) {
-      this.tableSchema = SchemaParser.fromJson((String) serDeProperties.get(InputFormatConfig.TABLE_SCHEMA));
+      this.tableSchema = SchemaParser.fromJson(serDeProperties.getProperty(InputFormatConfig.TABLE_SCHEMA));
+      if (serDeProperties.get(InputFormatConfig.TABLE_DELETE_SCHEMA) != null) {
+        this.deleteSchema = SchemaParser.fromJson(serDeProperties.getProperty(InputFormatConfig.TABLE_DELETE_SCHEMA));
+      }
       if (serDeProperties.get(InputFormatConfig.PARTITION_SPEC) != null) {
         PartitionSpec spec =
             PartitionSpecParser.fromJson(tableSchema, serDeProperties.getProperty(InputFormatConfig.PARTITION_SPEC));
@@ -104,6 +110,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         Table table = IcebergTableUtil.getTable(configuration, serDeProperties);
         // always prefer the original table schema if there is one
         this.tableSchema = table.schema();
+        this.deleteSchema = IcebergAcidUtil.createDeleteSchema(tableSchema.columns());
         this.partitionColumns = table.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
         LOG.info("Using schema from existing table {}", SchemaParser.toJson(tableSchema));
       } catch (Exception e) {
@@ -128,7 +135,11 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     }
 
     Schema projectedSchema;
-    if (serDeProperties.get(HiveIcebergStorageHandler.WRITE_KEY) != null) {
+    if (HiveIcebergStorageHandler.isDelete(serDeProperties)) {
+      // when writing delete files, we should use the full delete schema
+      projectedSchema = deleteSchema;
+      isDelete = true;
+    } else if (HiveIcebergStorageHandler.isWrite(serDeProperties)) {
       // when writing out data, we should not do projection pushdown
       projectedSchema = tableSchema;
     } else {
@@ -224,7 +235,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     Deserializer deserializer = deserializers.get(objectInspector);
     if (deserializer == null) {
       deserializer = new Deserializer.Builder()
-          .schema(tableSchema)
+          .schema(isDelete ? deleteSchema : tableSchema)
           .sourceInspector((StructObjectInspector) objectInspector)
           .writerInspector((StructObjectInspector) inspector)
           .build();

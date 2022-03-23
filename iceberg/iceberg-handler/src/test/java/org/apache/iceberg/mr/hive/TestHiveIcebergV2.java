@@ -171,6 +171,8 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         .filter(file -> file.recordCount() == 3)
         .findAny()
         .orElseThrow(() -> new RuntimeException("Did not find the desired data file in the test table"));
+    PositionDelete<Record> posDel = PositionDelete.create();
+    PositionDelete<Record> posDel2 = PositionDelete.create();
     List<PositionDelete<Record>> deletes = ImmutableList.of(
         positionDelete(dataFile.path(), 0L, null),
         positionDelete(dataFile.path(), 2L, null)
@@ -211,6 +213,8 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         .orElseThrow(() -> new RuntimeException("Did not find the desired data file in the test table"));
     List<Record> rowsToDel = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .add(0L, "Laura", "Yellow").add(0L, "Blake", "Blue").build();
+    PositionDelete<Record> posDel = PositionDelete.create();
+    PositionDelete<Record> posDel2 = PositionDelete.create();
     List<PositionDelete<Record>> deletes = ImmutableList.of(
         positionDelete(dataFile.path(), 0L, rowsToDel.get(0)),
         positionDelete(dataFile.path(), 2L, rowsToDel.get(1))
@@ -226,6 +230,56 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
     Assert.assertArrayEquals(new Object[] {0L, "John", "Green"}, objects.get(1));
     Assert.assertArrayEquals(new Object[] {1L, "Bob", "Green"}, objects.get(2));
     Assert.assertArrayEquals(new Object[] {2L, "Trudy", "Pink"}, objects.get(3));
+  }
+
+  @Test
+  public void testDeleteStatementsUnpartitioned() {
+    Assume.assumeFalse("Iceberg DELETEs are only implemented for non-vectorized mode for now", isVectorized);
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Alice", "Brown")
+        .add(0L, "BBB", "CCC")
+        .add(1L, "Blobbbb", "GHYH")
+        .add(1L, "Bob", "Green")
+        .add(1L, "FFF", "DDD")
+        .add(1L, "FFF", "Milla")
+        .add(2L, "GGG", "BLU")
+        .add(2L, "Trudy", "Pink")
+        .add(2L, "Trudy", "Bubba")
+        .build();
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, records, 2);
+    shell.executeStatement("insert into customers values (1, 'Jason', 'Derulo'), (0, 'k', 's'), (4, 'Buh', 'Bubba')");
+
+    shell.executeStatement("DELETE FROM customers WHERE customer_id=1 or last_name='Bubba'");
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM customers");
+    Assert.assertEquals(5, objects.size());
+  }
+
+  @Test
+  public void testDeleteStatementsPartitioned() {
+    Assume.assumeFalse("Iceberg DELETEs are only implemented for non-vectorized mode for now", isVectorized);
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Alice", "Brown")
+        .add(0L, "BBB", "CCC")
+        .add(1L, "Blobbbb", "GHYH")
+        .add(1L, "Bob", "Green")
+        .add(1L, "FFF", "DDD")
+        .add(1L, "FFF", "Milla")
+        .add(2L, "GGG", "BLU")
+        .add(2L, "Trudy", "Pink")
+        .add(2L, "Trudy", "Bubba")
+        .build();
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").bucket("customer_id", 16).build();
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, records, 2);
+    shell.executeStatement("insert into customers values (1, 'Jason', 'Derulo'), (0, 'k', 's'), (4, 'Buh', 'Bubba')");
+
+    shell.executeStatement("DELETE FROM customers WHERE customer_id=1 or last_name='Bubba'");
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM customers");
+    Assert.assertEquals(5, objects.size());
   }
 
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {

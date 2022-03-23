@@ -2946,16 +2946,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
         final TableType tableType = obtainTableType(tabMetaData);
 
         // 3.3 Add column info corresponding to virtual columns
-        List<VirtualColumn> virtualCols = new ArrayList<VirtualColumn>();
+        List<VirtualColumn> virtualCols = new ArrayList<>();
         if (tableType == TableType.NATIVE) {
-          Iterator<VirtualColumn> vcs = VirtualColumn.getRegistry(conf).iterator();
-          while (vcs.hasNext()) {
-            VirtualColumn vc = vcs.next();
+          virtualCols = VirtualColumn.getRegistry(conf);
+          if (tabMetaData.getStorageHandler() != null && tabMetaData.getStorageHandler().supportsAcidOperations()) {
+            virtualCols.addAll(tabMetaData.getStorageHandler().acidVirtualColumns());
+          }
+          for (VirtualColumn vc : virtualCols) {
             colInfo = new ColumnInfo(vc.getName(), vc.getTypeInfo(), tableAlias, true,
                 vc.getIsHidden());
             rr.put(tableAlias, vc.getName().toLowerCase(), colInfo);
             cInfoLst.add(colInfo);
-            virtualCols.add(vc);
           }
         }
 
