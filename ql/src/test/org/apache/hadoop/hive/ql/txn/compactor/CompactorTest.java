@@ -399,7 +399,7 @@ public abstract class CompactorTest {
     Path location = new Path(getLocation(t.getTableName(), partValue));
     String filename = null;
     switch (type) {
-      case BASE: filename = AcidUtils.BASE_PREFIX + maxTxn + (visibilityId > 0 ? AcidUtils.VISIBILITY_PREFIX + visibilityId : ""); break;
+      case BASE: filename = AcidUtils.addVisibilitySuffix(AcidUtils.BASE_PREFIX + maxTxn, visibilityId); break;
       case LENGTH_FILE: // Fall through to delta
       case DELTA: filename = AcidUtils.addVisibilitySuffix(makeDeltaDirName(minTxn, maxTxn),visibilityId); break;
       case LEGACY: break; // handled below

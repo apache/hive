@@ -444,25 +444,26 @@ public class Cleaner extends MetaStoreCompactorThread {
       // Including obsolete directories for partitioned tables can result in data loss.
       obsoleteDirs = dir.getAbortedDirectories();
     }
-
-    if (obsoleteDirs.isEmpty()) {
-      conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
-      
-      AcidDirectory fullDir = AcidUtils.getAcidState(fs, path, conf,
-        new ValidReaderWriteIdList(ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId, Long.MAX_VALUE),
-        Ref.from(false), false, hdfsDirSnapshots);
-      
-      if (fullDir.getObsolete().isEmpty()) {
-        LOG.info(idWatermark(ci) + " nothing to remove below watermark " + ci.highestWriteId + ", ");
-        return true;
-      }
-    }
     StringBuilder extraDebugInfo = new StringBuilder("[").append(obsoleteDirs.stream()
         .map(Path::getName).collect(Collectors.joining(",")));
     boolean success = remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
     if (dir.getObsolete().size() > 0) {
       AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
           txnHandler);
+    }
+    // Make sure there are no leftovers below the compacted highestWriteId
+    conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
+    dir = AcidUtils.getAcidState(fs, path, conf,
+      new ValidReaderWriteIdList(ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId, Long.MAX_VALUE),
+      Ref.from(false), false, hdfsDirSnapshots);
+
+    if (dir.getObsolete().isEmpty()) {
+      LOG.info(idWatermark(ci) + " nothing to remove below watermark " + ci.highestWriteId + ", ");
+      return true;
+    } else if (!success) {
+      LOG.warn("Hmm, nothing to delete in the cleaner for directory " + location +
+        ", that hardly seems right.");
+      return false;
     }
     return success;
   }
@@ -483,14 +484,13 @@ public class Cleaner extends MetaStoreCompactorThread {
       FileSystem fs, StringBuilder extraDebugInfo)
       throws NoSuchObjectException, MetaException, IOException {
 
+    if (filesToDelete.size() < 1) {
+      return false;
+    }
     extraDebugInfo.setCharAt(extraDebugInfo.length() - 1, ']');
     LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
          " obsolete directories from " + location + ". " + extraDebugInfo.toString());
-    if (filesToDelete.size() < 1) {
-      LOG.warn("Hmm, nothing to delete in the cleaner for directory " + location +
-          ", that hardly seems right.");
-      return false;
-    }
+    
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
     boolean needCmRecycle = ReplChangeManager.isSourceOfReplication(db);
 
