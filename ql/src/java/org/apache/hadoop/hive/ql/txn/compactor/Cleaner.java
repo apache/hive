@@ -420,7 +420,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     Path path = new Path(location);
     FileSystem fs = path.getFileSystem(conf);
 
-    // Collect the all of the files/dirs
+    // Collect all of the files/dirs
     Map<Path, AcidUtils.HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, path);
     
     AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false, hdfsDirSnapshots);
@@ -446,7 +446,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
     StringBuilder extraDebugInfo = new StringBuilder("[").append(obsoleteDirs.stream()
         .map(Path::getName).collect(Collectors.joining(",")));
-    boolean success = remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
+    remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
     if (dir.getObsolete().size() > 0) {
       AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
           txnHandler);
@@ -458,14 +458,10 @@ public class Cleaner extends MetaStoreCompactorThread {
       Ref.from(false), false, hdfsDirSnapshots);
 
     if (dir.getObsolete().isEmpty()) {
-      LOG.info(idWatermark(ci) + " nothing to remove below watermark " + ci.highestWriteId + ", ");
+      LOG.info(idWatermark(ci) + " All cleared below the watermark: " + ci.highestWriteId + " from " + location);
       return true;
-    } else if (!success) {
-      LOG.warn("Hmm, nothing to delete in the cleaner for directory " + location +
-        ", that hardly seems right.");
-      return false;
-    }
-    return success;
+    } 
+    return false;
   }
 
   private boolean removeFiles(String location, CompactionInfo ci)
