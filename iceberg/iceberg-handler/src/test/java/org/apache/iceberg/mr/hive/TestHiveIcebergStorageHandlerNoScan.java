@@ -936,9 +936,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Assert.assertEquals(expectedIcebergProperties, icebergTable.properties());
 
     if (Catalogs.hiveCatalog(shell.getHiveConf(), tableProperties)) {
-      Assert.assertEquals(10, hmsParams.size());
+      Assert.assertEquals(9, hmsParams.size());
       Assert.assertEquals("initial_val", hmsParams.get("custom_property"));
-      Assert.assertEquals("TRUE", hmsParams.get(InputFormatConfig.EXTERNAL_TABLE_PURGE));
       Assert.assertEquals("TRUE", hmsParams.get("EXTERNAL"));
       Assert.assertEquals("true", hmsParams.get(TableProperties.ENGINE_HIVE_ENABLED));
       Assert.assertEquals(HiveIcebergStorageHandler.class.getName(),
@@ -951,7 +950,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
       Assert.assertNotNull(hmsParams.get(hive_metastoreConstants.DDL_TIME));
       Assert.assertNotNull(hmsParams.get(serdeConstants.SERIALIZATION_FORMAT));
     } else {
-      Assert.assertEquals(7, hmsParams.size());
+      Assert.assertEquals(6, hmsParams.size());
       Assert.assertNull(hmsParams.get(TableProperties.ENGINE_HIVE_ENABLED));
     }
 
@@ -974,7 +973,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     if (Catalogs.hiveCatalog(shell.getHiveConf(), tableProperties)) {
-      Assert.assertEquals(13, hmsParams.size()); // 2 newly-added properties + previous_metadata_location prop
+      Assert.assertEquals(12, hmsParams.size()); // 2 newly-added properties + previous_metadata_location prop
       Assert.assertEquals("true", hmsParams.get("new_prop_1"));
       Assert.assertEquals("false", hmsParams.get("new_prop_2"));
       Assert.assertEquals("new_val", hmsParams.get("custom_property"));
@@ -984,7 +983,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
       Assert.assertEquals(hmsParams.get(BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP), prevSnapshot);
       Assert.assertEquals(hmsParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP), newSnapshot);
     } else {
-      Assert.assertEquals(7, hmsParams.size());
+      Assert.assertEquals(6, hmsParams.size());
     }
 
     // Remove some Iceberg props and see if they're removed from HMS table props as well
@@ -1054,6 +1053,47 @@ public class TestHiveIcebergStorageHandlerNoScan {
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
     shell.executeStatement("DROP TABLE customers");
+  }
+
+  @Test
+  public void testDropTableWithoutPurge() throws IOException {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.executeStatement("CREATE EXTERNAL TABLE customers (" +
+        "t_int INT,  " +
+        "t_string STRING) " +
+        "STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    Path tableLocation = new Path(icebergTable.location());
+    shell.executeStatement("DROP TABLE customers");
+
+    // Check if the files are kept
+    FileSystem fs = Util.getFs(tableLocation, shell.getHiveConf());
+    Assert.assertEquals(1, fs.listStatus(tableLocation).length);
+    Assert.assertTrue(fs.listStatus(new Path(tableLocation, "metadata")).length > 0);
+  }
+
+  @Test
+  public void testDropTableWithPurge() throws IOException {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.executeStatement("CREATE EXTERNAL TABLE customers (" +
+        "t_int INT,  " +
+        "t_string STRING) " +
+        "STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of(InputFormatConfig.EXTERNAL_TABLE_PURGE, "TRUE")));
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    Path tableLocation = new Path(icebergTable.location());
+    shell.executeStatement("DROP TABLE customers");
+
+    // Check if the files are kept
+    FileSystem fs = Util.getFs(tableLocation, shell.getHiveConf());
+    Assert.assertFalse(fs.exists(tableLocation));
   }
 
   @Test
