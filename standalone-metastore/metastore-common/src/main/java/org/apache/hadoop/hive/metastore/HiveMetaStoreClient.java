@@ -673,7 +673,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                 httpClient.setCustomHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, httpUser);
                 transport = httpClient;
               } else {
-                new TSocket(new TConfiguration(),store.getHost(), store.getPort()
+                transport = new TSocket(new TConfiguration(),store.getHost(), store.getPort()
                     , clientSocketTimeout);
               }
             } catch (TTransportException e) {
@@ -681,6 +681,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               throw new MetaException(e.toString());
             }
           }
+          // HTTP mode does not support any auth mechanism
           if (!isHttpTransportMode) {
             transport = createAuthTransportNonHttp(store, transport);
           }
@@ -786,7 +787,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE).
         equalsIgnoreCase("http");
     Preconditions.checkArgument(!isHttpTransportMode);
-    Preconditions.checkNotNull(underlyingTransport);
+    Preconditions.checkNotNull(underlyingTransport, "Underlying transport should not be null");
     // default transport is the underlying one
     TTransport transport = underlyingTransport;
     boolean useFramedTransport =
