@@ -67,14 +67,16 @@ public class JWTValidator {
     // verify signature
     Exception lastException = null;
     for (JWK matchedJWK : matchedJWKS) {
+      String keyID = matchedJWK.getKeyID() == null ? "null" : matchedJWK.getKeyID();
       try {
         JWSVerifier verifier = getVerifier(parsedJwt.getHeader(), matchedJWK);
         if (parsedJwt.verify(verifier)) {
+          LOG.debug("Verified JWT {} by JWK {}", parsedJwt.getPayload(), keyID);
           break;
         }
       } catch (Exception e) {
         lastException = e;
-        LOG.warn("Failed to verify JWT {} by JWK {}", parsedJwt.getPayload(), matchedJWK, e);
+        LOG.warn("Failed to verify JWT {} by JWK {}", parsedJwt.getPayload(), keyID, e);
       }
     }
     // We use only the last seven characters to let a user can differentiate exceptions for different JWT
