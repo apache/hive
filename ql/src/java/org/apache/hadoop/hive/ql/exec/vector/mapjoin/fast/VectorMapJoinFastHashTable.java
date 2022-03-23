@@ -63,11 +63,11 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
   }
 
   private static void validateCapacity(long capacity) {
-    if (Long.bitCount(capacity) != 1) {
-      throw new AssertionError("Capacity must be a power of two " + capacity);
-    }
     if (capacity <= 0) {
       throw new AssertionError("Invalid capacity " + capacity);
+    }
+    if (Long.bitCount(capacity) != 1) {
+      throw new AssertionError("Capacity must be a power of two " + capacity);
     }
   }
 
