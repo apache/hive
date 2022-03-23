@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -156,14 +155,12 @@ public class Cleaner extends MetaStoreCompactorThread {
             // when min_history_level is finally dropped, than every HMS will commit compaction the new way
             // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
             for (CompactionInfo compactionInfo : readyToClean) {
-              String tableName = compactionInfo.getFullTableName();
-              String partition = compactionInfo.getFullPartitionName();
               CompletableFuture<Void> asyncJob =
                   CompletableFuture.runAsync(
                           ThrowingRunnable.unchecked(() -> clean(compactionInfo, cleanerWaterMark, metricsEnabled)),
                           cleanerExecutor)
                       .exceptionally(t -> {
-                        LOG.error("Error during the cleaning the table {} / partition {}", tableName, partition, t);
+                        LOG.error("Error clearing {}", compactionInfo.getFullPartitionName(), t);
                         return null;
                       });
               cleanerList.add(asyncJob);
@@ -423,39 +420,30 @@ public class Cleaner extends MetaStoreCompactorThread {
     FileSystem fs = path.getFileSystem(conf);
     
     // Collect all of the files/dirs
-    Map<Path, AcidUtils.HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, path);
+    Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, path);
+    AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false, dirSnapshots);
     
-    AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false, hdfsDirSnapshots);
-    List<Path> obsoleteDirs = getObsoleteDirs(ci, dir);
-    
-    StringBuilder extraDebugInfo = new StringBuilder("[").append(obsoleteDirs.stream()
-        .map(Path::getName).collect(Collectors.joining(",")));
-    
-    List<Path> deleted = remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
+    List<Path> deleted = remove(location, ci, getObsoleteDirs(ci, dir), true, fs);
     if (dir.getObsolete().size() > 0) {
       AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
           txnHandler);
     }
     // Make sure there are no leftovers below the compacted watermark
     conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
-    dir = AcidUtils.getAcidState(fs, path, conf,
-      new ValidReaderWriteIdList(ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId, Long.MAX_VALUE),
-      Ref.from(false), false, hdfsDirSnapshots);
+    dir = AcidUtils.getAcidState(fs, path, conf, new ValidReaderWriteIdList(
+        ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId, Long.MAX_VALUE),
+      Ref.from(false), false, dirSnapshots);
     
     List<Path> remained = subtract(getObsoleteDirs(ci, dir), deleted);
     if (!remained.isEmpty()) {
-      extraDebugInfo = new StringBuilder("[").append(remained.stream()
-        .map(Path::getName).collect(Collectors.joining(",")));
-      
       LOG.warn(idWatermark(ci) + " Remained " + remained.size() +
-        " obsolete directories from " + location + ". " + extraDebugInfo.toString());
+        " obsolete directories from " + location + ". " + getDebugInfo(remained));
       return false;
     }
     LOG.debug(idWatermark(ci) + " All cleared below the watermark: " + ci.highestWriteId + " from " + location);
     return true;
   }
-
-  @NotNull
+  
   private List<Path> getObsoleteDirs(CompactionInfo ci, AcidDirectory dir) throws MetaException {
     List<Path> obsoleteDirs = dir.getObsolete();
     /**
@@ -481,34 +469,27 @@ public class Cleaner extends MetaStoreCompactorThread {
   }
 
   private boolean removeFiles(String location, CompactionInfo ci)
-    throws NoSuchObjectException, IOException, MetaException {
-    Path path = new Path(location);
-    StringBuilder extraDebugInfo = new StringBuilder("[").append(path.getName()).append(",");
-
+      throws NoSuchObjectException, IOException, MetaException {
     String strIfPurge = ci.getProperty("ifPurge");
     boolean ifPurge = strIfPurge != null || Boolean.parseBoolean(ci.getProperty("ifPurge"));
-
-    List<Path> deleted = remove(location, ci, Collections.singletonList(path), ifPurge,
-      path.getFileSystem(conf), extraDebugInfo);
-    return !deleted.isEmpty();
+    
+    Path path = new Path(location);
+    return !remove(location, ci, Collections.singletonList(path), ifPurge,
+      path.getFileSystem(conf)).isEmpty();
   }
 
-  private List<Path> remove(String location, CompactionInfo ci, List<Path> filesToDelete, boolean ifPurge,
-      FileSystem fs, StringBuilder extraDebugInfo)
+  private List<Path> remove(String location, CompactionInfo ci, List<Path> paths, boolean ifPurge, FileSystem fs)
       throws NoSuchObjectException, MetaException, IOException {
-    
     List<Path> deleted = new ArrayList<>();
-    if (filesToDelete.size() < 1) {
+    if (paths.size() < 1) {
       return deleted;
     }
-    extraDebugInfo.setCharAt(extraDebugInfo.length() - 1, ']');
-    LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
-      " obsolete directories from " + location + ". " + extraDebugInfo.toString());
-    
+    LOG.info(idWatermark(ci) + " About to remove " + paths.size() +
+      " obsolete directories from " + location + ". " + getDebugInfo(paths));
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
     boolean needCmRecycle = ReplChangeManager.isSourceOfReplication(db);
     
-    for (Path dead : filesToDelete) {
+    for (Path dead : paths) {
       LOG.debug("Going to delete path " + dead.toString());
       if (needCmRecycle) {
         replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, ifPurge);
@@ -518,6 +499,10 @@ public class Cleaner extends MetaStoreCompactorThread {
       }
     }
     return deleted;
+  }
+  
+  private String getDebugInfo(List<Path> paths) {
+    return "[" + paths.stream().map(Path::getName).collect(Collectors.joining(",")) + ']';
   }
 
   private static class CleanerCycleUpdater implements Runnable {
