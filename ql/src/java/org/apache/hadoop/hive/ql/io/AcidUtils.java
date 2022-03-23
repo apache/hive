@@ -409,7 +409,7 @@ public class AcidUtils {
         + String.format(DELTA_DIGITS, visibilityTxnId);
   }
 
-  public static boolean isLocklessReadsSupported(Table table, Configuration conf) {
+  public static boolean isLocklessReadsSupported(Table table, HiveConf conf) {
     return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED)
         && AcidUtils.isTransactionalTable(table);
   }
