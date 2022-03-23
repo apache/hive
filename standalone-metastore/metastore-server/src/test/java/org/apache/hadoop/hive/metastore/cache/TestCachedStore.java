@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
+import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.metastore.Deadline;
@@ -38,7 +39,6 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.*;
-import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -48,6 +48,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import javax.xml.bind.DatatypeConverter;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
@@ -1032,7 +1034,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cachedStore.shutdown();
   }
 
-  //@Test
+  @Test
   public void testPartitionAggrStats() throws Exception {
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
@@ -1111,8 +1113,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cachedStore.shutdown();
   }
 
-  //@Test
-  public void testPartitionAggrStatsBitVector() throws Exception {
+  @Test
+  public void testPartitionAggrStatsBitVectorAndHistogram() throws Exception {
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "-1Kb");
@@ -1172,6 +1174,12 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     hll.addLong(3);
     longStats.setBitVectors(hll.serialize());
 
+    KllFloatsSketch kll = new KllFloatsSketch();
+    kll.update(1);
+    kll.update(2);
+    kll.update(3);
+    longStats.setHistogram(kll.toByteArray());
+
     data.setLongStats(longStats);
     colStatObjs.add(colStats);
 
@@ -1189,6 +1197,13 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     hll.addLong(5);
     longStats.setBitVectors(hll.serialize());
 
+    kll = new KllFloatsSketch();
+    kll.update(2);
+    kll.update(3);
+    kll.update(4);
+    kll.update(5);
+    longStats.setHistogram(kll.toByteArray());
+
     cachedStore.updatePartitionColumnStatistics(stats.deepCopy(), partVals2, null, -1);
 
     List<String> colNames = new ArrayList<>();
@@ -1196,12 +1211,22 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     List<String> aggrPartVals = new ArrayList<>();
     aggrPartVals.add("1");
     aggrPartVals.add("2");
+
     AggrStats aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 5);
+    LongColumnStatsData longColumnStatsData = aggrStats.getColStats().get(0).getStatsData().getLongStats();
+    Assert.assertEquals(100, longColumnStatsData.getNumNulls());
+    Assert.assertEquals(5, longColumnStatsData.getNumDVs());
+
     aggrStats = cachedStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, dbName, tblName, aggrPartVals, colNames, CacheUtils.HIVE_ENGINE);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls(), 100);
-    Assert.assertEquals(aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumDVs(), 5);
+    longColumnStatsData = aggrStats.getColStats().get(0).getStatsData().getLongStats();
+    Assert.assertEquals(100, longColumnStatsData.getNumNulls());
+    Assert.assertEquals(5, longColumnStatsData.getNumDVs());
+    Assert.assertArrayEquals(
+        DatatypeConverter.parseHexBinary("484C4CE00303C5F3BE48BCBBAC62C0D2F48E03"),
+        longColumnStatsData.getBitVectors());
+    Assert.assertArrayEquals(DatatypeConverter.parseHexBinary(
+        "05010F00C80008000300000000000000C8000100C50000000000803F0000404000004040000000400000803F"),
+        longColumnStatsData.getHistogram());
     cachedStore.shutdown();
   }
 
