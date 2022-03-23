@@ -2517,6 +2517,84 @@ public class TestCompactor {
     Assert.assertEquals("2\t55\t66", valuesReadFromHiveDriver.get(1));
   }
 
+  @Test
+  public void testAcidDirCacheOnDropTable() throws Exception {
+    int cacheDurationInMinutes = 10;
+    AcidUtils.initDirCache(cacheDurationInMinutes);
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
+    String dbName = "default";
+    String tblName = "adc_table";
+
+    // First phase, populate the cache
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("create table " + tblName + " (a string) stored as orc " +
+            "TBLPROPERTIES ('transactional'='true', 'hive.exec.orc.split.strategy'='BI')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('a')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('b')", driver);
+    runMajorCompaction(dbName, tblName);
+    runCleaner(conf);
+
+    HiveConf.setIntVar(driver.getConf(), ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION, cacheDurationInMinutes);
+    executeStatementOnDriver("select * from " + tblName + " order by a", driver);
+
+    // Second phase, the previous data should be cleaned
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("create table " + tblName + " (a string) stored as orc " +
+            "TBLPROPERTIES ('transactional'='true', 'hive.exec.orc.split.strategy'='BI')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('c')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('d')", driver);
+    runMajorCompaction(dbName, tblName);
+    runCleaner(conf);
+
+    HiveConf.setIntVar(driver.getConf(), ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION, cacheDurationInMinutes);
+    List<String> rs = execSelectAndDumpData("select * from " + tblName + " order by a", driver, "select");
+    Assert.assertEquals(2, rs.size());
+    Assert.assertEquals("c", rs.get(0));
+    Assert.assertEquals("d", rs.get(1));
+  }
+
+  @Test
+  public void testAcidDirCacheOnDropPartitionedTable() throws Exception {
+    int cacheDurationInMinutes = 10;
+    AcidUtils.initDirCache(cacheDurationInMinutes);
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
+    String dbName = "default";
+    String tblName = "adc_part_table";
+
+    // First phase, populate the cache
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("create table " + tblName + " (a string) PARTITIONED BY (p string) stored as orc " +
+            "TBLPROPERTIES ('transactional'='true', 'hive.exec.orc.split.strategy'='BI')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('a', 'p1')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('b', 'p1')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('a', 'p2')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('b', 'p2')", driver);
+    runMajorCompaction(dbName, tblName, "p=p1", "p=p2");
+    runCleaner(conf);
+
+    HiveConf.setIntVar(driver.getConf(), ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION, cacheDurationInMinutes);
+    executeStatementOnDriver("select a from " + tblName + " order by a", driver);
+
+    // Second phase, the previous data should be cleaned
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("create table " + tblName + " (a string) PARTITIONED BY (p string) stored as orc " +
+            "TBLPROPERTIES ('transactional'='true', 'hive.exec.orc.split.strategy'='BI')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('c', 'p1')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('d', 'p1')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('c', 'p2')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('d', 'p2')", driver);
+    runMajorCompaction(dbName, tblName, "p=p1", "p=p2");
+    runCleaner(conf);
+
+    HiveConf.setIntVar(driver.getConf(), ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION, cacheDurationInMinutes);
+    List<String> rs = execSelectAndDumpData("select a from " + tblName + " order by a", driver, "select");
+    Assert.assertEquals(4, rs.size());
+    Assert.assertEquals("c", rs.get(0));
+    Assert.assertEquals("c", rs.get(1));
+    Assert.assertEquals("d", rs.get(2));
+    Assert.assertEquals("d", rs.get(2));
+  }
+
   private List<ShowCompactResponseElement> getCompactionList() throws Exception {
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
     runInitiator(conf);

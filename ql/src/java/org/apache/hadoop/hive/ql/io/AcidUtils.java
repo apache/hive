@@ -3143,7 +3143,8 @@ public class AcidUtils {
       .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null));
   }
 
-  private static void initDirCache(int durationInMts) {
+  @VisibleForTesting
+  public static void initDirCache(int durationInMts) {
     if (dirCacheInited.get()) {
       LOG.debug("DirCache got initialized already");
       return;
