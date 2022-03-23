@@ -5215,7 +5215,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               bucketDest.toUri().toString());
           try {
             fs.rename(bucketSrc, bucketDest);
-            if (newFiles != null) {
+            if (newFiles != null && !newFiles.contains(bucketDest)) {
               newFiles.add(bucketDest);
             }
           } catch (Exception e) {
