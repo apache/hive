@@ -735,7 +735,7 @@ public class TestCleaner extends CompactorTest {
     burnThroughTransactions(dbName, tblName, 22);
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
     rqst.setPartitionname(partName);
-    compactInTxn(rqst);
+    long compactTxn = compactInTxn(rqst);
     addDeltaFile(t, p, 21, 22, 2);
     startCleaner();
 
@@ -751,10 +751,10 @@ public class TestCleaner extends CompactorTest {
     // major compaction
     addDeltaFile(t, p, 23L, 23L, 1);
     addDeltaFile(t, p, 24L, 24L, 1);
-    burnThroughTransactions(dbName, tblName, 2);
+    burnThroughTransactions(dbName, tblName, 2, null, new HashSet<>(Collections.singletonList(compactTxn + 1)));
     rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
     rqst.setPartitionname(partName);
-    long compactTxn = compactInTxn(rqst);
+    compactTxn = compactInTxn(rqst);
     addBaseFile(t, p, 24, 24, compactTxn);
     startCleaner();
 

@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -77,6 +78,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.collections4.ListUtils.subtract;
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
@@ -419,11 +421,42 @@ public class Cleaner extends MetaStoreCompactorThread {
       throws IOException, NoSuchObjectException, MetaException {
     Path path = new Path(location);
     FileSystem fs = path.getFileSystem(conf);
-
+    
     // Collect all of the files/dirs
     Map<Path, AcidUtils.HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, path);
     
     AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false, hdfsDirSnapshots);
+    List<Path> obsoleteDirs = getObsoleteDirs(ci, dir);
+    
+    StringBuilder extraDebugInfo = new StringBuilder("[").append(obsoleteDirs.stream()
+        .map(Path::getName).collect(Collectors.joining(",")));
+    
+    List<Path> deleted = remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
+    if (dir.getObsolete().size() > 0) {
+      AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
+          txnHandler);
+    }
+    // Make sure there are no leftovers below the compacted watermark
+    conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
+    dir = AcidUtils.getAcidState(fs, path, conf,
+      new ValidReaderWriteIdList(ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId, Long.MAX_VALUE),
+      Ref.from(false), false, hdfsDirSnapshots);
+    
+    List<Path> remained = subtract(getObsoleteDirs(ci, dir), deleted);
+    if (!remained.isEmpty()) {
+      extraDebugInfo = new StringBuilder("[").append(remained.stream()
+        .map(Path::getName).collect(Collectors.joining(",")));
+      
+      LOG.warn(idWatermark(ci) + " Remained " + remained.size() +
+        " obsolete directories from " + location + ". " + extraDebugInfo.toString());
+      return false;
+    }
+    LOG.debug(idWatermark(ci) + " All cleared below the watermark: " + ci.highestWriteId + " from " + location);
+    return true;
+  }
+
+  @NotNull
+  private List<Path> getObsoleteDirs(CompactionInfo ci, AcidDirectory dir) throws MetaException {
     List<Path> obsoleteDirs = dir.getObsolete();
     /**
      * add anything in 'dir'  that only has data from aborted transactions - no one should be
@@ -444,24 +477,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       // Including obsolete directories for partitioned tables can result in data loss.
       obsoleteDirs = dir.getAbortedDirectories();
     }
-    StringBuilder extraDebugInfo = new StringBuilder("[").append(obsoleteDirs.stream()
-        .map(Path::getName).collect(Collectors.joining(",")));
-    remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
-    if (dir.getObsolete().size() > 0) {
-      AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
-          txnHandler);
-    }
-    // Make sure there are no leftovers below the compacted highestWriteId
-    conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
-    dir = AcidUtils.getAcidState(fs, path, conf,
-      new ValidReaderWriteIdList(ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId, Long.MAX_VALUE),
-      Ref.from(false), false, hdfsDirSnapshots);
-
-    if (dir.getObsolete().isEmpty()) {
-      LOG.info(idWatermark(ci) + " All cleared below the watermark: " + ci.highestWriteId + " from " + location);
-      return true;
-    } 
-    return false;
+    return obsoleteDirs;
   }
 
   private boolean removeFiles(String location, CompactionInfo ci)
@@ -472,32 +488,36 @@ public class Cleaner extends MetaStoreCompactorThread {
     String strIfPurge = ci.getProperty("ifPurge");
     boolean ifPurge = strIfPurge != null || Boolean.parseBoolean(ci.getProperty("ifPurge"));
 
-    return remove(location, ci, Collections.singletonList(path), ifPurge,
+    List<Path> deleted = remove(location, ci, Collections.singletonList(path), ifPurge,
       path.getFileSystem(conf), extraDebugInfo);
+    return !deleted.isEmpty();
   }
 
-  private boolean remove(String location, CompactionInfo ci, List<Path> filesToDelete, boolean ifPurge,
+  private List<Path> remove(String location, CompactionInfo ci, List<Path> filesToDelete, boolean ifPurge,
       FileSystem fs, StringBuilder extraDebugInfo)
       throws NoSuchObjectException, MetaException, IOException {
-
+    
+    List<Path> deleted = new ArrayList<>();
     if (filesToDelete.size() < 1) {
-      return false;
+      return deleted;
     }
     extraDebugInfo.setCharAt(extraDebugInfo.length() - 1, ']');
     LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
-         " obsolete directories from " + location + ". " + extraDebugInfo.toString());
+      " obsolete directories from " + location + ". " + extraDebugInfo.toString());
     
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
     boolean needCmRecycle = ReplChangeManager.isSourceOfReplication(db);
-
+    
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
       if (needCmRecycle) {
         replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, ifPurge);
       }
-      FileUtils.moveToTrash(fs, dead, conf, ifPurge);
+      if (FileUtils.moveToTrash(fs, dead, conf, ifPurge)) {
+        deleted.add(dead);
+      }
     }
-    return true;
+    return deleted;
   }
 
   private static class CleanerCycleUpdater implements Runnable {
