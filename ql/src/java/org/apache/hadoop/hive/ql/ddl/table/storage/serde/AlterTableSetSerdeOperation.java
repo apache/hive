@@ -69,7 +69,8 @@ public class AlterTableSetSerdeOperation extends AbstractAlterTableOperation<Alt
         try {
           Deserializer oldSerde = HiveMetaStoreUtils.getDeserializer(context.getConf(), table.getTTable(), null,
               false, oldSerdeName);
-          table.setFields(Hive.getFieldsFromDeserializer(table.getTableName(), oldSerde));
+          table.setFields(Hive.getFieldsFromDeserializer(table.getTableName(), oldSerde,
+              table.getStorageHandler().getDefaultColumnComment()));
         } catch (MetaException ex) {
           throw new HiveException(ex);
         }

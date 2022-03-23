@@ -739,7 +739,8 @@ public class Table implements Serializable {
           SessionState.getSessionConf(), serializationLib, tTable.getParameters())) {
         return Hive.getFieldsFromDeserializerForMsStorage(this, getDeserializer());
       } else {
-        return HiveMetaStoreUtils.getFieldsFromDeserializer(getTableName(), getDeserializer());
+        return HiveMetaStoreUtils.getFieldsFromDeserializer(getTableName(), getDeserializer(),
+            getStorageHandler().getDefaultColumnComment());
       }
     } catch (Exception e) {
       LOG.error("Unable to get field from serde: " + serializationLib, e);

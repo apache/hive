@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.AssertHelpers;
@@ -793,7 +794,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testCreateTableWithColumnComments() {
+  public void testCreateTableWithColumnComments() throws InterruptedException, TException {
     TableIdentifier identifier = TableIdentifier.of("default", "comment_table");
     shell.executeStatement("CREATE EXTERNAL TABLE comment_table (" +
         "t_int INT COMMENT 'int column',  " +
@@ -809,8 +810,14 @@ public class TestHiveIcebergStorageHandlerNoScan {
     for (int i = 0; i < icebergTable.schema().columns().size(); i++) {
       Types.NestedField field = icebergTable.schema().columns().get(i);
       Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
-          field.doc() != null ? field.doc() : "from deserializer"}, rows.get(i));
+          field.doc() != null ? field.doc() : ""}, rows.get(i));
     }
+
+    // Check the columns directly
+    List<FieldSchema> cols = shell.metastore()
+        .run(client -> client.getTable(new GetTableRequest("default", "comment_table")))
+        .getSd().getCols();
+    Assert.assertEquals(icebergTable.schema().asStruct(), HiveSchemaUtil.convert(cols).asStruct());
   }
 
   @Test
@@ -829,8 +836,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
     for (int i = 0; i < icebergTable.schema().columns().size(); i++) {
       Types.NestedField field = icebergTable.schema().columns().get(i);
       Assert.assertNull(field.doc());
-      Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
-          "from deserializer"}, rows.get(i));
+      Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(), ""},
+          rows.get(i));
     }
   }
 
@@ -855,7 +862,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     for (int i = 0; i < columns.size(); i++) {
       Types.NestedField field = columns.get(i);
       Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
-          field.doc() != null ? field.doc() : "from deserializer"}, rows.get(i));
+          field.doc() != null ? field.doc() : ""}, rows.get(i));
       Assert.assertEquals(expectedDoc[i], field.doc());
     }
   }
@@ -1172,8 +1179,11 @@ public class TestHiveIcebergStorageHandlerNoScan {
     );
     testTables.createTable(shell, identifier.name(), schema, SPEC, FileFormat.PARQUET, ImmutableList.of());
 
+    // Run some alter commands so the
+    shell.executeStatement("ALTER TABLE default.customers CHANGE COLUMN customer_id customer_id bigint");
+
     shell.executeStatement("ALTER TABLE default.customers REPLACE COLUMNS " +
-        "(customer_id int, last_name string COMMENT 'This is last name', " +
+        "(customer_id bigint, last_name string COMMENT 'This is last name', " +
         "address struct<city:string,street:string>)");
 
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
@@ -1183,7 +1193,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     List<FieldSchema> hmsSchema = hmsTable.getSd().getCols();
 
     List<FieldSchema> expectedSchema = Lists.newArrayList(
-        new FieldSchema("customer_id", "int", null),
+        new FieldSchema("customer_id", "bigint", null),
         // first_name column is dropped
         new FieldSchema("last_name", "string", "This is last name"),
         new FieldSchema("address", "struct<city:string,street:string>", null));
@@ -1265,9 +1275,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
         new FieldSchema("family_name", "string", "This is family name"));
 
     Assert.assertEquals(expectedSchema, icebergSchema);
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
-      expectedSchema.stream().filter(fs -> fs.getComment() == null).forEach(fs -> fs.setComment("from deserializer"));
-    }
     Assert.assertEquals(expectedSchema, hmsSchema);
   }
 
@@ -1295,9 +1302,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
         new FieldSchema("last_name", "string", "This is last name"));
 
     Assert.assertEquals(expectedSchema, icebergSchema);
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
-      expectedSchema.stream().filter(fs -> fs.getComment() == null).forEach(fs -> fs.setComment("from deserializer"));
-    }
     Assert.assertEquals(expectedSchema, hmsSchema);
   }
 
@@ -1378,11 +1382,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
         new FieldSchema("newstringcol", "string", "Column with description"));
 
     Assert.assertEquals(expectedSchema, icebergSchema);
-
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
-      expectedSchema.get(0).setComment("from deserializer");
-    }
-
     Assert.assertEquals(expectedSchema, hmsSchema);
   }
 

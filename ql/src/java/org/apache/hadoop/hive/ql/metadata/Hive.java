@@ -1259,7 +1259,7 @@ public class Hive {
       }
       if (tbl.getCols().size() == 0 || tbl.getSd().getColsSize() == 0) {
         tbl.setFields(HiveMetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(),
-            tbl.getDeserializer()));
+            tbl.getDeserializer(), tbl.getStorageHandler().getDefaultColumnComment()));
       }
       tbl.checkValidity(conf);
       if (tbl.getParameters() != null) {
@@ -1322,7 +1322,7 @@ public class Hive {
   public static List<FieldSchema> getFieldsFromDeserializerForMsStorage(
       Table tbl, Deserializer deserializer) throws SerDeException, MetaException {
     List<FieldSchema> schema = HiveMetaStoreUtils.getFieldsFromDeserializer(
-        tbl.getTableName(), deserializer);
+        tbl.getTableName(), deserializer, tbl.getStorageHandler().getDefaultColumnComment());
     for (FieldSchema field : schema) {
       field.setType(MetaStoreUtils.TYPE_FROM_DESERIALIZER);
     }
@@ -5617,9 +5617,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public static List<FieldSchema> getFieldsFromDeserializer(String name,
-      Deserializer serde) throws HiveException {
+      Deserializer serde, String defaultColumnComment) throws HiveException {
     try {
-      return HiveMetaStoreUtils.getFieldsFromDeserializer(name, serde);
+      return HiveMetaStoreUtils.getFieldsFromDeserializer(name, serde, defaultColumnComment);
     } catch (SerDeException e) {
       throw new HiveException("Error in getting fields from serde. "
           + e.getMessage(), e);

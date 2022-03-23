@@ -400,7 +400,8 @@ public class Compiler {
         String tableName = "result";
         List<FieldSchema> lst = null;
         try {
-          lst = HiveMetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer(driverContext.getConf()));
+          lst = HiveMetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer(driverContext.getConf()),
+              null);
         } catch (Exception e) {
           LOG.warn("Error getting schema", e);
         }

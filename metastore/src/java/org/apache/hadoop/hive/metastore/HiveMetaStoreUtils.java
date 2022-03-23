@@ -148,12 +148,13 @@ public class HiveMetaStoreUtils {
   /**
    * @param tableName name of the table
    * @param deserializer deserializer to use
+   * @param defaultComment the comment to use if the field comment is null
    * @return the list of fields
    * @throws SerDeException if the serde throws an exception
    * @throws MetaException if one of the fields or types in the table is invalid
    */
   public static List<FieldSchema> getFieldsFromDeserializer(String tableName,
-      Deserializer deserializer) throws SerDeException, MetaException {
+      Deserializer deserializer, String defaultComment) throws SerDeException, MetaException {
     ObjectInspector oi = deserializer.getObjectInspector();
     String[] names = tableName.split("\\.");
     String last_name = names[names.length - 1];
@@ -187,8 +188,7 @@ public class HiveMetaStoreUtils {
     ArrayList<FieldSchema> str_fields = new ArrayList<>();
     // rules on how to recurse the ObjectInspector based on its type
     if (oi.getCategory() != Category.STRUCT) {
-      str_fields.add(new FieldSchema(last_name, oi.getTypeName(),
-          FROM_SERIALIZER));
+      str_fields.add(new FieldSchema(last_name, oi.getTypeName(), defaultComment));
     } else {
       List<? extends StructField> fields = ((StructObjectInspector) oi)
           .getAllStructFieldRefs();
@@ -196,17 +196,12 @@ public class HiveMetaStoreUtils {
         StructField structField = fields.get(i);
         String fieldName = structField.getFieldName();
         String fieldTypeName = structField.getFieldObjectInspector().getTypeName();
-        String fieldComment = determineFieldComment(structField.getFieldComment());
+        String fieldComment = structField.getFieldComment() == null ? defaultComment : structField.getFieldComment();
 
         str_fields.add(new FieldSchema(fieldName, fieldTypeName, fieldComment));
       }
     }
     return str_fields;
-  }
-
-  private static final String FROM_SERIALIZER = "from deserializer";
-  private static String determineFieldComment(String comment) {
-    return (comment == null) ? FROM_SERIALIZER : comment;
   }
 
   /**

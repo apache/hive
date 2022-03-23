@@ -93,7 +93,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         if (desc.isFormatted()) {
           getColumnDataColPathSpecified(table, part, cols, colStats, deserializer);
         } else {
-          cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer));
+          cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer,
+              table.getStorageHandler().getDefaultColumnComment()));
         }
       }
       fixDecimalColumnTypeName(cols);
@@ -204,11 +205,13 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         if (table.isPartitionKey(colNames.get(0))) {
           getColumnDataForPartitionKeyColumn(table, cols, colStats, colNames, tableProps);
         } else {
-          getColumnsForNotPartitionKeyColumn(cols, colStats, deserializer, colNames, tableName, tableProps);
+          getColumnsForNotPartitionKeyColumn(cols, colStats, deserializer, colNames, tableName, tableProps,
+              table.getStorageHandler().getDefaultColumnComment());
         }
         table.setParameters(tableProps);
       } else {
-        cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer));
+        cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer,
+            table.getStorageHandler().getDefaultColumnComment()));
         colStats.addAll(
             context.getDb().getTableColumnStatistics(tableName.getDb().toLowerCase(),
                 tableName.getTable().toLowerCase(), colNames, false));
@@ -219,7 +222,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       // lower case name to get the stats.
       String partName = HMSHandler.lowerCaseConvertPartName(part.getName());
       partitions.add(partName);
-      cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer));
+      cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer,
+          table.getStorageHandler().getDefaultColumnComment()));
       Map<String, List<ColumnStatisticsObj>> partitionColumnStatistics = context.getDb().getPartitionColumnStatistics(
           tableName.getDb().toLowerCase(), tableName.getTable().toLowerCase(), partitions, colNames, false);
       List<ColumnStatisticsObj> partitionColStat = partitionColumnStatistics.get(partName);
@@ -252,9 +256,10 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   }
 
   private void getColumnsForNotPartitionKeyColumn(List<FieldSchema> cols, List<ColumnStatisticsObj> colStats,
-      Deserializer deserializer, List<String> colNames, TableName tableName, Map<String, String> tableProps)
+      Deserializer deserializer, List<String> colNames, TableName tableName, Map<String, String> tableProps,
+      String defaultColumnComment)
       throws HiveException {
-    cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer));
+    cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, defaultColumnComment));
     List<String> parts = context.getDb().getPartitionNames(tableName.getDb().toLowerCase(),
         tableName.getTable().toLowerCase(), (short) -1);
     AggrStats aggrStats = context.getDb().getAggrColStatsFor(
