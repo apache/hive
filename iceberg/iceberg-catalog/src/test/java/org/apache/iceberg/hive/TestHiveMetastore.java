@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.RetryingHMSHandler;
 import org.apache.hadoop.hive.metastore.TSetIpAddressProcessor;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -196,7 +197,7 @@ public class TestHiveMetastore {
   }
 
   public Table getTable(String dbName, String tableName) throws TException, InterruptedException {
-    return clientPool.run(client -> client.getTable(dbName, tableName));
+    return clientPool.run(client -> client.getTable(new GetTableRequest(dbName, tableName)));
   }
 
   public Table getTable(TableIdentifier identifier) throws TException, InterruptedException {

@@ -320,7 +320,7 @@ public class TestJdbcWithMiniLlapVectorArrowBatch extends BaseJdbcWithMiniLlap {
 
   // test with legacy avro files
   // similar to ql/src/test/queries/clientpositive/avro_legacy_mixed_timestamp.q
-  @Test(timeout = 12000000) public void testAvroLegacyMixedTimestamps() throws Exception {
+  @Test public void testAvroLegacyMixedTimestamps() throws Exception {
 
     final String tableName = "testAvroLegacyMixedTimestamps";
     executeSQL("create table " + tableName + "(d timestamp) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'"

@@ -53,10 +53,10 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_t
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_t
 # col_name            	data_type           	comment             
-i                   	int                 	from deserializer   
-s                   	string              	from deserializer   
-ts                  	timestamp           	from deserializer   
-d                   	date                	from deserializer   
+i                   	int                 	                    
+s                   	string              	                    
+ts                  	timestamp           	                    
+d                   	date                	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -95,13 +95,13 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_t_transform
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_t_transform
 # col_name            	data_type           	comment             
-year_field          	date                	from deserializer   
-month_field         	date                	from deserializer   
-day_field           	date                	from deserializer   
-hour_field          	timestamp           	from deserializer   
-truncate_field      	string              	from deserializer   
-bucket_field        	int                 	from deserializer   
-identity_field      	int                 	from deserializer   
+year_field          	date                	                    
+month_field         	date                	                    
+day_field           	date                	                    
+hour_field          	timestamp           	                    
+truncate_field      	string              	                    
+bucket_field        	int                 	                    
+identity_field      	int                 	                    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -150,14 +150,14 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_t_transform_prop
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_t_transform_prop
 # col_name            	data_type           	comment             
-id                  	int                 	from deserializer   
-year_field          	date                	from deserializer   
-month_field         	date                	from deserializer   
-day_field           	date                	from deserializer   
-hour_field          	timestamp           	from deserializer   
-truncate_field      	string              	from deserializer   
-bucket_field        	int                 	from deserializer   
-identity_field      	int                 	from deserializer   
+id                  	int                 	                    
+year_field          	date                	                    
+month_field         	date                	                    
+day_field           	date                	                    
+hour_field          	timestamp           	                    
+truncate_field      	string              	                    
+bucket_field        	int                 	                    
+identity_field      	int                 	                    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -206,8 +206,8 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_t_identity_part
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_t_identity_part
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -260,7 +260,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-comment             	from deserializer   
+comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\",\"i\":\"true\",\"s\":\"true\",\"ts\":\"true\"}}
 PREHOOK: query: DESCRIBE FORMATTED ice_t_transform year_field
 PREHOOK: type: DESCTABLE
@@ -279,7 +279,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-comment             	from deserializer   
+comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"bucket_field\":\"true\",\"day_field\":\"true\",\"hour_field\":\"true\",\"identity_field\":\"true\",\"month_field\":\"true\",\"truncate_field\":\"true\",\"year_field\":\"true\"}}
 PREHOOK: query: DESCRIBE FORMATTED ice_t_transform_prop id
 PREHOOK: type: DESCTABLE
@@ -298,7 +298,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-comment             	from deserializer   
+comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"bucket_field\":\"true\",\"day_field\":\"true\",\"hour_field\":\"true\",\"id\":\"true\",\"identity_field\":\"true\",\"month_field\":\"true\",\"truncate_field\":\"true\",\"year_field\":\"true\"}}
 PREHOOK: query: DESCRIBE FORMATTED ice_t_identity_part a
 PREHOOK: type: DESCTABLE
@@ -317,5 +317,5 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-comment             	from deserializer   
+comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}

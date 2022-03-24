@@ -13,10 +13,10 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_t
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_t
 # col_name            	data_type           	comment             
-i                   	int                 	from deserializer   
-s                   	string              	from deserializer   
-ts                  	timestamp           	from deserializer   
-d                   	date                	from deserializer   
+i                   	int                 	                    
+s                   	string              	                    
+ts                  	timestamp           	                    
+d                   	date                	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

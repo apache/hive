@@ -36,7 +36,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.AssertHelpers;
@@ -814,9 +813,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     }
 
     // Check the columns directly
-    List<FieldSchema> cols = shell.metastore()
-        .run(client -> client.getTable(new GetTableRequest("default", "comment_table")))
-        .getSd().getCols();
+    List<FieldSchema> cols = shell.metastore().getTable("default", "comment_table").getSd().getCols();
     Assert.assertEquals(icebergTable.schema().asStruct(), HiveSchemaUtil.convert(cols).asStruct());
   }
 
@@ -1179,7 +1176,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
     );
     testTables.createTable(shell, identifier.name(), schema, SPEC, FileFormat.PARQUET, ImmutableList.of());
 
-    // Run some alter commands so the
+    // Run some alter commands. Before the fix the alter changed the column commands, and we would like to check
+    // that this is fixed now.
     shell.executeStatement("ALTER TABLE default.customers CHANGE COLUMN customer_id customer_id bigint");
 
     shell.executeStatement("ALTER TABLE default.customers REPLACE COLUMNS " +

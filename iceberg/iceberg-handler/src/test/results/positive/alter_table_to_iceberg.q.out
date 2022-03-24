@@ -84,8 +84,8 @@ POSTHOOK: query: describe formatted tbl_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_orc
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -234,8 +234,8 @@ POSTHOOK: query: describe formatted tbl_parquet
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -384,8 +384,8 @@ POSTHOOK: query: describe formatted tbl_avro
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_avro
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

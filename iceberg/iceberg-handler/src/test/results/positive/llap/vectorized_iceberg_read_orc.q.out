@@ -300,10 +300,10 @@ PREHOOK: Input: default@tbl_ice_orc_parted
 POSTHOOK: query: describe tbl_ice_orc_parted
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_ice_orc_parted
-p1                  	string              	from deserializer   
-b                   	string              	from deserializer   
-a                   	int                 	from deserializer   
-p2                  	string              	from deserializer   
+p1                  	string              	                    
+b                   	string              	                    
+a                   	int                 	                    
+p2                  	string              	                    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
