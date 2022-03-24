@@ -1357,7 +1357,6 @@ public class Hive {
     table.getTTable().setTxnId(txnId);
 
     dropTable(table.getTTable(), !tableWithSuffix, true, ifPurge);
-    AcidUtils.tryInvalidateDirCache(table);
   }
 
   /**
@@ -1436,6 +1435,8 @@ public class Hive {
       getMSC().dropTable(table, deleteData, ignoreUnknownTab, ifPurge);
     } catch (Exception e) {
       throw new HiveException(e);
+    } finally {
+      AcidUtils.tryInvalidateDirCache(table);
     }
   }
 

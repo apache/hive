@@ -3244,10 +3244,12 @@ public class AcidUtils {
     return value.getDirInfo();
   }
 
-  public static void tryInvalidateDirCache(Table table) {
+  public static void tryInvalidateDirCache(org.apache.hadoop.hive.metastore.api.Table table) {
     if (dirCacheInited.get()) {
-      String key = table.getFullTableName().getNotEmptyDbTable() + "_" + table.getDataLocation();
-      if (!table.isPartitioned()) {
+      TableName tableName = new TableName(table.getCatName(), table.getDbName(), table.getTableName());
+      String key = tableName.getNotEmptyDbTable() + "_" + table.getSd().getLocation();
+      boolean partitioned = table.getPartitionKeys() != null && !table.getPartitionKeys().isEmpty();
+      if (!partitioned) {
         dirCache.invalidate(key);
       } else {
         // Invalidate all partitions as the difference in the key is only the partition part at the end of the path.
