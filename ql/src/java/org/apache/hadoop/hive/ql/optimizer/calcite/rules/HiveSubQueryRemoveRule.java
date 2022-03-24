@@ -62,6 +62,11 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 
+import static org.apache.calcite.rel.core.JoinRelType.ANTI;
+import static org.apache.calcite.rel.core.JoinRelType.INNER;
+import static org.apache.calcite.rel.core.JoinRelType.LEFT;
+import static org.apache.calcite.rel.core.JoinRelType.SEMI;
+
 /**
  * NOTE: this rule is replicated from Calcite's SubqueryRemoveRule
  * Transform that converts IN, EXISTS and scalar sub-queries into joins.
@@ -192,7 +197,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       if (!variablesSet.isEmpty()) {
         builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
       } else {
-        builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
+        builder.join(INNER, builder.literal(true), variablesSet);
       }
       offset++;
     }
@@ -262,7 +267,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
               || op.comparisonKind == SqlKind.GREATER_THAN_OR_EQUAL ? builder
               .min("m", builder.field(0)) : builder.max("m", builder.field(0)),
           builder.count(false, "c"), builder.count(false, "d", builder.field(0))).as("q")
-          .join(JoinRelType.INNER);
+          .join(INNER);
       return builder.call(SqlStdOperatorTable.CASE,
           builder.call(SqlStdOperatorTable.EQUALS, builder.field("q", "c"), builder.literal(0)),
           builder.literal(false), builder.call(SqlStdOperatorTable.IS_TRUE, builder
@@ -393,7 +398,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
         if (!variablesSet.isEmpty()) {
           builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
         } else {
-          builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
+          builder.join(INNER, builder.literal(true), variablesSet);
         }
 
         SqlFunction inCountCheck =
@@ -451,7 +456,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
         //builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
         builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
       } else {
-        builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
+        builder.join(INNER, builder.literal(true), variablesSet);
       }
 
       offset += 2;
@@ -506,10 +511,10 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     }
     switch (logic) {
     case TRUE:
-      builder.join(JoinRelType.SEMI, builder.and(conditions), variablesSet);
+      builder.join(variablesSet.size() == 1 ? SEMI : INNER, builder.and(conditions), variablesSet);
       return builder.literal(true);
     case FALSE:
-      builder.join(JoinRelType.ANTI, builder.and(conditions), variablesSet);
+      builder.join(variablesSet.size() == 1 ? ANTI : LEFT, builder.and(conditions), variablesSet);
       return builder.literal(false);
     }
     builder.join(JoinRelType.LEFT, builder.and(conditions), variablesSet);
