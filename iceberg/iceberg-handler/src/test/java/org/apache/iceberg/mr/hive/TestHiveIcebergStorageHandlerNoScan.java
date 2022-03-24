@@ -408,6 +408,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         "'" + InputFormatConfig.PARTITION_SPEC + "'='" +
         PartitionSpecParser.toJson(PartitionSpec.unpartitioned()) + "', " +
         "'dummy'='test', " +
+        "'" + InputFormatConfig.EXTERNAL_TABLE_PURGE + "'='TRUE', " +
         "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
 
     // Check the Iceberg table data
@@ -465,7 +466,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         " last_name STRING COMMENT 'This is last name')" +
         " STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
-        testTables.propertiesForCreateTableSQL(ImmutableMap.of());
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of(InputFormatConfig.EXTERNAL_TABLE_PURGE, "TRUE"));
     shell.executeStatement(createSql);
 
     Table icebergTable = testTables.loadTable(identifier);
@@ -784,7 +785,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
       shell.executeStatement("CREATE EXTERNAL TABLE not_supported_types (not_supported " + notSupportedType + ") " +
               "STORED BY ICEBERG " +
               testTables.locationForCreateTableSQL(identifier) +
-              testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
+              testTables.propertiesForCreateTableSQL(
+                  ImmutableMap.of(InputFormatConfig.EXTERNAL_TABLE_PURGE, "TRUE")));
 
       org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
       Assert.assertEquals(notSupportedTypes.get(notSupportedType), icebergTable.schema().columns().get(0).type());
@@ -1064,7 +1066,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         "t_string STRING) " +
         "STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
-        testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE")));
 
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
     Path tableLocation = new Path(icebergTable.location());
