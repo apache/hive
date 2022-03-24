@@ -88,7 +88,7 @@ public class Derby extends DatabaseRule {
   }
 
   public String getDb() {
-    return MetaStoreServerUtils.JUNIT_DATABASE_PREFIX;
+    return "${test.tmp.dir}/" + MetaStoreServerUtils.JUNIT_DATABASE_PREFIX;
   };
 
   @Override

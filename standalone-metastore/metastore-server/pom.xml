@@ -573,6 +573,9 @@
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
             <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
             <hive.in.test>true</hive.in.test>
+            <derby.version>${derby.version}</derby.version>
+            <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
+            <javax.jdo.option.ConnectionURL>jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true</javax.jdo.option.ConnectionURL>
           </systemPropertyVariables>
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
