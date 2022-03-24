@@ -421,7 +421,8 @@ public class Cleaner extends MetaStoreCompactorThread {
     
     // Collect all of the files/dirs
     Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, path);
-    AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false, dirSnapshots);
+    AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false, 
+        dirSnapshots);
     
     List<Path> deleted = remove(location, ci, getObsoleteDirs(ci, dir), true, fs);
     if (dir.getObsolete().size() > 0) {

@@ -2516,6 +2516,9 @@ public class AcidUtils {
         LOG.debug("isRawFormat() called on " + dataFile + " which is not an ORC file: " +
             ex.getMessage());
         return true;
+      } catch (FileNotFoundException ex) {
+        //Fallback in case file was already removed and used Snapshot is outdated
+        return false;
       }
     }
   }
