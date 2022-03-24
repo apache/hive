@@ -2583,6 +2583,11 @@ public class ObjectStore implements RawStore, Configurable {
       List<MTablePrivilege> tabGrants = null;
       List<MTableColumnPrivilege> tabColumnGrants = null;
       MTable table = this.getMTable(catName, dbName, tblName);
+      if (table == null) {
+        throw new InvalidObjectException("Unable to add partitions because "
+            + TableName.getQualified(catName, dbName, tblName) +
+            " does not exist");
+      }
       if ("TRUE".equalsIgnoreCase(table.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
         tabGrants = this.listAllTableGrants(catName, dbName, tblName);
         tabColumnGrants = this.listTableAllColumnGrants(catName, dbName, tblName);
@@ -2651,6 +2656,11 @@ public class ObjectStore implements RawStore, Configurable {
       List<MTablePrivilege> tabGrants = null;
       List<MTableColumnPrivilege> tabColumnGrants = null;
       MTable table = this.getMTable(catName, dbName, tblName);
+      if (table == null) {
+        throw new InvalidObjectException("Unable to add partitions because "
+            + TableName.getQualified(catName, dbName, tblName) +
+            " does not exist");
+      }
       if ("TRUE".equalsIgnoreCase(table.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
         tabGrants = this.listAllTableGrants(catName, dbName, tblName);
         tabColumnGrants = this.listTableAllColumnGrants(catName, dbName, tblName);
@@ -2711,6 +2721,11 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       String catName = part.isSetCatName() ? part.getCatName() : getDefaultCatalog(conf);
       MTable table = this.getMTable(catName, part.getDbName(), part.getTableName());
+      if (table == null) {
+        throw new InvalidObjectException("Unable to add partition because "
+            + TableName.getQualified(catName, part.getDbName(), part.getTableName()) +
+            " does not exist");
+      }
       List<MTablePrivilege> tabGrants = null;
       List<MTableColumnPrivilege> tabColumnGrants = null;
       if ("TRUE".equalsIgnoreCase(table.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
@@ -2773,6 +2788,11 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       MTable table = this.getMTable(catName, dbName, tableName);
+      if (table == null) {
+        throw new NoSuchObjectException("Unable to get partition because "
+            + TableName.getQualified(catName, dbName, tableName) +
+            " does not exist");
+      }
       MPartition mpart = getMPartition(catName, dbName, tableName, part_vals, table);
       part = convertToPart(mpart, false);
       committed = commitTransaction();
@@ -5168,6 +5188,10 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
 
       MTable table = this.getMTable(catName, dbName, tblName);
+      if (table == null) {
+        throw new NoSuchObjectException(
+            TableName.getQualified(catName, dbName, tblName) + " table not found");
+      }
       List<String> partNames = new ArrayList<>();
       for (List<String> partVal : part_vals) {
         partNames.add(
@@ -10022,6 +10046,9 @@ public class ObjectStore implements RawStore, Configurable {
     Boolean isCompliant = null;
     if (writeIdList != null) {
       MTable table = this.getMTable(catName, dbName, tableName);
+      if (table == null) {
+        throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tableName) + " table not found");
+      }
       isCompliant = !TxnUtils.isTransactionalTable(table.getParameters())
         || (areTxnStatsSupported && isCurrentStatsValidForTheQuery(table, writeIdList, false));
     }
