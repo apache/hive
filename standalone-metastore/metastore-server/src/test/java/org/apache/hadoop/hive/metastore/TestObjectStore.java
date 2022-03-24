@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
@@ -58,7 +57,6 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -99,14 +97,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -185,9 +180,9 @@ public class TestObjectStore {
 
   @Test
   public void catalogs() throws MetaException, NoSuchObjectException {
-    final String names[] = {"cat1", "cat2"};
-    final String locations[] = {"loc1", "loc2"};
-    final String descriptions[] = {"description 1", "description 2"};
+    final String[] names = {"cat1", "cat2"};
+    final String[] locations = {"loc1", "loc2"};
+    final String[] descriptions = {"description 1", "description 2"};
 
     for (int i = 0; i < names.length; i++) {
       Catalog cat = new CatalogBuilder()
@@ -212,7 +207,9 @@ public class TestObjectStore {
     Assert.assertEquals(Warehouse.DEFAULT_CATALOG_COMMENT, cat.getDescription());
     // Location will vary by system.
 
-    for (int i = 0; i < names.length; i++) objectStore.dropCatalog(names[i]);
+    for (String name : names) {
+      objectStore.dropCatalog(name);
+    }
     fetchedNames = objectStore.getCatalogs();
     Assert.assertEquals(1, fetchedNames.size());
   }
@@ -503,9 +500,9 @@ public class TestObjectStore {
     try {
       executorService.awaitTermination(30, TimeUnit.SECONDS);
     } catch (InterruptedException ex) {
-      Assert.assertTrue("Got interrupted.", false);
+      Assert.fail("Got interrupted.");
     }
-    Assert.assertTrue("Expect no active transactions.", !objectStore.isActiveTransaction());
+    Assert.assertFalse("Expect no active transactions.", objectStore.isActiveTransaction());
   }
 
   /**
@@ -625,7 +622,7 @@ public class TestObjectStore {
     checkBackendTableSize("CDS", 1);
     checkBackendTableSize("COLUMNS_V2", 5);
     // Alters a partition to create a new column descriptor
-    List<String> partVals = Arrays.asList("a0");
+    List<String> partVals = Collections.singletonList("a0");
     try (AutoCloseable c = deadline()) {
       Partition part = objectStore.getPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, partVals);
       StorageDescriptor newSd = part.getSd().deepCopy();
@@ -664,13 +661,15 @@ public class TestObjectStore {
     Assert.assertEquals(3, stat.get(0).size());
     Assert.assertEquals(ENGINE, stat.get(0).get(0).getEngine());
     Assert.assertEquals(1, stat.get(0).get(0).getStatsObj().size());
-    Assert.assertTrue(stat.get(0).get(0).getStatsObj().get(0).getStatsData().isSetLongStats());
-    Assert.assertEquals(1, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getNumNulls());
-    Assert.assertEquals(2, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getNumDVs());
-    Assert.assertEquals(3, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getLowValue());
-    Assert.assertEquals(4, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getHighValue());
+
+    ColumnStatisticsData columnStatisticsData = stat.get(0).get(0).getStatsObj().get(0).getStatsData();
+    Assert.assertTrue(columnStatisticsData.isSetLongStats());
+    Assert.assertEquals(1, columnStatisticsData.getLongStats().getNumNulls());
+    Assert.assertEquals(2, columnStatisticsData.getLongStats().getNumDVs());
+    Assert.assertEquals(3, columnStatisticsData.getLongStats().getLowValue());
+    Assert.assertEquals(4, columnStatisticsData.getLongStats().getHighValue());
     Assert.assertArrayEquals(DatatypeConverter.parseHexBinary("02020f04c80008000000803f"),
-        stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getHistogram());
+        columnStatisticsData.getLongStats().getHistogram());
   }
 
   /**
@@ -704,7 +703,7 @@ public class TestObjectStore {
     }
     PrivilegeBag privilegeBag = new PrivilegeBag();
     // Create partitions for the partitioned table
-    for(int i=0; i < 3; i++) {
+    for(int i = 0; i < 3; i++) {
       Partition part = new PartitionBuilder()
                            .inTable(tbl1)
                            .addValue("a" + i)
@@ -857,13 +856,12 @@ public class TestObjectStore {
 
     objectStore.new GetDbHelper(DEFAULT_CATALOG_NAME, "foo", true, true) {
       @Override
-      protected Database getSqlResult(ObjectStore.GetHelper<Database> ctx) throws MetaException {
+      protected Database getSqlResult(ObjectStore.GetHelper<Database> ctx) {
         return null;
       }
 
       @Override
-      protected Database getJdoResult(ObjectStore.GetHelper<Database> ctx) throws MetaException,
-          NoSuchObjectException {
+      protected Database getJdoResult(ObjectStore.GetHelper<Database> ctx) {
         return null;
       }
     }.run(false);
@@ -872,66 +870,17 @@ public class TestObjectStore {
 
     objectStore.new GetDbHelper(DEFAULT_CATALOG_NAME, "foo", true, true) {
       @Override
-      protected Database getSqlResult(ObjectStore.GetHelper<Database> ctx) throws MetaException {
+      protected Database getSqlResult(ObjectStore.GetHelper<Database> ctx) {
         throw new RuntimeException();
       }
 
       @Override
-      protected Database getJdoResult(ObjectStore.GetHelper<Database> ctx) throws MetaException,
-          NoSuchObjectException {
+      protected Database getJdoResult(ObjectStore.GetHelper<Database> ctx) {
         return null;
       }
     }.run(false);
 
     Assert.assertEquals(1, directSqlErrors.getCount());
-  }
-
-  @Deprecated
-  private static void dropAllStoreObjects(RawStore store)
-      throws MetaException, InvalidObjectException, InvalidInputException {
-    try {
-      List<Function> functions = store.getAllFunctions(DEFAULT_CATALOG_NAME);
-      for (Function func : functions) {
-        store.dropFunction(DEFAULT_CATALOG_NAME, func.getDbName(), func.getFunctionName());
-      }
-      for (String catName : store.getCatalogs()) {
-        List<String> dbs = store.getAllDatabases(catName);
-        for (String db : dbs) {
-          List<String> tbls = store.getAllTables(DEFAULT_CATALOG_NAME, db);
-          for (String tbl : tbls) {
-            List<Partition> parts = store.getPartitions(DEFAULT_CATALOG_NAME, db, tbl, 100);
-            for (Partition part : parts) {
-              store.dropPartition(DEFAULT_CATALOG_NAME, db, tbl, part.getValues());
-            }
-            // Find any constraints and drop them
-            Set<String> constraints = new HashSet<>();
-            List<SQLPrimaryKey> pk = store.getPrimaryKeys(DEFAULT_CATALOG_NAME, db, tbl);
-            if (pk != null) {
-              for (SQLPrimaryKey pkcol : pk) {
-                constraints.add(pkcol.getPk_name());
-              }
-            }
-            List<SQLForeignKey> fks = store.getForeignKeys(DEFAULT_CATALOG_NAME, null, null, db, tbl);
-            if (fks != null) {
-              for (SQLForeignKey fkcol : fks) {
-                constraints.add(fkcol.getFk_name());
-              }
-            }
-            for (String constraint : constraints) {
-              store.dropConstraint(DEFAULT_CATALOG_NAME, db, tbl, constraint);
-            }
-            store.dropTable(DEFAULT_CATALOG_NAME, db, tbl);
-          }
-          store.dropDatabase(catName, db);
-        }
-        store.dropCatalog(catName);
-      }
-      List<String> roles = store.listRoleNames();
-      for (String role : roles) {
-        store.removeRole(role);
-      }
-    } catch (NoSuchObjectException e) {
-    }
   }
 
   @Test
@@ -942,11 +891,11 @@ public class TestObjectStore {
     spy.getAllTables(DEFAULT_CATALOG_NAME, DB1);
     spy.getPartitionCount();
     Mockito.verify(spy, Mockito.times(3))
-        .rollbackAndCleanup(Mockito.anyBoolean(), Mockito.<Query>anyObject());
+        .rollbackAndCleanup(Mockito.anyBoolean(), Mockito.any(Query.class));
   }
 
   @Test
-  public void testRetryingExecutorSleep() throws Exception {
+  public void testRetryingExecutorSleep() {
     RetryingExecutor re = new ObjectStore.RetryingExecutor(MetastoreConf.newMetastoreConf(), null);
     Assert.assertTrue("invalid sleep value", re.getSleepInterval() >= 0);
   }
@@ -1023,7 +972,7 @@ public class TestObjectStore {
    * Test metastore configuration property METASTORE_MAX_EVENT_RESPONSE
    */
   @Test
-  public void testMaxEventResponse() throws InterruptedException, MetaException {
+  public void testMaxEventResponse() throws MetaException {
     NotificationEvent event =
         new NotificationEvent(0, 0, EventMessage.EventType.CREATE_DATABASE.toString(), "");
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_MAX_EVENT_RESPONSE, 1);
@@ -1114,7 +1063,7 @@ public class TestObjectStore {
     for (NotificationEvent event : eventResponse.getEvents()) {
       Assert.assertTrue("previous:" + previousId + " current:" + event.getEventId(),
           previousId < event.getEventId());
-      Assert.assertTrue(previousId + 1 == event.getEventId());
+      Assert.assertEquals(previousId + 1, event.getEventId());
       previousId = event.getEventId();
     }
   }
@@ -1141,25 +1090,22 @@ public class TestObjectStore {
       // in case the one holding the write lock doesn't get a connection from the CP manager
       conf.set(dataSourceProp, Integer.toString( 2 * numThreads ));
       MetaStoreTestUtils.setConfForStandloneMode(conf);
-      results.add(executor.submit(new Callable<Void>() {
-        @Override
-        public Void call() throws Exception {
-          // each thread gets its own ObjectStore to simulate threadLocal store
-          ObjectStore objectStore = new ObjectStore();
-          barrier.await();
-          for (int j = 0; j < numIteration; j++) {
-            // set connectionPool to a random value to increase the likelihood of pmf
-            // re-initialization
-            int randomNumber = random.nextInt(100);
-            if (randomNumber % 2 == 0) {
-              objectStore.setConf(conf);
-            } else {
-              Assert.assertNotNull(objectStore.getPersistenceManager());
-            }
-            counter.getAndIncrement();
+      results.add(executor.submit(() -> {
+        // each thread gets its own ObjectStore to simulate threadLocal store
+        ObjectStore objectStore = new ObjectStore();
+        barrier.await();
+        for (int j = 0; j < numIteration; j++) {
+          // set connectionPool to a random value to increase the likelihood of pmf
+          // re-initialization
+          int randomNumber = random.nextInt(100);
+          if (randomNumber % 2 == 0) {
+            objectStore.setConf(conf);
+          } else {
+            Assert.assertNotNull(objectStore.getPersistenceManager());
           }
-          return null;
+          counter.getAndIncrement();
         }
+        return null;
       }));
     }
     for (Future<Void> future : results) {
@@ -1434,7 +1380,7 @@ public class TestObjectStore {
 
   /**
    * Helper method to check whether the Java system properties were set correctly in {@link ObjectStore#configureSSL(Configuration)}
-   * @param useSSL whether or not SSL is enabled
+   * @param useSSL whether SSL is enabled
    * @param key Java system property key
    * @param value Java system property value indicated by the key
    */
@@ -1457,13 +1403,7 @@ public class TestObjectStore {
   AutoCloseable deadline() throws Exception {
     Deadline.registerIfNot(100_000);
     Deadline.startTimer("some method");
-    return new AutoCloseable() {
-
-      @Override
-      public void close() throws Exception {
-        Deadline.stopTimer();
-      }
-    };
+    return Deadline::stopTimer;
   }
 }
 
