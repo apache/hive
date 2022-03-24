@@ -103,27 +103,15 @@ public class TestHiveIcebergTruncateTable extends HiveIcebergStorageHandlerWithE
 
   @Test
   public void testTruncateTableExternalPurgeFalse() throws IOException, TException, InterruptedException {
-    // Create an Iceberg table with some records in it and set the 'external.table.purge' table property
-    // to false and try to run a truncate table command on it. The command should fail with a SemanticException.
-    // Then check if the data is not deleted from the table and also the statistics are not changed.
+    // Create an Iceberg table with some records and set the 'external.table.purge' table parameter to false.
+    // Then execute a truncate table command which should run without any error, even without force.
+    // Then check if the data is deleted from the table and the statistics are reset.
     String databaseName = "default";
     String tableName = "customers";
-    TableIdentifier identifier = TableIdentifier.of(databaseName, tableName);
     Table icebergTable = testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
-    shell.executeStatement("ALTER TABLE " + identifier + " SET TBLPROPERTIES('external.table.purge'='false')");
-    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS");
-
-    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
-        "Cannot truncate non-managed table", () -> {
-          shell.executeStatement("TRUNCATE " + identifier);
-        });
-
-    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + identifier);
-    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
-        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, rows), 0);
-    icebergTable = testTables.loadTable(TableIdentifier.of(databaseName, tableName));
-    validateBasicStats(icebergTable, databaseName, tableName);
+    testTruncateTable(databaseName, tableName, icebergTable, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, false, false);
   }
 
   @Test
