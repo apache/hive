@@ -3246,8 +3246,7 @@ public class AcidUtils {
 
   public static void tryInvalidateDirCache(org.apache.hadoop.hive.metastore.api.Table table) {
     if (dirCacheInited.get()) {
-      TableName tableName = new TableName(table.getCatName(), table.getDbName(), table.getTableName());
-      String key = tableName.getNotEmptyDbTable() + "_" + table.getSd().getLocation();
+      String key = getFullTableName(table.getDbName(), table.getTableName()) + "_" + table.getSd().getLocation();
       boolean partitioned = table.getPartitionKeys() != null && !table.getPartitionKeys().isEmpty();
       if (!partitioned) {
         dirCache.invalidate(key);
