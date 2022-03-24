@@ -56,7 +56,7 @@
         <include>.gitignore</include>
         <include>.reviewboardrc</include>
         <include>DEVNOTES</include>
-        <include>README.txt</include>
+        <include>README*</include>
         <include>LICENSE</include>
         <include>NOTICE</include>
         <include>CHANGELOG</include>

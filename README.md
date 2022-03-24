@@ -65,6 +65,9 @@ Getting Started
 - Installation Instructions and a quick tutorial:
   https://cwiki.apache.org/confluence/display/Hive/GettingStarted
 
+- Instructions to build Hive from source:
+  https://cwiki.apache.org/confluence/display/Hive/GettingStarted#GettingStarted-BuildingHivefromSource
+
 - A longer tutorial that covers more features of HiveQL:
   https://cwiki.apache.org/confluence/display/Hive/Tutorial
 
