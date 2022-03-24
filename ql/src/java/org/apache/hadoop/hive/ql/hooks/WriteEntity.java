@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
@@ -233,7 +232,7 @@ public class WriteEntity extends Entity implements Serializable {
       return WriteType.DDL_EXCLUSIVE;
 
     case RENAME:
-      return AcidUtils.isLocklessReadsSupported(table, conf) ? 
+      return AcidUtils.isLocklessReadsEnabled(table, conf) ? 
           WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE;
 
     case ADDPARTITION:

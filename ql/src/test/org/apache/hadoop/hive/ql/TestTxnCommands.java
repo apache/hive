@@ -1768,4 +1768,97 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       Assert.assertEquals("Unexpected number of compactions in history", 0, resp.getCompactsSize());
     }
   }
+
+  @Test
+  public void testDropMaterializedViewWithSuffix() throws Exception {
+    String tableName = "tab_acid";
+    String mviewName = "mv_" + tableName;
+    runStatementOnDriver("drop materialized view if exists " + mviewName);
+    runStatementOnDriver("drop table if exists " + tableName);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, true);
+
+    runStatementOnDriver("create table " + tableName + "(a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into " + tableName + " values(1,2),(3,4)");
+    runStatementOnDriver("create materialized view " + mviewName + " stored as orc TBLPROPERTIES ('transactional'='true') " +
+      "as select a from tab_acid where b > 1");
+    runStatementOnDriver("drop materialized view " + mviewName);
+
+    int count = TestTxnDbUtil.countQueryAgent(hiveConf,
+      "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE = '" + mviewName + "'");
+    Assert.assertEquals(1, count);
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir()),
+      t -> t.getName().matches(mviewName + SOFT_DELETE_TABLE_PATTERN));
+    if (1 != stat.length) {
+      Assert.fail("Materialized view data was removed from FS");
+    }
+    MetastoreTaskThread houseKeeperService = new AcidHouseKeeperService();
+    houseKeeperService.setConf(hiveConf);
+
+    houseKeeperService.run();
+    count = TestTxnDbUtil.countQueryAgent(hiveConf,
+      "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE = '" + mviewName + "'");
+    Assert.assertEquals(0, count);
+
+    try {
+      runStatementOnDriver("select * from " + mviewName);
+    } catch (Exception ex) {
+      Assert.assertTrue(ex.getMessage().contains(
+        ErrorMsg.INVALID_TABLE.getMsg(StringUtils.wrap(mviewName, "'"))));
+    }
+    // Check status of compaction job
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+
+    Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 0 compaction state",
+      TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
+
+    runCleaner(hiveConf);
+
+    FileStatus[] status = fs.listStatus(new Path(getWarehouseDir()),
+      t -> t.getName().matches(mviewName + SOFT_DELETE_TABLE_PATTERN));
+    Assert.assertEquals(0, status.length);
+  }
+
+  @Test
+  public void testDropMaterializedViewWithoutSuffix() throws Exception {
+    String tableName = "tab_acid";
+    String mviewName = "mv_" + tableName;
+    runStatementOnDriver("drop materialized view if exists " + mviewName);
+
+    for (boolean enabled : Arrays.asList(false, true)) {
+      runStatementOnDriver("drop table if exists " + tableName);
+      HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, enabled);
+      
+      runStatementOnDriver("create table " + tableName + "(a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+      runStatementOnDriver("insert into " + tableName + " values(1,2),(3,4)");
+      runStatementOnDriver("create materialized view " + mviewName + " stored as orc TBLPROPERTIES ('transactional'='true') " +
+        "as select a from tab_acid where b > 1");
+
+      HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, !enabled);
+      runStatementOnDriver("drop materialized view " + mviewName);
+
+      int count = TestTxnDbUtil.countQueryAgent(hiveConf,
+        "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE = '" + mviewName + "'");
+      Assert.assertEquals(0, count);
+
+      FileSystem fs = FileSystem.get(hiveConf);
+      FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir()),
+        t -> t.getName().equals(mviewName));
+      Assert.assertEquals(0, stat.length);
+
+      try {
+        runStatementOnDriver("select * from " + mviewName);
+      } catch (Exception ex) {
+        Assert.assertTrue(ex.getMessage().contains(
+          ErrorMsg.INVALID_TABLE.getMsg(StringUtils.wrap(mviewName, "'"))));
+      }
+      // Check status of compaction job
+      TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+      ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+      Assert.assertEquals("Unexpected number of compactions in history", 0, resp.getCompactsSize());
+    }
+  }
 }
