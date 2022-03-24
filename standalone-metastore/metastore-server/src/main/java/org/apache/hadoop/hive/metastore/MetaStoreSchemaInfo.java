@@ -33,6 +33,7 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
@@ -205,19 +206,33 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
       return false;
     }
 
-    for (int i = 0; i < dbVerParts.length; i++) {
-      int dbVerPart = Integer.parseInt(dbVerParts[i]);
-      int hiveVerPart = Integer.parseInt(hiveVerParts[i]);
-      if (dbVerPart > hiveVerPart) {
-        return true;
-      } else if (dbVerPart < hiveVerPart) {
-        return false;
-      } else {
-        continue; // compare next part
+    hiveVerParts = hiveVersion.split("\\.|-");
+    dbVerParts = dbVersion.split("\\.|-");
+
+    int i = 0;
+    for (; i < Math.min(hiveVerParts.length, dbVerParts.length); i++) {
+      int compare = compareVersion(dbVerParts[i], hiveVerParts[i]);
+      if (compare != 0) {
+        return compare > 0;
       }
     }
 
-    return true;
+    return i == dbVerParts.length;
+  }
+
+  private int compareVersion(String dbVerPart, String hiveVerPart) {
+    if (dbVerPart.equals(hiveVerPart)) {
+      return 0;
+    }
+    boolean isDbVerNum = NumberUtils.isNumber(dbVerPart);
+    boolean isHiveVerNum = NumberUtils.isNumber(hiveVerPart);
+    if (isDbVerNum && isHiveVerNum) {
+      return Integer.parseInt(dbVerPart) - Integer.parseInt(hiveVerPart);
+    } else if (!isDbVerNum && !isHiveVerNum) {
+      return dbVerPart.compareTo(hiveVerPart);
+    }
+    // return -1 for one is a number but the other is a string
+    return -1;
   }
 
   @Override
