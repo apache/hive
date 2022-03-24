@@ -12,6 +12,8 @@ set hive.auto.convert.join=true;
 set hive.exec.dynamic.partition=true;
 set hive.exec.max.dynamic.partitions.pernode=255;
 
+set hive.query.lifetime.hooks=org.apache.hadoop.hive.ql.hooks.DataNucleusQueryHook;
+
 DROP TABLE orc_llap_part;
 DROP TABLE orc_llap_dim_part;
 

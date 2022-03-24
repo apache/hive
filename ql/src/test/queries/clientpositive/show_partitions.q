@@ -1,4 +1,5 @@
 --! qt:dataset:srcpart
+set hive.query.lifetime.hooks=org.apache.hadoop.hive.ql.hooks.DataNucleusQueryHook;
 SHOW PARTITIONS srcpart;
 SHOW PARTITIONS default.srcpart;
 SHOW PARTITIONS srcpart PARTITION(hr='11');

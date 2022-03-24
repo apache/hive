@@ -1,5 +1,6 @@
 set hive.stats.column.autogather=false;
 set hive.strict.checks.bucketing=true;
+set hive.query.lifetime.hooks=org.apache.hadoop.hive.ql.hooks.DataNucleusQueryHook;
 
 set hive.explain.user=false;
 

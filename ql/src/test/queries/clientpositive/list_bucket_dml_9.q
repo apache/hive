@@ -6,6 +6,7 @@ set hive.merge.smallfiles.avgsize=200;
 set mapred.input.dir.recursive=true;
 set hive.merge.mapfiles=false;	
 set hive.merge.mapredfiles=false;
+set hive.query.lifetime.hooks=org.apache.hadoop.hive.ql.hooks.DataNucleusQueryHook;
 
 -- SORT_QUERY_RESULTS
 

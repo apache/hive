@@ -19,6 +19,8 @@ set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 INSERT INTO TABLE mpart1 PARTITION(ds, hr, rs) SELECT * FROM srcpart1;
 
+set hive.query.lifetime.hooks=org.apache.hadoop.hive.ql.hooks.DataNucleusQueryHook;
+
 SHOW PARTITIONS mpart1 WHERE ds = '1980-11-10' ORDER BY rs DESC, hr LIMIT 4;
 SHOW PARTITIONS mpart1 PARTITION (rs = 'AS') WHERE ds = '1980-11-10' AND hr >= 20;
 SHOW PARTITIONS mpart1 WHERE hr > 9 AND hr < 19 ORDER BY hr DESC, ds;
@@ -33,6 +35,7 @@ SHOW PARTITIONS mpart1 where ds = '__HIVE_DEFAULT_PARTITION__' AND hr = '__HIVE_
 SHOW PARTITIONS mpart1 where (ds = '__HIVE_DEFAULT_PARTITION__' OR hr = '__HIVE_DEFAULT_PARTITION__') AND rs = 'NA';
 SHOW PARTITIONS mpart1 where ds >= '1980-11-10' AND hr = '__HIVE_DEFAULT_PARTITION__' ORDER BY ds DESC;
 SHOW PARTITIONS mpart1 where ds = '1980-11-10' AND hr != '__HIVE_DEFAULT_PARTITION__' ORDER BY hr DESC;
+set hive.query.lifetime.hooks=;
 
 EXPLAIN SHOW PARTITIONS mpart1 WHERE ds = '1980-11-10' AND hr >= 20;
 EXPLAIN SHOW PARTITIONS mpart1 WHERE ds = '1980-11-10' ORDER BY rs DESC, hr LIMIT 4;

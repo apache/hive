@@ -4,6 +4,8 @@ INSERT INTO test_tbl PARTITION(b="abc") VALUES (1);
 INSERT INTO test_tbl PARTITION(b="d_\\%ae") VALUES (1);
 INSERT INTO test_tbl PARTITION(b="af%") VALUES (1);
 
+set hive.query.lifetime.hooks=org.apache.hadoop.hive.ql.hooks.DataNucleusQueryHook;
+
 select * from test_tbl where b like 'a%';
 select * from test_tbl where b like '%a%';
 select * from test_tbl where b like '%a';
