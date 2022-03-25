@@ -4799,6 +4799,7 @@ public class TestReplicationScenarios {
     appender.removeFromLogger(logger.getName());
   }
 
+  @org.junit.Ignore("HIVE-26073")
   @Test
   public void testIncrementalStatisticsMetrics() throws Throwable {
     isMetricsEnabledForTests(true);
