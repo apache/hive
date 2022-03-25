@@ -73,8 +73,6 @@ import java.util.Properties;
 @InterfaceStability.Stable
 public interface HiveStorageHandler extends Configurable {
 
-  static final String FROM_SERIALIZER = "from deserializer";
-
   List<AlterTableType> DEFAULT_ALLOWED_ALTER_OPS = ImmutableList.of(
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.ADDCOLS);
 
@@ -382,9 +380,5 @@ public interface HiveStorageHandler extends Configurable {
    * @throws SemanticException if the sink operation is not allowed
    */
   default void validateSinkDesc(FileSinkDesc sinkDesc) throws SemanticException {
-  }
-
-  default String getDefaultColumnComment() {
-    return FROM_SERIALIZER;
   }
 }

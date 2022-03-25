@@ -171,11 +171,11 @@ Crossover	NULL
 SUV	2.5
 Sedan	NULL
 Sports	NULL
-PREHOOK: query: ALTER TABLE llap_items REPLACE COLUMNS (itemid int, name string, cost int   , description string, to60 float)
+PREHOOK: query: ALTER TABLE llap_items REPLACE COLUMNS (itemid int, name string, cost int, description string, to60 float)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@llap_items
 PREHOOK: Output: default@llap_items
-POSTHOOK: query: ALTER TABLE llap_items REPLACE COLUMNS (itemid int, name string, cost int   , description string, to60 float)
+POSTHOOK: query: ALTER TABLE llap_items REPLACE COLUMNS (itemid int, name string, cost int, description string, to60 float)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@llap_items
 POSTHOOK: Output: default@llap_items

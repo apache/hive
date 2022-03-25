@@ -59,7 +59,7 @@ INSERT INTO llap_items VALUES
 SELECT cat, min(to60) from llap_items group by cat;
 
 --removing a column
-ALTER TABLE llap_items REPLACE COLUMNS (itemid int, name string, cost int   , description string, to60 float);
+ALTER TABLE llap_items REPLACE COLUMNS (itemid int, name string, cost int, description string, to60 float);
 INSERT INTO llap_items VALUES
 (8, 'Cybertruck', 40000, 'Single Motor RWD', 6.5),
 (9, 'Cybertruck', 50000, 'Dual Motor AWD', 4.5);

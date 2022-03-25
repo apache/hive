@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableOperation;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -70,8 +69,7 @@ public class AlterTableSetSerdeOperation extends AbstractAlterTableOperation<Alt
         try {
           Deserializer oldSerde = HiveMetaStoreUtils.getDeserializer(context.getConf(), table.getTTable(), null,
               false, oldSerdeName);
-          table.setFields(Hive.getFieldsFromDeserializer(table.getTableName(), oldSerde,
-              HiveUtils.getDefaultComment(table.getStorageHandler())));
+          table.setFields(Hive.getFieldsFromDeserializer(table.getTableName(), oldSerde, context.getConf()));
         } catch (MetaException ex) {
           throw new HiveException(ex);
         }

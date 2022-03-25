@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
 import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,13 +150,17 @@ public class HiveMetaStoreUtils {
   /**
    * @param tableName name of the table
    * @param deserializer deserializer to use
-   * @param defaultComment the comment to use if the field comment is null
+   * @param conf the configuration - used to determine if the deserializer needs to generate the 'from deserializer'
+   *             comments
    * @return the list of fields
    * @throws SerDeException if the serde throws an exception
    * @throws MetaException if one of the fields or types in the table is invalid
    */
   public static List<FieldSchema> getFieldsFromDeserializer(String tableName,
-      Deserializer deserializer, String defaultComment) throws SerDeException, MetaException {
+      Deserializer deserializer, Configuration conf) throws SerDeException, MetaException {
+    Collection<String> noCommentSerdes =
+        MetastoreConf.getStringCollection(conf, MetastoreConf.ConfVars.SERDES_WITHOUT_FROM_DESERIALIZER);
+    boolean noCommentFromDeserializer = noCommentSerdes.contains(deserializer.getClass().getName());
     ObjectInspector oi = deserializer.getObjectInspector();
     String[] names = tableName.split("\\.");
     String last_name = names[names.length - 1];
@@ -188,7 +194,8 @@ public class HiveMetaStoreUtils {
     ArrayList<FieldSchema> str_fields = new ArrayList<>();
     // rules on how to recurse the ObjectInspector based on its type
     if (oi.getCategory() != Category.STRUCT) {
-      str_fields.add(new FieldSchema(last_name, oi.getTypeName(), defaultComment));
+      str_fields.add(new FieldSchema(last_name, oi.getTypeName(),
+          determineFieldComment(null, noCommentFromDeserializer)));
     } else {
       List<? extends StructField> fields = ((StructObjectInspector) oi)
           .getAllStructFieldRefs();
@@ -196,12 +203,17 @@ public class HiveMetaStoreUtils {
         StructField structField = fields.get(i);
         String fieldName = structField.getFieldName();
         String fieldTypeName = structField.getFieldObjectInspector().getTypeName();
-        String fieldComment = structField.getFieldComment() == null ? defaultComment : structField.getFieldComment();
+        String fieldComment = determineFieldComment(structField.getFieldComment(), noCommentFromDeserializer);
 
         str_fields.add(new FieldSchema(fieldName, fieldTypeName, fieldComment));
       }
     }
     return str_fields;
+  }
+
+  private static final String FROM_SERIALIZER = "from deserializer";
+  private static String determineFieldComment(String comment, boolean noCommentFromDeserializer) {
+    return (comment != null || noCommentFromDeserializer) ? comment : FROM_SERIALIZER;
   }
 
   /**

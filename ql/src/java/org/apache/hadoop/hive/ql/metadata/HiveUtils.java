@@ -304,10 +304,6 @@ public final class HiveUtils {
     }
   }
 
-  public static String getDefaultComment(HiveStorageHandler storageHandler) {
-    return storageHandler != null ? storageHandler.getDefaultColumnComment() : HiveStorageHandler.FROM_SERIALIZER;
-  }
-
   private HiveUtils() {
     // prevent instantiation
   }
