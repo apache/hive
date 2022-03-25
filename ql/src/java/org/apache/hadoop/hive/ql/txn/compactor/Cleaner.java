@@ -423,8 +423,14 @@ public class Cleaner extends MetaStoreCompactorThread {
     Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, path);
     AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false, 
         dirSnapshots);
+    Table table = resolveTable(ci);
+    boolean isDynPartAbort = isDynPartAbort(table, ci);
     
-    List<Path> deleted = remove(location, ci, getObsoleteDirs(ci, dir), true, fs);
+    List<Path> obsoleteDirs = getObsoleteDirs(dir, isDynPartAbort);
+    if (isDynPartAbort || dir.hasUncompactedAborts()) {
+      ci.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
+    }
+    List<Path> deleted = remove(location, ci, obsoleteDirs, true, fs);
     if (dir.getObsolete().size() > 0) {
       AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
           txnHandler);
@@ -435,7 +441,7 @@ public class Cleaner extends MetaStoreCompactorThread {
         ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId, Long.MAX_VALUE),
       Ref.from(false), false, dirSnapshots);
     
-    List<Path> remained = subtract(getObsoleteDirs(ci, dir), deleted);
+    List<Path> remained = subtract(getObsoleteDirs(dir, isDynPartAbort), deleted);
     if (!remained.isEmpty()) {
       LOG.warn(idWatermark(ci) + " Remained " + remained.size() +
         " obsolete directories from " + location + ". " + getDebugInfo(remained));
@@ -445,7 +451,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     return true;
   }
   
-  private List<Path> getObsoleteDirs(CompactionInfo ci, AcidDirectory dir) throws MetaException {
+  private List<Path> getObsoleteDirs(AcidDirectory dir, boolean isDynPartAbort) {
     List<Path> obsoleteDirs = dir.getObsolete();
     /**
      * add anything in 'dir'  that only has data from aborted transactions - no one should be
@@ -456,12 +462,8 @@ public class Cleaner extends MetaStoreCompactorThread {
      * txns with write IDs > {@link CompactionInfo#highestWriteId}.
      * See {@link TxnStore#markCleaned(CompactionInfo)}
      */
-    Table table = getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
-    if (isDynPartAbort(table, ci) || dir.hasUncompactedAborts()) {
-      ci.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
-    }
     obsoleteDirs.addAll(dir.getAbortedDirectories());
-    if (isDynPartAbort(table, ci)) {
+    if (isDynPartAbort) {
       // In the event of an aborted DP operation, we should only consider the aborted directories for cleanup.
       // Including obsolete directories for partitioned tables can result in data loss.
       obsoleteDirs = dir.getAbortedDirectories();
