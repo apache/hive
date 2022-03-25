@@ -813,7 +813,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     }
 
     // Check the columns directly
-    List<FieldSchema> cols = shell.metastore().getTable("default", "comment_table").getSd().getCols();
+    List<FieldSchema> cols = shell.metastore().getTable(identifier).getSd().getCols();
     Assert.assertEquals(icebergTable.schema().asStruct(), HiveSchemaUtil.convert(cols).asStruct());
   }
 
@@ -1176,7 +1176,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     );
     testTables.createTable(shell, identifier.name(), schema, SPEC, FileFormat.PARQUET, ImmutableList.of());
 
-    // Run some alter commands. Before the fix the alter changed the column commands, and we would like to check
+    // Run some alter commands. Before the fix the alter changed the column comment, and we would like to check
     // that this is fixed now.
     shell.executeStatement("ALTER TABLE default.customers CHANGE COLUMN customer_id customer_id bigint");
 
