@@ -206,17 +206,15 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
       return false;
     }
 
-    int i = 0;
     hiveVerParts = hiveVersion.split("\\.|-");
     dbVerParts = dbVersion.split("\\.|-");
-    for (; i < Math.min(hiveVerParts.length, dbVerParts.length); i++) {
+    for (int i = 0; i < Math.min(hiveVerParts.length, dbVerParts.length); i++) {
       int compare = compareVersion(dbVerParts[i], hiveVerParts[i]);
       if (compare != 0) {
         return compare > 0;
       }
     }
-
-    return i == dbVerParts.length;
+    return hiveVerParts.length > dbVerParts.length;
   }
 
   private int compareVersion(String dbVerPart, String hiveVerPart) {
