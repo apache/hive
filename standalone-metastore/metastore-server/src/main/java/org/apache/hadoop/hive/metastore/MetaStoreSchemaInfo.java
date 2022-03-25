@@ -33,7 +33,7 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
@@ -224,8 +224,8 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
     if (dbVerPart.equals(hiveVerPart)) {
       return 0;
     }
-    boolean isDbVerNum = NumberUtils.isNumber(dbVerPart);
-    boolean isHiveVerNum = NumberUtils.isNumber(hiveVerPart);
+    boolean isDbVerNum = StringUtils.isNumeric(dbVerPart);
+    boolean isHiveVerNum = StringUtils.isNumeric(hiveVerPart);
     if (isDbVerNum && isHiveVerNum) {
       return Integer.parseInt(dbVerPart) - Integer.parseInt(hiveVerPart);
     } else if (!isDbVerNum && !isHiveVerNum) {
