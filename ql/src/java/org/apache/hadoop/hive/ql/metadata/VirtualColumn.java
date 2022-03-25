@@ -71,7 +71,7 @@ public enum VirtualColumn {
   public static final ImmutableSet<String> VIRTUAL_COLUMN_NAMES =
       ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(), ROWOFFSET.getName(),
           RAWDATASIZE.getName(), GROUPINGID.getName(), ROWID.getName(), POS_DEL_PATH.getName(), POS_DEL_POS.getName(),
-          POS_DEL_SPEC.getName(), POS_DEL_PART.getName());
+          POS_DEL_SPEC.getName(), POS_DEL_PART.getName(), ROWISDELETED.getName());
 
   public static final ImmutableMap<String, VirtualColumn> VIRTUAL_COLUMN_NAME_MAP =
        new ImmutableMap.Builder<String, VirtualColumn>().putAll(getColumnNameMap()).build();
