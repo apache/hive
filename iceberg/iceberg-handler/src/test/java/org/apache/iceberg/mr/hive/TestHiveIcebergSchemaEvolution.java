@@ -51,7 +51,7 @@ import static org.apache.iceberg.types.Types.NestedField.required;
 public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
-  public void testDescribeTiniable() throws IOException {
+  public void testDescribeTable() throws IOException {
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     List<Object[]> rows = shell.executeStatement("DESCRIBE default.customers");
