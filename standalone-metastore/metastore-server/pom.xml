@@ -573,6 +573,8 @@
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
             <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
             <hive.in.test>true</hive.in.test>
+            <derby.version>${derby.version}</derby.version>
+            <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
           </systemPropertyVariables>
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
