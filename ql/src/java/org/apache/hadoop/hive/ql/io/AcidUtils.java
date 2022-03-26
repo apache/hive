@@ -3151,7 +3151,8 @@ public class AcidUtils {
       .noneMatch(pattern -> astSearcher.simpleBreadthFirstSearch(tree, pattern) != null));
   }
 
-  private static void initDirCache(int durationInMts) {
+  @VisibleForTesting
+  public static void initDirCache(int durationInMts) {
     if (dirCacheInited.get()) {
       LOG.debug("DirCache got initialized already");
       return;
@@ -3249,6 +3250,20 @@ public class AcidUtils {
       printDirCacheEntries();
     }
     return value.getDirInfo();
+  }
+
+  public static void tryInvalidateDirCache(org.apache.hadoop.hive.metastore.api.Table table) {
+    if (dirCacheInited.get()) {
+      String key = getFullTableName(table.getDbName(), table.getTableName()) + "_" + table.getSd().getLocation();
+      boolean partitioned = table.getPartitionKeys() != null && !table.getPartitionKeys().isEmpty();
+      if (!partitioned) {
+        dirCache.invalidate(key);
+      } else {
+        // Invalidate all partitions as the difference in the key is only the partition part at the end of the path.
+        dirCache.invalidateAll(
+          dirCache.asMap().keySet().stream().filter(k -> k.startsWith(key)).collect(Collectors.toSet()));
+      }
+    }
   }
 
   static class DirInfoValue {
