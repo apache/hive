@@ -47,7 +47,6 @@ public class InputFormatConfig {
   public static final String TABLE_IDENTIFIER = "iceberg.mr.table.identifier";
   public static final String TABLE_LOCATION = "iceberg.mr.table.location";
   public static final String TABLE_SCHEMA = "iceberg.mr.table.schema";
-  public static final String TABLE_DELETE_SCHEMA = "iceberg.mr.table.delete.schema";
   public static final String PARTITION_SPEC = "iceberg.mr.table.partition.spec";
   public static final String SERIALIZED_TABLE_PREFIX = "iceberg.mr.serialized.table.";
   public static final String TABLE_CATALOG_PREFIX = "iceberg.mr.table.catalog.";

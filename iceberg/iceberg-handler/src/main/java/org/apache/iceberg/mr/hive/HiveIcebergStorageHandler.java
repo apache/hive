@@ -178,7 +178,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   /**
    * Committer with no-op job commit. We can pass this into the Tez AM to take care of task commits/aborts, as well
    * as aborting jobs reliably if an execution error occurred. However, we want to execute job commits on the
-   * HS2-side using the HiveIcebergMetaHook, so we will use the full-featured HiveIcebergOutputCommitter there.
+   * HS2-side during the MoveTask, so we will use the full-featured HiveIcebergOutputCommitter there.
    */
   static class HiveIcebergNoJobCommitter extends HiveIcebergOutputCommitter {
     @Override
@@ -609,9 +609,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     Table table = IcebergTableUtil.getTable(configuration, props);
     String schemaJson = SchemaParser.toJson(table.schema());
 
-    Schema deleteSchema = IcebergAcidUtil.createDeleteSchema(table.schema().columns());
-    String deleteSchemaJson = SchemaParser.toJson(deleteSchema);
-
     Maps.fromProperties(props).entrySet().stream()
         .filter(entry -> !map.containsKey(entry.getKey())) // map overrides tableDesc properties
         .forEach(entry -> map.put(entry.getKey(), entry.getValue()));
@@ -619,7 +616,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
     map.put(InputFormatConfig.TABLE_LOCATION, table.location());
     map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
-    map.put(InputFormatConfig.TABLE_DELETE_SCHEMA, deleteSchemaJson);
     props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(table.spec()));
 
     // serialize table object into config
@@ -635,7 +631,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
     // this is an exception to the interface documentation, but it's a safe operation to add this property
     props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
-    props.put(InputFormatConfig.TABLE_DELETE_SCHEMA, deleteSchemaJson);
   }
 
   /**

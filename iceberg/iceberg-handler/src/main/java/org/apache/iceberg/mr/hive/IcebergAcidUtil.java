@@ -37,8 +37,8 @@ public class IcebergAcidUtil {
     SPEC_ID(MetadataColumns.SPEC_ID),
     PARTITION_HASH(Types.NestedField.required(MetadataColumns.PARTITION_COLUMN_ID,
         MetadataColumns.PARTITION_COLUMN_NAME, Types.LongType.get())),
-    FILE_PATH(MetadataColumns.DELETE_FILE_PATH),
-    FILE_POS(MetadataColumns.DELETE_FILE_POS);
+    FILE_PATH(MetadataColumns.FILE_PATH),
+    FILE_POS(MetadataColumns.ROW_POSITION);
 
     private final Types.NestedField field;
 

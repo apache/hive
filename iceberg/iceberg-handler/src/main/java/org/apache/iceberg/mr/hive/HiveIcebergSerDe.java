@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Writable;
+import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -95,9 +96,6 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
     if (serDeProperties.get(InputFormatConfig.TABLE_SCHEMA) != null) {
       this.tableSchema = SchemaParser.fromJson(serDeProperties.getProperty(InputFormatConfig.TABLE_SCHEMA));
-      if (serDeProperties.get(InputFormatConfig.TABLE_DELETE_SCHEMA) != null) {
-        this.deleteSchema = SchemaParser.fromJson(serDeProperties.getProperty(InputFormatConfig.TABLE_DELETE_SCHEMA));
-      }
       if (serDeProperties.get(InputFormatConfig.PARTITION_SPEC) != null) {
         PartitionSpec spec =
             PartitionSpecParser.fromJson(tableSchema, serDeProperties.getProperty(InputFormatConfig.PARTITION_SPEC));
@@ -110,7 +108,6 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         Table table = IcebergTableUtil.getTable(configuration, serDeProperties);
         // always prefer the original table schema if there is one
         this.tableSchema = table.schema();
-        this.deleteSchema = IcebergAcidUtil.createDeleteSchema(tableSchema.columns());
         this.partitionColumns = table.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
         LOG.info("Using schema from existing table {}", SchemaParser.toJson(tableSchema));
       } catch (Exception e) {
@@ -136,9 +133,10 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
     Schema projectedSchema;
     if (HiveIcebergStorageHandler.isDelete(serDeProperties)) {
+      isDelete = true;
+      deleteSchema = IcebergAcidUtil.createDeleteSchema(tableSchema.columns());
       // when writing delete files, we should use the full delete schema
       projectedSchema = deleteSchema;
-      isDelete = true;
     } else if (HiveIcebergStorageHandler.isWrite(serDeProperties)) {
       // when writing out data, we should not do projection pushdown
       projectedSchema = tableSchema;
