@@ -11442,8 +11442,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       List<VirtualColumn> vcList = new ArrayList<>();
       boolean nonNativeAcid = tab.getStorageHandler() != null && tab.getStorageHandler().supportsAcidOperations();
+      boolean isUpdateDelete = this instanceof UpdateDeleteSemanticAnalyzer;
       // put all virtual columns in RowResolver.
-      if (!tab.isNonNative() || nonNativeAcid) {
+      if (!tab.isNonNative() || (nonNativeAcid && isUpdateDelete)) {
         vcList = VirtualColumn.getRegistry(conf);
         if (nonNativeAcid) {
           vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
