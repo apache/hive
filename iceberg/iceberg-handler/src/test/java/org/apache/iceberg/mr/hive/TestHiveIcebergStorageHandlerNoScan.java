@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -1058,16 +1059,15 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testDropTableWithoutPurge() throws IOException {
+  public void testDropTableWithPurgeFalse() throws IOException, TException, InterruptedException {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
-    shell.executeStatement("CREATE EXTERNAL TABLE customers (" +
-        "t_int INT,  " +
-        "t_string STRING) " +
-        "STORED BY ICEBERG " +
+    shell.executeStatement("CREATE EXTERNAL TABLE customers (t_int INT, t_string STRING) STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE")));
 
+    String purge = shell.metastore().getTable(identifier).getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE);
+    Assert.assertEquals("FALSE", purge);
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
     Path tableLocation = new Path(icebergTable.location());
     shell.executeStatement("DROP TABLE customers");
@@ -1079,16 +1079,15 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testDropTableWithPurge() throws IOException {
+  public void testDropTableWithPurgeTrue() throws IOException, TException, InterruptedException {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
-    shell.executeStatement("CREATE EXTERNAL TABLE customers (" +
-        "t_int INT,  " +
-        "t_string STRING) " +
-        "STORED BY ICEBERG " +
+    shell.executeStatement("CREATE EXTERNAL TABLE customers (t_int INT, t_string STRING) STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of(InputFormatConfig.EXTERNAL_TABLE_PURGE, "TRUE")));
 
+    String purge = shell.metastore().getTable(identifier).getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE);
+    Assert.assertEquals("TRUE", purge);
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
     Path tableLocation = new Path(icebergTable.location());
     shell.executeStatement("DROP TABLE customers");
@@ -1096,6 +1095,30 @@ public class TestHiveIcebergStorageHandlerNoScan {
     // Check if the files are kept
     FileSystem fs = Util.getFs(tableLocation, shell.getHiveConf());
     Assert.assertFalse(fs.exists(tableLocation));
+  }
+
+  @Test
+  public void testDropTableWithoutPurge() throws IOException, TException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.executeStatement("CREATE EXTERNAL TABLE customers (t_int INT, t_string STRING) STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
+
+    String purge = shell.metastore().getTable(identifier).getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE);
+    Assert.assertNull(purge);
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    Path tableLocation = new Path(icebergTable.location());
+    shell.executeStatement("DROP TABLE customers");
+
+    FileSystem fs = Util.getFs(tableLocation, shell.getHiveConf());
+    // This comes from the default Hive behavior based on hive.external.table.purge.default
+    if (HiveConf.getBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_EXTERNALTABLE_PURGE_DEFAULT)) {
+      Assert.assertFalse(fs.exists(tableLocation));
+    } else {
+      Assert.assertEquals(1, fs.listStatus(tableLocation).length);
+      Assert.assertTrue(fs.listStatus(new Path(tableLocation, "metadata")).length > 0);
+    }
   }
 
   @Test
