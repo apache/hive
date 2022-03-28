@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
@@ -32,7 +33,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -59,9 +58,6 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedBaseLight;
-import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDelta;
-import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDeltaLight;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
@@ -69,18 +65,19 @@ import org.apache.hive.common.util.Ref;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.collections4.ListUtils.subtract;
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
@@ -158,14 +155,12 @@ public class Cleaner extends MetaStoreCompactorThread {
             // when min_history_level is finally dropped, than every HMS will commit compaction the new way
             // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
             for (CompactionInfo compactionInfo : readyToClean) {
-              String tableName = compactionInfo.getFullTableName();
-              String partition = compactionInfo.getFullPartitionName();
               CompletableFuture<Void> asyncJob =
                   CompletableFuture.runAsync(
                           ThrowingRunnable.unchecked(() -> clean(compactionInfo, cleanerWaterMark, metricsEnabled)),
                           cleanerExecutor)
                       .exceptionally(t -> {
-                        LOG.error("Error during the cleaning the table {} / partition {}", tableName, partition, t);
+                        LOG.error("Error clearing {}", compactionInfo.getFullPartitionName(), t);
                         return null;
                       });
               cleanerList.add(asyncJob);
@@ -423,7 +418,40 @@ public class Cleaner extends MetaStoreCompactorThread {
       throws IOException, NoSuchObjectException, MetaException {
     Path path = new Path(location);
     FileSystem fs = path.getFileSystem(conf);
-    AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false);
+    
+    // Collect all of the files/dirs
+    Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, path);
+    AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false, 
+        dirSnapshots);
+    Table table = resolveTable(ci);
+    boolean isDynPartAbort = isDynPartAbort(table, ci);
+    
+    List<Path> obsoleteDirs = getObsoleteDirs(dir, isDynPartAbort);
+    if (isDynPartAbort || dir.hasUncompactedAborts()) {
+      ci.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
+    }
+    List<Path> deleted = remove(location, ci, obsoleteDirs, true, fs);
+    if (dir.getObsolete().size() > 0) {
+      AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
+          txnHandler);
+    }
+    // Make sure there are no leftovers below the compacted watermark
+    conf.set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
+    dir = AcidUtils.getAcidState(fs, path, conf, new ValidReaderWriteIdList(
+        ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId, Long.MAX_VALUE),
+      Ref.from(false), false, dirSnapshots);
+    
+    List<Path> remained = subtract(getObsoleteDirs(dir, isDynPartAbort), deleted);
+    if (!remained.isEmpty()) {
+      LOG.warn(idWatermark(ci) + " Remained " + remained.size() +
+        " obsolete directories from " + location + ". " + getDebugInfo(remained));
+      return false;
+    }
+    LOG.debug(idWatermark(ci) + " All cleared below the watermark: " + ci.highestWriteId + " from " + location);
+    return true;
+  }
+  
+  private List<Path> getObsoleteDirs(AcidDirectory dir, boolean isDynPartAbort) {
     List<Path> obsoleteDirs = dir.getObsolete();
     /**
      * add anything in 'dir'  that only has data from aborted transactions - no one should be
@@ -434,105 +462,50 @@ public class Cleaner extends MetaStoreCompactorThread {
      * txns with write IDs > {@link CompactionInfo#highestWriteId}.
      * See {@link TxnStore#markCleaned(CompactionInfo)}
      */
-    Table table = getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
-    if (isDynPartAbort(table, ci) || dir.hasUncompactedAborts()) {
-      ci.setWriteIds(dir.hasUncompactedAborts(), dir.getAbortedWriteIds());
-    }
     obsoleteDirs.addAll(dir.getAbortedDirectories());
-    if (isDynPartAbort(table, ci)) {
+    if (isDynPartAbort) {
       // In the event of an aborted DP operation, we should only consider the aborted directories for cleanup.
       // Including obsolete directories for partitioned tables can result in data loss.
       obsoleteDirs = dir.getAbortedDirectories();
     }
-
-    if (obsoleteDirs.isEmpty()
-        && !hasDataBelowWatermark(dir, fs, path, ci.highestWriteId, writeIdList.getHighWatermark())) {
-      LOG.info(idWatermark(ci) + " nothing to remove below watermark " + ci.highestWriteId + ", ");
-      return true;
-    }
-    StringBuilder extraDebugInfo = new StringBuilder("[").append(obsoleteDirs.stream()
-        .map(Path::getName).collect(Collectors.joining(",")));
-    boolean success = remove(location, ci, obsoleteDirs, true, fs, extraDebugInfo);
-    if (dir.getObsolete().size() > 0) {
-      AcidMetricService.updateMetricsFromCleaner(ci.dbname, ci.tableName, ci.partName, dir.getObsolete(), conf,
-          txnHandler);
-    }
-    return success;
-  }
-
-  private boolean hasDataBelowWatermark(AcidDirectory acidDir, FileSystem fs, Path path, long highWatermark,
-      long minOpenTxn)
-      throws IOException {
-    Set<Path> acidPaths = new HashSet<>();
-    for (ParsedDelta delta : acidDir.getCurrentDirectories()) {
-      acidPaths.add(delta.getPath());
-    }
-    if (acidDir.getBaseDirectory() != null) {
-      acidPaths.add(acidDir.getBaseDirectory());
-    }
-    FileStatus[] children = fs.listStatus(path, p -> {
-      return !acidPaths.contains(p);
-    });
-    for (FileStatus child : children) {
-      if (isFileBelowWatermark(child, highWatermark, minOpenTxn)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private boolean isFileBelowWatermark(FileStatus child, long highWatermark, long minOpenTxn) {
-    Path p = child.getPath();
-    String fn = p.getName();
-    if (!child.isDirectory()) {
-      return true;
-    }
-    if (fn.startsWith(AcidUtils.BASE_PREFIX)) {
-      ParsedBaseLight b = ParsedBaseLight.parseBase(p);
-      return b.getWriteId() <= highWatermark;
-    }
-    if (fn.startsWith(AcidUtils.DELTA_PREFIX) || fn.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
-      ParsedDeltaLight d = ParsedDeltaLight.parse(p);
-      return d.getMaxWriteId() <= highWatermark;
-    }
-    return false;
+    return obsoleteDirs;
   }
 
   private boolean removeFiles(String location, CompactionInfo ci)
-    throws NoSuchObjectException, IOException, MetaException {
-    Path path = new Path(location);
-    StringBuilder extraDebugInfo = new StringBuilder("[").append(path.getName()).append(",");
-
+      throws NoSuchObjectException, IOException, MetaException {
     String strIfPurge = ci.getProperty("ifPurge");
     boolean ifPurge = strIfPurge != null || Boolean.parseBoolean(ci.getProperty("ifPurge"));
-
-    return remove(location, ci, Collections.singletonList(path), ifPurge,
-      path.getFileSystem(conf), extraDebugInfo);
+    
+    Path path = new Path(location);
+    return !remove(location, ci, Collections.singletonList(path), ifPurge,
+      path.getFileSystem(conf)).isEmpty();
   }
 
-  private boolean remove(String location, CompactionInfo ci, List<Path> filesToDelete, boolean ifPurge,
-      FileSystem fs, StringBuilder extraDebugInfo)
+  private List<Path> remove(String location, CompactionInfo ci, List<Path> paths, boolean ifPurge, FileSystem fs)
       throws NoSuchObjectException, MetaException, IOException {
-
-    extraDebugInfo.setCharAt(extraDebugInfo.length() - 1, ']');
-    LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
-         " obsolete directories from " + location + ". " + extraDebugInfo.toString());
-    if (filesToDelete.size() < 1) {
-      LOG.warn("Hmm, nothing to delete in the cleaner for directory " + location +
-          ", that hardly seems right.");
-      return false;
+    List<Path> deleted = new ArrayList<>();
+    if (paths.size() < 1) {
+      return deleted;
     }
+    LOG.info(idWatermark(ci) + " About to remove " + paths.size() +
+      " obsolete directories from " + location + ". " + getDebugInfo(paths));
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
     boolean needCmRecycle = ReplChangeManager.isSourceOfReplication(db);
-
-    for (Path dead : filesToDelete) {
+    
+    for (Path dead : paths) {
       LOG.debug("Going to delete path " + dead.toString());
       if (needCmRecycle) {
         replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, ifPurge);
       }
-      FileUtils.moveToTrash(fs, dead, conf, ifPurge);
+      if (FileUtils.moveToTrash(fs, dead, conf, ifPurge)) {
+        deleted.add(dead);
+      }
     }
-    return true;
+    return deleted;
+  }
+  
+  private String getDebugInfo(List<Path> paths) {
+    return "[" + paths.stream().map(Path::getName).collect(Collectors.joining(",")) + ']';
   }
 
   private static class CleanerCycleUpdater implements Runnable {
