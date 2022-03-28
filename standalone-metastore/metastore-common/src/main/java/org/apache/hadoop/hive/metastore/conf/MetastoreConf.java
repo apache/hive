@@ -1268,6 +1268,10 @@ public class MetastoreConf {
             "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe," +
             "org.apache.hadoop.hive.serde2.OpenCSVSerde",
         "SerDes retrieving schema from metastore. This is an internal parameter."),
+    SERDES_WITHOUT_FROM_DESERIALIZER("metastore.serdes.without.from.deserializer",
+        "hive.metastore.serdes.without.from.deserializer",
+        "org.apache.iceberg.mr.hive.HiveIcebergSerDe",
+        "SerDes which are providing the schema but do not need the 'from deserializer' comment for the columns."),
     SERVER_MAX_MESSAGE_SIZE("metastore.server.max.message.size",
         "hive.metastore.server.max.message.size", 100*1024*1024L,
         "Maximum message size in bytes a HMS will accept."),

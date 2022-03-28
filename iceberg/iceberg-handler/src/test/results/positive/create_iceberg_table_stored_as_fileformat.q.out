@@ -17,10 +17,10 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
-i                   	int                 	from deserializer   
-s                   	string              	from deserializer   
-ts                  	timestamp           	from deserializer   
-d                   	date                	from deserializer   
+i                   	int                 	                    
+s                   	string              	                    
+ts                  	timestamp           	                    
+d                   	date                	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -80,10 +80,10 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_parquet
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_parquet
 # col_name            	data_type           	comment             
-i                   	int                 	from deserializer   
-s                   	string              	from deserializer   
-ts                  	timestamp           	from deserializer   
-d                   	date                	from deserializer   
+i                   	int                 	                    
+s                   	string              	                    
+ts                  	timestamp           	                    
+d                   	date                	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -143,10 +143,10 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_avro
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_avro
 # col_name            	data_type           	comment             
-i                   	int                 	from deserializer   
-s                   	string              	from deserializer   
-ts                  	timestamp           	from deserializer   
-d                   	date                	from deserializer   
+i                   	int                 	                    
+s                   	string              	                    
+ts                  	timestamp           	                    
+d                   	date                	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -206,10 +206,10 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_t
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_t
 # col_name            	data_type           	comment             
-i                   	int                 	from deserializer   
-s                   	string              	from deserializer   
-ts                  	timestamp           	from deserializer   
-d                   	date                	from deserializer   
+i                   	int                 	                    
+s                   	string              	                    
+ts                  	timestamp           	                    
+d                   	date                	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -265,10 +265,10 @@ POSTHOOK: query: DESCRIBE FORMATTED ice_t
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_t
 # col_name            	data_type           	comment             
-i                   	int                 	from deserializer   
-s                   	string              	from deserializer   
-ts                  	timestamp           	from deserializer   
-d                   	date                	from deserializer   
+i                   	int                 	                    
+s                   	string              	                    
+ts                  	timestamp           	                    
+d                   	date                	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

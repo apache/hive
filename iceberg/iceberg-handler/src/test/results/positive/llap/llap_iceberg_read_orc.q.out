@@ -171,11 +171,11 @@ Crossover	NULL
 SUV	2.5
 Sedan	NULL
 Sports	NULL
-PREHOOK: query: ALTER TABLE llap_items REPLACE COLUMNS (itemid int, name string, cost int COMMENT 'from deserializer', description string, to60 float)
+PREHOOK: query: ALTER TABLE llap_items REPLACE COLUMNS (itemid int, name string, cost int, description string, to60 float)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@llap_items
 PREHOOK: Output: default@llap_items
-POSTHOOK: query: ALTER TABLE llap_items REPLACE COLUMNS (itemid int, name string, cost int COMMENT 'from deserializer', description string, to60 float)
+POSTHOOK: query: ALTER TABLE llap_items REPLACE COLUMNS (itemid int, name string, cost int, description string, to60 float)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@llap_items
 POSTHOOK: Output: default@llap_items
@@ -353,11 +353,11 @@ FR	NULL	2.75
 HU	NULL	7.0
 IT	Venezia	6.0
 UK	London	2.0
-PREHOOK: query: ALTER TABLE llap_orders REPLACE COLUMNS (quantity int, itemid int, region string COMMENT 'from deserializer', state string COMMENT 'from deserializer', ordertime timestamp COMMENT 'from deserializer', city string)
+PREHOOK: query: ALTER TABLE llap_orders REPLACE COLUMNS (quantity int, itemid int, region string, state string, ordertime timestamp, city string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@llap_orders
 PREHOOK: Output: default@llap_orders
-POSTHOOK: query: ALTER TABLE llap_orders REPLACE COLUMNS (quantity int, itemid int, region string COMMENT 'from deserializer', state string COMMENT 'from deserializer', ordertime timestamp COMMENT 'from deserializer', city string)
+POSTHOOK: query: ALTER TABLE llap_orders REPLACE COLUMNS (quantity int, itemid int, region string, state string, ordertime timestamp, city string)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@llap_orders
 POSTHOOK: Output: default@llap_orders

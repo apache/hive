@@ -57,7 +57,8 @@ public class AlterTableUpdateColumnsOperation extends AbstractAlterTableOperatio
     Deserializer deserializer = table.getDeserializer(true);
     try {
       LOG.info("Updating metastore columns for table: {}", table.getTableName());
-      List<FieldSchema> fields = HiveMetaStoreUtils.getFieldsFromDeserializer(table.getTableName(), deserializer);
+      List<FieldSchema> fields = HiveMetaStoreUtils.getFieldsFromDeserializer(table.getTableName(), deserializer,
+          context.getConf());
       StorageDescriptor sd = getStorageDescriptor(table, partition);
       sd.setCols(fields);
     } catch (org.apache.hadoop.hive.serde2.SerDeException | MetaException e) {

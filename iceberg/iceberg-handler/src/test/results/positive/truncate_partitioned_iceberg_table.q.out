@@ -77,8 +77,8 @@ POSTHOOK: query: describe formatted test_truncate
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_truncate
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -170,8 +170,8 @@ POSTHOOK: query: describe formatted test_truncate
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_truncate
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 

@@ -58,7 +58,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     Assert.assertEquals(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA.columns().size(), rows.size());
     for (int i = 0; i < HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA.columns().size(); i++) {
       Types.NestedField field = HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA.columns().get(i);
-      String comment = field.doc() == null ? "from deserializer" : field.doc();
+      String comment = field.doc() == null ? "" : field.doc();
       Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
           comment}, rows.get(i));
     }
@@ -222,17 +222,15 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
 
     // Drop columns via REPLACE COLUMNS
     shell.executeStatement("ALTER TABLE orders REPLACE COLUMNS (" +
-        "customer_last_name string COMMENT 'from deserializer', order_id int COMMENT 'from deserializer'," +
-        " quantity int, nick string COMMENT 'from deserializer'," +
-        " fruit string COMMENT 'from deserializer')");
+        "customer_last_name string, order_id int, quantity int, nick string, fruit string)");
 
     result = shell.executeStatement("DESCRIBE orders");
     assertQueryResult(result, 5,
-        "customer_last_name", "string", "from deserializer",
-        "order_id", "int", "from deserializer",
-        "quantity", "int", "from deserializer",
-        "nick", "string", "from deserializer",
-        "fruit", "string", "from deserializer");
+        "customer_last_name", "string", "",
+        "order_id", "int", "",
+        "quantity", "int", "",
+        "nick", "string", "",
+        "fruit", "string", "");
     result = shell.executeStatement("SELECT * FROM orders ORDER BY order_id");
     assertQueryResult(result, 7,
         "Strange", 1, 100, null, "apple",

@@ -59,7 +59,7 @@ INSERT INTO llap_items VALUES
 SELECT cat, min(to60) from llap_items group by cat;
 
 --removing a column
-ALTER TABLE llap_items REPLACE COLUMNS (itemid int, name string, cost int COMMENT 'from deserializer', description string, to60 float);
+ALTER TABLE llap_items REPLACE COLUMNS (itemid int, name string, cost int, description string, to60 float);
 INSERT INTO llap_items VALUES
 (8, 'Cybertruck', 40000, 'Single Motor RWD', 6.5),
 (9, 'Cybertruck', 50000, 'Dual Motor AWD', 4.5);
@@ -96,7 +96,7 @@ INSERT INTO llap_orders VALUES
 SELECT state, max(city), avg(itemid) from llap_orders WHERE region = 'EU' GROUP BY state;
 
 --removing a column from schema
-ALTER TABLE llap_orders REPLACE COLUMNS (quantity int, itemid int, region string COMMENT 'from deserializer', state string COMMENT 'from deserializer', ordertime timestamp COMMENT 'from deserializer', city string);
+ALTER TABLE llap_orders REPLACE COLUMNS (quantity int, itemid int, region string, state string, ordertime timestamp, city string);
 INSERT INTO llap_orders VALUES
 (88, 5, 'EU', 'FR', timestamp('2006-02-04 19:55:46.129'), 'Paris');
 SELECT state, max(city), avg(itemid) from llap_orders WHERE region = 'EU' GROUP BY state;
