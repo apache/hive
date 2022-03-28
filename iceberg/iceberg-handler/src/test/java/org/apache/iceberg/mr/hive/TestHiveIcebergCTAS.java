@@ -20,18 +20,27 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.AssertHelpers;
+import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.PartitionSpecParser;
+import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
+
+import static org.apache.iceberg.types.Types.NestedField.optional;
 
 /**
  * Creates Iceberg tables using CTAS, and runs select queries against these new tables to verify table content.
@@ -116,6 +125,59 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
     Assert.assertEquals("customValue", tbl.getParameters().get("customKey"));
     Assert.assertNull(tbl.getParameters().get(serdeConstants.LIST_COLUMNS));
     Assert.assertNull(tbl.getParameters().get(serdeConstants.LIST_PARTITION_COLUMNS));
+  }
+
+  @Test
+  public void testCTASPartitionedBySpec() throws TException, InterruptedException {
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "year_field", Types.DateType.get()),
+        optional(3, "month_field", Types.TimestampType.withZone()),
+        optional(4, "day_field", Types.TimestampType.withoutZone()),
+        optional(5, "hour_field", Types.TimestampType.withoutZone()),
+        optional(6, "truncate_field", Types.StringType.get()),
+        optional(7, "bucket_field", Types.StringType.get()),
+        optional(8, "identity_field", Types.StringType.get())
+    );
+
+    List<Record> records =  TestHelper.generateRandomRecords(schema, 10, 0L);
+
+    shell.executeStatement("CREATE TABLE source (id bigint, year_field date, month_field timestamp, " +
+        "day_field timestamp, hour_field timestamp, truncate_field string, bucket_field string, " +
+        "identity_field string)");
+
+    shell.executeStatement(testTables.getInsertQuery(records, TableIdentifier.of("default", "source"), false));
+
+    shell.executeStatement(String.format("CREATE TABLE target PARTITIONED BY SPEC " +
+        "(year(year_field), month(month_field), day(day_field), hour(hour_field), " +
+        "truncate(2, truncate_field), bucket(2, bucket_field), identity_field) " +
+        "STORED BY ICEBERG %s AS SELECT * FROM source", testTables.propertiesForCreateTableSQL(
+        ImmutableMap.of(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString()))));
+
+    // check table can be read back correctly
+    records.sort(Comparator.comparingLong(record -> (Long) record.get(0)));
+    HiveIcebergTestUtils.validateDataWithSQL(shell, "default.target", records, "id");
+
+    // check HMS table has been created correctly (no partition cols, props pushed down)
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "target");
+    Assert.assertEquals(8, hmsTable.getSd().getColsSize());
+    Assert.assertTrue(hmsTable.getPartitionKeys().isEmpty());
+    Assert.assertEquals(fileFormat.toString(), hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT));
+
+    // check Iceberg table has correct partition spec
+    Table table = testTables.loadTable(TableIdentifier.of("default", "target"));
+    PartitionSpec spec = PartitionSpec.builderFor(schema)
+        .year("year_field")
+        .month("month_field")
+        .day("day_field")
+        .hour("hour_field")
+        .truncate("truncate_field", 2)
+        .bucket("bucket_field", 2)
+        .identity("identity_field")
+        .build();
+    Assert.assertEquals(PartitionSpecParser.toJson(spec), PartitionSpecParser.toJson(table.spec()));
   }
 
   @Test

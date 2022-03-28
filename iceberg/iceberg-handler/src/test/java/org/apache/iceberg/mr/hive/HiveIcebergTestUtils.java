@@ -31,6 +31,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -299,12 +300,14 @@ public class HiveIcebergTestUtils {
       Assert.assertEquals(record.size(), row.length);
       for (int j = 0; j < record.size(); ++j) {
         Object field = record.get(j);
-        if (field instanceof LocalDateTime) {
+        if (field == null) {
+          Assert.assertNull(row[j]);
+        } else if (field instanceof LocalDateTime) {
           Assert.assertEquals(((LocalDateTime) field).toInstant(ZoneOffset.UTC).toEpochMilli(),
               TimestampUtils.stringToTimestamp((String) row[j]).toEpochMilli());
         } else if (field instanceof OffsetDateTime) {
           Assert.assertEquals(((OffsetDateTime) field).toInstant().toEpochMilli(),
-              TimestampTZUtil.parse((String) row[j]).toEpochMilli());
+              TimestampTZUtil.parse((String) row[j], ZoneId.systemDefault()).toEpochMilli());
         } else {
           Assert.assertEquals(field.toString(), row[j].toString());
         }
