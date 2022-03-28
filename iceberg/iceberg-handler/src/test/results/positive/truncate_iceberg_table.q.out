@@ -353,8 +353,8 @@ POSTHOOK: query: describe formatted test_truncate
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_truncate
 # col_name            	data_type           	comment             
-id                  	int                 	from deserializer   
-value               	string              	from deserializer   
+id                  	int                 	                    
+value               	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
