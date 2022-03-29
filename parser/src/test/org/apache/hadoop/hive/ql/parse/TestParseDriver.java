@@ -272,6 +272,7 @@ public class TestParseDriver {
     }
   }
 
+  @org.junit.Ignore("HIVE-26083")
   @Test(timeout = 10000)
   public void testExoticSJSSubQuery() throws Exception {
     ExoticQueryBuilder eqb = new ExoticQueryBuilder();
