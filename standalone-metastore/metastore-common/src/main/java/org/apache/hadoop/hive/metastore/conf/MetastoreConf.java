@@ -417,9 +417,13 @@ public class MetastoreConf {
         "hive.compactor.history.retention.succeeded", 3,
         new RangeValidator(0, 100), "Determines how many successful compaction records will be " +
         "retained in compaction history for a given table/partition."),
+    COMPACTOR_HISTORY_RETENTION_REFUSED("metastore.compactor.history.retention.refused",
+        "hive.compactor.history.retention.refused", 3,
+        new RangeValidator(0, 100), "Determines how many refused compaction records will be " +
+        "retained in compaction history for a given table/partition."),
     COMPACTOR_HISTORY_RETENTION_TIMEOUT("metastore.compactor.history.retention.timeout",
             "hive.compactor.history.retention.timeout", 7, TimeUnit.DAYS,
-            "Determines how long failed and not initiated compaction records will be " +
+            "Determines how long failed, not initiated and refused compaction records will be " +
             "retained in compaction history if there is a more recent succeeded compaction on the table/partition."),
     COMPACTOR_INITIATOR_FAILED_THRESHOLD("metastore.compactor.initiator.failed.compacts.threshold",
         "hive.compactor.initiator.failed.compacts.threshold", 2,

@@ -553,11 +553,21 @@ public class TestCompactionTxnHandler {
     txnHandler.markFailed(ci);
   }
 
+  private void addRefusedCompaction(String dbName, String tableName, String partitionName,
+                                           CompactionType type, String errorMessage) throws MetaException {
+    CompactionInfo ci = new CompactionInfo(dbName, tableName, partitionName, type);
+    ci.errorMessage = errorMessage;
+    ci.id = 0;
+    txnHandler.markRefused(ci);
+  }
+
+
   @Test
   public void testPurgeCompactionHistory() throws Exception {
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED, 2);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE, 2);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED, 2);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_REFUSED, 2);
     txnHandler.setConf(conf);
 
     String dbName = "default";
@@ -585,13 +595,18 @@ public class TestCompactionTxnHandler {
     addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
     addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
 
-    countCompactionsInHistory(dbName, tableName, part1, 3, 3, 3);
-    countCompactionsInHistory(dbName, tableName, part2, 0, 4, 0);
+    // 3 refused on p=1
+    addRefusedCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addRefusedCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addRefusedCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+
+    countCompactionsInHistory(dbName, tableName, part1, 3, 3, 3, 3);
+    countCompactionsInHistory(dbName, tableName, part2, 0, 4, 0, 0);
 
     txnHandler.purgeCompactionHistory();
 
-    countCompactionsInHistory(dbName, tableName, part1, 2, 2, 2);
-    countCompactionsInHistory(dbName, tableName, part2, 0, 2, 0);
+    countCompactionsInHistory(dbName, tableName, part1, 2, 2, 2, 2);
+    countCompactionsInHistory(dbName, tableName, part2, 0, 2, 0, 0);
   }
 
   @Test
@@ -599,6 +614,7 @@ public class TestCompactionTxnHandler {
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED, 2);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE, 2);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED, 2);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_REFUSED, 2);
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_TIMEOUT, 1, TimeUnit.MILLISECONDS);
     txnHandler.setConf(conf);
 
@@ -608,44 +624,48 @@ public class TestCompactionTxnHandler {
 
     addFailedCompaction(dbName, tableName, CompactionType.MINOR, part1, "message");
     addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MINOR, "message");
+    addRefusedCompaction(dbName, tableName, part1, CompactionType.MINOR, "message");
     addSucceededCompaction(dbName, tableName, part1, CompactionType.MINOR);
     addFailedCompaction(dbName, tableName, CompactionType.MINOR, part1, "message");
     addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MINOR, "message");
+    addRefusedCompaction(dbName, tableName, part1, CompactionType.MINOR, "message");
 
-    countCompactionsInHistory(dbName, tableName, part1, 1, 2, 2);
+    countCompactionsInHistory(dbName, tableName, part1, 1, 2, 2, 2);
 
     txnHandler.purgeCompactionHistory();
 
-    // the oldest 2 compactions should be cleaned
-    countCompactionsInHistory(dbName, tableName, part1, 1, 1, 1);
+    // the oldest 3 compactions should be cleaned
+    countCompactionsInHistory(dbName, tableName, part1, 1, 1, 1, 1);
 
     addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
 
     txnHandler.purgeCompactionHistory();
 
     // only 2 succeeded compactions should be left
-    countCompactionsInHistory(dbName, tableName, part1, 2, 0, 0);
+    countCompactionsInHistory(dbName, tableName, part1, 2, 0, 0, 0);
 
     addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
     addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addRefusedCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
     addSucceededCompaction(dbName, tableName, part1, CompactionType.MINOR);
 
     // succeeded minor compaction shouldn't cause cleanup, but the oldest succeeded will be cleaned up
     txnHandler.purgeCompactionHistory();
-    countCompactionsInHistory(dbName, tableName, part1, 2, 1, 1);
+    countCompactionsInHistory(dbName, tableName, part1, 2, 1, 1, 1);
 
     addFailedCompaction(dbName, tableName, CompactionType.MAJOR, part1, "message");
     addDidNotInitiateCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
+    addRefusedCompaction(dbName, tableName, part1, CompactionType.MAJOR, "message");
     addSucceededCompaction(dbName, tableName, part1, CompactionType.MAJOR);
 
     // only 2 succeeded compactions should be left
     txnHandler.purgeCompactionHistory();
-    countCompactionsInHistory(dbName, tableName, part1, 2, 0, 0);
+    countCompactionsInHistory(dbName, tableName, part1, 2, 0, 0, 0);
     checkShowCompaction(dbName, tableName, part1, "succeeded", null);
   }
 
   private void countCompactionsInHistory(String dbName, String tableName, String partition,
-          int expectedSucceeded, int expectedFailed, int expectedDidNotInitiate)
+          int expectedSucceeded, int expectedFailed, int expectedDidNotInitiate, int expextedRefused)
           throws MetaException {
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> filteredToPartition = resp.getCompacts().stream()
@@ -655,6 +675,7 @@ public class TestCompactionTxnHandler {
     assertEquals(expectedSucceeded, filteredToPartition.stream().filter(e -> e.getState().equals(TxnStore.SUCCEEDED_RESPONSE)).count());
     assertEquals(expectedFailed, filteredToPartition.stream().filter(e -> e.getState().equals(TxnStore.FAILED_RESPONSE)).count());
     assertEquals(expectedDidNotInitiate, filteredToPartition.stream().filter(e -> e.getState().equals(TxnStore.DID_NOT_INITIATE_RESPONSE)).count());
+    assertEquals(expextedRefused, filteredToPartition.stream().filter(e -> e.getState().equals(TxnStore.REFUSED_RESPONSE)).count());
   }
 
   @Test

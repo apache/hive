@@ -1091,16 +1091,18 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   private static class RetentionCounters {
-    int didNotInitiateRetention = 0;
-    int failedRetention = 0;
-    int succeededRetention = 0;
+    int didNotInitiateRetention;
+    int failedRetention;
+    int succeededRetention;
+    int refusedRetention;
     boolean hasSucceededMajorCompaction = false;
     boolean hasSucceededMinorCompaction = false;
 
-    RetentionCounters(int didNotInitiateRetention, int failedRetention, int succeededRetention) {
+    RetentionCounters(int didNotInitiateRetention, int failedRetention, int succeededRetention, int refusedRetention) {
       this.didNotInitiateRetention = didNotInitiateRetention;
       this.failedRetention = failedRetention;
       this.succeededRetention = succeededRetention;
+      this.refusedRetention = refusedRetention;
     }
   }
 
@@ -1124,6 +1126,11 @@ class CompactionTxnHandler extends TxnHandler {
           rc.hasSucceededMajorCompaction = true;
         } else {
           rc.hasSucceededMinorCompaction = true;
+        }
+        break;
+      case REFUSED_STATE:
+        if(--rc.refusedRetention < 0 || timedOut(ci, rc, timeoutThreshold)) {
+          deleteSet.add(ci.id);
         }
         break;
       default:
@@ -1165,6 +1172,7 @@ class CompactionTxnHandler extends TxnHandler {
     int didNotInitiateRetention = MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE);
     int failedRetention = getFailedCompactionRetention();
     int succeededRetention = MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED);
+    int refusedRetention = MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_REFUSED);
     try {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
@@ -1188,7 +1196,7 @@ class CompactionTxnHandler extends TxnHandler {
           ci.type = TxnHandler.dbCompactionType2ThriftType(rs.getString(7).charAt(0));
           if(!ci.getFullPartitionName().equals(lastCompactedEntity)) {
             lastCompactedEntity = ci.getFullPartitionName();
-            rc = new RetentionCounters(didNotInitiateRetention, failedRetention, succeededRetention);
+            rc = new RetentionCounters(didNotInitiateRetention, failedRetention, succeededRetention, refusedRetention);
           }
           checkForDeletion(deleteSet, ci, rc, timeoutThreshold);
         }
