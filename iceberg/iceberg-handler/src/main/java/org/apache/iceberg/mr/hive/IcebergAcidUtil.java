@@ -21,12 +21,15 @@ package org.apache.iceberg.mr.hive;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.StructProjection;
 
 public class IcebergAcidUtil {
 
@@ -74,5 +77,26 @@ public class IcebergAcidUtil {
     PositionDelete<Record> positionDelete = PositionDelete.create();
     positionDelete.set(filePath, filePosition, rowData);
     return positionDelete;
+  }
+
+  public static PositionDeleteInfo parsePositionDeleteInfoFromRecord(GenericRecord rec) {
+    int specId = rec.get(rec.size() - 4, Integer.class);
+    StructProjection partitionStruct = rec.get(rec.size() - 3, StructProjection.class);
+    String filePath = rec.get(rec.size() - 2, String.class);
+    long filePos = rec.get(rec.size() - 1, Long.class);
+
+    return new PositionDeleteInfo(specId, computeHash(partitionStruct), filePath, filePos);
+  }
+
+  private static long computeHash(StructProjection struct) {
+    long partHash = -1;
+    if (struct != null) {
+      Object[] partFields = new Object[struct.size()];
+      for (int i = 0; i < struct.size(); ++i) {
+        partFields[i] = struct.get(i, Object.class);
+      }
+      partHash = Objects.hash(partFields);
+    }
+    return partHash;
   }
 }

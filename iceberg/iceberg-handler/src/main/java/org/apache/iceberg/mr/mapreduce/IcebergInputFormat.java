@@ -19,19 +19,17 @@
 
 package org.apache.iceberg.mr.mapreduce;
 
-import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
-import org.apache.hadoop.hive.ql.io.IOContext;
+import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -78,6 +76,7 @@ import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
+import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -87,7 +86,6 @@ import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.PartitionUtil;
 import org.apache.iceberg.util.SerializationUtil;
-import org.apache.iceberg.util.StructProjection;
 
 /**
  * Generic Mrv2 InputFormat API for Iceberg.
@@ -284,27 +282,10 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     private void collectPositionDeleteInfo() {
       Configuration conf = context.getConfiguration();
+      // TODO: implement DELETE for vectorized reads too
       if (current instanceof GenericRecord) {
-        GenericRecord rec = (GenericRecord) current;
-
-        int specId = rec.get(rec.size() - 4, Integer.class);
-        String filePath = rec.get(rec.size() - 2, String.class);
-        long filePos = rec.get(rec.size() - 1, Long.class);
-
-        // compute a hash value from the partition struct
-        long partHash = -1;
-        StructProjection proj = rec.get(rec.size() - 3, StructProjection.class);
-        if (proj != null) {
-          Object[] partFields = new Object[proj.size()];
-          for (int i = 0; i < proj.size(); ++i) {
-            partFields[i] = proj.get(i, Object.class);
-          }
-          partHash = Objects.hash(partFields);
-        }
-
-        IOContext.PositionDeleteInfo info = new IOContext.PositionDeleteInfo(specId, partHash, filePath, filePos);
-        Gson gson = new Gson();
-        conf.set(IOContext.PositionDeleteInfo.CONF_KEY, gson.toJson(info));
+        PositionDeleteInfo pdi = IcebergAcidUtil.parsePositionDeleteInfoFromRecord((GenericRecord) current);
+        PositionDeleteInfo.serializeIntoConf(conf, pdi);
       }
     }
 
@@ -523,6 +504,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       readSchema = caseSensitive ? table.schema().select(selectedColumns) :
           table.schema().caseInsensitiveSelect(selectedColumns);
 
+      // for DELETE queries, append additional metadata columns onto the read schema
       if (HiveIcebergStorageHandler.isDelete(conf)) {
         List<Types.NestedField> cols = new ArrayList<>(table.schema().columns());
         cols.add(MetadataColumns.SPEC_ID);

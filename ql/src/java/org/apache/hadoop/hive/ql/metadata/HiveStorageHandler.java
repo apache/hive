@@ -274,7 +274,7 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer} rewrites DELETE queries into INSERT
+   * {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer} rewrites DELETE/UPDATE queries into INSERT
    * queries. As part of that, it writes out special delete files using virtual columns. For standard Hive ACID
    * tables for example, it writes out the ROW__ID virtual column. The storage handler should define which virtual
    * columns it needs to write out for its own delete files in these rewritten queries.
