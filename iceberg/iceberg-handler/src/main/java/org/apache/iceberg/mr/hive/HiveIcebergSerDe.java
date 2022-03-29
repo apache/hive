@@ -162,13 +162,19 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
   private void createTableForCTAS(Configuration configuration, Properties serDeProperties) {
     serDeProperties.setProperty(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(tableSchema));
-    // build partition spec, if any
-    if (!getPartitionColumnNames().isEmpty()) {
+
+    // Spec for the PARTITIONED BY SPEC queries (partition stored in the SessionState)
+    PartitionSpec spec = IcebergTableUtil.spec(configuration, tableSchema);
+    if (spec == null && !getPartitionColumnNames().isEmpty()) {
+      // Spec for the PARTITIONED BY queries (partitioned columns created by the compiler)
       List<FieldSchema> partitionFields = IntStream.range(0, getPartitionColumnNames().size())
           .mapToObj(i ->
                new FieldSchema(getPartitionColumnNames().get(i), getPartitionColumnTypes().get(i).getTypeName(), null))
           .collect(Collectors.toList());
-      PartitionSpec spec = HiveSchemaUtil.spec(tableSchema, partitionFields);
+      spec = HiveSchemaUtil.spec(tableSchema, partitionFields);
+    }
+
+    if (spec != null) {
       serDeProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
     }
 

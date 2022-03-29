@@ -482,7 +482,9 @@ abstract class TestTables {
 
   private String getStringValueForInsert(Object value, Type type) {
     String template = "\'%s\'";
-    if (type.equals(Types.TimestampType.withoutZone())) {
+    if (value == null) {
+      return "NULL";
+    } else if (type.equals(Types.TimestampType.withoutZone())) {
       return String.format(template, Timestamp.valueOf((LocalDateTime) value).toString());
     } else if (type.equals(Types.TimestampType.withZone())) {
       return String.format(template, Timestamp.from(((OffsetDateTime) value).toInstant()).toString());
