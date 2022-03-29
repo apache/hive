@@ -171,8 +171,6 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         .filter(file -> file.recordCount() == 3)
         .findAny()
         .orElseThrow(() -> new RuntimeException("Did not find the desired data file in the test table"));
-    PositionDelete<Record> posDel = PositionDelete.create();
-    PositionDelete<Record> posDel2 = PositionDelete.create();
     List<PositionDelete<Record>> deletes = ImmutableList.of(
         positionDelete(dataFile.path(), 0L, null),
         positionDelete(dataFile.path(), 2L, null)
@@ -213,8 +211,6 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         .orElseThrow(() -> new RuntimeException("Did not find the desired data file in the test table"));
     List<Record> rowsToDel = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .add(0L, "Laura", "Yellow").add(0L, "Blake", "Blue").build();
-    PositionDelete<Record> posDel = PositionDelete.create();
-    PositionDelete<Record> posDel2 = PositionDelete.create();
     List<PositionDelete<Record>> deletes = ImmutableList.of(
         positionDelete(dataFile.path(), 0L, rowsToDel.get(0)),
         positionDelete(dataFile.path(), 2L, rowsToDel.get(1))
