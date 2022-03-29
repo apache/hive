@@ -79,7 +79,7 @@ public class HiveIcebergDeleteWriter extends ClusteredPositionDeleteWriter<Recor
   @Override
   public void write(Writable row) throws IOException {
     Record rec = ((Container<Record>) row).get();
-    PositionDelete<Record> positionDelete = IcebergAcidUtil.buildPositionDelete(spec.schema(), rec);
+    PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(spec.schema(), rec);
     PartitionKey partitionKey = new PartitionKey(spec, spec.schema());
     partitionKey.partition(wrapper.wrap(positionDelete.row()));
     super.write(positionDelete, spec, partitionKey);

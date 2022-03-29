@@ -21,11 +21,12 @@ package org.apache.iceberg.mr.mapreduce;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
@@ -44,7 +45,7 @@ import org.apache.iceberg.DataTableScan;
 import org.apache.iceberg.DataTask;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataColumns;
-import org.apache.iceberg.Partitioning;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
@@ -83,7 +84,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.TypeUtil;
-import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.PartitionUtil;
 import org.apache.iceberg.util.SerializationUtil;
 
@@ -266,8 +266,11 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         if (currentIterator.hasNext()) {
           current = currentIterator.next();
           if (HiveIcebergStorageHandler.isDelete(context.getConfiguration())) {
-            // construct the position delete information and serialize it into the job conf
-            collectPositionDeleteInfo();
+            // TODO: implement DELETE for vectorized reads too
+            if (current instanceof GenericRecord) {
+              PositionDeleteInfo pdi = IcebergAcidUtil.parsePositionDeleteInfoFromRecord((GenericRecord) current);
+              PositionDeleteInfo.serializeIntoConf(context.getConfiguration(), pdi);
+            }
           }
           return true;
         } else if (tasks.hasNext()) {
@@ -277,15 +280,6 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           currentIterator.close();
           return false;
         }
-      }
-    }
-
-    private void collectPositionDeleteInfo() {
-      Configuration conf = context.getConfiguration();
-      // TODO: implement DELETE for vectorized reads too
-      if (current instanceof GenericRecord) {
-        PositionDeleteInfo pdi = IcebergAcidUtil.parsePositionDeleteInfoFromRecord((GenericRecord) current);
-        PositionDeleteInfo.serializeIntoConf(conf, pdi);
       }
     }
 
@@ -481,11 +475,14 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
 
     private Map<Integer, ?> constantsMap(FileScanTask task, BiFunction<Type, Object, Object> converter) {
-      if (expectedSchema.findField(MetadataColumns.PARTITION_COLUMN_ID) != null) {
-        Types.StructType partitionType = Partitioning.partitionType(table);
-        return PartitionUtil.constantsMap(task, partitionType, converter);
-      } else {
+      PartitionSpec spec = task.spec();
+      Set<Integer> idColumns = spec.identitySourceIds();
+      Schema partitionSchema = TypeUtil.select(expectedSchema, idColumns);
+      boolean projectsIdentityPartitionColumns = !partitionSchema.columns().isEmpty();
+      if (projectsIdentityPartitionColumns) {
         return PartitionUtil.constantsMap(task, converter);
+      } else {
+        return Collections.emptyMap();
       }
     }
 
@@ -504,14 +501,9 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       readSchema = caseSensitive ? table.schema().select(selectedColumns) :
           table.schema().caseInsensitiveSelect(selectedColumns);
 
-      // for DELETE queries, append additional metadata columns onto the read schema
+      // for DELETE queries, add additional metadata columns into the read schema
       if (HiveIcebergStorageHandler.isDelete(conf)) {
-        List<Types.NestedField> cols = new ArrayList<>(table.schema().columns());
-        cols.add(MetadataColumns.SPEC_ID);
-        cols.add(MetadataColumns.metadataColumn(table, MetadataColumns.PARTITION_COLUMN_NAME));
-        cols.add(MetadataColumns.FILE_PATH);
-        cols.add(MetadataColumns.ROW_POSITION);
-        readSchema = new Schema(cols);
+        readSchema = IcebergAcidUtil.createFileReadSchemaForDelete(readSchema.columns(), table);
       }
 
       return readSchema;
