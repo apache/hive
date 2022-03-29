@@ -1,3 +1,5 @@
+--! qt:disabled:Disabled in HIVE-
+
 set fs.defaultFS=${hiveconf:hbase.rootdir};
 
 --! qt:dataset:src_hbase

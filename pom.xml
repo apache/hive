@@ -192,7 +192,7 @@
     <parquet.version>1.11.1</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
-    <protobuf.version>2.5.0</protobuf.version>
+    <protobuf.version>3.16.1</protobuf.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
