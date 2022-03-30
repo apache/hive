@@ -28,9 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -2208,5 +2206,37 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     hiveConf.setVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT, "none");
     qc.runCompactionQueries(hiveConf, null, sdMock, null, ciMock, null, emptyQueries, emptyQueries, emptyQueries);
     Assert.assertEquals("none", hiveConf.getVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT));
+  }
+
+  @Test
+  public void testIfEmptyBaseIsPresentAfterCompaction() throws Exception {
+    String dbName = "default";
+    String tblName = "empty_table";
+
+    // Setup of LOAD INPATH scenario.
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("create table " + tblName + " (a string) stored as orc " +
+            "TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('a')", driver);
+    executeStatementOnDriver("delete from " + tblName + " where a='a'", driver);
+
+    // Run a query-based MAJOR compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true);
+    // Clean up resources
+    CompactorTestUtil.runCleaner(conf);
+
+    IMetaStoreClient hmsClient = new HiveMetaStoreClient(conf);
+    Table table = hmsClient.getTable(dbName, tblName);
+    FileSystem fs = FileSystem.get(conf);
+
+    FileStatus[] fileStatuses = fs.listStatus(new Path(table.getSd().getLocation()));
+    // There should be only dir
+    Assert.assertEquals(1, fileStatuses.length);
+    Path basePath = fileStatuses[0].getPath();
+    // And it's a base
+    Assert.assertTrue(AcidUtils.baseFileFilter.accept(basePath));
+    RemoteIterator<LocatedFileStatus> filesInBase = fs.listFiles(basePath, true);
+    // It has no files in it
+    Assert.assertFalse(filesInBase.hasNext());
   }
 }

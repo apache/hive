@@ -28,16 +28,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -1478,6 +1469,40 @@ public class AcidUtils {
       validTxnList.readFromString(s);
     }
     return validTxnList;
+  }
+
+
+  /**
+   * In case of the cleaner, we don't need to go into file level, it is enough to collect base/delta/deletedelta directories.
+   *
+   * @param fs the filesystem used for the directory lookup
+   * @param path the path of the table or partition needs to be cleaned
+   * @return The listed directory snapshot needs to be checked for cleaning
+   * @throws IOException on filesystem errors
+   */
+  public static Map<Path, HdfsDirSnapshot> getHdfsDirSnapshotsForCleaner(final FileSystem fs, final Path path)
+          throws IOException {
+    Map<Path, HdfsDirSnapshot> dirToSnapshots = new HashMap<>();
+    // depth first search
+    Deque<RemoteIterator<FileStatus>> stack = new ArrayDeque<>();
+    stack.push(fs.listStatusIterator(path));
+    while (!stack.isEmpty()) {
+      RemoteIterator<FileStatus> itr = stack.pop();
+      while (itr.hasNext()) {
+        FileStatus fStatus = itr.next();
+        Path fPath = fStatus.getPath();
+        if (acidHiddenFileFilter.accept(fPath)) {
+          if (deltaFileFilter.accept(fPath) ||
+                  baseFileFilter.accept(fPath) ||
+                  deleteEventDeltaDirFilter.accept(fPath)) {
+            dirToSnapshots.put(fPath, new HdfsDirSnapshotImpl(fPath));
+          } else {
+            stack.push(fs.listStatusIterator(fPath));
+          }
+        }
+      }
+    }
+    return dirToSnapshots;
   }
 
   public static Map<Path, HdfsDirSnapshot> getHdfsDirSnapshots(final FileSystem fs, final Path path)
