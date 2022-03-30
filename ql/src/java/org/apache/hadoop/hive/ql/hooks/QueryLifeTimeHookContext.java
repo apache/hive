@@ -54,6 +54,12 @@ public interface QueryLifeTimeHookContext {
    */
   void setCommand(String command);
 
+  /**
+   * Get the id of the query/command.
+   *
+   * @return the id of the query/command, never null.
+   */
+  String getQueryId();
 
   /**
    * Get the hook context for query execution.

@@ -20,12 +20,17 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 
+import java.util.Objects;
 
 public class QueryLifeTimeHookContextImpl implements QueryLifeTimeHookContext {
 
   private HiveConf conf;
   private String command;
+  private String queryId;
   private HookContext hc;
+
+  private QueryLifeTimeHookContextImpl(){
+  }
 
   @Override
   public HiveConf getHiveConf() {
@@ -40,6 +45,11 @@ public class QueryLifeTimeHookContextImpl implements QueryLifeTimeHookContext {
   @Override
   public String getCommand() {
     return command;
+  }
+
+  @Override
+  public String getQueryId() {
+    return queryId;
   }
 
   @Override
@@ -78,11 +88,12 @@ public class QueryLifeTimeHookContextImpl implements QueryLifeTimeHookContext {
       return this;
     }
 
-    public QueryLifeTimeHookContextImpl build() {
+    public QueryLifeTimeHookContextImpl build(String queryId) {
       QueryLifeTimeHookContextImpl queryLifeTimeHookContext = new QueryLifeTimeHookContextImpl();
       queryLifeTimeHookContext.setHiveConf(this.conf);
       queryLifeTimeHookContext.setCommand(this.command);
       queryLifeTimeHookContext.setHookContext(this.hc);
+      queryLifeTimeHookContext.queryId = Objects.requireNonNull(queryId);
       return queryLifeTimeHookContext;
     }
   }

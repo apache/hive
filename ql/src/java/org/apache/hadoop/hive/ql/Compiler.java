@@ -164,14 +164,14 @@ public class Compiler {
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.PARSE);
 
     // Trigger query hook before compilation
-    driverContext.getHookRunner().runBeforeParseHook(context.getCmd());
+    driverContext.getHookRunner().runBeforeParseHook(context);
 
     boolean success = false;
     try {
       tree = ParseUtils.parse(context.getCmd(), context);
       success = true;
     } finally {
-      driverContext.getHookRunner().runAfterParseHook(context.getCmd(), !success);
+      driverContext.getHookRunner().runAfterParseHook(context, !success);
     }
     perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.PARSE);
   }
@@ -179,7 +179,7 @@ public class Compiler {
   private BaseSemanticAnalyzer analyze() throws Exception {
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
 
-    driverContext.getHookRunner().runBeforeCompileHook(context.getCmd());
+    driverContext.getHookRunner().runBeforeCompileHook(context);
 
     // clear CurrentFunctionsInUse set, to capture new set of functions
     // that SemanticAnalyzer finds are in use

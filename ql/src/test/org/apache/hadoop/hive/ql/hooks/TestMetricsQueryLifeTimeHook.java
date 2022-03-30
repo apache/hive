@@ -53,7 +53,7 @@ public class TestMetricsQueryLifeTimeHook {
     metricRegistry = ((CodahaleMetrics) MetricsFactory.getInstance()).getMetricRegistry();
 
     hook = new MetricsQueryLifeTimeHook();
-    ctx = new QueryLifeTimeHookContextImpl();
+    ctx = new QueryLifeTimeHookContextImpl.Builder().build("fake-query-id");
   }
 
   @Test

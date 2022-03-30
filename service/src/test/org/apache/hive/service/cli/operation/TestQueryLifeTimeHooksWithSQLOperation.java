@@ -31,6 +31,9 @@ import org.apache.hive.service.cli.session.HiveSession;
 
 import org.junit.Test;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -69,6 +72,7 @@ public class TestQueryLifeTimeHooksWithSQLOperation {
     public void beforeParse(QueryLifeTimeHookContext ctx) {
       assertNotNull(ctx);
       assertEquals(ctx.getCommand().trim(), QUERY);
+      assertQueryId(ctx.getQueryId());
     }
 
     @Override
@@ -76,12 +80,14 @@ public class TestQueryLifeTimeHooksWithSQLOperation {
       assertNotNull(ctx);
       assertEquals(ctx.getCommand().trim(), QUERY);
       assertFalse(hasError);
+      assertQueryId(ctx.getQueryId());
     }
 
     @Override
     public void beforeCompile(QueryLifeTimeHookContext ctx) {
       assertNotNull(ctx);
       assertEquals(ctx.getCommand().trim(), QUERY);
+      assertQueryId(ctx.getQueryId());
     }
 
     @Override
@@ -89,6 +95,7 @@ public class TestQueryLifeTimeHooksWithSQLOperation {
       assertNotNull(ctx);
       assertEquals(ctx.getCommand().trim(), QUERY);
       assertFalse(hasError);
+      assertQueryId(ctx.getQueryId());
     }
 
     @Override
@@ -98,6 +105,7 @@ public class TestQueryLifeTimeHooksWithSQLOperation {
       assertNotNull(ctx.getHookContext());
       assertNotNull(ctx.getHookContext().getQueryInfo());
       assertNotNull(ctx.getHookContext().getQueryInfo().getQueryDisplay());
+      assertQueryId(ctx.getQueryId());
     }
 
     @Override
@@ -110,6 +118,45 @@ public class TestQueryLifeTimeHooksWithSQLOperation {
       assertNull(ctx.getHookContext().getException());
       assertNotNull(ctx.getHookContext().getQueryInfo());
       assertNotNull(ctx.getHookContext().getQueryInfo().getQueryDisplay());
+      assertQueryId(ctx.getQueryId());
     }
+  }
+
+  /**
+   * Asserts that the specified query id exists and has the expected prefix and size.
+   *
+   * <p>
+   * A query id looks like below:
+   * <pre>
+   *   username_20220330093338_dab90f30-5e79-463d-8359-0d2fff57effa
+   * </pre>
+   * and we can accurately predict how the prefix should look like. T
+   * </p>
+   *
+   * @param actualQueryId the query id to verify
+   */
+  private static void assertQueryId(String actualQueryId) {
+    assertNotNull(actualQueryId);
+    String expectedIdPrefix = makeQueryIdStablePrefix();
+    String actualIdPrefix = actualQueryId.substring(0, expectedIdPrefix.length());
+    assertEquals(expectedIdPrefix, actualIdPrefix);
+    assertEquals(expectedIdPrefix.length() + 41, actualQueryId.length());
+  }
+
+  /**
+   * Makes a query id prefix that is stable for an hour. The prefix changes every hour but this is enough to guarantee
+   * that there will not be any flakiness when used in these tests.
+   *
+   * @return a query id prefix that remains stable for an hour.
+   */
+  private static String makeQueryIdStablePrefix() {
+    GregorianCalendar gc = new GregorianCalendar();
+    String userid = System.getProperty("user.name");
+
+    return userid + "_" + String.format("%1$4d%2$02d%3$02d%4$02d",
+        gc.get(Calendar.YEAR),
+        gc.get(Calendar.MONTH) + 1,
+        gc.get(Calendar.DAY_OF_MONTH),
+        gc.get(Calendar.HOUR_OF_DAY));
   }
 }
