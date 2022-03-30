@@ -4791,11 +4791,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // We examine the order by in this query block and adds in column needed
         // by order by in select list.
         //
-        // If DISTINCT is present, it is not possible to ORDER BY unselected
-        // columns, and in fact adding all columns would change the behavior of
-        // DISTINCT, so we bypass this logic.
         if ((obAST != null || sbAST != null)
-            && selExprList.getToken().getType() != HiveParser.TOK_SELECTDI
+            && !(selForWindow != null && selExprList.getToken().getType() == HiveParser.TOK_SELECTDI)
             && !isAllColRefRewrite) {
           // 1. OB Expr sanity test
           // in strict mode, in the presence of order by, limit must be
@@ -4807,7 +4804,41 @@ public class CalcitePlanner extends SemanticAnalyzer {
               throw new SemanticException(SemanticAnalyzer.generateErrorMessage(obAST, error));
             }
           }
+          List<RexNode> originalInputRefs = Lists.transform(srcRel.getRowType().getFieldList(),
+              new Function<RelDataTypeField, RexNode>() {
+                @Override
+                public RexNode apply(RelDataTypeField input) {
+                  return new RexInputRef(input.getIndex(), input.getType());
+                }
+              });
+
+          /**
+           * In the output row resolver columns are referenced by
+           * - their alias if AS <alias> present in select expression
+           * - or column name if it is a table column reference
+           * - or a generated name in case of expression
+           * See {@link #getColAlias}
+           * Append the columns from the input row resolver to enable referencing projected columns
+           * from order by clause with both alias and the expression:
+           * - no distinct: input RR contains the columns of the source table (TS) or tables (Join)
+           * - distinct: input RR belongs to an Aggregate which contains only the select expressions AST string
+           * representations
+          */
           originalRR = appendInputColumns(srcRel, columnList, outputRR, inputRR);
+          for (int i = 0; i < inputRR.getColumnInfos().size(); i++) {
+            ColumnInfo colInfo = new ColumnInfo(inputRR.getColumnInfos().get(i));
+            String internalName = SemanticAnalyzer.getColumnInternalName(outputRR.getColumnInfos()
+                .size() + i);
+            colInfo.setInternalName(internalName);
+            // if there is any confict, then we do not generate it in the new select
+            // otherwise, we add it into the calciteColLst and generate the new select
+            if (!outputRR.putWithCheck(colInfo.getTabAlias(), colInfo.getAlias(), internalName,
+                colInfo)) {
+              LOG.trace("Column already present in RR. skipping.");
+            } else {
+              columnList.add(originalInputRefs.get(i));
+            }
+          }
           outputRel = genSelectRelNode(columnList, outputRR, srcRel);
           // outputRel is the generated augmented select with extra unselected
           // columns, and originalRR is the original generated select

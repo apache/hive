@@ -89,7 +89,7 @@ public class RowResolver implements Serializable{
    * exactly matches the string rendering of the given ASTNode.
    */
   public ColumnInfo getExpression(ASTNode node) throws SemanticException {
-    return get("", node.toStringTree());
+    return get("", node.toStringTree().toLowerCase());
   }
 
   /**
