@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
@@ -45,7 +47,7 @@ import org.apache.iceberg.DataTableScan;
 import org.apache.iceberg.DataTask;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataColumns;
-import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
@@ -81,9 +83,9 @@ import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
-import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.TypeUtil;
+import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.PartitionUtil;
 import org.apache.iceberg.util.SerializationUtil;
 
@@ -439,8 +441,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     private CloseableIterable<T> newOrcIterable(InputFile inputFile, FileScanTask task, Schema readSchema) {
       Map<Integer, ?> idToConstant = constantsMap(task, IdentityPartitionConverters::convertConstant);
-      Schema readSchemaWithoutConstantAndMetadataFields = TypeUtil.selectNot(readSchema,
-          Sets.union(idToConstant.keySet(), MetadataColumns.metadataFieldIds()));
+      Set<Integer> fieldIdsToExclude = getFieldIdsToExclude(readSchema, idToConstant);
+      Schema readSchemaWithoutConstantAndMetadataFields = TypeUtil.selectNot(readSchema, fieldIdsToExclude);
 
       CloseableIterable<T> orcIterator = null;
       // ORC does not support reuse containers yet
@@ -475,14 +477,11 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
 
     private Map<Integer, ?> constantsMap(FileScanTask task, BiFunction<Type, Object, Object> converter) {
-      PartitionSpec spec = task.spec();
-      Set<Integer> idColumns = spec.identitySourceIds();
-      Schema partitionSchema = TypeUtil.select(expectedSchema, idColumns);
-      boolean projectsIdentityPartitionColumns = !partitionSchema.columns().isEmpty();
-      if (projectsIdentityPartitionColumns) {
-        return PartitionUtil.constantsMap(task, converter);
+      if (expectedSchema.findField(MetadataColumns.PARTITION_COLUMN_ID) != null) {
+        Types.StructType partitionType = Partitioning.partitionType(table);
+        return PartitionUtil.constantsMap(task, partitionType, converter);
       } else {
-        return Collections.emptyMap();
+        return PartitionUtil.constantsMap(task, converter);
       }
     }
 
@@ -507,6 +506,23 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       }
 
       return readSchema;
+    }
+
+    /**
+     * Collects the field IDs from the idToConstant map, the MetadataColumns, and the nested fields of the
+     * PARTITION_COLUMN_ID struct (if any).
+     */
+    private Set<Integer> getFieldIdsToExclude(Schema readSchema, Map<Integer, ?> idToConstant) {
+      Set<Integer> partitionFields = Optional.ofNullable(readSchema.findField(MetadataColumns.PARTITION_COLUMN_ID))
+          .map(Types.NestedField::type)
+          .map(Type::asStructType)
+          .map(Types.StructType::fields)
+          .map(fields -> fields.stream().map(Types.NestedField::fieldId).collect(Collectors.toSet()))
+          .orElseGet(Collections::emptySet);
+
+      return Stream.of(idToConstant.keySet(), MetadataColumns.metadataFieldIds(), partitionFields)
+          .flatMap(Set::stream)
+          .collect(Collectors.toSet());
     }
   }
 
