@@ -231,7 +231,11 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
       // this path is intermediate data
       if (FileUtils.isPathWithinSubtree(path,hdfsTmpDir) || FileUtils.isPathWithinSubtree(path,localTmpDir)) {
         FileSystem fs = path.getFileSystem(conf);
-        long fileSize = fs.getContentSummary(path).getLength();
+//        long fileSize = fs.getContentSummary(path).getLength();
+        long fileSize = 0;
+        if (fs.exists(path)) {
+          fileSize = fs.getContentSummary(path).getLength();
+        }
         for (String alias : pathToAliases.get(path)) {
           Long length = aliasToKnownSize.get(alias);
           if (length == null) {
