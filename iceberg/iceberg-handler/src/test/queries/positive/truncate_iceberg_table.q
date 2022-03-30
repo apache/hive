@@ -31,4 +31,13 @@ select count(*) from test_truncate;
 select * from test_truncate;
 describe formatted test_truncate;
 
+insert into test_truncate values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five');
+alter table test_truncate set tblproperties('external.table.purge'='false');
+
+truncate test_truncate;
+
+select count(*) from test_truncate;
+select * from test_truncate;
+describe formatted test_truncate;
+
 drop table if exists test_truncate;
