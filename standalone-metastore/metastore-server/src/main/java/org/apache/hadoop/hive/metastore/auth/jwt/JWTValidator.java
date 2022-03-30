@@ -28,6 +28,7 @@ import com.nimbusds.jose.jwk.AsymmetricJWK;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,7 @@ public class JWTValidator {
 
   private final URLBasedJWKSProvider jwksProvider;
 
-  public JWTValidator(MetastoreConf conf) throws IOException, ParseException {
+  public JWTValidator(Configuration conf) throws IOException, ParseException {
     this.jwksProvider = new URLBasedJWKSProvider(conf);
   }
 

@@ -23,7 +23,9 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKMatcher;
 import com.nimbusds.jose.jwk.JWKSelector;
 import com.nimbusds.jose.jwk.JWKSet;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,10 +42,10 @@ import java.util.List;
 public class URLBasedJWKSProvider {
 
   private static final Logger LOG = LoggerFactory.getLogger(URLBasedJWKSProvider.class.getName());
-  private final MetastoreConf conf;
+  private final Configuration conf;
   private List<JWKSet> jwkSets = new ArrayList<>();
 
-  public URLBasedJWKSProvider(MetastoreConf conf) throws IOException, ParseException {
+  public URLBasedJWKSProvider(Configuration conf) throws IOException, ParseException {
     this.conf = conf;
     loadJWKSets();
   }
@@ -53,7 +55,11 @@ public class URLBasedJWKSProvider {
    * https://datatracker.ietf.org/doc/html/rfc7517#appendix-A.
    */
   private void loadJWKSets() throws IOException, ParseException {
-    String jwksURL = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION_JWT_JWKS_URL);
+    String jwksURL = MetastoreConf.getVar(conf, ConfVars.THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL);
+    if (jwksURL == null || jwksURL.isEmpty()) {
+      throw new IOException("Invalid value of property: " +
+          ConfVars.THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL.getHiveName());
+    }
     String[] jwksURLs = jwksURL.split(",");
     for (String urlString : jwksURLs) {
       URL url = new URL(urlString);

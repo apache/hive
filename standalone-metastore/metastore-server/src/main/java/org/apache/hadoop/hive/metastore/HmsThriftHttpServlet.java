@@ -17,14 +17,23 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Enumeration;
 
+import java.util.Optional;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.auth.jwt.JWTValidator;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.pac4j.core.context.JEEContext;
+import org.pac4j.core.credentials.TokenCredentials;
+import org.pac4j.core.credentials.extractor.BearerAuthExtractor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,41 +48,54 @@ public class HmsThriftHttpServlet extends TServlet {
       .getLogger(HmsThriftHttpServlet.class);
 
   private static final String X_USER = MetaStoreUtils.USER_NAME_HTTP_HEADER;
-
   private final boolean isSecurityEnabled;
+  private final boolean jwtAuthEnabled;
+  public static final String AUTHORIZATION = "Authorization";
+  private JWTValidator jwtValidator;
+  private Configuration conf;
 
   public HmsThriftHttpServlet(TProcessor processor,
-      TProtocolFactory inProtocolFactory, TProtocolFactory outProtocolFactory) {
-    super(processor, inProtocolFactory, outProtocolFactory);
-    // This should ideally be reveiving an instance of the Configuration which is used for the check
+      TProtocolFactory protocolFactory, Configuration conf) {
+    super(processor, protocolFactory);
+    this.conf = conf;
     isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
+    if (MetastoreConf.getVar(conf,
+        ConfVars.THRIFT_METASTORE_AUTHENTICATION).equalsIgnoreCase("jwt")) {
+      jwtAuthEnabled = true;
+    } else {
+      jwtAuthEnabled = false;
+      jwtValidator = null;
+    }
   }
 
-  public HmsThriftHttpServlet(TProcessor processor,
-      TProtocolFactory protocolFactory) {
-    super(processor, protocolFactory);
-    isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
+  public void init() throws ServletException {
+    super.init();
+    if (jwtAuthEnabled) {
+      try {
+        jwtValidator = new JWTValidator(this.conf);
+      } catch (Exception e) {
+        throw new ServletException("Failed to initialize HmsThriftHttpServlet."
+            + " Error: " + e);
+      }
+    }
   }
 
   @Override
   protected void doPost(HttpServletRequest request,
       HttpServletResponse response) throws ServletException, IOException {
-
-    Enumeration<String> headerNames = request.getHeaderNames();
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Logging headers in request");
+      LOG.debug(" Logging headers in request");
+      Enumeration<String> headerNames = request.getHeaderNames();
       while (headerNames.hasMoreElements()) {
         String headerName = headerNames.nextElement();
         LOG.debug("Header: [{}], Value: [{}]", headerName,
             request.getHeader(headerName));
       }
     }
-    String userFromHeader = request.getHeader(X_USER);
+
+    String userFromHeader = extractUserName(request, response);
     if (userFromHeader == null || userFromHeader.isEmpty()) {
-      LOG.error("No user header: {} found", X_USER);
-      response.sendError(HttpServletResponse.SC_FORBIDDEN,
-          "Header: " + X_USER + " missing in the request");
-      return;
+      throw new ServletException("Could not fetch username from request header");
     }
 
     // TODO: These should ideally be in some kind of a Cache with Weak referencse.
@@ -109,5 +131,91 @@ public class HmsThriftHttpServlet extends TServlet {
           e);
       throw new ServletException(e);
     }
+  }
+
+  /**
+   * Returns the base64 encoded auth header payload.
+   * @param request request to interrogate
+   * @return base64 encoded auth header payload
+   * @throws ServletException exception if header is missing or empty
+   */
+  private String getAuthHeader(HttpServletRequest request)
+      throws ServletException {
+    String authHeader = request.getHeader(AUTHORIZATION);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Logging headers in request");
+      Enumeration<String> headerNames = request.getHeaderNames();
+      while (headerNames.hasMoreElements()) {
+        String headerName = headerNames.nextElement();
+        LOG.debug("Header: [{}], Value: [{}]", headerName,
+            request.getHeader(headerName));
+      }
+    }
+    // Each http request must have an Authorization header
+    if (authHeader == null || authHeader.isEmpty()) {
+      throw new ServletException("no authorization header received " +
+          "from the client");
+    }
+
+    String[] parts = authHeader.split(" ");
+
+    // Assume the Base-64 string is always the last thing in the header
+    String authHeaderBase64String = parts[parts.length - 1];
+
+    // Authorization header must have a payload
+    if (authHeaderBase64String.isEmpty()) {
+      throw new ServletException("Authorization header received " +
+          "from the client does not contain any data.");
+    }
+    return authHeaderBase64String;
+  }
+
+  private String extractUserName(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException {
+    if (!jwtAuthEnabled) {
+      String userFromHeader = request.getHeader(X_USER);
+      if (userFromHeader == null || userFromHeader.isEmpty()) {
+        throw new ServletException("User header " + X_USER + " missing in request");
+      }
+      return userFromHeader;
+    }
+    // JWT auth enabled
+
+    // TODO: Should we skip getting and validating auth header and
+    // instead rely on extractBearerToken?
+    /*
+    String base64AuthHeader = getAuthHeader(request);
+    // JWT token should be of format a.b.c
+    if (base64AuthHeader.split("\\.").length != 3) {
+      throw new ServletException("authorization header bearer token does not have valid jwt token");
+    }
+    */
+
+    String signedJwt = extractBearerToken(request, response);
+    if (signedJwt == null) {
+      throw new ServletException("Couldn't find bearer token in the auth header in the request");
+    }
+    String user;
+    try {
+      user = jwtValidator.validateJWTAndExtractUser(signedJwt);
+      Preconditions.checkNotNull(user, "JWT needs to contain the user name as subject");
+      Preconditions.checkState(!user.isEmpty(), "User name should not be empty");
+      LOG.info("JWT verification successful for user {}", user);
+    } catch (Exception e) {
+      throw new ServletException("Failed to extract JWT from Bearer token", e);
+    }
+    return user;
+  }
+
+  /**
+   * Extracts the bearer authorization header from the request. If there is no bearer
+   * authorization token, returns null.
+   */
+  private String extractBearerToken(HttpServletRequest request,
+      HttpServletResponse response) {
+    BearerAuthExtractor extractor = new BearerAuthExtractor();
+    Optional<TokenCredentials> tokenCredentials = extractor.extract(new JEEContext(
+        request, response));
+    return tokenCredentials.map(TokenCredentials::getToken).orElse(null);
   }
 }
