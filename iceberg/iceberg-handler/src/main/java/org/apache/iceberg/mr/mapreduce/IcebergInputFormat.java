@@ -477,11 +477,15 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
 
     private Map<Integer, ?> constantsMap(FileScanTask task, BiFunction<Type, Object, Object> converter) {
+      Set<Integer> idColumns = task.spec().identitySourceIds();
+      boolean projectsIdentityPartitionColumns = !TypeUtil.select(expectedSchema, idColumns).columns().isEmpty();
       if (expectedSchema.findField(MetadataColumns.PARTITION_COLUMN_ID) != null) {
         Types.StructType partitionType = Partitioning.partitionType(table);
         return PartitionUtil.constantsMap(task, partitionType, converter);
-      } else {
+      } else if (projectsIdentityPartitionColumns) {
         return PartitionUtil.constantsMap(task, converter);
+      } else {
+        return Collections.emptyMap();
       }
     }
 
