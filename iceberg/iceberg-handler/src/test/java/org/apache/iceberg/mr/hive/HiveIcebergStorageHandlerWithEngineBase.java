@@ -159,7 +159,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
   }
 
   @AfterClass
-  public static void afterClass() {
+  public static void afterClass() throws Exception {
     shell.stop();
   }
 
