@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.common.metrics.metrics2.MetricsReporting;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,7 +54,7 @@ public class TestMetricsQueryLifeTimeHook {
     metricRegistry = ((CodahaleMetrics) MetricsFactory.getInstance()).getMetricRegistry();
 
     hook = new MetricsQueryLifeTimeHook();
-    ctx = new QueryLifeTimeHookContextImpl.Builder().build("fake-query-id");
+    ctx = new QueryLifeTimeHookContextImpl.Builder().build(QueryPlan.makeQueryId());
   }
 
   @Test

@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 
-import java.util.Objects;
-
 public class QueryLifeTimeHookContextImpl implements QueryLifeTimeHookContext {
 
   private HiveConf conf;
@@ -89,11 +87,13 @@ public class QueryLifeTimeHookContextImpl implements QueryLifeTimeHookContext {
     }
 
     public QueryLifeTimeHookContextImpl build(String queryId) {
+      // QUERYID = USERNAME + UNDERSCORES + DATETIME + UUID Type4 = X + 2 + 14 + 36 = X + 52
+      assert queryId != null && queryId.length() >= 52 : "Specified query id ("+queryId+") is invalid";
       QueryLifeTimeHookContextImpl queryLifeTimeHookContext = new QueryLifeTimeHookContextImpl();
       queryLifeTimeHookContext.setHiveConf(this.conf);
       queryLifeTimeHookContext.setCommand(this.command);
       queryLifeTimeHookContext.setHookContext(this.hc);
-      queryLifeTimeHookContext.queryId = Objects.requireNonNull(queryId);
+      queryLifeTimeHookContext.queryId = queryId;
       return queryLifeTimeHookContext;
     }
   }
