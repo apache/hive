@@ -72,8 +72,8 @@ public class HiveIcebergDeleteWriter extends ClusteredPositionDeleteWriter<Recor
     writers.get(taskAttemptID).put(tableName, this);
   }
 
-  public DeleteFile[] deleteFiles() {
-    return result().deleteFiles().toArray(new DeleteFile[0]);
+  public List<DeleteFile> deleteFiles() {
+    return result().deleteFiles();
   }
 
   @Override

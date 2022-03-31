@@ -125,7 +125,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
               String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
                   attemptID.getJobID(), attemptID.getTaskID().getId());
               if (delWriter != null) {
-                DeleteFile[] closedFiles = delWriter.deleteFiles();
+                DeleteFile[] closedFiles = delWriter.deleteFiles().toArray(new DeleteFile[0]);
                 createFileForCommit(closedFiles, fileForCommitLocation, table.io());
               }
               if (writer != null) {
@@ -337,46 +337,59 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     if (HiveIcebergStorageHandler.isDelete(conf, name)) {
       Collection<DeleteFile> deleteFiles = new ConcurrentLinkedQueue<>();
       collectFiles(deleteFiles, numTasks, executor, location, jobContext, io, true);
-      if (!deleteFiles.isEmpty()) {
-        RowDelta append = table.newRowDelta();
-        deleteFiles.forEach(append::addDeletes);
-        append.commit();
-      }
-    } else {
+      commitDelete(jobContext, table, startTime, deleteFiles);
+    } else if (HiveIcebergStorageHandler.isWrite(conf, name)) {
       Collection<DataFile> dataFiles = new ConcurrentLinkedQueue<>();
       collectFiles(dataFiles, numTasks, executor, location, jobContext, io, true);
-
       boolean isOverwrite = conf.getBoolean(InputFormatConfig.IS_OVERWRITE, false);
-      if (isOverwrite) {
-        if (!dataFiles.isEmpty()) {
-          ReplacePartitions overwrite = table.newReplacePartitions();
-          dataFiles.forEach(overwrite::addFile);
-          overwrite.commit();
-          LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
-              table, dataFiles.size());
-        } else if (table.spec().isUnpartitioned()) {
-          // TODO: we won't get here if we have a formerly-partitioned table,
-          //  whose partition specs have been turned void
-          table.newDelete().deleteFromRowFilter(Expressions.alwaysTrue()).commit();
-          LOG.info("Cleared table contents as part of empty overwrite for unpartitioned table. " +
-              "Commit took {} ms for table: {}", System.currentTimeMillis() - startTime, table);
-        }
-        LOG.debug("Overwrote partitions with files {}", dataFiles);
-      } else if (dataFiles.size() > 0) {
-        // Appending data files to the table
-        // We only create a new commit if there's something to append
-        AppendFiles append = table.newAppend();
-        dataFiles.forEach(append::appendFile);
-        append.commit();
-        LOG.info("Append commit took {} ms for table: {} with {} file(s)",
-            System.currentTimeMillis() - startTime,
-            table,
-            dataFiles.size());
-        LOG.debug("Added files {}", dataFiles);
-      } else {
-        LOG.info("Not creating a new commit for table: {}, jobID: {}, since there were no new files to append",
-            table, jobContext.getJobID());
+      commitInsert(jobContext, table, startTime, dataFiles, isOverwrite);
+    } else {
+      LOG.info("Unable to determine commit operation type for table: {}, jobID: {}. Will not create a commit.",
+          table, jobContext.getJobID());
+    }
+  }
+
+  private void commitDelete(JobContext jobContext, Table table, long startTime, Collection<DeleteFile> deleteFiles) {
+    if (!deleteFiles.isEmpty()) {
+      RowDelta append = table.newRowDelta();
+      deleteFiles.forEach(append::addDeletes);
+      append.commit();
+      LOG.info("Delete commit took {} ms for table: {} with {} delete file(s)",
+          System.currentTimeMillis() - startTime, table, deleteFiles.size());
+      LOG.debug("Added delete files {}", deleteFiles);
+    } else {
+      LOG.info("Not creating a new commit for table: {}, jobID: {}, since there were no new delete files to add",
+          table, jobContext.getJobID());
+    }
+  }
+
+  private void commitInsert(JobContext jobContext, Table table, long startTime, Collection<DataFile> dataFiles,
+      boolean isOverwrite) {
+    if (isOverwrite) {
+      if (!dataFiles.isEmpty()) {
+        ReplacePartitions overwrite = table.newReplacePartitions();
+        dataFiles.forEach(overwrite::addFile);
+        overwrite.commit();
+        LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
+            table, dataFiles.size());
+      } else if (table.spec().isUnpartitioned()) {
+        table.newDelete().deleteFromRowFilter(Expressions.alwaysTrue()).commit();
+        LOG.info("Cleared table contents as part of empty overwrite for unpartitioned table. " +
+            "Commit took {} ms for table: {}", System.currentTimeMillis() - startTime, table);
       }
+      LOG.debug("Overwrote partitions with files {}", dataFiles);
+    } else if (dataFiles.size() > 0) {
+      // Appending data files to the table
+      // We only create a new commit if there's something to append
+      AppendFiles append = table.newAppend();
+      dataFiles.forEach(append::appendFile);
+      append.commit();
+      LOG.info("Append commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime, table,
+          dataFiles.size());
+      LOG.debug("Added files {}", dataFiles);
+    } else {
+      LOG.info("Not creating a new commit for table: {}, jobID: {}, since there were no new files to append",
+          table, jobContext.getJobID());
     }
   }
 
