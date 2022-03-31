@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import com.google.common.base.Preconditions;
 import java.io.FileInputStream;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -286,10 +287,12 @@ public class SecurityUtils {
     return getSSLSocketWithHttps(tSSLSocket);
   }
 
-  public static THttpClient getHttpSSLSocket(String httpsUrl, String trustStorePath,
-      String trustStorePasswd, String trustStoreAlgorithm, String trustStoreType)
-      throws TTransportException, IOException, KeyStoreException, NoSuchAlgorithmException,
-      CertificateException, KeyManagementException {
+  public static THttpClient getThriftHttpsClient(String httpsUrl, String trustStorePath,
+      String trustStorePasswd, String trustStoreAlgorithm, String trustStoreType,
+      HttpClientBuilder underlyingHttpClientBuilder) throws TTransportException, IOException,
+      KeyStoreException, NoSuchAlgorithmException, CertificateException,
+      KeyManagementException {
+    Preconditions.checkNotNull(underlyingHttpClientBuilder, "httpClientBuilder should not be null");
     if (trustStoreType == null || trustStoreType.isEmpty()) {
       trustStoreType = KeyStore.getDefaultType();
     }
@@ -306,9 +309,8 @@ public class SecurityUtils {
     final Registry<ConnectionSocketFactory> registry =
         RegistryBuilder.<ConnectionSocketFactory> create().register("https", socketFactory)
             .build();
-    HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-    httpClientBuilder.setConnectionManager(new BasicHttpClientConnectionManager(registry));
-    return new THttpClient(httpsUrl, httpClientBuilder.build());
+    underlyingHttpClientBuilder.setConnectionManager(new BasicHttpClientConnectionManager(registry));
+    return new THttpClient(httpsUrl, underlyingHttpClientBuilder.build());
   }
 
   // Using endpoint identification algorithm as HTTPS enables us to do

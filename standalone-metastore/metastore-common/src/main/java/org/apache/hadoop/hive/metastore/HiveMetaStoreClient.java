@@ -78,6 +78,11 @@ import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.http.HttpException;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.protocol.HttpContext;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TConfiguration;
 import org.apache.thrift.TException;
@@ -591,7 +596,98 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setValidWriteIdList(validWriteIds);
     client.rename_partition_req(req);
   }
-  
+
+  private THttpClient createHttpClient(URI store, boolean useSSL) throws MetaException,
+      TTransportException {
+    String path = MetaStoreUtils.getHttpPath(MetastoreConf.getVar(conf, ConfVars.THRIFT_HTTP_PATH));
+    String httpUrl = (useSSL ? "https://" : "http://") + store.getHost() + ":" + store.getPort() + path;
+
+    String user = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
+    if (user == null || user.equals("")) {
+      try {
+        user = UserGroupInformation.getCurrentUser().getShortUserName();
+      } catch (IOException e) {
+        throw new MetaException("Failed to get client username from UGI");
+      }
+    }
+    final String httpUser = user;
+    THttpClient tHttpClient;
+    HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+    httpClientBuilder.addInterceptorFirst(new HttpRequestInterceptor() {
+      @Override
+      public void process(HttpRequest httpRequest, HttpContext httpContext)
+          throws HttpException, IOException {
+        httpRequest.addHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, httpUser);
+      }
+    });
+
+    try {
+      if (useSSL) {
+        String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_PATH).trim();
+        if (trustStorePath.isEmpty()) {
+          throw new IllegalArgumentException(ConfVars.SSL_TRUSTSTORE_PATH
+              + " Not configured for SSL connection");
+        }
+        String trustStorePassword =
+            MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
+        String trustStoreType =
+            MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_TYPE).trim();
+        String trustStoreAlgorithm =
+            MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
+        tHttpClient = SecurityUtils.getThriftHttpsClient(httpUrl, trustStorePath, trustStorePassword,
+            trustStoreAlgorithm, trustStoreType, httpClientBuilder);
+      }  else {
+        tHttpClient = new THttpClient(httpUrl, httpClientBuilder.build());
+      }
+    } catch (Exception e) {
+      if (e instanceof TTransportException) {
+        throw (TTransportException)e;
+      } else {
+        throw new MetaException("Failed to create http transport client to url: " + httpUrl
+            + ". Error:" + e);
+      }
+    }
+    LOG.debug("Created thrift http client for URL: " + httpUrl);
+    return tHttpClient;
+  }
+
+  private TTransport createBinaryClient(URI store, boolean useSSL) throws TTransportException,
+      MetaException {
+    TTransport binaryTransport = null;
+    try {
+      int clientSocketTimeout = (int) MetastoreConf.getTimeVar(conf,
+          ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+      if (useSSL) {
+        String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_PATH).trim();
+        if (trustStorePath.isEmpty()) {
+          throw new IllegalArgumentException(ConfVars.SSL_TRUSTSTORE_PATH
+              + " Not configured for SSL connection");
+        }
+        String trustStorePassword =
+            MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
+        String trustStoreType =
+            MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_TYPE).trim();
+        String trustStoreAlgorithm =
+            MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
+        binaryTransport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
+            trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
+      } else {
+        binaryTransport = new TSocket(new TConfiguration(),store.getHost(), store.getPort(),
+            clientSocketTimeout);
+      }
+      binaryTransport = createAuthBinaryTransport(store, binaryTransport);
+    } catch (Exception e) {
+      if (e instanceof TTransportException) {
+        throw (TTransportException)e;
+      } else {
+        throw new MetaException("Failed to create binary transport client to url: " + store
+            + ". Error: " + e);
+      }
+    }
+    LOG.debug("Created thrift binary client for URI: " + store);
+    return binaryTransport;
+  }
+
   private void open() throws MetaException {
     isConnected = false;
     TTransportException tte = null;
@@ -601,10 +697,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     String clientAuthMode = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE);
     boolean usePasswordAuth = false;
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
-    int clientSocketTimeout = (int) MetastoreConf.getTimeVar(conf,
-        ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
-    boolean isHttpTransportMode = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE).
-        equalsIgnoreCase("http");
+    String transportMode = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE);
+    boolean isHttpTransportMode = transportMode.equalsIgnoreCase("http");
 
     if (clientAuthMode != null) {
       usePasswordAuth = "PLAIN".equalsIgnoreCase(clientAuthMode);
@@ -612,78 +706,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       for (URI store : metastoreUris) {
-        LOG.info("Trying to connect to metastore with URI ({})", store);
+        LOG.info("Trying to connect to metastore with URI ({}) in {} transport mode", store,
+            transportMode);
         try {
-          String httpUrl = null;
-          String httpUser = null;
-          if (isHttpTransportMode) {
-            String[] urlAndUser = getHttpUrlAndUser(store);
-            httpUrl = urlAndUser[0];
-            httpUser = urlAndUser[1];
-          }
-          if (useSSL) {
-            try {
-              String trustStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_PATH).trim();
-              if (trustStorePath.isEmpty()) {
-                throw new IllegalArgumentException(ConfVars.SSL_TRUSTSTORE_PATH
-                    + " Not configured for SSL connection");
-              }
-              String trustStorePassword =
-                  MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
-              String trustStoreType =
-                      MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_TYPE).trim();
-              String trustStoreAlgorithm =
-                      MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
-
-              if (isHttpTransportMode) {
-                LOG.info("Creating HTTP transport client to url: {}", httpUrl);
-                try {
-                  THttpClient httpClient = SecurityUtils.getHttpSSLSocket(httpUrl, trustStorePath, trustStorePassword,
-                      trustStoreAlgorithm, trustStoreType);
-                  httpClient.setCustomHeader("x-actor-username", httpUser);
-                  transport = httpClient;
-                } catch (Exception e) {
-                  throw new MetaException("Failed to create http transport client to url: " + httpUrl
-                      + ".Error message:" + e.getMessage());
-                }
-              } else {
-                transport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
-                    trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
-              }
-              // Create an SSL socket and connect
-
-              final int newCount = connCount.incrementAndGet();
-              LOG.debug(
-                  "Opened an SSL connection to metastore, current connections: {}",
-                  newCount);
-              if (LOG.isTraceEnabled()) {
-                LOG.trace("METASTORE SSL CONNECTION TRACE - open [{}]",
-                    System.identityHashCode(this), new Exception());
-              }
-            } catch (IOException e) {
-              throw new IllegalArgumentException(e);
-            } catch (TTransportException e) {
-              tte = e;
-              throw new MetaException(e.toString());
+          try {
+            if (isHttpTransportMode) {
+              transport = createHttpClient(store, useSSL);
+            } else {
+              transport = createBinaryClient(store, useSSL);
             }
-          } else {
-            try {
-              if (isHttpTransportMode) {
-                THttpClient httpClient = new THttpClient(httpUrl);
-                httpClient.setCustomHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, httpUser);
-                transport = httpClient;
-              } else {
-                transport = new TSocket(new TConfiguration(),store.getHost(), store.getPort()
-                    , clientSocketTimeout);
-              }
-            } catch (TTransportException e) {
-              tte = e;
-              throw new MetaException(e.toString());
-            }
-          }
-          // HTTP mode does not support any auth mechanism
-          if (!isHttpTransportMode) {
-            transport = createAuthTransportNonHttp(store, transport);
+          } catch (TTransportException te) {
+            tte = te;
+            throw new MetaException(te.toString());
           }
 
           final TProtocol protocol;
@@ -697,11 +731,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             if (!transport.isOpen()) {
               transport.open();
               final int newCount = connCount.incrementAndGet();
-              LOG.info("Opened a connection to metastore, URI ({}) "
-                  + "current connections: {}", store, newCount);
-              if (LOG.isTraceEnabled()) {
-                LOG.trace("METASTORE CONNECTION TRACE - open [{}]",
-                    System.identityHashCode(this), new Exception());
+              if (useSSL) {
+                LOG.info(
+                    "Opened an SSL connection to metastore, current connections: {}",
+                    newCount);
+                if (LOG.isTraceEnabled()) {
+                  LOG.trace("METASTORE SSL CONNECTION TRACE - open [{}]",
+                      System.identityHashCode(this), new Exception());
+                }
+              } else {
+                LOG.info("Opened a connection to metastore, URI ({}) "
+                    + "current connections: {}", store, newCount);
+                if (LOG.isTraceEnabled()) {
+                  LOG.trace("METASTORE CONNECTION TRACE - open [{}]",
+                      System.identityHashCode(this), new Exception());
+                }
               }
             }
             isConnected = true;
@@ -765,23 +809,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     snapshotActiveConf();
   }
 
-  private String[] getHttpUrlAndUser(URI store) throws MetaException {
-    boolean useSSL = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
-    String path = MetaStoreUtils.getHttpPath(MetastoreConf.getVar(conf, ConfVars.THRIFT_HTTP_PATH));
-    String httpUrl = (useSSL ? "https://" : "http://") + store.getHost() + ":" + store.getPort() + path;
-    String httpUser = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
-    if (httpUser == null || httpUser.equals("")) {
-      try {
-        httpUser = UserGroupInformation.getCurrentUser().getShortUserName();
-      } catch (IOException e) {
-        throw new MetaException("Failed to get client username from UGI");
-      }
-    }
-    return new String[] {httpUrl, httpUser};
-  }
-
   // wraps the underlyingTransport in the appropriate transport based on mode of authentication
-  private TTransport createAuthTransportNonHttp(URI store, TTransport underlyingTransport)
+  private TTransport createAuthBinaryTransport(URI store, TTransport underlyingTransport)
       throws MetaException {
     boolean isHttpTransportMode =
         MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE).
