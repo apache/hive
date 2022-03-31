@@ -614,3 +614,30 @@ POSTHOOK: Input: default@test_dec_space
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	0
 2	1
+PREHOOK: query: create table tbl (fld int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl
+POSTHOOK: query: create table tbl (fld int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl
+PREHOOK: query: insert into tbl values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl
+POSTHOOK: query: insert into tbl values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl
+POSTHOOK: Lineage: tbl.fld SCRIPT []
+PREHOOK: query: select * from tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+#### A masked pattern was here ####
