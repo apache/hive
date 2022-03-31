@@ -1406,8 +1406,17 @@ public class DagUtils {
   public LocalResource localizeResource(
       Path src, Path dest, LocalResourceType type, Configuration conf) throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
-    // We call copyFromLocal below, so we basically assume src is a local file.
-    FileSystem srcFs = FileSystem.getLocal(conf);
+
+    // We call copyFromLocal below, only if file schema is null. So we basically can not assume src is a local file.
+    FileSystem srcFs;
+    boolean isSrcLocal = true;
+    if (src.toUri().getScheme() != null) {
+      srcFs = src.getFileSystem(conf);
+      isSrcLocal = false;
+    } else {
+      srcFs = FileSystem.getLocal(conf);
+    }
+
     if (src != null && !checkPreExisting(srcFs, src, dest, conf)) {
       // copy the src to the destination and create local resource.
       // do not overwrite.
@@ -1424,10 +1433,9 @@ public class DagUtils {
         return createLocalResource(destFS, dest, type, LocalResourceVisibility.PRIVATE);
       }
       try {
-        if (src.toUri().getScheme()!=null) {
-          FileUtil.copy(src.getFileSystem(conf), src, destFS, dest, false, false, conf);
-        }
-        else {
+        if (!isSrcLocal) {
+          FileUtil.copy(srcFs, src, destFS, dest, false, false, conf);
+        } else {
           destFS.copyFromLocalFile(false, false, src, dest);
         }
         synchronized (notifier) {
