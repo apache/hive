@@ -48,12 +48,12 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.apache.iceberg</groupId>
+        <groupId>org.apache.hive</groupId>
         <artifactId>patched-iceberg-api</artifactId>
         <version>patched-${iceberg.version}-${project.parent.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.apache.iceberg</groupId>
+        <groupId>org.apache.hive</groupId>
         <artifactId>patched-iceberg-core</artifactId>
         <version>patched-${iceberg.version}-${project.parent.version}</version>
       </dependency>

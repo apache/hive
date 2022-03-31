@@ -35,7 +35,7 @@
   </properties>
   <dependencies>
     <dependency>
-      <groupId>org.apache.iceberg</groupId>
+      <groupId>org.apache.hive</groupId>
       <artifactId>patched-iceberg-core</artifactId>
       <optional>true</optional>
     </dependency>
