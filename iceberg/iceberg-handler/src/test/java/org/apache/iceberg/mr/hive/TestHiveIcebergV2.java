@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.StreamSupport;
+import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
@@ -230,7 +231,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
   }
 
   @Test
-  public void testDeleteStatementsUnpartitioned() {
+  public void testDeleteStatementUnpartitioned() {
     Assume.assumeFalse("Iceberg DELETEs are only implemented for non-vectorized mode for now", isVectorized);
     List<Record> records = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .add(0L, "Alice", "Brown")
@@ -254,7 +255,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
   }
 
   @Test
-  public void testDeleteStatementsPartitioned() {
+  public void testDeleteStatementPartitioned() {
     Assume.assumeFalse("Iceberg DELETEs are only implemented for non-vectorized mode for now", isVectorized);
     List<Record> records = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .add(0L, "Alice", "Brown")
@@ -280,7 +281,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
   }
 
   @Test
-  public void testDeleteStatementsWithOtherTable() {
+  public void testDeleteStatementWithOtherTable() {
     Assume.assumeFalse("Iceberg DELETEs are only implemented for non-vectorized mode for now", isVectorized);
     List<Record> records = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .add(0L, "Alice", "Brown")
@@ -308,6 +309,19 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
     List<Object[]> objects = shell.executeStatement("SELECT * FROM customers");
     Assert.assertEquals(2, objects.size());
+  }
+
+  @Test
+  public void testDeleteStatementThrowsIfVectorizationEnabled() {
+    Assume.assumeTrue(isVectorized);
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").bucket("customer_id", 16).build();
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+
+    AssertHelpers.assertThrows("ACID operations should throw exc when vectorization is enabled",
+        IllegalArgumentException.class, "DELETE/UPDATE operations not allowed on Iceberg tables",
+        () -> shell.executeStatement("DELETE FROM customers WHERE customer_id=1 or last_name='Bubba'"));
   }
 
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {

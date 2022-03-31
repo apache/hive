@@ -169,6 +169,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     String opType = SessionStateUtil.getProperty(conf, Context.Operation.class.getSimpleName())
         .orElse(Context.Operation.OTHER.name());
     map.put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
+    // check that vectorization is turned off for ACID operations
+    if (Context.Operation.DELETE.name().equals(opType) || Context.Operation.UPDATE.name().equals(opType)) {
+      assertAcidNotVectorized();
+    }
     // Putting the key into the table props as well, so that projection pushdown can be determined on a
     // table-level and skipped only for output tables in HiveIcebergSerde. Properties from the map will be present in
     // the serde config for all tables in the query, not just the output tables, so we can't rely on that in the serde.
@@ -703,6 +707,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
 
     return column;
+  }
+
+  private void assertAcidNotVectorized() {
+    if (conf.getBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname,
+        HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.defaultBoolVal)) {
+      throw new IllegalStateException("DELETE/UPDATE operations not allowed on Iceberg tables with vectorization " +
+          "turned on. Please set " + HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname + "=false and retry.");
+    }
   }
 
   /**
