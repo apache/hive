@@ -69,29 +69,6 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   public HiveCatalog() {
   }
 
-  /**
-   * Hive Catalog constructor.
-   *
-   * @param conf Hadoop Configuration
-   * @deprecated please use the no-arg constructor, setConf and initialize to construct the catalog. Will be removed in
-   * v0.13.0
-   */
-  @Deprecated
-  public HiveCatalog(Configuration conf) {
-    this.name = "hive";
-    this.conf = conf;
-    this.fileIO = new HadoopFileIO(conf);
-    Map<String, String> properties = ImmutableMap.of(
-            CatalogProperties.CLIENT_POOL_CACHE_EVICTION_INTERVAL_MS,
-            conf.get(CatalogProperties.CLIENT_POOL_CACHE_EVICTION_INTERVAL_MS,
-              String.valueOf(CatalogProperties.CLIENT_POOL_CACHE_EVICTION_INTERVAL_MS_DEFAULT)),
-            CatalogProperties.CLIENT_POOL_SIZE,
-            conf.get(CatalogProperties.CLIENT_POOL_SIZE,
-              String.valueOf(CatalogProperties.CLIENT_POOL_SIZE_DEFAULT))
-    );
-    this.clients = new CachedClientPool(conf, properties);
-  }
-
   @Override
   public void initialize(String inputName, Map<String, String> properties) {
     this.name = inputName;
