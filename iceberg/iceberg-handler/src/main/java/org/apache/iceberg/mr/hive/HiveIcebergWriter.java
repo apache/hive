@@ -24,6 +24,10 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.mapred.Container;
 
+/**
+ * Common interface for different Hive Iceberg writers, such as the HiveIcebergRecordWriter (which writes data files)
+ * and the HiveIcebergDeleteWriter (which writes delete files)
+ */
 public interface HiveIcebergWriter extends FileSinkOperator.RecordWriter,
     org.apache.hadoop.mapred.RecordWriter<NullWritable, Container<Record>> {
 }

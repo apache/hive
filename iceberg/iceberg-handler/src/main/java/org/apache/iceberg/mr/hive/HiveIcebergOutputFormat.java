@@ -83,12 +83,7 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
         .operationId(operationId)
         .build();
     String tableName = jc.get(Catalogs.NAME);
-    if (!HiveIcebergStorageHandler.isDelete(jc, tableName)) {
-      HiveFileWriterFactory hfwf = new HiveFileWriterFactory(table, fileFormat, schema,
-          null, fileFormat, null, null, null, null);
-      return new HiveIcebergRecordWriter(schema, spec, fileFormat,
-          hfwf, outputFileFactory, io, targetFileSize, taskAttemptID, tableName);
-    } else {
+    if (HiveIcebergStorageHandler.isDelete(jc, tableName)) {
       // TODO: remove this Avro-specific logic once we have Avro writer function ready
       // for now, this means that Avro delete files will not contain the 'row' column
       Schema positionDeleteRowSchema = fileFormat == FileFormat.AVRO ? null : schema;
@@ -96,6 +91,11 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
           null, fileFormat, null, null, null, positionDeleteRowSchema);
       return new HiveIcebergDeleteWriter(hfwf, schema, spec, fileFormat, outputFileFactory, io, targetFileSize,
           taskAttemptID, tableName);
+    } else {
+      HiveFileWriterFactory hfwf = new HiveFileWriterFactory(table, fileFormat, schema,
+          null, fileFormat, null, null, null, null);
+      return new HiveIcebergRecordWriter(schema, spec, fileFormat,
+          hfwf, outputFileFactory, io, targetFileSize, taskAttemptID, tableName);
     }
   }
 }

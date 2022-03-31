@@ -54,10 +54,10 @@ public enum VirtualColumn {
    */
   ROWID("ROW__ID", RecordIdentifier.StructInfo.typeInfo, true, RecordIdentifier.StructInfo.oi),
   ROWISDELETED("ROW__IS__DELETED", TypeInfoFactory.booleanTypeInfo),
-  POS_DEL_SPEC("POS_DEL_SPEC", TypeInfoFactory.intTypeInfo),
-  POS_DEL_PART("POS_DEL_PART", TypeInfoFactory.longTypeInfo),
-  POS_DEL_PATH("POS_DEL_PATH", TypeInfoFactory.stringTypeInfo),
-  POS_DEL_POS("POS_DEL_POS", TypeInfoFactory.longTypeInfo),
+  PARTITION_SPEC_ID("POS__DEL__SPEC", TypeInfoFactory.intTypeInfo),
+  PARTITION_HASH("POS__DEL__PART", TypeInfoFactory.longTypeInfo),
+  FILE_PATH("POS__DEL__PATH", TypeInfoFactory.stringTypeInfo),
+  ROW_POSITION("POS__DEL__POS", TypeInfoFactory.longTypeInfo),
 
   /**
    * GROUPINGID is used with GROUP BY GROUPINGS SETS, ROLLUP and CUBE.
@@ -70,8 +70,8 @@ public enum VirtualColumn {
 
   public static final ImmutableSet<String> VIRTUAL_COLUMN_NAMES =
       ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(), ROWOFFSET.getName(),
-          RAWDATASIZE.getName(), GROUPINGID.getName(), ROWID.getName(), POS_DEL_PATH.getName(), POS_DEL_POS.getName(),
-          POS_DEL_SPEC.getName(), POS_DEL_PART.getName(), ROWISDELETED.getName());
+          RAWDATASIZE.getName(), GROUPINGID.getName(), ROWID.getName(), ROWISDELETED.getName(),
+          PARTITION_SPEC_ID.getName(), PARTITION_HASH.getName(), FILE_PATH.getName(), ROW_POSITION.getName());
 
   public static final ImmutableMap<String, VirtualColumn> VIRTUAL_COLUMN_NAME_MAP =
        new ImmutableMap.Builder<String, VirtualColumn>().putAll(getColumnNameMap()).build();

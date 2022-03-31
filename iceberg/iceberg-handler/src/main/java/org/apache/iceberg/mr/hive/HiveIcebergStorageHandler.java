@@ -463,8 +463,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public List<VirtualColumn> acidVirtualColumns() {
-    return ImmutableList.of(VirtualColumn.POS_DEL_SPEC, VirtualColumn.POS_DEL_PART,
-        VirtualColumn.POS_DEL_PATH, VirtualColumn.POS_DEL_POS);
+    return ImmutableList.of(VirtualColumn.PARTITION_SPEC_ID, VirtualColumn.PARTITION_HASH,
+        VirtualColumn.FILE_PATH, VirtualColumn.ROW_POSITION);
   }
 
   private void setCommonJobConf(JobConf jobConf) {

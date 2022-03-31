@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -676,28 +675,28 @@ public class MapOperator extends AbstractMapOperator {
             //happen since IO layer either knows how to produce ROW__ID or not - but to be safe
           }
           break;
-        case POS_DEL_PATH:
-          vcValues[i] = null;
-          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
-            vcValues[i] = new Text(ctx.getIoCxt().getPositionDeleteInfo().getFilePath());
-          }
-          break;
-        case POS_DEL_POS:
-          vcValues[i] = null;
-          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
-            vcValues[i] = new LongWritable(ctx.getIoCxt().getPositionDeleteInfo().getFilePos());
-          }
-          break;
-        case POS_DEL_SPEC:
+        case PARTITION_SPEC_ID:
           vcValues[i] = null;
           if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
             vcValues[i] = new IntWritable(ctx.getIoCxt().getPositionDeleteInfo().getSpecId());
           }
           break;
-        case POS_DEL_PART:
+        case PARTITION_HASH:
           vcValues[i] = null;
           if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
             vcValues[i] = new LongWritable(ctx.getIoCxt().getPositionDeleteInfo().getPartitionHash());
+          }
+          break;
+        case FILE_PATH:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
+            vcValues[i] = new Text(ctx.getIoCxt().getPositionDeleteInfo().getFilePath());
+          }
+          break;
+        case ROW_POSITION:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
+            vcValues[i] = new LongWritable(ctx.getIoCxt().getPositionDeleteInfo().getFilePos());
           }
           break;
         case ROWISDELETED:
