@@ -36,7 +36,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
@@ -195,8 +194,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
       throw new RuntimeException("Interrupted during refresh", e);
     }
 
-    refreshFromMetadataLocation(metadataLocation, HiveConf.getIntVar(conf,
-        HiveConf.ConfVars.HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES));
+    refreshFromMetadataLocation(metadataLocation);
   }
 
   @SuppressWarnings("checkstyle:CyclomaticComplexity")

@@ -5693,10 +5693,6 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_ICEBERG_METADATA_GENERATOR_THREADS("hive.server2.iceberg.metadata.generator.threads", 10,
         "Number of threads used to scan partition directories for data files and update/generate iceberg metadata"),
 
-    HIVE_ICEBERG_METADATA_REFRESH_MAX_RETRIES("hive.iceberg.metadata.refresh.max.retries", 2,
-        "Max retry count for trying to access the metadata location in order to refresh metadata during " +
-         " Iceberg table load."),
-
     /* BLOBSTORE section */
 
     HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "s3,s3a,s3n",
