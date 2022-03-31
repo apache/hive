@@ -28,6 +28,7 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -196,7 +197,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
 
     // Create a Catalog where the KEEP_HIVE_STATS is false
-    shell.metastore().hiveConf().set(HiveTableOperations.KEEP_HIVE_STATS, StatsSetupConst.FALSE);
+    shell.metastore().hiveConf().set(ConfigProperties.KEEP_HIVE_STATS, StatsSetupConst.FALSE);
     TestTables nonHiveTestTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
     Table nonHiveTable = nonHiveTestTables.loadTable(identifier);
 

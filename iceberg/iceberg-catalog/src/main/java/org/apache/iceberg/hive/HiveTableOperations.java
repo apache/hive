@@ -97,9 +97,6 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
       GC_ENABLED, "external.table.purge"
   );
 
-  // Should be in org.apache.iceberg.hadoop.ConfigProperties, but that is not ported to Hive codebase
-  public static final String KEEP_HIVE_STATS = "iceberg.hive.keep.stats";
-
   private static Cache<String, ReentrantLock> commitLockCache;
 
   private static synchronized void initTableLevelLockCache(long evictionTimeout) {
@@ -206,7 +203,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
   protected void doCommit(TableMetadata base, TableMetadata metadata) {
     String newMetadataLocation = writeNewMetadata(metadata, currentVersion() + 1);
     boolean hiveEngineEnabled = hiveEngineEnabled(metadata, conf);
-    boolean keepHiveStats = conf.getBoolean(KEEP_HIVE_STATS, false);
+    boolean keepHiveStats = conf.getBoolean(ConfigProperties.KEEP_HIVE_STATS, false);
 
     CommitStatus commitStatus = CommitStatus.FAILURE;
     boolean updateHiveTable = false;
