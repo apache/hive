@@ -62,6 +62,7 @@ public class IcebergAcidUtil {
 
   /**
    * @param columns The columns of the file read schema
+   * @param table The table object - it is used for populating the partition struct meta column
    * @return The schema for reading files, extended with metadata columns needed for deletes
    */
   public static Schema createFileReadSchemaForDelete(List<Types.NestedField> columns, Table table) {

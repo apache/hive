@@ -449,6 +449,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   /**
    * Get the committed data or delete files for this table and job.
    *
+   * @param files The collection into which the DataFiles/DeleteFiles are accumulated
    * @param numTasks Number of writer tasks that produced a forCommit file
    * @param executor The executor used for reading the forCommit files parallel
    * @param location The location of the table
