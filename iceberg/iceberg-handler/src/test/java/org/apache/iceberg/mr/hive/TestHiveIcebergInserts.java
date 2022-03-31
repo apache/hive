@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
@@ -103,7 +102,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
     shell.executeStatement("INSERT INTO customers SELECT * FROM customers");
 
     // Check that everything is duplicated as expected
-    List<Record> records = new ArrayList<>(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    List<Record> records = Lists.newArrayList(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     records.addAll(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     HiveIcebergTestUtils.validateData(table, records, 0);
   }
@@ -145,7 +144,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
         spec, fileFormat, ImmutableList.of());
 
     // IOW into empty target table -> whole source result set is inserted
-    List<Record> expected = new ArrayList<>(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    List<Record> expected = Lists.newArrayList(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     expected.add(TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .add(8L, "Sue", "Green").build().get(0)); // add one more to 'Green' so we have a partition w/ multiple records
     shell.executeStatement(testTables.getInsertQuery(expected, target, true));
@@ -160,7 +159,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
         .build();
     shell.executeStatement(testTables.getInsertQuery(newRecords, target, true));
 
-    expected = new ArrayList<>(newRecords);
+    expected = Lists.newArrayList(newRecords);
     expected.add(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.get(2)); // existing, untouched partition ('Pink')
     HiveIcebergTestUtils.validateData(table, expected, 0);
 
@@ -197,7 +196,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
     shell.executeStatement("INSERT INTO customers SELECT * FROM customers ORDER BY customer_id");
 
     // Check that everything is duplicated as expected
-    List<Record> records = new ArrayList<>(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    List<Record> records = Lists.newArrayList(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     records.addAll(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     HiveIcebergTestUtils.validateData(table, records, 0);
   }

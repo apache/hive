@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -271,7 +270,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
-    Map<String, String> stats = new HashMap<>();
+    Map<String, String> stats = Maps.newHashMap();
     if (table.currentSnapshot() != null) {
       Map<String, String> summary = table.currentSnapshot().summary();
       if (summary != null) {

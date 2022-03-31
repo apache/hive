@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -31,6 +30,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -68,7 +68,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     String tableName = "customers";
     Table table = testTables
         .createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
-            new ArrayList<>());
+            Lists.newArrayList());
     shell.executeStatement("ANALYZE TABLE " + dbName + "." + tableName + " COMPUTE STATISTICS");
     validateBasicStats(table, dbName, tableName);
   }

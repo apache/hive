@@ -21,7 +21,6 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -33,6 +32,7 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
 import org.junit.Assert;
@@ -376,7 +376,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     icebergTable = testTables.loadTable(TableIdentifier.of("default", "people"));
     testTables.appendIcebergTable(shell.getHiveConf(), icebergTable, fileFormat, null, newPeople);
 
-    List<Record> sortedExpected = new ArrayList<>(people);
+    List<Record> sortedExpected = Lists.newArrayList(people);
     sortedExpected.addAll(newPeople);
     sortedExpected.sort(Comparator.comparingLong(record -> (Long) record.get(0)));
     List<Object[]> rows = shell

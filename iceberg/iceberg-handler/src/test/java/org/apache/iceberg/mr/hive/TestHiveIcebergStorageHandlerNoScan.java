@@ -22,7 +22,6 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -124,7 +123,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
   @Parameters(name = "catalog={0}")
   public static Collection<Object[]> parameters() {
-    Collection<Object[]> testParams = new ArrayList<>();
+    Collection<Object[]> testParams = Lists.newArrayList();
     for (TestTables.TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
       testParams.add(new Object[] {testTableType});
     }
