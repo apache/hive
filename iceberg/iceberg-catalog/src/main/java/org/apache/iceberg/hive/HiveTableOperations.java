@@ -301,7 +301,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
   void persistTable(Table hmsTable, boolean updateHiveTable) throws TException, InterruptedException {
     if (updateHiveTable) {
       metaClients.run(client -> {
-        MetastoreUtil.alterTable(client, database, tableName, hmsTable);;
+        MetastoreUtil.alterTable(client, database, tableName, hmsTable);
         return null;
       });
     } else {

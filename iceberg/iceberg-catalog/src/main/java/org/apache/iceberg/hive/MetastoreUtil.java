@@ -62,7 +62,7 @@ public class MetastoreUtil {
         ImmutableMap.of(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE)
     );
     ALTER_TABLE.invoke(client, databaseName, tblName, table, envContext);
-   }
+  }
 
   private static boolean detectHive3() {
     try {
