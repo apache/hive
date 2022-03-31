@@ -77,10 +77,11 @@ public class TestHiveCommits extends HiveTableBaseTest {
   }
 
   /**
-   * Pretends we throw an error while persisting that actually fails to commit serverside
+   * Pretends we throw an error while persisting, and not found with check state, commit state should be treated as
+   * unknown, because in reality the persisting may still succeed, just not yet by the time of checking.
    */
   @Test
-  public void testThriftExceptionFailureOnCommit() throws TException, InterruptedException {
+  public void testThriftExceptionUnknownStateIfNotInHistoryFailureOnCommit() throws TException, InterruptedException {
     Table table = catalog.loadTable(TABLE_IDENTIFIER);
     HiveTableOperations ops = (HiveTableOperations) ((HasTableOperations) table).operations();
 
@@ -100,17 +101,15 @@ public class TestHiveCommits extends HiveTableBaseTest {
 
     failCommitAndThrowException(spyOps);
 
-    AssertHelpers.assertThrows("We should rethrow generic runtime errors if the " +
-        "commit actually doesn't succeed", CommitStateUnknownException.class,
-        "Cannot determine whether the commit was successful or not, the underlying data files may " +
-            "or may not be needed. Manual intervention via the Remove Orphan Files Action can remove these files " +
-            "when a connection to the Catalog can be re-established if the commit was actually unsuccessful.",
-        () -> spyOps.commit(metadataV2, metadataV1));
+    AssertHelpers.assertThrows("We should assume commit state is unknown if the " +
+            "new location is not found in history in commit state check", CommitStateUnknownException.class,
+        "Datacenter on fire", () -> spyOps.commit(metadataV2, metadataV1));
 
     ops.refresh();
     Assert.assertEquals("Current metadata should not have changed", metadataV2, ops.current());
     Assert.assertTrue("Current metadata should still exist", metadataFileExists(metadataV2));
-    Assert.assertEquals("New non-current metadata file should be added", 3, metadataFileCount(ops.current()));
+    Assert.assertEquals("New metadata files should still exist, new location not in history but" +
+        " the commit may still succeed", 3, metadataFileCount(ops.current()));
   }
 
   /**
