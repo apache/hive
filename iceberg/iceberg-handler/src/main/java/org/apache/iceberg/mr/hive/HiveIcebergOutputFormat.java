@@ -83,7 +83,7 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
         .operationId(operationId)
         .build();
     String tableName = jc.get(Catalogs.NAME);
-    if (!HiveIcebergStorageHandler.isDelete(jc)) {
+    if (!HiveIcebergStorageHandler.isDelete(jc, tableName)) {
       HiveFileWriterFactory hfwf = new HiveFileWriterFactory(table, fileFormat, schema,
           null, fileFormat, null, null, null, null);
       return new HiveIcebergRecordWriter(schema, spec, fileFormat,

@@ -334,7 +334,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       return conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
     });
 
-    if (HiveIcebergStorageHandler.isDelete(conf)) {
+    if (HiveIcebergStorageHandler.isDelete(conf, name)) {
       Collection<DeleteFile> deleteFiles = new ConcurrentLinkedQueue<>();
       collectFiles(deleteFiles, numTasks, executor, location, jobContext, io, true);
       if (!deleteFiles.isEmpty()) {

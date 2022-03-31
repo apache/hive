@@ -267,11 +267,12 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       while (true) {
         if (currentIterator.hasNext()) {
           current = currentIterator.next();
-          if (HiveIcebergStorageHandler.isDelete(context.getConfiguration())) {
+          Configuration conf = context.getConfiguration();
+          if (HiveIcebergStorageHandler.isDelete(conf, conf.get(Catalogs.NAME))) {
             // TODO: implement DELETE for vectorized reads too
             if (current instanceof GenericRecord) {
               PositionDeleteInfo pdi = IcebergAcidUtil.parsePositionDeleteInfoFromRecord((GenericRecord) current);
-              PositionDeleteInfo.serializeIntoConf(context.getConfiguration(), pdi);
+              PositionDeleteInfo.serializeIntoConf(conf, pdi);
             }
           }
           return true;
@@ -505,7 +506,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           table.schema().caseInsensitiveSelect(selectedColumns);
 
       // for DELETE queries, add additional metadata columns into the read schema
-      if (HiveIcebergStorageHandler.isDelete(conf)) {
+      if (HiveIcebergStorageHandler.isDelete(conf, conf.get(Catalogs.NAME))) {
         readSchema = IcebergAcidUtil.createFileReadSchemaForDelete(readSchema.columns(), table);
       }
 

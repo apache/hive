@@ -131,12 +131,13 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     }
 
     Schema projectedSchema;
-    if (HiveIcebergStorageHandler.isDelete(configuration)) {
-      isDelete = true;
-      deleteSchema = IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
+    String tableName = serDeProperties.getProperty(Catalogs.NAME);
+    if (HiveIcebergStorageHandler.isDelete(configuration, tableName)) {
+      this.isDelete = true;
       // when writing delete files, we should use the full delete schema
+      deleteSchema = IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
       projectedSchema = deleteSchema;
-    } else if (HiveIcebergStorageHandler.isWrite(serDeProperties)) {
+    } else if (HiveIcebergStorageHandler.isWrite(configuration, tableName)) {
       // when writing out data, we should not do projection pushdown
       projectedSchema = tableSchema;
     } else {

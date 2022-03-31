@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.StreamSupport;
 import org.apache.iceberg.DataFile;
@@ -276,6 +277,37 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
     List<Object[]> objects = shell.executeStatement("SELECT * FROM customers");
     Assert.assertEquals(5, objects.size());
+  }
+
+  @Test
+  public void testDeleteStatementsWithOtherTable() {
+    Assume.assumeFalse("Iceberg DELETEs are only implemented for non-vectorized mode for now", isVectorized);
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Alice", "Brown")
+        .add(0L, "BBB", "CCC")
+        .add(1L, "Blobbbb", "GHYH")
+        .add(1L, "Bob", "Green")
+        .add(1L, "FFF", "DDD")
+        .add(1L, "FFF", "Milla")
+        .add(2L, "GGG", "BLU")
+        .add(2L, "Trudy", "Pink")
+        .add(2L, "Trudy", "Bubba")
+        .build();
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").bucket("customer_id", 16).build();
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, records, 2);
+
+    testTables.createTable(shell, "other", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, Collections.emptyList(), 2);
+
+    shell.executeStatement("insert into other values (1, 'Jason', 'Derulo'), (0, 'k', 's'), (4, 'Buh', 'Bubba')");
+
+    shell.executeStatement("DELETE FROM customers WHERE customer_id in (select customer_id from other) " +
+        "or last_name in (select last_name from other)");
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM customers");
+    Assert.assertEquals(2, objects.size());
   }
 
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {

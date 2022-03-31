@@ -103,7 +103,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergStorageHandler.class);
 
   private static final String ICEBERG_URI_PREFIX = "iceberg://";
-  private static final String INSERT = "INSERT";
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
   /**
@@ -167,12 +166,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // For Tez, setting the committer here is enough to make sure it'll be part of the jobConf
     map.put("mapred.output.committer.class", HiveIcebergNoJobCommitter.class.getName());
     // For MR, the jobConf is set only in configureJobConf, so we're setting the write key here to detect it over there
-    String opType = SessionStateUtil.getProperty(conf, Context.Operation.class.getSimpleName()).orElse(INSERT);
-    map.put(InputFormatConfig.OPERATION_TYPE, opType);
+    String opType = SessionStateUtil.getProperty(conf, Context.Operation.class.getSimpleName())
+        .orElse(Context.Operation.OTHER.name());
+    map.put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
     // Putting the key into the table props as well, so that projection pushdown can be determined on a
     // table-level and skipped only for output tables in HiveIcebergSerde. Properties from the map will be present in
     // the serde config for all tables in the query, not just the output tables, so we can't rely on that in the serde.
-    tableDesc.getProperties().put(InputFormatConfig.OPERATION_TYPE, opType);
+    tableDesc.getProperties().put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
   }
 
   /**
@@ -202,10 +202,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     setCommonJobConf(jobConf);
     if (tableDesc != null && tableDesc.getProperties() != null &&
-        tableDesc.getProperties().get(InputFormatConfig.OPERATION_TYPE) != null) {
+        tableDesc.getProperties().get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName()) != null) {
       // set operation type into job conf too
-      jobConf.set(InputFormatConfig.OPERATION_TYPE,
-          tableDesc.getProperties().getProperty(InputFormatConfig.OPERATION_TYPE));
+      jobConf.set(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(),
+          tableDesc.getProperties().getProperty(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName()));
       String tableName = tableDesc.getTableName();
       Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
           "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
@@ -502,16 +502,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return false;
   }
 
-  public static boolean isDelete(Configuration conf) {
-    return conf != null && Context.Operation.DELETE.name().equals(conf.get(InputFormatConfig.OPERATION_TYPE));
+  public static boolean isWrite(Configuration conf, String tableName) {
+    return conf != null && tableName != null && Context.Operation.OTHER.name().equals(
+        conf.get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName));
   }
 
-  public static boolean isDelete(Properties props) {
-    return props != null && Context.Operation.DELETE.name().equals(props.get(InputFormatConfig.OPERATION_TYPE));
-  }
-
-  public static boolean isWrite(Properties props) {
-    return props != null && INSERT.equals(props.get(InputFormatConfig.OPERATION_TYPE));
+  public static boolean isDelete(Configuration conf, String tableName) {
+    return conf != null && tableName != null && Context.Operation.DELETE.name().equals(
+        conf.get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName));
   }
 
   /**
