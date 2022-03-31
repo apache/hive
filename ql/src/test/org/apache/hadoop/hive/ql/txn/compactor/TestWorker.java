@@ -362,11 +362,11 @@ public class TestWorker extends CompactorTest {
 
     startWorker();
 
-    // since compaction was not run, state should not be "ready for cleaning" but "succeeded"
+    // since compaction was not run, state should not be "ready for cleaning" but "refused"
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(1, compacts.size());
-    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(0).getState());
+    Assert.assertEquals(TxnStore.REFUSED_RESPONSE, compacts.get(0).getState());
 
     // There should still be 4 directories in the location
     FileSystem fs = FileSystem.get(conf);
@@ -1123,7 +1123,7 @@ public class TestWorker extends CompactorTest {
     List<ShowCompactResponseElement> compacts =
         txnHandler.showCompact(new ShowCompactRequest()).getCompacts();
     Assert.assertEquals(compactionNum + 1, compacts.size());
-    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(compactionNum).getState());
+    Assert.assertEquals(TxnStore.REFUSED_RESPONSE, compacts.get(compactionNum).getState());
 
     // assert transaction with txnId=1 is still aborted after cleaner is run
     startCleaner();

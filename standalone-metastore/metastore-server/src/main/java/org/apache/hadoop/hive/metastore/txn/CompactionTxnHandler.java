@@ -1332,8 +1332,9 @@ class CompactionTxnHandler extends TxnHandler {
 
 
   private void updateStatus(CompactionInfo ci) throws MetaException {
+    String strState = compactorStateToResponse(ci.state);
     if (LOG.isDebugEnabled()) {
-      LOG.debug("Marking as failed: CompactionInfo: " + ci.toString());
+      LOG.debug("Marking as " + strState + ": CompactionInfo: " + ci);
     }
     try {
       Connection dbConn = null;
@@ -1394,15 +1395,12 @@ class CompactionTxnHandler extends TxnHandler {
         CompactionInfo.insertIntoCompletedCompactions(pStmt, ci, getDbTime(dbConn));
         int updCount = pStmt.executeUpdate();
         LOG.debug("Inserted " + updCount + " entries into COMPLETED_COMPACTIONS");
-        LOG.debug("Going to commit");
         closeStmt(pStmt);
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.warn("markFailed(" + ci.id + "):" + e.getMessage());
-        LOG.debug("Going to rollback");
+        LOG.error("Failed to mark compaction request as " + strState + ", rolling back transaction: " + ci, e);
         rollbackDBConn(dbConn);
-        checkRetryable(e, "markFailed(" + ci + ")");
-        LOG.error("markFailed(" + ci + ") failed: " + e.getMessage(), e);
+        checkRetryable(e, "updateStatus(" + ci + ")");
       } finally {
         close(rs, stmt, null);
         close(null, pStmt, dbConn);

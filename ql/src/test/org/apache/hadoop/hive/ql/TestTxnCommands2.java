@@ -1396,7 +1396,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals("Unexpected number of compactions in history", 2, resp.getCompactsSize());
     Assert.assertEquals("Unexpected 0 compaction state", TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
-    Assert.assertEquals("Unexpected 1 compaction state", TxnStore.SUCCEEDED_RESPONSE,
+    Assert.assertEquals("Unexpected 1 compaction state", TxnStore.REFUSED_RESPONSE,
         resp.getCompacts().get(1).getState());
   }
 
