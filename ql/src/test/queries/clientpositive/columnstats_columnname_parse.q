@@ -11,7 +11,6 @@ CREATE TABLE table1(
 insert into table1 values(1);
 insert into table2 values("1","1","1");
 
---set hive.stats.autogather=false;
 set hive.support.quoted.identifiers=none;
 
 create external table ext_table STORED AS ORC tblproperties('compression'='snappy','external.table.purge'='true') as
