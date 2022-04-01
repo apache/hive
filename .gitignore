@@ -20,9 +20,7 @@ target/
 conf/hive-default.xml.template
 .DS_Store
 .factorypath
-standalone-metastore/src/gen/version
 standalone-metastore/metastore-common/src/gen/version
-standalone-metastore/metastore-server/src/gen/version
 kafka-handler/src/test/gen
 **/.vscode/
 /.recommenders/
