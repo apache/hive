@@ -28,7 +28,18 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -1491,18 +1502,35 @@ public class AcidUtils {
       while (itr.hasNext()) {
         FileStatus fStatus = itr.next();
         Path fPath = fStatus.getPath();
-        if (acidHiddenFileFilter.accept(fPath)) {
-          if (deltaFileFilter.accept(fPath) ||
-                  baseFileFilter.accept(fPath) ||
+        if (acidHiddenFileFilter.accept(fPath) && acidTempDirFilter.accept(fPath)) {
+          if (baseFileFilter.accept(fPath) ||
+                  deltaFileFilter.accept(fPath) ||
                   deleteEventDeltaDirFilter.accept(fPath)) {
-            dirToSnapshots.put(fPath, new HdfsDirSnapshotImpl(fPath));
+            addToSnapshoot(dirToSnapshots, fPath);
           } else {
-            stack.push(fs.listStatusIterator(fPath));
+            if (fStatus.isDirectory()) {
+              stack.push(fs.listStatusIterator(fPath));
+              // This needed to remove non acid directories
+              addToSnapshoot(dirToSnapshots, fPath);
+            } else {
+              // Found a rogue file
+              HdfsDirSnapshot hdfsDirSnapshot = addToSnapshoot(dirToSnapshots, fPath.getParent());
+              hdfsDirSnapshot.addFile(fStatus);
+            }
           }
         }
       }
     }
     return dirToSnapshots;
+  }
+
+  private static HdfsDirSnapshot addToSnapshoot(Map<Path, HdfsDirSnapshot> dirToSnapshots, Path fPath) {
+    HdfsDirSnapshot dirSnapshot = dirToSnapshots.get(fPath);
+    if (dirSnapshot == null) {
+      dirSnapshot = new HdfsDirSnapshotImpl(fPath);
+      dirToSnapshots.put(fPath, dirSnapshot);
+    }
+    return dirSnapshot;
   }
 
   public static Map<Path, HdfsDirSnapshot> getHdfsDirSnapshots(final FileSystem fs, final Path path)
@@ -1514,11 +1542,7 @@ public class AcidUtils {
       Path fPath = fStatus.getPath();
       if (acidHiddenFileFilter.accept(fPath)) {
         if (fStatus.isDirectory() && acidTempDirFilter.accept(fPath)) {
-          HdfsDirSnapshot dirSnapshot = dirToSnapshots.get(fPath);
-          if (dirSnapshot == null) {
-            dirSnapshot = new HdfsDirSnapshotImpl(fPath);
-            dirToSnapshots.put(fPath, dirSnapshot);
-          }
+          addToSnapshoot(dirToSnapshots, fPath);
         } else {
           Path parentDirPath = fPath.getParent();
           if (acidTempDirFilter.accept(parentDirPath)) {
@@ -1529,11 +1553,7 @@ public class AcidUtils {
               // So build the snapshot with the files inside the delta directory
               parentDirPath = parentDirPath.getParent();
             }
-            HdfsDirSnapshot dirSnapshot = dirToSnapshots.get(parentDirPath);
-            if (dirSnapshot == null) {
-              dirSnapshot = new HdfsDirSnapshotImpl(parentDirPath);
-              dirToSnapshots.put(parentDirPath, dirSnapshot);
-            }
+            HdfsDirSnapshot dirSnapshot = addToSnapshoot(dirToSnapshots, parentDirPath);
             // We're not filtering out the metadata file and acid format file,
             // as they represent parts of a valid snapshot
             // We're not using the cached values downstream, but we can potentially optimize more in a follow-up task
@@ -1852,11 +1872,11 @@ public class AcidUtils {
       return;
     }
     if (directory.getBase() == null || directory.getBase().getWriteId() < writeId
-      // If there are two competing versions of a particular write-id, one from the compactor and another from IOW, 
+      // If there are two competing versions of a particular write-id, one from the compactor and another from IOW,
       // always pick the compactor one once it is committed.
-      || directory.getBase().getWriteId() == writeId && 
+      || directory.getBase().getWriteId() == writeId &&
           isCompactedBase && validTxnList.isTxnValid(parsedBase.getVisibilityTxnId())) {
-      
+
       if (isValidBase(parsedBase, writeIdList, directory.getFs(), dirSnapshot)) {
         List<HdfsFileStatusWithId> files = null;
         if (dirSnapshot != null) {
