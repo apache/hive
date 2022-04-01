@@ -251,6 +251,9 @@ public class TestHiveMetastore {
     conf.set(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL.varname, "false");
     conf.set(HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES.varname, "false");
     conf.set("iceberg.hive.client-pool-size", "2");
+    // set to false so that TxnManager#checkLock does not throw exception when using UNSET data type operation
+    // in the requested lock component
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, false);
   }
 
   private static void setupMetastoreDB(String dbURL) throws Exception {
