@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
@@ -68,6 +69,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -394,7 +396,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       LOG.info("Security is not enabled. Not logging in via keytab");
     }
 
-    // TODO Bunch of http specific variables need to be defined here.
     long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
     int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
     int maxWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MAX_THREADS);
@@ -404,10 +405,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Server thread pool
     // Start with minWorkerThreads, expand till maxWorkerThreads and reject
     // subsequent requests
-    String threadPoolName = "HiveServer2-HttpHandler-Pool";
+    final String threadPoolNamePrefix = "HiveMetastore-HttpHandler-Pool";
     ExecutorService executorService = new ThreadPoolExecutor(
         minWorkerThreads, maxWorkerThreads, 60, TimeUnit.SECONDS,
-        new SynchronousQueue<>());
+        new SynchronousQueue<>(), new ThreadFactory() {
+      @Override
+      public Thread newThread(@NotNull Runnable r) {
+        Thread newThread = new Thread(r);
+        newThread.setName(threadPoolNamePrefix + ": Thread-" + newThread.getId());
+        return newThread;
+      }
+    });
 
     ExecutorThreadPool threadPool = new ExecutorThreadPool((ThreadPoolExecutor) executorService);
 
@@ -418,7 +426,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     ServerConnector connector;
 
     final HttpConfiguration httpServerConf = new HttpConfiguration();
-    // TODO: Read from Configuration
     httpServerConf.setRequestHeaderSize(
         MetastoreConf.getIntVar(conf, ConfVars.METASTORE_THRIFT_HTTP_REQUEST_HEADER_SIZE));
     httpServerConf.setResponseHeaderSize(
@@ -442,7 +449,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           MetastoreConf.getVar(conf, ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
 
       SslContextFactory sslContextFactory = new SslContextFactory();
-      // TODO: Add support for excluding protocols?
       String[] excludedProtocols = MetastoreConf.getVar(conf, ConfVars.SSL_PROTOCOL_BLACKLIST).split(",");
       LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
       sslContextFactory.addExcludeProtocols(excludedProtocols);
@@ -458,8 +464,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
     connector.setPort(port);
     connector.setReuseAddress(true);
-    // TODO: What should the idle timeout be for the metastore. 30 minutes seems a little too long.
-    connector.setIdleTimeout(120 * 1000);
+    // TODO: What should the idle timeout be for the metastore? Currently it is 30 minutes
+    int maxIdleTimeout = (int)MetastoreConf.getTimeVar(conf, ConfVars.METASTORE_THRIFT_HTTP_MAX_IDLE_TIME,
+        TimeUnit.MILLISECONDS);
+    connector.setIdleTimeout(maxIdleTimeout);
     // TODO: AcceptQueueSize needs to be higher for HMS
     connector.setAcceptQueueSize(maxWorkerThreads);
     // TODO: Connection keepalive configuration?

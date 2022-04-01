@@ -61,7 +61,7 @@ public class HmsThriftHttpServlet extends TServlet {
 
     Enumeration<String> headerNames = request.getHeaderNames();
     if (LOG.isDebugEnabled()) {
-      LOG.debug(" Logging headers in request");
+      LOG.debug("Logging headers in request");
       while (headerNames.hasMoreElements()) {
         String headerName = headerNames.nextElement();
         LOG.debug("Header: [{}], Value: [{}]", headerName,

@@ -34,24 +34,14 @@ public class TestRemoteHiveHttpMetaStore extends TestRemoteHiveMetaStore {
   @Override
   public void start() throws Exception {
     MetastoreConf.setVar(conf, ConfVars.THRIFT_TRANSPORT_MODE, "http");
-    //MetastoreConf.setBoolVar(conf, ConfVars.USE_SSL, true);
-    //MetastoreConf.setVar(conf, ConfVars.SSL_KEYSTORE_PATH, "/home/sourabh/src/certs1/keystore");
-    //MetastoreConf.setVar(conf, ConfVars.SSL_KEYSTORE_PASSWORD, "password");
-    //MetastoreConf.setVar(conf, ConfVars.SSL_KEYSTORE_TYPE, "pkcs12");
-    //MetastoreConf.setVar(conf, ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM, "SunX509");
-    LOG.info("Attempting to start test remote metastore");
+    LOG.info("Attempting to start test remote metastore in http mode");
     super.start();
-    LOG.info("Successfully started test remote metastore");
+    LOG.info("Successfully started test remote metastore in http mode");
   }
 
   @Override
   protected HiveMetaStoreClient createClient() throws Exception {
     MetastoreConf.setVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE, "http");
-    //MetastoreConf.setBoolVar(conf, ConfVars.USE_SSL, true);
-    //MetastoreConf.setVar(conf, ConfVars.SSL_TRUSTSTORE_PATH, "/home/sourabh/src/certs1/truststore");
-    //MetastoreConf.setVar(conf, ConfVars.SSL_TRUSTSTORE_PASSWORD, "password");
-    //MetastoreConf.setVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM, "SunX509");
-    //MetastoreConf.setVar(conf, ConfVars.SSL_TRUSTSTORE_TYPE, "jks");
     return super.createClient();
   }
 }
