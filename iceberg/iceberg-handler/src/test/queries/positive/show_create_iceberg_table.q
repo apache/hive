@@ -1,3 +1,6 @@
+-- Mask random uuid
+--! qt:replace:/(\s+'uuid'=')\S+('\s*)/$1#Masked#$2/
+
 DROP TABLE IF EXISTS ice_t;
 CREATE EXTERNAL TABLE ice_t (i int, s string, ts timestamp, d date) STORED BY ICEBERG;
 SHOW CREATE TABLE ice_t;
