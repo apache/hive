@@ -207,10 +207,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     setCommonJobConf(jobConf);
     if (tableDesc != null && tableDesc.getProperties() != null &&
         tableDesc.getProperties().get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName()) != null) {
-      // set operation type into job conf too
-      jobConf.set(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(),
-          tableDesc.getProperties().getProperty(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName()));
       String tableName = tableDesc.getTableName();
+      String opKey = InputFormatConfig.OPERATION_TYPE_PREFIX + tableName;
+      // set operation type into job conf too
+      jobConf.set(opKey, tableDesc.getProperties().getProperty(opKey));
       Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
           "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
       String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);

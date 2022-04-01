@@ -57,17 +57,19 @@ public class HiveIcebergDeleteWriter extends ClusteredPositionDeleteWriter<Recor
     return writers.get(taskAttemptID);
   }
 
+  private final PartitionKey currentKey;
   private final FileIO io;
-  private final PartitionSpec spec;
   private final InternalRecordWrapper wrapper;
+  private final PartitionSpec spec;
 
-  HiveIcebergDeleteWriter(FileWriterFactory<Record> writerFactory, Schema schema, PartitionSpec spec,
-      FileFormat fileFormat, OutputFileFactory fileFactory, FileIO io, long targetFileSize, TaskAttemptID taskAttemptID,
-      String tableName) {
+  HiveIcebergDeleteWriter(Schema schema, PartitionSpec spec, FileFormat fileFormat,
+      FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
+      TaskAttemptID taskAttemptID, String tableName) {
     super(writerFactory, fileFactory, io, fileFormat, targetFileSize);
     this.io = io;
-    this.spec = spec;
+    this.currentKey = new PartitionKey(spec, schema);
     this.wrapper = new InternalRecordWrapper(schema.asStruct());
+    this.spec = spec;
     writers.putIfAbsent(taskAttemptID, Maps.newConcurrentMap());
     writers.get(taskAttemptID).put(tableName, this);
   }
@@ -80,9 +82,8 @@ public class HiveIcebergDeleteWriter extends ClusteredPositionDeleteWriter<Recor
   public void write(Writable row) throws IOException {
     Record rec = ((Container<Record>) row).get();
     PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(spec.schema(), rec);
-    PartitionKey partitionKey = new PartitionKey(spec, spec.schema());
-    partitionKey.partition(wrapper.wrap(positionDelete.row()));
-    super.write(positionDelete, spec, partitionKey);
+    currentKey.partition(wrapper.wrap(positionDelete.row()));
+    super.write(positionDelete, spec, currentKey);
   }
 
   @Override
