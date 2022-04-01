@@ -1406,9 +1406,14 @@ public class DagUtils {
   public LocalResource localizeResource(
       Path src, Path dest, LocalResourceType type, Configuration conf) throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
-    // We call copyFromLocal below, so we basically assume src is a local file.
-    FileSystem srcFs = FileSystem.getLocal(conf);
-    if (src != null && !checkPreExisting(srcFs, src, dest, conf)) {
+    FileSystem srcFs;
+    if (src.toUri().getScheme() != null) {
+      srcFs = src.getFileSystem(conf);
+    } else {
+      srcFs = FileSystem.getLocal(conf);
+    }
+
+    if (!checkPreExisting(srcFs, src, dest, conf)) {
       // copy the src to the destination and create local resource.
       // do not overwrite.
       String srcStr = src.toString();
@@ -1424,12 +1429,8 @@ public class DagUtils {
         return createLocalResource(destFS, dest, type, LocalResourceVisibility.PRIVATE);
       }
       try {
-        if (src.toUri().getScheme()!=null) {
-          FileUtil.copy(src.getFileSystem(conf), src, destFS, dest, false, false, conf);
-        }
-        else {
-          destFS.copyFromLocalFile(false, false, src, dest);
-        }
+        // FileUtil.copy takes care of copy from local filesystem internally.
+        FileUtil.copy(srcFs, src, destFS, dest, false, false, conf);
         synchronized (notifier) {
           notifier.notifyAll(); // Notify if we have successfully copied the file.
         }
@@ -1458,8 +1459,7 @@ public class DagUtils {
         }
       }
     }
-    return createLocalResource(destFS, dest, type,
-        LocalResourceVisibility.PRIVATE);
+    return createLocalResource(destFS, dest, type, LocalResourceVisibility.PRIVATE);
   }
 
   public boolean checkOrWaitForTheFile(FileSystem srcFs, Path src, Path dest, Configuration conf,
