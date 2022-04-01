@@ -53,6 +53,14 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     String partitionName = getPartitionName(table);
 
     CompactionResponse resp = compact(table, partitionName);
+    if(!resp.isAccepted()) {
+      String message = "No detailed message available";
+      if (resp.isSetErrormessage()) {
+        message = resp.getErrormessage();
+      }
+      throw new HiveException(ErrorMsg.COMPACTION_REFUSED,
+          table.getDbName(), table.getTableName(), partitionName == null ? "" : "(partition=" + partitionName + ")", message);
+    }
 
     if (desc.isBlocking() && resp.isAccepted()) {
       waitForCompactionToFinish(resp);

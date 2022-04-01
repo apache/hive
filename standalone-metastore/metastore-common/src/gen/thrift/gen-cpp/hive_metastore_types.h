@@ -10559,25 +10559,34 @@ void swap(CompactionMetricsDataRequest &a, CompactionMetricsDataRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const CompactionMetricsDataRequest& obj);
 
+typedef struct _CompactionResponse__isset {
+  _CompactionResponse__isset() : errormessage(false) {}
+  bool errormessage :1;
+} _CompactionResponse__isset;
 
 class CompactionResponse : public virtual ::apache::thrift::TBase {
  public:
 
   CompactionResponse(const CompactionResponse&);
   CompactionResponse& operator=(const CompactionResponse&);
-  CompactionResponse() : id(0), state(), accepted(0) {
+  CompactionResponse() : id(0), state(), accepted(0), errormessage() {
   }
 
   virtual ~CompactionResponse() noexcept;
   int64_t id;
   std::string state;
   bool accepted;
+  std::string errormessage;
+
+  _CompactionResponse__isset __isset;
 
   void __set_id(const int64_t val);
 
   void __set_state(const std::string& val);
 
   void __set_accepted(const bool val);
+
+  void __set_errormessage(const std::string& val);
 
   bool operator == (const CompactionResponse & rhs) const
   {
@@ -10586,6 +10595,10 @@ class CompactionResponse : public virtual ::apache::thrift::TBase {
     if (!(state == rhs.state))
       return false;
     if (!(accepted == rhs.accepted))
+      return false;
+    if (__isset.errormessage != rhs.__isset.errormessage)
+      return false;
+    else if (__isset.errormessage && !(errormessage == rhs.errormessage))
       return false;
     return true;
   }

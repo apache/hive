@@ -303,8 +303,15 @@ class DriverTxnHandler {
 
   private void allocateWriteIdForAcidAnalyzeTable() throws LockException {
     if (driverContext.getPlan().getAcidAnalyzeTable() != null) {
+      //Inside a compaction transaction, only stats gathering is running which is not requiring a new write id,
+      //and for duplicate compaction detection it is necessary to not increment it.
+      boolean isWithinCompactionTxn = Boolean.parseBoolean(SessionState.get().getHiveVariables().get(Constants.INSIDE_COMPACTION_TRANSACTION_FLAG));
       Table table = driverContext.getPlan().getAcidAnalyzeTable().getTable();
-      driverContext.getTxnManager().getTableWriteId(table.getDbName(), table.getTableName());
+      if(isWithinCompactionTxn) {
+        driverContext.getTxnManager().allocateMaxTableWriteId(table.getDbName(), table.getTableName());
+      } else {
+        driverContext.getTxnManager().getTableWriteId(table.getDbName(), table.getTableName());
+      }
     }
   }
 

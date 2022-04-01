@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
@@ -51,6 +52,7 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook;
@@ -61,6 +63,7 @@ import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
 import org.apache.hive.streaming.StrictDelimitedInputWriter;
@@ -120,6 +123,56 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("Expecting 1 rows and found " + compacts.size(), 1, compacts.size());
     Assert.assertEquals("Expecting compaction state 'ready for cleaning' and found:" + compacts.get(0).getState(),
             "ready for cleaning", compacts.get(0).getState());
+  }
+
+  @Test
+  public void secondCompactionShouldBeRefusedBeforeEnqueueing() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    // Set delta numbuer threshold to 2 to avoid skipping compaction because of too few deltas
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 2);
+    // Set delta percentage to a high value to suppress selecting major compression based on that
+    conf.setFloatVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD, 1000f);
+
+    final String dbName = "default";
+    final String tableName = "compaction_test";
+    executeStatementOnDriver("drop table if exists " + tableName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tableName + "(id string, value string) CLUSTERED BY(id) " +
+        "INTO 10 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
+
+    executeStatementOnDriver("INSERT INTO TABLE " + tableName + " values ('1','one'),('2','two'),('3','three')," +
+        "('4','four'),('5','five'),('6','six'),('7','seven'),('8','eight'),('9','nine'),('10','ten')," +
+        "('11','eleven'),('12','twelve'),('13','thirteen'),('14','fourteen'),('15','fifteen'),('16','sixteen')," +
+        "('17','seventeen'),('18','eighteen'),('19','nineteen'),('20','twenty')", driver);
+
+    executeStatementOnDriver("insert into " + tableName + " values ('21', 'value21'),('84', 'value84')," +
+        "('66', 'value66'),('54', 'value54')", driver);
+    executeStatementOnDriver("insert into " + tableName + " values ('22', 'value22'),('34', 'value34')," +
+        "('35', 'value35')", driver);
+    executeStatementOnDriver("insert into " + tableName + " values ('75', 'value75'),('99', 'value99')", driver);
+
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+
+    //Do a compaction directly and wait for it to finish
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MAJOR);
+    CompactionResponse resp = txnHandler.compact(rqst);
+    runWorker(conf);
+
+    //Try to do a second compaction on the same table before the cleaner runs.
+    try {
+      driver.run("ALTER TABLE " + tableName + " COMPACT 'major'");
+    } catch (CommandProcessorException e) {
+      String errorMessage = ErrorMsg.COMPACTION_REFUSED.format(dbName, tableName, "",
+          "Compaction is already scheduled with state='ready for cleaning' and id=" + resp.getId());
+      Assert.assertEquals(errorMessage, e.getCauseMessage());
+      Assert.assertEquals(ErrorMsg.COMPACTION_REFUSED.getErrorCode(), e.getErrorCode());
+    }
+
+    //Check if the first compaction is in 'ready for cleaning'
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
   }
 
   @Test
@@ -581,10 +634,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         Collections.singletonList("base_0000005_v0000009"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionToday));
     Assert.assertEquals("Base directory does not match after major compaction",
-        Collections.singletonList("base_0000006_v0000014"),
+        Collections.singletonList("base_0000005_v0000014"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionTomorrow));
     Assert.assertEquals("Base directory does not match after major compaction",
-        Collections.singletonList("base_0000007_v0000019"),
+        Collections.singletonList("base_0000005_v0000019"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionYesterday));
     // Check base dir contents
     List<String> expectedBucketFiles = Arrays.asList("bucket_00000");
@@ -593,17 +646,17 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             .getBucketFileNames(fs, table, partitionToday, "base_0000005_v0000009"));
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil
-            .getBucketFileNames(fs, table, partitionTomorrow, "base_0000006_v0000014"));
+            .getBucketFileNames(fs, table, partitionTomorrow, "base_0000005_v0000014"));
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil
-            .getBucketFileNames(fs, table, partitionYesterday, "base_0000007_v0000019"));
+            .getBucketFileNames(fs, table, partitionYesterday, "base_0000005_v0000019"));
     // Check buckets contents
     Assert.assertEquals("post-compaction bucket 0", expectedRsBucket0,
         testDataProvider.getBucketData(tblName, "536870912"));
     // Check bucket file contents
     checkBucketIdAndRowIdInAcidFile(fs, new Path(todayPath, "base_0000005_v0000009"), 0);
-    checkBucketIdAndRowIdInAcidFile(fs, new Path(tomorrowPath, "base_0000006_v0000014"), 0);
-    checkBucketIdAndRowIdInAcidFile(fs, new Path(yesterdayPath, "base_0000007_v0000019"), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(tomorrowPath, "base_0000005_v0000014"), 0);
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(yesterdayPath, "base_0000005_v0000019"), 0);
 
     CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
         conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE), new String[] { AcidUtils.BASE_PREFIX});
@@ -667,8 +720,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     verifySuccessfulCompaction( 3);
     // Verify base directories after compaction in each partition
     String expectedBaseToday = "base_0000005_v0000011";
-    String expectedBaseTomorrow = "base_0000006_v0000016";
-    String expectedBaseYesterday = "base_0000007_v0000021";
+    String expectedBaseTomorrow = "base_0000005_v0000016";
+    String expectedBaseYesterday = "base_0000005_v0000021";
     List<String> baseDeltasInToday =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, partitionToday);
     Assert.assertEquals("Delta directories does not match after compaction",
@@ -1587,10 +1640,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         Collections.singletonList("base_0000005_v0000009"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
     Assert.assertEquals("Delta directories do not match after major compaction",
-        Collections.singletonList("delta_0000007_0000011_v0000021"),
+        Collections.singletonList("delta_0000006_0000010_v0000021"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
     Assert.assertEquals("Delete delta directories does not match after minor compaction",
-        Collections.singletonList("delete_delta_0000007_0000011_v0000021"),
+        Collections.singletonList("delete_delta_0000006_0000010_v0000021"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null));
     // Verify all contents
     actualData = dataProvider.getAllData(tableName);

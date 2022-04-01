@@ -15962,14 +15962,16 @@ class CompactionResponse(object):
      - id
      - state
      - accepted
+     - errormessage
 
     """
 
 
-    def __init__(self, id=None, state=None, accepted=None,):
+    def __init__(self, id=None, state=None, accepted=None, errormessage=None,):
         self.id = id
         self.state = state
         self.accepted = accepted
+        self.errormessage = errormessage
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15995,6 +15997,11 @@ class CompactionResponse(object):
                     self.accepted = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.errormessage = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -16016,6 +16023,10 @@ class CompactionResponse(object):
         if self.accepted is not None:
             oprot.writeFieldBegin('accepted', TType.BOOL, 3)
             oprot.writeBool(self.accepted)
+            oprot.writeFieldEnd()
+        if self.errormessage is not None:
+            oprot.writeFieldBegin('errormessage', TType.STRING, 4)
+            oprot.writeString(self.errormessage.encode('utf-8') if sys.version_info[0] == 2 else self.errormessage)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -30822,6 +30833,7 @@ CompactionResponse.thrift_spec = (
     (1, TType.I64, 'id', None, None, ),  # 1
     (2, TType.STRING, 'state', 'UTF8', None, ),  # 2
     (3, TType.BOOL, 'accepted', None, None, ),  # 3
+    (4, TType.STRING, 'errormessage', 'UTF8', None, ),  # 4
 )
 all_structs.append(ShowCompactRequest)
 ShowCompactRequest.thrift_spec = (

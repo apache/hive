@@ -556,6 +556,7 @@ public class TestAcidOnTez {
     for(int i = 0; i < expectedDelDelta2.length; i++) {
       Assert.assertNull("at " + i + " " + expectedDelDelta2[i] + " not found on disk", expectedDelDelta2[i]);
     }
+    runCleaner(hiveConf);
     //run Major compaction
     runStatementOnDriver("alter table " + Table.ACIDNOBUCKET + " compact 'major'", confForTez);
     runWorker(hiveConf);

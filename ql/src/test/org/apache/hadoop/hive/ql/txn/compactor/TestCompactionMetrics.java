@@ -402,6 +402,8 @@ public class TestCompactionMetrics  extends CompactorTest {
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER,
         WORKER_CYCLE_KEY + "_" + CompactionType.MINOR.toString().toLowerCase(), 1);
 
+    startCleaner();
+
     rqst = new CompactionRequest("default", "mapwb", CompactionType.MAJOR);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
@@ -410,7 +412,16 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(2, rsp.getCompactsSize());
-    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts()
+        .stream()
+        .filter(c -> c.getType().equals(CompactionType.MINOR))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("Could not found minor compaction")).getState());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts()
+        .stream()
+        .filter(c -> c.getType().equals(CompactionType.MAJOR))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("Could not found minor compaction")).getState());
 
     json = metrics.dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER,

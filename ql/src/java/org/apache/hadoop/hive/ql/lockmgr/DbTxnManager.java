@@ -978,6 +978,17 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     return getTableWriteId(dbName, tableName, false);
   }
 
+  @Override
+  public void allocateMaxTableWriteId(String dbName, String tableName) throws LockException{
+    try {
+      long writeId = getMS().getMaxAllocatedWriteId(dbName, tableName);
+      LOG.debug("Caching max allocated write ID {} for {}.{}", writeId, dbName, tableName);
+      tableWriteIds.put(AcidUtils.getFullTableName(dbName, tableName), writeId);
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    }
+  }
+
   private long getTableWriteId(
       String dbName, String tableName, boolean allocateIfNotYet) throws LockException {
     String fullTableName = AcidUtils.getFullTableName(dbName, tableName);

@@ -316,7 +316,16 @@ public interface HiveTxnManager {
   * @return 0 if not yet allocated
   * @throws LockException
   */
- public long getAllocatedTableWriteId(String dbName, String tableName) throws LockException;
+ long getAllocatedTableWriteId(String dbName, String tableName) throws LockException;
+
+ /**
+  * Finds the max allocated table write ID and caches it. As a result all subsequent
+  * {@link #getTableWriteId(String, String)} calls will return it.
+  * @param dbName
+  * @param tableName
+  * @throws LockException
+  */
+ void allocateMaxTableWriteId(String dbName, String tableName) throws LockException;
 
  /**
    * Allocates write id for each transaction in the list.

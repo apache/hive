@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -731,11 +732,11 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDelta == 1) {
-          Assert.assertEquals("delta_10000002_10000002_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_10000001_10000001_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001_0", buckets[0].getPath().getName());
         } else if (numDelta == 2) {
-          Assert.assertEquals("delta_10000003_10000003_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_10000002_10000002_0000", status[i].getPath().getName());
           Assert.assertEquals(1, buckets.length);
           Assert.assertEquals("bucket_00000_0", buckets[0].getPath().getName());
         }
@@ -744,7 +745,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDeleteDelta == 1) {
-          Assert.assertEquals("delete_delta_10000002_10000002_0000", status[i].getPath().getName());
+          Assert.assertEquals("delete_delta_10000001_10000001_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001_0", buckets[0].getPath().getName());
         }
@@ -791,7 +792,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
-          Assert.assertEquals("base_10000003_v0000031", status[i].getPath().getName());
+          Assert.assertEquals("base_10000002_v0000031", status[i].getPath().getName());
           Assert.assertEquals(2, buckets.length);
           Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
         }
@@ -818,7 +819,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     status = fs.listStatus(new Path(getWarehouseDir() + "/" +
       (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Assert.assertEquals(1, status.length);
-    Assert.assertEquals("base_10000003_v0000031", status[0].getPath().getName());
+    Assert.assertEquals("base_10000002_v0000031", status[0].getPath().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(2, buckets.length);
@@ -922,11 +923,11 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
         FileStatus[] buckets = fs.listStatus(parent, FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDelta == 1) {
-          Assert.assertEquals("delta_10000002_10000002_0000", parent.getName());
+          Assert.assertEquals("delta_10000001_10000001_0000", parent.getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001_0", buckets[0].getPath().getName());
         } else if (numDelta == 2) {
-          Assert.assertEquals("delta_10000003_10000003_0000", parent.getName());
+          Assert.assertEquals("delta_10000002_10000002_0000", parent.getName());
           Assert.assertEquals(1, buckets.length);
           Assert.assertEquals("bucket_00000_0", buckets[0].getPath().getName());
         }
@@ -935,7 +936,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
         FileStatus[] buckets = fs.listStatus(parent, FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDeleteDelta == 1) {
-          Assert.assertEquals("delete_delta_10000002_10000002_0000", parent.getName());
+          Assert.assertEquals("delete_delta_10000001_10000001_0000", parent.getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001_0", buckets[0].getPath().getName());
         }
@@ -982,7 +983,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
-          Assert.assertEquals("base_10000003_v0000031", parent.getName());
+          Assert.assertEquals("base_10000002_v0000031", parent.getName());
           Assert.assertEquals(2, buckets.length);
           Assert.assertEquals("bucket_00000", buckets[0].getPath().getName());
         }
@@ -1008,7 +1009,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     // Original bucket files, delta directories and previous base directory should have been cleaned up. Only one base with 2 files.
     status = listFilesByTable(fs, Table.NONACIDNESTEDPART);
     Assert.assertEquals(2, status.length);
-    Assert.assertEquals("base_10000003_v0000031", status[0].getPath().getParent().getName());
+    Assert.assertEquals("base_10000002_v0000031", status[0].getPath().getParent().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath().getParent(), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(2, buckets.length);
@@ -2061,6 +2062,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("ALTER TABLE " + Table.ACIDTBL + " COMPACT 'MINOR'");
     runWorker(hiveConf);
+    runCleaner(hiveConf);
 
     r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     Assert.assertEquals(stringifyValues(rExpected), r);
@@ -2403,7 +2405,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnHandler.cleanTxnToWriteIdTable();
     Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
-            4, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
+            3, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
 
     // Commit the open txn, which lets the cleanup on TXN_TO_WRITE_ID.
     txnMgr.commitTxn();
@@ -2532,11 +2534,11 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     verifyDeltaDirAndResult(4, Table.MMTBL.toString(), "", resultData3);
     verifyBaseDir(1, Table.MMTBL.toString(), "");
 
-    // 7. Run one more Major compaction this should not have any affect
-    runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MAJOR'");
-    runWorker(hiveConf);
-    verifyDeltaDirAndResult(4, Table.MMTBL.toString(), "", resultData3);
-    verifyBaseDir(1, Table.MMTBL.toString(), "");
+    // 7. Run one more Major compaction this should have been refused because there are no changes in the table
+    CompactionResponse resp = txnHandler.compact(new CompactionRequest("default", Table.MMTBL.name.toLowerCase(), CompactionType.MAJOR));
+    Assert.assertFalse(resp.isAccepted());
+    Assert.assertEquals(TxnStore.REFUSED_RESPONSE, resp.getState());
+    Assert.assertEquals("Compaction is already scheduled with state='ready for cleaning' and id=2", resp.getErrormessage());
 
     runCleaner(hiveConf);
 

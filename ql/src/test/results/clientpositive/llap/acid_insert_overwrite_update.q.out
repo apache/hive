@@ -122,10 +122,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sequential_update
 #### A masked pattern was here ####
 LOOKS OKAY	base_0000005
-PREHOOK: query: alter table sequential_update compact 'major'
-PREHOOK: type: ALTERTABLE_COMPACT
-POSTHOOK: query: alter table sequential_update compact 'major'
-POSTHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: query: select distinct IF(seq==0, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sequential_update

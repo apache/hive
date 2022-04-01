@@ -1334,7 +1334,8 @@ struct CompactionMetricsDataRequest {
 struct CompactionResponse {
     1: required i64 id,
     2: required string state,
-    3: required bool accepted
+    3: required bool accepted,
+    4: optional string errormessage
 }
 
 struct ShowCompactRequest {
