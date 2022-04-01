@@ -451,3 +451,20 @@ col3
 cola                
 colb                
 colc                
+PREHOOK: query: create table tbl_test (fld string COMMENT '期末日期', fld1 string COMMENT '班次名称', fld2  string COMMENT '排班人数')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_test
+POSTHOOK: query: create table tbl_test (fld string COMMENT '期末日期', fld1 string COMMENT '班次名称', fld2  string COMMENT '排班人数')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_test
+PREHOOK: query: show columns from tbl_test
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@tbl_test
+POSTHOOK: query: show columns from tbl_test
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@tbl_test
+fld                 
+fld1                
+fld2                
