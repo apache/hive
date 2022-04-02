@@ -42,6 +42,12 @@ public class TestMetaStoreSchemaInfo {
     Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("1.0.2", "2.0.1"));
     Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("0.0.9", "9.0.0"));
 
+    Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("4.0.0-alpha-1", "4.0.0-alpha-2"));
+    Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("4.0.0-alpha-1", "4.0.0-alpha"));
+    Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("4.0.0-alpha-1", "4.0.0"));
+    Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("4.0.0-alpha-1", "4.0.1"));
+    Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("4.0.0-alpha-1", "4.0.0-beta"));
+
     // check equivalent versions, should be compatible
     Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("0.13.0", "0.13.1"));
     Assert.assertTrue(metastoreSchemaInfo.isVersionCompatible("0.13.1", "0.13.0"));
@@ -49,7 +55,11 @@ public class TestMetaStoreSchemaInfo {
     // check incompatible versions
     Assert.assertFalse(metastoreSchemaInfo.isVersionCompatible("0.1.1", "0.1.0"));
     Assert.assertFalse(metastoreSchemaInfo.isVersionCompatible("4.0.1", "0.1.0"));
-
+    Assert.assertFalse(metastoreSchemaInfo.isVersionCompatible("4.0.1", "4.0.0-alpha-1"));
+    Assert.assertFalse(metastoreSchemaInfo.isVersionCompatible("4.0.0", "4.0.0-alpha-1"));
+    Assert.assertFalse(metastoreSchemaInfo.isVersionCompatible("4.0.0-alpha-2", "4.0.0-alpha-1"));
+    Assert.assertFalse(metastoreSchemaInfo.isVersionCompatible("4.0.0-alpha", "4.0.0-alpha-1"));
+    Assert.assertFalse(metastoreSchemaInfo.isVersionCompatible("4.0.0-beta", "4.0.0-alpha-1"));
   }
 
 }
