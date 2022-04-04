@@ -2,7 +2,7 @@ SELECT 'Upgrading MetaStore schema from 4.0.0-alpha-1 to 4.0.0-alpha-2';
 
 USE SYS;
 
-DROP TABLE IF EXISTS `WM_RESOURCEPLANS`;
+DROP TABLE IF EXISTS `DBS`;
 CREATE EXTERNAL TABLE IF NOT EXISTS `DBS` (
   `DB_ID` bigint,
   `DB_LOCATION_URI` string,
@@ -87,6 +87,46 @@ FROM
   \"SERDES\""
 );
 
+DROP TABLE IF EXISTS `TBLS`;
+CREATE EXTERNAL TABLE IF NOT EXISTS `TBLS` (
+  `TBL_ID` bigint,
+  `CREATE_TIME` int,
+  `DB_ID` bigint,
+  `LAST_ACCESS_TIME` int,
+  `OWNER` string,
+  `OWNER_TYPE` string,
+  `RETENTION` int,
+  `SD_ID` bigint,
+  `TBL_NAME` string,
+  `TBL_TYPE` string,
+  `VIEW_EXPANDED_TEXT` string,
+  `VIEW_ORIGINAL_TEXT` string,
+  `IS_REWRITE_ENABLED` boolean,
+  `WRITE_ID` bigint,
+  CONSTRAINT `SYS_PK_TBLS` PRIMARY KEY (`TBL_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"TBL_ID\",
+  \"CREATE_TIME\",
+  \"DB_ID\",
+  \"LAST_ACCESS_TIME\",
+  \"OWNER\",
+  \"OWNER_TYPE\",
+  \"RETENTION\",
+  \"SD_ID\",
+  \"TBL_NAME\",
+  \"TBL_TYPE\",
+  \"VIEW_EXPANDED_TEXT\",
+  \"VIEW_ORIGINAL_TEXT\",
+  \"IS_REWRITE_ENABLED\",
+  \"WRITE_ID\"
+FROM \"TBLS\""
+);
+
 DROP TABLE IF EXISTS `MV_CREATION_METADATA`;
 CREATE EXTERNAL TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
   `MV_CREATION_METADATA_ID` bigint,
@@ -149,7 +189,6 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `TAB_COL_STATS` (
  `BIG_DECIMAL_HIGH_VALUE` string,
  `NUM_NULLS` bigint,
  `NUM_DISTINCTS` bigint,
- `BIT_VECTOR` binary,
  `AVG_COL_LEN` double,
  `MAX_COL_LEN` bigint,
  `NUM_TRUES` bigint,
@@ -178,7 +217,6 @@ TBLPROPERTIES (
  \"BIG_DECIMAL_HIGH_VALUE\",
  \"NUM_NULLS\",
  \"NUM_DISTINCTS\",
- \"BIT_VECTOR\",
  \"AVG_COL_LEN\",
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
@@ -207,7 +245,6 @@ CREATE EXTERNAL TABLE IF NOT EXISTS `PART_COL_STATS` (
  `BIG_DECIMAL_HIGH_VALUE` string,
  `NUM_NULLS` bigint,
  `NUM_DISTINCTS` bigint,
- `BIT_VECTOR` binary,
  `AVG_COL_LEN` double,
  `MAX_COL_LEN` bigint,
  `NUM_TRUES` bigint,
@@ -237,7 +274,6 @@ TBLPROPERTIES (
  \"BIG_DECIMAL_HIGH_VALUE\",
  \"NUM_NULLS\",
  \"NUM_DISTINCTS\",
- \"BIT_VECTOR\",
  \"AVG_COL_LEN\",
  \"MAX_COL_LEN\",
  \"NUM_TRUES\",
@@ -266,56 +302,6 @@ TBLPROPERTIES (
   \"INTEGER_IDX\"
 FROM
   \"FUNC_RU\""
-);
-
-DROP TABLE IF EXISTS `COMPACTION_QUEUE`;
-CREATE EXTERNAL TABLE IF NOT EXISTS `COMPACTION_QUEUE` (
-  `CQ_ID` bigint,
-  `CQ_DATABASE` string,
-  `CQ_TABLE` string,
-  `CQ_PARTITION` string,
-  `CQ_STATE` string,
-  `CQ_TYPE` string,
-  `CQ_TBLPROPERTIES` string,
-  `CQ_WORKER_ID` string,
-  `CQ_ENQUEUE_TIME` bigint,
-  `CQ_START` bigint,
-  `CQ_RUN_AS` string,
-  `CQ_HIGHEST_WRITE_ID` bigint,
-  `CQ_META_INFO` binary,
-  `CQ_HADOOP_JOB_ID` string,
-  `CQ_ERROR_MESSAGE` string,
-  `CQ_INITIATOR_ID` string,
-  `CQ_INITIATOR_VERSION` string,
-  `CQ_WORKER_VERSION` string,
-  `CQ_CLEANER_START` bigint
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"CQ_ID\",
-  \"CQ_DATABASE\",
-  \"CQ_TABLE\",
-  \"CQ_PARTITION\",
-  \"CQ_STATE\",
-  \"CQ_TYPE\",
-  \"CQ_TBLPROPERTIES\",
-  \"CQ_WORKER_ID\",
-  \"CQ_ENQUEUE_TIME\",
-  \"CQ_START\",
-  \"CQ_RUN_AS\",
-  \"CQ_HIGHEST_WRITE_ID\",
-  \"CQ_META_INFO\",
-  \"CQ_HADOOP_JOB_ID\",
-  \"CQ_ERROR_MESSAGE\",
-  \"CQ_INITIATOR_ID\",
-  \"CQ_INITIATOR_VERSION\",
-  \"CQ_WORKER_VERSION\",
-  \"CQ_CLEANER_START\"
-FROM \"COMPACTION_QUEUE\"
-"
 );
 
 DROP TABLE IF EXISTS `REPLICATION_METRICS_ORIG`;
