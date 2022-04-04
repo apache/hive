@@ -22,16 +22,12 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
-import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
-import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.io.ClusteredPositionDeleteWriter;
@@ -44,7 +40,7 @@ import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HiveIcebergDeleteWriter extends ClusteredPositionDeleteWriter<Record> implements HiveIcebergWriter {
+public class HiveIcebergDeleteWriter extends HiveIcebergWriter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergDeleteWriter.class);
   // <TaskAttemptId, <TABLE_NAME, HiveIcebergDeleteWriter>> map to store the active writers
   // Stored in concurrent map, since some executor engines can share containers
@@ -53,63 +49,47 @@ public class HiveIcebergDeleteWriter extends ClusteredPositionDeleteWriter<Recor
   static Map<String, HiveIcebergDeleteWriter> removeWriters(TaskAttemptID taskAttemptID) {
     return writers.remove(taskAttemptID);
   }
+
   static Map<String, HiveIcebergDeleteWriter> getWriters(TaskAttemptID taskAttemptID) {
     return writers.get(taskAttemptID);
   }
 
-  private final PartitionKey currentKey;
-  private final FileIO io;
-  private final InternalRecordWrapper wrapper;
-  private final PartitionSpec spec;
+  private final ClusteredPositionDeleteWriter<Record> innerWriter;
 
   HiveIcebergDeleteWriter(Schema schema, PartitionSpec spec, FileFormat fileFormat,
       FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
       TaskAttemptID taskAttemptID, String tableName) {
-    super(writerFactory, fileFactory, io, fileFormat, targetFileSize);
-    this.io = io;
-    this.currentKey = new PartitionKey(spec, schema);
-    this.wrapper = new InternalRecordWrapper(schema.asStruct());
-    this.spec = spec;
+    super(schema, spec, io);
+    this.innerWriter = new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, fileFormat, targetFileSize);
     writers.putIfAbsent(taskAttemptID, Maps.newConcurrentMap());
     writers.get(taskAttemptID).put(tableName, this);
-  }
-
-  public List<DeleteFile> deleteFiles() {
-    return result().deleteFiles();
   }
 
   @Override
   public void write(Writable row) throws IOException {
     Record rec = ((Container<Record>) row).get();
     PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(spec.schema(), rec);
-    currentKey.partition(wrapper.wrap(positionDelete.row()));
-    super.write(positionDelete, spec, currentKey);
-  }
-
-  @Override
-  public void write(NullWritable key, Container value) throws IOException {
-    write(value);
+    innerWriter.write(positionDelete, spec, partition(positionDelete.row()));
   }
 
   @Override
   public void close(boolean abort) throws IOException {
-    super.close();
+    innerWriter.close();
+    List<DeleteFile> deleteFiles = deleteFiles();
 
     // If abort then remove the unnecessary files
     if (abort) {
-      List<DeleteFile> files = result().deleteFiles();
-      Tasks.foreach(files)
+      Tasks.foreach(deleteFiles)
           .retry(3)
           .suppressFailureWhenFinished()
           .onFailure((file, exception) -> LOG.debug("Failed on to remove delete file {} on abort", file, exception))
           .run(deleteFile -> io.deleteFile(deleteFile.path().toString()));
     }
 
-    LOG.info("IcebergDeleteWriter is closed with abort={}.", abort);
+    LOG.info("IcebergDeleteWriter is closed with abort={}. Created {} files", abort, deleteFiles.size());
   }
 
-  @Override
-  public void close(Reporter reporter) throws IOException {
-    close(false);
+  public List<DeleteFile> deleteFiles() {
+    return innerWriter.result().deleteFiles();
   }
 }

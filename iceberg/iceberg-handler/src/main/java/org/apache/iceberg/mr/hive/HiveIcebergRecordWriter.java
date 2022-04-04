@@ -22,16 +22,12 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.FileFormat;
-import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
-import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.ClusteredDataWriter;
 import org.apache.iceberg.io.FileIO;
@@ -43,15 +39,8 @@ import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class HiveIcebergRecordWriter extends ClusteredDataWriter<Record> implements HiveIcebergWriter {
+class HiveIcebergRecordWriter extends HiveIcebergWriter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergRecordWriter.class);
-
-  // The current key is reused at every write to avoid unnecessary object creation
-  private final PartitionKey currentKey;
-  private final FileIO io;
-  private final InternalRecordWrapper wrapper;
-  private final PartitionSpec spec;
-
   // <TaskAttemptId, <TABLE_NAME, HiveIcebergRecordWriter>> map to store the active writers
   // Stored in concurrent map, since some executor engines can share containers
   private static final Map<TaskAttemptID, Map<String, HiveIcebergRecordWriter>> writers = Maps.newConcurrentMap();
@@ -64,32 +53,26 @@ class HiveIcebergRecordWriter extends ClusteredDataWriter<Record> implements Hiv
     return writers.get(taskAttemptID);
   }
 
+  private final ClusteredDataWriter<Record> innerWriter;
+
   HiveIcebergRecordWriter(Schema schema, PartitionSpec spec, FileFormat format,
       FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
       TaskAttemptID taskAttemptID, String tableName) {
-    super(fileWriterFactory, fileFactory, io, format, targetFileSize);
-    this.io = io;
-    this.currentKey = new PartitionKey(spec, schema);
-    this.wrapper = new InternalRecordWrapper(schema.asStruct());
-    this.spec = spec;
+    super(schema, spec, io);
+    this.innerWriter = new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize);
     writers.putIfAbsent(taskAttemptID, Maps.newConcurrentMap());
     writers.get(taskAttemptID).put(tableName, this);
-  }
-
-  private PartitionKey partition(Record row) {
-    currentKey.partition(wrapper.wrap(row));
-    return currentKey;
   }
 
   @Override
   public void write(Writable row) throws IOException {
     Record record = ((Container<Record>) row).get();
-    super.write(record, spec, partition(record));
+    innerWriter.write(record, spec, partition(record));
   }
 
   @Override
   public void close(boolean abort) throws IOException {
-    super.close();
+    innerWriter.close();
     List<DataFile> dataFiles = dataFiles();
 
     // If abort then remove the unnecessary files
@@ -104,19 +87,7 @@ class HiveIcebergRecordWriter extends ClusteredDataWriter<Record> implements Hiv
     LOG.info("IcebergRecordWriter is closed with abort={}. Created {} files", abort, dataFiles.size());
   }
 
-  @Override
-  public void write(NullWritable key, Container value) throws IOException {
-    write(value);
-  }
-
-
   public List<DataFile> dataFiles() {
-    return aggregatedResult().dataFiles();
-  }
-
-
-  @Override
-  public void close(Reporter reporter) throws IOException {
-    close(false);
+    return innerWriter.result().dataFiles();
   }
 }

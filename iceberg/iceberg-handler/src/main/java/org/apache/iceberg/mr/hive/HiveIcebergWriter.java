@@ -19,15 +19,46 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.IOException;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapred.Reporter;
+import org.apache.iceberg.PartitionKey;
+import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.Schema;
+import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.mapred.Container;
 
-/**
- * Common interface for different Hive Iceberg writers, such as the HiveIcebergRecordWriter (which writes data files)
- * and the HiveIcebergDeleteWriter (which writes delete files)
- */
-public interface HiveIcebergWriter extends FileSinkOperator.RecordWriter,
+@SuppressWarnings("checkstyle:VisibilityModifier")
+public abstract class HiveIcebergWriter implements FileSinkOperator.RecordWriter,
     org.apache.hadoop.mapred.RecordWriter<NullWritable, Container<Record>> {
+
+  protected final PartitionKey currentKey;
+  protected final FileIO io;
+  protected final InternalRecordWrapper wrapper;
+  protected final PartitionSpec spec;
+
+  public HiveIcebergWriter(Schema schema, PartitionSpec spec, FileIO io) {
+    this.io = io;
+    this.currentKey = new PartitionKey(spec, schema);
+    this.wrapper = new InternalRecordWrapper(schema.asStruct());
+    this.spec = spec;
+  }
+
+  protected PartitionKey partition(Record row) {
+    currentKey.partition(wrapper.wrap(row));
+    return currentKey;
+  }
+
+  @Override
+  public void write(NullWritable key, Container value) throws IOException {
+    write(value);
+  }
+
+  @Override
+  public void close(Reporter reporter) throws IOException {
+    close(false);
+  }
 }
