@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.dataconnector.drop;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -25,6 +26,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -50,7 +52,8 @@ public class DropDataConnectorAnalyzer extends BaseSemanticAnalyzer {
     }
 
     inputs.add(new ReadEntity(connector));
-    outputs.add(new WriteEntity(connector, WriteEntity.WriteType.DDL_EXCLUSIVE));
+    outputs.add(new WriteEntity(connector, HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED) ?
+      WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE));
 
     DropDataConnectorDesc desc = new DropDataConnectorDesc(connectorName, ifExists);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
