@@ -19,7 +19,6 @@
 
 package org.apache.iceberg.mr.hive;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,6 +29,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.StructProjection;
@@ -66,16 +66,16 @@ public class IcebergAcidUtil {
    * @return The schema for reading files, extended with metadata columns needed for deletes
    */
   public static Schema createFileReadSchemaForDelete(List<Types.NestedField> columns, Table table) {
-    List<Types.NestedField> deleteCols = new ArrayList<>();
+    List<Types.NestedField> delCols = Lists.newArrayListWithCapacity(columns.size() + DELETE_FILEREAD_META_COLS.size());
     DELETE_FILEREAD_META_COLS.forEach((col, index) -> {
       if (col == PARTITION_STRUCT_META_COL) {
-        deleteCols.add(MetadataColumns.metadataColumn(table, MetadataColumns.PARTITION_COLUMN_NAME));
+        delCols.add(MetadataColumns.metadataColumn(table, MetadataColumns.PARTITION_COLUMN_NAME));
       } else {
-        deleteCols.add(col);
+        delCols.add(col);
       }
     });
-    deleteCols.addAll(columns);
-    return new Schema(deleteCols);
+    delCols.addAll(columns);
+    return new Schema(delCols);
   }
 
   /**
@@ -83,10 +83,10 @@ public class IcebergAcidUtil {
    * @return The schema for SerDe operations, extended with metadata columns needed for deletes
    */
   public static Schema createSerdeSchemaForDelete(List<Types.NestedField> columns) {
-    List<Types.NestedField> deleteCols = new ArrayList<>();
-    DELETE_SERDE_META_COLS.forEach((col, index) -> deleteCols.add(col));
-    deleteCols.addAll(columns);
-    return new Schema(deleteCols);
+    List<Types.NestedField> delCols = Lists.newArrayListWithCapacity(columns.size() + DELETE_SERDE_META_COLS.size());
+    DELETE_SERDE_META_COLS.forEach((col, index) -> delCols.add(col));
+    delCols.addAll(columns);
+    return new Schema(delCols);
   }
 
   public static PositionDelete<Record> getPositionDelete(Schema schema, Record rec) {
