@@ -272,7 +272,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           if (HiveIcebergStorageHandler.isDelete(conf, conf.get(Catalogs.NAME))) {
             if (current instanceof GenericRecord) {
               PositionDeleteInfo pdi = IcebergAcidUtil.parsePositionDeleteInfoFromRecord((GenericRecord) current);
-              PositionDeleteInfo.serializeIntoConf(conf, pdi);
+              PositionDeleteInfo.setIntoConf(conf, pdi);
             }
           }
           return true;

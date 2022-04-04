@@ -19,21 +19,28 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import com.google.gson.Gson;
 import org.apache.hadoop.conf.Configuration;
 
 public class PositionDeleteInfo {
 
-  private static final String CONF_KEY = "hive.io.context.position.delete.info";
-  private static final Gson GSON = new Gson();
+  private static final String CONF_KEY_SPEC_ID = "hive.io.context.position.delete.spec.id";
+  private static final String CONF_KEY_PART_HASH = "hive.io.context.position.delete.partition.hash";
+  private static final String CONF_KEY_FILE_PATH = "hive.io.context.position.delete.file.path";
+  private static final String CONF_KEY_ROW_POSITION = "hive.io.context.position.delete.row.position";
 
   public static PositionDeleteInfo parseFromConf(Configuration conf) {
-    String value = conf.get(CONF_KEY);
-    return value == null ? null : GSON.fromJson(value, PositionDeleteInfo.class);
+    int specId = conf.getInt(CONF_KEY_SPEC_ID, -1);
+    long partHash = conf.getLong(CONF_KEY_PART_HASH, -1);
+    String filePath = conf.get(CONF_KEY_FILE_PATH);
+    long rowPos = conf.getLong(CONF_KEY_ROW_POSITION, -1);
+    return new PositionDeleteInfo(specId, partHash, filePath, rowPos);
   }
 
-  public static void serializeIntoConf(Configuration conf, PositionDeleteInfo pdi) {
-    conf.set(CONF_KEY, pdi.toJson());
+  public static void setIntoConf(Configuration conf, PositionDeleteInfo pdi) {
+    conf.setInt(CONF_KEY_SPEC_ID, pdi.getSpecId());
+    conf.setLong(CONF_KEY_PART_HASH, pdi.getPartitionHash());
+    conf.set(CONF_KEY_FILE_PATH, pdi.getFilePath());
+    conf.setLong(CONF_KEY_ROW_POSITION, pdi.getFilePos());
   }
 
   private final int specId;
@@ -62,9 +69,5 @@ public class PositionDeleteInfo {
 
   public long getFilePos() {
     return filePos;
-  }
-
-  public String toJson() {
-    return GSON.toJson(this);
   }
 }
