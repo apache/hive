@@ -130,7 +130,7 @@
     <druid.version>0.17.1</druid.version>
     <flatbuffers.version>1.6.0.1</flatbuffers.version>
     <guava.version>19.0</guava.version>
-    <groovy.version>2.4.11</groovy.version>
+    <groovy.version>2.4.21</groovy.version>
     <h2database.version>2.1.210</h2database.version>
     <hadoop.version>3.1.0</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
