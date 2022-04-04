@@ -42,6 +42,7 @@ Table Parameters:
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                   
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	ORC                 
 	 	 
 # Storage Information	 	 
@@ -104,6 +105,7 @@ Table Parameters:
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                   
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	PARQUET             
 	 	 
 # Storage Information	 	 
@@ -166,6 +168,7 @@ Table Parameters:
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                   
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	AVRO                
 	 	 
 # Storage Information	 	 
@@ -228,6 +231,7 @@ Table Parameters:
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                   
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	AVRO                
 	 	 
 # Storage Information	 	 
@@ -287,6 +291,7 @@ Table Parameters:
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                   
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	ORC                 
 	 	 
 # Storage Information	 	 

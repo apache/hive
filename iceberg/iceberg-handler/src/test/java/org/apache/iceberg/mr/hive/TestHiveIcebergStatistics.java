@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -28,9 +27,10 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
-import org.apache.iceberg.hive.HiveTableOperations;
+import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -68,7 +68,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     String tableName = "customers";
     Table table = testTables
         .createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
-            new ArrayList<>());
+            Lists.newArrayList());
     shell.executeStatement("ANALYZE TABLE " + dbName + "." + tableName + " COMPUTE STATISTICS");
     validateBasicStats(table, dbName, tableName);
   }
@@ -196,7 +196,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
 
     // Create a Catalog where the KEEP_HIVE_STATS is false
-    shell.metastore().hiveConf().set(HiveTableOperations.KEEP_HIVE_STATS, StatsSetupConst.FALSE);
+    shell.metastore().hiveConf().set(ConfigProperties.KEEP_HIVE_STATS, StatsSetupConst.FALSE);
     TestTables nonHiveTestTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
     Table nonHiveTable = nonHiveTestTables.loadTable(identifier);
 

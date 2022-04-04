@@ -33,7 +33,6 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -74,6 +73,7 @@ import org.apache.iceberg.encryption.EncryptedOutputFile;
 import org.apache.iceberg.hadoop.HadoopOutputFile;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileAppenderFactory;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ArrayUtil;
 import org.apache.iceberg.util.ByteBuffers;
@@ -235,7 +235,7 @@ public class HiveIcebergTestUtils {
   public static void validateData(Table table, List<Record> expected, int sortBy) throws IOException {
     // Refresh the table, so we get the new data as well
     table.refresh();
-    List<Record> records = new ArrayList<>(expected.size());
+    List<Record> records = Lists.newArrayListWithExpectedSize(expected.size());
     try (CloseableIterable<Record> iterable = IcebergGenerics.read(table).build()) {
       iterable.forEach(records::add);
     }
@@ -251,8 +251,8 @@ public class HiveIcebergTestUtils {
    * @param sortBy The column position by which we will sort
    */
   public static void validateData(List<Record> expected, List<Record> actual, int sortBy) {
-    List<Record> sortedExpected = new ArrayList<>(expected);
-    List<Record> sortedActual = new ArrayList<>(actual);
+    List<Record> sortedExpected = Lists.newArrayList(expected);
+    List<Record> sortedActual = Lists.newArrayList(actual);
     // Sort based on the specified column
     sortedExpected.sort(Comparator.comparingInt(record -> record.get(sortBy).hashCode()));
     sortedActual.sort(Comparator.comparingInt(record -> record.get(sortBy).hashCode()));

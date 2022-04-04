@@ -21,13 +21,13 @@ package org.apache.iceberg.mr.mapreduce;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.StructType;
@@ -131,7 +131,7 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
   }
 
   private Map<String, Integer> buildFieldPositionMap(StructType schema) {
-    Map<String, Integer> nameToPosition = new HashMap<>();
+    Map<String, Integer> nameToPosition = Maps.newHashMap();
     List<Types.NestedField> fields = schema.fields();
     for (int i = 0; i < fields.size(); i += 1) {
       nameToPosition.put(fields.get(i).name(), i);

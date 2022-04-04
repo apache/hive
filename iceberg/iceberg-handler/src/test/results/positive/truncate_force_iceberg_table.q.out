@@ -101,6 +101,7 @@ Table Parameters:
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	parquet             
 	 	 
 # Storage Information	 	 
@@ -167,6 +168,7 @@ Table Parameters:
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                   
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	parquet             
 	 	 
 # Storage Information	 	 

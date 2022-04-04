@@ -19,7 +19,6 @@
 
 package org.apache.iceberg.mr.hive;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +37,7 @@ import org.apache.hive.service.server.HiveServer2;
 import org.apache.iceberg.hive.TestHiveMetastore;
 import org.apache.iceberg.relocated.com.google.common.base.Joiner;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 
 /**
  * Test class for running HiveQL queries, essentially acting like a Beeline shell in tests.
@@ -101,7 +101,7 @@ public class TestHiveShell {
     started = true;
   }
 
-  public void stop() {
+  public void stop() throws Exception {
     if (client != null) {
       client.stop();
     }
@@ -140,7 +140,7 @@ public class TestHiveShell {
             "You have to start TestHiveShell and open a session first, before running a query.");
     try {
       OperationHandle handle = client.executeStatement(session.getSessionHandle(), statement, Collections.emptyMap());
-      List<Object[]> resultSet = new ArrayList<>();
+      List<Object[]> resultSet = Lists.newArrayList();
       if (handle.hasResultSet()) {
         RowSet rowSet;
         // keep fetching results until we can

@@ -1,5 +1,7 @@
 -- Mask the totalSize value as it can have slight variability, causing test flakiness
 --! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
+-- Mask random uuid
+--! qt:replace:/(\s+uuid\s+)\S+/$1#Masked#/
 
 DROP TABLE IF EXISTS ice_t;
 CREATE EXTERNAL TABLE ice_t (i int, s string, ts timestamp, d date) STORED BY ICEBERG;

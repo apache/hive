@@ -35,6 +35,7 @@ TBLPROPERTIES (
   'serialization.format'='1', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
+  'uuid'='#Masked#')
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_transform
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS ice_t_transform
@@ -83,6 +84,7 @@ TBLPROPERTIES (
   'serialization.format'='1', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
+  'uuid'='#Masked#')
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_transform_prop
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS ice_t_transform_prop
@@ -132,6 +134,7 @@ TBLPROPERTIES (
   'serialization.format'='1', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
+  'uuid'='#Masked#')
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_identity_part
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS ice_t_identity_part
@@ -169,3 +172,4 @@ TBLPROPERTIES (
   'serialization.format'='1', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
+  'uuid'='#Masked#')
