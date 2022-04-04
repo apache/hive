@@ -7828,9 +7828,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .map(Table::getStorageHandler)
         .map(HiveStorageHandler::supportsAcidOperations)
         .orElse(false);
-    if (!nonNativeAcid && (updating(dest) || deleting(dest))) {
+    boolean isUpdateDelete = updating(dest) || deleting(dest);
+    if (!nonNativeAcid && isUpdateDelete) {
       vecCol.add(new ColumnInfo(VirtualColumn.ROWID.getName(), VirtualColumn.ROWID.getTypeInfo(),
           "", true));
+    } else if (nonNativeAcid && isUpdateDelete)  {
+      destinationTable.getStorageHandler().acidVirtualColumns().stream()
+          .map(col -> new ColumnInfo(col.getName(), col.getTypeInfo(), "", true))
+          .forEach(vecCol::add);
     } else {
       try {
         // If we already have a specific inspector (view or directory as a target) use that
