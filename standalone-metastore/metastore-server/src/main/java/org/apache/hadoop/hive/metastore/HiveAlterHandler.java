@@ -72,7 +72,7 @@ import java.util.Optional;
 import static org.apache.hadoop.hive.metastore.HMSHandler.addTruncateBaseFile;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTERLOCATION;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTER_TABLE_OPERATION_TYPE;
-import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_MAKE_DATA_COPY;
+import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -678,14 +678,14 @@ public class HiveAlterHandler implements AlterHandler {
                   throw new MetaException("Unable to create path " + destParentPath);
               }
               
-              boolean makeDataCopy = Optional.ofNullable(environmentContext)
+              boolean clonePart = Optional.ofNullable(environmentContext)
                   .map(EnvironmentContext::getProperties)
-                  .map(prop -> prop.get(RENAME_MAKE_DATA_COPY))
+                  .map(prop -> prop.get(RENAME_PARTITION_MAKE_COPY))
                   .map(Boolean::parseBoolean)
                   .orElse(false);
               long writeId = new_part.getWriteId();
 
-              if (writeId > 0 && makeDataCopy) {
+              if (writeId > 0 && clonePart) {
                 LOG.debug("Making a copy of the partition directory: {} under a new location: {}", srcPath, destPath);
                 
                 if (!wh.copyDir(srcPath, destPath, ReplChangeManager.shouldEnableCm(db, tbl))) {

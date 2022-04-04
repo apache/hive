@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.isMustPurge;
-import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_MAKE_DATA_COPY;
+import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.throwMetaException;
 
 
@@ -179,11 +179,11 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
       EnvironmentContext context = partitionEvent.getEnvironmentContext();
       Table table = partitionEvent.getTable();
 
-      boolean makeDataCopy = Optional.ofNullable(context).map(EnvironmentContext::getProperties)
-        .map(prop -> prop.get(RENAME_MAKE_DATA_COPY)).map(Boolean::parseBoolean)
+      boolean clonePart = Optional.ofNullable(context).map(EnvironmentContext::getProperties)
+        .map(prop -> prop.get(RENAME_PARTITION_MAKE_COPY)).map(Boolean::parseBoolean)
         .orElse(false);
       
-      if (makeDataCopy) {
+      if (clonePart) {
         long currentTxn = Optional.of(context).map(EnvironmentContext::getProperties)
           .map(prop -> prop.get("txnId")).map(Long::parseLong)
           .orElse(0L);

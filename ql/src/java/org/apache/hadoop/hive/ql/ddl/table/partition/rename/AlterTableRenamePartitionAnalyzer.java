@@ -67,12 +67,12 @@ public  class AlterTableRenamePartitionAnalyzer extends AbstractAlterTableAnalyz
     allPartitionSpecs.add(partitionSpec);
     allPartitionSpecs.add(newPartitionSpec);
 
-    boolean renamePartMakeCopy = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY)
+    boolean clonePart = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY)
       || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED)
       && AcidUtils.isTransactionalTable(table);
     
     PartitionUtils.addTablePartsOutputs(db, outputs, table, allPartitionSpecs, false,
-      renamePartMakeCopy ? WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE);
+      clonePart ? WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE);
 
     AlterTableRenamePartitionDesc desc = new AlterTableRenamePartitionDesc(tableName, partitionSpec, newPartitionSpec,
         null, table);

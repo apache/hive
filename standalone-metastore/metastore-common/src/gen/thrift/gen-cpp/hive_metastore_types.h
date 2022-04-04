@@ -16832,10 +16832,11 @@ void swap(AlterPartitionsResponse &a, AlterPartitionsResponse &b);
 std::ostream& operator<<(std::ostream& out, const AlterPartitionsResponse& obj);
 
 typedef struct _RenamePartitionRequest__isset {
-  _RenamePartitionRequest__isset() : catName(false), validWriteIdList(false), environmentContext(false) {}
+  _RenamePartitionRequest__isset() : catName(false), validWriteIdList(false), txnId(false), clonePart(false) {}
   bool catName :1;
   bool validWriteIdList :1;
-  bool environmentContext :1;
+  bool txnId :1;
+  bool clonePart :1;
 } _RenamePartitionRequest__isset;
 
 class RenamePartitionRequest : public virtual ::apache::thrift::TBase {
@@ -16843,7 +16844,7 @@ class RenamePartitionRequest : public virtual ::apache::thrift::TBase {
 
   RenamePartitionRequest(const RenamePartitionRequest&);
   RenamePartitionRequest& operator=(const RenamePartitionRequest&);
-  RenamePartitionRequest() : catName(), dbName(), tableName(), validWriteIdList() {
+  RenamePartitionRequest() : catName(), dbName(), tableName(), validWriteIdList(), txnId(0), clonePart(0) {
   }
 
   virtual ~RenamePartitionRequest() noexcept;
@@ -16853,7 +16854,8 @@ class RenamePartitionRequest : public virtual ::apache::thrift::TBase {
   std::vector<std::string>  partVals;
   Partition newPart;
   std::string validWriteIdList;
-  EnvironmentContext environmentContext;
+  int64_t txnId;
+  bool clonePart;
 
   _RenamePartitionRequest__isset __isset;
 
@@ -16869,7 +16871,9 @@ class RenamePartitionRequest : public virtual ::apache::thrift::TBase {
 
   void __set_validWriteIdList(const std::string& val);
 
-  void __set_environmentContext(const EnvironmentContext& val);
+  void __set_txnId(const int64_t val);
+
+  void __set_clonePart(const bool val);
 
   bool operator == (const RenamePartitionRequest & rhs) const
   {
@@ -16889,9 +16893,13 @@ class RenamePartitionRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
       return false;
-    if (__isset.environmentContext != rhs.__isset.environmentContext)
+    if (__isset.txnId != rhs.__isset.txnId)
       return false;
-    else if (__isset.environmentContext && !(environmentContext == rhs.environmentContext))
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.clonePart != rhs.__isset.clonePart)
+      return false;
+    else if (__isset.clonePart && !(clonePart == rhs.clonePart))
       return false;
     return true;
   }

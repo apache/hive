@@ -25460,19 +25460,21 @@ class RenamePartitionRequest(object):
      - partVals
      - newPart
      - validWriteIdList
-     - environmentContext
+     - txnId
+     - clonePart
 
     """
 
 
-    def __init__(self, catName=None, dbName=None, tableName=None, partVals=None, newPart=None, validWriteIdList=None, environmentContext=None,):
+    def __init__(self, catName=None, dbName=None, tableName=None, partVals=None, newPart=None, validWriteIdList=None, txnId=None, clonePart=None,):
         self.catName = catName
         self.dbName = dbName
         self.tableName = tableName
         self.partVals = partVals
         self.newPart = newPart
         self.validWriteIdList = validWriteIdList
-        self.environmentContext = environmentContext
+        self.txnId = txnId
+        self.clonePart = clonePart
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -25520,9 +25522,13 @@ class RenamePartitionRequest(object):
                 else:
                     iprot.skip(ftype)
             elif fid == 7:
-                if ftype == TType.STRUCT:
-                    self.environmentContext = EnvironmentContext()
-                    self.environmentContext.read(iprot)
+                if ftype == TType.I64:
+                    self.txnId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.BOOL:
+                    self.clonePart = iprot.readBool()
                 else:
                     iprot.skip(ftype)
             else:
@@ -25562,9 +25568,13 @@ class RenamePartitionRequest(object):
             oprot.writeFieldBegin('validWriteIdList', TType.STRING, 6)
             oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
             oprot.writeFieldEnd()
-        if self.environmentContext is not None:
-            oprot.writeFieldBegin('environmentContext', TType.STRUCT, 7)
-            self.environmentContext.write(oprot)
+        if self.txnId is not None:
+            oprot.writeFieldBegin('txnId', TType.I64, 7)
+            oprot.writeI64(self.txnId)
+            oprot.writeFieldEnd()
+        if self.clonePart is not None:
+            oprot.writeFieldBegin('clonePart', TType.BOOL, 8)
+            oprot.writeBool(self.clonePart)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -31591,7 +31601,8 @@ RenamePartitionRequest.thrift_spec = (
     (4, TType.LIST, 'partVals', (TType.STRING, 'UTF8', False), None, ),  # 4
     (5, TType.STRUCT, 'newPart', [Partition, None], None, ),  # 5
     (6, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 6
-    (7, TType.STRUCT, 'environmentContext', [EnvironmentContext, None], None, ),  # 7
+    (7, TType.I64, 'txnId', None, None, ),  # 7
+    (8, TType.BOOL, 'clonePart', None, None, ),  # 8
 )
 all_structs.append(RenamePartitionResponse)
 RenamePartitionResponse.thrift_spec = (

@@ -110,7 +110,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   
   public static final String MANUALLY_INITIATED_COMPACTION = "manual";
   public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
-  public static final String RENAME_MAKE_DATA_COPY = "renameMakeDataCopy";
+  public static final String RENAME_PARTITION_MAKE_COPY = "renamePartitionMakeCopy";
 
   /**
    * Capabilities of the current client. If this client talks to a MetaStore server in a manner
@@ -589,10 +589,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     RenamePartitionRequest req = new RenamePartitionRequest(dbname, tableName, part_vals, newPart);
     req.setCatName(catName);
     req.setValidWriteIdList(validWriteIds);
-    EnvironmentContext context = new EnvironmentContext();
-    context.putToProperties(RENAME_MAKE_DATA_COPY, String.valueOf(makeCopy));
-    context.putToProperties("txnId", String.valueOf(txnId));
-    req.setEnvironmentContext(context);
+    req.setTxnId(txnId);
+    req.setClonePart(makeCopy);
     client.rename_partition_req(req);
   }
 

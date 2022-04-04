@@ -1162,7 +1162,7 @@ public class Hive {
         }
       }
       String validWriteIds = null;
-      boolean renamePartMakeCopy = false;
+      boolean clonePart = false;
       long txnId = 0;
       
       if (AcidUtils.isTransactionalTable(tbl)) {
@@ -1185,7 +1185,7 @@ public class Hive {
           newPart.getTPartition().setWriteId(tableSnapshot.getWriteId());
           validWriteIds = tableSnapshot.getValidWriteIdList();
         }
-        renamePartMakeCopy = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY)
+        clonePart = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY)
           || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
 
         txnId = Optional.ofNullable(SessionState.get())
@@ -1194,7 +1194,7 @@ public class Hive {
 
       String catName = (tbl.getCatalogName() != null) ? tbl.getCatalogName() : getDefaultCatalog(conf);
       getMSC().renamePartition(catName, tbl.getDbName(), tbl.getTableName(), pvals,
-          newPart.getTPartition(), validWriteIds, txnId, renamePartMakeCopy);
+          newPart.getTPartition(), validWriteIds, txnId, clonePart);
 
     } catch (InvalidOperationException e){
       throw new HiveException("Unable to rename partition. " + e.getMessage(), e);

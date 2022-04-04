@@ -111,6 +111,7 @@ import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.common.AcidConstants.DELTA_DIGITS;
 
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_PROPERTY;
+import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
@@ -5822,10 +5823,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public RenamePartitionResponse rename_partition_req(
-      RenamePartitionRequest req) throws InvalidOperationException ,MetaException ,TException {
+  public RenamePartitionResponse rename_partition_req(RenamePartitionRequest req) throws TException {
+    EnvironmentContext context = new EnvironmentContext();
+    context.putToProperties(RENAME_PARTITION_MAKE_COPY, String.valueOf(req.isClonePart()));
+    context.putToProperties("txnId", String.valueOf(req.getTxnId()));
+    
     rename_partition(req.getCatName(), req.getDbName(), req.getTableName(), req.getPartVals(),
-        req.getNewPart(), req.getEnvironmentContext(), req.getValidWriteIdList());
+        req.getNewPart(), context, req.getValidWriteIdList());
     return new RenamePartitionResponse();
   };
 

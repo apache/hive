@@ -57,10 +57,14 @@ class RenamePartitionRequest
             'type' => TType::STRING,
         ),
         7 => array(
-            'var' => 'environmentContext',
+            'var' => 'txnId',
             'isRequired' => false,
-            'type' => TType::STRUCT,
-            'class' => '\metastore\EnvironmentContext',
+            'type' => TType::I64,
+        ),
+        8 => array(
+            'var' => 'clonePart',
+            'isRequired' => false,
+            'type' => TType::BOOL,
         ),
     );
 
@@ -89,9 +93,13 @@ class RenamePartitionRequest
      */
     public $validWriteIdList = null;
     /**
-     * @var \metastore\EnvironmentContext
+     * @var int
      */
-    public $environmentContext = null;
+    public $txnId = null;
+    /**
+     * @var bool
+     */
+    public $clonePart = null;
 
     public function __construct($vals = null)
     {
@@ -114,8 +122,11 @@ class RenamePartitionRequest
             if (isset($vals['validWriteIdList'])) {
                 $this->validWriteIdList = $vals['validWriteIdList'];
             }
-            if (isset($vals['environmentContext'])) {
-                $this->environmentContext = $vals['environmentContext'];
+            if (isset($vals['txnId'])) {
+                $this->txnId = $vals['txnId'];
+            }
+            if (isset($vals['clonePart'])) {
+                $this->clonePart = $vals['clonePart'];
             }
         }
     }
@@ -192,9 +203,15 @@ class RenamePartitionRequest
                     }
                     break;
                 case 7:
-                    if ($ftype == TType::STRUCT) {
-                        $this->environmentContext = new \metastore\EnvironmentContext();
-                        $xfer += $this->environmentContext->read($input);
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->txnId);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 8:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->clonePart);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -253,12 +270,14 @@ class RenamePartitionRequest
             $xfer += $output->writeString($this->validWriteIdList);
             $xfer += $output->writeFieldEnd();
         }
-        if ($this->environmentContext !== null) {
-            if (!is_object($this->environmentContext)) {
-                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-            }
-            $xfer += $output->writeFieldBegin('environmentContext', TType::STRUCT, 7);
-            $xfer += $this->environmentContext->write($output);
+        if ($this->txnId !== null) {
+            $xfer += $output->writeFieldBegin('txnId', TType::I64, 7);
+            $xfer += $output->writeI64($this->txnId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->clonePart !== null) {
+            $xfer += $output->writeFieldBegin('clonePart', TType::BOOL, 8);
+            $xfer += $output->writeBool($this->clonePart);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
