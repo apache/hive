@@ -21,7 +21,6 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.DataFile;
@@ -34,34 +33,20 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.mapred.Container;
-import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class HiveIcebergRecordWriter extends HiveIcebergWriter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergRecordWriter.class);
-  // <TaskAttemptId, <TABLE_NAME, HiveIcebergRecordWriter>> map to store the active writers
-  // Stored in concurrent map, since some executor engines can share containers
-  private static final Map<TaskAttemptID, Map<String, HiveIcebergRecordWriter>> writers = Maps.newConcurrentMap();
-
-  static Map<String, HiveIcebergRecordWriter> removeWriters(TaskAttemptID taskAttemptID) {
-    return writers.remove(taskAttemptID);
-  }
-
-  static Map<String, HiveIcebergRecordWriter> getWriters(TaskAttemptID taskAttemptID) {
-    return writers.get(taskAttemptID);
-  }
 
   private final ClusteredDataWriter<Record> innerWriter;
 
   HiveIcebergRecordWriter(Schema schema, PartitionSpec spec, FileFormat format,
       FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
       TaskAttemptID taskAttemptID, String tableName) {
-    super(schema, spec, io);
+    super(schema, spec, io, taskAttemptID, tableName, false);
     this.innerWriter = new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize);
-    writers.putIfAbsent(taskAttemptID, Maps.newConcurrentMap());
-    writers.get(taskAttemptID).put(tableName, this);
   }
 
   @Override
@@ -87,6 +72,7 @@ class HiveIcebergRecordWriter extends HiveIcebergWriter {
     LOG.info("IcebergRecordWriter is closed with abort={}. Created {} files", abort, dataFiles.size());
   }
 
+  @Override
   public List<DataFile> dataFiles() {
     return innerWriter.result().dataFiles();
   }

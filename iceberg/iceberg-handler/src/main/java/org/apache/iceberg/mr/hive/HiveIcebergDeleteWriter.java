@@ -21,7 +21,6 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.DeleteFile;
@@ -35,34 +34,20 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.mapred.Container;
-import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HiveIcebergDeleteWriter extends HiveIcebergWriter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergDeleteWriter.class);
-  // <TaskAttemptId, <TABLE_NAME, HiveIcebergDeleteWriter>> map to store the active writers
-  // Stored in concurrent map, since some executor engines can share containers
-  private static final Map<TaskAttemptID, Map<String, HiveIcebergDeleteWriter>> writers = Maps.newConcurrentMap();
-
-  static Map<String, HiveIcebergDeleteWriter> removeWriters(TaskAttemptID taskAttemptID) {
-    return writers.remove(taskAttemptID);
-  }
-
-  static Map<String, HiveIcebergDeleteWriter> getWriters(TaskAttemptID taskAttemptID) {
-    return writers.get(taskAttemptID);
-  }
 
   private final ClusteredPositionDeleteWriter<Record> innerWriter;
 
   HiveIcebergDeleteWriter(Schema schema, PartitionSpec spec, FileFormat fileFormat,
       FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
       TaskAttemptID taskAttemptID, String tableName) {
-    super(schema, spec, io);
+    super(schema, spec, io, taskAttemptID, tableName, true);
     this.innerWriter = new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, fileFormat, targetFileSize);
-    writers.putIfAbsent(taskAttemptID, Maps.newConcurrentMap());
-    writers.get(taskAttemptID).put(tableName, this);
   }
 
   @Override
@@ -89,6 +74,7 @@ public class HiveIcebergDeleteWriter extends HiveIcebergWriter {
     LOG.info("IcebergDeleteWriter is closed with abort={}. Created {} files", abort, deleteFiles.size());
   }
 
+  @Override
   public List<DeleteFile> deleteFiles() {
     return innerWriter.result().deleteFiles();
   }

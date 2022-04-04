@@ -104,9 +104,9 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     TaskAttemptID attemptID = context.getTaskAttemptID();
     JobConf jobConf = context.getJobConf();
     Collection<String> outputs = HiveIcebergStorageHandler.outputTables(context.getJobConf());
-    Map<String, HiveIcebergRecordWriter> writers = Optional.ofNullable(HiveIcebergRecordWriter.getWriters(attemptID))
+    Map<String, HiveIcebergWriter> writers = Optional.ofNullable(HiveIcebergWriter.getRecordWriters(attemptID))
         .orElseGet(ImmutableMap::of);
-    Map<String, HiveIcebergDeleteWriter> delWriters = Optional.ofNullable(HiveIcebergDeleteWriter.getWriters(attemptID))
+    Map<String, HiveIcebergWriter> delWriters = Optional.ofNullable(HiveIcebergWriter.getDeleteWriters(attemptID))
         .orElseGet(ImmutableMap::of);
 
     ExecutorService tableExecutor = tableExecutor(jobConf, outputs.size());
@@ -120,8 +120,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .run(output -> {
             Table table = HiveIcebergStorageHandler.table(context.getJobConf(), output);
             if (table != null) {
-              HiveIcebergRecordWriter writer = writers.get(output);
-              HiveIcebergDeleteWriter delWriter = delWriters.get(output);
+              HiveIcebergWriter writer = writers.get(output);
+              HiveIcebergWriter delWriter = delWriters.get(output);
               String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
                   attemptID.getJobID(), attemptID.getTaskID().getId());
               if (delWriter != null) {
@@ -150,8 +150,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     }
 
     // remove the writer to release the object
-    HiveIcebergRecordWriter.removeWriters(attemptID);
-    HiveIcebergDeleteWriter.removeWriters(attemptID);
+    HiveIcebergWriter.removeWriters(attemptID);
   }
 
   /**
@@ -164,11 +163,19 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     TaskAttemptContext context = TezUtil.enrichContextWithAttemptWrapper(originalContext);
 
     // Clean up writer data from the local store
-    Map<String, HiveIcebergRecordWriter> writers = HiveIcebergRecordWriter.removeWriters(context.getTaskAttemptID());
+    Map<String, HiveIcebergWriter> writers = HiveIcebergWriter.getRecordWriters(context.getTaskAttemptID());
+    Map<String, HiveIcebergWriter> delWriters = HiveIcebergWriter.getDeleteWriters(context.getTaskAttemptID());
 
     // Remove files if it was not done already
+    closeWriters(writers);
+    closeWriters(delWriters);
+
+    HiveIcebergWriter.removeWriters(context.getTaskAttemptID());
+  }
+
+  private void closeWriters(Map<String, HiveIcebergWriter> writers) throws IOException {
     if (writers != null) {
-      for (HiveIcebergRecordWriter writer : writers.values()) {
+      for (HiveIcebergWriter writer : writers.values()) {
         writer.close(true);
       }
     }

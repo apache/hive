@@ -59,7 +59,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import static org.apache.iceberg.mr.hive.HiveIcebergRecordWriter.getWriters;
+import static org.apache.iceberg.mr.hive.HiveIcebergRecordWriter.getRecordWriters;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
 public class TestHiveIcebergOutputCommitter {
@@ -209,10 +209,10 @@ public class TestHiveIcebergOutputCommitter {
     Assert.assertEquals(1, argumentCaptor.getAllValues().size());
     TaskAttemptID capturedId = TezUtil.taskAttemptWrapper(argumentCaptor.getValue().getTaskAttemptID());
     // writer is still in the map after commitTask failure
-    Assert.assertNotNull(getWriters(capturedId));
+    Assert.assertNotNull(getRecordWriters(capturedId));
     failingCommitter.abortTask(new TaskAttemptContextImpl(conf, capturedId));
     // abortTask succeeds and removes writer
-    Assert.assertNull(getWriters(capturedId));
+    Assert.assertNull(getRecordWriters(capturedId));
   }
 
   private Table table(String location, boolean partitioned) {
