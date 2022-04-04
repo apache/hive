@@ -77,7 +77,6 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   private Container<Record> row = new Container<>();
   private boolean isDelete = false;
 
-  @SuppressWarnings("checkstyle:CyclomaticComplexity")
   @Override
   public void initialize(@Nullable Configuration configuration, Properties serDeProperties,
                          Properties partitionProperties) throws SerDeException {

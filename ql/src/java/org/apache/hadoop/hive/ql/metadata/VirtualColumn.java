@@ -54,10 +54,10 @@ public enum VirtualColumn {
    */
   ROWID("ROW__ID", RecordIdentifier.StructInfo.typeInfo, true, RecordIdentifier.StructInfo.oi),
   ROWISDELETED("ROW__IS__DELETED", TypeInfoFactory.booleanTypeInfo),
-  PARTITION_SPEC_ID("POS__DEL__SPEC", TypeInfoFactory.intTypeInfo),
-  PARTITION_HASH("POS__DEL__PART", TypeInfoFactory.longTypeInfo),
-  FILE_PATH("POS__DEL__PATH", TypeInfoFactory.stringTypeInfo),
-  ROW_POSITION("POS__DEL__POS", TypeInfoFactory.longTypeInfo),
+  PARTITION_SPEC_ID("PARTITION__SPEC__ID", TypeInfoFactory.intTypeInfo),
+  PARTITION_HASH("PARTITION__HASH", TypeInfoFactory.longTypeInfo),
+  FILE_PATH("FILE__PATH", TypeInfoFactory.stringTypeInfo),
+  ROW_POSITION("ROW__POSITION", TypeInfoFactory.longTypeInfo),
 
   /**
    * GROUPINGID is used with GROUP BY GROUPINGS SETS, ROLLUP and CUBE.
