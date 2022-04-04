@@ -1,4 +1,4 @@
---! qt:disabled:Disabled in HIVE-26079
+--! qt:disabled:HIVE-26079
 
 set fs.defaultFS=${hiveconf:hbase.rootdir};
 
