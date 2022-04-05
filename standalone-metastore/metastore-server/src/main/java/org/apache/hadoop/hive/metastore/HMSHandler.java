@@ -111,6 +111,7 @@ import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.common.AcidConstants.DELTA_DIGITS;
 
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_PROPERTY;
+import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
@@ -3364,7 +3365,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           } else {
             // For Acid tables we don't need to delete the old files, only write an empty baseDir.
             // Compaction and cleaner will take care of the rest
-            addTruncateBaseFile(location, writeId, DataFormat.TRUNCATED);
+            addTruncateBaseFile(location, writeId, conf, DataFormat.TRUNCATED);
           }
         }
       }
@@ -3383,16 +3384,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * Add an empty baseDir with a truncate metadatafile
    * @param location partition or table directory
    * @param writeId allocated writeId
-   * @throws Exception
+   * @throws MetaException
    */
-  private void addTruncateBaseFile(Path location, long writeId, DataFormat dataFormat) 
+  static void addTruncateBaseFile(Path location, long writeId, Configuration conf, DataFormat dataFormat) 
       throws MetaException {
     if (location == null) 
       return;
     
     Path basePath = new Path(location, AcidConstants.baseDir(writeId));
     try {
-      FileSystem fs = location.getFileSystem(getConf());
+      FileSystem fs = location.getFileSystem(conf);
       fs.mkdirs(basePath);
       // We can not leave the folder empty, otherwise it will be skipped at some file listing in AcidUtils
       // No need for a data file, a simple metadata is enough
@@ -5061,7 +5062,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
         // ok even if the data is not deleted
       } else if (TxnUtils.isTransactionalTable(tbl) && writeId > 0) {
-        addTruncateBaseFile(partPath, writeId, DataFormat.DROPPED);
+        addTruncateBaseFile(partPath, writeId, conf, DataFormat.DROPPED);
       }
     
       if (!listeners.isEmpty()) {
@@ -5332,7 +5333,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             Path partPath = new Path(part.getSd().getLocation());
             verifyIsWritablePath(partPath);
             
-            addTruncateBaseFile(partPath, writeId, DataFormat.DROPPED);
+            addTruncateBaseFile(partPath, writeId, conf, DataFormat.DROPPED);
           }
         }
       }
@@ -5822,10 +5823,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public RenamePartitionResponse rename_partition_req(
-      RenamePartitionRequest req) throws InvalidOperationException ,MetaException ,TException {
+  public RenamePartitionResponse rename_partition_req(RenamePartitionRequest req) throws TException {
+    EnvironmentContext context = new EnvironmentContext();
+    context.putToProperties(RENAME_PARTITION_MAKE_COPY, String.valueOf(req.isClonePart()));
+    context.putToProperties("txnId", String.valueOf(req.getTxnId()));
+    
     rename_partition(req.getCatName(), req.getDbName(), req.getTableName(), req.getPartVals(),
-        req.getNewPart(), null, req.getValidWriteIdList());
+        req.getNewPart(), context, req.getValidWriteIdList());
     return new RenamePartitionResponse();
   };
 

@@ -7068,6 +7068,8 @@ class RenamePartitionRequest
   PARTVALS = 4
   NEWPART = 5
   VALIDWRITEIDLIST = 6
+  TXNID = 7
+  CLONEPART = 8
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
@@ -7075,7 +7077,9 @@ class RenamePartitionRequest
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     PARTVALS => {:type => ::Thrift::Types::LIST, :name => 'partVals', :element => {:type => ::Thrift::Types::STRING}},
     NEWPART => {:type => ::Thrift::Types::STRUCT, :name => 'newPart', :class => ::Partition},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :optional => true},
+    CLONEPART => {:type => ::Thrift::Types::BOOL, :name => 'clonePart', :optional => true}
   }
 
   def struct_fields; FIELDS; end

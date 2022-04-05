@@ -2425,9 +2425,15 @@ public interface IMetaStoreClient {
    * @throws TException
    *          if error in communicating with metastore server
    */
+  default void renamePartition(String catName, String dbname, String tableName, List<String> part_vals, 
+                               Partition newPart, String validWriteIds) 
+        throws TException {
+    renamePartition(catName, dbname, tableName, part_vals, newPart, validWriteIds, 0, false);
+  }
+
   void renamePartition(String catName, String dbname, String tableName, List<String> part_vals,
-                       Partition newPart, String validWriteIds)
-      throws InvalidOperationException, MetaException, TException;
+                       Partition newPart, String validWriteIds, long txnId, boolean makeCopy)
+    throws TException;
 
   /**
    * Get schema for a table, excluding the partition columns.

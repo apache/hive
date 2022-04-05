@@ -2109,7 +2109,9 @@ struct RenamePartitionRequest {
   3: required string tableName,
   4: required list<string> partVals,
   5: required Partition newPart,
-  6: optional string validWriteIdList
+  6: optional string validWriteIdList,
+  7: optional i64 txnId,              // txnId associated with the rename operation
+  8: optional bool clonePart          // non-blocking rename
 }
 
 struct RenamePartitionResponse {

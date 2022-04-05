@@ -448,6 +448,21 @@ public class Warehouse {
     return false;
   }
 
+  public boolean copyDir(Path sourcePath, Path destPath, boolean needCmRecycle) throws MetaException {
+    try {
+      if (needCmRecycle) {
+        cm.recycle(sourcePath, RecycleType.COPY, true);
+      }
+      FileSystem srcFs = getFs(sourcePath);
+      FileSystem destFs = getFs(destPath);
+      // TODO: this operation can be expensive depending on the size of data. 
+      return FileUtils.copy(srcFs, sourcePath, destFs, destPath, false, false, conf);
+    } catch (Exception ex) {
+      MetaStoreUtils.throwMetaException(ex);
+    }
+    return false;
+  }
+
   void addToChangeManagement(Path file) throws MetaException {
     try {
       cm.recycle(file, RecycleType.COPY, true);

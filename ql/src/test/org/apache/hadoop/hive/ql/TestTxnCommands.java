@@ -111,6 +111,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //of these tests.
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, false);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, false);
   }
@@ -1859,6 +1860,96 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
       ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
       Assert.assertEquals("Unexpected number of compactions in history", 0, resp.getCompactsSize());
+    }
+  }
+
+  @Test
+  public void testRenameMakeCopyPartition() throws Exception {
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition (p='a') values (1,2),(3,4)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition (p='b') values (5,5),(4,4)");
+
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY, true);
+    runStatementOnDriver("alter table " + Table.ACIDTBLPART + " partition (p='b') rename to partition (p='c')");
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"),
+      AcidUtils.baseFileFilter);
+    if (1 != stat.length) {
+      Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    String name = stat[0].getPath().getName();
+    Assert.assertEquals("base_0000003", name);
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
+      AcidUtils.baseFileFilter);
+    if (0 != stat.length) {
+      Assert.fail("Expecting no base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    
+    List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLPART + " where p='b'");
+    Assert.assertEquals(0, r.size());
+
+    r = runStatementOnDriver("select * from " + Table.ACIDTBLPART);
+    Assert.assertEquals(4, r.size());
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+
+    Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
+    Assert.assertTrue(resp.getCompacts().stream().anyMatch(
+      ci -> TxnStore.CLEANING_RESPONSE.equals(ci.getState()) && "p=b".equals(ci.getPartitionname())));
+
+    runCleaner(hiveConf);
+
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase()),
+      path -> path.getName().equals("p=b"));
+    if (0 != stat.length) {
+      Assert.fail("Expecting partition data to be removed from FS");
+    }
+  }
+
+  @Test
+  public void testRenameMakeCopyNestedPartition() throws Exception {
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART + " partition (p1='a', p2='b', p3='c') values (1,1),(2,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLNESTEDPART + " partition (p1='a', p2='b', p3='d') values (3,3),(4,4)");
+
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY, true);
+    runStatementOnDriver("alter table " + Table.ACIDTBLNESTEDPART + " partition (p1='a', p2='b', p3='d')" +
+      " rename to partition (p1='a', p2='c', p3='d')");
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+    ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat;
+    
+    String partName = "p1=a/p2=b/p3=d";
+    Assert.assertTrue(resp.getCompacts().stream().anyMatch(
+      ci -> TxnStore.CLEANING_RESPONSE.equals(ci.getState()) && partName.equals(ci.getPartitionname())));
+
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/" + partName),
+      AcidUtils.baseFileFilter);
+    if (1 != stat.length) {
+      Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    String name = stat[0].getPath().getName();
+    Assert.assertEquals("base_0000003", name);
+    
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=c/p3=d"),
+      AcidUtils.baseFileFilter);
+    if (0 != stat.length) {
+      Assert.fail("Expecting no base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+
+    List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLNESTEDPART);
+    Assert.assertEquals(4, r.size());
+
+    runCleaner(hiveConf);
+    
+    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=b"),
+      path -> path.getName().equals("p3=d"));
+    if (0 != stat.length) {
+      Assert.fail("Expecting partition data to be removed from FS");
     }
   }
 }

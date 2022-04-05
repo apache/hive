@@ -110,6 +110,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   
   public static final String MANUALLY_INITIATED_COMPACTION = "manual";
   public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
+  public static final String RENAME_PARTITION_MAKE_COPY = "renamePartitionMakeCopy";
 
   /**
    * Capabilities of the current client. If this client talks to a MetaStore server in a manner
@@ -584,10 +585,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public void renamePartition(String catName, String dbname, String tableName, List<String> part_vals,
-                              Partition newPart, String validWriteIds) throws TException {
+                              Partition newPart, String validWriteIds, long txnId, boolean makeCopy) throws TException {
     RenamePartitionRequest req = new RenamePartitionRequest(dbname, tableName, part_vals, newPart);
     req.setCatName(catName);
     req.setValidWriteIdList(validWriteIds);
+    req.setTxnId(txnId);
+    req.setClonePart(makeCopy);
     client.rename_partition_req(req);
   }
 
