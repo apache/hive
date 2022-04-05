@@ -218,7 +218,7 @@ STAGE PLANS:
       table properties:
         rewriting.time.window 5min
       expanded text: SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
-  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
+  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
   WHERE `cmv_basetable_2_n1`.`c` > 10.0
   GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
       name: default.cmv_mat_view_n3
@@ -308,7 +308,7 @@ Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
 Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
-	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
+	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
 Rewrite Enabled:    	No                  	 
@@ -547,7 +547,7 @@ Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
 Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
-	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
+	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
 Rewrite Enabled:    	Yes                 	 
@@ -891,7 +891,7 @@ Original Query:     	SELECT cmv_basetable_n3.a, cmv_basetable_2_n1.c
 	                    	  WHERE cmv_basetable_2_n1.c > 10.0
 	                    	  GROUP BY cmv_basetable_n3.a, cmv_basetable_2_n1.c
 Expanded Query:     	SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`	 
-	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
+	                    	  FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (cmv_basetable_n3.a = cmv_basetable_2_n1.a)
 	                    	  WHERE `cmv_basetable_2_n1`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
 Rewrite Enabled:    	Yes                 	 

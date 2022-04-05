@@ -216,7 +216,7 @@ STAGE PLANS:
     Create Materialized View
       columns: a int, c decimal(10,2)
       expanded text: SELECT `cmv_basetable`.`a`, `cmv_basetable_2`.`c`
-  FROM `default`.`cmv_basetable` JOIN `default`.`cmv_basetable_2` ON (`cmv_basetable`.`a` = `cmv_basetable_2`.`a`)
+  FROM `default`.`cmv_basetable` JOIN `default`.`cmv_basetable_2` ON (cmv_basetable.a = cmv_basetable_2.a)
   WHERE `cmv_basetable_2`.`c` > 10.0
   GROUP BY `cmv_basetable`.`a`, `cmv_basetable_2`.`c`
       name: default.cmv_mat_view

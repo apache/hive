@@ -107,7 +107,6 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@FinancialPart
 WARNING: Comparing char(60) and bigint may result in loss of information.
-WARNING: Comparing char(60) and bigint may result in loss of information.
 PREHOOK: query: INSERT INTO FinancialPart partition (country='country1') (
   SK_CompanyID,
   FI_YEAR,
@@ -351,7 +350,6 @@ num_trues
 num_falses          	                    
 bit_vector          	HL                  
 comment             	from deserializer   
-WARNING: Comparing char(60) and bigint may result in loss of information.
 WARNING: Comparing char(60) and bigint may result in loss of information.
 PREHOOK: query: INSERT INTO Financial (
   SK_CompanyID,

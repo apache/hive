@@ -114,7 +114,7 @@ Original Query:     	SELECT cmv_basetable_n100.a, cmv_basetable_2_n100.c
 	                    	  WHERE cmv_basetable_2_n100.c > 10.0
 	                    	  GROUP BY cmv_basetable_n100.a, cmv_basetable_2_n100.c
 Expanded Query:     	SELECT `cmv_basetable_n100`.`a`, `cmv_basetable_2_n100`.`c`	 
-	                    	  FROM `default`.`cmv_basetable_n100` JOIN `default`.`cmv_basetable_2_n100` ON (`cmv_basetable_n100`.`a` = `cmv_basetable_2_n100`.`a`)
+	                    	  FROM `default`.`cmv_basetable_n100` JOIN `default`.`cmv_basetable_2_n100` ON (cmv_basetable_n100.a = cmv_basetable_2_n100.a)
 	                    	  WHERE `cmv_basetable_2_n100`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n100`.`a`, `cmv_basetable_2_n100`.`c`
 Rewrite Enabled:    	Yes                 	 
@@ -178,7 +178,7 @@ Original Query:     	SELECT cmv_basetable_n100.a, cmv_basetable_2_n100.c
 	                    	  WHERE cmv_basetable_2_n100.c > 10.0
 	                    	  GROUP BY cmv_basetable_n100.a, cmv_basetable_2_n100.c
 Expanded Query:     	SELECT `cmv_basetable_n100`.`a`, `cmv_basetable_2_n100`.`c`	 
-	                    	  FROM `default`.`cmv_basetable_n100` JOIN `default`.`cmv_basetable_2_n100` ON (`cmv_basetable_n100`.`a` = `cmv_basetable_2_n100`.`a`)
+	                    	  FROM `default`.`cmv_basetable_n100` JOIN `default`.`cmv_basetable_2_n100` ON (cmv_basetable_n100.a = cmv_basetable_2_n100.a)
 	                    	  WHERE `cmv_basetable_2_n100`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n100`.`a`, `cmv_basetable_2_n100`.`c`
 Rewrite Enabled:    	Yes                 	 
@@ -242,7 +242,7 @@ Original Query:     	SELECT cmv_basetable_n100.a, cmv_basetable_2_n100.c
 	                    	  WHERE cmv_basetable_2_n100.c > 10.0
 	                    	  GROUP BY cmv_basetable_n100.a, cmv_basetable_2_n100.c
 Expanded Query:     	SELECT `cmv_basetable_n100`.`a`, `cmv_basetable_2_n100`.`c`	 
-	                    	  FROM `default`.`cmv_basetable_n100` JOIN `default`.`cmv_basetable_2_n100` ON (`cmv_basetable_n100`.`a` = `cmv_basetable_2_n100`.`a`)
+	                    	  FROM `default`.`cmv_basetable_n100` JOIN `default`.`cmv_basetable_2_n100` ON (cmv_basetable_n100.a = cmv_basetable_2_n100.a)
 	                    	  WHERE `cmv_basetable_2_n100`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n100`.`a`, `cmv_basetable_2_n100`.`c`
 Rewrite Enabled:    	Yes                 	 
