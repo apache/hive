@@ -324,10 +324,10 @@ public class Initiator extends MetaStoreCompactorThread {
 
     //In case of an aborted Dynamic partition insert, the created entry in the compaction queue does not contain
     //a partition name even for partitioned tables. As a result it can happen that the ShowCompactResponse contains
-    //an element without partition name for partitioned tables. Therefore, it is necessary to check the partition name of
-    //the ShowCompactResponseElement even if the CompactionInfo.partName is not null. These special compaction requests
-    //are skipped by the worker, and only cleaner will pick them up, so we should allow to schedule a 'normal' compaction
-    //for partitions of those tables which has special (DP abort) entry with undefined partition name.
+    //an element without partition name for partitioned tables. Therefore, it is necessary to null check the partition
+    //name of the ShowCompactResponseElement even if the CompactionInfo.partName is not null. These special compaction
+    //requests are skipped by the worker, and only cleaner will pick them up, so we should allow to schedule a 'normal'
+    //compaction for partitions of those tables which has special (DP abort) entry with undefined partition name.
     List<ShowCompactResponseElement> filteredElements = compactions.getCompacts().stream()
       .filter(e -> e.getDbname().equals(ci.dbname)
         && e.getTablename().equals(ci.tableName)
