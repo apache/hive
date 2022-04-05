@@ -648,7 +648,12 @@ public class SortedDynPartitionOptimizer extends Transform {
       ArrayList<ExprNodeDesc> partCols = Lists.newArrayList();
 
       for (Function<List<ExprNodeDesc>, ExprNodeDesc> customSortExpr : customSortExprs) {
-        keyCols.add(customSortExpr.apply(allCols));
+        ExprNodeDesc colExpr = customSortExpr.apply(allCols);
+        // Custom sort expressions are marked as KEYs, which is required for sorting the rows that are going for
+        // a particular reducer instance. They also need to be marked as 'partition' columns for MapReduce shuffle
+        // phase, in order to gather the same keys to the same reducer instances.
+        keyCols.add(colExpr);
+        partCols.add(colExpr);
       }
 
       // we will clone here as RS will update bucket column key with its
