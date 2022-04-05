@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.ProcessResults;
+
 /**
  * JUnit TestRule for Mssql.
  */
@@ -73,7 +75,7 @@ public class Mssql extends DatabaseRule {
 
   @Override
   public boolean isContainerReady(ProcessResults pr) {
-    return pr.stdout
+    return pr.getStdout()
         .contains(
         "Recovery is complete. This is an informational message only. No user action is required.");
   }

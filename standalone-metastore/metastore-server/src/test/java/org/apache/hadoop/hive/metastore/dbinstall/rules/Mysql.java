@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore.dbinstall.rules;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.ProcessResults;
+
 /**
  * JUnit TestRule for MySql.
  */
@@ -68,7 +70,7 @@ public class Mysql extends DatabaseRule {
   @Override
   public boolean isContainerReady(ProcessResults pr) {
     Pattern pat = Pattern.compile("ready for connections");
-    Matcher m = pat.matcher(pr.stderr);
+    Matcher m = pat.matcher(pr.getStderr());
     return m.find() && m.find();
   }
 

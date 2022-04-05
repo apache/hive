@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.externalDB;
 
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.ProcessResults;
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.getContainerHostAddress;
+
 public class MSSQLServer extends AbstractExternalDB {
 
   @Override
@@ -51,7 +54,7 @@ public class MSSQLServer extends AbstractExternalDB {
 
   @Override
   public boolean isContainerReady(ProcessResults pr) {
-    return pr.stdout
+    return pr.getStdout()
         .contains("Recovery is complete. This is an informational message only. No user action is required.");
   }
 }

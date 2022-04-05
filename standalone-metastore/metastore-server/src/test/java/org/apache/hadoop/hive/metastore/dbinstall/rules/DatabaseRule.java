@@ -17,19 +17,19 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.ProcessResults;
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.buildLogCmd;
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.buildRmCmd;
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.buildRunCmd;
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.runCmd;
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.runCmdAndPrintStreams;
 
 /**
  * Abstract JUnit TestRule for different RDMBS types.
@@ -110,30 +110,21 @@ public abstract class DatabaseRule extends ExternalResource {
     return strs;
   }
 
-  public static class ProcessResults {
-    final String stdout;
-    final String stderr;
-    final int rc;
-
-    public ProcessResults(String stdout, String stderr, int rc) {
-      this.stdout = stdout;
-      this.stderr = stderr;
-      this.rc = rc;
-    }
-  }
-
   @Override
   public void before() throws Exception { //runDockerContainer
-    runCmdAndPrintStreams(buildRmCmd(), 600);
-    if (runCmdAndPrintStreams(buildRunCmd(), 600) != 0) {
+    runCmdAndPrintStreams(buildRmCmd(getDockerContainerName()), 600);
+
+    final String[] runCmd = buildRunCmd(
+        getDockerContainerName(), getDockerAdditionalArgs(), getDockerImageName());
+    if (runCmdAndPrintStreams(runCmd, 600) != 0) {
       throw new RuntimeException("Unable to start docker container");
     }
     long startTime = System.currentTimeMillis();
     ProcessResults pr;
     do {
       Thread.sleep(1000);
-      pr = runCmd(buildLogCmd(), 30);
-      if (pr.rc != 0) {
+      pr = runCmd(buildLogCmd(getDockerContainerName()), 30);
+      if (pr.getReturnCode() != 0) {
         throw new RuntimeException("Failed to get docker logs");
       }
     } while (startTime + MAX_STARTUP_WAIT >= System.currentTimeMillis() && !isContainerReady(pr));
@@ -152,7 +143,7 @@ public abstract class DatabaseRule extends ExternalResource {
       return;
     }
     try {
-      if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
+      if (runCmdAndPrintStreams(buildRmCmd(getDockerContainerName()), 600) != 0) {
         throw new RuntimeException("Unable to remove docker container");
       }
     } catch (InterruptedException | IOException e) {
@@ -168,63 +159,6 @@ public abstract class DatabaseRule extends ExternalResource {
       suffix = "-" + suffix;
     }
     return String.format("metastore-test-%s-install%s", getDbType(), suffix);
-  }
-
-  private ProcessResults runCmd(String[] cmd, long secondsToWait)
-      throws IOException, InterruptedException {
-    LOG.info("Going to run: " + StringUtils.join(cmd, " "));
-    Process proc = Runtime.getRuntime().exec(cmd);
-    if (!proc.waitFor(secondsToWait, TimeUnit.SECONDS)) {
-      throw new RuntimeException(
-          "Process " + cmd[0] + " failed to run in " + secondsToWait + " seconds");
-    }
-    BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-    final StringBuilder lines = new StringBuilder();
-    reader.lines().forEach(s -> lines.append(s).append('\n'));
-
-    reader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-    final StringBuilder errLines = new StringBuilder();
-    reader.lines().forEach(s -> errLines.append(s).append('\n'));
-    LOG.info("Result size: " + lines.length() + ";" + errLines.length());
-    return new ProcessResults(lines.toString(), errLines.toString(), proc.exitValue());
-  }
-
-  private int runCmdAndPrintStreams(String[] cmd, long secondsToWait)
-      throws InterruptedException, IOException {
-    ProcessResults results = runCmd(cmd, secondsToWait);
-    LOG.info("Stdout from proc: " + results.stdout);
-    LOG.info("Stderr from proc: " + results.stderr);
-    return results.rc;
-  }
-
-  private String[] buildRunCmd() {
-    List<String> cmd = new ArrayList<>(4 + getDockerAdditionalArgs().length);
-    cmd.add("docker");
-    cmd.add("run");
-    cmd.add("--rm");
-    cmd.add("--name");
-    cmd.add(getDockerContainerName());
-    cmd.addAll(Arrays.asList(getDockerAdditionalArgs()));
-    cmd.add(getDockerImageName());
-    return cmd.toArray(new String[cmd.size()]);
-  }
-
-  private String[] buildRmCmd() {
-    return buildArray(
-        "docker",
-        "rm",
-        "-f",
-        "-v",
-        getDockerContainerName()
-    );
-  }
-
-  private String[] buildLogCmd() {
-    return buildArray(
-        "docker",
-        "logs",
-        getDockerContainerName()
-    );
   }
 
   public String getHiveUser(){

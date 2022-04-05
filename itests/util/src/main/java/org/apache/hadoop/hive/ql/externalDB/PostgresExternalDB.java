@@ -17,8 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.externalDB;
 
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.ProcessResults;
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.getContainerHostAddress;
+
 /**
- * MySQLExternalDB is a extension of abstractExternalDB
+ * MySQLExternalDB is an extension of abstractExternalDB
  * Designed for MySQL external database connection
  */
 public class PostgresExternalDB extends AbstractExternalDB {
@@ -27,7 +30,7 @@ public class PostgresExternalDB extends AbstractExternalDB {
     }
 
     public String getJdbcUrl() {
-        return "jdbc:postgresql://" + getContainerHostAddress() + ":5432/" + dbName;
+        return "jdbc:postgresql://" + getContainerHostAddress() + ":5432/" + DB_NAME;
     }
 
     public String getJdbcDriver() {
@@ -42,14 +45,13 @@ public class PostgresExternalDB extends AbstractExternalDB {
         return new String[] {"-p", "5432:5432",
             "-e", "POSTGRES_PASSWORD=" + getRootPassword(),
             "-e", "POSTGRES_USER=" + getRootUser(),
-            "-e", "POSTGRES_DB=" + dbName,
+            "-e", "POSTGRES_DB=" + DB_NAME,
             "-d"
         };
     }
 
     public boolean isContainerReady(ProcessResults pr) {
-        return pr.stdout.contains("database system is ready to accept connections") &&
-            pr.stderr.contains("database system is ready to accept connections");
+        String readyToAccept = "database system is ready to accept connections";
+        return pr.getStdout().contains(readyToAccept) && pr.getStderr().contains(readyToAccept);
     }
-
 }

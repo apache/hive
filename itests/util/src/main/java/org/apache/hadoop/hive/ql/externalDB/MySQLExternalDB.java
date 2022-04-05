@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.externalDB;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.ProcessResults;
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.getContainerHostAddress;
+
 /**
  * Designed for MySQL external database connection
  */
@@ -35,7 +38,7 @@ public class MySQLExternalDB extends AbstractExternalDB {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mysql://" + getContainerHostAddress() + ":3306/" + dbName;
+        return "jdbc:mysql://" + getContainerHostAddress() + ":3306/" + DB_NAME;
     }
 
     public String getJdbcDriver() {
@@ -47,14 +50,14 @@ public class MySQLExternalDB extends AbstractExternalDB {
     public String[] getDockerAdditionalArgs() {
         return new String[] {"-p", "3306:3306",
                           "-e", "MYSQL_ROOT_PASSWORD=" + getRootPassword(),
-                          "-e", "MYSQL_DATABASE=" + dbName,
+                          "-e", "MYSQL_DATABASE=" + DB_NAME,
                           "-d"
         };
     }
 
     public boolean isContainerReady(ProcessResults pr) {
         Pattern pat = Pattern.compile("ready for connections");
-        Matcher m = pat.matcher(pr.stderr);
+        Matcher m = pat.matcher(pr.getStderr());
         return m.find() && m.find();
     }
 }

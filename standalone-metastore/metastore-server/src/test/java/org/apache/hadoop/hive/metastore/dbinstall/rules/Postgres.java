@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.ProcessResults;
+
 /**
  * JUnit TestRule for Postgres.
  */
@@ -63,8 +65,8 @@ public class Postgres extends DatabaseRule {
 
   @Override
   public boolean isContainerReady(ProcessResults pr) {
-    return pr.stdout.contains("database system is ready to accept connections") &&
-        pr.stderr.contains("database system is ready to accept connections");
+    return pr.getStdout().contains("database system is ready to accept connections") &&
+        pr.getStderr().contains("database system is ready to accept connections");
   }
 
   @Override

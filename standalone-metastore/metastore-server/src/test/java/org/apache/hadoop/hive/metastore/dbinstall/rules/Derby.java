@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore.dbinstall.rules;
 import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.ProcessResults;
+
 /**
  * JUnit TestRule for Derby.
  */

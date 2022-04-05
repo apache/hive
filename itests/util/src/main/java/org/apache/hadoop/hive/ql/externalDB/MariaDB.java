@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.externalDB;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.ProcessResults;
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.getContainerHostAddress;
+
 public class MariaDB extends AbstractExternalDB {
 
   @Override
@@ -29,7 +32,7 @@ public class MariaDB extends AbstractExternalDB {
 
   @Override
   public String getJdbcUrl() {
-    return "jdbc:mariadb://" + getContainerHostAddress() + ":3309/" + dbName;
+    return "jdbc:mariadb://" + getContainerHostAddress() + ":3309/" + DB_NAME;
   }
   
   public String getJdbcDriver() {
@@ -41,14 +44,14 @@ public class MariaDB extends AbstractExternalDB {
   public String[] getDockerAdditionalArgs() {
     return new String[] {"-p", "3309:3306",
         "-e", "MARIADB_ROOT_PASSWORD=" + getRootPassword(),
-        "-e", "MARIADB_DATABASE=" + dbName,
+        "-e", "MARIADB_DATABASE=" + DB_NAME,
         "-d"
     };
   }
 
   public boolean isContainerReady(ProcessResults pr) {
     Pattern pat = Pattern.compile("ready for connections");
-    Matcher m = pat.matcher(pr.stderr);
+    Matcher m = pat.matcher(pr.getStderr());
     return m.find() && m.find();
   }
 }

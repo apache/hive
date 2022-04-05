@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.externalDB;
 
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.ProcessResults;
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.getContainerHostAddress;
+
 public class Oracle extends AbstractExternalDB {
   @Override
   public String getRootUser() {
@@ -50,7 +53,7 @@ public class Oracle extends AbstractExternalDB {
 
   @Override
   public boolean isContainerReady(ProcessResults pr) {
-    return pr.stdout.contains("DATABASE IS READY TO USE!");
+    return pr.getStdout().contains("DATABASE IS READY TO USE!");
   }
 
 }

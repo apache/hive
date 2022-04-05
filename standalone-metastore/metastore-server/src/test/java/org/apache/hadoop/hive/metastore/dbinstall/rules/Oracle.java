@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import static org.apache.hadoop.hive.metastore.dbinstall.DockerUtils.ProcessResults;
+
 /**
  * JUnit TestRule for Oracle.
  */
@@ -68,7 +70,7 @@ public class Oracle extends DatabaseRule {
 
   @Override
   public boolean isContainerReady(ProcessResults pr) {
-    return pr.stdout.contains("DATABASE IS READY TO USE!");
+    return pr.getStdout().contains("DATABASE IS READY TO USE!");
   }
 
   @Override
