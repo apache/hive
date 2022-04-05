@@ -471,8 +471,8 @@ CONCAT('#', `h`.`level1`, '#', `h`.`level2`, '#', `h`.`level3`, '#', `h`.`level4
 FROM
 (SELECT MAX(`table1`.`data_date`) `data_as_of_date`, `table1`.`level1` FROM `db1`.`table1` WHERE `table1`.`level1` = 'N00000' GROUP BY `table1`.`level1`) `d`
 JOIN `db1`.`table1` `h`
-ON (`h`.`data_date` = `d`.`data_as_of_date`
-AND `h`.`level1` = `d`.`level1`)
+ON (h.data_date = d.data_as_of_date
+AND h.level1 = d.level1)
 WHERE
 'TM1-5460' NOT IN (`h`.`level1`, `h`.`level2`, `h`.`level3`, `h`.`level4`, `h`.`level5`, `h`.`level6`, `h`.`level7`, `h`.`level8`, `h`.`level9`, `h`.`level10`, `h`.`level11`, `h`.`level12`, `h`.`level13`, `h`.`level14`, `h`.`level15`)
 UNION ALL SELECT DISTINCT
@@ -566,8 +566,8 @@ END `leaf_desc`
 FROM
 (SELECT MAX(`table1`.`data_date`) `data_as_of_date`, `table1`.`level1` FROM `db1`.`table1` WHERE `table1`.`level1` = 'N00000' GROUP BY `table1`.`level1`) `d`
 JOIN `db1`.`table1` `h`
-ON (`h`.`data_date` = `d`.`data_as_of_date`
-AND `h`.`level1` = `d`.`level1`),
+ON (h.data_date = d.data_as_of_date
+AND h.level1 = d.level1),
 (SELECT
 `l`.`leaf_level`,
 'TM1-5460' `leaf_code`

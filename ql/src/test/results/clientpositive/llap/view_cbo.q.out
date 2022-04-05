@@ -358,7 +358,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 Original Query:     	select a.key from src a join src b on a.key=b.key	 
-Expanded Query:     	select `a`.`key` from `default`.`src` `a` join `default`.`src` `b` on `a`.`key`=`b`.`key`	 
+Expanded Query:     	select `a`.`key` from `default`.`src` `a` join `default`.`src` `b` on a.key=b.key	 
 PREHOOK: query: CREATE VIEW view15_n0 AS
 SELECT key,COUNT(value) AS value_count
 FROM src

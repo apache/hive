@@ -1032,7 +1032,6 @@ STAGE PLANS:
         ListSink
 
 WARNING: Comparing string and bigint may result in loss of information.
-WARNING: Comparing string and bigint may result in loss of information.
 PREHOOK: query: EXPLAIN
 SELECT subq1.key, subq1.value, x.key, x.value
 FROM 

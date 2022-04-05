@@ -2643,8 +2643,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             count++;
           }
           joinCond = count > 1 ? and : equal;
-        } else if (unparseTranslator != null && unparseTranslator.isEnabled()) {
-          genAllExprNodeDesc(joinCond, input, jCtx);
         }
         Map<ASTNode, RexNode> exprNodes = RexNodeTypeCheck.genExprNodeJoinCond(
             joinCond, jCtx, cluster.getRexBuilder());

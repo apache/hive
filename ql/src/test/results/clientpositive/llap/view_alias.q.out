@@ -426,7 +426,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 Original Query:     	select '010', a_n9.*, 121, b_n7.*, 234 from a_n9 join b_n7 on a_n9.ca_n9 = b_n7.cb_n7	 
-Expanded Query:     	select '010', `a_n9`.`ca_n9`, `a_n9`.`caa_n9`, 121, `b_n7`.`cb_n7`, `b_n7`.`cbb_n7`, 234 from `default`.`a_n9` join `default`.`b_n7` on `a_n9`.`ca_n9` = `b_n7`.`cb_n7`	 
+Expanded Query:     	select '010', `a_n9`.`ca_n9`, `a_n9`.`caa_n9`, 121, `b_n7`.`cb_n7`, `b_n7`.`cbb_n7`, 234 from `default`.`a_n9` join `default`.`b_n7` on a_n9.ca_n9 = b_n7.cb_n7	 
 PREHOOK: query: select * from v_n6 order by `_c3`, `_c0`, ca_n9, caa_n9, cb_n7, cbb_n7 limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_n9
