@@ -321,6 +321,12 @@
       <artifactId>pac4j-core</artifactId>
       <version>4.5.5</version>
     </dependency>
+    <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock-jre8-standalone</artifactId>
+      <version>2.32.0</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

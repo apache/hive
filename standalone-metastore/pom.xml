@@ -517,6 +517,7 @@
             <exclude>**/metastore_db/**</exclude>
             <exclude>**/test/resources/**/*.ldif</exclude>
             <exclude>**/test/resources/sql/**</exclude>
+            <exclude>**/test/resources/**/*.json</exclude>
           </excludes>
         </configuration>
       </plugin>

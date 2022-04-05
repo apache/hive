@@ -1542,9 +1542,10 @@ public class MetastoreConf {
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
     METASTORE_CLIENT_AUTH_MODE("metastore.client.auth.mode",
             "hive.metastore.client.auth.mode", "NOSASL",
-            new StringSetValidator("NOSASL", "PLAIN", "KERBEROS"),
+            new StringSetValidator("NOSASL", "PLAIN", "KERBEROS", "JWT"),
             "If PLAIN, clients will authenticate using plain authentication, by providing username" +
-                    " and password. Any other value is ignored right now but may be used later."),
+                    " and password. Any other value is ignored right now but may be used later."
+                + "For JWT - it is only supported in HTTP transport mode"),
     METASTORE_CLIENT_PLAIN_USERNAME("metastore.client.plain.username",
             "hive.metastore.client.plain.username",  "",
         "The username used by the metastore client when " +
