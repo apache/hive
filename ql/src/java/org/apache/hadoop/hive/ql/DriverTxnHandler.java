@@ -570,6 +570,9 @@ class DriverTxnHandler {
     txnRollbackRunner = null;
   }
 
+  // When Hive query is being interrupted via cancel request, both the background pool thread (HiveServer2-Background), 
+  // executing the query, and the HttpHandler thread (HiveServer2-Handler), running the HiveSession.cancelOperation logic, 
+  // might call the below method concurrently. To prevent a race condition, marking it as synchronized.
   synchronized void endTransactionAndCleanup(boolean commit, HiveTxnManager txnManager) throws LockException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);

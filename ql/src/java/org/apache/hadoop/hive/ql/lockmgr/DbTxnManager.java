@@ -60,6 +60,7 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -91,6 +92,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * implicitly by the {@link org.apache.hadoop.hive.ql.Driver} (which looks exactly as autoCommit=true
  * from end user poit of view). See more at {@link #isExplicitTransaction}.
  */
+@NotThreadSafe
 public final class DbTxnManager extends HiveTxnManagerImpl {
 
   static final private String CLASS_NAME = DbTxnManager.class.getName();
@@ -691,6 +693,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     return task;
   }
 
+  // To prevent NullPointerException due to race condition, marking it as synchronized.
   private synchronized void stopHeartbeat() {
     if (heartbeatTask != null) {
       heartbeatTask.cancel(true);
