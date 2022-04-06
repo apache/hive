@@ -703,7 +703,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         // If it's still not cancelled (unlikely), we will just move on.
         long now = System.currentTimeMillis();
         if (now - startTime > 30000) {
-          LOG.warn("Heartbeat task cannot be cancelled for unknown reason. QueryId: " + queryId);
+          LOG.error("Heartbeat task cannot be cancelled for unknown reason. QueryId: " + queryId);
           break;
         }
         try {
