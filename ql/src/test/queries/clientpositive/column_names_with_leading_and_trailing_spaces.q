@@ -16,3 +16,7 @@ select * from space;
 insert into space (` middle `) values("2");
 
 select * from space order by ` left`;
+
+create table space2 (` left2` string, ` middle2 ` string);
+
+select * from space join space2 on (` left` == ` left2`);

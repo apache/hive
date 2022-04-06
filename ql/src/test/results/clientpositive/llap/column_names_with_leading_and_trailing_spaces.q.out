@@ -121,3 +121,21 @@ POSTHOOK: Input: default@space
 #### A masked pattern was here ####
 1	2	3
 NULL	2	NULL
+PREHOOK: query: create table space2 (` left2` string, ` middle2 ` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@space2
+POSTHOOK: query: create table space2 (` left2` string, ` middle2 ` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@space2
+PREHOOK: query: select * from space join space2 on (` left` == ` left2`)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@space
+PREHOOK: Input: default@space2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from space join space2 on (` left` == ` left2`)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@space
+POSTHOOK: Input: default@space2
+#### A masked pattern was here ####
