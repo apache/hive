@@ -34,48 +34,37 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.mapred.Container;
-import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HiveIcebergDeleteWriter extends HiveIcebergWriter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergDeleteWriter.class);
 
-  private final ClusteredPositionDeleteWriter<Record> innerWriter;
+  private final ClusteredPositionDeleteWriter<Record> deleteWriter;
 
   HiveIcebergDeleteWriter(Schema schema, PartitionSpec spec, FileFormat fileFormat,
       FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
       TaskAttemptID taskAttemptID, String tableName) {
-    super(schema, spec, io, taskAttemptID, tableName, true);
-    this.innerWriter = new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, fileFormat, targetFileSize);
+    super(schema, spec, io, taskAttemptID, tableName);
+    this.deleteWriter = new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, fileFormat, targetFileSize);
   }
 
   @Override
   public void write(Writable row) throws IOException {
     Record rec = ((Container<Record>) row).get();
     PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(spec.schema(), rec);
-    innerWriter.write(positionDelete, spec, partition(positionDelete.row()));
+    deleteWriter.write(positionDelete, spec, partition(positionDelete.row()));
   }
 
   @Override
   public void close(boolean abort) throws IOException {
-    innerWriter.close();
-    List<DeleteFile> deleteFiles = deleteFiles();
-
-    // If abort then remove the unnecessary files
-    if (abort) {
-      Tasks.foreach(deleteFiles)
-          .retry(3)
-          .suppressFailureWhenFinished()
-          .onFailure((file, exception) -> LOG.debug("Failed on to remove delete file {} on abort", file, exception))
-          .run(deleteFile -> io.deleteFile(deleteFile.path().toString()));
-    }
-
-    LOG.info("IcebergDeleteWriter is closed with abort={}. Created {} files", abort, deleteFiles.size());
+    deleteWriter.close();
+    super.close(abort);
   }
 
   @Override
-  public List<DeleteFile> deleteFiles() {
-    return innerWriter.result().deleteFiles();
+  public FilesForCommit files() {
+    List<DeleteFile> deleteFiles = deleteWriter.result().deleteFiles();
+    return FilesForCommit.onlyDelete(deleteFiles);
   }
 }

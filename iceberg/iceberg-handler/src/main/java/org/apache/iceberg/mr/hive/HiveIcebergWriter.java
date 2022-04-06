@@ -20,15 +20,11 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TaskAttemptID;
-import org.apache.iceberg.DataFile;
-import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
@@ -37,25 +33,23 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.util.Tasks;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("checkstyle:VisibilityModifier")
 public abstract class HiveIcebergWriter implements FileSinkOperator.RecordWriter,
     org.apache.hadoop.mapred.RecordWriter<NullWritable, Container<Record>> {
+  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergWriter.class);
 
-  private static final Map<TaskAttemptID, Map<String, HiveIcebergWriter>> recordWriters = Maps.newConcurrentMap();
-  private static final Map<TaskAttemptID, Map<String, HiveIcebergWriter>> deleteWriters = Maps.newConcurrentMap();
+  private static final Map<TaskAttemptID, Map<String, HiveIcebergWriter>> writers = Maps.newConcurrentMap();
 
-  static void removeWriters(TaskAttemptID taskAttemptID) {
-    recordWriters.remove(taskAttemptID);
-    deleteWriters.remove(taskAttemptID);
+  static Map<String, HiveIcebergWriter> removeWriters(TaskAttemptID taskAttemptID) {
+    return writers.remove(taskAttemptID);
   }
 
-  static Map<String, HiveIcebergWriter> getRecordWriters(TaskAttemptID taskAttemptID) {
-    return recordWriters.get(taskAttemptID);
-  }
-
-  static Map<String, HiveIcebergWriter> getDeleteWriters(TaskAttemptID taskAttemptID) {
-    return deleteWriters.get(taskAttemptID);
+  static Map<String, HiveIcebergWriter> getWriters(TaskAttemptID taskAttemptID) {
+    return writers.get(taskAttemptID);
   }
 
   protected final PartitionKey currentKey;
@@ -63,19 +57,13 @@ public abstract class HiveIcebergWriter implements FileSinkOperator.RecordWriter
   protected final InternalRecordWrapper wrapper;
   protected final PartitionSpec spec;
 
-  protected HiveIcebergWriter(Schema schema, PartitionSpec spec, FileIO io, TaskAttemptID attemptID, String tableName,
-      boolean isDeleteWriter) {
+  protected HiveIcebergWriter(Schema schema, PartitionSpec spec, FileIO io, TaskAttemptID attemptID, String tableName) {
     this.io = io;
     this.currentKey = new PartitionKey(spec, schema);
     this.wrapper = new InternalRecordWrapper(schema.asStruct());
     this.spec = spec;
-    if (isDeleteWriter) {
-      deleteWriters.putIfAbsent(attemptID, Maps.newConcurrentMap());
-      deleteWriters.get(attemptID).put(tableName, this);
-    } else {
-      recordWriters.putIfAbsent(attemptID, Maps.newConcurrentMap());
-      recordWriters.get(attemptID).put(tableName, this);
-    }
+    writers.putIfAbsent(attemptID, Maps.newConcurrentMap());
+    writers.get(attemptID).put(tableName, this);
   }
 
   protected PartitionKey partition(Record row) {
@@ -83,13 +71,7 @@ public abstract class HiveIcebergWriter implements FileSinkOperator.RecordWriter
     return currentKey;
   }
 
-  protected List<DataFile> dataFiles() {
-    return Collections.emptyList();
-  }
-
-  protected List<DeleteFile> deleteFiles() {
-    return Collections.emptyList();
-  }
+  protected abstract FilesForCommit files();
 
   @Override
   public void write(NullWritable key, Container value) throws IOException {
@@ -99,5 +81,22 @@ public abstract class HiveIcebergWriter implements FileSinkOperator.RecordWriter
   @Override
   public void close(Reporter reporter) throws IOException {
     close(false);
+  }
+
+  @Override
+  public void close(boolean abort) throws IOException {
+    FilesForCommit result = files();
+
+    // If abort then remove the unnecessary files
+    if (abort) {
+      Tasks.foreach(result.getAllFiles())
+          .retry(3)
+          .suppressFailureWhenFinished()
+          .onFailure((file, exception) -> LOG.debug("Failed on to remove file {} on abort", file, exception))
+          .run(file -> io.deleteFile(file.path().toString()));
+    }
+
+    LOG.info("HiveIcebergWriter is closed with abort={}. Created {} data files and {} delete files", abort,
+        result.getDataFiles().size(), result.getDeleteFiles().size());
   }
 }

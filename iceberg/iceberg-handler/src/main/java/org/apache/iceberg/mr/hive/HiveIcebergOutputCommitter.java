@@ -24,6 +24,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -104,10 +105,11 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     TaskAttemptID attemptID = context.getTaskAttemptID();
     JobConf jobConf = context.getJobConf();
     Collection<String> outputs = HiveIcebergStorageHandler.outputTables(context.getJobConf());
-    Map<String, HiveIcebergWriter> writers = Optional.ofNullable(HiveIcebergWriter.getRecordWriters(attemptID))
-        .orElseGet(ImmutableMap::of);
-    Map<String, HiveIcebergWriter> delWriters = Optional.ofNullable(HiveIcebergWriter.getDeleteWriters(attemptID))
-        .orElseGet(ImmutableMap::of);
+    Map<String, HiveIcebergWriter> writers = Optional.ofNullable(HiveIcebergWriter.getWriters(attemptID))
+        .orElseGet(() -> {
+          LOG.info("CommitTask found no writers for output tables: {}, attemptID: {}", outputs, attemptID);
+          return ImmutableMap.of();
+        });
 
     ExecutorService tableExecutor = tableExecutor(jobConf, outputs.size());
     try {
@@ -121,21 +123,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             Table table = HiveIcebergStorageHandler.table(context.getJobConf(), output);
             if (table != null) {
               HiveIcebergWriter writer = writers.get(output);
-              HiveIcebergWriter delWriter = delWriters.get(output);
               String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
                   attemptID.getJobID(), attemptID.getTaskID().getId());
-              if (delWriter != null) {
-                DeleteFile[] closedFiles = delWriter.deleteFiles().toArray(new DeleteFile[0]);
-                createFileForCommit(closedFiles, fileForCommitLocation, table.io());
-              }
               if (writer != null) {
-                DataFile[] closedFiles = writer.dataFiles().toArray(new DataFile[0]);
-                createFileForCommit(closedFiles, fileForCommitLocation, table.io());
-              }
-              if (delWriter == null && writer == null) {
+                createFileForCommit(writer.files(), fileForCommitLocation, table.io());
+              } else {
                 LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
-                DataFile[] closedFiles = new DataFile[0];
-                createFileForCommit(closedFiles, fileForCommitLocation, table.io());
+                createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
               }
             } else {
               // When using Tez multi-table inserts, we could have more output tables in config than
@@ -163,17 +157,9 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     TaskAttemptContext context = TezUtil.enrichContextWithAttemptWrapper(originalContext);
 
     // Clean up writer data from the local store
-    Map<String, HiveIcebergWriter> writers = HiveIcebergWriter.getRecordWriters(context.getTaskAttemptID());
-    Map<String, HiveIcebergWriter> delWriters = HiveIcebergWriter.getDeleteWriters(context.getTaskAttemptID());
+    Map<String, HiveIcebergWriter> writers = HiveIcebergWriter.removeWriters(context.getTaskAttemptID());
 
     // Remove files if it was not done already
-    closeWriters(writers);
-    closeWriters(delWriters);
-
-    HiveIcebergWriter.removeWriters(context.getTaskAttemptID());
-  }
-
-  private void closeWriters(Map<String, HiveIcebergWriter> writers) throws IOException {
     if (writers != null) {
       for (HiveIcebergWriter writer : writers.values()) {
         writer.close(true);
@@ -264,12 +250,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             // list jobLocation to get number of forCommit files
             // we do this because map/reduce num in jobConf is unreliable and we have no access to vertex status info
             int numTasks = listForCommits(jobConf, jobLocation).size();
-            Collection<DataFile> dataFiles = new ConcurrentLinkedQueue<>();
-            collectFiles(dataFiles, numTasks, fileExecutor, table.location(), jobContext, table.io(), false);
-
+            Collection<FilesForCommit> results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
+                table.io(), false);
             // Check if we have files already committed and remove data files if there are any
-            if (dataFiles.size() > 0) {
-              Tasks.foreach(dataFiles)
+            List<? extends ContentFile> files = results.stream().map(FilesForCommit::getAllFiles)
+                .flatMap(Collection::stream).collect(Collectors.toList());
+            if (files.size() > 0) {
+              Tasks.foreach(files)
                   .retry(3)
                   .suppressFailureWhenFinished()
                   .executeWith(fileExecutor)
@@ -342,23 +329,23 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     });
 
     if (HiveIcebergStorageHandler.isDelete(conf, name)) {
-      Collection<DeleteFile> deleteFiles = new ConcurrentLinkedQueue<>();
-      collectFiles(deleteFiles, numTasks, executor, location, jobContext, io, true);
-      commitDelete(jobContext, table, startTime, deleteFiles);
+      Collection<FilesForCommit> writeResults = collectResults(numTasks, executor, location, jobContext, io, true);
+      commitDelete(jobContext, table, startTime, writeResults);
     } else if (HiveIcebergStorageHandler.isWrite(conf, name)) {
-      Collection<DataFile> dataFiles = new ConcurrentLinkedQueue<>();
-      collectFiles(dataFiles, numTasks, executor, location, jobContext, io, true);
+      Collection<FilesForCommit> writeResults = collectResults(numTasks, executor, location, jobContext, io, true);
       boolean isOverwrite = conf.getBoolean(InputFormatConfig.IS_OVERWRITE, false);
-      commitInsert(jobContext, table, startTime, dataFiles, isOverwrite);
+      commitInsert(jobContext, table, startTime, writeResults, isOverwrite);
     } else {
       LOG.info("Unable to determine commit operation type for table: {}, jobID: {}. Will not create a commit.",
           table, jobContext.getJobID());
     }
   }
 
-  private void commitDelete(JobContext jobContext, Table table, long startTime, Collection<DeleteFile> deleteFiles) {
-    if (!deleteFiles.isEmpty()) {
+  private void commitDelete(JobContext jobContext, Table table, long startTime, Collection<FilesForCommit> results) {
+    if (!results.isEmpty()) {
       RowDelta append = table.newRowDelta();
+      List<DeleteFile> deleteFiles = results.stream().map(FilesForCommit::getDeleteFiles)
+          .flatMap(Collection::stream).collect(Collectors.toList());
       deleteFiles.forEach(append::addDeletes);
       append.commit();
       LOG.info("Delete commit took {} ms for table: {} with {} delete file(s)",
@@ -370,8 +357,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     }
   }
 
-  private void commitInsert(JobContext jobContext, Table table, long startTime, Collection<DataFile> dataFiles,
+  private void commitInsert(JobContext jobContext, Table table, long startTime, Collection<FilesForCommit> results,
       boolean isOverwrite) {
+    List<DataFile> dataFiles = results.stream().map(FilesForCommit::getDataFiles)
+        .flatMap(Collection::stream).collect(Collectors.toList());
     if (isOverwrite) {
       if (!dataFiles.isEmpty()) {
         ReplacePartitions overwrite = table.newReplacePartitions();
@@ -469,28 +458,30 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   /**
    * Get the committed data or delete files for this table and job.
    *
-   * @param files The collection into which the DataFiles/DeleteFiles are accumulated
    * @param numTasks Number of writer tasks that produced a forCommit file
    * @param executor The executor used for reading the forCommit files parallel
    * @param location The location of the table
    * @param jobContext The job context
    * @param io The FileIO used for reading a files generated for commit
    * @param throwOnFailure If <code>true</code> then it throws an exception on failure
-   * @return The list of the committed data or delete files
+   * @return The list of the write results, which include the committed data or delete files
    */
-  private static <T> void collectFiles(Collection<T> files, int numTasks, ExecutorService executor, String location,
+  private static Collection<FilesForCommit> collectResults(int numTasks, ExecutorService executor, String location,
       JobContext jobContext, FileIO io, boolean throwOnFailure) {
     JobConf conf = jobContext.getJobConf();
     // Reading the committed files. The assumption here is that the taskIds are generated in sequential order
     // starting from 0.
+    Collection<FilesForCommit> writeResults = new ConcurrentLinkedQueue<>();
     Tasks.range(numTasks)
         .throwFailureWhenFinished(throwOnFailure)
         .executeWith(executor)
         .retry(3)
         .run(taskId -> {
           String taskFileName = generateFileForCommitLocation(location, conf, jobContext.getJobID(), taskId);
-          files.addAll(Arrays.asList((T[]) readFileForCommit(taskFileName, io)));
+          writeResults.add(readFileForCommit(taskFileName, io));
         });
+
+    return writeResults;
   }
 
   /**
@@ -521,19 +512,17 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     return generateJobLocation(location, conf, jobId) + "/task-" + taskId + FOR_COMMIT_EXTENSION;
   }
 
-  private static <T extends ContentFile<T>> void createFileForCommit(T[] closedFiles, String location, FileIO io)
-      throws IOException {
-
+  private static void createFileForCommit(FilesForCommit writeResult, String location, FileIO io) throws IOException {
     OutputFile fileForCommit = io.newOutputFile(location);
     try (ObjectOutputStream oos = new ObjectOutputStream(fileForCommit.createOrOverwrite())) {
-      oos.writeObject(closedFiles);
+      oos.writeObject(writeResult);
     }
     LOG.debug("Iceberg committed file is created {}", fileForCommit);
   }
 
-  private static Object readFileForCommit(String fileForCommitLocation, FileIO io) {
+  private static FilesForCommit readFileForCommit(String fileForCommitLocation, FileIO io) {
     try (ObjectInputStream ois = new ObjectInputStream(io.newInputFile(fileForCommitLocation).newStream())) {
-      return ois.readObject();
+      return (FilesForCommit) ois.readObject();
     } catch (ClassNotFoundException | IOException e) {
       throw new NotFoundException("Can not read or parse committed file: %s", fileForCommitLocation);
     }

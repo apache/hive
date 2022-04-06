@@ -33,47 +33,36 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.mapred.Container;
-import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class HiveIcebergRecordWriter extends HiveIcebergWriter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergRecordWriter.class);
 
-  private final ClusteredDataWriter<Record> innerWriter;
+  private final ClusteredDataWriter<Record> dataWriter;
 
   HiveIcebergRecordWriter(Schema schema, PartitionSpec spec, FileFormat format,
       FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
       TaskAttemptID taskAttemptID, String tableName) {
-    super(schema, spec, io, taskAttemptID, tableName, false);
-    this.innerWriter = new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize);
+    super(schema, spec, io, taskAttemptID, tableName);
+    this.dataWriter = new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize);
   }
 
   @Override
   public void write(Writable row) throws IOException {
     Record record = ((Container<Record>) row).get();
-    innerWriter.write(record, spec, partition(record));
+    dataWriter.write(record, spec, partition(record));
   }
 
   @Override
   public void close(boolean abort) throws IOException {
-    innerWriter.close();
-    List<DataFile> dataFiles = dataFiles();
-
-    // If abort then remove the unnecessary files
-    if (abort) {
-      Tasks.foreach(dataFiles)
-          .retry(3)
-          .suppressFailureWhenFinished()
-          .onFailure((file, exception) -> LOG.debug("Failed on to remove file {} on abort", file, exception))
-          .run(dataFile -> io.deleteFile(dataFile.path().toString()));
-    }
-
-    LOG.info("IcebergRecordWriter is closed with abort={}. Created {} files", abort, dataFiles.size());
+    dataWriter.close();
+    super.close(abort);
   }
 
   @Override
-  public List<DataFile> dataFiles() {
-    return innerWriter.result().dataFiles();
+  public FilesForCommit files() {
+    List<DataFile> dataFiles = dataWriter.result().dataFiles();
+    return FilesForCommit.onlyData(dataFiles);
   }
 }
