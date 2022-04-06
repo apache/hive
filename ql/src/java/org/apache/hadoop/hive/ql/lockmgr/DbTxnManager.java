@@ -76,7 +76,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * An implementation of HiveTxnManager that stores the transactions in the metastore database.
@@ -169,7 +168,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private static ScheduledExecutorService heartbeatExecutorService = null;
   private ScheduledFuture<?> heartbeatTask = null;
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
-  private final ReentrantLock heartbeatTaskLock = new ReentrantLock();
   //Contains database under replication name for hive replication transactions (dump and load operation)
   private String replPolicy;
 
@@ -267,7 +265,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
    * be read by a different threads than one writing it, thus it's {@code volatile}
    */
   @Override
-  public HiveLockManager getLockManager() throws LockException {
+  public HiveLockManager getLockManager() {
     init();
     if (lockMgr == null) {
       lockMgr = new DbLockManager(conf, this);
@@ -470,16 +468,15 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
   }
 
-
   @Override
-  public void releaseLocks(List<HiveLock> hiveLocks) throws LockException {
+  public void releaseLocks(List<HiveLock> hiveLocks) {
     if (lockMgr != null) {
       stopHeartbeat();
       lockMgr.releaseLocks(hiveLocks);
     }
   }
 
-  private void clearLocksAndHB() throws LockException {
+  private void clearLocksAndHB() {
     lockMgr.clearLocalLockRecords();
     stopHeartbeat();
   }
@@ -574,30 +571,24 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     if (!isTxnOpen()) {
       throw new RuntimeException("Attempt to rollback before opening a transaction");
     }
-    stopHeartbeat();
-
     try {
-      lockMgr.clearLocalLockRecords();
+      clearLocksAndHB();
       LOG.debug("Rolling back " + JavaUtils.txnIdToString(txnId));
-
-      // Re-checking as txn could have been closed, in the meantime, by a competing thread.
-      if (isTxnOpen()) {
-        if (replPolicy != null) {
-          getMS().replRollbackTxn(txnId, replPolicy, TxnType.DEFAULT);
-        } else {
-          getMS().rollbackTxn(txnId);
-        }
+      
+      if (replPolicy != null) {
+        getMS().replRollbackTxn(txnId, replPolicy, TxnType.DEFAULT);
       } else {
-        LOG.warn("Transaction is already closed.");
+        getMS().rollbackTxn(txnId);
       }
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
       throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
+    
     } catch(TxnAbortedException e) {
       throw new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(txnId));
+    
     } catch (TException e) {
-      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
-          e);
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     } finally {
       resetTxnInfo();
     }
@@ -678,21 +669,11 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException("error while getting current user,", e);
     }
 
-    try {
-      heartbeatTaskLock.lock();
-      if (heartbeatTask != null) {
-        throw new IllegalStateException("Heartbeater is already started.");
-      }
-
-      Heartbeater heartbeater = new Heartbeater(this, conf, queryId, currentUser);
-      heartbeatTask = startHeartbeat(initialDelay, heartbeatInterval, heartbeater);
-      LOG.debug("Started heartbeat with delay/interval = " + initialDelay + "/" + heartbeatInterval +
-          " " + TimeUnit.MILLISECONDS + " for query: " + queryId);
-
-      return heartbeater;
-    } finally {
-      heartbeatTaskLock.unlock();
-    }
+    Heartbeater heartbeater = new Heartbeater(this, conf, queryId, currentUser);
+    heartbeatTask = startHeartbeat(initialDelay, heartbeatInterval, heartbeater);
+    LOG.debug("Started heartbeat with delay/interval = " + initialDelay + "/" + heartbeatInterval +
+      " " + TimeUnit.MILLISECONDS + " for query: " + queryId);
+    return heartbeater;
   }
 
   private ScheduledFuture<?> startHeartbeat(long initialDelay, long heartbeatInterval, Runnable heartbeater) {
@@ -710,49 +691,32 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     return task;
   }
 
-  private void stopHeartbeat() {
-    if (heartbeatTask == null) {
-      // avoid unnecessary locking if the field is null
-      return;
-    }
-
-    boolean isLockAcquired = false;
-    try {
-      // The lock should not be held by other thread trying to stop the heartbeat for more than 31 seconds
-      isLockAcquired = heartbeatTaskLock.tryLock(31000, TimeUnit.MILLISECONDS);
-    } catch (InterruptedException e) {
-      // safe to go on
-    }
-
-    try {
-      if (isLockAcquired && heartbeatTask != null) {
-        heartbeatTask.cancel(true);
-        long startTime = System.currentTimeMillis();
-        long sleepInterval = 100;
-        while (!heartbeatTask.isCancelled() && !heartbeatTask.isDone()) {
-          // We will wait for 30 seconds for the task to be cancelled.
-          // If it's still not cancelled (unlikely), we will just move on.
-          long now = System.currentTimeMillis();
-          if (now - startTime > 30000) {
-            LOG.warn("Heartbeat task cannot be cancelled for unknown reason. QueryId: " + queryId);
-            break;
-          }
-          try {
-            Thread.sleep(sleepInterval);
-          } catch (InterruptedException e) {
-          }
-          sleepInterval *= 2;
+  private synchronized void stopHeartbeat() {
+    if (heartbeatTask != null) {
+      heartbeatTask.cancel(true);
+      
+      long startTime = System.currentTimeMillis();
+      long sleepInterval = 100;
+      
+      while (!heartbeatTask.isCancelled() && !heartbeatTask.isDone()) {
+        // We will wait for 30 seconds for the task to be cancelled.
+        // If it's still not cancelled (unlikely), we will just move on.
+        long now = System.currentTimeMillis();
+        if (now - startTime > 30000) {
+          LOG.warn("Heartbeat task cannot be cancelled for unknown reason. QueryId: " + queryId);
+          break;
         }
-        if (heartbeatTask.isCancelled() || heartbeatTask.isDone()) {
-          LOG.info("Stopped heartbeat for query: " + queryId);
+        try {
+          Thread.sleep(sleepInterval);
+        } catch (InterruptedException e) {
         }
-        heartbeatTask = null;
-        queryId = null;
+        sleepInterval *= 2;
       }
-    } finally {
-      if (isLockAcquired) {
-        heartbeatTaskLock.unlock();
+      if (heartbeatTask.isCancelled() || heartbeatTask.isDone()) {
+        LOG.info("Stopped heartbeat for query: " + queryId);
       }
+      heartbeatTask = null;
+      queryId = null;
     }
   }
 
@@ -886,6 +850,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     return false;
   }
+  
   @Override
   protected void destruct() {
     try {
@@ -903,7 +868,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
   }
 
-  private void init() throws LockException {
+  private void init() {
     if (conf == null) {
       throw new RuntimeException("Must call setHiveConf before any other methods.");
     }

@@ -570,7 +570,7 @@ class DriverTxnHandler {
     txnRollbackRunner = null;
   }
 
-  void endTransactionAndCleanup(boolean commit, HiveTxnManager txnManager) throws LockException {
+  synchronized void endTransactionAndCleanup(boolean commit, HiveTxnManager txnManager) throws LockException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
 
@@ -611,6 +611,8 @@ class DriverTxnHandler {
     if (context != null && context.getHiveLocks() != null) {
       hiveLocks.addAll(context.getHiveLocks());
     }
-    txnManager.releaseLocks(hiveLocks);
+    if (!hiveLocks.isEmpty()) {
+      txnManager.releaseLocks(hiveLocks);
+    }
   }
 }

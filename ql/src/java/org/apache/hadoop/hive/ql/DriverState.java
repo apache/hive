@@ -132,7 +132,9 @@ public class DriverState {
   public void executionFinishedWithLocking(boolean wasError) {
     lock();
     try {
-      driverState = wasError ? State.ERROR : State.EXECUTED;
+      if (!isDestroyed()) {
+        driverState = wasError ? State.ERROR : State.EXECUTED;
+      }
     } finally {
       unlock();
     }
