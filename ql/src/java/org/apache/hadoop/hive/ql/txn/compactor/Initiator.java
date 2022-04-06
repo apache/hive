@@ -70,6 +70,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.LongSummaryStatistics;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -320,10 +321,18 @@ public class Initiator extends MetaStoreCompactorThread {
     if (compactions.getCompacts() == null) {
       return false;
     }
+
+    //In case of an aborted Dynamic partition insert, the created entry in the compaction queue does not contain
+    //a partition name even for partitioned tables. As a result it can happen that the ShowCompactResponse contains
+    //an element without partition name for partitioned tables. Therefore, it is necessary to null check the partition
+    //name of the ShowCompactResponseElement even if the CompactionInfo.partName is not null. These special compaction
+    //requests are skipped by the worker, and only cleaner will pick them up, so we should allow to schedule a 'normal'
+    //compaction for partitions of those tables which has special (DP abort) entry with undefined partition name.
     List<ShowCompactResponseElement> filteredElements = compactions.getCompacts().stream()
       .filter(e -> e.getDbname().equals(ci.dbname)
         && e.getTablename().equals(ci.tableName)
-        && (e.getPartitionname() == null && ci.partName == null || e.getPartitionname().equals(ci.partName)))
+        && (e.getPartitionname() == null && ci.partName == null ||
+              (Objects.equals(e.getPartitionname(),ci.partName))))
       .collect(Collectors.toList());
 
     // Figure out if there are any currently running compactions on the same table or partition.
@@ -602,8 +611,8 @@ public class Initiator extends MetaStoreCompactorThread {
         txnHandler.markFailed(ci);
       } catch (MetaException ex) {
         LOG.error("Caught exception while marking compaction as failed.", e);
-        return false;
       }
+      return false;
     }
     return true;
   }
