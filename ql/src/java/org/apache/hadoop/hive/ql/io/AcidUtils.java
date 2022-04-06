@@ -1494,7 +1494,6 @@ public class AcidUtils {
   public static Map<Path, HdfsDirSnapshot> getHdfsDirSnapshotsForCleaner(final FileSystem fs, final Path path)
           throws IOException {
     Map<Path, HdfsDirSnapshot> dirToSnapshots = new HashMap<>();
-    // depth first search
     Deque<RemoteIterator<FileStatus>> stack = new ArrayDeque<>();
     stack.push(fs.listStatusIterator(path));
     while (!stack.isEmpty()) {
@@ -1502,7 +1501,7 @@ public class AcidUtils {
       while (itr.hasNext()) {
         FileStatus fStatus = itr.next();
         Path fPath = fStatus.getPath();
-        if (acidHiddenFileFilter.accept(fPath) && acidTempDirFilter.accept(fPath)) {
+        if (acidHiddenFileFilter.accept(fPath)) {
           if (baseFileFilter.accept(fPath) ||
                   deltaFileFilter.accept(fPath) ||
                   deleteEventDeltaDirFilter.accept(fPath)) {
@@ -1510,10 +1509,8 @@ public class AcidUtils {
           } else {
             if (fStatus.isDirectory()) {
               stack.push(fs.listStatusIterator(fPath));
-              // This needed to remove non acid directories
-              addToSnapshoot(dirToSnapshots, fPath);
             } else {
-              // Found a rogue file
+              // Found an original file
               HdfsDirSnapshot hdfsDirSnapshot = addToSnapshoot(dirToSnapshots, fPath.getParent());
               hdfsDirSnapshot.addFile(fStatus);
             }
