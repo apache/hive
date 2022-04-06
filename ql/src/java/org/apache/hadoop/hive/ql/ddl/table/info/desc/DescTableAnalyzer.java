@@ -46,14 +46,14 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * A query like this will generate a tree as follows
  *   "describe formatted default.maptable partition (b=100) id;"
  * TOK_TABTYPE
- *   TOK_TABNAME --> root for tablename, 2 child nodes mean DB specified
+ *   TOK_TABNAME --&gt; root for tablename, 2 child nodes mean DB specified
  *     default
  *     maptable
- *   TOK_PARTSPEC  --> root node for partition spec. else columnName
+ *   TOK_PARTSPEC  --&gt; root node for partition spec. else columnName
  *     TOK_PARTVAL
  *       b
  *       100
- *   id           --> root node for columnName
+ *   id           --&gt; root node for columnName
  * formatted
  */
 @DDLType(types = HiveParser.TOK_DESCTABLE)

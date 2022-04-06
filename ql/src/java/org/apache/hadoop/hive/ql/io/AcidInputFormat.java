@@ -137,7 +137,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     /**
      * @param minWriteId min writeId of the delta directory
      * @param maxWriteId max writeId of the delta directory
-     * @param stmtIds delta dir suffixes when a single txn writes > 1 delta in the same partition
+     * @param stmtIds delta dir suffixes when a single txn writes &gt; 1 delta in the same partition
      * @param visibilityTxnId maybe 0, if the dir name didn't have it.  txnid:0 is always visible
      * @param deltaFiles bucketFiles in the directory
      */

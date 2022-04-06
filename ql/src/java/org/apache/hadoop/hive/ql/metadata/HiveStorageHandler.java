@@ -211,7 +211,7 @@ public interface HiveStorageHandler extends Configurable {
    *
    * @param operatorDesc operatorDesc
    * @param initialProps Map containing initial operator properties
-   * @return Map<String, String> containing additional operator specific information from storage handler
+   * @return Map&lt;String, String&gt; containing additional operator specific information from storage handler
    * OR `initialProps` if the storage handler choose to not provide any such information.
    */
   default Map<String, String> getOperatorDescProperties(OperatorDesc operatorDesc, Map<String, String> initialProps) {

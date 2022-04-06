@@ -353,7 +353,6 @@ public class FileUtils {
    * @param fs
    *          the file system
    * @return array of FileStatus
-   * @throws IOException
    */
   public static List<FileStatus> getFileStatusRecurse(Path base, FileSystem fs) {
     try {

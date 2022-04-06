@@ -5038,7 +5038,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param isSrcLocal true if source is on local file system
    * @param isAcidIUD true if this is an ACID based Insert/Update/Delete
    * @param isOverwrite if true, then overwrite if destination file exist, else add a duplicate copy
-   * @param newFiles if this is non-null, a list of files that were created as a result of this
+   * @param newFilesStatus if this is non-null, a list of files that were created as a result of this
    *                 move will be returned.
    * @param isManaged if table is managed.
    * @param isCompactionTable is table used in query-based compaction

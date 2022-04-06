@@ -74,7 +74,7 @@ public class OptimisedBootstrapUtils {
   public static final String BOOTSTRAP_TABLES_LIST = "_failover_bootstrap_table_list";
 
   /**
-   * Gets & checks whether the database is target of replication.
+   * Gets &amp; checks whether the database is target of replication.
    * @param dbName name of database
    * @param hive hive object
    * @return true, if the database has repl.target.for property set.
@@ -91,7 +91,7 @@ public class OptimisedBootstrapUtils {
   }
 
   /**
-   * Gets the source & target event id  from the event ack file
+   * Gets the source &amp; target event id  from the event ack file
    * @param dumpPath the dump path
    * @param conf the hive configuration
    * @return the event id from file.

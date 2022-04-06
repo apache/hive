@@ -98,7 +98,7 @@ public interface FunctionHelper {
   boolean isInFunction(FunctionInfo fi);
 
   /**
-   * returns true if FunctionInfo is a compare function (e.g. '<=')
+   * returns true if FunctionInfo is a compare function (e.g. '&lt;=')
    */
   boolean isCompareFunction(FunctionInfo fi);
 

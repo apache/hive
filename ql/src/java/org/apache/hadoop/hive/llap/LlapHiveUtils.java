@@ -52,7 +52,7 @@ public final class LlapHiveUtils {
   }
 
   /**
-   * Takes a Path and looks up the PartitionDesc instance associated with it in a map of Path->PartitionDesc entries.
+   * Takes a Path and looks up the PartitionDesc instance associated with it in a map of Path-&gt;PartitionDesc entries.
    * If it is not found (e.g. Path denotes a partition path, but map contains table level instances only) we will try
    * to do the same with the parent of this path, traversing up until there's a match, if any.
    * @param path the absolute path used for the look up
@@ -104,7 +104,6 @@ public final class LlapHiveUtils {
    * Returns MapWork based what is serialized in the JobConf instance provided.
    * @param job
    * @return the MapWork instance. Might be null if missing.
-   * @throws HiveException
    */
   public static MapWork findMapWork(JobConf job) {
     String inputName = job.get(Utilities.INPUT_NAME, null);

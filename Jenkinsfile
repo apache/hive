@@ -350,6 +350,18 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
       }
     }
   }
+  branches['javadoc-check'] = {
+    executorNode {
+      stage('Prepare') {
+          loadWS();
+      }
+      stage('Generate javadoc') {
+          sh """#!/bin/bash -e
+mvn clean install javadoc:javadoc javadoc:aggregate -DskipTests
+"""
+      }
+    }
+  }
   try {
     stage('Testing') {
       parallel branches

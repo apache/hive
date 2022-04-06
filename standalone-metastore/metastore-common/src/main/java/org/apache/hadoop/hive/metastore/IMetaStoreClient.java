@@ -252,9 +252,7 @@ public interface IMetaStoreClient {
    * @param dbName Name of the database to fetch tables from.
    * @param tablePattern pattern to match the tables names.
    * @param requestedFields An int bitmask to indicate the depth of the returned objects
-   * @param processorCapabilities A list of "capabilities" possessed by the caller, to be matched with table's params
-   * @param processorId Any string id to identify the caller/client, for logging purposes only.
-   * @param limit Maximum size of the result set. <=0 indicates no limit
+   * @param limit Maximum size of the result set. &lt;=0 indicates no limit
    * @return List of ExtendedTableInfo that match the input arguments.
    * @throws MetaException Thrown if there is error on fetching from DBMS.
    * @throws TException Thrown if there is a thrift transport exception.
@@ -1689,9 +1687,7 @@ public interface IMetaStoreClient {
    * @throws MetaException
    * @throws NoSuchObjectException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_table(org.apache.hadoop.hive.metastore.api.CreateTableRequest)
    */
-
   void createTable(Table tbl) throws AlreadyExistsException,
       InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
@@ -1703,7 +1699,6 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    * @throws TException
    */
-
   void createTable(CreateTableRequest request) throws AlreadyExistsException,
           InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
@@ -2583,7 +2578,7 @@ public interface IMetaStoreClient {
   /**
    * Get the column statistics for a set of columns in a table.  This should only be used for
    * non-partitioned tables.  For partitioned tables use
-   * {@link #getPartitionColumnStatistics(String, String, List, List)}.
+   * {@link #getPartitionColumnStatistics(String, String, List, List, String)}.
    * @param dbName database name
    * @param tableName table name
    * @param colNames list of column names
@@ -2603,7 +2598,7 @@ public interface IMetaStoreClient {
   /**
    * Get the column statistics for a set of columns in a table.  This should only be used for
    * non-partitioned tables.  For partitioned tables use
-   * {@link #getPartitionColumnStatistics(String, String, String, List, List)}.
+   * {@link #getPartitionColumnStatistics(String, String, String, List, List, String)}.
    * @param catName catalog name
    * @param dbName database name
    * @param tableName table name

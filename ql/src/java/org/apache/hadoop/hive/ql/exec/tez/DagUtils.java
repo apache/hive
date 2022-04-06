@@ -1260,7 +1260,6 @@ public class DagUtils {
    * @param inputOutputJars The file names to localize.
    * @return Map&lt;String, LocalResource&gt; (srcPath, local resources) to add to execution
    * @throws IOException when hdfs operation fails.
-   * @throws LoginException when getDefaultDestDir fails with the same exception
    */
   public Map<String, LocalResource> localizeTempFiles(String hdfsDirPathStr, Configuration conf,
       String[] inputOutputJars, String[] skipJars) throws IOException {

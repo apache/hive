@@ -44,18 +44,18 @@ import org.apache.hadoop.hive.common.type.Timestamp;
  * about the way hive logs using syslog format (specifically RFC5424).
  *
  * This implementation also parses structured data, returns all parsed fields as map and also un-escapes messages.
- * This parser also gracefully handles some corner cases where 'msg' can be empty or line can start with '<' but not
+ * This parser also gracefully handles some corner cases where 'msg' can be empty or line can start with '&lt;' but not
  * a valid RFC5424 format etc.
  *
  * Assumption:
  * 1) This parser assumes the linebreaks '\n' in stack traces for example are replaced by '\r' to make single
  * line message. The reader will do replacement of '\r' with '\n' at the time of read.
  * 2) This parser assumes structured data values are html escaped. So it will html unescape when parsing structured
- * data. (hive writes log lines directly to stderr that look like rfc5424 layout starting with '<' so the expectation
+ * data. (hive writes log lines directly to stderr that look like rfc5424 layout starting with '&lt;' so the expectation
  * from log4j2 is to escape those lines using html escaping).
- * 3) Read event returns List<Object> conforming to sys.logs table schema in hive. The schema for sys.logs table is
+ * 3) Read event returns List&lt;Object&gt; conforming to sys.logs table schema in hive. The schema for sys.logs table is
  * expected to be (facility STRING, severity STRING, version STRING, ts TIMESTAMP, hostname STRING, app_name STRING,
- * proc_id STRING, msg_id STRING, structured_data map<STRING,STRING>, msg BINARY, unmatched BINARY)
+ * proc_id STRING, msg_id STRING, structured_data map&lt;STRING,STRING&gt;, msg BINARY, unmatched BINARY)
  * 4) Timestamps are in UTC
  *
  * This parser is tested with Log4j2's RFC5424 layout generated using the following properties
@@ -161,8 +161,7 @@ public class SyslogParser implements Closeable {
    * Read the next Syslog message from the stream.
    *
    * @return a parsed map of object, or null on EOF.
-   * @throw EOFException if EOF is found in an inappropriate place.
-   * @throw IOException if the underlying stream fails, or unexpected
+   * @throws IOException if the underlying stream fails, or unexpected
    * bytes are seen.
    */
   public List<Object> readEvent() throws IOException {

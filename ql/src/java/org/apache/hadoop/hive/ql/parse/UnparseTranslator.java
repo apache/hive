@@ -137,7 +137,7 @@ public class UnparseTranslator {
   /**
    * Register a translation for an tabName.
    *
-   * @param node
+   * @param tableName
    *          source node (which must be an tabName) to be replaced
    */
   public void addTableNameTranslation(ASTNode tableName, String currentDatabaseName) {
@@ -175,7 +175,7 @@ public class UnparseTranslator {
   /**
    * Register a translation for an identifier.
    *
-   * @param node
+   * @param identifier
    *          source node (which must be an identifier) to be replaced
    */
   public void addIdentifierTranslation(ASTNode identifier) {
