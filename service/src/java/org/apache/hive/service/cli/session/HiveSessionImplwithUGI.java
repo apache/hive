@@ -69,6 +69,7 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
     }
     if (UserGroupInformation.isSecurityEnabled()) {
       try {
+        Hive.closeCurrent();
         sessionUgi = UserGroupInformation.createProxyUser(
             owner, UserGroupInformation.getLoginUser());
       } catch (IOException e) {
