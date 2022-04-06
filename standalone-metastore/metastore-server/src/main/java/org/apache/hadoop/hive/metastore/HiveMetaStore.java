@@ -61,12 +61,15 @@ import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.jetbrains.annotations.NotNull;
@@ -504,12 +507,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         MetaStoreUtils.getHttpPath(
             MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_HTTP_PATH));
 
-    // TODO: ZZZ: Figure out what this should be
+    // TODO: Figure out what this should be
     ServletContextHandler context = new ServletContextHandler(
         ServletContextHandler.NO_SECURITY | ServletContextHandler.NO_SESSIONS);
 
     // Tons of stuff skipped as compared the HS2.
-    // Sesions, XSRF, Compression, path configuration, constraining the methods allowed, etc.
+    // Sesions, XSRF, Compression, path configuration, etc.
+    constrainHttpMethods(context, false);
     server.setHandler(context);
 
     context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
@@ -679,6 +683,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return tServer != null && tServer.isServing();
       }
     };
+  }
+
+  private static void constrainHttpMethods(ServletContextHandler ctxHandler, boolean allowOptionsMethod) {
+    Constraint c = new Constraint();
+    c.setAuthenticate(true);
+
+    ConstraintMapping cmt = new ConstraintMapping();
+    cmt.setConstraint(c);
+    cmt.setMethod("TRACE");
+    cmt.setPathSpec("/*");
+
+    ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+    if (!allowOptionsMethod) {
+      ConstraintMapping cmo = new ConstraintMapping();
+      cmo.setConstraint(c);
+      cmo.setMethod("OPTIONS");
+      cmo.setPathSpec("/*");
+      securityHandler.setConstraintMappings(new ConstraintMapping[] {cmt, cmo});
+    } else {
+      securityHandler.setConstraintMappings(new ConstraintMapping[] {cmt});
+    }
+    ctxHandler.setSecurityHandler(securityHandler);
   }
   /**
    * Start Metastore based on a passed {@link HadoopThriftAuthBridge}.
