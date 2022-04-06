@@ -453,8 +453,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return jsonObject;
   }
 
-  public void addCreateTableStatement(Table table, List<String> tableCreateStmt , DDLPlanUtils ddlPlanUtils)
-    throws HiveException {
+  public void addCreateTableStatement(Table table, List<String> tableCreateStmt , DDLPlanUtils ddlPlanUtils) {
     tableCreateStmt.add(ddlPlanUtils.getCreateTableCommand(table, false) + ";");
   }
   
@@ -489,7 +488,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return;
   }
 
-  public void getDDLPlan(PrintStream out) throws HiveException, MetaException, Exception {
+  public void getDDLPlan(PrintStream out) throws Exception {
     DDLPlanUtils ddlPlanUtils = new DDLPlanUtils();
     Set<String> createDatabase = new TreeSet<String>();
     List<String> tableCreateStmt = new LinkedList<String>();
