@@ -1529,7 +1529,7 @@ public class MetastoreConf {
         "Response header size in bytes when using HTTP transport mode for metastore thrift server."
             + " Defaults to jetty's defaults"),
     METASTORE_THRIFT_HTTP_MAX_IDLE_TIME("metastore.thrift.http.max.idle.time", "hive.metastore.thrift.http.max.idle.time", 
-        "1800s", new TimeValidator(TimeUnit.MILLISECONDS), 
+        1800, TimeUnit.SECONDS,
         "Maximum idle time for a connection on the server when in HTTP mode."),
     USE_SSL("metastore.use.SSL", "hive.metastore.use.SSL", false,
         "Set this to true for using SSL encryption in HMS server."),
