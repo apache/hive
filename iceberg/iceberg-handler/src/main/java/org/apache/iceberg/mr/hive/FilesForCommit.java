@@ -50,15 +50,15 @@ public class FilesForCommit implements Serializable {
     return new FilesForCommit(Collections.emptyList(), Collections.emptyList());
   }
 
-  public List<DataFile> getDataFiles() {
+  public List<DataFile> dataFiles() {
     return dataFiles;
   }
 
-  public List<DeleteFile> getDeleteFiles() {
+  public List<DeleteFile> deleteFiles() {
     return deleteFiles;
   }
 
-  public List<? extends ContentFile> getAllFiles() {
+  public List<? extends ContentFile> allFiles() {
     return Stream.concat(dataFiles.stream(), deleteFiles.stream()).collect(Collectors.toList());
   }
 }

@@ -253,7 +253,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             Collection<FilesForCommit> results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
                 table.io(), false);
             // Check if we have files already committed and remove data files if there are any
-            List<? extends ContentFile> files = results.stream().map(FilesForCommit::getAllFiles)
+            List<? extends ContentFile> files = results.stream().map(FilesForCommit::allFiles)
                 .flatMap(Collection::stream).collect(Collectors.toList());
             if (files.size() > 0) {
               Tasks.foreach(files)
@@ -344,7 +344,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   private void commitDelete(JobContext jobContext, Table table, long startTime, Collection<FilesForCommit> results) {
     if (!results.isEmpty()) {
       RowDelta append = table.newRowDelta();
-      List<DeleteFile> deleteFiles = results.stream().map(FilesForCommit::getDeleteFiles)
+      List<DeleteFile> deleteFiles = results.stream().map(FilesForCommit::deleteFiles)
           .flatMap(Collection::stream).collect(Collectors.toList());
       deleteFiles.forEach(append::addDeletes);
       append.commit();
@@ -359,7 +359,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
   private void commitInsert(JobContext jobContext, Table table, long startTime, Collection<FilesForCommit> results,
       boolean isOverwrite) {
-    List<DataFile> dataFiles = results.stream().map(FilesForCommit::getDataFiles)
+    List<DataFile> dataFiles = results.stream().map(FilesForCommit::dataFiles)
         .flatMap(Collection::stream).collect(Collectors.toList());
     if (isOverwrite) {
       if (!dataFiles.isEmpty()) {

@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -108,7 +109,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
     addPartitionColsToInsert(mTable.getPartCols(), rewrittenQueryStr);
 
-    boolean nonNativeAcid = mTable.getStorageHandler() != null && mTable.getStorageHandler().supportsAcidOperations();
+    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
     if (nonNativeAcid) {
       String virtualCols = mTable.getStorageHandler().acidVirtualColumns().stream()
           .map(VirtualColumn::getName).collect(Collectors.joining(","));

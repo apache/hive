@@ -148,6 +148,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -2949,7 +2950,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         List<VirtualColumn> virtualCols = new ArrayList<>();
         if (tableType == TableType.NATIVE) {
           virtualCols = VirtualColumn.getRegistry(conf);
-          if (tabMetaData.getStorageHandler() != null && tabMetaData.getStorageHandler().supportsAcidOperations()) {
+          if (AcidUtils.isNonNativeAcidTable(tabMetaData)) {
             virtualCols.addAll(tabMetaData.getStorageHandler().acidVirtualColumns());
           }
           for (VirtualColumn vc : virtualCols) {

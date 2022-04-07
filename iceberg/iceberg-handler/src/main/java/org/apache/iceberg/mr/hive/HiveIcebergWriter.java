@@ -89,7 +89,7 @@ public abstract class HiveIcebergWriter implements FileSinkOperator.RecordWriter
 
     // If abort then remove the unnecessary files
     if (abort) {
-      Tasks.foreach(result.getAllFiles())
+      Tasks.foreach(result.allFiles())
           .retry(3)
           .suppressFailureWhenFinished()
           .onFailure((file, exception) -> LOG.debug("Failed on to remove file {} on abort", file, exception))
@@ -97,6 +97,6 @@ public abstract class HiveIcebergWriter implements FileSinkOperator.RecordWriter
     }
 
     LOG.info("HiveIcebergWriter is closed with abort={}. Created {} data files and {} delete files", abort,
-        result.getDataFiles().size(), result.getDeleteFiles().size());
+        result.dataFiles().size(), result.deleteFiles().size());
   }
 }

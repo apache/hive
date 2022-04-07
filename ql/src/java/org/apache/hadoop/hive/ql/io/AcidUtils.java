@@ -3269,6 +3269,10 @@ public class AcidUtils {
     }
   }
 
+  public static boolean isNonNativeAcidTable(Table table) {
+    return table != null && table.getStorageHandler() != null && table.getStorageHandler().supportsAcidOperations();
+  }
+
   static class DirInfoValue {
     private String txnString;
     private AcidDirectory dirInfo;
