@@ -105,3 +105,44 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 444	hola	800
+PREHOOK: query: drop table if exists tbl_standard_other
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_standard_other
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table tbl_standard_other(a int, b string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_standard_other
+POSTHOOK: query: create external table tbl_standard_other(a int, b string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_standard_other
+PREHOOK: query: insert into tbl_standard_other values (10, 'ten'), (444, 'tutu')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_standard_other
+POSTHOOK: query: insert into tbl_standard_other values (10, 'ten'), (444, 'tutu')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_standard_other
+POSTHOOK: Lineage: tbl_standard_other.a SCRIPT []
+POSTHOOK: Lineage: tbl_standard_other.b SCRIPT []
+PREHOOK: query: delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Input: default@tbl_standard_other
+PREHOOK: Output: default@tbl_ice
+POSTHOOK: query: delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Input: default@tbl_standard_other
+POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: select count(*) from tbl_ice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_ice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0

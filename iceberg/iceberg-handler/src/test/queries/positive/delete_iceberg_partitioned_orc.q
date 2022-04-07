@@ -22,3 +22,11 @@ insert into tbl_ice_other values (10, 'ten'), (333, 'hundred');
 delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_ice_other t2 on t1.a = t2.a);
 select * from tbl_ice order by a;
 -- (444, 'hola', 800)
+
+-- delete using a join subquery between the same table & a non-iceberg table
+drop table if exists tbl_standard_other;
+create external table tbl_standard_other(a int, b string) stored as orc;
+insert into tbl_standard_other values (10, 'ten'), (444, 'tutu');
+delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a);
+select count(*) from tbl_ice;
+-- 0
