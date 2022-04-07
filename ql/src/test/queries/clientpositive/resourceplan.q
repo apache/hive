@@ -1,5 +1,7 @@
 --! qt:dataset:alltypesorc,alltypesparquet,cbo_t1,cbo_t2,cbo_t3,lineitem,part,src,src1,src_cbo,src_json,src_sequencefile,src_thrift,srcbucket,srcbucket2,srcpart
 --! qt:sysdb
+# Mask the memory address when printing errors
+--! qt:replace:/(model\.\w+@)(\w+)"/$1#Masked#"/
 
 -- Continue on errors, we do check some error conditions below.
 set hive.cli.errors.ignore=true;

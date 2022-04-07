@@ -1,0 +1,1793 @@
+PREHOOK: query: create table src_buck (key int, value string) clustered by(value) into 2 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_buck
+POSTHOOK: query: create table src_buck (key int, value string) clustered by(value) into 2 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_buck
+PREHOOK: query: create table src_skew (key int) skewed by (key) on (1,2,3)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_skew
+POSTHOOK: query: create table src_skew (key int) skewed by (key) on (1,2,3)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_skew
+PREHOOK: query: CREATE TABLE scr_txn (key int, value string)
+    CLUSTERED BY (key) INTO 2 BUCKETS STORED AS ORC
+    TBLPROPERTIES (
+      "transactional"="true",
+      "compactor.mapreduce.map.memory.mb"="2048",
+      "compactorthreshold.hive.compactor.delta.num.threshold"="4",
+      "compactorthreshold.hive.compactor.delta.pct.threshold"="0.5")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@scr_txn
+POSTHOOK: query: CREATE TABLE scr_txn (key int, value string)
+    CLUSTERED BY (key) INTO 2 BUCKETS STORED AS ORC
+    TBLPROPERTIES (
+      "transactional"="true",
+      "compactor.mapreduce.map.memory.mb"="2048",
+      "compactorthreshold.hive.compactor.delta.num.threshold"="4",
+      "compactorthreshold.hive.compactor.delta.pct.threshold"="0.5")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@scr_txn
+PREHOOK: query: CREATE TABLE scr_txn_2 (key int, value string) STORED AS ORC
+    TBLPROPERTIES ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@scr_txn_2
+POSTHOOK: query: CREATE TABLE scr_txn_2 (key int, value string) STORED AS ORC
+    TBLPROPERTIES ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@scr_txn_2
+PREHOOK: query: alter table scr_txn compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table scr_txn compact 'major'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: alter table scr_txn_2 compact 'minor'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table scr_txn_2 compact 'minor'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: CREATE TEMPORARY TABLE src_tmp (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_tmp
+POSTHOOK: query: CREATE TEMPORARY TABLE src_tmp (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_tmp
+PREHOOK: query: CREATE TABLE moretypes (a decimal(10,2), b tinyint, c smallint, d int, e bigint, f varchar(10), g char(3))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@moretypes
+POSTHOOK: query: CREATE TABLE moretypes (a decimal(10,2), b tinyint, c smallint, d int, e bigint, f varchar(10), g char(3))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@moretypes
+PREHOOK: query: show grant user hive_test_user
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user
+POSTHOOK: type: SHOW_GRANT
+default	moretypes			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	moretypes			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	moretypes			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	moretypes			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	part			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	part			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	part			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	part			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	scr_txn			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	scr_txn			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	scr_txn			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	scr_txn			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	scr_txn_2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	scr_txn_2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	scr_txn_2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	scr_txn_2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_buck			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_buck			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_buck			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_buck			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	src_skew			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	src_skew			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	src_skew			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	src_skew			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	srcbucket			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	column_privileges			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	column_privileges			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	column_privileges			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	column_privileges			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	columns			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	columns			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	columns			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	columns			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	scheduled_executions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	scheduled_executions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	scheduled_executions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	scheduled_executions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	scheduled_queries			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	scheduled_queries			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	scheduled_queries			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	scheduled_queries			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	schemata			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	schemata			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	schemata			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	schemata			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	table_privileges			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	table_privileges			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	table_privileges			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	table_privileges			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	tables			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	tables			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	tables			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	tables			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+information_schema	views			hive_test_user	USER	DELETE	true	-1	hive_test_user
+information_schema	views			hive_test_user	USER	INSERT	true	-1	hive_test_user
+information_schema	views			hive_test_user	USER	SELECT	true	-1	hive_test_user
+information_schema	views			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	bucketing_cols			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	bucketing_cols			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	bucketing_cols			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	bucketing_cols			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	cds			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	cds			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	cds			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	cds			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	columns_v2			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	columns_v2			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	columns_v2			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	columns_v2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	compaction_queue			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	completed_compactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	database_params			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	database_params			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	database_params			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	database_params			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	db_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	db_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	db_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	db_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	db_version			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	db_version			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	db_version			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	db_version			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	dbs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	dbs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	dbs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	dbs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	funcs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	funcs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	funcs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	funcs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	global_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	global_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	global_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	global_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	hive_locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	key_constraints			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	key_constraints			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	key_constraints			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	key_constraints			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	mv_creation_metadata			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	mv_creation_metadata			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	mv_creation_metadata			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	mv_creation_metadata			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	mv_tables_used			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	mv_tables_used			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	mv_tables_used			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	mv_tables_used			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	part_col_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	part_col_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	part_col_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	part_col_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	part_col_stats			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	part_col_stats			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	part_col_stats			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	part_col_stats			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	part_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	part_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	part_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	part_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	partition_key_vals			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	partition_key_vals			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	partition_key_vals			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	partition_key_vals			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	partition_keys			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	partition_keys			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	partition_keys			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	partition_keys			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	partition_params			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	partition_params			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	partition_params			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	partition_params			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	partition_stats_view			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	partition_stats_view			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	partition_stats_view			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	partition_stats_view			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	partitions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	partitions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	partitions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	partitions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	replication_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	replication_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	replication_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	replication_metrics			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	role_map			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	role_map			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	role_map			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	role_map			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	roles			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	roles			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	roles			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	roles			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	scheduled_executions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	scheduled_executions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	scheduled_executions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	scheduled_executions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	scheduled_queries			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	scheduled_queries			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	scheduled_queries			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	scheduled_queries			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	sd_params			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	sd_params			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	sd_params			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	sd_params			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	sds			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	sds			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	sds			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	sds			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	sequence_table			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	sequence_table			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	sequence_table			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	sequence_table			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	serde_params			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	serde_params			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	serde_params			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	serde_params			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	serdes			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	serdes			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	serdes			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	serdes			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	skewed_col_names			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	skewed_col_names			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	skewed_col_names			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	skewed_col_names			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	skewed_col_value_loc_map			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	skewed_col_value_loc_map			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	skewed_col_value_loc_map			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	skewed_col_value_loc_map			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	skewed_string_list			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	skewed_string_list			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	skewed_string_list			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	skewed_string_list			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	skewed_string_list_values			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	skewed_string_list_values			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	skewed_string_list_values			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	skewed_string_list_values			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	skewed_values			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	skewed_values			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	skewed_values			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	skewed_values			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	sort_cols			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	sort_cols			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	sort_cols			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	sort_cols			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	tab_col_stats			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	tab_col_stats			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	tab_col_stats			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	tab_col_stats			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	table_params			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	table_params			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	table_params			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	table_params			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	table_stats_view			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	table_stats_view			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	table_stats_view			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	table_stats_view			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	tbl_col_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	tbl_col_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	tbl_col_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	tbl_col_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	tbl_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	tbl_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	tbl_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	tbl_privs			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	tbls			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	tbls			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	tbls			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	tbls			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	transactions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	txn_components			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	txns			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	version			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	version			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	version			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	version			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	wm_mappings			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	wm_mappings			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	wm_mappings			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	wm_mappings			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	wm_pools			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	wm_pools			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	wm_pools			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	wm_pools			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	wm_pools_to_triggers			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	wm_pools_to_triggers			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	wm_pools_to_triggers			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	wm_pools_to_triggers			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	wm_resourceplans			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	wm_resourceplans			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	wm_resourceplans			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	wm_resourceplans			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	wm_triggers			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	wm_triggers			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	wm_triggers			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	wm_triggers			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+PREHOOK: query: use sys
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:sys
+POSTHOOK: query: use sys
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:sys
+PREHOOK: query: select bucket_col_name, integer_idx from bucketing_cols order by bucket_col_name, integer_idx limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@bucketing_cols
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select bucket_col_name, integer_idx from bucketing_cols order by bucket_col_name, integer_idx limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@bucketing_cols
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+key	0
+key	0
+value	0
+PREHOOK: query: select t.tbl_name, c.column_name from tbls t join sds s on t.sd_id=s.sd_id join columns_v2 c on s.cd_id=c.cd_id order by t.tbl_name, c.column_name
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@columns_v2
+PREHOOK: Input: sys@sds
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select t.tbl_name, c.column_name from tbls t join sds s on t.sd_id=s.sd_id join columns_v2 c on s.cd_id=c.cd_id order by t.tbl_name, c.column_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@columns_v2
+POSTHOOK: Input: sys@sds
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bucketing_cols	bucket_col_name
+bucketing_cols	integer_idx
+bucketing_cols	sd_id
+cds	cd_id
+column_privileges	column_name
+column_privileges	grantee
+column_privileges	grantor
+column_privileges	is_grantable
+column_privileges	privilege_type
+column_privileges	table_catalog
+column_privileges	table_name
+column_privileges	table_schema
+columns	character_maximum_length
+columns	character_octet_length
+columns	character_set_catalog
+columns	character_set_name
+columns	character_set_schema
+columns	collation_catalog
+columns	collation_name
+columns	collation_schema
+columns	column_default
+columns	column_name
+columns	data_type
+columns	datetime_precision
+columns	declared_data_type
+columns	declared_numeric_precision
+columns	declared_numeric_scale
+columns	dtd_identifier
+columns	generation_expression
+columns	identity_cycle
+columns	identity_generation
+columns	identity_increment
+columns	identity_maximum
+columns	identity_minimum
+columns	identity_start
+columns	interval_precision
+columns	interval_type
+columns	is_generated
+columns	is_identity
+columns	is_nullable
+columns	is_self_referencing
+columns	is_system_time_period_end
+columns	is_system_time_period_start
+columns	is_updatable
+columns	maximum_cardinality
+columns	numeric_precision
+columns	numeric_precision_radix
+columns	numeric_scale
+columns	ordinal_position
+columns	scope_catalog
+columns	scope_name
+columns	scope_schema
+columns	system_time_period_timestamp_generation
+columns	table_catalog
+columns	table_name
+columns	table_schema
+columns	udt_catalog
+columns	udt_name
+columns	udt_schema
+columns_v2	cd_id
+columns_v2	column_name
+columns_v2	comment
+columns_v2	integer_idx
+columns_v2	type_name
+compaction_queue	cq_cleaner_start
+compaction_queue	cq_database
+compaction_queue	cq_enqueue_time
+compaction_queue	cq_error_message
+#### A masked pattern was here ####
+compaction_queue	cq_highest_write_id
+compaction_queue	cq_id
+compaction_queue	cq_initiator_id
+compaction_queue	cq_initiator_version
+compaction_queue	cq_partition
+compaction_queue	cq_run_as
+compaction_queue	cq_start
+compaction_queue	cq_state
+compaction_queue	cq_table
+compaction_queue	cq_tblproperties
+compaction_queue	cq_type
+compaction_queue	cq_worker_id
+compaction_queue	cq_worker_version
+compactions	c_catalog
+compactions	c_catalog
+compactions	c_cleaner_start
+compactions	c_cleaner_start
+compactions	c_database
+compactions	c_database
+compactions	c_duration
+compactions	c_duration
+compactions	c_enqueue_time
+compactions	c_enqueue_time
+#### A masked pattern was here ####
+compactions	c_highest_write_id
+compactions	c_highest_write_id
+compactions	c_id
+compactions	c_id
+compactions	c_initiator_host
+compactions	c_initiator_host
+compactions	c_initiator_id
+compactions	c_initiator_id
+compactions	c_initiator_version
+compactions	c_initiator_version
+compactions	c_partition
+compactions	c_partition
+compactions	c_run_as
+compactions	c_run_as
+compactions	c_start
+compactions	c_start
+compactions	c_state
+compactions	c_state
+compactions	c_table
+compactions	c_table
+compactions	c_type
+compactions	c_type
+compactions	c_worker_host
+compactions	c_worker_host
+compactions	c_worker_id
+compactions	c_worker_id
+compactions	c_worker_version
+compactions	c_worker_version
+completed_compactions	cc_database
+completed_compactions	cc_end
+completed_compactions	cc_enqueue_time
+completed_compactions	cc_error_message
+#### A masked pattern was here ####
+completed_compactions	cc_highest_write_id
+completed_compactions	cc_id
+completed_compactions	cc_initiator_id
+completed_compactions	cc_initiator_version
+completed_compactions	cc_partition
+completed_compactions	cc_run_as
+completed_compactions	cc_start
+completed_compactions	cc_state
+completed_compactions	cc_table
+completed_compactions	cc_tblproperties
+completed_compactions	cc_type
+completed_compactions	cc_worker_id
+completed_compactions	cc_worker_version
+database_params	db_id
+database_params	param_key
+database_params	param_value
+db_privs	authorizer
+db_privs	create_time
+db_privs	db_grant_id
+db_privs	db_id
+db_privs	db_priv
+db_privs	grant_option
+db_privs	grantor
+db_privs	grantor_type
+db_privs	principal_name
+db_privs	principal_type
+db_version	schema_version
+db_version	ver_id
+db_version	version_comment
+dbs	db_id
+dbs	db_location_uri
+dbs	name
+#### A masked pattern was here ####
+funcs	class_name
+funcs	create_time
+funcs	db_id
+funcs	func_id
+funcs	func_name
+funcs	func_type
+#### A masked pattern was here ####
+global_privs	authorizer
+global_privs	create_time
+global_privs	grant_option
+global_privs	grantor
+global_privs	grantor_type
+global_privs	principal_name
+global_privs	principal_type
+global_privs	user_grant_id
+global_privs	user_priv
+hive_locks	hl_acquired_at
+hive_locks	hl_agent_info
+hive_locks	hl_blockedby_ext_id
+hive_locks	hl_blockedby_int_id
+hive_locks	hl_db
+hive_locks	hl_heartbeat_count
+hive_locks	hl_host
+hive_locks	hl_last_heartbeat
+hive_locks	hl_lock_ext_id
+hive_locks	hl_lock_int_id
+hive_locks	hl_lock_state
+hive_locks	hl_lock_type
+hive_locks	hl_partition
+hive_locks	hl_table
+hive_locks	hl_txnid
+hive_locks	hl_user
+key_constraints	child_cd_id
+key_constraints	child_integer_idx
+key_constraints	child_tbl_id
+key_constraints	constraint_name
+key_constraints	constraint_type
+key_constraints	default_value
+key_constraints	delete_rule
+key_constraints	enable_validate_rely
+key_constraints	parent_cd_id
+key_constraints	parent_integer_idx
+key_constraints	parent_tbl_id
+key_constraints	position
+key_constraints	update_rule
+locks	acquired_at
+locks	agent_info
+locks	blockedby_ext_id
+locks	blockedby_int_id
+locks	db
+locks	heartbeat_count
+locks	host
+locks	last_heartbeat
+locks	lock_ext_id
+locks	lock_int_id
+locks	lock_state
+locks	lock_type
+locks	partition
+locks	table
+locks	txnid
+locks	user
+moretypes	a
+moretypes	b
+moretypes	c
+moretypes	d
+moretypes	e
+moretypes	f
+moretypes	g
+mv_creation_metadata	db_name
+mv_creation_metadata	mv_creation_metadata_id
+mv_creation_metadata	tbl_name
+mv_creation_metadata	txn_list
+mv_tables_used	mv_creation_metadata_id
+mv_tables_used	tbl_id
+notification_log	cat_name
+notification_log	db_name
+notification_log	event_id
+notification_log	event_time
+notification_log	event_type
+notification_log	message
+notification_log	message_format
+notification_log	nl_id
+notification_log	tbl_name
+part	p_brand
+part	p_comment
+part	p_container
+part	p_mfgr
+part	p_name
+part	p_partkey
+part	p_retailprice
+part	p_size
+part	p_type
+part_col_privs	authorizer
+part_col_privs	column_name
+part_col_privs	create_time
+part_col_privs	grant_option
+part_col_privs	grantor
+part_col_privs	grantor_type
+part_col_privs	part_col_priv
+part_col_privs	part_column_grant_id
+part_col_privs	part_id
+part_col_privs	principal_name
+part_col_privs	principal_type
+part_col_stats	avg_col_len
+part_col_stats	big_decimal_high_value
+part_col_stats	big_decimal_low_value
+part_col_stats	column_name
+part_col_stats	column_type
+part_col_stats	cs_id
+part_col_stats	db_name
+part_col_stats	double_high_value
+part_col_stats	double_low_value
+part_col_stats	engine
+part_col_stats	last_analyzed
+part_col_stats	long_high_value
+part_col_stats	long_low_value
+part_col_stats	max_col_len
+part_col_stats	num_distincts
+part_col_stats	num_falses
+part_col_stats	num_nulls
+part_col_stats	num_trues
+part_col_stats	part_id
+part_col_stats	partition_name
+part_col_stats	table_name
+part_privs	authorizer
+part_privs	create_time
+part_privs	grant_option
+part_privs	grantor
+part_privs	grantor_type
+part_privs	part_grant_id
+part_privs	part_id
+part_privs	part_priv
+part_privs	principal_name
+part_privs	principal_type
+partition_key_vals	integer_idx
+partition_key_vals	part_id
+partition_key_vals	part_key_val
+partition_keys	integer_idx
+partition_keys	pkey_comment
+partition_keys	pkey_name
+partition_keys	pkey_type
+partition_keys	tbl_id
+partition_params	param_key
+partition_params	param_value
+partition_params	part_id
+partition_stats_view	column_stats_accurate
+partition_stats_view	num_files
+partition_stats_view	num_rows
+partition_stats_view	part_id
+partition_stats_view	raw_data_size
+partition_stats_view	total_size
+partition_stats_view	transient_last_ddl_time
+partitions	create_time
+partitions	last_access_time
+partitions	part_id
+partitions	part_name
+partitions	sd_id
+partitions	tbl_id
+replication_metrics	dump_execution_id
+replication_metrics	metadata
+replication_metrics	policy_name
+replication_metrics	progress
+replication_metrics	scheduled_execution_id
+replication_metrics_orig	dump_execution_id
+replication_metrics_orig	message_format
+replication_metrics_orig	metadata
+replication_metrics_orig	policy_name
+replication_metrics_orig	progress
+replication_metrics_orig	scheduled_execution_id
+role_map	add_time
+role_map	grant_option
+role_map	grantor
+role_map	grantor_type
+role_map	principal_name
+role_map	principal_type
+role_map	role_grant_id
+role_map	role_id
+roles	create_time
+#### A masked pattern was here ####
+roles	role_id
+roles	role_name
+scheduled_executions	elapsed
+scheduled_executions	end_time
+scheduled_executions	end_time
+scheduled_executions	error_message
+scheduled_executions	error_message
+scheduled_executions	executor_query_id
+scheduled_executions	executor_query_id
+scheduled_executions	last_update_time
+scheduled_executions	last_update_time
+scheduled_executions	schedule_name
+scheduled_executions	scheduled_execution_id
+scheduled_executions	scheduled_execution_id
+scheduled_executions	scheduled_query_id
+scheduled_executions	start_time
+scheduled_executions	start_time
+scheduled_executions	state
+scheduled_executions	state
+scheduled_queries	active_execution_id
+scheduled_queries	active_execution_id
+scheduled_queries	cluster_namespace
+scheduled_queries	cluster_namespace
+scheduled_queries	enabled
+scheduled_queries	enabled
+scheduled_queries	next_execution
+scheduled_queries	next_execution
+scheduled_queries	query
+scheduled_queries	query
+scheduled_queries	schedule
+scheduled_queries	schedule
+scheduled_queries	schedule_name
+scheduled_queries	schedule_name
+scheduled_queries	scheduled_query_id
+scheduled_queries	scheduled_query_id
+scheduled_queries	user
+scheduled_queries	user
+schemata	catalog_name
+schemata	default_character_set_catalog
+schemata	default_character_set_name
+schemata	default_character_set_schema
+schemata	schema_name
+#### A masked pattern was here ####
+schemata	sql_path
+scr_txn	key
+scr_txn	value
+scr_txn_2	key
+scr_txn_2	value
+sd_params	param_key
+sd_params	param_value
+sd_params	sd_id
+sds	cd_id
+sds	input_format
+sds	is_compressed
+sds	is_storedassubdirectories
+sds	location
+sds	num_buckets
+sds	output_format
+sds	sd_id
+sds	serde_id
+sequence_table	next_val
+sequence_table	sequence_name
+serde_params	param_key
+serde_params	param_value
+serde_params	serde_id
+serdes	name
+serdes	serde_id
+serdes	slib
+skewed_col_names	integer_idx
+skewed_col_names	sd_id
+skewed_col_names	skewed_col_name
+skewed_col_value_loc_map	location
+skewed_col_value_loc_map	sd_id
+skewed_col_value_loc_map	string_list_id_kid
+skewed_string_list	string_list_id
+skewed_string_list_values	integer_idx
+skewed_string_list_values	string_list_id
+skewed_string_list_values	string_list_value
+skewed_values	integer_idx
+skewed_values	sd_id_oid
+skewed_values	string_list_id_eid
+sort_cols	column_name
+sort_cols	integer_idx
+sort_cols	order
+sort_cols	sd_id
+src	key
+src	value
+src_buck	key
+src_buck	value
+src_skew	key
+srcbucket	key
+srcbucket	value
+tab_col_stats	avg_col_len
+tab_col_stats	big_decimal_high_value
+tab_col_stats	big_decimal_low_value
+tab_col_stats	column_name
+tab_col_stats	column_type
+tab_col_stats	cs_id
+tab_col_stats	db_name
+tab_col_stats	double_high_value
+tab_col_stats	double_low_value
+tab_col_stats	engine
+tab_col_stats	last_analyzed
+tab_col_stats	long_high_value
+tab_col_stats	long_low_value
+tab_col_stats	max_col_len
+tab_col_stats	num_distincts
+tab_col_stats	num_falses
+tab_col_stats	num_nulls
+tab_col_stats	num_trues
+tab_col_stats	table_name
+tab_col_stats	tbl_id
+table_params	param_key
+table_params	param_value
+table_params	tbl_id
+table_privileges	grantee
+table_privileges	grantor
+table_privileges	is_grantable
+table_privileges	privilege_type
+table_privileges	table_catalog
+table_privileges	table_name
+table_privileges	table_schema
+table_privileges	with_hierarchy
+table_stats_view	column_stats_accurate
+table_stats_view	num_files
+table_stats_view	num_rows
+table_stats_view	raw_data_size
+table_stats_view	tbl_id
+table_stats_view	total_size
+table_stats_view	transient_last_ddl_time
+tables	commit_action
+tables	is_insertable_into
+tables	is_typed
+tables	reference_generation
+tables	self_referencing_column_name
+tables	table_catalog
+tables	table_name
+tables	table_schema
+tables	table_type
+tables	user_defined_type_catalog
+tables	user_defined_type_name
+tables	user_defined_type_schema
+tbl_col_privs	authorizer
+tbl_col_privs	column_name
+tbl_col_privs	create_time
+tbl_col_privs	grant_option
+tbl_col_privs	grantor
+tbl_col_privs	grantor_type
+tbl_col_privs	principal_name
+tbl_col_privs	principal_type
+tbl_col_privs	tbl_col_priv
+tbl_col_privs	tbl_column_grant_id
+tbl_col_privs	tbl_id
+tbl_privs	authorizer
+tbl_privs	create_time
+tbl_privs	grant_option
+tbl_privs	grantor
+tbl_privs	grantor_type
+tbl_privs	principal_name
+tbl_privs	principal_type
+tbl_privs	tbl_grant_id
+tbl_privs	tbl_id
+tbl_privs	tbl_priv
+tbls	create_time
+tbls	db_id
+tbls	is_rewrite_enabled
+tbls	last_access_time
+#### A masked pattern was here ####
+tbls	retention
+tbls	sd_id
+tbls	tbl_id
+tbls	tbl_name
+tbls	tbl_type
+tbls	view_expanded_text
+tbls	view_original_text
+transactions	agent_info
+transactions	heartbeat_count
+transactions	host
+transactions	last_heartbeat
+transactions	meta_info
+transactions	started
+transactions	state
+transactions	tc_database
+transactions	tc_operation_type
+transactions	tc_partition
+transactions	tc_table
+transactions	tc_writeid
+transactions	txn_id
+transactions	type
+transactions	user
+txn_components	tc_database
+txn_components	tc_operation_type
+txn_components	tc_partition
+txn_components	tc_table
+txn_components	tc_txnid
+txn_components	tc_writeid
+txns	txn_agent_info
+txns	txn_heartbeat_count
+txns	txn_host
+txns	txn_id
+txns	txn_last_heartbeat
+txns	txn_meta_info
+txns	txn_started
+txns	txn_state
+txns	txn_type
+txns	txn_user
+version	schema_version
+version	ver_id
+version	version_comment
+views	check_option
+views	is_insertable_into
+views	is_trigger_deletable
+views	is_trigger_insertable_into
+views	is_trigger_updatable
+views	is_updatable
+views	table_catalog
+views	table_name
+views	table_schema
+views	view_definition
+wm_mappings	entity_name
+wm_mappings	entity_type
+wm_mappings	ns
+wm_mappings	ordering
+wm_mappings	pool_path
+wm_mappings	rp_name
+wm_pools	alloc_fraction
+wm_pools	ns
+wm_pools	path
+wm_pools	query_parallelism
+wm_pools	rp_name
+wm_pools	scheduling_policy
+wm_pools_to_triggers	ns
+wm_pools_to_triggers	pool_path
+wm_pools_to_triggers	rp_name
+wm_pools_to_triggers	trigger_name
+wm_resourceplans	default_pool_path
+wm_resourceplans	name
+wm_resourceplans	ns
+wm_resourceplans	query_parallelism
+wm_resourceplans	status
+wm_triggers	action_expression
+wm_triggers	name
+wm_triggers	ns
+wm_triggers	rp_name
+wm_triggers	trigger_expression
+PREHOOK: query: select column_name, type_name, integer_idx from columns_v2 order by column_name, integer_idx limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@columns_v2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select column_name, type_name, integer_idx from columns_v2 order by column_name, integer_idx limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@columns_v2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+a	decimal(10,2)	0
+acquired_at	string	9
+action_expression	string	4
+active_execution_id	bigint	8
+active_execution_id	bigint	8
+PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@database_params
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@database_params
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@dbs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###	default	public	ROLE
+hdfs://### HDFS PATH ###	information_schema	hive_test_user	USER
+hdfs://### HDFS PATH ###	sys	hive_test_user	USER
+PREHOOK: query: select grantor, principal_name from db_privs order by grantor, principal_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@db_privs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select grantor, principal_name from db_privs order by grantor, principal_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@db_privs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select grantor, principal_name from global_privs order by grantor, principal_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@global_privs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select grantor, principal_name from global_privs order by grantor, principal_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@global_privs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+admin	admin
+PREHOOK: query: select part_name from partitions order by part_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@partitions
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select part_name from partitions order by part_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@partitions
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select pkey_name, pkey_type from partition_keys order by pkey_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@partition_keys
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select pkey_name, pkey_type from partition_keys order by pkey_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@partition_keys
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select part_key_val, integer_idx from partition_key_vals order by part_key_val, integer_idx limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@partition_key_vals
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select part_key_val, integer_idx from partition_key_vals order by part_key_val, integer_idx limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@partition_key_vals
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select param_key, param_value from partition_params order by param_key, param_value limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@partition_params
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select param_key, param_value from partition_params order by param_key, param_value limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@partition_params
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select grantor, principal_name from part_col_privs order by grantor, principal_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@part_col_privs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select grantor, principal_name from part_col_privs order by grantor, principal_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@part_col_privs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select grantor, principal_name from part_privs order by grantor, principal_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@part_privs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select grantor, principal_name from part_privs order by grantor, principal_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@part_privs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select role_name from roles order by role_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@roles
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select role_name from roles order by role_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@roles
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+admin
+public
+PREHOOK: query: select principal_name, grantor from role_map order by principal_name, grantor limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@role_map
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select principal_name, grantor from role_map order by principal_name, grantor limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@role_map
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+hive_admin_user	admin
+PREHOOK: query: explain vectorization detail
+select count(*) from sds
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@sds
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain vectorization detail
+select count(*) from sds
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@sds
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: sds
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:sd_id:bigint, 1:cd_id:bigint, 2:input_format:string, 3:is_compressed:boolean, 4:is_storedassubdirectories:boolean, 5:location:string, 6:num_buckets:int, 7:output_format:string, 8:serde_id:bigint]
+                  Select Operator
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: []
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      Group By Vectorization:
+                          aggregators: VectorUDAFCountStar(*) -> bigint
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkEmptyKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 0:bigint
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hive.storage.jdbc.JdbcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 9
+                    includeColumns: []
+                    dataColumns: sd_id:bigint, cd_id:bigint, input_format:string, is_compressed:boolean, is_storedassubdirectories:boolean, location:string, num_buckets:int, output_format:string, serde_id:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from sds
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@sds
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from sds
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@sds
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+75
+PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@sd_params
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@sd_params
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select name, slib from serdes order by name, slib limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@serdes
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select name, slib from serdes order by name, slib limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@serdes
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
+NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
+NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+PREHOOK: query: select param_key, param_value from serde_params order by param_key, param_value limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@serde_params
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select param_key, param_value from serde_params order by param_key, param_value limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@serde_params
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+serialization.format	1
+serialization.format	1
+serialization.format	1
+serialization.format	1
+serialization.format	1
+PREHOOK: query: select skewed_col_name from skewed_col_names order by skewed_col_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@skewed_col_names
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select skewed_col_name from skewed_col_names order by skewed_col_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@skewed_col_names
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+key
+PREHOOK: query: select count(*) from skewed_col_value_loc_map
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@skewed_col_value_loc_map
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from skewed_col_value_loc_map
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@skewed_col_value_loc_map
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: select * from skewed_string_list limit 0
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@skewed_string_list
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from skewed_string_list limit 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@skewed_string_list
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select * from skewed_string_list_values limit 0
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@skewed_string_list_values
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from skewed_string_list_values limit 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@skewed_string_list_values
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select count(*) from skewed_values
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@skewed_values
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from skewed_values
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@skewed_values
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3
+PREHOOK: query: select column_name, `order` from sort_cols order by column_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@sort_cols
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select column_name, `order` from sort_cols order by column_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@sort_cols
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select param_key, param_value from table_params order by param_key, param_value limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@table_params
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select param_key, param_value from table_params order by param_key, param_value limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@table_params
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","ns":"true","rp_name":"true","trigger_expression":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"active_execution_id":"true","cluster_namespace":"true","enabled":"true","next_execution":"true","query":"true","schedule":"true","schedule_name":"true","scheduled_query_id":"true","user":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"add_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","role_grant_id":"true","role_id":"true"}}
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"alloc_fraction":"true","ns":"true","path":"true","query_parallelism":"true","rp_name":"true","scheduling_policy":"true"}}
+PREHOOK: query: select tbl_name from tbls order by tbl_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select tbl_name from tbls order by tbl_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bucketing_cols
+cds
+column_privileges
+columns
+columns_v2
+PREHOOK: query: select column_name, grantor, principal_name from tbl_col_privs order by column_name, principal_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@tbl_col_privs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select column_name, grantor, principal_name from tbl_col_privs order by column_name, principal_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@tbl_col_privs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select grantor, principal_name from tbl_privs order by grantor, principal_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select grantor, principal_name from tbl_privs order by grantor, principal_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+hive_test_user	hive_test_user
+hive_test_user	hive_test_user
+hive_test_user	hive_test_user
+hive_test_user	hive_test_user
+hive_test_user	hive_test_user
+PREHOOK: query: select table_name, column_name, num_nulls, num_distincts from tab_col_stats order by table_name, column_name limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@tab_col_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select table_name, column_name, num_nulls, num_distincts from tab_col_stats order by table_name, column_name limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@tab_col_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+part	p_brand	0	16
+part	p_comment	0	25
+part	p_container	0	18
+part	p_mfgr	0	5
+part	p_name	0	25
+part	p_partkey	0	25
+part	p_retailprice	0	25
+part	p_size	0	21
+part	p_type	0	24
+src	key	0	316
+PREHOOK: query: select table_name, partition_name, column_name, num_nulls, num_distincts from part_col_stats order by table_name, partition_name, column_name limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@part_col_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select table_name, partition_name, column_name, num_nulls, num_distincts from part_col_stats order by table_name, partition_name, column_name limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@part_col_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select schema_version from version order by schema_version limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: sys@version
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select schema_version from version order by schema_version limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: sys@version
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4.0.0-alpha-2
+PREHOOK: query: select func_name, func_type from funcs order by func_name, func_type limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@funcs
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select func_name, func_type from funcs order by func_name, func_type limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@funcs
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select constraint_name from key_constraints order by constraint_name limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@key_constraints
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select constraint_name from key_constraints order by constraint_name limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@key_constraints
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+sys_pk_bucketing_cols
+sys_pk_bucketing_cols
+sys_pk_cds
+sys_pk_col_value_loc_map
+sys_pk_col_value_loc_map
+PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM TABLE_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by COLUMN_STATS_ACCURATE limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@table_params
+PREHOOK: Input: sys@table_stats_view
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM TABLE_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by COLUMN_STATS_ACCURATE limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@table_params
+POSTHOOK: Input: sys@table_stats_view
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","e":"true","f":"true","g":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"action_expression":"true","name":"true","ns":"true","rp_name":"true","trigger_expression":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"active_execution_id":"true","cluster_namespace":"true","enabled":"true","next_execution":"true","query":"true","schedule":"true","schedule_name":"true","scheduled_query_id":"true","user":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"add_time":"true","grant_option":"true","grantor":"true","grantor_type":"true","principal_name":"true","principal_type":"true","role_grant_id":"true","role_id":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"alloc_fraction":"true","ns":"true","path":"true","query_parallelism":"true","rp_name":"true","scheduling_policy":"true"}}	0	0	0	0
+PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@partition_params
+PREHOOK: Input: sys@partition_stats_view
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@partition_params
+POSTHOOK: Input: sys@partition_stats_view
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: describe sys.tab_col_stats
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: sys@tab_col_stats
+POSTHOOK: query: describe sys.tab_col_stats
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: sys@tab_col_stats
+cs_id               	bigint              	from deserializer   
+db_name             	string              	from deserializer   
+table_name          	string              	from deserializer   
+column_name         	string              	from deserializer   
+column_type         	string              	from deserializer   
+tbl_id              	bigint              	from deserializer   
+long_low_value      	bigint              	from deserializer   
+long_high_value     	bigint              	from deserializer   
+double_high_value   	double              	from deserializer   
+double_low_value    	double              	from deserializer   
+big_decimal_low_value	string              	from deserializer   
+big_decimal_high_value	string              	from deserializer   
+num_nulls           	bigint              	from deserializer   
+num_distincts       	bigint              	from deserializer   
+avg_col_len         	double              	from deserializer   
+max_col_len         	bigint              	from deserializer   
+num_trues           	bigint              	from deserializer   
+num_falses          	bigint              	from deserializer   
+last_analyzed       	bigint              	from deserializer   
+engine              	string              	from deserializer   
+PREHOOK: query: explain select max(num_distincts) from sys.tab_col_stats
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@tab_col_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select max(num_distincts) from sys.tab_col_stats
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@tab_col_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tab_col_stats
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: num_distincts (type: bigint)
+                    outputColumnNames: num_distincts
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: max(num_distincts)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(num_distincts) from sys.tab_col_stats
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@tab_col_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(num_distincts) from sys.tab_col_stats
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@tab_col_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+431
+PREHOOK: query: select * from compactions
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@compaction_queue
+PREHOOK: Input: sys@compactions
+PREHOOK: Input: sys@completed_compactions
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from compactions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@compaction_queue
+POSTHOOK: Input: sys@compactions
+POSTHOOK: Input: sys@completed_compactions
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-alpha-2-SNAPSHOT	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-alpha-2-SNAPSHOT	NULL
+PREHOOK: query: use INFORMATION_SCHEMA
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:information_schema
+POSTHOOK: query: use INFORMATION_SCHEMA
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:information_schema
+PREHOOK: query: select count(*) from SCHEMATA
+PREHOOK: type: QUERY
+PREHOOK: Input: information_schema@schemata
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from SCHEMATA
+POSTHOOK: type: QUERY
+POSTHOOK: Input: information_schema@schemata
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3
+PREHOOK: query: select * from TABLES order by TABLE_SCHEMA, TABLE_NAME
+PREHOOK: type: QUERY
+PREHOOK: Input: information_schema@tables
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from TABLES order by TABLE_SCHEMA, TABLE_NAME
+POSTHOOK: type: QUERY
+POSTHOOK: Input: information_schema@tables
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+default	default	moretypes	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	part	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	scr_txn	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	scr_txn_2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src_buck	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	src_skew	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	default	srcbucket	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	information_schema	column_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	columns	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	compactions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	scheduled_executions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	scheduled_queries	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	schemata	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	table_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	tables	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	information_schema	views	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	bucketing_cols	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	cds	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	columns_v2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	compaction_queue	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	compactions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	completed_compactions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	database_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	db_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	db_version	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	dbs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	funcs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	global_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	hive_locks	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	key_constraints	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	locks	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	mv_creation_metadata	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	mv_tables_used	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	notification_log	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	part_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	part_col_stats	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	part_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	partition_key_vals	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	partition_keys	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	partition_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	partition_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	partitions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	replication_metrics	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	replication_metrics_orig	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	role_map	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	roles	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	scheduled_executions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	scheduled_queries	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	sd_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	sds	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	sequence_table	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	serde_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	serdes	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	skewed_col_names	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	skewed_col_value_loc_map	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	skewed_string_list	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	skewed_string_list_values	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	skewed_values	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	sort_cols	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	tab_col_stats	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	table_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	table_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	tbl_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	tbl_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	tbls	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	transactions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	txn_components	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	txns	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	version	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	wm_mappings	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	wm_pools	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	wm_pools_to_triggers	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	wm_resourceplans	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	wm_triggers	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+PREHOOK: query: select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: information_schema@table_privileges
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from TABLE_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: information_schema@table_privileges
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+hive_test_user	hive_test_user	default	default	moretypes	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	SELECT	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	UPDATE	YES	NO
+hive_test_user	hive_test_user	default	default	part	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	part	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	part	SELECT	YES	NO
+hive_test_user	hive_test_user	default	default	part	UPDATE	YES	NO
+hive_test_user	hive_test_user	default	default	scr_txn	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	scr_txn	INSERT	YES	NO
+PREHOOK: query: select table_catalog,table_schema,table_name,column_name,ordinal_position,column_default,is_nullable,data_type,character_maximum_length,character_octet_length,numeric_precision,numeric_precision_radix,numeric_scale,datetime_precision,interval_type,interval_precision,character_set_catalog,character_set_schema,character_set_name,collation_catalog,collation_schema,collation_name,udt_catalog,udt_schema,udt_name,scope_catalog,scope_schema,scope_name,maximum_cardinality,is_self_referencing,is_identity,identity_generation,identity_start,identity_increment,identity_maximum,identity_minimum,identity_cycle,is_generated,generation_expression,is_system_time_period_start,is_system_time_period_end,system_time_period_timestamp_generation,is_updatable,declared_data_type,declared_numeric_precision,declared_numeric_scale from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
+PREHOOK: type: QUERY
+PREHOOK: Input: information_schema@columns
+PREHOOK: Input: sys@columns_v2
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@sds
+PREHOOK: Input: sys@tbl_col_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select table_catalog,table_schema,table_name,column_name,ordinal_position,column_default,is_nullable,data_type,character_maximum_length,character_octet_length,numeric_precision,numeric_precision_radix,numeric_scale,datetime_precision,interval_type,interval_precision,character_set_catalog,character_set_schema,character_set_name,collation_catalog,collation_schema,collation_name,udt_catalog,udt_schema,udt_name,scope_catalog,scope_schema,scope_name,maximum_cardinality,is_self_referencing,is_identity,identity_generation,identity_start,identity_increment,identity_maximum,identity_minimum,identity_cycle,is_generated,generation_expression,is_system_time_period_start,is_system_time_period_end,system_time_period_timestamp_generation,is_updatable,declared_data_type,declared_numeric_precision,declared_numeric_scale from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
+POSTHOOK: type: QUERY
+POSTHOOK: Input: information_schema@columns
+POSTHOOK: Input: sys@columns_v2
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@sds
+POSTHOOK: Input: sys@tbl_col_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+default	default	moretypes	a	0	NULL	YES	decimal(10,2)	NULL	NULL	10	10	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	decimal(10,2)	10	10
+default	default	moretypes	b	1	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
+default	default	moretypes	c	2	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
+default	default	moretypes	d	3	NULL	YES	int	NULL	NULL	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	int	10	10
+default	default	moretypes	e	4	NULL	YES	bigint	NULL	NULL	19	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	bigint	19	10
+default	default	moretypes	f	5	NULL	YES	varchar(10)	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	varchar(10)	NULL	NULL
+default	default	moretypes	g	6	NULL	YES	char(3)	3	3	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	char(3)	NULL	NULL
+PREHOOK: query: select * from COLUMN_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: information_schema@column_privileges
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@sds
+PREHOOK: Input: sys@tbl_col_privs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from COLUMN_PRIVILEGES order by GRANTOR, GRANTEE, TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: information_schema@column_privileges
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@sds
+POSTHOOK: Input: sys@tbl_col_privs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select TABLE_SCHEMA, TABLE_NAME from views order by TABLE_SCHEMA, TABLE_NAME
+PREHOOK: type: QUERY
+PREHOOK: Input: information_schema@views
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select TABLE_SCHEMA, TABLE_NAME from views order by TABLE_SCHEMA, TABLE_NAME
+POSTHOOK: type: QUERY
+POSTHOOK: Input: information_schema@views
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+information_schema	column_privileges
+information_schema	columns
+information_schema	compactions
+information_schema	scheduled_executions
+information_schema	scheduled_queries
+information_schema	schemata
+information_schema	table_privileges
+information_schema	tables
+information_schema	views
+sys	compactions
+sys	locks
+sys	partition_stats_view
+sys	replication_metrics
+sys	table_stats_view
+sys	transactions
+sys	version
+PREHOOK: query: select * from compactions
+PREHOOK: type: QUERY
+PREHOOK: Input: information_schema@compactions
+PREHOOK: Input: sys@compaction_queue
+PREHOOK: Input: sys@compactions
+PREHOOK: Input: sys@completed_compactions
+PREHOOK: Input: sys@dbs
+PREHOOK: Input: sys@tbl_privs
+PREHOOK: Input: sys@tbls
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from compactions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: information_schema@compactions
+POSTHOOK: Input: sys@compaction_queue
+POSTHOOK: Input: sys@compactions
+POSTHOOK: Input: sys@completed_compactions
+POSTHOOK: Input: sys@dbs
+POSTHOOK: Input: sys@tbl_privs
+POSTHOOK: Input: sys@tbls
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-alpha-2-SNAPSHOT	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-alpha-2-SNAPSHOT	NULL

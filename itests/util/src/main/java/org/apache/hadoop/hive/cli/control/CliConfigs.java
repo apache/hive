@@ -240,6 +240,101 @@ public class CliConfigs {
     }
   }
 
+  public static class PostgresMetastoreCliConfig extends AbstractCliConfig {
+    public PostgresMetastoreCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+        includesFrom(testConfigProps, "ms.postgres.query.files");
+        setResultsDir("ql/src/test/results/clientpositive/mspostgres");
+        setLogDir("itests/qtest/target/qfile-results/mspostgres");
+        setInitScript("q_test_init.sql");
+        setCleanupScript("q_test_cleanup.sql");
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.LLAP);
+        setMetastoreType("postgres");
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class MssqlMetastoreCliConfig extends AbstractCliConfig {
+    public MssqlMetastoreCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+        includesFrom(testConfigProps, "ms.mssql.query.files");
+        setResultsDir("ql/src/test/results/clientpositive/msmssql");
+        setLogDir("itests/qtest/target/qfile-results/msmssql");
+        setInitScript("q_test_init.sql");
+        setCleanupScript("q_test_cleanup.sql");
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.LLAP);
+        setMetastoreType("mssql");
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class OracleMetastoreCliConfig extends AbstractCliConfig {
+    public OracleMetastoreCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+        includesFrom(testConfigProps, "ms.oracle.query.files");
+        setResultsDir("ql/src/test/results/clientpositive/msoracle");
+        setLogDir("itests/qtest/target/qfile-results/msoracle");
+        setInitScript("q_test_init.sql");
+        setCleanupScript("q_test_cleanup.sql");
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.LLAP);
+        setMetastoreType("oracle");
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class MysqlMetastoreCliConfig extends AbstractCliConfig {
+    public MysqlMetastoreCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+        includesFrom(testConfigProps, "ms.mysql.query.files");
+        setResultsDir("ql/src/test/results/clientpositive/msmysql");
+        setLogDir("itests/qtest/target/qfile-results/msmysql");
+        setInitScript("q_test_init.sql");
+        setCleanupScript("q_test_cleanup.sql");
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.LLAP);
+        setMetastoreType("mysql");
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class MariadbMetastoreCliConfig extends AbstractCliConfig {
+    public MariadbMetastoreCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+        includesFrom(testConfigProps, "ms.mariadb.query.files");
+        setResultsDir("ql/src/test/results/clientpositive/msmariadb");
+        setLogDir("itests/qtest/target/qfile-results/msmariadb");
+        setInitScript("q_test_init.sql");
+        setCleanupScript("q_test_cleanup.sql");
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.LLAP);
+        setMetastoreType("mariadb");
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
   public static class EncryptedHDFSCliConfig extends AbstractCliConfig {
     public EncryptedHDFSCliConfig() {
       super(CoreCliDriver.class);
