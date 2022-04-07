@@ -441,6 +441,12 @@
         <classifier>tests</classifier>
       </dependency>
       <dependency>
+        <groupId>org.apache.hbase</groupId>
+        <artifactId>hbase-testing-util</artifactId>
+        <version>${hbase.version}</version>
+        <classifier>tests</classifier>
+      </dependency>
+      <dependency>
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-tests</artifactId>
         <version>${tez.version}</version>
