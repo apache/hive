@@ -4867,11 +4867,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
         outputRel = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
               outputRel, groupSet, null, new ArrayList<AggregateCall>());
         RowResolver groupByOutputRowResolver = new RowResolver();
+        List<ASTNode> gbyKeyExpressions = getGroupByForClause(qbp, selClauseName);
         for (int i = 0; i < outputRR.getColumnInfos().size(); i++) {
           ColumnInfo colInfo = outputRR.getColumnInfos().get(i);
           ColumnInfo newColInfo = new ColumnInfo(colInfo.getInternalName(),
               colInfo.getType(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
           groupByOutputRowResolver.put(colInfo.getTabAlias(), colInfo.getAlias(), newColInfo);
+          if (gbyKeyExpressions != null && gbyKeyExpressions.size() == outputRR.getColumnInfos().size()) {
+            groupByOutputRowResolver.putExpression(gbyKeyExpressions.get(i), colInfo);
+          }
         }
         relToHiveColNameCalcitePosMap.put(outputRel, buildHiveToCalciteColumnMap(groupByOutputRowResolver));
         this.relToHiveRR.put(outputRel, groupByOutputRowResolver);
