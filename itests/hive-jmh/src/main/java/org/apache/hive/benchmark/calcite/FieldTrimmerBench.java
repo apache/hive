@@ -55,13 +55,13 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 /**
  * This test measures the performance for field trimmer.
- * <p/>
+ * <p>
  * This test uses JMH framework for benchmarking.
  * You may execute this benchmark tool using JMH command line in different ways:
- * <p/>
+ * <p>
  * To use the settings shown in the main() function, use:
  * $ java -cp target/benchmarks.jar org.apache.hive.benchmark.calcite.FieldTrimmerBench
- * <p/>
+ * <p>
  * To use the default settings used by JMH, use:
  * $ java -jar target/benchmarks.jar org.apache.hive.benchmark.calcite.FieldTrimmerBench
  */
