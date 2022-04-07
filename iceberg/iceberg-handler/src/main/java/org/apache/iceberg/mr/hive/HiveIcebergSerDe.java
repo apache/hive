@@ -71,11 +71,10 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
   private ObjectInspector inspector;
   private Schema tableSchema;
-  private Schema deleteSchema;
+  private Schema projectedSchema;
   private Collection<String> partitionColumns;
   private Map<ObjectInspector, Deserializer> deserializers = Maps.newHashMapWithExpectedSize(1);
   private Container<Record> row = new Container<>();
-  private boolean isDelete = false;
 
   @Override
   public void initialize(@Nullable Configuration configuration, Properties serDeProperties,
@@ -129,13 +128,10 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       }
     }
 
-    Schema projectedSchema;
     String tableName = serDeProperties.getProperty(Catalogs.NAME);
     if (HiveIcebergStorageHandler.isDelete(configuration, tableName)) {
-      isDelete = true;
       // when writing delete files, we should use the full delete schema
-      deleteSchema = IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
-      projectedSchema = deleteSchema;
+      projectedSchema = IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
     } else if (HiveIcebergStorageHandler.isWrite(configuration, tableName)) {
       // when writing out data, we should not do projection pushdown
       projectedSchema = tableSchema;
@@ -232,7 +228,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     Deserializer deserializer = deserializers.get(objectInspector);
     if (deserializer == null) {
       deserializer = new Deserializer.Builder()
-          .schema(isDelete ? deleteSchema : tableSchema)
+          .schema(projectedSchema)
           .sourceInspector((StructObjectInspector) objectInspector)
           .writerInspector((StructObjectInspector) inspector)
           .build();

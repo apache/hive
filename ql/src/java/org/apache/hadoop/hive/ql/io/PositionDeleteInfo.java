@@ -36,7 +36,7 @@ public class PositionDeleteInfo {
     return new PositionDeleteInfo(specId, partHash, filePath, rowPos);
   }
 
-  public static void setIntoConfRecord(Configuration conf, int specId, long partHash, String filePath, long filePos) {
+  public static void setIntoConf(Configuration conf, int specId, long partHash, String filePath, long filePos) {
     conf.setInt(CONF_KEY_SPEC_ID, specId);
     conf.setLong(CONF_KEY_PART_HASH, partHash);
     conf.set(CONF_KEY_FILE_PATH, filePath);

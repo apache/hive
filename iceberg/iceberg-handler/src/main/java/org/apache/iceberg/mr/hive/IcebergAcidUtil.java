@@ -103,21 +103,21 @@ public class IcebergAcidUtil {
     return positionDelete;
   }
 
-  public static int parseSpecIdFromRecord(GenericRecord rec) {
+  public static int parseSpecId(GenericRecord rec) {
     return rec.get(DELETE_FILE_READ_META_COLS.get(MetadataColumns.SPEC_ID), Integer.class);
   }
 
-  public static long parsePartitionHashFromRecord(GenericRecord rec) {
+  public static long computePartitionHash(GenericRecord rec) {
     StructProjection part = rec.get(DELETE_FILE_READ_META_COLS.get(PARTITION_STRUCT_META_COL), StructProjection.class);
     // we need to compute a hash value for the partition struct so that it can be used as a sorting key
     return computeHash(part);
   }
 
-  public static String parseFilePathFromRecord(GenericRecord rec) {
+  public static String parseFilePath(GenericRecord rec) {
     return rec.get(DELETE_FILE_READ_META_COLS.get(MetadataColumns.FILE_PATH), String.class);
   }
 
-  public static long parseFilePositionFromRecord(GenericRecord rec) {
+  public static long parseFilePosition(GenericRecord rec) {
     return rec.get(DELETE_FILE_READ_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
   }
 

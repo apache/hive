@@ -263,11 +263,11 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           current = currentIterator.next();
           if (HiveIcebergStorageHandler.isDelete(conf, conf.get(Catalogs.NAME))) {
             GenericRecord rec = (GenericRecord) current;
-            PositionDeleteInfo.setIntoConfRecord(conf,
-                IcebergAcidUtil.parseSpecIdFromRecord(rec),
-                IcebergAcidUtil.parsePartitionHashFromRecord(rec),
-                IcebergAcidUtil.parseFilePathFromRecord(rec),
-                IcebergAcidUtil.parseFilePositionFromRecord(rec));
+            PositionDeleteInfo.setIntoConf(conf,
+                IcebergAcidUtil.parseSpecId(rec),
+                IcebergAcidUtil.computePartitionHash(rec),
+                IcebergAcidUtil.parseFilePath(rec),
+                IcebergAcidUtil.parseFilePosition(rec));
           }
           return true;
         } else if (tasks.hasNext()) {
