@@ -457,8 +457,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean supportsAcidOperations() {
-    return true;
+  public AcidSupportType supportsAcidOperations() {
+    return AcidSupportType.WITHOUT_TRANSACTIONS;
   }
 
   @Override

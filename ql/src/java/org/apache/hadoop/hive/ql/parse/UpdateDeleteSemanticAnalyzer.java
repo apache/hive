@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -99,6 +100,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     assert tabName.getToken().getType() == HiveParser.TOK_TABNAME :
         "Expected tablename as first child of " + operation + " but found " + tabName.getName();
     Table mTable = getTargetTable(tabName);
+    validateTxnManager(mTable);
     validateTargetTable(mTable);
 
     // save the operation type into the query state
@@ -243,6 +245,12 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
               colName);
         }
       }
+    }
+  }
+
+  private void validateTxnManager(Table mTable) throws SemanticException {
+    if (!AcidUtils.acidTableWithoutTransactions(mTable) && !getTxnMgr().supportsAcid()) {
+      throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getMsg());
     }
   }
 

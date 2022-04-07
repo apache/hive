@@ -266,11 +266,29 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
+  enum AcidSupportType {
+    NONE,
+    WITH_TRANSACTIONS,
+    WITHOUT_TRANSACTIONS
+  }
+
   /**
-   * @return whether the storage handler supports DELETE, UPDATE and MERGE operations
+   * Specifies whether the table supports ACID operations or not (DELETE, UPDATE and MERGE statements).
+   *
+   * Possible return values:
+   * <ul>
+   *   <li>AcidSupportType.NONE - ACID operations are not supported</li>
+   *   <li>AcidSupportType.WITH_TRANSACTIONS - ACID operations are supported, and must use a valid HiveTxnManager to wrap
+   *   the operation in a transaction, like in the case of standard Hive ACID tables</li>
+   *   <li>AcidSupportType.WITHOUT_TRANSACTIONS - ACID operations are supported, and there is no need for a HiveTxnManager
+   *   to open/close transactions for the operation, i.e. {@link org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager}
+   *   can be used</li>
+   * </ul>
+   *
+   * @return the table's ACID support type
    */
-  default boolean supportsAcidOperations() {
-    return false;
+  default AcidSupportType supportsAcidOperations() {
+    return AcidSupportType.NONE;
   }
 
   /**
@@ -279,7 +297,8 @@ public interface HiveStorageHandler extends Configurable {
    * tables for example, it writes out the ROW__ID virtual column. The storage handler should define which virtual
    * columns it needs to write out for its own delete files in these rewritten queries.
    *
-   * Should only return a non-empty list if {@link HiveStorageHandler#supportsAcidOperations()} ()} returns true.
+   * Should only return a non-empty list if {@link HiveStorageHandler#supportsAcidOperations()} ()} returns something
+   * other NONE.
    *
    * @return the list of virtual columns to be used in the rewritten query
    */

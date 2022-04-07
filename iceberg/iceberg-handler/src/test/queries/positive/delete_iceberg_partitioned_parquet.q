@@ -1,6 +1,4 @@
 set hive.vectorized.execution.enabled=false;
-set hive.support.concurrency=true;
-set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 drop table if exists tbl_ice;
 create external table tbl_ice(a int, b string, c int) partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg tblproperties ('format-version'='2');

@@ -66,9 +66,6 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     if (useSuper) {
       super.analyzeInternal(tree);
     } else {
-      if (!getTxnMgr().supportsAcid()) {
-        throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getMsg());
-      }
       analyze(tree);
       cleanUpMetaColumnAccessControl();
     }
