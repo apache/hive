@@ -30,6 +30,7 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.io.ClusteredPositionDeleteWriter;
+import org.apache.iceberg.io.DeleteWriteResult;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
@@ -40,31 +41,23 @@ import org.slf4j.LoggerFactory;
 public class HiveIcebergDeleteWriter extends HiveIcebergWriter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergDeleteWriter.class);
 
-  private final ClusteredPositionDeleteWriter<Record> deleteWriter;
-
   HiveIcebergDeleteWriter(Schema schema, PartitionSpec spec, FileFormat fileFormat,
       FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
       TaskAttemptID taskAttemptID, String tableName) {
-    super(schema, spec, io, taskAttemptID, tableName);
-    this.deleteWriter = new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, fileFormat, targetFileSize);
+    super(schema, spec, io, taskAttemptID, tableName,
+        new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, fileFormat, targetFileSize));
   }
 
   @Override
   public void write(Writable row) throws IOException {
     Record rec = ((Container<Record>) row).get();
     PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(spec.schema(), rec);
-    deleteWriter.write(positionDelete, spec, partition(positionDelete.row()));
-  }
-
-  @Override
-  public void close(boolean abort) throws IOException {
-    deleteWriter.close();
-    super.close(abort);
+    writer.write(positionDelete, spec, partition(positionDelete.row()));
   }
 
   @Override
   public FilesForCommit files() {
-    List<DeleteFile> deleteFiles = deleteWriter.result().deleteFiles();
+    List<DeleteFile> deleteFiles = ((DeleteWriteResult) writer.result()).deleteFiles();
     return FilesForCommit.onlyDelete(deleteFiles);
   }
 }

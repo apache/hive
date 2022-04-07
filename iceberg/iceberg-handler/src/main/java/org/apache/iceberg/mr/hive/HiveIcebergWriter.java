@@ -31,6 +31,7 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.FileIO;
+import org.apache.iceberg.io.PartitioningWriter;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.Tasks;
@@ -56,19 +57,17 @@ public abstract class HiveIcebergWriter implements FileSinkOperator.RecordWriter
   protected final FileIO io;
   protected final InternalRecordWrapper wrapper;
   protected final PartitionSpec spec;
+  protected final PartitioningWriter writer;
 
-  protected HiveIcebergWriter(Schema schema, PartitionSpec spec, FileIO io, TaskAttemptID attemptID, String tableName) {
+  protected HiveIcebergWriter(Schema schema, PartitionSpec spec, FileIO io, TaskAttemptID attemptID, String tableName,
+      PartitioningWriter writer) {
     this.io = io;
     this.currentKey = new PartitionKey(spec, schema);
     this.wrapper = new InternalRecordWrapper(schema.asStruct());
     this.spec = spec;
+    this.writer = writer;
     writers.putIfAbsent(attemptID, Maps.newConcurrentMap());
     writers.get(attemptID).put(tableName, this);
-  }
-
-  protected PartitionKey partition(Record row) {
-    currentKey.partition(wrapper.wrap(row));
-    return currentKey;
   }
 
   protected abstract FilesForCommit files();
@@ -85,6 +84,7 @@ public abstract class HiveIcebergWriter implements FileSinkOperator.RecordWriter
 
   @Override
   public void close(boolean abort) throws IOException {
+    writer.close();
     FilesForCommit result = files();
 
     // If abort then remove the unnecessary files
@@ -98,5 +98,10 @@ public abstract class HiveIcebergWriter implements FileSinkOperator.RecordWriter
 
     LOG.info("HiveIcebergWriter is closed with abort={}. Created {} data files and {} delete files", abort,
         result.dataFiles().size(), result.deleteFiles().size());
+  }
+
+  protected PartitionKey partition(Record row) {
+    currentKey.partition(wrapper.wrap(row));
+    return currentKey;
   }
 }

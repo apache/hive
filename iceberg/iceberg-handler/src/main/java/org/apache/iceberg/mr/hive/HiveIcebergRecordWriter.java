@@ -29,6 +29,7 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.ClusteredDataWriter;
+import org.apache.iceberg.io.DataWriteResult;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
@@ -39,30 +40,22 @@ import org.slf4j.LoggerFactory;
 class HiveIcebergRecordWriter extends HiveIcebergWriter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergRecordWriter.class);
 
-  private final ClusteredDataWriter<Record> dataWriter;
-
   HiveIcebergRecordWriter(Schema schema, PartitionSpec spec, FileFormat format,
       FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
       TaskAttemptID taskAttemptID, String tableName) {
-    super(schema, spec, io, taskAttemptID, tableName);
-    this.dataWriter = new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize);
+    super(schema, spec, io, taskAttemptID, tableName,
+        new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize));
   }
 
   @Override
   public void write(Writable row) throws IOException {
     Record record = ((Container<Record>) row).get();
-    dataWriter.write(record, spec, partition(record));
-  }
-
-  @Override
-  public void close(boolean abort) throws IOException {
-    dataWriter.close();
-    super.close(abort);
+    writer.write(record, spec, partition(record));
   }
 
   @Override
   public FilesForCommit files() {
-    List<DataFile> dataFiles = dataWriter.result().dataFiles();
+    List<DataFile> dataFiles = ((DataWriteResult) writer.result()).dataFiles();
     return FilesForCommit.onlyData(dataFiles);
   }
 }
