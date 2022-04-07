@@ -1811,7 +1811,6 @@
             <artifactId>maven-javadoc-plugin</artifactId>
             <configuration>
               <doclint>none</doclint>
-              <additionalparam>-Xdoclint:none</additionalparam>
               <useStandardDocletOptions>false</useStandardDocletOptions>
             </configuration>
             <executions>
