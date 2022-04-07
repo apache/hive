@@ -35,7 +35,7 @@
     <test.warehouse.scheme>file://</test.warehouse.scheme>
     <test.forkcount>1</test.forkcount>
     <skipITests>true</skipITests>
-    <hdp.hive.version>2.3.3</hdp.hive.version>
+    <hdp.hive.version>2.3.4</hdp.hive.version>
     <hdp.hadoop.version>2.7.2</hdp.hadoop.version>
   </properties>
   <dependencies>
