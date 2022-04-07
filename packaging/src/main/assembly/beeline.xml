@@ -79,7 +79,7 @@
             <directory>${project.parent.basedir}/beeline/target</directory>
             <outputDirectory>lib</outputDirectory>
             <includes>
-                <include>original-jar-with-dependencies.jar</include>
+                <include>jar-with-dependencies.jar</include>
             </includes>
         </fileSet>
     </fileSets>
