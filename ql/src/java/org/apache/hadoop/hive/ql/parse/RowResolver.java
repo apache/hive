@@ -89,7 +89,7 @@ public class RowResolver implements Serializable{
    * exactly matches the string rendering of the given ASTNode.
    */
   public ColumnInfo getExpression(ASTNode node) throws SemanticException {
-    return get("", node.toStringTree().toLowerCase());
+    return get("", node.toStringTree());
   }
 
   /**
@@ -105,10 +105,10 @@ public class RowResolver implements Serializable{
       //Make sure that the table alias and column alias are stored
       //in the column info
       if (tab_alias != null) {
-        colInfo.setTabAlias(tab_alias.toLowerCase());
+        colInfo.setTabAlias(tab_alias);
       }
       if (col_alias != null) {
-        colInfo.setAlias(col_alias.toLowerCase());
+        colInfo.setAlias(col_alias);
       }
       rowSchema.getSignature().add(colInfo);
     }
