@@ -67,14 +67,12 @@ import org.apache.iceberg.data.avro.DataReader;
 import org.apache.iceberg.data.orc.GenericOrcReader;
 import org.apache.iceberg.data.parquet.GenericParquetReaders;
 import org.apache.iceberg.encryption.EncryptedFiles;
-import org.apache.iceberg.encryption.EncryptionManager;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
-import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
@@ -229,7 +227,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
 
     private TaskAttemptContext context;
-    private Schema tableSchema;
+    private Configuration conf;
     private Schema expectedSchema;
     private String nameMapping;
     private boolean reuseContainers;
@@ -238,22 +236,17 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     private Iterator<FileScanTask> tasks;
     private T current;
     private CloseableIterator<T> currentIterator;
-    private FileIO io;
-    private EncryptionManager encryptionManager;
     private Table table;
 
     @Override
     public void initialize(InputSplit split, TaskAttemptContext newContext) {
-      Configuration conf = newContext.getConfiguration();
       // For now IcebergInputFormat does its own split planning and does not accept FileSplit instances
       CombinedScanTask task = ((IcebergSplit) split).task();
       this.context = newContext;
-      table = ((IcebergSplit) split).table();
+      this.conf = newContext.getConfiguration();
+      this.table = ((IcebergSplit) split).table();
       HiveIcebergStorageHandler.checkAndSetIoConfig(conf, table);
-      this.io = table.io();
-      this.encryptionManager = table.encryption();
       this.tasks = task.files().iterator();
-      this.tableSchema = InputFormatConfig.tableSchema(conf);
       this.nameMapping = table.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
       this.caseSensitive = conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT);
       this.expectedSchema = readSchema(conf, table, caseSensitive);
@@ -268,12 +261,13 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       while (true) {
         if (currentIterator.hasNext()) {
           current = currentIterator.next();
-          Configuration conf = context.getConfiguration();
           if (HiveIcebergStorageHandler.isDelete(conf, conf.get(Catalogs.NAME))) {
-            if (current instanceof GenericRecord) {
-              PositionDeleteInfo pdi = IcebergAcidUtil.parsePositionDeleteInfoFromRecord((GenericRecord) current);
-              PositionDeleteInfo.setIntoConf(conf, pdi);
-            }
+            GenericRecord rec = (GenericRecord) current;
+            PositionDeleteInfo.setIntoConfRecord(conf,
+                IcebergAcidUtil.parseSpecIdFromRecord(rec),
+                IcebergAcidUtil.parsePartitionHashFromRecord(rec),
+                IcebergAcidUtil.parseFilePathFromRecord(rec),
+                IcebergAcidUtil.parseFilePositionFromRecord(rec));
           }
           return true;
         } else if (tasks.hasNext()) {
@@ -317,14 +311,14 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         // When querying metadata tables, the currentTask is a DataTask and the data has to
         // be fetched from the task instead of reading it from files.
         IcebergInternalRecordWrapper wrapper =
-            new IcebergInternalRecordWrapper(tableSchema.asStruct(), readSchema.asStruct());
+            new IcebergInternalRecordWrapper(table.schema().asStruct(), readSchema.asStruct());
         return (CloseableIterable) CloseableIterable.transform(((DataTask) currentTask).rows(),
             row -> wrapper.wrap((StructLike) row));
       }
 
       DataFile file = currentTask.file();
-      InputFile inputFile = encryptionManager.decrypt(EncryptedFiles.encryptedInput(
-          io.newInputFile(file.path().toString()),
+      InputFile inputFile = table.encryption().decrypt(EncryptedFiles.encryptedInput(
+          table.io().newInputFile(file.path().toString()),
           file.keyMetadata()));
 
       CloseableIterable<T> iterable;
@@ -355,7 +349,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         case HIVE:
           return openTask(currentTask, readSchema);
         case GENERIC:
-          DeleteFilter deletes = new GenericDeleteFilter(io, currentTask, tableSchema, readSchema);
+          DeleteFilter deletes = new GenericDeleteFilter(table.io(), currentTask, table.schema(), readSchema);
           Schema requiredSchema = deletes.requiredSchema();
           return deletes.filter(openTask(currentTask, requiredSchema));
         default:
@@ -514,7 +508,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       return readSchema;
     }
 
-    private Schema schemaWithoutConstantsAndMeta(Schema readSchema, Map<Integer, ?> idToConstant) {
+    private static Schema schemaWithoutConstantsAndMeta(Schema readSchema, Map<Integer, ?> idToConstant) {
       // remove the nested fields of the partition struct
       Set<Integer> partitionFields = Optional.ofNullable(readSchema.findField(MetadataColumns.PARTITION_COLUMN_ID))
           .map(Types.NestedField::type)

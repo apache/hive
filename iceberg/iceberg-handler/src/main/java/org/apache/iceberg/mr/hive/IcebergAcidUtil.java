@@ -22,7 +22,6 @@ package org.apache.iceberg.mr.hive;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -40,13 +39,13 @@ public class IcebergAcidUtil {
   }
 
   private static final Types.NestedField PARTITION_STRUCT_META_COL = null; // placeholder value in the map
-  private static final Map<Types.NestedField, Integer> DELETE_FILEREAD_META_COLS = Maps.newLinkedHashMap();
+  private static final Map<Types.NestedField, Integer> DELETE_FILE_READ_META_COLS = Maps.newLinkedHashMap();
 
   static {
-    DELETE_FILEREAD_META_COLS.put(MetadataColumns.SPEC_ID, 0);
-    DELETE_FILEREAD_META_COLS.put(PARTITION_STRUCT_META_COL, 1);
-    DELETE_FILEREAD_META_COLS.put(MetadataColumns.FILE_PATH, 2);
-    DELETE_FILEREAD_META_COLS.put(MetadataColumns.ROW_POSITION, 3);
+    DELETE_FILE_READ_META_COLS.put(MetadataColumns.SPEC_ID, 0);
+    DELETE_FILE_READ_META_COLS.put(PARTITION_STRUCT_META_COL, 1);
+    DELETE_FILE_READ_META_COLS.put(MetadataColumns.FILE_PATH, 2);
+    DELETE_FILE_READ_META_COLS.put(MetadataColumns.ROW_POSITION, 3);
   }
 
   private static final Types.NestedField PARTITION_HASH_META_COL = Types.NestedField.required(
@@ -61,32 +60,32 @@ public class IcebergAcidUtil {
   }
 
   /**
-   * @param columns The columns of the file read schema
+   * @param dataCols The columns of the original file read schema
    * @param table The table object - it is used for populating the partition struct meta column
    * @return The schema for reading files, extended with metadata columns needed for deletes
    */
-  public static Schema createFileReadSchemaForDelete(List<Types.NestedField> columns, Table table) {
-    List<Types.NestedField> delCols = Lists.newArrayListWithCapacity(columns.size() + DELETE_FILEREAD_META_COLS.size());
-    DELETE_FILEREAD_META_COLS.forEach((col, index) -> {
-      if (col == PARTITION_STRUCT_META_COL) {
-        delCols.add(MetadataColumns.metadataColumn(table, MetadataColumns.PARTITION_COLUMN_NAME));
+  public static Schema createFileReadSchemaForDelete(List<Types.NestedField> dataCols, Table table) {
+    List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + DELETE_FILE_READ_META_COLS.size());
+    DELETE_FILE_READ_META_COLS.forEach((metaCol, index) -> {
+      if (metaCol == PARTITION_STRUCT_META_COL) {
+        cols.add(MetadataColumns.metadataColumn(table, MetadataColumns.PARTITION_COLUMN_NAME));
       } else {
-        delCols.add(col);
+        cols.add(metaCol);
       }
     });
-    delCols.addAll(columns);
-    return new Schema(delCols);
+    cols.addAll(dataCols);
+    return new Schema(cols);
   }
 
   /**
-   * @param columns The columns of the serde projection schema
+   * @param dataCols The columns of the serde projection schema
    * @return The schema for SerDe operations, extended with metadata columns needed for deletes
    */
-  public static Schema createSerdeSchemaForDelete(List<Types.NestedField> columns) {
-    List<Types.NestedField> delCols = Lists.newArrayListWithCapacity(columns.size() + DELETE_SERDE_META_COLS.size());
-    DELETE_SERDE_META_COLS.forEach((col, index) -> delCols.add(col));
-    delCols.addAll(columns);
-    return new Schema(delCols);
+  public static Schema createSerdeSchemaForDelete(List<Types.NestedField> dataCols) {
+    List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + DELETE_SERDE_META_COLS.size());
+    DELETE_SERDE_META_COLS.forEach((metaCol, index) -> cols.add(metaCol));
+    cols.addAll(dataCols);
+    return new Schema(cols);
   }
 
   public static PositionDelete<Record> getPositionDelete(Schema schema, Record rec) {
@@ -104,14 +103,22 @@ public class IcebergAcidUtil {
     return positionDelete;
   }
 
-  public static PositionDeleteInfo parsePositionDeleteInfoFromRecord(GenericRecord rec) {
-    int specId = rec.get(DELETE_FILEREAD_META_COLS.get(MetadataColumns.SPEC_ID), Integer.class);
-    StructProjection struct = rec.get(DELETE_FILEREAD_META_COLS.get(PARTITION_STRUCT_META_COL), StructProjection.class);
-    String filePath = rec.get(DELETE_FILEREAD_META_COLS.get(MetadataColumns.FILE_PATH), String.class);
-    long filePos = rec.get(DELETE_FILEREAD_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
+  public static int parseSpecIdFromRecord(GenericRecord rec) {
+    return rec.get(DELETE_FILE_READ_META_COLS.get(MetadataColumns.SPEC_ID), Integer.class);
+  }
 
+  public static long parsePartitionHashFromRecord(GenericRecord rec) {
+    StructProjection part = rec.get(DELETE_FILE_READ_META_COLS.get(PARTITION_STRUCT_META_COL), StructProjection.class);
     // we need to compute a hash value for the partition struct so that it can be used as a sorting key
-    return new PositionDeleteInfo(specId, computeHash(struct), filePath, filePos);
+    return computeHash(part);
+  }
+
+  public static String parseFilePathFromRecord(GenericRecord rec) {
+    return rec.get(DELETE_FILE_READ_META_COLS.get(MetadataColumns.FILE_PATH), String.class);
+  }
+
+  public static long parseFilePositionFromRecord(GenericRecord rec) {
+    return rec.get(DELETE_FILE_READ_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
   }
 
   private static long computeHash(StructProjection struct) {

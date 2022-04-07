@@ -36,11 +36,11 @@ public class PositionDeleteInfo {
     return new PositionDeleteInfo(specId, partHash, filePath, rowPos);
   }
 
-  public static void setIntoConf(Configuration conf, PositionDeleteInfo pdi) {
-    conf.setInt(CONF_KEY_SPEC_ID, pdi.getSpecId());
-    conf.setLong(CONF_KEY_PART_HASH, pdi.getPartitionHash());
-    conf.set(CONF_KEY_FILE_PATH, pdi.getFilePath());
-    conf.setLong(CONF_KEY_ROW_POSITION, pdi.getFilePos());
+  public static void setIntoConfRecord(Configuration conf, int specId, long partHash, String filePath, long filePos) {
+    conf.setInt(CONF_KEY_SPEC_ID, specId);
+    conf.setLong(CONF_KEY_PART_HASH, partHash);
+    conf.set(CONF_KEY_FILE_PATH, filePath);
+    conf.setLong(CONF_KEY_ROW_POSITION, filePos);
   }
 
   private final int specId;
