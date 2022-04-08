@@ -23,7 +23,9 @@ import java.util.Map;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.BoundaryCache;
@@ -740,6 +742,10 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       return new DateValueBoundaryScanner(start, end, exprDef, nullsLast);
     case STRING:
       return new StringValueBoundaryScanner(start, end, exprDef, nullsLast);
+    case CHAR:
+      return new CharValueBoundaryScanner(start, end, exprDef, nullsLast);
+    case VARCHAR:
+      return new VarcharValueBoundaryScanner(start, end, exprDef, nullsLast);
     default:
       throw new HiveException(String
           .format("Internal Error: attempt to setup a Window for datatype: '%s'", primitiveCategory));
@@ -768,6 +774,9 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     case "string":
       return new StringPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
     default:
+      if (typeString.startsWith("char") || typeString.startsWith("varchar")) {
+        return new StringPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
+      }
       throw new HiveException(String
           .format("Internal Error: attempt to setup a Window for typeString: '%s'", typeString));
     }
@@ -1214,6 +1223,55 @@ class StringPrimitiveValueBoundaryScanner extends SinglePrimitiveValueBoundarySc
   }
 }
 
+class CharValueBoundaryScanner extends SingleValueBoundaryScanner {
+  public CharValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
+      OrderExpressionDef expressionDef, boolean nullsLast) {
+    super(start, end, expressionDef, nullsLast);
+  }
+
+  @Override
+  public boolean isDistanceGreater(Object v1, Object v2, int amt) {
+    HiveChar s1 = PrimitiveObjectInspectorUtils.getHiveChar(v1,
+        (PrimitiveObjectInspector) expressionDef.getOI());
+    HiveChar s2 = PrimitiveObjectInspectorUtils.getHiveChar(v2,
+        (PrimitiveObjectInspector) expressionDef.getOI());
+    return s1 != null && s2 != null && s1.compareTo(s2) > 0;
+  }
+
+  @Override
+  public boolean isEqual(Object v1, Object v2) {
+    HiveChar s1 = PrimitiveObjectInspectorUtils.getHiveChar(v1,
+        (PrimitiveObjectInspector) expressionDef.getOI());
+    HiveChar s2 = PrimitiveObjectInspectorUtils.getHiveChar(v2,
+        (PrimitiveObjectInspector) expressionDef.getOI());
+    return (s1 == null && s2 == null) || (s1 != null && s1.equals(s2));
+  }
+}
+
+class VarcharValueBoundaryScanner extends SingleValueBoundaryScanner {
+  public VarcharValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
+      OrderExpressionDef expressionDef, boolean nullsLast) {
+    super(start, end, expressionDef, nullsLast);
+  }
+
+  @Override
+  public boolean isDistanceGreater(Object v1, Object v2, int amt) {
+    HiveVarchar s1 = PrimitiveObjectInspectorUtils.getHiveVarchar(v1,
+        (PrimitiveObjectInspector) expressionDef.getOI());
+    HiveVarchar s2 = PrimitiveObjectInspectorUtils.getHiveVarchar(v2,
+        (PrimitiveObjectInspector) expressionDef.getOI());
+    return s1 != null && s2 != null && s1.compareTo(s2) > 0;
+  }
+
+  @Override
+  public boolean isEqual(Object v1, Object v2) {
+    HiveVarchar s1 = PrimitiveObjectInspectorUtils.getHiveVarchar(v1,
+        (PrimitiveObjectInspector) expressionDef.getOI());
+    HiveVarchar s2 = PrimitiveObjectInspectorUtils.getHiveVarchar(v2,
+        (PrimitiveObjectInspector) expressionDef.getOI());
+    return (s1 == null && s2 == null) || (s1 != null && s1.equals(s2));
+  }
+}
 /*
  */
  class MultiValueBoundaryScanner extends ValueBoundaryScanner {
