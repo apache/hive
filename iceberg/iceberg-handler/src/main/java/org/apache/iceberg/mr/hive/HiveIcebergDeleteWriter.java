@@ -27,6 +27,7 @@ import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.io.ClusteredPositionDeleteWriter;
@@ -38,17 +39,20 @@ import org.apache.iceberg.mr.mapred.Container;
 
 public class HiveIcebergDeleteWriter extends HiveIcebergWriter {
 
+  private final GenericRecord rowDataTemplate;
+
   HiveIcebergDeleteWriter(Schema schema, PartitionSpec spec, FileFormat fileFormat,
       FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
       TaskAttemptID taskAttemptID, String tableName) {
     super(schema, spec, io, taskAttemptID, tableName,
         new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, fileFormat, targetFileSize));
+    rowDataTemplate = GenericRecord.create(schema);
   }
 
   @Override
   public void write(Writable row) throws IOException {
     Record rec = ((Container<Record>) row).get();
-    PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(spec.schema(), rec);
+    PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(rec, rowDataTemplate);
     writer.write(positionDelete, spec, partition(positionDelete.row()));
   }
 

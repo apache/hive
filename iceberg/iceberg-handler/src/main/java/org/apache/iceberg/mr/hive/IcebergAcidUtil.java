@@ -19,12 +19,9 @@
 
 package org.apache.iceberg.mr.hive;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -62,13 +59,6 @@ public class IcebergAcidUtil {
     DELETE_SERDE_META_COLS.put(MetadataColumns.ROW_POSITION, 3);
   }
 
-  private static final long RECORD_CACHE_EXPIRE_MILLI = 10 * 60 * 1000;
-  private static final long RECORD_CACHE_MAX_SIZE = 1000;
-  private static final Cache<Schema, GenericRecord> RECORD_CACHE = Caffeine.newBuilder()
-      .expireAfterAccess(RECORD_CACHE_EXPIRE_MILLI, TimeUnit.MILLISECONDS)
-      .maximumSize(RECORD_CACHE_MAX_SIZE)
-      .build();
-
   /**
    * @param dataCols The columns of the original file read schema
    * @param table The table object - it is used for populating the partition struct meta column
@@ -98,13 +88,17 @@ public class IcebergAcidUtil {
     return new Schema(cols);
   }
 
-  public static PositionDelete<Record> getPositionDelete(Schema schema, Record rec) {
+  /**
+   * @param rec The record read by the file scan task, which contains both the metadata fields and the row data fields
+   * @param rowData The record object to populate with the rowData fields only
+   * @return The position delete object
+   */
+  public static PositionDelete<Record> getPositionDelete(Record rec, GenericRecord rowData) {
     PositionDelete<Record> positionDelete = PositionDelete.create();
     String filePath = rec.get(DELETE_SERDE_META_COLS.get(MetadataColumns.FILE_PATH), String.class);
     long filePosition = rec.get(DELETE_SERDE_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
 
     int dataOffset = DELETE_SERDE_META_COLS.size(); // position in the rec where the actual row data begins
-    GenericRecord rowData = RECORD_CACHE.get(schema, GenericRecord::create);
     for (int i = dataOffset; i < rec.size(); ++i) {
       rowData.set(i - dataOffset, rec.get(i));
     }
