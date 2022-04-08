@@ -35,11 +35,8 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.mapred.Container;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class HiveIcebergDeleteWriter extends HiveIcebergWriter {
-  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergDeleteWriter.class);
 
   HiveIcebergDeleteWriter(Schema schema, PartitionSpec spec, FileFormat fileFormat,
       FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,

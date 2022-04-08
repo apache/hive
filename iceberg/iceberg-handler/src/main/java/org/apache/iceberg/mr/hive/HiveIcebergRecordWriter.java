@@ -34,11 +34,8 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.mapred.Container;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class HiveIcebergRecordWriter extends HiveIcebergWriter {
-  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergRecordWriter.class);
 
   HiveIcebergRecordWriter(Schema schema, PartitionSpec spec, FileFormat format,
       FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
