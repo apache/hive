@@ -107,6 +107,7 @@ import java.util.regex.Pattern;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.common.AcidConstants.DELTA_DIGITS;
 
@@ -1681,7 +1682,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             // add it's locations to the list of paths to delete
             Path tablePath = null;
             boolean isSoftDelete = req.isSoftDelete() && TxnUtils.isTransactionalTable(table) 
-              && Boolean.parseBoolean(table.getParameters().getOrDefault(SOFT_DELETE_TABLE, "false"));
+              && Boolean.parseBoolean(table.getParameters().get(SOFT_DELETE_TABLE));
             
             boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, req.isDeleteData()) 
               && !isSoftDelete;
@@ -1720,10 +1721,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       if (ms.dropDatabase(req.getCatalogName(), req.getName())) {
         if (!transactionalListeners.isEmpty()) {
+          DropDatabaseEvent dropEvent = new DropDatabaseEvent(db, true, this, isReplicated);
+          EnvironmentContext context = null;
+          if (!req.isDeleteManagedDir()) {
+            context = new EnvironmentContext();
+            context.putToProperties("txnId", String.valueOf(req.getTxnId()));
+          }
+          dropEvent.setEnvironmentContext(context);
           transactionalListenerResponses =
               MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.DROP_DATABASE,
-                  new DropDatabaseEvent(db, true, this, isReplicated));
+                  EventType.DROP_DATABASE, dropEvent);
         }
         success = ms.commitTransaction();
       }
@@ -1733,7 +1740,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       } else if (req.isDeleteData()) {
         // Delete the data in the partitions which have other locations
         deletePartitionData(partitionPaths, false, db);
-        // Delete the data in the tables which have other locations
+        // Delete the data in the tables which have other locations or soft-delete is enabled
         for (Path tablePath : tablePaths) {
           deleteTableData(tablePath, false, db);
         }
@@ -2351,13 +2358,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (!TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType())) {
         if (tbl.getSd().getLocation() == null
             || tbl.getSd().getLocation().isEmpty()) {
-          tblPath = wh.getDefaultTablePath(db, getTableName(tbl), isExternal(tbl));
+          tblPath = wh.getDefaultTablePath(db, tbl.getTableName() + getTableSuffix(tbl), isExternal(tbl));
         } else {
           if (!isExternal(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
             LOG.warn("Location: " + tbl.getSd().getLocation()
                 + " specified for non-external table:" + tbl.getTableName());
           }
           tblPath = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
+          // ignore suffix if it's already there (direct-write CTAS)
+          if (!tblPath.getName().matches("(.*)" + SOFT_DELETE_TABLE_PATTERN)) {
+            tblPath = new Path(tblPath + getTableSuffix(tbl));
+          }
         }
         tbl.getSd().setLocation(tblPath.toString());
       }
@@ -2503,10 +2514,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  private String getTableName(Table tbl) {
-    return tbl.getTableName() + (tbl.isSetTxnId() &&
-      tbl.getParameters() != null && Boolean.parseBoolean(tbl.getParameters().get(SOFT_DELETE_TABLE)) ?
-          SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, tbl.getTxnId()) : "");
+  private String getTableSuffix(Table tbl) {
+    return tbl.isSetTxnId() && tbl.getParameters() != null 
+        && Boolean.parseBoolean(tbl.getParameters().get(SOFT_DELETE_TABLE)) ?
+      SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, tbl.getTxnId()) : "";
   }
 
   @Override
@@ -5099,7 +5110,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         || MetaStoreUtils.isSkipTrash(tbl.getParameters());
   }
 
-  private long getWriteId(EnvironmentContext context){
+  static long getWriteId(EnvironmentContext context){
     return Optional.ofNullable(context)
       .map(EnvironmentContext::getProperties)
       .map(prop -> prop.get("writeId"))

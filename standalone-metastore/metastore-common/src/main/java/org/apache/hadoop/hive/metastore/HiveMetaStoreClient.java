@@ -1616,7 +1616,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         // First we delete the materialized views
         Table mview = getTable(getDefaultCatalog(conf), req.getName(), table);
         boolean isSoftDelete = req.isSoftDelete() && Boolean.parseBoolean(
-          mview.getParameters().getOrDefault(SOFT_DELETE_TABLE, "false"));
+          mview.getParameters().get(SOFT_DELETE_TABLE));
         mview.setTxnId(req.getTxnId());
         dropTable(mview, req.isDeleteData() && !isSoftDelete, true, false);
       }
@@ -1675,7 +1675,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           hook.preDropTable(table);
         }
         boolean isSoftDelete = req.isSoftDelete() && Boolean.parseBoolean(
-          table.getParameters().getOrDefault(SOFT_DELETE_TABLE, "false"));
+          table.getParameters().get(SOFT_DELETE_TABLE));
         EnvironmentContext context = null;
         if (req.isSetTxnId()) {
           context = new EnvironmentContext();

@@ -2157,7 +2157,7 @@ public class AcidUtils {
    */
   public static long getLogicalLength(FileSystem fs, FileStatus file) throws IOException {
     Path acidDir = file.getPath().getParent(); //should be base_x or delta_x_y_
-    if(AcidUtils.isInsertDelta(acidDir)) {
+    if (AcidUtils.isInsertDelta(acidDir)) {
       ParsedDeltaLight pd = ParsedDeltaLight.parse(acidDir);
       if(!pd.mayContainSideFile()) {
         return file.getLen();
@@ -3013,7 +3013,7 @@ public class AcidUtils {
         compBuilder.setOperationType(DataOperationType.NO_TXN);
         break;
       case INSERT_OVERWRITE:
-        t = AcidUtils.getTable(output);
+        assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
           if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) && !sharedWrite) {
             compBuilder.setExclusive();
@@ -3037,7 +3037,11 @@ public class AcidUtils {
             if (isExclMergeInsert) {
               compBuilder.setExclWrite();
             } else {
-              compBuilder.setSharedRead();
+              if (AcidUtils.isLocklessReadsEnabled(t, conf)) {
+                compBuilder.setSharedWrite();
+              } else {
+                compBuilder.setSharedRead();
+              }
             }
           }
           if (isExclMergeInsert) {
@@ -3197,23 +3201,28 @@ public class AcidUtils {
   
   private static boolean isSoftDeleteTxn(Configuration conf, ASTNode tree) {
     boolean locklessReadsEnabled = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
-    
+
     switch (tree.getToken().getType()) {
+      case HiveParser.TOK_DROPDATABASE:
       case HiveParser.TOK_DROPTABLE:
       case HiveParser.TOK_DROP_MATERIALIZED_VIEW:
-        return locklessReadsEnabled 
+        return locklessReadsEnabled
           || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX);
-        
-      case HiveParser.TOK_ALTERTABLE_DROPPARTS:
-        return locklessReadsEnabled 
-          || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE);
-        
-      case HiveParser.TOK_ALTERTABLE_RENAMEPART:
-        return locklessReadsEnabled 
-          || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY);
-      default:
-        return false;
+
+      case HiveParser.TOK_ALTERTABLE: {
+        boolean isDropParts = tree.getFirstChildWithType(HiveParser.TOK_ALTERTABLE_DROPPARTS) != null;
+        if (isDropParts) {
+          return locklessReadsEnabled
+            || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE);
+        }
+        boolean isRenamePart = tree.getFirstChildWithType(HiveParser.TOK_ALTERTABLE_RENAMEPART) != null;
+        if (isRenamePart) {
+          return locklessReadsEnabled
+            || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY);
+        }
+      }
     }
+    return false;
   }
 
   public static String getPathSuffix(long txnId) {

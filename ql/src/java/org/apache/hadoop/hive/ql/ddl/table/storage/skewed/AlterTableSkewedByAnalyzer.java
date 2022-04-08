@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -57,6 +58,9 @@ public class AlterTableSkewedByAnalyzer extends AbstractAlterTableAnalyzer {
     Table table = getTable(tableName);
     validateAlterTableType(table, AlterTableType.SKEWED_BY, false);
 
+    if (AcidUtils.isLocklessReadsEnabled(table, conf)) {
+      throw new UnsupportedOperationException(command.getText());
+    }
     inputs.add(new ReadEntity(table));
     outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_EXCLUSIVE));
 
