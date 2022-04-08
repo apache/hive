@@ -158,21 +158,21 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> map) {
     overlayTableProperties(conf, tableDesc, map);
+    // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
+    fallbackToNonVectorizedModeForV2(tableDesc.getProperties());
   }
 
   @Override
   public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> map) {
     overlayTableProperties(conf, tableDesc, map);
+    // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
+    fallbackToNonVectorizedModeForV2(tableDesc.getProperties());
     // For Tez, setting the committer here is enough to make sure it'll be part of the jobConf
     map.put("mapred.output.committer.class", HiveIcebergNoJobCommitter.class.getName());
     // For MR, the jobConf is set only in configureJobConf, so we're setting the write key here to detect it over there
     String opType = SessionStateUtil.getProperty(conf, Context.Operation.class.getSimpleName())
         .orElse(Context.Operation.OTHER.name());
     map.put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
-    // check that vectorization is turned off for ACID operations
-    if (Context.Operation.DELETE.name().equals(opType) || Context.Operation.UPDATE.name().equals(opType)) {
-      assertAcidNotVectorized();
-    }
     // Putting the key into the table props as well, so that projection pushdown can be determined on a
     // table-level and skipped only for output tables in HiveIcebergSerde. Properties from the map will be present in
     // the serde config for all tables in the query, not just the output tables, so we can't rely on that in the serde.
@@ -709,11 +709,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return column;
   }
 
-  private void assertAcidNotVectorized() {
-    if (conf.getBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname,
-        HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.defaultBoolVal)) {
-      throw new IllegalStateException("DELETE/UPDATE operations not allowed on Iceberg tables with vectorization " +
-          "turned on. Please set " + HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname + "=false and retry.");
+  private void fallbackToNonVectorizedModeForV2(Properties tableProps) {
+    if ("2".equals(tableProps.get(TableProperties.FORMAT_VERSION))) {
+      conf.setBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname, false);
     }
   }
 

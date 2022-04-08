@@ -1,5 +1,3 @@
-set hive.vectorized.execution.enabled=false;
-
 drop table if exists tbl_ice;
 create external table tbl_ice(a int, b string, c int) partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg stored as orc tblproperties ('format-version'='2');
 
