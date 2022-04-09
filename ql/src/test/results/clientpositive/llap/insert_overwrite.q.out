@@ -308,6 +308,17 @@ POSTHOOK: Input: default@ext_part@par=2
 third	1
 first	2
 second	2
+#### A masked pattern was here ####
+PREHOOK: query: INSERT OVERWRITE TABLE ext_part PARTITION (par) SELECT * FROM b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@b
+PREHOOK: Output: default@ext_part
+POSTHOOK: query: INSERT OVERWRITE TABLE ext_part PARTITION (par) SELECT * FROM b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@b
+POSTHOOK: Output: default@ext_part
+POSTHOOK: Output: default@ext_part@par=1
+POSTHOOK: Lineage: ext_part PARTITION(par=1).col SIMPLE [(b)b.FieldSchema(name:par, type:string, comment:null), ]
 PREHOOK: query: drop table ext_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ext_part
