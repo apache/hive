@@ -5399,7 +5399,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
       recycleDirToCmPath(path, purge);
     }
-    FileStatus[] statuses = fs.listStatus(path, pathFilter);
+    FileStatus[] statuses = null;
+    try {
+      statuses = fs.listStatus(path, pathFilter);
+    } catch (FileNotFoundException e) {
+      Utilities.FILE_OP_LOGGER.trace("No need to clean up {} since it does not exist", path, e);
+    }
     if (statuses == null || statuses.length == 0) {
       return;
     }
