@@ -357,7 +357,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
       }
       stage('Generate javadoc') {
           sh """#!/bin/bash -e
-mvn clean install javadoc:javadoc javadoc:aggregate -DskipTests
+mvn install javadoc:javadoc javadoc:aggregate -DskipTests -pl '!itests/hive-jmh,!itests/util'
 """
       }
     }
