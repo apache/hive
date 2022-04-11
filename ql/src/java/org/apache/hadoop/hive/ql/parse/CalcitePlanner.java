@@ -3420,7 +3420,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
             RelNode subQueryRelNode =
                 genLogicalPlan(qbSQ, false, relToHiveColNameCalcitePosMap.get(srcRel), relToHiveRR.get(srcRel));
 
-            subQueryMap.put(subQueryRelNode, subQueryRoot);
+            if (subQueryRelNode instanceof HiveProject) {
+              subQueryMap.put(subQueryRelNode, subQueryRoot);
+            }
 
             subQueryToRelNode.put(next, parseInfo.setSubQueryRelNode(subQueryRelNode));
             //keep track of subqueries which are scalar, correlated and contains aggregate
@@ -5015,7 +5017,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         ASTNode subqueryRoot = qbexpr.getSubQueryRoot();
         if (subqueryRoot != null &&
-                conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL)) {
+                conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL) &&
+                relNode instanceof HiveProject) {
           subQueryMap.put(relNode, subqueryRoot);
         }
 
