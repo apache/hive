@@ -28,9 +28,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -48,7 +51,6 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.TxnCommandsBaseForTests;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook;
@@ -73,7 +75,6 @@ import org.apache.tez.dag.history.logging.proto.ProtoMessageReader;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.mockito.internal.util.reflection.FieldSetter;
 
 import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
@@ -2209,4 +2210,96 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     qc.runCompactionQueries(hiveConf, null, sdMock, null, ciMock, null, emptyQueries, emptyQueries, emptyQueries);
     Assert.assertEquals("none", hiveConf.getVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT));
   }
+
+  @Test
+  public void testIfEmptyBaseIsPresentAfterCompaction() throws Exception {
+    String dbName = "default";
+    String tblName = "empty_table";
+
+    // Setup of LOAD INPATH scenario.
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("create table " + tblName + " (a string) stored as orc " +
+            "TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('a')", driver);
+    executeStatementOnDriver("delete from " + tblName + " where a='a'", driver);
+
+    // Run a query-based MAJOR compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true);
+    // Clean up resources
+    CompactorTestUtil.runCleaner(conf);
+
+    IMetaStoreClient hmsClient = new HiveMetaStoreClient(conf);
+    Table table = hmsClient.getTable(dbName, tblName);
+    FileSystem fs = FileSystem.get(conf);
+
+    FileStatus[] fileStatuses = fs.listStatus(new Path(table.getSd().getLocation()));
+    // There should be only dir
+    Assert.assertEquals(1, fileStatuses.length);
+    Path basePath = fileStatuses[0].getPath();
+    // And it's a base
+    Assert.assertTrue(AcidUtils.baseFileFilter.accept(basePath));
+    RemoteIterator<LocatedFileStatus> filesInBase = fs.listFiles(basePath, true);
+    // It has no files in it
+    Assert.assertFalse(filesInBase.hasNext());
+  }
+
+  @Test
+  public void testNonAcidToAcidConversionWithNestedTableWithUnionSubdir() throws Exception {
+    String dbName = "default";
+
+    // Helper table for the union all insert
+    String helperTblName = "helper_table";
+    executeStatementOnDriver("drop table if exists " + helperTblName, driver);
+    executeStatementOnDriver("create table " + helperTblName + " (a int, b int) stored as orc " +
+            "TBLPROPERTIES ('transactional'='false')", driver);
+    executeStatementOnDriver("insert into " + helperTblName + " values (1, 1), (2, 2)", driver);
+
+    // Non acid nested table with union subdirs
+    String tblName = "non_acid_nested";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("create table " + tblName +
+            "(a int, b int) partitioned by (p string, q string) stored as orc TBLPROPERTIES ('transactional'='false')", driver);
+
+    // Insert some union data
+    executeStatementOnDriver("insert into " + tblName + " partition(p='p1',q='q1') " +
+            "select a,b from " + helperTblName + " union all select a,b from " + helperTblName, driver);
+
+    // Some sanity checks
+    List<String> result = execSelectAndDumpData("select * from " + tblName, driver, tblName);
+    Assert.assertEquals(4, result.size());
+
+    // Convert the table to acid
+    executeStatementOnDriver("alter table " + tblName + " SET TBLPROPERTIES ('transactional'='true')", driver);
+
+    // Run a query-based MAJOR compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true, "p=p1/q=q1");
+    // Clean up resources
+    CompactorTestUtil.runCleaner(conf);
+
+    // Verify file level
+    IMetaStoreClient hmsClient = new HiveMetaStoreClient(conf);
+    Table table = hmsClient.getTable(dbName, tblName);
+    FileSystem fs = FileSystem.get(conf);
+
+    Path tablePath = new Path(table.getSd().getLocation());
+
+    // Partition lvl1
+    FileStatus[] fileStatuses = fs.listStatus(tablePath);
+    Assert.assertEquals(1, fileStatuses.length);
+    String partitionName1 = fileStatuses[0].getPath().getName();
+    Assert.assertEquals("p=p1", partitionName1);
+
+    // Partition lvl2
+    fileStatuses = fs.listStatus(new Path(table.getSd().getLocation() + "/" + partitionName1));
+    Assert.assertEquals(1, fileStatuses.length);
+    String partitionName2 = fileStatuses[0].getPath().getName();
+    Assert.assertEquals("q=q1", partitionName2);
+
+    // 1 base should be here
+    fileStatuses = fs.listStatus(new Path(table.getSd().getLocation() + "/" + partitionName1 + "/" + partitionName2));
+    Assert.assertEquals(1, fileStatuses.length);
+    String baseName = fileStatuses[0].getPath().getName();
+    Assert.assertEquals("base_10000000_v0000009", baseName);
+  }
+
 }

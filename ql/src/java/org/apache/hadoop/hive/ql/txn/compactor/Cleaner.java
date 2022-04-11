@@ -420,7 +420,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     FileSystem fs = path.getFileSystem(conf);
     
     // Collect all of the files/dirs
-    Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, path);
+    Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshotsForCleaner(fs, path);
     AcidDirectory dir = AcidUtils.getAcidState(fs, path, conf, writeIdList, Ref.from(false), false, 
         dirSnapshots);
     Table table = resolveTable(ci);
