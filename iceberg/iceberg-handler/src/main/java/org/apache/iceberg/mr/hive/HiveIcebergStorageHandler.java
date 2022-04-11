@@ -33,12 +33,14 @@ import java.util.Properties;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
@@ -124,6 +126,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
               throw new RuntimeException(e);
             }
           };
+
+  private static final List<VirtualColumn> ACID_VIRTUAL_COLS = ImmutableList.of(VirtualColumn.PARTITION_SPEC_ID,
+      VirtualColumn.PARTITION_HASH, VirtualColumn.FILE_PATH, VirtualColumn.ROW_POSITION);
+  private static final List<FieldSchema> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA = ACID_VIRTUAL_COLS.stream()
+      .map(v -> new FieldSchema(v.getName(), v.getTypeInfo().getTypeName(), ""))
+      .collect(Collectors.toList());
 
 
   private Configuration conf;
@@ -463,8 +471,21 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public List<VirtualColumn> acidVirtualColumns() {
-    return ImmutableList.of(VirtualColumn.PARTITION_SPEC_ID, VirtualColumn.PARTITION_HASH,
-        VirtualColumn.FILE_PATH, VirtualColumn.ROW_POSITION);
+    return ACID_VIRTUAL_COLS;
+  }
+
+  @Override
+  public List<FieldSchema> acidSelectColumns(org.apache.hadoop.hive.ql.metadata.Table table) {
+    // TODO: make it configurable whether we want to include the table columns in the select query
+    // it might make delete writes faster if we don't have to write out the row object
+    return Stream.of(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols())
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
   }
 
   private void setCommonJobConf(JobConf jobConf) {

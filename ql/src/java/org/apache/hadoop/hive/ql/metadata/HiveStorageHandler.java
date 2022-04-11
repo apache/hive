@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -292,17 +293,49 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer} rewrites DELETE/UPDATE queries into INSERT
-   * queries. As part of that, it writes out special delete files using virtual columns. For standard Hive ACID
-   * tables for example, it writes out the ROW__ID virtual column. The storage handler should define which virtual
-   * columns it needs to write out for its own delete files in these rewritten queries.
+   * Specifies which additional virtual columns should be added to the virtual column registry during compilation
+   * for tables that support ACID operations.
    *
    * Should only return a non-empty list if {@link HiveStorageHandler#supportsAcidOperations()} ()} returns something
    * other NONE.
    *
-   * @return the list of virtual columns to be used in the rewritten query
+   * @return the list of ACID virtual columns
    */
   default List<VirtualColumn> acidVirtualColumns() {
+    return Collections.emptyList();
+  }
+
+  /**
+   * {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer} rewrites DELETE/UPDATE queries into INSERT
+   * queries. E.g. DELETE FROM T WHERE A = 32 is rewritten into INSERT INTO T SELECT <selectCols> FROM T WHERE A = 32
+   * SORT BY <sortCols>.
+   *
+   * This method specifies which columns should be injected into the <selectCols> part of the rewritten query.
+   *
+   * Should only return a non-empty list if {@link HiveStorageHandler#supportsAcidOperations()} ()} returns something
+   * other NONE.
+   *
+   * @param table the table which is being deleted/updated/merged into
+   * @return the list of columns that should be projected in the rewritten ACID query
+   */
+  default List<FieldSchema> acidSelectColumns(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return Collections.emptyList();
+  }
+
+  /**
+   * {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer} rewrites DELETE/UPDATE queries into INSERT
+   * queries. E.g. DELETE FROM T WHERE A = 32 is rewritten into INSERT INTO T SELECT <selectCols> FROM T WHERE A = 32
+   * SORT BY <sortCols>.
+   *
+   * This method specifies which columns should be injected into the <sortCols> part of the rewritten query.
+   *
+   * Should only return a non-empty list if {@link HiveStorageHandler#supportsAcidOperations()} ()} returns something
+   * other NONE.
+   *
+   * @param table the table which is being deleted/updated/merged into
+   * @return the list of columns that should be used as sort columns in the rewritten ACID query
+   */
+  default List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table) {
     return Collections.emptyList();
   }
 

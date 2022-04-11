@@ -113,9 +113,9 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
     if (nonNativeAcid) {
-      String virtualCols = mTable.getStorageHandler().acidVirtualColumns().stream()
-          .map(VirtualColumn::getName).collect(Collectors.joining(","));
-      rewrittenQueryStr.append(" select ").append(virtualCols);
+      String selectCols = mTable.getStorageHandler().acidSelectColumns(mTable).stream()
+          .map(FieldSchema::getName).collect(Collectors.joining(","));
+      rewrittenQueryStr.append(" select ").append(selectCols);
     } else {
       rewrittenQueryStr.append(" select ROW__ID");
     }
@@ -148,7 +148,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       }
     }
 
-    addPartitionColsToSelect(nonNativeAcid ? mTable.getCols() : mTable.getPartCols(), rewrittenQueryStr, null);
+    addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr, null);
     rewrittenQueryStr.append(" from ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
 
@@ -162,9 +162,9 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     // Add a sort by clause so that the row ids come out in the correct order
     if (nonNativeAcid) {
-      String virtualCols = mTable.getStorageHandler().acidVirtualColumns().stream()
-          .map(VirtualColumn::getName).collect(Collectors.joining(","));
-      rewrittenQueryStr.append(" sort by ").append(virtualCols).append(" ");
+      String sortCols = mTable.getStorageHandler().acidSortColumns(mTable).stream()
+          .map(FieldSchema::getName).collect(Collectors.joining(","));
+      rewrittenQueryStr.append(" sort by ").append(sortCols).append(" ");
     } else {
       rewrittenQueryStr.append(" sort by ROW__ID ");
     }
