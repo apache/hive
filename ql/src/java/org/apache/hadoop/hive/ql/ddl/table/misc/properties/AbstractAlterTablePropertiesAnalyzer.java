@@ -99,7 +99,7 @@ public abstract class AbstractAlterTablePropertiesAnalyzer extends AbstractAlter
         } catch (Exception e) {
           throw new SemanticException("AlterTable " + entry.getKey() + " failed with value " + entry.getValue());
         }
-      } else if (entry.getKey().equals("external") && entry.getValue().equals("true")) {
+      } else if (entry.getKey().equals("EXTERNAL") && entry.getValue().equalsIgnoreCase("true")) {
         // if table is being modified to be external we need to make sure existing table
         // doesn't have enabled constraint since constraints are disallowed with such tables
         if (hasConstraintsEnabled(tableName.getTable())) {
