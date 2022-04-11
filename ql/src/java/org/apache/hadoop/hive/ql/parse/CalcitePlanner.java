@@ -5045,10 +5045,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ImmutableBitSet.of(groupSetPositions), null, new ArrayList<AggregateCall>());
 
       // This comes from genSelectLogicalPlan, must be a project assert srcRel instanceof HiveProject;
-      RowResolver outputRR = srcNodeRR.right;
-      if (outputRR == null) {
-        outputRR = relToHiveRR.get(srcRel);
-      }
+      RowResolver outputRR = relToHiveRR.get(srcRel);
 
       relToHiveRR.put(distAgg, outputRR);
       relToHiveColNameCalcitePosMap.put(distAgg, relToHiveColNameCalcitePosMap.get(srcRel));
