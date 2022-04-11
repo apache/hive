@@ -49,12 +49,12 @@ PREHOOK: query: select * from v_n6 order by `_c0`, `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@v_n6
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from v_n6 order by `_c0`, `_c1` limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v_n6
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -488.0	12
 -488.0	12
 -488.0	12
@@ -115,12 +115,12 @@ PREHOOK: query: select * from v_n6 order by `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@v_n6
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from v_n6 order by `_c1` limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v_n6
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 238	12
 86	12
 311	12
@@ -183,12 +183,12 @@ PREHOOK: query: select * from v_n6 order by key, value, `_c2` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@v_n6
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from v_n6 order by key, value, `_c2` limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v_n6
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	12
 0	val_0	12
 0	val_0	12
@@ -251,12 +251,12 @@ PREHOOK: query: select * from v_n6 order by key, value, `_c121` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@v_n6
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from v_n6 order by key, value, `_c121` limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v_n6
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	12
 0	val_0	12
 0	val_0	12
@@ -317,12 +317,12 @@ PREHOOK: query: select * from v_n6 order by key, `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@v_n6
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from v_n6 order by key, `_c1` limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v_n6
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	3
 10	1
 100	2
@@ -426,19 +426,19 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 Original Query:     	select '010', a_n9.*, 121, b_n7.*, 234 from a_n9 join b_n7 on a_n9.ca_n9 = b_n7.cb_n7	 
-Expanded Query:     	select '010', `a_n9`.`ca_n9`, `a_n9`.`caa_n9`, 121, `b_n7`.`cb_n7`, `b_n7`.`cbb_n7`, 234 from `default`.`a_n9` join `default`.`b_n7` on a_n9.ca_n9 = b_n7.cb_n7	 
+Expanded Query:     	select '010', `a_n9`.`ca_n9`, `a_n9`.`caa_n9`, 121, `b_n7`.`cb_n7`, `b_n7`.`cbb_n7`, 234 from `default`.`a_n9` join `default`.`b_n7` on `a_n9`.`ca_n9` = `b_n7`.`cb_n7`	 
 PREHOOK: query: select * from v_n6 order by `_c3`, `_c0`, ca_n9, caa_n9, cb_n7, cbb_n7 limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a_n9
 PREHOOK: Input: default@b_n7
 PREHOOK: Input: default@v_n6
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from v_n6 order by `_c3`, `_c0`, ca_n9, caa_n9, cb_n7, cbb_n7 limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n9
 POSTHOOK: Input: default@b_n7
 POSTHOOK: Input: default@v_n6
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 010	0	val_0	121	0	val_0	234
 010	0	val_0	121	0	val_0	234
 010	0	val_0	121	0	val_0	234

@@ -222,7 +222,7 @@ STAGE PLANS:
       table properties:
         transactional true
       expanded text: SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)
-  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
+  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
   WHERE `cmv_basetable_2_n2`.`c` > 10.0
   GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
       name: default.cmv_mat_view_n5
@@ -247,7 +247,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-#### A masked pattern was here ####
+          destination: hdfs://### HDFS PATH ###
           Write Type: INSERT
 
 PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view_n5 DISABLE REWRITE TBLPROPERTIES ('transactional'='true') AS
@@ -316,7 +316,7 @@ Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_ba
 	                    	  WHERE cmv_basetable_2_n2.c > 10.0
 	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
-	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
+	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
 	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
 Rewrite Enabled:    	No                  	 
@@ -334,7 +334,7 @@ GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -343,7 +343,7 @@ GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -459,7 +459,7 @@ GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
@@ -467,7 +467,7 @@ GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	6
 1	2
 PREHOOK: query: insert into cmv_basetable_2_n2 values
@@ -560,7 +560,7 @@ Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_ba
 	                    	  WHERE cmv_basetable_2_n2.c > 10.0
 	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
-	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
+	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
 	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
 Rewrite Enabled:    	Yes                 	 
@@ -578,7 +578,7 @@ GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -587,7 +587,7 @@ GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -703,7 +703,7 @@ GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
@@ -711,7 +711,7 @@ GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	2
 3	6
 1	2
@@ -1049,7 +1049,7 @@ Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_ba
 	                    	  WHERE cmv_basetable_2_n2.c > 10.0
 	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
-	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
+	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
 	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
 Rewrite Enabled:    	Yes                 	 
@@ -1068,7 +1068,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
 PREHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1078,7 +1078,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
 POSTHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1105,7 +1105,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
 PREHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
@@ -1114,7 +1114,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
 POSTHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	6
 1	2
 3	2
@@ -1359,7 +1359,7 @@ Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_ba
 	                    	  WHERE cmv_basetable_2_n2.c > 10.0
 	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
-	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
+	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
 	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
 Rewrite Enabled:    	Yes                 	 
@@ -1378,7 +1378,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
 PREHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1388,7 +1388,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
 POSTHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1415,7 +1415,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
 PREHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
@@ -1424,7 +1424,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
 POSTHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	4
 3	2
 3	6
@@ -1669,7 +1669,7 @@ Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_ba
 	                    	  WHERE cmv_basetable_2_n2.c > 10.0
 	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
-	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
+	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
 	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
 Rewrite Enabled:    	Yes                 	 
@@ -1688,7 +1688,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
 PREHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1698,7 +1698,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
 POSTHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1725,7 +1725,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
 PREHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
@@ -1734,7 +1734,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
 POSTHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	2
 3	6
 PREHOOK: query: insert into cmv_basetable_2_n2 values
@@ -2085,7 +2085,7 @@ Original Query:     	SELECT cmv_basetable_n5.a, cmv_basetable_2_n2.c, sum(cmv_ba
 	                    	  WHERE cmv_basetable_2_n2.c > 10.0
 	                    	  GROUP BY cmv_basetable_n5.a, cmv_basetable_2_n2.c
 Expanded Query:     	SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)	 
-	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
+	                    	  FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
 	                    	  WHERE `cmv_basetable_2_n2`.`c` > 10.0
 	                    	  GROUP BY `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`
 Rewrite Enabled:    	Yes                 	 
@@ -2104,7 +2104,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
 PREHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -2114,7 +2114,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
 POSTHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -2141,7 +2141,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Input: default@cmv_basetable_n5
 PREHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 JOIN cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
 WHERE cmv_basetable_2_n2.c > 10.10
@@ -2150,7 +2150,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Input: default@cmv_basetable_n5
 POSTHOOK: Input: default@cmv_mat_view_n5
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	2
 3	6
 1	1

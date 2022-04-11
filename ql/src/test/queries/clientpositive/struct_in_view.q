@@ -15,6 +15,8 @@ drop table testreserved;
 
 create table s_n1 (default struct<src:struct<`end`:struct<key:string>, id: string>, id: string>);
 
+create table s_n2 (default struct<src:struct<`end`:struct<key:string>, id: string>, id: string>);
+
 create view vs1 as select default.src.`end`.key from s_n1;
 
 describe extended vs1;
@@ -23,9 +25,15 @@ create view vs2 as select default.src.`end` from s_n1;
 
 describe extended vs2;
 
+create view vs3 as select a.default.src.`end` from s_n1 a join s_n2 b on a.default.src.`end`.key=b.default.src.`end`.key;
+
+describe extended vs3;
+
 drop view vs1;
 
 drop view vs2;
+
+drop view vs3;
 
 create view v_n3 as select named_struct('key', 1).key from src limit 1;
 

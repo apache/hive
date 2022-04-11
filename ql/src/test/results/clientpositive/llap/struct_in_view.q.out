@@ -64,6 +64,14 @@ POSTHOOK: query: create table s_n1 (default struct<src:struct<`end`:struct<key:s
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s_n1
+PREHOOK: query: create table s_n2 (default struct<src:struct<`end`:struct<key:string>, id: string>, id: string>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@s_n2
+POSTHOOK: query: create table s_n2 (default struct<src:struct<`end`:struct<key:string>, id: string>, id: string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@s_n2
 PREHOOK: query: create view vs1 as select default.src.`end`.key from s_n1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@s_n1
@@ -104,6 +112,28 @@ POSTHOOK: Input: default@vs2
 end                 	struct<key:string>  	                    
 	 	 
 #### A masked pattern was here ####
+PREHOOK: query: create view vs3 as select a.default.src.`end` from s_n1 a join s_n2 b on a.default.src.`end`.key=b.default.src.`end`.key
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@s_n1
+PREHOOK: Input: default@s_n2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vs3
+POSTHOOK: query: create view vs3 as select a.default.src.`end` from s_n1 a join s_n2 b on a.default.src.`end`.key=b.default.src.`end`.key
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@s_n1
+POSTHOOK: Input: default@s_n2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vs3
+POSTHOOK: Lineage: vs3.end EXPRESSION [(s_n1)a.FieldSchema(name:default, type:struct<src:struct<end:struct<key:string>,id:string>,id:string>, comment:null), ]
+PREHOOK: query: describe extended vs3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@vs3
+POSTHOOK: query: describe extended vs3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@vs3
+end                 	struct<key:string>  	                    
+	 	 
+#### A masked pattern was here ####
 PREHOOK: query: drop view vs1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@vs1
@@ -120,6 +150,14 @@ POSTHOOK: query: drop view vs2
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@vs2
 POSTHOOK: Output: default@vs2
+PREHOOK: query: drop view vs3
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@vs3
+PREHOOK: Output: default@vs3
+POSTHOOK: query: drop view vs3
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@vs3
+POSTHOOK: Output: default@vs3
 PREHOOK: query: create view v_n3 as select named_struct('key', 1).key from src limit 1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src

@@ -39,3 +39,13 @@ select `x+1```, `y&y`, rank() over(partition by `x+1``` order by  `y&y`)
 from v1
 group by `x+1```, `y&y`
 ;
+
+-- view with join
+create view v2 as
+select a.`x+1```, a.`y&y`
+from `t4``` a join `t4``` b on a.`x+1``` = b.`x+1```
+;
+
+select `x+1```, `y&y`
+from v2
+;

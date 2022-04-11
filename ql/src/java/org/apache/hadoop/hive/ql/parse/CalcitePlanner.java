@@ -2650,6 +2650,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
           throw new SemanticException(SemanticAnalyzer.generateErrorMessage(jCtx.getErrorSrcNode(),
               jCtx.getError()));
         }
+        for (Map.Entry<ASTNode, RexNode> entry : exprNodes.entrySet()) {
+          UnparseTranslatorHelper.addTranslationIfNeeded(entry.getKey(), entry.getValue(),
+              input, unparseTranslator, conf);
+        }
         calciteJoinCond = exprNodes.get(joinCond);
       } else {
         calciteJoinCond = cluster.getRexBuilder().makeLiteral(true);
