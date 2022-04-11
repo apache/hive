@@ -91,7 +91,7 @@ public class HiveMaterializedViewASTSubQueryRewriteShuttle extends HiveRelShuttl
   @Override
   public RelNode visit(HiveProject project) {
     if (!subQueryMap.containsKey(project)) {
-      // No AST is found for this subtree
+      // No AST found for this subtree
       return super.visit(project);
     }
 
@@ -104,7 +104,7 @@ public class HiveMaterializedViewASTSubQueryRewriteShuttle extends HiveRelShuttl
       curr = (ASTNode) curr.getParent();
     }
 
-    // 2. To find the AST node in the expanded we need the path elements in reverse order
+    // 2. To find the AST node in the expanded tree we need the path elements in reverse order
     int[] pathInt = new int[path.size()];
     int idx = 0;
     while (!path.isEmpty()) {
