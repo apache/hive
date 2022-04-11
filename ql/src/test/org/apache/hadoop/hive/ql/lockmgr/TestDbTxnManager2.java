@@ -3914,4 +3914,22 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.getFetchTask().fetch(res);
     Assert.assertEquals("Expecting 1 rows and found " + res.size(), 1, res.size());
   }
+  
+  @Test
+  public void testDbConnectorNoLocks() throws Exception {
+    driver.run("DROP CONNECTOR IF EXISTS derby_auth");
+
+    driver.run("CREATE CONNECTOR IF NOT EXISTS derby_auth " +
+      "TYPE 'derby' " +
+      "URL 'jdbc:derby:./target/tmp/junit_metastore_db;create=true' " +
+      "WITH DCPROPERTIES ( " +
+      "   'hive.sql.dbcp.username'='APP', " +
+      "   'hive.sql.dbcp.password'='mine')");
+    
+    driver.compileAndRespond("DROP CONNECTOR derby_auth");
+    
+    driver.lockAndRespond();
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 0, locks.size());
+  }
 }

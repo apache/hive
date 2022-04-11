@@ -52,8 +52,8 @@ public class DropDataConnectorAnalyzer extends BaseSemanticAnalyzer {
     }
 
     inputs.add(new ReadEntity(connector));
-    outputs.add(new WriteEntity(connector, HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED) ?
-      WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE));
+    // Neither DummyTxnManager nor DbTxnManageer acquire any locks with `DATACONNECTOR` type
+    outputs.add(new WriteEntity(connector, WriteEntity.WriteType.DDL_NO_LOCK));
 
     DropDataConnectorDesc desc = new DropDataConnectorDesc(connectorName, ifExists);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
