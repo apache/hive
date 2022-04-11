@@ -35,12 +35,12 @@ import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayDeque;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.function.Predicate;
 
 import static java.util.Collections.singletonList;
@@ -97,28 +97,20 @@ public class HiveMaterializedViewASTSubQueryRewriteShuttle extends HiveRelShuttl
 
     // The AST associated to the RelNode is part of the original AST, but we need the expanded one
     // 1. Collect the path elements of this node in the original AST
-    Stack<Integer> path = new Stack<>();
+    ArrayDeque<Integer> path = new ArrayDeque<>();
     ASTNode curr = subQueryMap.get(project);
     while (curr != null && curr != originalAST) {
       path.push(curr.getType());
       curr = (ASTNode) curr.getParent();
     }
 
-    // 2. To find the AST node in the expanded tree we need the path elements in reverse order
-    int[] pathInt = new int[path.size()];
-    int idx = 0;
-    while (!path.isEmpty()) {
-      pathInt[idx] = path.pop();
-      ++idx;
-    }
-
-    // 3. Search for the node in the expanded tree
-    ASTNode expandedSubqAST = new CalcitePlanner.ASTSearcher().simpleBreadthFirstSearch(expandedAST, pathInt);
+    // 2. Search for the node in the expanded tree
+    ASTNode expandedSubqAST = new CalcitePlanner.ASTSearcher().simpleBreadthFirstSearch(expandedAST, path);
     if (expandedSubqAST == null) {
       return super.visit(project);
     }
 
-    // 4. Lookup MV in the registry by AST subtree coming from the expanded tree.
+    // 3. Lookup MV in the registry by AST subtree coming from the expanded tree.
     // Deal only with MVs which are not supported by the Calcite based rewrite algorithm since that algorithm
     // also makes cost based decisions and can produce better plans.
     RelNode match = getMaterializedViewByAST(

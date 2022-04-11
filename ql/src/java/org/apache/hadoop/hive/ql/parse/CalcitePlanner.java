@@ -1249,6 +1249,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
   public static class ASTSearcher {
     private final LinkedList<ASTNode> searchQueue = new LinkedList<ASTNode>();
 
+    public ASTNode simpleBreadthFirstSearch(ASTNode ast, Collection<Integer> tokens) {
+      int[] tokenArray = new int[tokens.size()];
+      int i = 0;
+      for (Integer token : tokens) {
+        tokenArray[i] = token;
+        ++i;
+      }
+      return simpleBreadthFirstSearch(ast, tokenArray);
+    }
+
     /**
      * Performs breadth-first search of the AST for a nested set of tokens. Tokens
      * don't have to be each others' direct children, they can be separated by
