@@ -475,23 +475,6 @@
             </configuration>
           </execution>
           <execution>
-            <id>generate-version-annotation</id>
-            <phase>generate-sources</phase>
-            <configuration>
-              <target>
-                <exec executable="bash" failonerror="true">
-                  <arg value="${basedir}/src/main/resources/saveVersion.sh"/>
-                  <arg value="${project.version}"/>
-                  <arg value="${hive.version.shortname}"/>
-                  <arg value="${basedir}/src"/>
-                </exec>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-          <execution>
             <id>setup-metastore-scripts</id>
             <phase>process-test-resources</phase>
             <goals>
