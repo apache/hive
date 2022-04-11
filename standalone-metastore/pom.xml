@@ -362,7 +362,6 @@
         <scope>runtime</scope>
         <optional>true</optional>
       </dependency>
-      <!-- check if it introduces any transitive dependencies -->
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore</artifactId>

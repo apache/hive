@@ -72,7 +72,7 @@ public class HmsThriftHttpServlet extends TServlet {
     if (userFromHeader == null || userFromHeader.isEmpty()) {
       LOG.error("No user header: {} found", X_USER);
       response.sendError(HttpServletResponse.SC_FORBIDDEN,
-          "User Header missing");
+          "Header: " + X_USER + " missing in the request");
       return;
     }
 
@@ -105,12 +105,9 @@ public class HmsThriftHttpServlet extends TServlet {
     try {
       clientUgi.doAs(action);
     } catch (InterruptedException | RuntimeException e) {
-      // TODO: Exception handling likely needs to be better, so that the client
-      // can make better sense of what has gone wrong. Lookup what this looks like
-      // in the default thrift binary interface.
-      LOG.info("Exception while processing call", e);
-      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-          "C1C User Header missing");
+      LOG.error("Exception when executing http request as user: " + clientUgi.getUserName(),
+          e);
+      throw new ServletException(e);
     }
   }
 }

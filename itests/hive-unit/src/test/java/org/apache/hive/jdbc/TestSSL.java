@@ -451,13 +451,11 @@ public class TestSSL {
    */
   @Test
   public void testMetastoreWithHttps() throws Exception {
-    // MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
-    //MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_TRANSPORT_MODE, "http");
     SSLTestUtils.setMetastoreHttpsConf(conf);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM,
         KEY_MANAGER_FACTORY_ALGORITHM);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_TYPE, KEY_STORE_TRUST_STORE_TYPE);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_TYPE, KEY_STORE_TRUST_STORE_TYPE);
+    // false flag in testSSLHMS will set key store type for metastore
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM,
         KEY_MANAGER_FACTORY_ALGORITHM);
 
