@@ -82,6 +82,7 @@ public class RowResolver implements Serializable{
     String treeAsString = node.toStringTree();
     expressionMap.put(treeAsString, node);
     put("", treeAsString, colInfo);
+    colInfo.setExpression(treeAsString);
   }
 
   /**
@@ -105,10 +106,10 @@ public class RowResolver implements Serializable{
       //Make sure that the table alias and column alias are stored
       //in the column info
       if (tab_alias != null) {
-        colInfo.setTabAlias(tab_alias);
+        colInfo.setTabAlias(tab_alias.toLowerCase());
       }
       if (col_alias != null) {
-        colInfo.setAlias(col_alias);
+        colInfo.setAlias(col_alias.toLowerCase());
       }
       rowSchema.getSignature().add(colInfo);
     }

@@ -4830,13 +4830,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
             String internalName = SemanticAnalyzer.getColumnInternalName(outputRR.getColumnInfos()
                 .size() + i);
             colInfo.setInternalName(internalName);
-            // if there is any confict, then we do not generate it in the new select
-            // otherwise, we add it into the calciteColLst and generate the new select
-            if (!outputRR.putWithCheck(colInfo.getTabAlias(), colInfo.getAlias(), internalName,
-                colInfo)) {
-              LOG.trace("Column already present in RR. skipping.");
-            } else {
+            if (colInfo.getExpression() != null) {
+              ASTNode exprAST = inputRR.getExpressionMap().get(colInfo.getExpression());
+              outputRR.putExpression(exprAST, colInfo);
               columnList.add(originalInputRefs.get(i));
+            } else {
+              // if there is any conflict, then we do not generate it in the new select
+              // otherwise, we add it into the calciteColLst and generate the new select
+              if (!outputRR.putWithCheck(colInfo.getTabAlias(), colInfo.getAlias(), internalName,
+                      colInfo)) {
+                LOG.trace("Column already present in RR. skipping.");
+              } else {
+                columnList.add(originalInputRefs.get(i));
+              }
             }
           }
           outputRel = genSelectRelNode(columnList, outputRR, srcRel);

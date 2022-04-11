@@ -40,6 +40,9 @@ public class ColumnInfo implements Serializable {
 
   private String alias = null; // [optional] alias of the column (external name
   // as seen by the users)
+
+  private String expression;
+
   /**
    * Indicates whether the column is a skewed column.
    */
@@ -129,6 +132,7 @@ public class ColumnInfo implements Serializable {
     this.isHiddenVirtualCol = columnInfo.isHiddenVirtualCol();
     this.nullable = columnInfo.nullable;
     this.setType(columnInfo.getType());
+    this.expression = columnInfo.expression;
   }
 
   public String getTypeName() {
@@ -278,5 +282,13 @@ public class ColumnInfo implements Serializable {
 
   public boolean isNullable() {
     return nullable;
+  }
+
+  public String getExpression() {
+    return expression;
+  }
+
+  public void setExpression(String expression) {
+    this.expression = expression;
   }
 }
