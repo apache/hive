@@ -354,7 +354,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   }
 
   @Override protected String getOutputClass() {
-    return JDBC_INPUTFORMAT_CLASS;
+    return JDBC_OUTPUTFORMAT_CLASS;
   }
   @Override protected String getTableLocation(String tableName) {
     if (warehouse != null) {
