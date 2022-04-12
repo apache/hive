@@ -36,7 +36,7 @@
     <test.forkcount>1</test.forkcount>
     <skipITests>true</skipITests>
     <hdp.hive.version>2.3.3</hdp.hive.version>
-    <hdp.hadoop.version>2.7.2</hdp.hadoop.version>
+    <hdp.hadoop.version>3.2.3</hdp.hadoop.version>
   </properties>
   <dependencies>
     <!--scope is 'provided' for all.  The UpgradeTool is provided as part of Hive 3.x and
