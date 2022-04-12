@@ -17,10 +17,12 @@ select col0 from t1 where col0 = 1 union select col0 from t1 where col0 = 2;
 create materialized view mat2 as
 select col0 from t1 where col0 = 3;
 
+-- This query is not rewritten because the MV mat2 is applicable for Calcite based rewrite algorithm but that is turned off in this test case.
 explain cbo
 select col0 from t2 where exists (
  select col0 from t1 where col0 = 3);
 
+-- These queries should be rewritten because only sql text based rewrite is applicable for MV mat1
 explain cbo
 select col0 from t2 where exists (select col0 from t1 where col0 = 1 union select col0 from t1 where col0 = 2);
 
