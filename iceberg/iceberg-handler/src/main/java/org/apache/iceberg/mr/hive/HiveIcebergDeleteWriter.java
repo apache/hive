@@ -23,36 +23,42 @@ import java.io.IOException;
 import java.util.List;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.TaskAttemptID;
-import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.io.ClusteredDataWriter;
-import org.apache.iceberg.io.DataWriteResult;
+import org.apache.iceberg.deletes.PositionDelete;
+import org.apache.iceberg.io.ClusteredPositionDeleteWriter;
+import org.apache.iceberg.io.DeleteWriteResult;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.mapred.Container;
 
-class HiveIcebergRecordWriter extends HiveIcebergWriter {
+public class HiveIcebergDeleteWriter extends HiveIcebergWriter {
 
-  HiveIcebergRecordWriter(Schema schema, PartitionSpec spec, FileFormat format,
-      FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
+  private final GenericRecord rowDataTemplate;
+
+  HiveIcebergDeleteWriter(Schema schema, PartitionSpec spec, FileFormat fileFormat,
+      FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
       TaskAttemptID taskAttemptID, String tableName) {
     super(schema, spec, io, taskAttemptID, tableName,
-        new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize));
+        new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, fileFormat, targetFileSize));
+    rowDataTemplate = GenericRecord.create(schema);
   }
 
   @Override
   public void write(Writable row) throws IOException {
-    Record record = ((Container<Record>) row).get();
-    writer.write(record, spec, partition(record));
+    Record rec = ((Container<Record>) row).get();
+    PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(rec, rowDataTemplate);
+    writer.write(positionDelete, spec, partition(positionDelete.row()));
   }
 
   @Override
   public FilesForCommit files() {
-    List<DataFile> dataFiles = ((DataWriteResult) writer.result()).dataFiles();
-    return FilesForCommit.onlyData(dataFiles);
+    List<DeleteFile> deleteFiles = ((DeleteWriteResult) writer.result()).deleteFiles();
+    return FilesForCommit.onlyDelete(deleteFiles);
   }
 }

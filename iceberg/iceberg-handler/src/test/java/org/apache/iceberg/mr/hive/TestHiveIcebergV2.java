@@ -28,6 +28,7 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.mr.TestHelper;
@@ -226,6 +227,87 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
     Assert.assertArrayEquals(new Object[] {0L, "John", "Green"}, objects.get(1));
     Assert.assertArrayEquals(new Object[] {1L, "Bob", "Green"}, objects.get(2));
     Assert.assertArrayEquals(new Object[] {2L, "Trudy", "Pink"}, objects.get(3));
+  }
+
+  @Test
+  public void testDeleteStatementUnpartitioned() {
+    // create and insert an initial batch of records
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+    // insert one more batch so that we have multiple data files within the same partition
+    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
+        TableIdentifier.of("default", "customers"), false));
+
+    shell.executeStatement("DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'");
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name");
+    Assert.assertEquals(6, objects.size());
+    List<Record> expected = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(1L, "Sharon", "Taylor")
+        .add(2L, "Jake", "Donnel")
+        .add(2L, "Susan", "Morrison")
+        .add(2L, "Bob", "Silver")
+        .add(4L, "Laci", "Zold")
+        .add(5L, "Peti", "Rozsaszin")
+        .build();
+    HiveIcebergTestUtils.validateData(expected,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
+  }
+
+  @Test
+  public void testDeleteStatementPartitioned() {
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").bucket("customer_id", 16).build();
+
+    // create and insert an initial batch of records
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+    // insert one more batch so that we have multiple data files within the same partition
+    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
+        TableIdentifier.of("default", "customers"), false));
+
+    shell.executeStatement("DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'");
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name");
+    Assert.assertEquals(6, objects.size());
+    List<Record> expected = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(1L, "Sharon", "Taylor")
+        .add(2L, "Jake", "Donnel")
+        .add(2L, "Susan", "Morrison")
+        .add(2L, "Bob", "Silver")
+        .add(4L, "Laci", "Zold")
+        .add(5L, "Peti", "Rozsaszin")
+        .build();
+    HiveIcebergTestUtils.validateData(expected,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
+  }
+
+  @Test
+  public void testDeleteStatementWithOtherTable() {
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").bucket("customer_id", 16).build();
+
+    // create a couple of tables, with an initial batch of records
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+    testTables.createTable(shell, "other", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1, 2);
+
+    shell.executeStatement("DELETE FROM customers WHERE customer_id in (select t1.customer_id from customers t1 join " +
+        "other t2 on t1.customer_id = t2.customer_id) or " +
+        "first_name in (select first_name from customers where first_name = 'Bob')");
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name");
+    Assert.assertEquals(5, objects.size());
+    List<Record> expected = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(1L, "Joanna", "Pierce")
+        .add(1L, "Sharon", "Taylor")
+        .add(2L, "Jake", "Donnel")
+        .add(2L, "Susan", "Morrison")
+        .add(2L, "Joanna", "Silver")
+        .build();
+    HiveIcebergTestUtils.validateData(expected,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
   }
 
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {

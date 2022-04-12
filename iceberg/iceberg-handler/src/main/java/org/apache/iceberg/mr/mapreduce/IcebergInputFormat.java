@@ -28,8 +28,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -45,6 +48,7 @@ import org.apache.iceberg.DataTask;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
@@ -56,31 +60,31 @@ import org.apache.iceberg.avro.Avro;
 import org.apache.iceberg.common.DynMethods;
 import org.apache.iceberg.data.DeleteFilter;
 import org.apache.iceberg.data.GenericDeleteFilter;
+import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.IdentityPartitionConverters;
 import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.avro.DataReader;
 import org.apache.iceberg.data.orc.GenericOrcReader;
 import org.apache.iceberg.data.parquet.GenericParquetReaders;
 import org.apache.iceberg.encryption.EncryptedFiles;
-import org.apache.iceberg.encryption.EncryptionManager;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
-import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
+import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
-import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.TypeUtil;
+import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.PartitionUtil;
 import org.apache.iceberg.util.SerializationUtil;
 
@@ -223,7 +227,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
 
     private TaskAttemptContext context;
-    private Schema tableSchema;
+    private Configuration conf;
     private Schema expectedSchema;
     private String nameMapping;
     private boolean reuseContainers;
@@ -232,24 +236,20 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     private Iterator<FileScanTask> tasks;
     private T current;
     private CloseableIterator<T> currentIterator;
-    private FileIO io;
-    private EncryptionManager encryptionManager;
+    private Table table;
 
     @Override
     public void initialize(InputSplit split, TaskAttemptContext newContext) {
-      Configuration conf = newContext.getConfiguration();
       // For now IcebergInputFormat does its own split planning and does not accept FileSplit instances
       CombinedScanTask task = ((IcebergSplit) split).task();
       this.context = newContext;
-      Table table = ((IcebergSplit) split).table();
+      this.conf = newContext.getConfiguration();
+      this.table = ((IcebergSplit) split).table();
       HiveIcebergStorageHandler.checkAndSetIoConfig(conf, table);
-      this.io = table.io();
-      this.encryptionManager = table.encryption();
       this.tasks = task.files().iterator();
-      this.tableSchema = InputFormatConfig.tableSchema(conf);
       this.nameMapping = table.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
       this.caseSensitive = conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT);
-      this.expectedSchema = readSchema(conf, tableSchema, caseSensitive);
+      this.expectedSchema = readSchema(conf, table, caseSensitive);
       this.reuseContainers = conf.getBoolean(InputFormatConfig.REUSE_CONTAINERS, false);
       this.inMemoryDataModel = conf.getEnum(InputFormatConfig.IN_MEMORY_DATA_MODEL,
               InputFormatConfig.InMemoryDataModel.GENERIC);
@@ -261,6 +261,14 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       while (true) {
         if (currentIterator.hasNext()) {
           current = currentIterator.next();
+          if (HiveIcebergStorageHandler.isDelete(conf, conf.get(Catalogs.NAME))) {
+            GenericRecord rec = (GenericRecord) current;
+            PositionDeleteInfo.setIntoConf(conf,
+                IcebergAcidUtil.parseSpecId(rec),
+                IcebergAcidUtil.computePartitionHash(rec),
+                IcebergAcidUtil.parseFilePath(rec),
+                IcebergAcidUtil.parseFilePosition(rec));
+          }
           return true;
         } else if (tasks.hasNext()) {
           currentIterator.close();
@@ -303,14 +311,14 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         // When querying metadata tables, the currentTask is a DataTask and the data has to
         // be fetched from the task instead of reading it from files.
         IcebergInternalRecordWrapper wrapper =
-            new IcebergInternalRecordWrapper(tableSchema.asStruct(), readSchema.asStruct());
+            new IcebergInternalRecordWrapper(table.schema().asStruct(), readSchema.asStruct());
         return (CloseableIterable) CloseableIterable.transform(((DataTask) currentTask).rows(),
             row -> wrapper.wrap((StructLike) row));
       }
 
       DataFile file = currentTask.file();
-      InputFile inputFile = encryptionManager.decrypt(EncryptedFiles.encryptedInput(
-          io.newInputFile(file.path().toString()),
+      InputFile inputFile = table.encryption().decrypt(EncryptedFiles.encryptedInput(
+          table.io().newInputFile(file.path().toString()),
           file.keyMetadata()));
 
       CloseableIterable<T> iterable;
@@ -341,7 +349,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         case HIVE:
           return openTask(currentTask, readSchema);
         case GENERIC:
-          DeleteFilter deletes = new GenericDeleteFilter(io, currentTask, tableSchema, readSchema);
+          DeleteFilter deletes = new GenericDeleteFilter(table.io(), currentTask, table.schema(), readSchema);
           Schema requiredSchema = deletes.requiredSchema();
           return deletes.filter(openTask(currentTask, requiredSchema));
         default:
@@ -428,8 +436,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     private CloseableIterable<T> newOrcIterable(InputFile inputFile, FileScanTask task, Schema readSchema) {
       Map<Integer, ?> idToConstant = constantsMap(task, IdentityPartitionConverters::convertConstant);
-      Schema readSchemaWithoutConstantAndMetadataFields = TypeUtil.selectNot(readSchema,
-          Sets.union(idToConstant.keySet(), MetadataColumns.metadataFieldIds()));
+      Schema readSchemaWithoutConstantAndMetadataFields = schemaWithoutConstantsAndMeta(readSchema, idToConstant);
 
       CloseableIterable<T> orcIterator = null;
       // ORC does not support reuse containers yet
@@ -468,14 +475,17 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       Set<Integer> idColumns = spec.identitySourceIds();
       Schema partitionSchema = TypeUtil.select(expectedSchema, idColumns);
       boolean projectsIdentityPartitionColumns = !partitionSchema.columns().isEmpty();
-      if (projectsIdentityPartitionColumns) {
+      if (expectedSchema.findField(MetadataColumns.PARTITION_COLUMN_ID) != null) {
+        Types.StructType partitionType = Partitioning.partitionType(table);
+        return PartitionUtil.constantsMap(task, partitionType, converter);
+      } else if (projectsIdentityPartitionColumns) {
         return PartitionUtil.constantsMap(task, converter);
       } else {
         return Collections.emptyMap();
       }
     }
 
-    private static Schema readSchema(Configuration conf, Schema tableSchema, boolean caseSensitive) {
+    private static Schema readSchema(Configuration conf, Table table, boolean caseSensitive) {
       Schema readSchema = InputFormatConfig.readSchema(conf);
 
       if (readSchema != null) {
@@ -484,10 +494,35 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
       String[] selectedColumns = InputFormatConfig.selectedColumns(conf);
       if (selectedColumns == null) {
-        return tableSchema;
+        return table.schema();
       }
 
-      return caseSensitive ? tableSchema.select(selectedColumns) : tableSchema.caseInsensitiveSelect(selectedColumns);
+      readSchema = caseSensitive ? table.schema().select(selectedColumns) :
+          table.schema().caseInsensitiveSelect(selectedColumns);
+
+      // for DELETE queries, add additional metadata columns into the read schema
+      if (HiveIcebergStorageHandler.isDelete(conf, conf.get(Catalogs.NAME))) {
+        readSchema = IcebergAcidUtil.createFileReadSchemaForDelete(readSchema.columns(), table);
+      }
+
+      return readSchema;
+    }
+
+    private static Schema schemaWithoutConstantsAndMeta(Schema readSchema, Map<Integer, ?> idToConstant) {
+      // remove the nested fields of the partition struct
+      Set<Integer> partitionFields = Optional.ofNullable(readSchema.findField(MetadataColumns.PARTITION_COLUMN_ID))
+          .map(Types.NestedField::type)
+          .map(Type::asStructType)
+          .map(Types.StructType::fields)
+          .map(fields -> fields.stream().map(Types.NestedField::fieldId).collect(Collectors.toSet()))
+          .orElseGet(Collections::emptySet);
+
+      // remove constants and meta columns too
+      Set<Integer> collect = Stream.of(idToConstant.keySet(), MetadataColumns.metadataFieldIds(), partitionFields)
+          .flatMap(Set::stream)
+          .collect(Collectors.toSet());
+
+      return TypeUtil.selectNot(readSchema, collect);
     }
   }
 

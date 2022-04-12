@@ -23,12 +23,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 
 /**
  * A subclass of the {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer} that just handles
@@ -95,14 +100,25 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     assert tabName.getToken().getType() == HiveParser.TOK_TABNAME :
         "Expected tablename as first child of " + operation + " but found " + tabName.getName();
     Table mTable = getTargetTable(tabName);
+    validateTxnManager(mTable);
     validateTargetTable(mTable);
+
+    // save the operation type into the query state
+    SessionStateUtil.addResource(conf, Context.Operation.class.getSimpleName(), operation.name());
 
     StringBuilder rewrittenQueryStr = new StringBuilder();
     rewrittenQueryStr.append("insert into table ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
     addPartitionColsToInsert(mTable.getPartCols(), rewrittenQueryStr);
 
-    rewrittenQueryStr.append(" select ROW__ID");
+    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
+    if (nonNativeAcid) {
+      String selectCols = mTable.getStorageHandler().acidSelectColumns(mTable).stream()
+          .map(FieldSchema::getName).collect(Collectors.joining(","));
+      rewrittenQueryStr.append(" select ").append(selectCols);
+    } else {
+      rewrittenQueryStr.append(" select ROW__ID");
+    }
 
     Map<Integer, ASTNode> setColExprs = null;
     Map<String, ASTNode> setCols = null;
@@ -145,7 +161,13 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
 
     // Add a sort by clause so that the row ids come out in the correct order
-    rewrittenQueryStr.append(" sort by ROW__ID ");
+    if (nonNativeAcid) {
+      String sortCols = mTable.getStorageHandler().acidSortColumns(mTable).stream()
+          .map(FieldSchema::getName).collect(Collectors.joining(","));
+      rewrittenQueryStr.append(" sort by ").append(sortCols).append(" ");
+    } else {
+      rewrittenQueryStr.append(" sort by ROW__ID ");
+    }
 
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
@@ -223,6 +245,12 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
               colName);
         }
       }
+    }
+  }
+
+  private void validateTxnManager(Table mTable) throws SemanticException {
+    if (!AcidUtils.acidTableWithoutTransactions(mTable) && !getTxnMgr().supportsAcid()) {
+      throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getMsg());
     }
   }
 
