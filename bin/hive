@@ -113,21 +113,6 @@ if [ -f "${HIVE_CONF_DIR}/hive-env.sh" ]; then
   . "${HIVE_CONF_DIR}/hive-env.sh"
 fi
 
-if [ "$SERVICE" != "beeline" ]; then
-  if [[ -z "$SPARK_HOME" ]]
-  then
-    bin=`dirname "$0"`
-    # many hadoop installs are in dir/{spark,hive,hadoop,..}
-    if test -e $bin/../../spark; then 
-      sparkHome=$(readlink -f $bin/../../spark)
-      if [[ -d $sparkHome ]]
-      then
-        export SPARK_HOME=$sparkHome
-      fi
-    fi
-  fi
-fi
-
 CLASSPATH="${TEZ_CONF_DIR:-/etc/tez/conf}:${HIVE_CONF_DIR}"
 
 HIVE_LIB=${HIVE_HOME}/lib

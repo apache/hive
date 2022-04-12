@@ -485,12 +485,6 @@
   </dependencyManagement>
   <profiles>
     <profile>
-      <id>spark-test</id>
-      <modules>
-        <module>qtest-spark</module>
-      </modules>
-    </profile>
-    <profile>
       <id>iceberg</id>
       <modules>
         <module>qtest-iceberg</module>

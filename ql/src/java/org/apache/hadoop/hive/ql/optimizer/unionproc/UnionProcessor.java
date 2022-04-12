@@ -95,8 +95,7 @@ public class UnionProcessor extends Transform {
     // Walk the tree again to see if the union can be removed completely
     HiveConf conf = pCtx.getConf();
     opRules.clear();
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_UNION_REMOVE)
-      && !conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_UNION_REMOVE)) {
 
       opRules.put(new RuleRegExp("R5", UnionOperator.getOperatorName() + "%" +
                                  ".*" + FileSinkOperator.getOperatorName() + "%"),

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
 import org.junit.Assert;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -44,12 +43,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumnChecked;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractDecimalColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColAddDecimalColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColMultiplyDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColAddDecimalScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractDecimalScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColMultiplyDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarAddDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarSubtractDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarMultiplyDecimalColumn;

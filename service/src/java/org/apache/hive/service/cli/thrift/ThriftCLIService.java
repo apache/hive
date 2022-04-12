@@ -21,7 +21,6 @@ package org.apache.hive.service.cli.thrift;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import org.apache.hive.service.cli.OperationState;
-import org.apache.hive.service.cli.SparkProgressMonitorStatusMapper;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
 import org.apache.hive.service.rpc.thrift.TSetClientInfoResp;
 
@@ -813,9 +812,6 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       ProgressMonitorStatusMapper mapper = ProgressMonitorStatusMapper.DEFAULT;
       if ("tez".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
         mapper = new TezProgressMonitorStatusMapper();
-      }
-      if ("spark".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
-        mapper = new SparkProgressMonitorStatusMapper();
       }
       TJobExecutionStatus executionStatus =
           mapper.forStatus(progressUpdate.status);

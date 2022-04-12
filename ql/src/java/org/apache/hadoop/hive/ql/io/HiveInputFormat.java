@@ -748,22 +748,18 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   Path[] getInputPaths(JobConf job) throws IOException {
     Path[] dirs;
-    if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-      dirs = mrwork.getPathToPartitionInfo().keySet().toArray(new Path[]{});
-    } else {
-      dirs = FileInputFormat.getInputPaths(job);
-      if (dirs.length == 0) {
-        // on tez we're avoiding to duplicate the file info in FileInputFormat.
-        if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-          try {
-            List<Path> paths = Utilities.getInputPathsTez(job, mrwork);
-            dirs = paths.toArray(new Path[paths.size()]);
-          } catch (Exception e) {
-            throw new IOException("Could not create input files", e);
-          }
-        } else {
-          throw new IOException("No input paths specified in job");
+    dirs = FileInputFormat.getInputPaths(job);
+    if (dirs.length == 0) {
+      // on tez we're avoiding to duplicate the file info in FileInputFormat.
+      if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+        try {
+          List<Path> paths = Utilities.getInputPathsTez(job, mrwork);
+          dirs = paths.toArray(new Path[paths.size()]);
+        } catch (Exception e) {
+          throw new IOException("Could not create input files", e);
         }
+      } else {
+        throw new IOException("No input paths specified in job");
       }
     }
     StringInternUtils.internUriStringsInPathArray(dirs);

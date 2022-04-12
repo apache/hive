@@ -539,7 +539,7 @@ public class SimpleFetchOptimizer extends Transform {
     }
 
     // This method gets the basic stats from metastore for table/partitions. This will make use of the statistics from
-    // AnnotateWithStatistics optimizer when available. If execution engine is tez or spark, AnnotateWithStatistics
+    // AnnotateWithStatistics optimizer when available. If execution engine is tez, AnnotateWithStatistics
     // optimization is applied only during physical compilation because of DPP changing the stats. In such case, we
     // we will get the basic stats from metastore. When statistics is absent in metastore we will use the fallback of
     // scanning the filesystem to get file lengths.

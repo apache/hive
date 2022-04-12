@@ -85,7 +85,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           keyColumns: 3:decimal(21,0)
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 4:decimal(21,0), 5:decimal(22,1), 6:decimal(23,2), 7:decimal(24,3), 8:decimal(21,0), 9:decimal(21,0), 10:decimal(21,0), 11:decimal(21,0), 12:decimal(21,0), 13:decimal(21,0), 14:decimal(21,0), 15:decimal(21,0)
                       Statistics: Num rows: 1 Data size: 1456 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: decimal(21,0)), _col2 (type: decimal(22,1)), _col3 (type: decimal(23,2)), _col4 (type: decimal(24,3)), _col5 (type: decimal(21,0)), _col6 (type: decimal(21,0)), _col7 (type: decimal(21,0)), _col8 (type: decimal(21,0)), _col9 (type: decimal(21,0)), _col10 (type: decimal(21,0)), _col11 (type: decimal(21,0)), _col12 (type: decimal(21,0))
@@ -110,7 +110,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
@@ -258,7 +258,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           keyColumns: 4:decimal(21,0)
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 5:decimal(21,0), 6:decimal(22,1), 7:decimal(23,2), 8:decimal(24,3), 9:decimal(25,4), 10:decimal(21,0), 11:decimal(21,0), 12:decimal(21,0), 13:decimal(21,0), 14:decimal(21,0), 15:decimal(21,0), 16:decimal(22,1), 17:decimal(23,2), 18:decimal(24,3), 19:decimal(25,4), 20:decimal(21,0), 21:decimal(21,0), 22:decimal(21,0), 23:decimal(21,0)
                       Statistics: Num rows: 1 Data size: 2240 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: decimal(21,0)), _col2 (type: decimal(22,1)), _col3 (type: decimal(23,2)), _col4 (type: decimal(24,3)), _col5 (type: decimal(25,4)), _col6 (type: decimal(21,0)), _col7 (type: decimal(21,0)), _col8 (type: decimal(21,0)), _col9 (type: decimal(21,0)), _col10 (type: decimal(21,0)), _col11 (type: decimal(21,0)), _col12 (type: decimal(22,1)), _col13 (type: decimal(23,2)), _col14 (type: decimal(24,3)), _col15 (type: decimal(25,4)), _col16 (type: decimal(21,0)), _col17 (type: decimal(21,0)), _col18 (type: decimal(21,0)), _col19 (type: decimal(21,0))
@@ -283,7 +283,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
@@ -458,7 +458,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           keyColumns: 3:decimal(21,0)
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 4:decimal(21,0), 5:decimal(21,0), 6:decimal(21,0), 7:decimal(21,0), 8:decimal(21,0), 9:decimal(21,0), 10:decimal(21,0), 11:decimal(21,0), 12:decimal(21,0), 13:decimal(21,0), 14:decimal(21,0), 15:decimal(21,0), 16:decimal(21,0), 17:decimal(21,0), 18:decimal(21,0), 19:decimal(21,0), 20:decimal(22,1), 21:decimal(23,2), 22:decimal(24,3), 23:decimal(25,4), 24:decimal(26,5), 25:decimal(27,6), 26:decimal(28,7), 27:decimal(29,8), 28:decimal(30,9), 29:decimal(31,10), 30:decimal(32,11), 31:decimal(33,12), 32:decimal(34,13), 33:decimal(35,14), 34:decimal(36,15), 35:decimal(37,16)
                       Statistics: Num rows: 1 Data size: 3696 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: decimal(21,0)), _col2 (type: decimal(21,0)), _col3 (type: decimal(21,0)), _col4 (type: decimal(21,0)), _col5 (type: decimal(21,0)), _col6 (type: decimal(21,0)), _col7 (type: decimal(21,0)), _col8 (type: decimal(21,0)), _col9 (type: decimal(21,0)), _col10 (type: decimal(21,0)), _col11 (type: decimal(21,0)), _col12 (type: decimal(21,0)), _col13 (type: decimal(21,0)), _col14 (type: decimal(21,0)), _col15 (type: decimal(21,0)), _col16 (type: decimal(21,0)), _col17 (type: decimal(22,1)), _col18 (type: decimal(23,2)), _col19 (type: decimal(24,3)), _col20 (type: decimal(25,4)), _col21 (type: decimal(26,5)), _col22 (type: decimal(27,6)), _col23 (type: decimal(28,7)), _col24 (type: decimal(29,8)), _col25 (type: decimal(30,9)), _col26 (type: decimal(31,10)), _col27 (type: decimal(32,11)), _col28 (type: decimal(33,12)), _col29 (type: decimal(34,13)), _col31 (type: decimal(35,14)), _col32 (type: decimal(36,15)), _col33 (type: decimal(37,16))
@@ -483,7 +483,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
@@ -647,7 +647,7 @@ STAGE PLANS:
                           className: VectorReduceSinkObjectHashOperator
                           keyColumns: 4:decimal(30,9)
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 5:decimal(30,9)
                       Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: decimal(30,9))
@@ -672,7 +672,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false

@@ -31,7 +31,7 @@ import com.google.common.collect.Sets;
 
 /**
  * Default implementation of the cost model.
- * Currently used by MR and Spark execution engines.
+ * Currently used by MR execution engine.
  */
 public class HiveDefaultCostModel extends HiveCostModel {
   

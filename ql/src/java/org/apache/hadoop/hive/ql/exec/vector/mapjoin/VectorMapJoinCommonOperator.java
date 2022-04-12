@@ -500,9 +500,7 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
       break;
     case FAST:
       // Use our specialized hash table loader.
-      hashTableLoader = HiveConf.getVar(
-          hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark") ?
-          HashTableLoaderFactory.getLoader(hconf) : new VectorMapJoinFastHashTableLoader();
+      hashTableLoader = new VectorMapJoinFastHashTableLoader();
       break;
     default:
       throw new RuntimeException("Unknown vector map join hash table implementation type " + hashTableImplementationType.name());

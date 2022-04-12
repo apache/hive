@@ -158,16 +158,6 @@ final class CommandAuthorizerV2 {
     if (TableType.MATERIALIZED_VIEW.name().equals(tableType) || TableType.VIRTUAL_VIEW.name().equals(tableType)) {
       isView = true;
     }
-    if(isView){
-      Map<String, String> params = t.getParameters();
-      if (HiveConf.getBoolVar(SessionState.get().getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED_ON_SPARK_VIEWS)
-              && params != null && params.containsKey(authorizedKeyword)) {
-        String authorizedValue = params.get(authorizedKeyword);
-        if ("false".equalsIgnoreCase(authorizedValue)) {
-          return true;
-        }
-      }
-    }
     return false;
   }
 

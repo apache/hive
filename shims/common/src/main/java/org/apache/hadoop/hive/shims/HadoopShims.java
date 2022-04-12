@@ -94,9 +94,6 @@ public interface HadoopShims {
 
   public MiniMrShim getLocalMiniTezCluster(Configuration conf, boolean usingLlap);
 
-  public MiniMrShim getMiniSparkCluster(Configuration conf, int numberOfTaskTrackers,
-      String nameNode, int numDir) throws IOException;
-
 
   /**
    * Set up the caller context for HDFS and Yarn.

@@ -103,8 +103,6 @@ public class TestHiveIcebergStorageHandlerLocalScan {
   @Before
   public void before() throws IOException {
     testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
-    // Uses spark as an engine so we can detect if we unintentionally try to use any execution engines
-    HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, "spark");
   }
 
   @After

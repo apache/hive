@@ -146,8 +146,6 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           work = ((MapredWork) mrTask.getWork()).getMapWork();
         } else if (mrTask.getWork() instanceof TezWork){
           work = (MapWork) ((TezWork) mrTask.getWork()).getAllWork().get(0);
-        } else if (mrTask.getWork() instanceof SparkWork) {
-          work = (MapWork) ((SparkWork) mrTask.getWork()).getAllWork().get(0);
         } else {
           work = (MapWork) mrTask.getWork();
         }
