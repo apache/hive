@@ -5378,7 +5378,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
       // not the destf or its subdir?
       isOldPathUnderDestf = isSubDir(oldPath, destPath, oldFs, destFs, false);
-      if (isOldPathUnderDestf) {
+      if (isOldPathUnderDestf && oldFs.exists(oldPath)) {
         cleanUpOneDirectoryForReplace(oldPath, oldFs, pathFilter, conf, purge, isNeedRecycle);
       }
     } catch (IOException e) {
@@ -5399,12 +5399,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
       recycleDirToCmPath(path, purge);
     }
-    FileStatus[] statuses = null;
-    try {
-      statuses = fs.listStatus(path, pathFilter);
-    } catch (FileNotFoundException e) {
-      Utilities.FILE_OP_LOGGER.trace("No need to clean up {} since it does not exist", path, e);
-    }
+    FileStatus[] statuses = fs.listStatus(path, pathFilter);
     if (statuses == null || statuses.length == 0) {
       return;
     }
