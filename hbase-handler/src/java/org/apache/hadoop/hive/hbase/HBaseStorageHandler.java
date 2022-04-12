@@ -19,10 +19,8 @@
 package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -310,12 +308,9 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     return new URI(URIString);
   }
 
-  private static String encodeString(String rawString) throws URISyntaxException {
-    try {
-      return rawString != null ? URLEncoder.encode(rawString, "UTF-8"): null;
-    } catch (UnsupportedEncodingException e) {
-      throw new URISyntaxException(rawString, "Could not URLEncode string");
-    }
+  private static String encodeString(String rawString) {
+    // Only url encode hash code value for now
+    return rawString != null ? rawString.replace("#", "%23") : null;
   }
 
   /**
