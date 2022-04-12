@@ -25,7 +25,11 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 
 import org.antlr.runtime.TokenRewriteStream;
+import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 
 /**
@@ -262,6 +266,30 @@ public class UnparseTranslator {
     }
   }
 
+  /**
+   * Adds translation to the unparseTranslator for the RexNode if it is a RexInputRef.
+   * Grabs the inputRef information from the given RowResolver.
+   */
+  public static void addTranslationIfNeeded(ASTNode astNode, RexNode rexNode, RowResolver rr,
+      UnparseTranslator unparseTranslator, HiveConf conf) {
+    if (unparseTranslator == null || !unparseTranslator.isEnabled()) {
+      return;
+    }
+    if (!(rexNode instanceof RexInputRef)) {
+      return;
+    }
+    RexInputRef inputRef = (RexInputRef) rexNode;
+    ColumnInfo columnInfo = rr.getColumnInfos().get(inputRef.getIndex());
+    if (columnInfo.getTabAlias() == null || columnInfo.getTabAlias().length() == 0) {
+      return;
+    }
+    String[] tmp = rr.reverseLookup(columnInfo.getInternalName());
+    StringBuilder replacementText = new StringBuilder();
+    replacementText.append(HiveUtils.unparseIdentifier(tmp[0], conf));
+    replacementText.append(".");
+    replacementText.append(HiveUtils.unparseIdentifier(tmp[1], conf));
+    unparseTranslator.addTranslation(astNode, replacementText.toString());
+  }
   private static class Translation {
     int tokenStopIndex;
     String replacementText;
