@@ -9,7 +9,7 @@ insert into t values ('a'),('1'),('2'),(null);
 insert into n values ('a'),('b'),('1'),('3'),(null);
 
 
-explain select n.* from n left outer join t on (n.a=t.a) where assert_true(t.a is null) is null;
+--explain select n.* from n left outer join t on (n.a=t.a) where assert_true(t.a is null) is null;
 explain select n.* from n left outer join t on (n.a=t.a) where cast(t.a as float) is null;
 
 
