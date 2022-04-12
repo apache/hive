@@ -4748,7 +4748,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * if the validWriteIdList is not explicitly passed (as a method argument) to the HMS APIs.
    * This method returns the ValidWriteIdList based on the VALID_TABLES_WRITEIDS_KEY key.
    * Since, VALID_TABLES_WRITEIDS_KEY is set during the lock acquisition phase after query compilation
-   * ( DriverTxnHandler.acquireLocks -> recordValidWriteIds -> setValidWriteIds ),
+   * ( DriverTxnHandler.acquireLocks -&gt; recordValidWriteIds -&gt; setValidWriteIds ),
    * this only covers a subset of cases, where we invoke get_* APIs after query compilation,
    * if the validWriteIdList is not explicitly passed (as a method argument) to the HMS APIs.
    */

@@ -53,7 +53,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * CAST(<value> AS <type> FORMAT <STRING>).
+ * CAST(&lt;value&gt; AS &lt;type&gt; FORMAT &lt;STRING&gt;).
  *
  * Vector expressions: CastDateToCharWithFormat, CastDateToStringWithFormat,
  *     CastDateToVarCharWithFormat, CastTimestampToCharWithFormat,

@@ -532,9 +532,9 @@ public class RexNodeConverter {
    * </pre>
    * Or:
    * <pre>
-   * (c,d) IN ( (v1,v2), (v3,v4), ...) =&gt; (c=v1 && d=v2) || (c=v3 && d=v4) || ...
+   * (c,d) IN ( (v1,v2), (v3,v4), ...) =&gt; (c=v1 &amp;&amp; d=v2) || (c=v3 &amp;&amp; d=v4) || ...
    * Input: ((c,d), (v1,v2), (v3,v4), ...)
-   * Output: (c=v1 && d=v2, c=v3 && d=v4, ...)
+   * Output: (c=v1 &amp;&amp; d=v2, c=v3 &amp;&amp; d=v4, ...)
    * </pre>
    *
    * Returns null if the transformation fails, e.g., when non-deterministic

@@ -39,7 +39,7 @@ import static java.time.temporal.ChronoField.YEAR;
 /**
  * This is the internal type for Date. The full qualified input format of Date
  * is "uuuu-MM-dd". For example: "2021-02-11".
- * <table border="2">
+ * <table border="2" summary="">
  * <tr>
  * <th>Field</th>
  * <th>Format</th>
@@ -73,8 +73,8 @@ import static java.time.temporal.ChronoField.YEAR;
  * positive.
  * </p>
  *
- * @see {@link ChronoField#YEAR}
- * @see {@link ChronoField#YEAR_OF_ERA}
+ * @see java.time.temporal.ChronoField#YEAR
+ * @see java.time.temporal.ChronoField#YEAR_OF_ERA
  */
 public class Date implements Comparable<Date> {
 

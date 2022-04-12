@@ -746,7 +746,7 @@ public interface TxnStore extends Configurable {
 
   /**
    * Returns the top ACID metrics from each type {@link CompactionMetricsData.MetricType}
-   * @oaram limit number of returned records for each type
+   * @param limit number of returned records for each type
    * @return list of metrics, always non-null
    * @throws MetaException
    */

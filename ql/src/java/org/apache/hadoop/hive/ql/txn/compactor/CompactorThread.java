@@ -106,7 +106,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * Get the partition being compacted.
    * @param ci compaction info returned from the compaction queue
    * @return metastore partition, or null if there is not partition in this compaction info
-   * @throws Exception if underlying calls throw, or if the partition name resolves to more than
+   * @throws MetaException if underlying calls throw, or if the partition name resolves to more than
    * one partition.
    */
   protected Partition resolvePartition(CompactionInfo ci) throws MetaException {

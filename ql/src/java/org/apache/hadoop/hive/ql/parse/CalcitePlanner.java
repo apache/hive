@@ -2405,7 +2405,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
      * @param isCollection
      * @param order
      * @param rules
-     * @return HEP program
      */
     protected void generatePartialProgram(HepProgramBuilder programBuilder, boolean isCollection, HepMatchOrder order,
         RelOptRule... rules) {

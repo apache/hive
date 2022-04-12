@@ -43,7 +43,7 @@ public class DerbySQLConnectorProvider extends AbstractJDBCConnectorProvider {
   /**
    * Returns a list of all table names from the remote database.
    * @return List A collection of all the table names, null if there are no tables.
-   * @throws IOException To indicate any failures with executing this API
+   * @throws MetaException To indicate any failures with executing this API
    */
   @Override
   protected ResultSet fetchTableNames() throws MetaException {

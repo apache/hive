@@ -44,11 +44,11 @@ import java.util.List;
  * MULTI INSERT statement instead: one insert branch for inserted rows
  * and another for inserting deleted rows to delete delta.
  * Since CBO plan does not contain the INSERT branches we focus on the SELECT part of the plan in this rule.
- * See also {@link CalcitePlanner#fixUpASTJoinInsertDeleteIncrementalRebuild(ASTNode)}
+ * See also {@link CalcitePlanner}
  *
  * FROM (select mv.ROW__ID, mv.a, mv.b from mv) mv
  * RIGHT OUTER JOIN (SELECT _source_.ROW__IS_DELETED,_source_.a, _source_.b FROM _source_) source
- * ON (mv.a <=> source.a AND mv.b <=> source.b)
+ * ON (mv.a &lt;=&gt; source.a AND mv.b &lt;=&gt; source.b)
  * INSERT INTO TABLE mv_delete_delta
  *   SELECT mv.ROW__ID
  *   WHERE source.ROW__IS__DELETED

@@ -56,7 +56,7 @@ public interface LlapIo<T> {
    * @param tag a CacheTag instance must be provided as that's needed for cache insertion
    * @param fileKey fileId of the ORC file (either the Long fileId of HDFS or the SyntheticFileId).
    *                Optional, if it is not provided, it will be generated, see:
-   *                {@link org.apache.hadoop.hive.ql.io.HdfsUtils.getFileId()}
+   *                org.apache.hadoop.hive.ql.io.HdfsUtils#getFileId()
    * @return The tail of the ORC file
    * @throws IOException ex
    */

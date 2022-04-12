@@ -63,23 +63,23 @@ public @interface WindowFunctionDescription {
 
   /**
    * This property specifies whether the UDAF is an Ordered-set aggregate function.
-   * <ordered-set aggregate functions> ::=
-   *   <hypothetical set function> |
-   *   <inverse distribution function>
+   * &lt;ordered-set aggregate functions&gt; ::=
+   *   &lt;hypothetical set function&gt; |
+   *   &lt;inverse distribution function&gt;
    *
-   * <hypothetical set function> ::=
-   *   <rank function type> <left paren>
-   *   <hypothetical set function value expression list> <right paren>
-   *   <within group specification>
+   * &lt;hypothetical set function&gt; ::=
+   *   &lt;rank function type&gt; &lt;left paren&gt;
+   *   &lt;hypothetical set function value expression list&gt; &lt;right paren&gt;
+   *   &lt;within group specification&gt;
    *
-   * <rank function type> ::= RANK | DENSE_RANK | PERCENT_RANK | CUME_DIST
+   * &lt;rank function type&gt; ::= RANK | DENSE_RANK | PERCENT_RANK | CUME_DIST
    *
-   * <inverse distribution function> ::=
-   *   <inverse distribution function type> <left paren>
-   *   <inverse distribution function argument> <right paren>
-   *   <within group specification>
+   * &lt;inverse distribution function&gt; ::=
+   *   &lt;inverse distribution function type&gt; &lt;left paren&gt;
+   *   &lt;inverse distribution function argument&gt; &lt;right paren&gt;
+   *   &lt;within group specification&gt;
    *
-   * <inverse distribution function type> ::= PERCENTILE_CONT | PERCENTILE_DISC
+   * &lt;inverse distribution function type&gt; ::= PERCENTILE_CONT | PERCENTILE_DISC
    *
    * @return true if the function can be used as an ordered-set aggregate
    */
