@@ -1608,6 +1608,10 @@ public class TypeCheckProcFactory<T> {
 
     // If the current subExpression is pre-calculated, as in Group-By etc.
     ColumnInfo colInfo = input.getExpression(expr);
+    if (colInfo == null) {
+      colInfo = input.getByExpression(expr);
+    }
+
     RowResolver usedRR = input;
     int offset = 0;
 

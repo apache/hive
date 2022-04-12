@@ -82,7 +82,7 @@ public class RowResolver implements Serializable{
     String treeAsString = node.toStringTree();
     expressionMap.put(treeAsString, node);
     put("", treeAsString, colInfo);
-    colInfo.setExpression(treeAsString);
+    colInfo.setExpression(node.toStringTree());
   }
 
   /**
@@ -91,6 +91,17 @@ public class RowResolver implements Serializable{
    */
   public ColumnInfo getExpression(ASTNode node) throws SemanticException {
     return get("", node.toStringTree());
+  }
+
+  public ColumnInfo getByExpression(ASTNode node) throws SemanticException {
+    String expr = node.toStringTree();
+    for (ColumnInfo columnInfo : rowSchema.getSignature()) {
+      if (expr.equals(columnInfo.getExpression())) {
+        return columnInfo;
+      }
+    }
+
+    return null;
   }
 
   /**

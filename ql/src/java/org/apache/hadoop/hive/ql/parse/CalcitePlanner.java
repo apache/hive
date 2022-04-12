@@ -4752,6 +4752,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
                 TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo),
                 tabAlias, false);
+            colInfo.setExpression(expr.toStringTree());
             outputRR.put(tabAlias, colAlias, colInfo);
 
             pos = Integer.valueOf(pos.intValue() + 1);
@@ -4828,21 +4829,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
           for (int i = 0; i < inputRR.getColumnInfos().size(); i++) {
             ColumnInfo colInfo = new ColumnInfo(inputRR.getColumnInfos().get(i));
             String internalName = SemanticAnalyzer.getColumnInternalName(outputRR.getColumnInfos()
-                .size() + i);
+                    .size() + i);
             colInfo.setInternalName(internalName);
-            if (colInfo.getExpression() != null) {
-              ASTNode exprAST = inputRR.getExpressionMap().get(colInfo.getExpression());
-              outputRR.putExpression(exprAST, colInfo);
-              columnList.add(originalInputRefs.get(i));
+            // if there is any conflict, then we do not generate it in the new select
+            // otherwise, we add it into the calciteColLst and generate the new select
+            if (!outputRR.putWithCheck(colInfo.getTabAlias(), colInfo.getAlias(), internalName,
+                    colInfo)) {
+              LOG.trace("Column already present in RR. skipping.");
             } else {
-              // if there is any conflict, then we do not generate it in the new select
-              // otherwise, we add it into the calciteColLst and generate the new select
-              if (!outputRR.putWithCheck(colInfo.getTabAlias(), colInfo.getAlias(), internalName,
-                      colInfo)) {
-                LOG.trace("Column already present in RR. skipping.");
-              } else {
-                columnList.add(originalInputRefs.get(i));
-              }
+              columnList.add(originalInputRefs.get(i));
             }
           }
           outputRel = genSelectRelNode(columnList, outputRR, srcRel);
