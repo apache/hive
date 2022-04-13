@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -95,7 +96,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   public boolean isFirstFailover;
   public boolean isSecondFailover;
   public List<String> tablesToBootstrap = new ArrayList<>();
-  public List<String> tablesToDrop = new ArrayList<>();
+  public List<String> tablesToDrop = new LinkedList<>();
 
   /*
   these are sessionState objects that are copied over to work to allow for parallel execution.
@@ -160,10 +161,10 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       if (fs.exists(incBootstrapDir)) {
         if (isSecondFailover) {
           String[] bootstrappedTables = getBootstrapTableList(new Path(dumpDirectory).getParent(), hiveConf);
-          tablesToBootstrap = new ArrayList<String>(Arrays.asList(bootstrappedTables));
+          tablesToBootstrap = Arrays.asList(bootstrappedTables);
           LOG.info("Optimised bootstrap for database {} with load with bootstrapped table list as {}", dbNameToLoadIn,
               tablesToBootstrap);
-          ArrayList<String> tableList = new ArrayList<String>(Arrays.asList(bootstrappedTables));
+          LinkedList<String> tableList = new LinkedList<String>(Arrays.asList(bootstrappedTables));
           // Get list of tables bootstrapped.
           Path tableMetaPath = new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME + "/" + sourceDbName);
           FileStatus[] listing = fs.listStatus(tableMetaPath);

@@ -142,7 +142,7 @@ public class LoadTable {
        or in the case of an unpartitioned table. In all other cases, it should
        behave like a noop or a pure MD alter.
     */
-    newTableTasks(tableDesc, tblRootTask, tableLocationTuple, isSecondFailover && table !=null);
+    newTableTasks(tableDesc, tblRootTask, tableLocationTuple, isSecondFailover && table != null);
 
     // Set Checkpoint task as dependant to create table task. So, if same dump is retried for
     // bootstrap, we skip current table update.
@@ -165,6 +165,10 @@ public class LoadTable {
 
   private ReplLoadOpType getLoadTableType(Table table, boolean isBootstrapDuringInc, boolean isSecondFailover)
           throws InvalidOperationException, HiveException {
+    // In case of second iteration of the optimised bootstrap, we don't drop & re create the table, instead we
+    // re-write the metadata, in order to prevent deletion of the data in the target cluster. So, that while copying
+    // data from the source cluster, we just operate on the modified/missing/additional files and can get rid of
+    // copying the files which are already there on both cluster and are same.
     if (table == null || isSecondFailover) {
       return ReplLoadOpType.LOAD_NEW;
     }
