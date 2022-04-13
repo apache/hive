@@ -154,6 +154,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Before
   public void before() throws IOException {
     testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
+    HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, "mr");
   }
 
   @After
