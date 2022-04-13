@@ -3680,6 +3680,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       gbExprNDescLst.add(grpbyExprNDesc);
 
       ColumnInfo oColInfo = new ColumnInfo(field, TypeConverter.convert(grpbyExprNDesc.getType()), null, false);
+      oColInfo.setExpression(grpbyExpr.toStringTree());
       groupByOutputRowResolver.putExpression(grpbyExpr, oColInfo);
 
       addAlternateGByKeyMappings(grpbyExpr, oColInfo, groupByInputRowResolver,
@@ -4752,9 +4753,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
                 TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo),
                 tabAlias, false);
-            if (expr.getType() != HiveParser.TOK_TABLE_OR_COL) {
-              colInfo.setExpression(expr.toStringTree());
-            }
             outputRR.put(tabAlias, colAlias, colInfo);
 
             pos = Integer.valueOf(pos.intValue() + 1);
