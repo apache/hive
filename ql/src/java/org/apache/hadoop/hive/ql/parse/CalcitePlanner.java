@@ -4752,7 +4752,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
                 TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo),
                 tabAlias, false);
-            colInfo.setExpression(expr.toStringTree());
+            if (expr.getType() != HiveParser.TOK_TABLE_OR_COL) {
+              colInfo.setExpression(expr.toStringTree());
+            }
             outputRR.put(tabAlias, colAlias, colInfo);
 
             pos = Integer.valueOf(pos.intValue() + 1);
