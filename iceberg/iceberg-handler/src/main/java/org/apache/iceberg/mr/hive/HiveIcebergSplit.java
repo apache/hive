@@ -124,7 +124,8 @@ public class HiveIcebergSplit extends FileSplit implements IcebergSplitContainer
   @Override
   public void write(DataOutput out) throws IOException {
     for (FileScanTask fileScanTask : icebergSplit().task().files()) {
-      if (fileScanTask.getClass().isAssignableFrom(SPLIT_SCAN_TASK_CLAZZ)) {
+      if (fileScanTask.residual() != Expressions.alwaysTrue() &&
+          fileScanTask.getClass().isAssignableFrom(SPLIT_SCAN_TASK_CLAZZ)) {
 
         Object residuals = RESIDUALS_FIELD.get(FILE_SCAN_TASK_FIELD.get(fileScanTask));
 
