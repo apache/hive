@@ -2252,7 +2252,6 @@ public class Hive {
    * specified sql query text. It is guaranteed that it will always return an up-to-date version wrt metastore.
    * This method filters out outdated Materialized views. It compares the transaction ids of the passed usedTables and
    * the materialized view using the txnMgr.
-   * @param querySql extended query text (has fully qualified identifiers)
    * @param tablesUsed List of tables to verify whether materialized view is outdated
    * @param txnMgr Transaction manager to get open transactions affects used tables.
    * @return List of materialized views has matching query definition with querySql

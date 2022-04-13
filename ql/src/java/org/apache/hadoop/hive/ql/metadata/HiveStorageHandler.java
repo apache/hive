@@ -282,7 +282,7 @@ public interface HiveStorageHandler extends Configurable {
    *   <li>AcidSupportType.WITH_TRANSACTIONS - ACID operations are supported, and must use a valid HiveTxnManager to wrap
    *   the operation in a transaction, like in the case of standard Hive ACID tables</li>
    *   <li>AcidSupportType.WITHOUT_TRANSACTIONS - ACID operations are supported, and there is no need for a HiveTxnManager
-   *   to open/close transactions for the operation, i.e. {@link org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager}
+   *   to open/close transactions for the operation, i.e. org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager
    *   can be used</li>
    * </ul>
    *
@@ -307,12 +307,12 @@ public interface HiveStorageHandler extends Configurable {
 
   /**
    * {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer} rewrites DELETE/UPDATE queries into INSERT
-   * queries. E.g. DELETE FROM T WHERE A = 32 is rewritten into INSERT INTO T SELECT <selectCols> FROM T WHERE A = 32
-   * SORT BY <sortCols>.
+   * queries. E.g. DELETE FROM T WHERE A = 32 is rewritten into
+   * INSERT INTO T SELECT &lt;selectCols&gt; FROM T WHERE A = 32 SORT BY &lt;sortCols&gt;.
    *
-   * This method specifies which columns should be injected into the <selectCols> part of the rewritten query.
+   * This method specifies which columns should be injected into the &lt;selectCols&gt; part of the rewritten query.
    *
-   * Should only return a non-empty list if {@link HiveStorageHandler#supportsAcidOperations()} ()} returns something
+   * Should only return a non-empty list if {@link HiveStorageHandler#supportsAcidOperations()} returns something
    * other NONE.
    *
    * @param table the table which is being deleted/updated/merged into
@@ -324,12 +324,12 @@ public interface HiveStorageHandler extends Configurable {
 
   /**
    * {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer} rewrites DELETE/UPDATE queries into INSERT
-   * queries. E.g. DELETE FROM T WHERE A = 32 is rewritten into INSERT INTO T SELECT <selectCols> FROM T WHERE A = 32
-   * SORT BY <sortCols>.
+   * queries. E.g. DELETE FROM T WHERE A = 32 is rewritten into
+   * INSERT INTO T SELECT &lt;selectCols&gt; FROM T WHERE A = 32 SORT BY &lt;sortCols&gt;.
    *
-   * This method specifies which columns should be injected into the <sortCols> part of the rewritten query.
+   * This method specifies which columns should be injected into the &lt;sortCols&gt; part of the rewritten query.
    *
-   * Should only return a non-empty list if {@link HiveStorageHandler#supportsAcidOperations()} ()} returns something
+   * Should only return a non-empty list if {@link HiveStorageHandler#supportsAcidOperations()} returns something
    * other NONE.
    *
    * @param table the table which is being deleted/updated/merged into
