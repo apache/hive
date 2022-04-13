@@ -89,6 +89,11 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
    * @return - Iceberg data filter expression
    */
   static Expression icebergDataFilterFromHiveConf(Configuration conf) {
+    Expression icebergFilter = SerializationUtil.deserializeFromBase64(conf.get(InputFormatConfig.FILTER_EXPRESSION));
+    if (icebergFilter != null) {
+      // in case we already have it prepared..
+      return icebergFilter;
+    }
     String hiveFilter = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
     if (hiveFilter != null) {
       ExprNodeGenericFuncDesc exprNodeDesc = SerializationUtilities

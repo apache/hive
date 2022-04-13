@@ -162,18 +162,16 @@ public class VectorizedReadUtils {
 
     // Predicate pushdowns needs to be adjusted too in case of column renames, we let Iceberg generate this into job
     Expression residual = HiveIcebergInputFormat.residualForTask(task, job);
-    if (residual != null) {
-      Expression boundFilter = Binder.bind(currentSchema.asStruct(), residual, false);
+    Expression boundFilter = Binder.bind(currentSchema.asStruct(), residual, false);
 
-      // Note the use of the unshaded version of this class here (required for SARG deseralization later)
-      org.apache.hadoop.hive.ql.io.sarg.SearchArgument sarg =
-          ExpressionToOrcSearchArgument.convert(boundFilter, readOrcSchema);
-      if (sarg != null) {
-        job.unset(TableScanDesc.FILTER_EXPR_CONF_STR);
-        job.unset(ConvertAstToSearchArg.SARG_PUSHDOWN);
+    // Note the use of the unshaded version of this class here (required for SARG deseralization later)
+    org.apache.hadoop.hive.ql.io.sarg.SearchArgument sarg =
+        ExpressionToOrcSearchArgument.convert(boundFilter, readOrcSchema);
+    if (sarg != null) {
+      job.unset(TableScanDesc.FILTER_EXPR_CONF_STR);
+      job.unset(ConvertAstToSearchArg.SARG_PUSHDOWN);
 
-        job.set(ConvertAstToSearchArg.SARG_PUSHDOWN, ConvertAstToSearchArg.sargToKryo(sarg));
-      }
+      job.set(ConvertAstToSearchArg.SARG_PUSHDOWN, ConvertAstToSearchArg.sargToKryo(sarg));
     }
   }
 }
