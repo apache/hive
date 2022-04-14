@@ -4079,12 +4079,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
         } catch (SemanticException ex) {
           // we can tolerate this as this is the previous behavior
           LOG.debug("Can not find column in " + ref.getText() + ". The error msg is "
-                  + ex.getMessage());
+              + ex.getMessage());
         }
 
-        if (orderByExpression == null) {
-          Map<ASTNode, RexNode> astToExprNDescMap = genAllRexNode(ref, selectOutputRR, cluster.getRexBuilder(), true);
-          orderByExpression = astToExprNDescMap.get(ref);
+        try {
+          if (orderByExpression == null) {
+            Map<ASTNode, RexNode> astToExprNDescMap = genAllRexNode(ref, selectOutputRR, cluster.getRexBuilder(), true);
+            orderByExpression = astToExprNDescMap.get(ref);
+          }
+        } catch (SemanticException ex) {
+          // we can tolerate this as this is the previous behavior
+          LOG.debug("Can not find column in " + ref.getText() + ". The error msg is "
+              + ex.getMessage());
         }
       }
       // then try to get it from all
