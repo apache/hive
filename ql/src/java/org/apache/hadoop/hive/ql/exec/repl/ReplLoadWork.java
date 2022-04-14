@@ -18,8 +18,8 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_EXECUTIONID;
 import static org.apache.hadoop.hive.conf.Constants.SCHEDULED_QUERY_SCHEDULENAME;
@@ -161,19 +162,14 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       if (fs.exists(incBootstrapDir)) {
         if (isSecondFailover) {
           String[] bootstrappedTables = getBootstrapTableList(new Path(dumpDirectory).getParent(), hiveConf);
-          tablesToBootstrap = new LinkedList<String>(Arrays.asList(bootstrappedTables));
           LOG.info("Optimised bootstrap load for database {} with initial bootstrapped table list as {}",
               dbNameToLoadIn, tablesToBootstrap);
-          LinkedList<String> tableList = new LinkedList<String>(Arrays.asList(bootstrappedTables));
           // Get list of tables bootstrapped.
           Path tableMetaPath = new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME + "/" + sourceDbName);
-          FileStatus[] listing = fs.listStatus(tableMetaPath);
-          for (FileStatus tablePath : listing) {
-            tableList.remove(tablePath.getPath().getName());
-          }
-          tablesToDrop = tableList;
-          // Remove the table to be dropped from the list of tables to be bootstrapped.
-          tablesToBootstrap.removeAll(tablesToDrop);
+          tablesToBootstrap =
+              Stream.of(fs.listStatus(tableMetaPath)).map(st -> st.getPath().getName()).collect(Collectors.toList());
+          List<String> tableList = Arrays.asList(bootstrappedTables);
+          tablesToDrop = ListUtils.subtract(tableList, tablesToBootstrap);
           LOG.info("Optimised bootstrap for database {} with drop table list as {} and bootstrap table list as {}",
               dbNameToLoadIn, tablesToDrop, tablesToBootstrap);
         }
