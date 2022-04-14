@@ -95,7 +95,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   private boolean shouldFailover;
   public boolean isFirstFailover;
   public boolean isSecondFailover;
-  public List<String> tablesToBootstrap = new ArrayList<>();
+  public List<String> tablesToBootstrap = new LinkedList<>();
   public List<String> tablesToDrop = new LinkedList<>();
 
   /*
@@ -161,9 +161,9 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       if (fs.exists(incBootstrapDir)) {
         if (isSecondFailover) {
           String[] bootstrappedTables = getBootstrapTableList(new Path(dumpDirectory).getParent(), hiveConf);
-          tablesToBootstrap = Arrays.asList(bootstrappedTables);
-          LOG.info("Optimised bootstrap for database {} with load with bootstrapped table list as {}", dbNameToLoadIn,
-              tablesToBootstrap);
+          tablesToBootstrap = new LinkedList<String>(Arrays.asList(bootstrappedTables));
+          LOG.info("Optimised bootstrap load for database {} with initial bootstrapped table list as {}",
+              dbNameToLoadIn, tablesToBootstrap);
           LinkedList<String> tableList = new LinkedList<String>(Arrays.asList(bootstrappedTables));
           // Get list of tables bootstrapped.
           Path tableMetaPath = new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME + "/" + sourceDbName);
@@ -172,8 +172,10 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
             tableList.remove(tablePath.getPath().getName());
           }
           tablesToDrop = tableList;
-          LOG.info("Optimised bootstrap for database {} with load with drop table list as {}", dbNameToLoadIn,
-              tablesToDrop);
+          // Remove the table to be dropped from the list of tables to be bootstrapped.
+          tablesToBootstrap.removeAll(tablesToDrop);
+          LOG.info("Optimised bootstrap for database {} with drop table list as {} and bootstrap table list as {}",
+              dbNameToLoadIn, tablesToDrop, tablesToBootstrap);
         }
         this.bootstrapIterator = new BootstrapEventsIterator(
                 new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME).toString(), dbNameToLoadIn, true,
