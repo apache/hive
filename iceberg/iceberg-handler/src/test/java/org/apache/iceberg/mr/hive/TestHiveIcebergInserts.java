@@ -183,6 +183,24 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
             testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, target, true)));
   }
 
+  @Test
+  public void testInsertOverwriteWithPartitionEvolutionThrowsError() throws IOException {
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    shell.executeStatement("ALTER TABLE target SET PARTITION SPEC(TRUNCATE(2, last_name))");
+    List<Record> newRecords = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Mike", "Taylor")
+        .add(1L, "Christy", "Hubert")
+        .build();
+    AssertHelpers.assertThrows("IOW should not work on tables with partition evolution",
+        IllegalArgumentException.class,
+        "Cannot perform insert overwrite query on Iceberg table where partition evolution happened.",
+        () -> shell.executeStatement(testTables.getInsertQuery(newRecords, target, true)));
+    // TODO: we should add additional test cases after merge + compaction is supported in hive that allows us to
+    // rewrite the data
+  }
+
   /**
    * Testing map-reduce inserts.
    * @throws IOException If there is an underlying IOException

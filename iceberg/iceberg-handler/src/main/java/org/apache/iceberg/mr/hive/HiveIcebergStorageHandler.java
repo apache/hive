@@ -78,6 +78,7 @@ import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
@@ -459,6 +460,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       Table table = IcebergTableUtil.getTable(conf, sinkDesc.getTableInfo().getProperties());
       if (IcebergTableUtil.isBucketed(table)) {
         throw new SemanticException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
+      }
+      if (table.currentSnapshot() != null) {
+        if (table.currentSnapshot().allManifests().parallelStream().map(ManifestFile::partitionSpecId)
+            .anyMatch(id -> id < table.spec().specId())) {
+          throw new SemanticException(
+              "Cannot perform insert overwrite query on Iceberg table where partition evolution happened. In order " +
+              "to succesfully carry out any insert overwrite operation on this table, the data has to be rewritten " +
+              "conforming to the latest spec. ");
+        }
       }
     }
   }
