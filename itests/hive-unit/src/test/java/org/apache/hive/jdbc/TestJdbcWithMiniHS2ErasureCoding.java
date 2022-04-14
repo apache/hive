@@ -18,12 +18,9 @@
 
 package org.apache.hive.jdbc;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.MalformedURLException;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -70,6 +67,8 @@ public class TestJdbcWithMiniHS2ErasureCoding {
   @BeforeClass
   public static void beforeTest() throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
+    conf = new HiveConf();
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     DriverManager.setLoginTimeout(0);
     miniHS2 = new MiniHS2.Builder()
         .withConf(conf)
@@ -140,7 +139,6 @@ public class TestJdbcWithMiniHS2ErasureCoding {
       stmt.execute("INSERT INTO TABLE " + tableName
             + " PARTITION (datestamp = '2014-09-24', i = 2)(userid,link) VALUES ('mac', 'superchunk.com')");
       String explain = getExtendedExplain(stmt, "select userid from " + tableName);
-      assertMatchAndCount(explain, " numFiles 4", 2);
       assertMatchAndCount(explain,  " numFilesErasureCoded 4", 2);
     }
   }
