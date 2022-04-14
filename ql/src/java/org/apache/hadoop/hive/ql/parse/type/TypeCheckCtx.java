@@ -61,6 +61,8 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   private final boolean foldExpr;
 
+  private boolean allowExprLookup = false;
+
   /**
    * Receives translations which will need to be applied during unparse.
    */
@@ -307,5 +309,13 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   public List<String> getColumnAliases() {
     return columnAliases;
+  }
+
+  public void setAllowExprLookup(boolean allowExprLookup) {
+    this.allowExprLookup = allowExprLookup;
+  }
+
+  public boolean isAllowExprLookup() {
+    return allowExprLookup;
   }
 }

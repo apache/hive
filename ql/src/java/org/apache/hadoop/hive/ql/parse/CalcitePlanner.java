@@ -3667,6 +3667,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       gbExprNDescLst.add(grpbyExprNDesc);
 
       ColumnInfo oColInfo = new ColumnInfo(field, TypeConverter.convert(grpbyExprNDesc.getType()), null, false);
+      oColInfo.setExpression(grpbyExpr.toStringTree());
       groupByOutputRowResolver.putExpression(grpbyExpr, oColInfo);
 
       addAlternateGByKeyMappings(grpbyExpr, oColInfo, groupByInputRowResolver,
@@ -4079,6 +4080,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // we can tolerate this as this is the previous behavior
           LOG.debug("Can not find column in " + ref.getText() + ". The error msg is "
                   + ex.getMessage());
+        }
+
+        if (orderByExpression == null) {
+          Map<ASTNode, RexNode> astToExprNDescMap = genAllRexNode(ref, selectOutputRR, cluster.getRexBuilder(), true);
+          orderByExpression = astToExprNDescMap.get(ref);
         }
       }
       // then try to get it from all
@@ -4718,6 +4724,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
                 TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo),
                 tabAlias, false);
+            colInfo.setExpression(expr.toStringTree());
             outputRR.put(tabAlias, colAlias, colInfo);
 
             pos = Integer.valueOf(pos.intValue() + 1);
@@ -5354,10 +5361,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * Generates a Calcite {@link RexNode} for the expression and children of it
    * with default TypeCheckCtx.
    */
-  Map<ASTNode, RexNode> genAllRexNode(ASTNode expr, RowResolver input, RexBuilder rexBuilder)
+  Map<ASTNode, RexNode> genAllRexNode(ASTNode expr, RowResolver input, RexBuilder rexBuilder, boolean exprLookup)
       throws SemanticException {
     TypeCheckCtx tcCtx = new TypeCheckCtx(input, rexBuilder);
+    tcCtx.setAllowExprLookup(exprLookup);
     return genAllRexNode(expr, input, tcCtx);
+  }
+
+  Map<ASTNode, RexNode> genAllRexNode(ASTNode expr, RowResolver input, RexBuilder rexBuilder)
+      throws SemanticException {
+    return genAllRexNode(expr, input, rexBuilder, false);
   }
 
   /**

@@ -92,6 +92,17 @@ public class RowResolver implements Serializable{
     return get("", node.toStringTree());
   }
 
+  public ColumnInfo getByExpression(ASTNode node) {
+    String key = node.toStringTree();
+    for (ColumnInfo columnInfo : rowSchema.getSignature()) {
+      if (key.equals(columnInfo.getExpression())) {
+        return columnInfo;
+      }
+    }
+
+    return null;
+  }
+
   /**
    * Retrieves the source expression matching a given ASTNode's
    * string rendering exactly.
