@@ -174,12 +174,17 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
   //cleaner is a static object, use static synchronized to make sure its thread-safe
   private static synchronized void init(Configuration conf) throws MetaException {
-    if (cleaner == null) {
+    long freq = MetastoreConf.getTimeVar(conf, EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL, TimeUnit.MILLISECONDS);
+    if (cleaner == null && freq > 0) {
       cleaner =
           new CleanerThread(conf, RawStoreProxy.getProxy(conf, conf,
               MetastoreConf.getVar(conf, ConfVars.RAW_STORE_IMPL)));
       cleaner.start();
-    }
+      LOG.info("Scheduling notification log cleanup service with " +
+            "frequency " + freq + "ms.");
+    } else {
+      LOG.info("NOT scheduling notification log cleanup service!");
+    } 
   }
 
   @VisibleForTesting
