@@ -174,7 +174,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
   //cleaner is a static object, use static synchronized to make sure its thread-safe
   private static synchronized void init(Configuration conf) throws MetaException {
-    long freq = MetastoreConf.getTimeVar(conf, EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL, TimeUnit.MILLISECONDS);
+    long freq = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, TimeUnit.MILLISECONDS);
     if (cleaner == null && freq > 0) {
       cleaner =
           new CleanerThread(conf, RawStoreProxy.getProxy(conf, conf,
