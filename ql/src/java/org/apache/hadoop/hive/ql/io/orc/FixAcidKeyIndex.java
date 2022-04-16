@@ -180,7 +180,8 @@ public class FixAcidKeyIndex {
         RecordIdentifier recordIdentifier = new RecordIdentifier(lastTransaction, lastBucket, lastRowId);
         result.recordIdentifiers.add(recordIdentifier);
 
-        if (stripes.size() != keyIndex.length || keyIndex[i] == null || recordIdentifier.compareTo(keyIndex[i]) != 0) {
+        if (keyIndex == null || stripes.size() != keyIndex.length || keyIndex[i] == null
+            || recordIdentifier.compareTo(keyIndex[i]) != 0) {
           result.isValid = false;
         }
       }
