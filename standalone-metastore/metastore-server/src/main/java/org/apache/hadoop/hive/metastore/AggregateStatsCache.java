@@ -164,7 +164,7 @@ public class AggregateStatsCache {
     Key key = new Key(catName, dbName, tblName, colName);
     AggrColStatsList candidateList = cacheStore.get(key);
     // No key, or no nodes in candidate list
-    if ((candidateList == null) || (candidateList.nodes.size() == 0)) {
+    if ((candidateList == null) || (candidateList.nodes.isEmpty())) {
       LOG.debug("No aggregate stats cached for " + key.toString());
       return null;
     }
@@ -341,7 +341,7 @@ public class AggregateStatsCache {
             AggrColStats node;
             AggrColStatsList candidateList = pair.getValue();
             List<AggrColStats> nodes = candidateList.nodes;
-            if (nodes.size() == 0) {
+            if (nodes.isEmpty()) {
               mapIterator.remove();
               continue;
             }

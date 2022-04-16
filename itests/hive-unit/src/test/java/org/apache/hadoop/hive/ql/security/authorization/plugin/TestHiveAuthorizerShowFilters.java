@@ -84,7 +84,7 @@ public class TestHiveAuthorizerShowFilters {
         // return static variable with results, if it is set to some set of
         // values
         // otherwise return the arguments
-        if (filteredResults.size() == 0) {
+        if (filteredResults.isEmpty()) {
           return filterArguments;
         }
         return filteredResults;

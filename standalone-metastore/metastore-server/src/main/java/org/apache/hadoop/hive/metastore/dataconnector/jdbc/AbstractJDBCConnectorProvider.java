@@ -227,7 +227,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
         cols.add(fs);
       }
 
-      if (cols.size() == 0) {
+      if (cols.isEmpty()) {
         // table does not exists or could not be fetched
         return null;
       }

@@ -108,7 +108,7 @@ public class JdbcSerDe extends AbstractSerDe {
         if (hiveColumnNames.length == 0) {
           throw new SerDeException("Received an empty Hive column name definition");
         }
-        if (hiveColumnTypesList.size() == 0) {
+        if (hiveColumnTypesList.isEmpty()) {
           throw new SerDeException("Received an empty Hive column type definition");
         }
 

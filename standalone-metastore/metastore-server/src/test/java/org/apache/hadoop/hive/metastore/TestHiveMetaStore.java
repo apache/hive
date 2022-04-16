@@ -174,7 +174,7 @@ public abstract class TestHiveMetaStore {
       assertTrue("Spec from name is incorrect", spec.equals(testSpec));
 
       List<String> emptyVals = client.partitionNameToVals("");
-      assertTrue("Values should be empty", emptyVals.size() == 0);
+      assertTrue("Values should be empty", emptyVals.isEmpty());
 
       Map<String, String> emptySpec =  client.partitionNameToSpec("");
       assertTrue("Spec should be empty", emptySpec.size() == 0);
@@ -2889,7 +2889,7 @@ public abstract class TestHiveMetaStore {
       assertEquals("function owner type", PrincipalType.USER, func.getOwnerType());
       assertEquals("function type", funcType, func.getFunctionType());
       List<ResourceUri> resources = func.getResourceUris();
-      assertTrue("function resources", resources == null || resources.size() == 0);
+      assertTrue("function resources", resources == null || resources.isEmpty());
 
       boolean gotException = false;
       try {

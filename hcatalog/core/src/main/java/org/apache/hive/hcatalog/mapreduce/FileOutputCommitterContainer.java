@@ -455,7 +455,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
     List<FieldSchema> newColumns = HCatUtil.validatePartitionSchema(table, partitionSchema);
 
-    if (newColumns.size() != 0) {
+    if (!newColumns.isEmpty()) {
       List<FieldSchema> tableColumns = new ArrayList<FieldSchema>(table.getTTable().getSd().getCols());
       tableColumns.addAll(newColumns);
 

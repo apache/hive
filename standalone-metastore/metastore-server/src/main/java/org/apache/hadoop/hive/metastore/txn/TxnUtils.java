@@ -275,7 +275,7 @@ public class TxnUtils {
     int maxParameters = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_PARAMETERS);
 
     // Check parameter set validity as a public method.
-    if (inList == null || inList.size() == 0 || maxQueryLength <= 0 || batchSize <= 0) {
+    if (inList == null || inList.isEmpty() || maxQueryLength <= 0 || batchSize <= 0) {
       throw new IllegalArgumentException("The IN list is empty!");
     }
 

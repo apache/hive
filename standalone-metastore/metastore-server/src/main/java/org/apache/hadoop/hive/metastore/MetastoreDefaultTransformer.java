@@ -316,7 +316,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           ret.put(newTable, requiredCapabilities);
           break;
         case "MANAGED_TABLE":
-          if (processorCapabilities.size() == 0) { // processor has no capabilities
+          if (processorCapabilities.isEmpty()) { // processor has no capabilities
             LOG.info("Client has no capabilities for type " + tableType + ",accesstype is NONE");
             table.setAccessType(ACCESSTYPE_NONE);
             table.setRequiredReadCapabilities(getReads(requiredCapabilities));
@@ -839,11 +839,11 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
   private List<String> diff(final List<String> list1, final List<String> list2) {
     List<String> diffList = new ArrayList<>();
 
-    if (list2 == null || list2.size() == 0) {
+    if (list2 == null || list2.isEmpty()) {
       return list1;
     }
 
-    if (list1 == null || list1.size() == 0) {
+    if (list1 == null || list1.isEmpty()) {
       return Collections.emptyList();
     }
 

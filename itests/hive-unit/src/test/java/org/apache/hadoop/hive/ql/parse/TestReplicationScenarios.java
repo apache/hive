@@ -4838,7 +4838,7 @@ public class TestReplicationScenarios {
       ReplicationMetric elem = itr.next();
       assertEquals(Metadata.ReplicationType.INCREMENTAL, elem.getMetadata().getReplicationType());
       List<Stage> stages = elem.getProgress().getStages();
-      assertTrue(stages.size() != 0);
+      assertTrue(!stages.isEmpty());
       for (Stage stage : stages) {
         if (stage.getReplStats() == null) {
           continue;
@@ -4884,7 +4884,7 @@ public class TestReplicationScenarios {
       ReplicationMetric elem = itr.next();
       assertEquals(Metadata.ReplicationType.INCREMENTAL, elem.getMetadata().getReplicationType());
       List<Stage> stages = elem.getProgress().getStages();
-      assertTrue(stages.size() != 0);
+      assertTrue(!stages.isEmpty());
       for (Stage stage : stages) {
         if (stage.getReplStats() == null) {
           continue;

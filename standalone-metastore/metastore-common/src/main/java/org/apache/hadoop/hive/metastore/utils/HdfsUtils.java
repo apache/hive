@@ -194,7 +194,7 @@ public class HdfsUtils {
   private static List<String> constructDistCpParams(List<Path> srcPaths, Path dst,
                                                     Configuration conf) {
     List<String> params = constructDistCpOptions(conf);
-    if (params.size() == 0){
+    if (params.isEmpty()){
       // if no entries were added via conf, we initiate our defaults
       params.add("-update");
       params.add("-pbx");

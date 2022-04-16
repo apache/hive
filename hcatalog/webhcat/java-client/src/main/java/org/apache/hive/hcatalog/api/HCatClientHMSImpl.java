@@ -907,7 +907,7 @@ public class HCatClientHMSImpl extends HCatClient {
   public int addPartitions(List<HCatAddPartitionDesc> partInfoList)
     throws HCatException {
     int numPartitions = -1;
-    if ((partInfoList == null) || (partInfoList.size() == 0)) {
+    if ((partInfoList == null) || (partInfoList.isEmpty())) {
       throw new HCatException("The partition list is null or empty.");
     }
 

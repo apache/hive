@@ -134,7 +134,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
               List<Task<?>> rootTasks)
     throws SemanticException {
 
-    if (rootTasks.size() == 0) {
+    if (rootTasks.isEmpty()) {
       // There will be no DDL task created in case if its CREATE TABLE IF NOT EXISTS
       return;
     }

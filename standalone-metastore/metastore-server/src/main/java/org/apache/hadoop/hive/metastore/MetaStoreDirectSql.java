@@ -1825,7 +1825,7 @@ class MetaStoreDirectSql {
       }
       // Extrapolation is not needed for columns noExtraColumnNames
       List<Object[]> list;
-      if (noExtraColumnNames.size() != 0) {
+      if (!noExtraColumnNames.isEmpty()) {
         queryText = commonPrefix + " and \"COLUMN_NAME\" in ("
             + makeParams(noExtraColumnNames.size()) + ")" + " and \"PARTITION_NAME\" in ("
             + makeParams(partNames.size()) + ")"

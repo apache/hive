@@ -338,7 +338,7 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     WebHCatJTShim tracker = ShimLoader.getHadoopShims().getWebHCatShim(conf, ugi);
     try {
       Set<String> childJobs = tracker.getJobs(context.getJobID().toString(), startTime);
-      if (childJobs.size() == 0) {
+      if (childJobs.isEmpty()) {
         LOG.info("No child jobs found to reconnect with");
         return false;
       }

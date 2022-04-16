@@ -1200,7 +1200,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       close(rs);
     }
 
-    if (insertList.size() != 0) {
+    if (!insertList.isEmpty()) {
       // if rs is empty then no lock is taken and thus it can not cause deadlock.
       long nextNLId = getNextNLId(dbConn, sqlGenerator,
               "org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog", insertList.size());

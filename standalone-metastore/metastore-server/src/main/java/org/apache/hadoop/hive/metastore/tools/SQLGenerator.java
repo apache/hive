@@ -59,7 +59,7 @@ public final class SQLGenerator {
                                                                 String tblColumns, List<String> rows,
                                                                 List<List<String>> paramsList)
           throws SQLException {
-    if (rows == null || rows.size() == 0) {
+    if (rows == null || rows.isEmpty()) {
       return Collections.emptyList();
     }
     assert((paramsList == null) || (rows.size() == paramsList.size()));
@@ -116,7 +116,7 @@ public final class SQLGenerator {
    * @return fully formed INSERT INTO ... statements
    */
   private List<String> createInsertValuesStmt(String tblColumns, List<String> rows, List<Integer> rowsCountInStmts) {
-    if (rows == null || rows.size() == 0) {
+    if (rows == null || rows.isEmpty()) {
       return Collections.emptyList();
     }
     return dbProduct.createInsertValuesStmt(tblColumns, rows, rowsCountInStmts, conf);

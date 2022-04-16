@@ -541,7 +541,7 @@ public class HiveAlterHandler implements AlterHandler {
     }
 
     //alter partition
-    if (part_vals == null || part_vals.size() == 0) {
+    if (part_vals == null || part_vals.isEmpty()) {
       try {
         msdb.openTransaction();
 

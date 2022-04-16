@@ -841,7 +841,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   private void deleteInvalidOpenTransactions(Connection dbConn, List<Long> txnIds) throws MetaException {
-    if (txnIds.size() == 0) {
+    if (txnIds.isEmpty()) {
       return;
     }
     try {

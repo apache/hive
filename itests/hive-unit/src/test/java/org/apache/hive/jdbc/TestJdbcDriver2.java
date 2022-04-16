@@ -2957,7 +2957,7 @@ public class TestJdbcDriver2 {
     stmt.executeQuery(sql);
     List<String> logs = stmt.getQueryLog(false, 10);
     stmt.close();
-    assertTrue(logs.size() == 0);
+    assertTrue(logs.isEmpty());
     setStmt.execute("set hive.server2.logging.operation.enabled = true");
     setStmt.close();
   }
