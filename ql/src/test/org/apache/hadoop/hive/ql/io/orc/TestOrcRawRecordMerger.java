@@ -72,6 +72,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -251,10 +252,10 @@ public class TestOrcRawRecordMerger {
 
   private static <T> void checkMergerRecord(
       long writeId, int bucketProperty, long rowId, T value, RecordIdentifier key, OrcStruct event) {
+    assertEquals(value, getValue(event));
     assertEquals(writeId, key.getWriteId());
     assertEquals(bucketProperty, key.getBucketProperty());
     assertEquals(rowId, key.getRowId());
-    assertEquals(value, getValue(event));
   }
 
   private static <T> void checkMergerRecord(
@@ -295,6 +296,7 @@ public class TestOrcRawRecordMerger {
     ReaderKey key = new ReaderKey();
     Reader reader = createMockReader();
 
+    // null min and max keys forces a full scan of all records
     ReaderPair pair = new OrcRawRecordMerger.ReaderPairAcid(key, reader, null, null,
         new Reader.Options(), new HiveConf());
     RecordReader recordReader = pair.getRecordReader();
@@ -391,6 +393,8 @@ public class TestOrcRawRecordMerger {
     Path root = new Path(tmpDir, "testOriginalReaderPairNoMinMaxKeys");
     fs.makeQualified(root);
     fs.create(root);
+
+    // null min and max keys forces a full scan of all records
     ReaderPair pair = new OrcRawRecordMerger.OriginalReaderPairToRead(key, reader, BUCKET, null, null,
         new Reader.Options(), new OrcRawRecordMerger.Options().rootPath(root), conf,
         new ValidReaderWriteIdList(), 0);
@@ -413,42 +417,12 @@ public class TestOrcRawRecordMerger {
     Mockito.verify(pair.getRecordReader()).close();
   }
 
-  @Test
-  public void testNewBase() throws Exception {
-    Configuration conf = new Configuration();
-    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "col1");
-    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "string");
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
+  private Reader buildMockReaderMerger(List<String> columnNames, List<OrcProto.Type.Kind> columnKinds,
+      boolean addHiveAcidKeyIndexMetadata) throws IOException {
     Reader reader = Mockito.mock(Reader.class, settings);
     RecordReader recordReader = Mockito.mock(RecordReader.class, settings);
 
-    List<OrcProto.Type> types = new ArrayList<>();
-    OrcProto.Type.Builder typeBuilder = OrcProto.Type.newBuilder();
-    typeBuilder.setKind(OrcProto.Type.Kind.STRUCT).addSubtypes(1)
-        .addSubtypes(2).addSubtypes(3).addSubtypes(4).addSubtypes(5)
-        .addSubtypes(6);
-    typeBuilder.addAllFieldNames(Lists.newArrayList(
-        OrcRecordUpdater.OPERATION_FIELD_NAME,
-        OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
-        OrcRecordUpdater.BUCKET_FIELD_NAME,
-        OrcRecordUpdater.ROW_ID_FIELD_NAME,
-        OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
-        OrcRecordUpdater.ROW_FIELD_NAME));
-    types.add(typeBuilder.build());
-    types.add(null);
-    types.add(null);
-    types.add(null);
-    types.add(null);
-    types.add(null);
-    typeBuilder.clearSubtypes();
-    typeBuilder.addSubtypes(7);
-    typeBuilder.addAllFieldNames(Lists.newArrayList("col1"));
-    types.add(typeBuilder.build());
-    typeBuilder.clear();
-    typeBuilder.setKind(OrcProto.Type.Kind.STRING);
-    types.add(typeBuilder.build());
-
-    when(reader.getTypes()).thenReturn(types);
+    when(reader.getTypes()).thenReturn(buildReaderTypes(columnNames, columnKinds));
     when(reader.rowsOptions(any(Reader.Options.class), any()))
         .thenReturn(recordReader);
 
@@ -463,35 +437,62 @@ public class TestOrcRawRecordMerger {
     OrcStruct row5 = new OrcStruct(OrcRecordUpdater.FIELDS);
     setRow(row5, OrcRecordUpdater.INSERT_OPERATION, 40, 50, 61, 140, "fifth");
 
-    when(recordReader.hasNext()).
-        thenReturn(true, true, true, true, true, false);
-
     when(recordReader.getProgress()).thenReturn(1.0f);
 
-    when(recordReader.next(null)).thenReturn(row1, row4);
-    when(recordReader.next(row1)).thenReturn(row2);
-    when(recordReader.next(row2)).thenReturn(row3);
-    when(recordReader.next(row3)).thenReturn(row5);
+    if (addHiveAcidKeyIndexMetadata) {
+      when(recordReader.hasNext()).
+          thenReturn(true, true, true, true, true, false);
+
+      when(recordReader.next(null)).thenReturn(row1, row4);
+      when(recordReader.next(row1)).thenReturn(row2);
+      when(recordReader.next(row2)).thenReturn(row3);
+      when(recordReader.next(row3)).thenReturn(row5);
+    } else {
+      when(recordReader.hasNext()).
+          thenReturn(true, true, true, true, true, true, true, true, true, false);
+
+      when(recordReader.next(null)).thenReturn(row1);
+      when(recordReader.next(row1)).thenReturn(row2);
+      when(recordReader.next(row2)).thenReturn(row3);
+      when(recordReader.next(row3)).thenReturn(row4);
+      when(recordReader.next(row4)).thenReturn(row5);
+    }
 
     when(reader.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME))
-        .thenReturn(true);
-    when(reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME))
-        .thenReturn(ByteBuffer.wrap("10,20,30;40,50,60;40,50,61"
-            .getBytes(StandardCharsets.UTF_8)));
-    when(reader.getStripes())
-        .thenReturn(createStripes(2, 2, 1));
+        .thenReturn(addHiveAcidKeyIndexMetadata);
+    if (addHiveAcidKeyIndexMetadata) {
+      when(reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME))
+          .thenReturn(ByteBuffer.wrap("10,20,30;40,50,60;40,50,61".getBytes(StandardCharsets.UTF_8)));
+    }
+    when(reader.getStripes()).thenReturn(createStripes(2, 2, 1));
 
-    OrcRawRecordMerger merger = new OrcRawRecordMerger(conf, false, reader,
+    return reader;
+  }
+
+  @Test
+  public void testNewBase() throws Exception {
+    final List<String> columnNames = Collections.singletonList("col1");
+    final List<String> columnTypes = Collections.singletonList("string");
+    final List<OrcProto.Type.Kind> columnKinds = Collections.singletonList(OrcProto.Type.Kind.STRING);
+
+    final Configuration conf = new Configuration();
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, columnNames.get(0));
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, columnTypes.get(0));
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
+
+    final Reader reader = buildMockReaderMerger(columnNames, columnKinds, true);
+
+    final OrcRawRecordMerger merger = new OrcRawRecordMerger(conf, false, reader,
         false, 10, createMaximalTxnList(),
         new Reader.Options().range(1000, 1000), null, new OrcRawRecordMerger.Options());
-    RecordReader rr = merger.getCurrentReader().getRecordReader();
-    assertEquals(0, merger.getOtherReaders().size());
+    final RecordReader rr = merger.getCurrentReader().getRecordReader();
 
+    assertEquals(0, merger.getOtherReaders().size());
     assertEquals(merger.getMinKey().toString(), new RecordIdentifier(10, 20, 30), merger.getMinKey());
     assertEquals(merger.getMaxKey().toString(), new RecordIdentifier(40, 50, 60), merger.getMaxKey());
-    RecordIdentifier id = merger.createKey();
-    OrcStruct event = merger.createValue();
 
+    final RecordIdentifier id = merger.createKey();
+    final OrcStruct event = merger.createValue();
     assertTrue(merger.next(id, event));
     checkMergerRecord(10, 20, 40, "third", id, event);
 
@@ -504,10 +505,95 @@ public class TestOrcRawRecordMerger {
     Mockito.verify(rr).close();
     Mockito.verify(rr).getProgress();
 
+    assertRecordMergerStructFields(merger, columnNames);
+  }
+
+  @Test
+  public void testNewBaseNoHiveAcidKeyIndexMetadata() throws Exception {
+    final List<String> columnNames = Collections.singletonList("col1");
+    final List<String> columnTypes = Collections.singletonList("string");
+    final List<OrcProto.Type.Kind> columnKinds = Collections.singletonList(OrcProto.Type.Kind.STRING);
+
+    final Configuration conf = new Configuration();
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, columnNames.get(0));
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, columnTypes.get(0));
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
+
+    final Reader reader = buildMockReaderMerger(columnNames, columnKinds, false);
+    final OrcRawRecordMerger merger = new OrcRawRecordMerger(conf, true, reader,
+        false, 10, createMaximalTxnList(),
+        new Reader.Options().range(1000, 1000), null, new OrcRawRecordMerger.Options());
+    final RecordReader rr = merger.getCurrentReader().getRecordReader();
+    assertEquals(0, merger.getOtherReaders().size());
+
+    assertNull(merger.getMinKey());
+    assertNull(merger.getMaxKey());
+    RecordIdentifier id = merger.createKey();
+    OrcStruct event = merger.createValue();
+
+    // minKey/maxKey = null => full record scan
+    assertTrue(merger.next(id, event));
+    checkMergerRecord(10, 20, 20, "first", id, event);
+
+    assertTrue(merger.next(id, event));
+    checkMergerRecord(10, 20, 30, "second", id, event);
+
+    assertTrue(merger.next(id, event));
+    checkMergerRecord(10, 20, 40, "third", id, event);
+
+    assertTrue(merger.next(id, event));
+    checkMergerRecord(40, 50, 60, "fourth", id, event);
+
+    assertTrue(merger.next(id, event));
+    checkMergerRecord(40, 50, 61, "fifth", id, event);
+
+    assertEquals(1.0, merger.getProgress(), 0.01);
+    merger.close();
+    Mockito.verify(rr).close();
+    Mockito.verify(rr).getProgress();
+
+    assertRecordMergerStructFields(merger, columnNames);
+  }
+
+  private static List<OrcProto.Type> buildReaderTypes(List<String> columns, List<OrcProto.Type.Kind> columnTypes) {
+    final List<OrcProto.Type> types = new ArrayList<>();
+    final OrcProto.Type.Builder typeBuilder = OrcProto.Type.newBuilder();
+
+    typeBuilder.setKind(OrcProto.Type.Kind.STRUCT).addSubtypes(1)
+        .addSubtypes(2).addSubtypes(3).addSubtypes(4).addSubtypes(5)
+        .addSubtypes(6);
+    typeBuilder.addAllFieldNames(Lists.newArrayList(
+        OrcRecordUpdater.OPERATION_FIELD_NAME,
+        OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
+        OrcRecordUpdater.BUCKET_FIELD_NAME,
+        OrcRecordUpdater.ROW_ID_FIELD_NAME,
+        OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
+        OrcRecordUpdater.ROW_FIELD_NAME));
+
+    types.add(typeBuilder.build());
+    types.add(null);
+    types.add(null);
+    types.add(null);
+    types.add(null);
+    types.add(null);
+    typeBuilder.clearSubtypes();
+    typeBuilder.addSubtypes(7);
+    typeBuilder.addAllFieldNames(columns);
+    types.add(typeBuilder.build());
+    typeBuilder.clear();
+    columnTypes.forEach(typeBuilder::setKind);
+    types.add(typeBuilder.build());
+
+    return types;
+  }
+
+  private static void assertRecordMergerStructFields(OrcRawRecordMerger merger, List<String> columns) {
     StructObjectInspector eventObjectInspector =
         (StructObjectInspector) merger.getObjectInspector();
     List<? extends StructField> fields =
         eventObjectInspector.getAllStructFieldRefs();
+
+    // check ACID (internal) columns
     assertEquals(OrcRecordUpdater.FIELDS, fields.size());
     assertEquals(OrcRecordUpdater.OPERATION_FIELD_NAME,
         fields.get(OrcRecordUpdater.OPERATION).getFieldName());
@@ -522,8 +608,12 @@ public class TestOrcRawRecordMerger {
     StructObjectInspector rowObjectInspector =
         (StructObjectInspector) fields.get(OrcRecordUpdater.ROW)
             .getFieldObjectInspector();
-    assertEquals("col1",
-        rowObjectInspector.getAllStructFieldRefs().get(0).getFieldName());
+
+    // check actual row columns (that is, user data)
+    for (int i = 0; i < columns.size(); i++) {
+      assertEquals(columns.get(i),
+          rowObjectInspector.getAllStructFieldRefs().get(i).getFieldName());
+    }
   }
 
   static class MyRow {
