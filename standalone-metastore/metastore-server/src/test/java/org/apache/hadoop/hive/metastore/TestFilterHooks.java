@@ -44,6 +44,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -58,8 +59,10 @@ import org.junit.experimental.categories.Category;
 public class TestFilterHooks {
   public static class DummyMetaStoreFilterHookImpl implements MetaStoreFilterHook {
     private static boolean blockResults = false;
+    private final Configuration conf;
 
     public DummyMetaStoreFilterHookImpl(Configuration conf) {
+      this.conf = conf;
     }
 
     @Override
@@ -76,6 +79,11 @@ public class TestFilterHooks {
         throw new NoSuchObjectException("Blocked access");
       }
       return dataBase;
+    }
+
+    @Override
+    public List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException {
+      return filterTableNames(getDefaultCatalog(conf), dbName, tableList);
     }
 
     @Override
@@ -131,6 +139,12 @@ public class TestFilterHooks {
         throw new NoSuchObjectException("Blocked access");
       }
       return partition;
+    }
+
+    @Override
+    public List<String> filterPartitionNames(String dbName, String tblName, List<String> partitionNames)
+        throws MetaException {
+      return filterPartitionNames(getDefaultCatalog(conf), dbName, tblName, partitionNames);
     }
 
     @Override

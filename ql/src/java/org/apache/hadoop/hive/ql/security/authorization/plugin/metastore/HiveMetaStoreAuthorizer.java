@@ -62,6 +62,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+
 /**
  * HiveMetaStoreAuthorizer :  Do authorization checks on MetaStore Events in MetaStorePreEventListener
  */
@@ -142,6 +144,11 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
       }
     }
     return database;
+  }
+
+  @Override
+  public final List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException {
+    return filterTableNames(getDefaultCatalog(getConf()), dbName, tableList);
   }
 
   @Override
@@ -227,9 +234,15 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   }
 
   @Override
-  public final List<String> filterPartitionNames(String s, String s1, String s2, List<String> list)
+  public final List<String> filterPartitionNames(String dbName, String tblName, List<String> partitionNames)
       throws MetaException {
-    return list;
+    return filterPartitionNames(getDefaultCatalog(getConf()), dbName, tblName, partitionNames);
+  }
+
+  @Override
+  public final List<String> filterPartitionNames(String catName, String dbName, String tblName,
+      List<String> partitionNames) throws MetaException {
+    return partitionNames;
   }
 
   private List<String> filterDatabaseObjects(HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo) throws MetaException {

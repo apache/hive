@@ -29,12 +29,16 @@ import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+
 /**
  * Default no-op implementation of the MetaStoreFilterHook that returns the result as is
  */
 public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
+  private final Configuration conf;
 
   public DefaultMetaStoreFilterHookImpl(Configuration conf) {
+    this.conf = conf;
   }
 
   @Override
@@ -45,6 +49,11 @@ public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
   @Override
   public Database filterDatabase(Database dataBase) throws NoSuchObjectException {
     return dataBase;
+  }
+
+  @Override
+  public List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException {
+    return filterTableNames(getDefaultCatalog(conf), dbName, tableList);
   }
 
   @Override
@@ -82,6 +91,12 @@ public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
   @Override
   public Partition filterPartition(Partition partition)  throws NoSuchObjectException {
     return partition;
+  }
+
+  @Override
+  public List<String> filterPartitionNames(String dbName, String tblName,
+      List<String> partitionNames) throws MetaException {
+    return filterPartitionNames(getDefaultCatalog(conf), dbName, tblName, partitionNames);
   }
 
   @Override

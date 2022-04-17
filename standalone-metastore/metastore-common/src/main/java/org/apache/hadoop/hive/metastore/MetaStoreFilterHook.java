@@ -77,6 +77,14 @@ public interface MetaStoreFilterHook {
 
   /**
    * Filter given list of tables
+   * @param dbName database name
+   * @param tableList list of table returned by the metastore
+   * @return List of filtered table names
+   */
+  List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException;
+
+  /**
+   * Filter given list of tables
    * @param catName catalog name
    * @param dbName database name
    * @param tableList list of table returned by the metastore
@@ -132,6 +140,15 @@ public interface MetaStoreFilterHook {
    * @throws NoSuchObjectException
    */
   Partition filterPartition(Partition partition) throws MetaException, NoSuchObjectException;
+
+  /**
+   * Filter given list of partition names
+   * @param dbName database name
+   * @param tblName table name
+   * @param partitionNames list of partition names
+   * @return list of filtered partition names
+   */
+  List<String> filterPartitionNames(String dbName, String tblName, List<String> partitionNames) throws MetaException;
 
   /**
    * Filter given list of partition names
