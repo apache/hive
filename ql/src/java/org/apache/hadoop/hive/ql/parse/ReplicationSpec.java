@@ -49,6 +49,7 @@ public class ReplicationSpec {
   //Determine if replication is done using repl or export-import
   private boolean isRepl = false;
   private boolean isMetadataOnlyForExternalTables = false;
+  private boolean isForceOverwrite = false;
 
   public void setInReplicationScope(boolean inReplicationScope) {
     isInReplicationScope = inReplicationScope;
@@ -417,5 +418,13 @@ public class ReplicationSpec {
 
   public void setRepl(boolean repl) {
     isRepl = repl;
+  }
+
+  public boolean isForceOverwrite() {
+    return isForceOverwrite;
+  }
+
+  public void setForceOverwrite(boolean forceOverwrite) {
+    isForceOverwrite = forceOverwrite;
   }
 }

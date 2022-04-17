@@ -190,4 +190,8 @@ public class ImportTableDesc {
   public Long getReplWriteId() {
     return this.createTblDesc.getReplWriteId();
   }
+
+  public void setForceOverwriteTable(){
+    this.createTblDesc.getReplicationSpec().setForceOverwrite(true);
+  }
 }
