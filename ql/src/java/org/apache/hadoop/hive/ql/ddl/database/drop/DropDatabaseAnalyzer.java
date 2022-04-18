@@ -35,6 +35,9 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
+import java.util.List;
+import java.util.function.Predicate;
+
 /**
  * Analyzer for database dropping commands.
  */
@@ -56,13 +59,18 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
     // if cascade=true, then we need to authorize the drop table action as well, and add the tables to the outputs
+    boolean allTablesAcid = false;
     if (cascade) {
       try {
-        for (Table table : db.getAllTableObjects(databaseName)) {
+        List<Table> tables = db.getAllTableObjects(databaseName);
+        allTablesAcid = tables.stream().noneMatch(
+            ((Predicate<Table>)AcidUtils::isTransactionalTable).negate());
+        
+        for (Table table : tables) {
           // We want no lock here, as the database lock will cover the tables,
           // and putting a lock will actually cause us to deadlock on ourselves.
           outputs.add(
-            new WriteEntity(table, isSoftDelete ?
+            new WriteEntity(table, isSoftDelete && !allTablesAcid ?
               (AcidUtils.isLocklessReadsEnabled(table, conf) ? 
                   WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE) :
               WriteEntity.WriteType.DDL_NO_LOCK));
@@ -72,7 +80,7 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     inputs.add(new ReadEntity(database));
-    if (!isSoftDelete || !cascade) {
+    if (!isSoftDelete || !cascade || allTablesAcid) {
       outputs.add(new WriteEntity(database, isSoftDelete?
           WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE));
     }
