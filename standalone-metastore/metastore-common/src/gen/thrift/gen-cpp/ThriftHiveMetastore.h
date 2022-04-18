@@ -37,6 +37,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_database(Database& _return, const std::string& name) = 0;
   virtual void get_database_req(Database& _return, const GetDatabaseRequest& request) = 0;
   virtual void drop_database(const std::string& name, const bool deleteData, const bool cascade) = 0;
+  virtual void drop_database_req(const DropDatabaseRequest& req) = 0;
   virtual void get_databases(std::vector<std::string> & _return, const std::string& pattern) = 0;
   virtual void get_all_databases(std::vector<std::string> & _return) = 0;
   virtual void alter_database(const std::string& dbname, const Database& db) = 0;
@@ -355,6 +356,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void drop_database(const std::string& /* name */, const bool /* deleteData */, const bool /* cascade */) {
+    return;
+  }
+  void drop_database_req(const DropDatabaseRequest& /* req */) {
     return;
   }
   void get_databases(std::vector<std::string> & /* _return */, const std::string& /* pattern */) {
@@ -2455,6 +2459,126 @@ class ThriftHiveMetastore_drop_database_presult {
   MetaException o3;
 
   _ThriftHiveMetastore_drop_database_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_database_req_args__isset {
+  _ThriftHiveMetastore_drop_database_req_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_drop_database_req_args__isset;
+
+class ThriftHiveMetastore_drop_database_req_args {
+ public:
+
+  ThriftHiveMetastore_drop_database_req_args(const ThriftHiveMetastore_drop_database_req_args&);
+  ThriftHiveMetastore_drop_database_req_args& operator=(const ThriftHiveMetastore_drop_database_req_args&);
+  ThriftHiveMetastore_drop_database_req_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_database_req_args() noexcept;
+  DropDatabaseRequest req;
+
+  _ThriftHiveMetastore_drop_database_req_args__isset __isset;
+
+  void __set_req(const DropDatabaseRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_drop_database_req_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_database_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_database_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_drop_database_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_database_req_pargs() noexcept;
+  const DropDatabaseRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_database_req_result__isset {
+  _ThriftHiveMetastore_drop_database_req_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_drop_database_req_result__isset;
+
+class ThriftHiveMetastore_drop_database_req_result {
+ public:
+
+  ThriftHiveMetastore_drop_database_req_result(const ThriftHiveMetastore_drop_database_req_result&);
+  ThriftHiveMetastore_drop_database_req_result& operator=(const ThriftHiveMetastore_drop_database_req_result&);
+  ThriftHiveMetastore_drop_database_req_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_database_req_result() noexcept;
+  NoSuchObjectException o1;
+  InvalidOperationException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_drop_database_req_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const InvalidOperationException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_drop_database_req_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_database_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_database_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_database_req_presult__isset {
+  _ThriftHiveMetastore_drop_database_req_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_drop_database_req_presult__isset;
+
+class ThriftHiveMetastore_drop_database_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_database_req_presult() noexcept;
+  NoSuchObjectException o1;
+  InvalidOperationException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_drop_database_req_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -33627,6 +33751,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void drop_database(const std::string& name, const bool deleteData, const bool cascade);
   void send_drop_database(const std::string& name, const bool deleteData, const bool cascade);
   void recv_drop_database();
+  void drop_database_req(const DropDatabaseRequest& req);
+  void send_drop_database_req(const DropDatabaseRequest& req);
+  void recv_drop_database_req();
   void get_databases(std::vector<std::string> & _return, const std::string& pattern);
   void send_get_databases(const std::string& pattern);
   void recv_get_databases(std::vector<std::string> & _return);
@@ -34422,6 +34549,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_database(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_database_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_database(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_drop_database_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_databases(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_all_databases(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_database(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -34695,6 +34823,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_database"] = &ThriftHiveMetastoreProcessor::process_get_database;
     processMap_["get_database_req"] = &ThriftHiveMetastoreProcessor::process_get_database_req;
     processMap_["drop_database"] = &ThriftHiveMetastoreProcessor::process_drop_database;
+    processMap_["drop_database_req"] = &ThriftHiveMetastoreProcessor::process_drop_database_req;
     processMap_["get_databases"] = &ThriftHiveMetastoreProcessor::process_get_databases;
     processMap_["get_all_databases"] = &ThriftHiveMetastoreProcessor::process_get_all_databases;
     processMap_["alter_database"] = &ThriftHiveMetastoreProcessor::process_alter_database;
@@ -35088,6 +35217,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->drop_database(name, deleteData, cascade);
     }
     ifaces_[i]->drop_database(name, deleteData, cascade);
+  }
+
+  void drop_database_req(const DropDatabaseRequest& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->drop_database_req(req);
+    }
+    ifaces_[i]->drop_database_req(req);
   }
 
   void get_databases(std::vector<std::string> & _return, const std::string& pattern) {
@@ -37621,6 +37759,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void drop_database(const std::string& name, const bool deleteData, const bool cascade);
   int32_t send_drop_database(const std::string& name, const bool deleteData, const bool cascade);
   void recv_drop_database(const int32_t seqid);
+  void drop_database_req(const DropDatabaseRequest& req);
+  int32_t send_drop_database_req(const DropDatabaseRequest& req);
+  void recv_drop_database_req(const int32_t seqid);
   void get_databases(std::vector<std::string> & _return, const std::string& pattern);
   int32_t send_get_databases(const std::string& pattern);
   void recv_get_databases(std::vector<std::string> & _return, const int32_t seqid);

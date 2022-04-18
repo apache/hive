@@ -1670,6 +1670,16 @@ struct GetDatabaseRequest {
  4: optional string processorIdentifier
 }
 
+struct DropDatabaseRequest {
+  1: required string name,
+  2: optional string catalogName,
+  3: required bool ignoreUnknownDb,
+  4: required bool deleteData,
+  5: required bool cascade,
+  6: optional bool softDelete=false,
+  7: optional i64 txnId=0
+}
+  
 // Request type for cm_recycle
 struct CmRecycleRequest {
   1: required string dataPath,
@@ -2408,6 +2418,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   Database get_database_req(1:GetDatabaseRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_database(1:string name, 2:bool deleteData, 3:bool cascade) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+  void drop_database_req(1:DropDatabaseRequest req) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   list<string> get_databases(1:string pattern) throws(1:MetaException o1)
   list<string> get_all_databases() throws(1:MetaException o1)
   void alter_database(1:string dbname, 2:Database db) throws(1:MetaException o1, 2:NoSuchObjectException o2)

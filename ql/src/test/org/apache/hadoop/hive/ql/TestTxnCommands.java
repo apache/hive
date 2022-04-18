@@ -114,6 +114,9 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, false);
+
+    HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL, 
+      new Path(getWarehouseDir(), "ext").toUri().getPath());
   }
 
 
@@ -1685,7 +1688,81 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       }
     }
   }
+  
+  @Test
+  public void testDropDatabaseCascadeNonBlocking() throws Exception {
+    String database = "mydb";
+    String tableName = "tab_acid";
+    
+    runStatementOnDriver("drop database if exists " + database + " cascade");
+    runStatementOnDriver("create database " + database);
+    
+    // Create transactional table/materialized view with lockless-reads feature disabled
+    runStatementOnDriver("create table " + database + "." + tableName + "1 (a int, b int) " +
+      "partitioned by (ds string) stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into " + database + "." + tableName + "1 partition(ds) values(1,2,'foo'),(3,4,'bar')");
 
+    runStatementOnDriver("create materialized view " + database + ".mv_" + tableName + "1 " +
+      "partitioned on (ds) stored as orc TBLPROPERTIES ('transactional'='true')" +
+      "as select a, ds from " + database + "." + tableName + "1 where b > 1");
+    
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, true);
+    // Create transactional table/materialized view with lockless-reads feature enabled
+    runStatementOnDriver("create table " + database + "." + tableName + "2 (a int, b int) " +
+      "partitioned by (ds string) stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into " + database + "." + tableName + "2 partition(ds) values(1,2,'foo'),(3,4,'bar')");
+
+    runStatementOnDriver("create materialized view " + database + ".mv_" + tableName + "2 " +
+      "partitioned on (ds) stored as orc TBLPROPERTIES ('transactional'='true')" +
+      "as select a, ds from " + database + "." + tableName + "2 where b > 1");
+
+    // Create external partition data
+    runStatementOnDriver("drop table if exists Tstage");
+    runStatementOnDriver("create table Tstage (a int, b int) stored as orc" +
+      " tblproperties('transactional'='false')");
+    runStatementOnDriver("insert into Tstage values(0,2),(0,4)");
+    
+    runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/1'");
+    runStatementOnDriver("export table Tstage to '" + getWarehouseDir() + "/2'");
+    
+    // Create external table
+    runStatementOnDriver("create external table " + database + ".tab_ext (a int, b int) " +
+      "partitioned by (ds string) stored as parquet");
+    runStatementOnDriver("insert into " + database + ".tab_ext partition(ds) values(1,2,'foo'),(3,4,'bar')");
+    // Add partition with external location
+    runStatementOnDriver("alter table " + database + ".tab_ext add partition (ds='baz') location '" +getWarehouseDir() + "/1/data'");
+
+    // Create managed table
+    runStatementOnDriver("create table " + database + ".tab_nonacid (a int, b int) " +
+      "partitioned by (ds string) stored as parquet");
+    runStatementOnDriver("insert into " + database + ".tab_nonacid partition(ds) values(1,2,'foo'),(3,4,'bar')");
+    // Add partition with external location
+    runStatementOnDriver("alter table " + database + ".tab_nonacid add partition (ds='baz') location '" +getWarehouseDir() + "/2/data'");
+   
+    // Drop database cascade
+    runStatementOnDriver("drop database " + database + " cascade");
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), database + ".db"),
+      t -> t.getName().matches("(mv_)?" + tableName + "2" + SOFT_DELETE_TABLE_PATTERN));
+    if (2 != stat.length) {
+      Assert.fail("Table data was removed from FS");
+    }
+    stat = fs.listStatus(new Path(getWarehouseDir(), database + ".db"));
+    Assert.assertEquals(2, stat.length);
+    // External table under warehouse external location should be removed
+    stat = fs.listStatus(new Path(getWarehouseDir(), "ext"));
+    Assert.assertEquals(0, stat.length);
+    // External partition for the external table should remain
+    stat = fs.listStatus(new Path(getWarehouseDir(),"1"),
+      t -> t.getName().equals("data"));
+    Assert.assertEquals(1, stat.length);
+    // External partition for managed table should be removed
+    stat = fs.listStatus(new Path(getWarehouseDir(), "2"),
+      t -> t.getName().equals("data"));
+    Assert.assertEquals(0, stat.length);
+  }
+  
   @Test
   public void testDropTableWithSuffix() throws Exception {
     String tableName = "tab_acid";

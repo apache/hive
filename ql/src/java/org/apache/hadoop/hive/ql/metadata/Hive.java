@@ -134,6 +134,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
@@ -194,6 +195,7 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.ddl.database.drop.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
@@ -661,15 +663,34 @@ public class Hive {
    */
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
       throws HiveException, NoSuchObjectException {
+    dropDatabase(
+      new DropDatabaseDesc(name, ignoreUnknownDb, cascade, deleteData));
+  }
+
+  public void dropDatabase(DropDatabaseDesc desc) 
+      throws HiveException, NoSuchObjectException {
+    boolean isSoftDelete = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
+    
+    long txnId = Optional.ofNullable(SessionState.get())
+      .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
+    
+    DropDatabaseRequest req = new DropDatabaseRequest();
+    req.setCatalogName(getDefaultCatalog(conf));
+    req.setName(desc.getDatabaseName());
+    req.setIgnoreUnknownDb(desc.getIfExists());
+    req.setDeleteData(desc.isDeleteData());
+    req.setCascade(desc.isCasdade());
+    req.setSoftDelete(isSoftDelete);
+    req.setTxnId(txnId);
+    
     try {
-      getMSC().dropDatabase(name, deleteData, ignoreUnknownDb, cascade);
+      getMSC().dropDatabase(req);
     } catch (NoSuchObjectException e) {
       throw e;
     } catch (Exception e) {
       throw new HiveException(e);
     }
   }
-
 
   /**
    * Dry run that translates table

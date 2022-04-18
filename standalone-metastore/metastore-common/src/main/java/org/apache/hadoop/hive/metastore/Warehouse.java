@@ -271,7 +271,7 @@ public class Warehouse {
   }
 
   /**
-   * Get the managed tables path specified by the database.  In the case of the default database the root of the
+   * Get the external tables path specified by the database.  In the case of the default database the root of the
    * warehouse is returned.
    * @param db database to get the path of
    * @return path to the database directory

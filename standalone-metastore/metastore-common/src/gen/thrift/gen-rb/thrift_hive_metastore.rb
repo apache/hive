@@ -195,6 +195,23 @@ module ThriftHiveMetastore
       return
     end
 
+    def drop_database_req(req)
+      send_drop_database_req(req)
+      recv_drop_database_req()
+    end
+
+    def send_drop_database_req(req)
+      send_message('drop_database_req', Drop_database_req_args, :req => req)
+    end
+
+    def recv_drop_database_req()
+      result = receive_message(Drop_database_req_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
     def get_databases(pattern)
       send_get_databases(pattern)
       return recv_get_databases()
@@ -4614,6 +4631,21 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'drop_database', seqid)
     end
 
+    def process_drop_database_req(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_database_req_args)
+      result = Drop_database_req_result.new()
+      begin
+        @handler.drop_database_req(args.req)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::InvalidOperationException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'drop_database_req', seqid)
+    end
+
     def process_get_databases(seqid, iprot, oprot)
       args = read_args(iprot, Get_databases_args)
       result = Get_databases_result.new()
@@ -8174,6 +8206,42 @@ module ThriftHiveMetastore
   end
 
   class Drop_database_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_database_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::DropDatabaseRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_database_req_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
     O2 = 2

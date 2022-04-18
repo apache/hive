@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.database.drop;
 
-import java.util.List;
-
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
