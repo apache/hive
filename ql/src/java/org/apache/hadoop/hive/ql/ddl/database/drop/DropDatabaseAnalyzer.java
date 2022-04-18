@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.database.drop;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -25,6 +26,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -47,28 +49,33 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
     String databaseName = unescapeIdentifier(root.getChild(0).getText());
     boolean ifExists = root.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null;
     boolean cascade = root.getFirstChildWithType(HiveParser.TOK_CASCADE) != null;
+    boolean isSoftDelete = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
 
     Database database = getDatabase(databaseName, !ifExists);
     if (database == null) {
       return;
     }
-
     // if cascade=true, then we need to authorize the drop table action as well, and add the tables to the outputs
     if (cascade) {
       try {
         for (Table table : db.getAllTableObjects(databaseName)) {
           // We want no lock here, as the database lock will cover the tables,
           // and putting a lock will actually cause us to deadlock on ourselves.
-          outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK));
+          outputs.add(
+            new WriteEntity(table, isSoftDelete ?
+              (AcidUtils.isLocklessReadsEnabled(table, conf) ? 
+                  WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE) :
+              WriteEntity.WriteType.DDL_NO_LOCK));
         }
       } catch (HiveException e) {
         throw new SemanticException(e);
       }
     }
-
     inputs.add(new ReadEntity(database));
-    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_EXCLUSIVE));
-
+    if (!isSoftDelete || !cascade) {
+      outputs.add(new WriteEntity(database, isSoftDelete?
+          WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE));
+    }
     DropDatabaseDesc desc = new DropDatabaseDesc(databaseName, ifExists, cascade, new ReplicationSpec());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
