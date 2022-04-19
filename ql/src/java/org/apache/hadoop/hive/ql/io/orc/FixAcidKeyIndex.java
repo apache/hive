@@ -157,6 +157,11 @@ public class FixAcidKeyIndex {
         RecordReader rr = reader.rows()) {
       List<StripeInformation> stripes = reader.getStripes();
       RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(reader);
+
+      if (keyIndex == null) {
+        result.isValid = false;
+      }
+
       StructObjectInspector soi = (StructObjectInspector) reader.getObjectInspector();
       // struct<operation:int,originalTransaction:bigint,bucket:int,rowId:bigint,currentTransaction:bigint
       List<? extends StructField> structFields = soi.getAllStructFieldRefs();
@@ -180,7 +185,7 @@ public class FixAcidKeyIndex {
         RecordIdentifier recordIdentifier = new RecordIdentifier(lastTransaction, lastBucket, lastRowId);
         result.recordIdentifiers.add(recordIdentifier);
 
-        if (keyIndex == null || stripes.size() != keyIndex.length || keyIndex[i] == null
+        if (result.isValid && stripes.size() != keyIndex.length || keyIndex[i] == null
             || recordIdentifier.compareTo(keyIndex[i]) != 0) {
           result.isValid = false;
         }
