@@ -605,6 +605,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     String user = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
     if (user == null || user.equals("")) {
       try {
+        LOG.debug("No username passed in config " + ConfVars.METASTORE_CLIENT_PLAIN_USERNAME.getHiveName() +
+            ". Trying to get the current user from UGI" );
         user = UserGroupInformation.getCurrentUser().getShortUserName();
       } catch (IOException e) {
         throw new MetaException("Failed to get client username from UGI");
@@ -751,10 +753,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
             isConnected = true;
           } catch (TTransportException e) {
             tte = e;
-            LOG.warn("Failed to connect to the MetaStore Server URI ({})",
-                store);
-            LOG.debug("Failed to connect to the MetaStore Server URI ({})",
-                store, e);
+            String errMsg = String.format("Failed to connect to the MetaStore Server URI (%s) in %s "
+                    + "transport mode",   store, transportMode);
+            LOG.warn(errMsg);
+            LOG.debug(errMsg, e);
           }
 
           if (isConnected && !useSasl && !usePasswordAuth && !isHttpTransportMode &&
@@ -776,8 +778,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           }
         } catch (MetaException e) {
           recentME = e;
-          LOG.error("Failed to connect to metastore with URI (" + store
-              + ") in attempt " + attempt, e);
+          String errMsg = "Failed to connect to metastore with URI (" + store
+              + ") transport mode:" + transportMode + " in attempt " + attempt;
+          LOG.error(errMsg, e);
         }
         if (isConnected) {
           break;

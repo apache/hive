@@ -446,7 +446,7 @@ public class TestSSL {
   }
 
   /**
-   * Test HMS server with Http + SSL
+   * Test HMS server with Thrift over Http + SSL
    * @throws Exception
    */
   @Test

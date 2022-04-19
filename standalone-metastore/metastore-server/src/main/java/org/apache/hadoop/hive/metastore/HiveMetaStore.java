@@ -85,15 +85,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * TODO:pc remove application logic to a separate interface.
@@ -374,14 +371,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     startMetaStore(port, bridge, conf, false, null);
   }
 
-  public static boolean isThriftServerRunning() {
-    return thriftServer != null && thriftServer.isRunning();
-  }
-
   // TODO: Is it worth trying to use a server that supports HTTP/2?
   //  Does the Thrift http client support this?
 
-  public static ThriftServer startHttpMetastore(int port, Configuration conf)
+  private static ThriftServer startHttpMetastore(int port, Configuration conf)
       throws Exception {
     LOG.info("Attempting to start http metastore server on port: {}", port);
 
@@ -402,9 +395,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     long maxMessageSize = MetastoreConf.getLongVar(conf, ConfVars.SERVER_MAX_MESSAGE_SIZE);
     int minWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MIN_THREADS);
     int maxWorkerThreads = MetastoreConf.getIntVar(conf, ConfVars.SERVER_MAX_THREADS);
-
-    boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
-
     // Server thread pool
     // Start with minWorkerThreads, expand till maxWorkerThreads and reject
     // subsequent requests
@@ -419,15 +409,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return newThread;
       }
     });
-
     ExecutorThreadPool threadPool = new ExecutorThreadPool((ThreadPoolExecutor) executorService);
-
     // HTTP Server
     org.eclipse.jetty.server.Server server = new Server(threadPool);
     server.setStopAtShutdown(true);
 
     ServerConnector connector;
-
     final HttpConfiguration httpServerConf = new HttpConfiguration();
     httpServerConf.setRequestHeaderSize(
         MetastoreConf.getIntVar(conf, ConfVars.METASTORE_THRIFT_HTTP_REQUEST_HEADER_SIZE));
@@ -436,7 +423,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     final HttpConnectionFactory http = new HttpConnectionFactory(httpServerConf);
 
-    boolean useSsl  = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
+    final boolean useSsl  = MetastoreConf.getBoolVar(conf, ConfVars.USE_SSL);
     String schemeName = useSsl ? "https" : "http";
     if (useSsl) {
       String keyStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_PATH).trim();
@@ -476,23 +463,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // TODO: Connection keepalive configuration?
 
     server.addConnector(connector);
-
     TProcessor processor;
-
-    // All of this code can be re-used.
-    //  Eventually move the HTTP and Binary parts into separate
-    //  classes.
+    boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     final TProtocolFactory protocolFactory;
-    final TProtocolFactory inputProtoFactory;
     if (useCompactProtocol) {
       protocolFactory = new TCompactProtocol.Factory();
-      inputProtoFactory = new TCompactProtocol.Factory(maxMessageSize, maxMessageSize);
     } else {
       protocolFactory = new TBinaryProtocol.Factory();
-      inputProtoFactory = new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize);
     }
 
-    // TODO ZZZ: HMS seems to have it's own set of handlers. Not sure if the threadpool here is actually required.
     HMSHandler baseHandler = new HMSHandler("new db based metaserver",
         conf);
     IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
@@ -507,13 +486,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         MetaStoreUtils.getHttpPath(
             MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_HTTP_PATH));
 
-    // TODO: Figure out what this should be
     ServletContextHandler context = new ServletContextHandler(
         ServletContextHandler.NO_SECURITY | ServletContextHandler.NO_SESSIONS);
 
     // Tons of stuff skipped as compared the HS2.
     // Sesions, XSRF, Compression, path configuration, etc.
-    constrainHttpMethods(context, false);
+    constraintHttpMethods(context, false);
     server.setHandler(context);
 
     context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
@@ -522,10 +500,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     return new ThriftServer() {
       @Override
       public void start() throws Throwable {
-        HMSHandler.LOG.info("Starting HTTPServer for HMS");
+        HMSHandler.LOG.debug("Starting HTTPServer for HMS");
         server.setStopAtShutdown(true);
         server.start();
-        HMSHandler.LOG.info("Started HTTPServer for HMS");
+        HMSHandler.LOG.info("Started the new HTTPServer for metastore on port [" + port
+            + "]...");
+        HMSHandler.LOG.info("Options.minWorkerThreads = "
+            + minWorkerThreads);
+        HMSHandler.LOG.info("Options.maxWorkerThreads = "
+            + maxWorkerThreads);
+        HMSHandler.LOG.info("Enable SSL = " + useSsl);
       }
 
       @Override
@@ -572,9 +556,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       inputProtoFactory = new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize);
     }
     IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
-
     TServerSocket serverSocket;
-
     if (useSasl) {
       processor = saslServer.wrapProcessor(
           new ThriftHiveMetastore.Processor<>(handler));
@@ -685,7 +667,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     };
   }
 
-  private static void constrainHttpMethods(ServletContextHandler ctxHandler, boolean allowOptionsMethod) {
+  private static void constraintHttpMethods(ServletContextHandler ctxHandler, boolean allowOptionsMethod) {
     Constraint c = new Constraint();
     c.setAuthenticate(true);
 

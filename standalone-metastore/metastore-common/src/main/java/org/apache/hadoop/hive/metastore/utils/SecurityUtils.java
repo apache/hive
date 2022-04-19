@@ -287,6 +287,10 @@ public class SecurityUtils {
     return getSSLSocketWithHttps(tSSLSocket);
   }
 
+  /*
+  Sets the ssl related configs in the underlying http client builder and wrap it up
+  in a THttpClient
+   */
   public static THttpClient getThriftHttpsClient(String httpsUrl, String trustStorePath,
       String trustStorePasswd, String trustStoreAlgorithm, String trustStoreType,
       HttpClientBuilder underlyingHttpClientBuilder) throws TTransportException, IOException,
