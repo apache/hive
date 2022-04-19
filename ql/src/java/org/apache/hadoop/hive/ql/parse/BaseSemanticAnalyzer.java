@@ -562,7 +562,11 @@ public abstract class BaseSemanticAnalyzer {
     int tsampleIndex = -1;
     int ssampleIndex = -1;
     int asOfTimeIndex = -1;
+    int fromTimeIndex = -1;
+    int toTimeIndex = -1;
     int asOfVersionIndex = -1;
+    int fromVersionIndex = -1;
+    int toVersionIndex = -1;
     for (int index = 1; index < tabref.getChildCount(); index++) {
       ASTNode ct = (ASTNode) tabref.getChild(index);
       if (ct.getToken().getType() == HiveParser.TOK_TABLEBUCKETSAMPLE) {
@@ -573,13 +577,22 @@ public abstract class BaseSemanticAnalyzer {
         propsIndex = index;
       } else if (ct.getToken().getType() == HiveParser.TOK_AS_OF_TIME) {
         asOfTimeIndex = index;
+      } else if (ct.getToken().getType() == HiveParser.TOK_FROM_TIME) {
+        fromTimeIndex = index;
+      } else if (ct.getToken().getType() == HiveParser.TOK_TO_TIME) {
+        toTimeIndex = index;
       } else if (ct.getToken().getType() == HiveParser.TOK_AS_OF_VERSION) {
         asOfVersionIndex = index;
+      } else if (ct.getToken().getType() == HiveParser.TOK_FROM_VERSION) {
+        fromVersionIndex = index;
+      } else if (ct.getToken().getType() == HiveParser.TOK_TO_VERSION) {
+        toVersionIndex = index;
       } else {
         aliasIndex = index;
       }
     }
-    return new int[] {aliasIndex, propsIndex, tsampleIndex, ssampleIndex, asOfTimeIndex, asOfVersionIndex};
+    return new int[] {aliasIndex, propsIndex, tsampleIndex, ssampleIndex, asOfTimeIndex, fromTimeIndex, toTimeIndex,
+                      asOfVersionIndex, fromVersionIndex, toVersionIndex};
   }
 
   /**

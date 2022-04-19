@@ -38,10 +38,14 @@ public class InputFormatConfig {
   public static final String REUSE_CONTAINERS = "iceberg.mr.reuse.containers";
   public static final String SKIP_RESIDUAL_FILTERING = "skip.residual.filtering";
   public static final String AS_OF_TIMESTAMP = "iceberg.mr.as.of.time";
+  public static final String FROM_TIMESTAMP = "iceberg.mr.from.time";
+  public static final String TO_TIMESTAMP = "iceberg.mr.to.time";
   public static final String FILTER_EXPRESSION = "iceberg.mr.filter.expression";
   public static final String IN_MEMORY_DATA_MODEL = "iceberg.mr.in.memory.data.model";
   public static final String READ_SCHEMA = "iceberg.mr.read.schema";
   public static final String SNAPSHOT_ID = "iceberg.mr.snapshot.id";
+  public static final String FROM_VERSION = "iceberg.mr.from.version";
+  public static final String TO_VERSION = "iceberg.mr.to.version";
   public static final String SPLIT_SIZE = "iceberg.mr.split.size";
   public static final String SCHEMA_AUTO_CONVERSION = "iceberg.mr.schema.auto.conversion";
   public static final String TABLE_IDENTIFIER = "iceberg.mr.table.identifier";

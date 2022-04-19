@@ -99,6 +99,28 @@ public class ASTBuilder {
       b.add(asOfBuilder);
     }
 
+    if (hTbl.getHiveTableMD().getFromTimestamp() != null) {
+      ASTBuilder fromBuilder = ASTBuilder.construct(HiveParser.TOK_FROM_TIME, "TOK_FROM_TIME")
+          .add(HiveParser.StringLiteral, hTbl.getHiveTableMD().getFromTimestamp());
+      b.add(fromBuilder);
+      if (hTbl.getHiveTableMD().getToTimestamp() != null) {
+        ASTBuilder toBuilder = ASTBuilder.construct(HiveParser.TOK_TO_TIME, "TOK_TO_TIME")
+            .add(HiveParser.StringLiteral, hTbl.getHiveTableMD().getToTimestamp());
+        b.add(toBuilder);
+      }
+    }
+
+    if (hTbl.getHiveTableMD().getFromVersion() != null) {
+      ASTBuilder fromBuilder = ASTBuilder.construct(HiveParser.TOK_FROM_VERSION, "TOK_FROM_VERSION")
+          .add(HiveParser.StringLiteral, hTbl.getHiveTableMD().getFromVersion());
+      b.add(fromBuilder);
+      if (hTbl.getHiveTableMD().getToVersion() != null) {
+        ASTBuilder toBuilder = ASTBuilder.construct(HiveParser.TOK_TO_VERSION, "TOK_TO_VERSION")
+            .add(HiveParser.StringLiteral, hTbl.getHiveTableMD().getToVersion());
+        b.add(toBuilder);
+      }
+    }
+
     ASTBuilder propList = ASTBuilder.construct(HiveParser.TOK_TABLEPROPLIST, "TOK_TABLEPROPLIST");
     if (scan instanceof DruidQuery) {
       //Passing query spec, column names and column types to be used as part of Hive Physical execution

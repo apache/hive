@@ -1103,7 +1103,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int tsampleIndex = indexes[2];
     int ssampleIndex = indexes[3];
     int asOfTimeIndex = indexes[4];
-    int asOfVersionIndex = indexes[5];
+    int fromTimeIndex = indexes[5];
+    int toTimeIndex = indexes[6];
+    int asOfVersionIndex = indexes[7];
+    int fromVersionIndex = indexes[8];
+    int toVersionIndex = indexes[9];
 
     ASTNode tableTree = (ASTNode) (tabref.getChild(0));
 
@@ -1126,6 +1130,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String asOfTime = asOfTimeIndex == -1 ? null : tabref.getChild(asOfTimeIndex).getChild(0).getText();
       Pair<String, String> asOf = Pair.of(asOfVersion, asOfTime);
       qb.setAsOf(alias, asOf);
+    }
+
+    if (fromTimeIndex != -1) {
+      String fromTime = tabref.getChild(fromTimeIndex).getChild(0).getText();
+      String toTime = toTimeIndex != -1 ? tabref.getChild(toTimeIndex).getChild(0).getText() : null;
+      qb.setAliasToFromToTime(alias, Pair.of(fromTime, toTime));
+    }
+
+    if (fromVersionIndex != -1) {
+      String fromVersion = tabref.getChild(fromVersionIndex).getChild(0).getText();
+      String toVersion = toVersionIndex != -1 ? tabref.getChild(toVersionIndex).getChild(0).getText() : null;
+      qb.setAliasToFromToVersion(alias, Pair.of(fromVersion, toVersion));
     }
 
     // If the alias is already there then we have a conflict
@@ -2247,6 +2263,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         tab.setAsOfVersion(asOf.getLeft());
         tab.setAsOfTimestamp(asOf.getRight());
+      }
+
+      Pair<String, String> fromToTime = qb.getAliasToFromToTime(alias);
+      if (fromToTime != null) {
+        if (!Optional.ofNullable(tab.getStorageHandler()).map(HiveStorageHandler::isTimeTravelAllowed).orElse(false)) {
+          throw new SemanticException(ErrorMsg.TIME_TRAVEL_NOT_ALLOWED, alias);
+        }
+        tab.setFromTimestamp(fromToTime.getLeft());
+        tab.setToTimestamp(fromToTime.getRight());
+      }
+
+      Pair<String, String> fromToVersion = qb.getAliasToFromToVersion(alias);
+      if (fromToVersion != null) {
+        if (!Optional.ofNullable(tab.getStorageHandler()).map(HiveStorageHandler::isTimeTravelAllowed).orElse(false)) {
+          throw new SemanticException(ErrorMsg.TIME_TRAVEL_NOT_ALLOWED, alias);
+        }
+        tab.setFromVersion(fromToVersion.getLeft());
+        tab.setToVersion(fromToVersion.getRight());
       }
 
       if (tab.isView()) {

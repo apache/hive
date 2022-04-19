@@ -52,6 +52,8 @@ public class QB {
   private HashMap<String, Table> viewAliasToViewSchema;
   private HashMap<String, Map<String, String>> aliasToProps;
   private HashMap<String, Pair<String, String>> aliasToAsOf;
+  private HashMap<String, Pair<String, String>> aliasToFromToTime;
+  private HashMap<String, Pair<String, String>> aliasToFromToVersion;
   private List<String> aliases;
   private QBParseInfo qbp;
   private QBMetaData qbm;
@@ -135,6 +137,8 @@ public class QB {
     id = getAppendedAliasFromId(outer_id, alias);
     aliasInsideView = new HashSet<>();
     aliasToAsOf = new LinkedHashMap<>();
+    aliasToFromToTime = new LinkedHashMap<>();
+    aliasToFromToVersion = new LinkedHashMap<>();
   }
 
   // For sub-queries, the id. and alias should be appended since same aliases can be re-used
@@ -199,6 +203,14 @@ public class QB {
     aliasToAsOf.put(alias.toLowerCase(), asOf);
   }
 
+  public void setAliasToFromToTime(String alias, Pair<String, String> fromToTime) {
+    this.aliasToFromToTime.put(alias.toLowerCase(), fromToTime);
+  }
+
+  public void setAliasToFromToVersion(String alias, Pair<String, String> fromToVersion) {
+    this.aliasToFromToVersion.put(alias.toLowerCase(), fromToVersion);
+  }
+
   public void addAlias(String alias) {
     if (!aliases.contains(alias.toLowerCase())) {
       aliases.add(alias.toLowerCase());
@@ -259,6 +271,14 @@ public class QB {
 
   public Pair<String, String> getAsOfForAlias(String alias) {
     return aliasToAsOf.get(alias.toLowerCase());
+  }
+
+  public Pair<String, String> getAliasToFromToTime(String alias) {
+    return aliasToFromToTime.get(alias);
+  }
+
+  public Pair<String, String> getAliasToFromToVersion(String alias) {
+    return aliasToFromToVersion.get(alias);
   }
 
   public void rewriteViewToSubq(String alias, String viewName, QBExpr qbexpr, Table tab) {

@@ -134,12 +134,16 @@ public class Table implements Serializable {
    * The version of the table. For Iceberg tables this is the snapshotId.
    */
   private String asOfVersion = null;
+  private String fromVersion = null;
+  private String toVersion = null;
 
   /**
    * The version of the table at the given timestamp. The format will be parsed with
    * TimestampTZUtil.parse.
    */
   private String asOfTimestamp = null;
+  private String fromTimestamp = null;
+  private String toTimestamp = null;
 
   /**
    * Used only for serialization.
@@ -1321,6 +1325,38 @@ public class Table implements Serializable {
 
   public void setAsOfTimestamp(String asOfTimestamp) {
     this.asOfTimestamp = asOfTimestamp;
+  }
+
+  public String getFromTimestamp() {
+    return fromTimestamp;
+  }
+
+  public void setFromTimestamp(String fromTimestamp) {
+    this.fromTimestamp = fromTimestamp;
+  }
+
+  public String getToTimestamp() {
+    return toTimestamp;
+  }
+
+  public void setToTimestamp(String toTimestamp) {
+    this.toTimestamp = toTimestamp;
+  }
+
+  public String getFromVersion() {
+    return fromVersion;
+  }
+
+  public void setFromVersion(String fromVersion) {
+    this.fromVersion = fromVersion;
+  }
+
+  public String getToVersion() {
+    return toVersion;
+  }
+
+  public void setToVersion(String toVersion) {
+    this.toVersion = toVersion;
   }
 
   public String getMetaTable() {

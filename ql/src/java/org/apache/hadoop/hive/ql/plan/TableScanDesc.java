@@ -112,8 +112,20 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   public static final String AS_OF_TIMESTAMP =
       "hive.io.as.of.timestamp";
 
+  public static final String FROM_TIMESTAMP =
+      "hive.io.from.timestamp";
+
+  public static final String TO_TIMESTAMP =
+      "hive.io.to.timestamp";
+
   public static final String AS_OF_VERSION =
       "hive.io.as.of.version";
+
+  public static final String FROM_VERSION =
+      "hive.io.from.version";
+
+  public static final String TO_VERSION =
+      "hive.io.to.version";
 
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
@@ -141,7 +153,15 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   private String asOfVersion = null;
 
+  private String fromVersion = null;
+
+  private String toVersion = null;
+
   private String asOfTimestamp = null;
+
+  private String fromTimestamp = null;
+
+  private String toTimestamp = null;
 
   public TableScanDesc() {
     this(null, null);
@@ -171,7 +191,11 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
       tableName = tblMetadata.getTableName();
       numBuckets = tblMetadata.getNumBuckets();
       asOfTimestamp = tblMetadata.getAsOfTimestamp();
+      fromTimestamp = tblMetadata.getFromTimestamp();
+      toTimestamp = tblMetadata.getToTimestamp();
       asOfVersion = tblMetadata.getAsOfVersion();
+      fromVersion = tblMetadata.getFromVersion();
+      toVersion = tblMetadata.getToVersion();
     }
     isTranscationalTable = AcidUtils.isTransactionalTable(this.tableMetadata);
     if (isTranscationalTable) {
@@ -534,6 +558,26 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   @Explain(displayName = "As of timestamp")
   public String getAsOfTimestamp() {
     return asOfTimestamp;
+  }
+
+  @Explain(displayName = "From timestamp")
+  public String getFromTimestamp() {
+    return fromTimestamp;
+  }
+
+  @Explain(displayName = "To timestamp")
+  public String getToTimestamp() {
+    return toTimestamp;
+  }
+
+  @Explain(displayName = "From version")
+  public String getFromVersion() {
+    return fromVersion;
+  }
+
+  @Explain(displayName = "To version")
+  public String getToVersion() {
+    return toVersion;
   }
 
   public class TableScanOperatorExplainVectorization extends OperatorExplainVectorization {

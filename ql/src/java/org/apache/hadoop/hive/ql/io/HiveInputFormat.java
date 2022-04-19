@@ -983,16 +983,36 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   protected static void pushAsOf(Configuration jobConf, TableScanOperator ts) {
     TableScanDesc scanDesc = ts.getConf();
     if (scanDesc.getAsOfTimestamp() != null) {
-      ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
-          SessionState.get().getConf().getLocalTimeZone();
+      ZoneId timeZone = getTimeZone();
       TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(scanDesc.getAsOfTimestamp()), timeZone);
-
       jobConf.set(TableScanDesc.AS_OF_TIMESTAMP, Long.toString(time.toEpochMilli()));
+    }
+
+    if (scanDesc.getFromTimestamp() != null) {
+      ZoneId timeZone = getTimeZone();
+      TimestampTZ fromTime = TimestampTZUtil.parse(PlanUtils.stripQuotes(scanDesc.getFromTimestamp()), timeZone);
+      jobConf.set(TableScanDesc.FROM_TIMESTAMP, Long.toString(fromTime.toEpochMilli()));
+      if (scanDesc.getToTimestamp() != null) {
+        TimestampTZ toTime = TimestampTZUtil.parse(PlanUtils.stripQuotes(scanDesc.getToTimestamp()), timeZone);
+        jobConf.set(TableScanDesc.TO_TIMESTAMP, Long.toString(toTime.toEpochMilli()));
+      }
     }
 
     if (scanDesc.getAsOfVersion() != null) {
       jobConf.set(TableScanDesc.AS_OF_VERSION, scanDesc.getAsOfVersion());
     }
+
+    if (scanDesc.getFromVersion() != null) {
+      jobConf.set(TableScanDesc.FROM_VERSION, scanDesc.getFromVersion());
+      if (scanDesc.getToVersion() != null) {
+        jobConf.set(TableScanDesc.TO_VERSION, scanDesc.getToVersion());
+      }
+    }
+  }
+
+  private static ZoneId getTimeZone() {
+    return SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
+        SessionState.get().getConf().getLocalTimeZone();
   }
 
   protected void pushProjectionsAndFiltersAndAsOf(JobConf jobConf, Path splitPath) {
