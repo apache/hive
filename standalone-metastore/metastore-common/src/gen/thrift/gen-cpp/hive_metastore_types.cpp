@@ -34949,6 +34949,11 @@ void DropDatabaseRequest::__set_txnId(const int64_t val) {
   this->txnId = val;
 __isset.txnId = true;
 }
+
+void DropDatabaseRequest::__set_deleteManagedDir(const bool val) {
+  this->deleteManagedDir = val;
+__isset.deleteManagedDir = true;
+}
 std::ostream& operator<<(std::ostream& out, const DropDatabaseRequest& obj)
 {
   obj.printTo(out);
@@ -35037,6 +35042,14 @@ uint32_t DropDatabaseRequest::read(::apache::thrift::protocol::TProtocol* iprot)
           xfer += iprot->skip(ftype);
         }
         break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->deleteManagedDir);
+          this->__isset.deleteManagedDir = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -35093,6 +35106,11 @@ uint32_t DropDatabaseRequest::write(::apache::thrift::protocol::TProtocol* oprot
     xfer += oprot->writeI64(this->txnId);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.deleteManagedDir) {
+    xfer += oprot->writeFieldBegin("deleteManagedDir", ::apache::thrift::protocol::T_BOOL, 8);
+    xfer += oprot->writeBool(this->deleteManagedDir);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -35107,6 +35125,7 @@ void swap(DropDatabaseRequest &a, DropDatabaseRequest &b) {
   swap(a.cascade, b.cascade);
   swap(a.softDelete, b.softDelete);
   swap(a.txnId, b.txnId);
+  swap(a.deleteManagedDir, b.deleteManagedDir);
   swap(a.__isset, b.__isset);
 }
 
@@ -35118,6 +35137,7 @@ DropDatabaseRequest::DropDatabaseRequest(const DropDatabaseRequest& other1288) {
   cascade = other1288.cascade;
   softDelete = other1288.softDelete;
   txnId = other1288.txnId;
+  deleteManagedDir = other1288.deleteManagedDir;
   __isset = other1288.__isset;
 }
 DropDatabaseRequest& DropDatabaseRequest::operator=(const DropDatabaseRequest& other1289) {
@@ -35128,6 +35148,7 @@ DropDatabaseRequest& DropDatabaseRequest::operator=(const DropDatabaseRequest& o
   cascade = other1289.cascade;
   softDelete = other1289.softDelete;
   txnId = other1289.txnId;
+  deleteManagedDir = other1289.deleteManagedDir;
   __isset = other1289.__isset;
   return *this;
 }
@@ -35141,6 +35162,7 @@ void DropDatabaseRequest::printTo(std::ostream& out) const {
   out << ", " << "cascade=" << to_string(cascade);
   out << ", " << "softDelete="; (__isset.softDelete ? (out << to_string(softDelete)) : (out << "<null>"));
   out << ", " << "txnId="; (__isset.txnId ? (out << to_string(txnId)) : (out << "<null>"));
+  out << ", " << "deleteManagedDir="; (__isset.deleteManagedDir ? (out << to_string(deleteManagedDir)) : (out << "<null>"));
   out << ")";
 }
 

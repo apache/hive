@@ -5632,6 +5632,7 @@ class DropDatabaseRequest
   CASCADE = 5
   SOFTDELETE = 6
   TXNID = 7
+  DELETEMANAGEDDIR = 8
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
@@ -5640,7 +5641,8 @@ class DropDatabaseRequest
     DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData'},
     CASCADE => {:type => ::Thrift::Types::BOOL, :name => 'cascade'},
     SOFTDELETE => {:type => ::Thrift::Types::BOOL, :name => 'softDelete', :default => false, :optional => true},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => 0, :optional => true}
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => 0, :optional => true},
+    DELETEMANAGEDDIR => {:type => ::Thrift::Types::BOOL, :name => 'deleteManagedDir', :default => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end

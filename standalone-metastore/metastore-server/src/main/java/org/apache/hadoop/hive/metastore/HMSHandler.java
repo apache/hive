@@ -1555,7 +1555,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw new MetaException("Database name cannot be null.");
     }
     boolean isReplicated = false;
-    boolean hasSoftDeleteTables = false;
     try {
       ms.openTransaction();
       db = ms.getDatabase(req.getCatalogName(), req.getName());
@@ -1714,7 +1713,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             if (isSoftDelete) {
               context = new EnvironmentContext();
               context.putToProperties("txnId", String.valueOf(req.getTxnId()));
-              hasSoftDeleteTables = true;
+              req.setDeleteManagedDir(false);
             }
             // Drop the table but not its data
             drop_table_with_environment_context(
@@ -1747,7 +1746,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         final Database dbFinal = db;
         final Path path = (dbFinal.getManagedLocationUri() != null) ?
             new Path(dbFinal.getManagedLocationUri()) : wh.getDatabaseManagedPath(dbFinal);
-        if (!hasSoftDeleteTables) {
+        if (req.isDeleteManagedDir()) {
           try {
             Boolean deleted = UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Boolean>)
               () -> wh.deleteDir(path, true, dbFinal));
@@ -1794,12 +1793,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public void drop_database(final String dbName, final boolean deleteData, final boolean cascade)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
     String[] parsedDbName = parseDbName(dbName, conf);
-    if (DEFAULT_CATALOG_NAME.equalsIgnoreCase(parsedDbName[CAT_NAME]) &&
-      DEFAULT_DATABASE_NAME.equalsIgnoreCase(parsedDbName[DB_NAME])) {
-      endFunction("drop_database", false, null);
-      throw new MetaException("Can not drop " + DEFAULT_DATABASE_NAME + " database in catalog "
-        + DEFAULT_CATALOG_NAME);
-    }
     
     DropDatabaseRequest req = new DropDatabaseRequest();
     req.setName(parsedDbName[DB_NAME]);
@@ -1814,6 +1807,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws NoSuchObjectException, InvalidOperationException, MetaException {
     startFunction("drop_database", ": " + req.getName());
     
+    if (DEFAULT_CATALOG_NAME.equalsIgnoreCase(req.getCatalogName()) 
+          && DEFAULT_DATABASE_NAME.equalsIgnoreCase(req.getName())) {
+      endFunction("drop_database", false, null);
+      throw new MetaException("Can not drop " + DEFAULT_DATABASE_NAME + " database in catalog " 
+        + DEFAULT_CATALOG_NAME);
+    }
     boolean success = false;
     Exception ex = null;
     try {

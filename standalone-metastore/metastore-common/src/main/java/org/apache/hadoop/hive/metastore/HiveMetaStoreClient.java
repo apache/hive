@@ -1593,7 +1593,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         // First we delete the materialized views
         Table mview = getTable(getDefaultCatalog(conf), req.getName(), table);
         boolean isSoftDelete = req.isSoftDelete() && Boolean.parseBoolean(
-            mview.getParameters().getOrDefault(SOFT_DELETE_TABLE, "false"));
+          mview.getParameters().getOrDefault(SOFT_DELETE_TABLE, "false"));
         mview.setTxnId(req.getTxnId());
         dropTable(mview, req.isDeleteData() && !isSoftDelete, true, false);
       }
@@ -1614,7 +1614,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       if (tableCount > maxBatchSize) {
         LOG.debug("Dropping database in a per table batch manner.");
-        dropDatabaseCascadePerTable(req.getCatalogName(), req.getName(), tableNameList, req.isDeleteData(), maxBatchSize);
+        dropDatabaseCascadePerTable(req, tableNameList, maxBatchSize);
       } else {
         LOG.debug("Dropping database in a per DB manner.");
         dropDatabaseCascadePerDb(req, tableNameList);
@@ -1640,27 +1640,38 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * @param maxBatchSize
    * @throws TException
    */
-  private void dropDatabaseCascadePerTable(String catName, String dbName, List<String> tableList,
-                                           boolean deleteData, int maxBatchSize) throws TException {
-    String dbNameWithCatalog = prependCatalogToDbName(catName, dbName, conf);
-    for (Table table : new TableIterable(this, catName, dbName, tableList, maxBatchSize)) {
+  private void dropDatabaseCascadePerTable(DropDatabaseRequest req, List<String> tableList, int maxBatchSize) 
+      throws TException {
+    String dbNameWithCatalog = prependCatalogToDbName(req.getCatalogName(), req.getName(), conf);
+    for (Table table : new TableIterable(
+        this, req.getCatalogName(), req.getName(), tableList, maxBatchSize)) {
       boolean success = false;
       HiveMetaHook hook = getHook(table);
-      if (hook == null) {
-        continue;
-      }
       try {
-        hook.preDropTable(table);
-        client.drop_table_with_environment_context(dbNameWithCatalog, table.getTableName(), deleteData, null);
-        hook.commitDropTable(table, deleteData);
+        if (hook != null) {
+          hook.preDropTable(table);
+        }
+        boolean isSoftDelete = req.isSoftDelete() && Boolean.parseBoolean(
+          table.getParameters().getOrDefault(SOFT_DELETE_TABLE, "false"));
+        EnvironmentContext context = null;
+        if (req.isSetTxnId()) {
+          context = new EnvironmentContext();
+          context.putToProperties("txnId", String.valueOf(req.getTxnId()));
+          req.setDeleteManagedDir(false);
+        }
+        client.drop_table_with_environment_context(dbNameWithCatalog, table.getTableName(), 
+            req.isDeleteData() && !isSoftDelete, context);
+        if (hook != null) {
+          hook.commitDropTable(table, req.isDeleteData());
+        }
         success = true;
       } finally {
-        if (!success) {
+        if (!success && hook != null) {
           hook.rollbackDropTable(table);
         }
       }
     }
-    client.drop_database(dbNameWithCatalog, deleteData, true);
+    client.drop_database_req(req);
   }
 
   /**
@@ -1682,8 +1693,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         }
         hook.preDropTable(table);
       }
-      req.setCascade(true);
-      
       client.drop_database_req(req);
       for (Table table : tables) {
         HiveMetaHook hook = getHook(table);

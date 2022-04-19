@@ -18,6 +18,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField CASCADE_FIELD_DESC = new org.apache.thrift.protocol.TField("cascade", org.apache.thrift.protocol.TType.BOOL, (short)5);
   private static final org.apache.thrift.protocol.TField SOFT_DELETE_FIELD_DESC = new org.apache.thrift.protocol.TField("softDelete", org.apache.thrift.protocol.TType.BOOL, (short)6);
   private static final org.apache.thrift.protocol.TField TXN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnId", org.apache.thrift.protocol.TType.I64, (short)7);
+  private static final org.apache.thrift.protocol.TField DELETE_MANAGED_DIR_FIELD_DESC = new org.apache.thrift.protocol.TField("deleteManagedDir", org.apache.thrift.protocol.TType.BOOL, (short)8);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new DropDatabaseRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new DropDatabaseRequestTupleSchemeFactory();
@@ -29,6 +30,7 @@ package org.apache.hadoop.hive.metastore.api;
   private boolean cascade; // required
   private boolean softDelete; // optional
   private long txnId; // optional
+  private boolean deleteManagedDir; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -38,7 +40,8 @@ package org.apache.hadoop.hive.metastore.api;
     DELETE_DATA((short)4, "deleteData"),
     CASCADE((short)5, "cascade"),
     SOFT_DELETE((short)6, "softDelete"),
-    TXN_ID((short)7, "txnId");
+    TXN_ID((short)7, "txnId"),
+    DELETE_MANAGED_DIR((short)8, "deleteManagedDir");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -68,6 +71,8 @@ package org.apache.hadoop.hive.metastore.api;
           return SOFT_DELETE;
         case 7: // TXN_ID
           return TXN_ID;
+        case 8: // DELETE_MANAGED_DIR
+          return DELETE_MANAGED_DIR;
         default:
           return null;
       }
@@ -114,8 +119,9 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __CASCADE_ISSET_ID = 2;
   private static final int __SOFTDELETE_ISSET_ID = 3;
   private static final int __TXNID_ISSET_ID = 4;
+  private static final int __DELETEMANAGEDDIR_ISSET_ID = 5;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CATALOG_NAME,_Fields.SOFT_DELETE,_Fields.TXN_ID};
+  private static final _Fields optionals[] = {_Fields.CATALOG_NAME,_Fields.SOFT_DELETE,_Fields.TXN_ID,_Fields.DELETE_MANAGED_DIR};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -133,6 +139,8 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.TXN_ID, new org.apache.thrift.meta_data.FieldMetaData("txnId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.DELETE_MANAGED_DIR, new org.apache.thrift.meta_data.FieldMetaData("deleteManagedDir", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(DropDatabaseRequest.class, metaDataMap);
   }
@@ -141,6 +149,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.softDelete = false;
 
     this.txnId = 0L;
+
+    this.deleteManagedDir = true;
 
   }
 
@@ -176,6 +186,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.cascade = other.cascade;
     this.softDelete = other.softDelete;
     this.txnId = other.txnId;
+    this.deleteManagedDir = other.deleteManagedDir;
   }
 
   public DropDatabaseRequest deepCopy() {
@@ -195,6 +206,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.softDelete = false;
 
     this.txnId = 0L;
+
+    this.deleteManagedDir = true;
 
   }
 
@@ -356,6 +369,28 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __TXNID_ISSET_ID, value);
   }
 
+  public boolean isDeleteManagedDir() {
+    return this.deleteManagedDir;
+  }
+
+  public void setDeleteManagedDir(boolean deleteManagedDir) {
+    this.deleteManagedDir = deleteManagedDir;
+    setDeleteManagedDirIsSet(true);
+  }
+
+  public void unsetDeleteManagedDir() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __DELETEMANAGEDDIR_ISSET_ID);
+  }
+
+  /** Returns true if field deleteManagedDir is set (has been assigned a value) and false otherwise */
+  public boolean isSetDeleteManagedDir() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __DELETEMANAGEDDIR_ISSET_ID);
+  }
+
+  public void setDeleteManagedDirIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __DELETEMANAGEDDIR_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case NAME:
@@ -414,6 +449,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case DELETE_MANAGED_DIR:
+      if (value == null) {
+        unsetDeleteManagedDir();
+      } else {
+        setDeleteManagedDir((java.lang.Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -441,6 +484,9 @@ package org.apache.hadoop.hive.metastore.api;
     case TXN_ID:
       return getTxnId();
 
+    case DELETE_MANAGED_DIR:
+      return isDeleteManagedDir();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -466,6 +512,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetSoftDelete();
     case TXN_ID:
       return isSetTxnId();
+    case DELETE_MANAGED_DIR:
+      return isSetDeleteManagedDir();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -546,6 +594,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_deleteManagedDir = true && this.isSetDeleteManagedDir();
+    boolean that_present_deleteManagedDir = true && that.isSetDeleteManagedDir();
+    if (this_present_deleteManagedDir || that_present_deleteManagedDir) {
+      if (!(this_present_deleteManagedDir && that_present_deleteManagedDir))
+        return false;
+      if (this.deleteManagedDir != that.deleteManagedDir)
+        return false;
+    }
+
     return true;
   }
 
@@ -574,6 +631,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetTxnId()) ? 131071 : 524287);
     if (isSetTxnId())
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(txnId);
+
+    hashCode = hashCode * 8191 + ((isSetDeleteManagedDir()) ? 131071 : 524287);
+    if (isSetDeleteManagedDir())
+      hashCode = hashCode * 8191 + ((deleteManagedDir) ? 131071 : 524287);
 
     return hashCode;
   }
@@ -656,6 +717,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetDeleteManagedDir(), other.isSetDeleteManagedDir());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDeleteManagedDir()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.deleteManagedDir, other.deleteManagedDir);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -716,6 +787,12 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("txnId:");
       sb.append(this.txnId);
+      first = false;
+    }
+    if (isSetDeleteManagedDir()) {
+      if (!first) sb.append(", ");
+      sb.append("deleteManagedDir:");
+      sb.append(this.deleteManagedDir);
       first = false;
     }
     sb.append(")");
@@ -835,6 +912,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 8: // DELETE_MANAGED_DIR
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.deleteManagedDir = iprot.readBool();
+              struct.setDeleteManagedDirIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -879,6 +964,11 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeI64(struct.txnId);
         oprot.writeFieldEnd();
       }
+      if (struct.isSetDeleteManagedDir()) {
+        oprot.writeFieldBegin(DELETE_MANAGED_DIR_FIELD_DESC);
+        oprot.writeBool(struct.deleteManagedDir);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -910,7 +1000,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetTxnId()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetDeleteManagedDir()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetCatalogName()) {
         oprot.writeString(struct.catalogName);
       }
@@ -919,6 +1012,9 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (struct.isSetTxnId()) {
         oprot.writeI64(struct.txnId);
+      }
+      if (struct.isSetDeleteManagedDir()) {
+        oprot.writeBool(struct.deleteManagedDir);
       }
     }
 
@@ -933,7 +1029,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setDeleteDataIsSet(true);
       struct.cascade = iprot.readBool();
       struct.setCascadeIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      java.util.BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.catalogName = iprot.readString();
         struct.setCatalogNameIsSet(true);
@@ -945,6 +1041,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(2)) {
         struct.txnId = iprot.readI64();
         struct.setTxnIdIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.deleteManagedDir = iprot.readBool();
+        struct.setDeleteManagedDirIsSet(true);
       }
     }
   }

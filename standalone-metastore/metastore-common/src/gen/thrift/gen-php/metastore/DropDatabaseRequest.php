@@ -56,6 +56,11 @@ class DropDatabaseRequest
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        8 => array(
+            'var' => 'deleteManagedDir',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -86,6 +91,10 @@ class DropDatabaseRequest
      * @var int
      */
     public $txnId = 0;
+    /**
+     * @var bool
+     */
+    public $deleteManagedDir = true;
 
     public function __construct($vals = null)
     {
@@ -110,6 +119,9 @@ class DropDatabaseRequest
             }
             if (isset($vals['txnId'])) {
                 $this->txnId = $vals['txnId'];
+            }
+            if (isset($vals['deleteManagedDir'])) {
+                $this->deleteManagedDir = $vals['deleteManagedDir'];
             }
         }
     }
@@ -182,6 +194,13 @@ class DropDatabaseRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 8:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->deleteManagedDir);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -229,6 +248,11 @@ class DropDatabaseRequest
         if ($this->txnId !== null) {
             $xfer += $output->writeFieldBegin('txnId', TType::I64, 7);
             $xfer += $output->writeI64($this->txnId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->deleteManagedDir !== null) {
+            $xfer += $output->writeFieldBegin('deleteManagedDir', TType::BOOL, 8);
+            $xfer += $output->writeBool($this->deleteManagedDir);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

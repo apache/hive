@@ -13040,10 +13040,11 @@ void swap(GetDatabaseRequest &a, GetDatabaseRequest &b);
 std::ostream& operator<<(std::ostream& out, const GetDatabaseRequest& obj);
 
 typedef struct _DropDatabaseRequest__isset {
-  _DropDatabaseRequest__isset() : catalogName(false), softDelete(true), txnId(true) {}
+  _DropDatabaseRequest__isset() : catalogName(false), softDelete(true), txnId(true), deleteManagedDir(true) {}
   bool catalogName :1;
   bool softDelete :1;
   bool txnId :1;
+  bool deleteManagedDir :1;
 } _DropDatabaseRequest__isset;
 
 class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
@@ -13051,7 +13052,7 @@ class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
 
   DropDatabaseRequest(const DropDatabaseRequest&);
   DropDatabaseRequest& operator=(const DropDatabaseRequest&);
-  DropDatabaseRequest() : name(), catalogName(), ignoreUnknownDb(0), deleteData(0), cascade(0), softDelete(false), txnId(0LL) {
+  DropDatabaseRequest() : name(), catalogName(), ignoreUnknownDb(0), deleteData(0), cascade(0), softDelete(false), txnId(0LL), deleteManagedDir(true) {
   }
 
   virtual ~DropDatabaseRequest() noexcept;
@@ -13062,6 +13063,7 @@ class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
   bool cascade;
   bool softDelete;
   int64_t txnId;
+  bool deleteManagedDir;
 
   _DropDatabaseRequest__isset __isset;
 
@@ -13078,6 +13080,8 @@ class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
   void __set_softDelete(const bool val);
 
   void __set_txnId(const int64_t val);
+
+  void __set_deleteManagedDir(const bool val);
 
   bool operator == (const DropDatabaseRequest & rhs) const
   {
@@ -13100,6 +13104,10 @@ class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
     if (__isset.txnId != rhs.__isset.txnId)
       return false;
     else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.deleteManagedDir != rhs.__isset.deleteManagedDir)
+      return false;
+    else if (__isset.deleteManagedDir && !(deleteManagedDir == rhs.deleteManagedDir))
       return false;
     return true;
   }

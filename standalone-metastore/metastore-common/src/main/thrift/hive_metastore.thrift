@@ -1677,7 +1677,8 @@ struct DropDatabaseRequest {
   4: required bool deleteData,
   5: required bool cascade,
   6: optional bool softDelete=false,
-  7: optional i64 txnId=0
+  7: optional i64 txnId=0,
+  8: optional bool deleteManagedDir=true
 }
   
 // Request type for cm_recycle

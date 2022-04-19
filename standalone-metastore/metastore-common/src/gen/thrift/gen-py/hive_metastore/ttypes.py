@@ -19975,11 +19975,12 @@ class DropDatabaseRequest(object):
      - cascade
      - softDelete
      - txnId
+     - deleteManagedDir
 
     """
 
 
-    def __init__(self, name=None, catalogName=None, ignoreUnknownDb=None, deleteData=None, cascade=None, softDelete=False, txnId=0,):
+    def __init__(self, name=None, catalogName=None, ignoreUnknownDb=None, deleteData=None, cascade=None, softDelete=False, txnId=0, deleteManagedDir=True,):
         self.name = name
         self.catalogName = catalogName
         self.ignoreUnknownDb = ignoreUnknownDb
@@ -19987,6 +19988,7 @@ class DropDatabaseRequest(object):
         self.cascade = cascade
         self.softDelete = softDelete
         self.txnId = txnId
+        self.deleteManagedDir = deleteManagedDir
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -20032,6 +20034,11 @@ class DropDatabaseRequest(object):
                     self.txnId = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.BOOL:
+                    self.deleteManagedDir = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -20069,6 +20076,10 @@ class DropDatabaseRequest(object):
         if self.txnId is not None:
             oprot.writeFieldBegin('txnId', TType.I64, 7)
             oprot.writeI64(self.txnId)
+            oprot.writeFieldEnd()
+        if self.deleteManagedDir is not None:
+            oprot.writeFieldBegin('deleteManagedDir', TType.BOOL, 8)
+            oprot.writeBool(self.deleteManagedDir)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -31275,6 +31286,7 @@ DropDatabaseRequest.thrift_spec = (
     (5, TType.BOOL, 'cascade', None, None, ),  # 5
     (6, TType.BOOL, 'softDelete', None, False, ),  # 6
     (7, TType.I64, 'txnId', None, 0, ),  # 7
+    (8, TType.BOOL, 'deleteManagedDir', None, True, ),  # 8
 )
 all_structs.append(CmRecycleRequest)
 CmRecycleRequest.thrift_spec = (

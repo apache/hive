@@ -1690,7 +1690,15 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   }
   
   @Test
-  public void testDropDatabaseCascadeNonBlocking() throws Exception {
+  public void testDropDatabaseCascadePerTableNonBlocking() throws Exception {
+    MetastoreConf.setLongVar(hiveConf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX, 1);
+    dropDatabaseCascadeNonBlocking();
+  }
+  @Test
+  public void testDropDatabaseCascadePerDbNonBlocking() throws Exception {
+    dropDatabaseCascadeNonBlocking();
+  }
+  private void dropDatabaseCascadeNonBlocking() throws Exception {
     String database = "mydb";
     String tableName = "tab_acid";
     
