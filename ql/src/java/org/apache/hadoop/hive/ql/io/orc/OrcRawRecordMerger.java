@@ -772,7 +772,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
   private KeyInterval discoverKeyBounds(Reader reader, Reader.Options options) {
     final RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(reader);
     if (keyIndex == null) {
-      LOG.warn("Missing '{}' metadata in ORC acid file, can't compute min/max keys",
+      LOG.warn("Missing '{}' metadata in ORC file, can't compute min/max keys",
           OrcRecordUpdater.ACID_KEY_INDEX_NAME);
       return new KeyInterval(null, null);
     }
