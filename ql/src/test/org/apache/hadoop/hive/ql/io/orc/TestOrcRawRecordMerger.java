@@ -440,6 +440,7 @@ public class TestOrcRawRecordMerger {
     when(recordReader.getProgress()).thenReturn(1.0f);
 
     if (addHiveAcidKeyIndexMetadata) {
+      // hasNext() and next() need re-checking after fixing https://issues.apache.org/jira/browse/HIVE-26150
       when(recordReader.hasNext()).
           thenReturn(true, true, true, true, true, false);
 
@@ -448,6 +449,7 @@ public class TestOrcRawRecordMerger {
       when(recordReader.next(row2)).thenReturn(row3);
       when(recordReader.next(row3)).thenReturn(row5);
     } else {
+      // it should be (true x 4, false), see https://issues.apache.org/jira/browse/HIVE-26150
       when(recordReader.hasNext()).
           thenReturn(true, true, true, true, true, true, true, true, true, false);
 
