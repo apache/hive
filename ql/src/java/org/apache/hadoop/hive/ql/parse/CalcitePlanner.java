@@ -4082,10 +4082,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
               + ex.getMessage());
         }
       }
+
       // then try to get it from all
       if (orderByExpression == null) {
-        Map<ASTNode, RexNode> astToExprNDescMap = genAllRexNode(ref, inputRR, cluster.getRexBuilder());
-        orderByExpression = astToExprNDescMap.get(ref);
+        try {
+          Map<ASTNode, RexNode> astToExprNDescMap = genAllRexNode(ref, inputRR, cluster.getRexBuilder());
+          orderByExpression = astToExprNDescMap.get(ref);
+        } catch (SemanticException ex) {
+          LOG.debug("Can not find column in " + ref.getText() + ". The error msg is "
+                  + ex.getMessage());
+        }
       }
 
       if (orderByExpression == null && selectOutputRR != null) {
@@ -4093,7 +4099,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           Map<ASTNode, RexNode> astToExprNDescMap = genAllRexNode(ref, selectOutputRR, cluster.getRexBuilder(), true);
           orderByExpression = astToExprNDescMap.get(ref);
         } catch (SemanticException ex) {
-          // we can tolerate this as this is the previous behavior
           LOG.debug("Can not find column in " + ref.getText() + ". The error msg is "
                   + ex.getMessage());
         }
