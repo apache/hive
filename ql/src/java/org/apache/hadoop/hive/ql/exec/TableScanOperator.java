@@ -279,7 +279,12 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     }
 
     // increase the row count
-    currentStat.addToStat(StatsSetupConst.ROW_COUNT, 1);
+    if (vectorized) {
+      currentStat.addToStat(StatsSetupConst.ROW_COUNT, ((VectorizedRowBatch)row).size);
+    }
+    else {
+      currentStat.addToStat(StatsSetupConst.ROW_COUNT, 1);
+    }
 
     // extract the raw data size, and update the stats for the current partition
     int rdSizeColumn = currentStat.getBookkeepingInfo(StatsSetupConst.RAW_DATA_SIZE);
@@ -288,7 +293,13 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       ObjectInspectorUtils.partialCopyToStandardObject(rdSize, row,
           rdSizeColumn, 1, (StructObjectInspector) inputObjInspectors[0],
           ObjectInspectorCopyOption.WRITABLE);
-      currentStat.addToStat(StatsSetupConst.RAW_DATA_SIZE, (((LongWritable) rdSize.get(0)).get()));
+      if (vectorized) {
+        currentStat.addToStat(StatsSetupConst.RAW_DATA_SIZE,
+            (((LongWritable) rdSize.get(0)).get()) * ((VectorizedRowBatch)row).size);
+      }
+      else {
+        currentStat.addToStat(StatsSetupConst.RAW_DATA_SIZE, (((LongWritable) rdSize.get(0)).get()));
+      }
     }
 
   }

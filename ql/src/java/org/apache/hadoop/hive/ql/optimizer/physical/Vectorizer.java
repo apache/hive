@@ -2055,11 +2055,11 @@ public class Vectorizer implements PhysicalPlanResolver {
       // Set "global" member indicating where to store "not vectorized" information if necessary.
       currentBaseWork = mapWork;
 
-      if (!validateTableScanOperator(tableScanOperator, mapWork)) {
+      /*if (!validateTableScanOperator(tableScanOperator, mapWork)) {
 
         // The "not vectorized" information has been stored in the MapWork vertex.
         return false;
-      }
+      }*/
       try {
         validateAndVectorizeMapOperators(tableScanOperator, isTezOrSpark, vectorTaskColumnInfo);
       } catch (VectorizerCannotVectorizeException e) {
