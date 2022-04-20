@@ -33,7 +33,6 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.hadoop.util.Progressable;
 import org.apache.iceberg.FileFormat;
-import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -69,7 +68,6 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
     // It gets the config from the FileSinkOperator which has its own config for every target table
     Table table = HiveIcebergStorageHandler.table(jc, jc.get(hive_metastoreConstants.META_TABLE_NAME));
     Schema schema = HiveIcebergStorageHandler.schema(jc);
-    PartitionSpec spec = table.spec();
     FileFormat fileFormat = FileFormat.valueOf(PropertyUtil.propertyAsString(table.properties(),
         TableProperties.DEFAULT_FILE_FORMAT, TableProperties.DEFAULT_FILE_FORMAT_DEFAULT).toUpperCase(Locale.ENGLISH));
     long targetFileSize = PropertyUtil.propertyAsLong(table.properties(), TableProperties.WRITE_TARGET_FILE_SIZE_BYTES,
@@ -86,11 +84,11 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
     HiveFileWriterFactory writerFactory = new HiveFileWriterFactory(table, fileFormat, schema, null, fileFormat,
         null, null, null, schema);
     if (HiveIcebergStorageHandler.isDelete(jc, tableName)) {
-      return new HiveIcebergDeleteWriter(schema, spec, fileFormat, writerFactory, outputFileFactory, io, targetFileSize,
-          taskAttemptID, tableName);
+      return new HiveIcebergDeleteWriter(schema, table.specs(), fileFormat, writerFactory, outputFileFactory, io,
+          targetFileSize, taskAttemptID, tableName);
     } else {
-      return new HiveIcebergRecordWriter(schema, spec, fileFormat, writerFactory, outputFileFactory, io, targetFileSize,
-          taskAttemptID, tableName);
+      return new HiveIcebergRecordWriter(schema, table.specs(), fileFormat, writerFactory, outputFileFactory, io,
+          targetFileSize, taskAttemptID, tableName);
     }
   }
 }

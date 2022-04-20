@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.DeleteFile;
@@ -41,10 +42,10 @@ public class HiveIcebergDeleteWriter extends HiveIcebergWriter {
 
   private final GenericRecord rowDataTemplate;
 
-  HiveIcebergDeleteWriter(Schema schema, PartitionSpec spec, FileFormat fileFormat,
+  HiveIcebergDeleteWriter(Schema schema, Map<Integer, PartitionSpec> specs, FileFormat fileFormat,
       FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
       TaskAttemptID taskAttemptID, String tableName) {
-    super(schema, spec, io, taskAttemptID, tableName,
+    super(schema, specs, io, taskAttemptID, tableName,
         new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, fileFormat, targetFileSize));
     rowDataTemplate = GenericRecord.create(schema);
   }
@@ -53,7 +54,8 @@ public class HiveIcebergDeleteWriter extends HiveIcebergWriter {
   public void write(Writable row) throws IOException {
     Record rec = ((Container<Record>) row).get();
     PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(rec, rowDataTemplate);
-    writer.write(positionDelete, spec, partition(positionDelete.row()));
+    Integer specId = rec.get(0, Integer.class);
+    writer.write(positionDelete, specs.get(specId), partition(positionDelete.row(), specId));
   }
 
   @Override

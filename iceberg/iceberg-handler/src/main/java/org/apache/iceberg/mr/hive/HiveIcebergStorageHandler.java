@@ -178,8 +178,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // For Tez, setting the committer here is enough to make sure it'll be part of the jobConf
     map.put("mapred.output.committer.class", HiveIcebergNoJobCommitter.class.getName());
     // For MR, the jobConf is set only in configureJobConf, so we're setting the write key here to detect it over there
-    String opType = SessionStateUtil.getProperty(conf, Context.Operation.class.getSimpleName())
-        .orElse(Context.Operation.OTHER.name());
+    String opType = getOperationType();
     map.put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
     // Putting the key into the table props as well, so that projection pushdown can be determined on a
     // table-level and skipped only for output tables in HiveIcebergSerde. Properties from the map will be present in
@@ -374,9 +373,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       fieldOrderMap.put(fields.get(i).name(), i);
     }
 
+    // deletes already use the bucket values in the partition_struct for sorting, so no need to add the sort expression
+    boolean isDelete = getOperationType().equals(Context.Operation.DELETE.name());
+
     for (PartitionTransformSpec spec : partitionTransformSpecs) {
       int order = fieldOrderMap.get(spec.getColumnName());
-      if (PartitionTransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {
+      if (!isDelete && PartitionTransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {
         customSortExprs.add(BUCKET_SORT_EXPR.apply(order, spec.getTransformParam().get()));
       } else {
         customSortExprs.add(cols -> cols.get(order).clone());
@@ -770,6 +772,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       LOG.debug("Unable to find commit information in query state for table: {}", tableName);
       return Optional.empty();
     }
+  }
+
+  private String getOperationType() {
+    return SessionStateUtil.getProperty(conf, Context.Operation.class.getSimpleName())
+        .orElse(Context.Operation.OTHER.name());
   }
 
   private static class NonSerializingConfig implements Serializable {
