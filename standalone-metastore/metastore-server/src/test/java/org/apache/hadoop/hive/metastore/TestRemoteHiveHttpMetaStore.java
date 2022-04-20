@@ -15,53 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.metastore;
+
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.junit.experimental.categories.Category;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
-
 
 @Category(MetastoreCheckinTest.class)
-public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
-  private static boolean isServerStarted = false;
-  protected static int port;
+public class TestRemoteHiveHttpMetaStore extends TestRemoteHiveMetaStore {
 
-  public TestRemoteHiveMetaStore() {
-    super();
-    isThriftClient = true;
-  }
+  private static final Logger LOG = LoggerFactory.getLogger(TestRemoteHiveHttpMetaStore.class);
 
-  @Before
-  public void setUp() throws Exception {
-    super.setUp();
-
-    if (isServerStarted) {
-      Assert.assertNotNull("Unable to connect to the MetaStore server", client);
-      return;
-    }
-    start();
-  }
-
-  protected void start() throws Exception {
-    port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(),
-        conf);
-    System.out.println("Starting MetaStore Server on port " + port);
-    isServerStarted = true;
-
-    // This is default case with setugi off for both client and server
-    client = createClient();
+  @Override
+  public void start() throws Exception {
+    MetastoreConf.setVar(conf, ConfVars.THRIFT_TRANSPORT_MODE, "http");
+    LOG.info("Attempting to start test remote metastore in http mode");
+    super.start();
+    LOG.info("Successfully started test remote metastore in http mode");
   }
 
   @Override
   protected HiveMetaStoreClient createClient() throws Exception {
-    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
-    MetastoreConf.setBoolVar(conf, ConfVars.EXECUTE_SET_UGI, false);
-    return new HiveMetaStoreClient(conf);
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE, "http");
+    return super.createClient();
   }
 }

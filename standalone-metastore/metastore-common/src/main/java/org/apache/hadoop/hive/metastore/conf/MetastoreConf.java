@@ -1364,6 +1364,13 @@ public class MetastoreConf {
         "Comma-separated list of tasks that will be started in separate threads.  These will be" +
             " started only when the metastore is running as a separate service.  They must " +
             "implement " + METASTORE_TASK_THREAD_CLASS),
+    THRIFT_TRANSPORT_MODE("metastore.server.thrift.transport.mode",
+        "hive.metastore.server.thrift.transport.mode", "binary",
+        "Transport mode for thrift server in Metastore. Can be binary or http"),
+    THRIFT_HTTP_PATH("metastore.server.thrift.http.path",
+        "hive.metastore.server.thrift.http.path",
+        "metastore",
+        "Path component of URL endpoint when in HTTP mode"),
     TCP_KEEP_ALIVE("metastore.server.tcp.keepalive",
         "hive.metastore.server.tcp.keepalive", true,
         "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
@@ -1504,6 +1511,26 @@ public class MetastoreConf {
     USERS_IN_ADMIN_ROLE("metastore.users.in.admin.role", "hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +
             "More users can be added in ADMIN role later."),
+    // TODO: Should we have a separate config for the metastoreclient or THRIFT_TRANSPORT_MODE
+    // would suffice ?
+    METASTORE_CLIENT_THRIFT_TRANSPORT_MODE("metastore.client.thrift.transport.mode",
+        "hive.metastore.client.thrift.transport.mode", "binary",
+        "Transport mode to be used by the metastore client. It should be the same as " + THRIFT_TRANSPORT_MODE),
+    METASTORE_CLIENT_THRIFT_HTTP_PATH("metastore.client.thrift.http.path",
+        "hive.metastore.client.thrift.http.path",
+        "metastore",
+        "Path component of URL endpoint when in HTTP mode"),
+    METASTORE_THRIFT_HTTP_REQUEST_HEADER_SIZE("metastore.server.thrift.http.request.header.size",
+        "hive.metastore.server.thrift.http.request.header.size", 6*1024,
+        "Request header size in bytes when using HTTP transport mode for metastore thrift server."
+            + " Defaults to jetty's defaults"),
+    METASTORE_THRIFT_HTTP_RESPONSE_HEADER_SIZE("metastore.server.thrift.http.response.header.size",
+        "metastore.server.thrift.http.response.header.size", 6*1024,
+        "Response header size in bytes when using HTTP transport mode for metastore thrift server."
+            + " Defaults to jetty's defaults"),
+    METASTORE_THRIFT_HTTP_MAX_IDLE_TIME("metastore.thrift.http.max.idle.time", "hive.metastore.thrift.http.max.idle.time", 
+        1800, TimeUnit.SECONDS,
+        "Maximum idle time for a connection on the server when in HTTP mode."),
     USE_SSL("metastore.use.SSL", "hive.metastore.use.SSL", false,
         "Set this to true for using SSL encryption in HMS server."),
     // We should somehow unify next two options.
