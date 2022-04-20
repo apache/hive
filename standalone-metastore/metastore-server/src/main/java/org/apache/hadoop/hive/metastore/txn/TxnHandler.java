@@ -373,10 +373,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     this.conf = conf;
 
     int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
-    long getConnectionTimeoutMs = 30000;
     synchronized (TxnHandler.class) {
       if (connPool == null) {
-        connPool = setupJdbcConnectionPool(conf, maxPoolSize, getConnectionTimeoutMs);
+        connPool = setupJdbcConnectionPool(conf, maxPoolSize);
       }
 
       if (connPoolMutex == null) {
@@ -387,7 +386,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
            connection from connPool first, then connPoolMutex.  All others, go in the opposite
            order (not very elegant...).  So number of connection requests for connPoolMutex cannot
            exceed (size of connPool + MUTEX_KEY.values().length - 1).*/
-        connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize + MUTEX_KEY.values().length, getConnectionTimeoutMs);
+        connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize + MUTEX_KEY.values().length);
       }
 
       if (dbProduct == null) {
@@ -4676,7 +4675,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return getDbConn(isolationLevel, connPool);
   }
 
-  private Connection getDbConn(int isolationLevel, DataSource connPool) throws SQLException {
+  protected Connection getDbConn(int isolationLevel, DataSource connPool) throws SQLException {
     Connection dbConn = null;
     try {
       dbConn = connPool.getConnection();
@@ -5836,11 +5835,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private synchronized static DataSource setupJdbcConnectionPool(Configuration conf, int maxPoolSize, long getConnectionTimeoutMs) {
+  protected synchronized static DataSource setupJdbcConnectionPool(Configuration conf, int maxPoolSize) {
     DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     if (dsp != null) {
       try {
-        return dsp.create(conf);
+        return dsp.create(conf, maxPoolSize);
       } catch (SQLException e) {
         LOG.error("Unable to instantiate JDBC connection pooling", e);
         throw new RuntimeException(e);

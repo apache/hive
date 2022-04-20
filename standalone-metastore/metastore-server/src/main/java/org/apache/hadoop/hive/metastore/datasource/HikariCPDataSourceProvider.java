@@ -45,14 +45,18 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
 
   @Override
   public DataSource create(Configuration hdpConfig) throws SQLException {
+    int maxPoolSize = MetastoreConf.getIntVar(hdpConfig,
+            MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
+    return create(hdpConfig, maxPoolSize);
+  }
+
+  @Override
+  public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
     LOG.debug("Creating Hikari connection pool for the MetaStore");
 
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
     String passwd = DataSourceProvider.getMetastoreJdbcPasswd(hdpConfig);
-
-    int maxPoolSize = MetastoreConf.getIntVar(hdpConfig,
-        MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
 
     Properties properties = replacePrefix(
         DataSourceProvider.getPrefixedProperties(hdpConfig, HIKARI));
@@ -75,14 +79,14 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setConnectionTimeout(connectionTimeout);
 
     DatabaseProduct dbProduct =  DatabaseProduct.determineDatabaseProduct(driverUrl, hdpConfig);
-    
+
     String s = dbProduct.getPrepareTxnStmt();
     if (s!= null) {
       config.setConnectionInitSql(s);
     }
-    
+
     Map<String, String> props = dbProduct.getDataSourceProperties();
-    
+
     for ( Map.Entry<String, String> kv : props.entrySet()) {
       config.addDataSourceProperty(kv.getKey(), kv.getValue());
     }
