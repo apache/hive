@@ -286,8 +286,9 @@ public class TestHiveIcebergOutputCommitter {
           null, fileFormat, null, null, null, null);
 
 
-      HiveIcebergRecordWriter testWriter = new HiveIcebergRecordWriter(schema, table.specs(), fileFormat,
-          hfwf, outputFileFactory, io, TARGET_FILE_SIZE, TezUtil.taskAttemptWrapper(taskId), conf.get(Catalogs.NAME));
+      HiveIcebergRecordWriter testWriter = new HiveIcebergRecordWriter(schema, table.specs(),
+          table.spec().specId(), fileFormat, hfwf, outputFileFactory, io, TARGET_FILE_SIZE,
+          TezUtil.taskAttemptWrapper(taskId), conf.get(Catalogs.NAME));
 
       Container<Record> container = new Container<>();
 

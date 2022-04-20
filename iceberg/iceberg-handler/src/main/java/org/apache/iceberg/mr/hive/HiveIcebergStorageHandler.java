@@ -352,6 +352,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public DynamicPartitionCtx createDPContext(HiveConf hiveConf, org.apache.hadoop.hive.ql.metadata.Table hmsTable)
       throws SemanticException {
+    // delete records are already clustered by partition spec id and the hash of the partition struct
+    // there is no need to do any additional sorting based on partition columns
+    if (getOperationType().equals(Context.Operation.DELETE.name())) {
+      return null;
+    }
+
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     if (table.spec().isUnpartitioned()) {
@@ -373,12 +379,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       fieldOrderMap.put(fields.get(i).name(), i);
     }
 
-    // deletes already use the bucket values in the partition_struct for sorting, so no need to add the sort expression
-    boolean isDelete = getOperationType().equals(Context.Operation.DELETE.name());
-
     for (PartitionTransformSpec spec : partitionTransformSpecs) {
       int order = fieldOrderMap.get(spec.getColumnName());
-      if (!isDelete && PartitionTransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {
+      if (PartitionTransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {
         customSortExprs.add(BUCKET_SORT_EXPR.apply(order, spec.getTransformParam().get()));
       } else {
         customSortExprs.add(cols -> cols.get(order).clone());

@@ -54,7 +54,7 @@ public class HiveIcebergDeleteWriter extends HiveIcebergWriter {
   public void write(Writable row) throws IOException {
     Record rec = ((Container<Record>) row).get();
     PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(rec, rowDataTemplate);
-    Integer specId = rec.get(0, Integer.class);
+    int specId = IcebergAcidUtil.parseSpecId(rec);
     writer.write(positionDelete, specs.get(specId), partition(positionDelete.row(), specId));
   }
 

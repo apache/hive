@@ -87,8 +87,8 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
       return new HiveIcebergDeleteWriter(schema, table.specs(), fileFormat, writerFactory, outputFileFactory, io,
           targetFileSize, taskAttemptID, tableName);
     } else {
-      return new HiveIcebergRecordWriter(schema, table.specs(), fileFormat, writerFactory, outputFileFactory, io,
-          targetFileSize, taskAttemptID, tableName);
+      return new HiveIcebergRecordWriter(schema, table.specs(), table.spec().specId(), fileFormat, writerFactory,
+          outputFileFactory, io, targetFileSize, taskAttemptID, tableName);
     }
   }
 }

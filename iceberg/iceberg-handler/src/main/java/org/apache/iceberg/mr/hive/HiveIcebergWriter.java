@@ -100,11 +100,6 @@ public abstract class HiveIcebergWriter implements FileSinkOperator.RecordWriter
         result.dataFiles().size(), result.deleteFiles().size());
   }
 
-  protected PartitionKey partition(Record row) {
-    // get partition key for the latest spec
-    return partition(row, specs.size() - 1);
-  }
-
   protected PartitionKey partition(Record row, int specId) {
     PartitionKey partitionKey = partitionKeys.computeIfAbsent(specId,
         id -> new PartitionKey(specs.get(id), specs.get(id).schema()));
