@@ -672,7 +672,8 @@ public class Hive {
     boolean isSoftDelete = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
     
     long txnId = Optional.ofNullable(SessionState.get())
-      .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
+      .map(SessionState::getTxnMgr)
+      .map(HiveTxnManager::getCurrentTxnId).orElse(0L);
     
     DropDatabaseRequest req = new DropDatabaseRequest();
     req.setCatalogName(getDefaultCatalog(conf));

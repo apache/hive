@@ -59,20 +59,19 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
     // if cascade=true, then we need to authorize the drop table action as well, and add the tables to the outputs
-    boolean allTablesAcid = false;
+    boolean allTablesWithSuffix = false;
     if (cascade) {
       try {
         List<Table> tables = db.getAllTableObjects(databaseName);
-        allTablesAcid = tables.stream().noneMatch(
-            ((Predicate<Table>)AcidUtils::isTransactionalTable).negate());
-        
+        allTablesWithSuffix = tables.stream().allMatch(
+            table -> AcidUtils.isTableSoftDeleteEnabled(table, conf));
         for (Table table : tables) {
           // We want no lock here, as the database lock will cover the tables,
           // and putting a lock will actually cause us to deadlock on ourselves.
           outputs.add(
-            new WriteEntity(table, isSoftDelete && !allTablesAcid ?
-              (AcidUtils.isLocklessReadsEnabled(table, conf) ? 
-                  WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE) :
+            new WriteEntity(table, isSoftDelete && !allTablesWithSuffix ?
+              AcidUtils.isTableSoftDeleteEnabled(table, conf) ? 
+                  WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE :
               WriteEntity.WriteType.DDL_NO_LOCK));
         }
       } catch (HiveException e) {
@@ -80,9 +79,9 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     inputs.add(new ReadEntity(database));
-    if (!isSoftDelete || !cascade || allTablesAcid) {
-      outputs.add(new WriteEntity(database, isSoftDelete?
-          WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE));
+    if (!isSoftDelete || !cascade || allTablesWithSuffix) {
+      outputs.add(new WriteEntity(database, isSoftDelete ?
+        WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE));
     }
     DropDatabaseDesc desc = new DropDatabaseDesc(databaseName, ifExists, cascade, new ReplicationSpec());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));

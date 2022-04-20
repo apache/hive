@@ -3932,4 +3932,72 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     List<ShowLocksResponseElement> locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 0, locks.size());
   }
+
+  @Test
+  public void testDropDatabaseNonBlocking() throws Exception {
+    dropDatabaseNonBlocking(false, false);
+  }
+  @Test
+  public void testDropDatabaseCascadeAllTablesWithSuffix() throws Exception {
+    dropDatabaseNonBlocking(true, true);
+  }
+  @Test
+  public void testDropDatabaseCascadeMixed() throws Exception {
+    dropDatabaseNonBlocking(false, true);
+  }
+  private void dropDatabaseNonBlocking(boolean allTablesWithSuffix, boolean cascade) throws Exception {
+    String database = "mydb";
+    String tableName = "tab_acid";
+    
+    driver.run("drop database if exists " + database + " cascade");
+    driver.run("create database " + database);
+
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, allTablesWithSuffix);
+    // Create transactional table/materialized view with lockless-reads feature disabled
+    driver.run("create table " + database + "." + tableName + "1 (a int, b int) " +
+      "partitioned by (ds string) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("create materialized view " + database + ".mv_" + tableName + "1 " +
+        "partitioned on (ds) stored as orc TBLPROPERTIES ('transactional'='true')" +
+      "as select a, ds from " + database + "." + tableName + "1 where b > 1");
+    
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, true);
+    // Create transactional table/materialized view with lockless-reads feature enabled
+    driver.run("create table " + database + "." + tableName + "2 (a int, b int) " +
+      "partitioned by (ds string) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("create materialized view " + database + ".mv_" + tableName + "2 " +
+        "partitioned on (ds) stored as orc TBLPROPERTIES ('transactional'='true')" +
+      "as select a, ds from " + database + "." + tableName + "2 where b > 1");
+    
+    if (!allTablesWithSuffix) {
+      // Create external table
+      driver.run("create external table " + database + ".tab_ext (a int, b int) " +
+        "partitioned by (ds string) stored as parquet");
+      // Create managed table
+      driver.run("create table " + database + ".tab_nonacid (a int, b int) " +
+        "partitioned by (ds string) stored as parquet");
+    }
+    // Drop database cascade
+    driver.compileAndRespond("drop database " + database + (cascade ? " cascade" : ""));
+
+    driver.lockAndRespond();
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", cascade && !allTablesWithSuffix ? 6 : 1, locks.size());
+
+    if (cascade && !allTablesWithSuffix) {
+      checkLock(LockType.EXCLUSIVE,
+        LockState.ACQUIRED, database, tableName + "1", null, locks);
+      checkLock(LockType.EXCLUSIVE,
+        LockState.ACQUIRED, database, "mv_" + tableName + "1", null, locks);
+      checkLock(LockType.EXCL_WRITE,
+        LockState.ACQUIRED, database, tableName + "2", null, locks);
+      checkLock(LockType.EXCL_WRITE,
+        LockState.ACQUIRED, database, "mv_" + tableName + "2", null, locks);
+      checkLock(LockType.EXCLUSIVE,
+        LockState.ACQUIRED, database, "tab_nonacid", null, locks);
+    
+    } else {
+      checkLock(LockType.EXCL_WRITE,
+        LockState.ACQUIRED, database, null, null, locks);
+    }
+  }
 }
