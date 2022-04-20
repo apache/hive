@@ -44,6 +44,7 @@ import org.apache.iceberg.expressions.Binder;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mapping.MappingUtil;
+import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.orc.impl.BufferChunk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,18 +161,17 @@ public class VectorizedReadUtils {
     job.set(ColumnProjectionUtils.ORC_SCHEMA_STRING, readOrcSchema.toString());
 
     // Predicate pushdowns needs to be adjusted too in case of column renames, we let Iceberg generate this into job
-    if (task.residual() != null) {
-      Expression boundFilter = Binder.bind(currentSchema.asStruct(), task.residual(), false);
+    Expression residual = HiveIcebergInputFormat.residualForTask(task, job);
+    Expression boundFilter = Binder.bind(currentSchema.asStruct(), residual, false);
 
-      // Note the use of the unshaded version of this class here (required for SARG deseralization later)
-      org.apache.hadoop.hive.ql.io.sarg.SearchArgument sarg =
-          ExpressionToOrcSearchArgument.convert(boundFilter, readOrcSchema);
-      if (sarg != null) {
-        job.unset(TableScanDesc.FILTER_EXPR_CONF_STR);
-        job.unset(ConvertAstToSearchArg.SARG_PUSHDOWN);
+    // Note the use of the unshaded version of this class here (required for SARG deseralization later)
+    org.apache.hadoop.hive.ql.io.sarg.SearchArgument sarg =
+        ExpressionToOrcSearchArgument.convert(boundFilter, readOrcSchema);
+    if (sarg != null) {
+      job.unset(TableScanDesc.FILTER_EXPR_CONF_STR);
+      job.unset(ConvertAstToSearchArg.SARG_PUSHDOWN);
 
-        job.set(ConvertAstToSearchArg.SARG_PUSHDOWN, ConvertAstToSearchArg.sargToKryo(sarg));
-      }
+      job.set(ConvertAstToSearchArg.SARG_PUSHDOWN, ConvertAstToSearchArg.sargToKryo(sarg));
     }
   }
 }

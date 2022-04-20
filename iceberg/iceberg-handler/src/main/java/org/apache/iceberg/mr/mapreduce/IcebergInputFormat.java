@@ -77,6 +77,7 @@ import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.orc.ORC;
@@ -133,7 +134,6 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       Long openFileCost = splitSize > 0 ? splitSize : TableProperties.SPLIT_SIZE_DEFAULT;
       scan = scan.option(TableProperties.SPLIT_OPEN_FILE_COST, String.valueOf(openFileCost));
     }
-
     String schemaStr = conf.get(InputFormatConfig.READ_SCHEMA);
     if (schemaStr != null) {
       scan.project(SchemaParser.fromJson(schemaStr));
@@ -147,7 +147,10 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     // TODO add a filter parser to get rid of Serialization
     Expression filter = SerializationUtil.deserializeFromBase64(conf.get(InputFormatConfig.FILTER_EXPRESSION));
     if (filter != null) {
-      scan = scan.filter(filter);
+      // In order to prevent the filter expression to be attached to every file scan task generated we call
+      // ignoreResiduals() here. The passed in filter will still be effective during split generation.
+      // On the execution side residual expressions will be mined from the passed job conf.
+      scan = scan.filter(filter).ignoreResiduals();
     }
 
     return scan;
@@ -374,6 +377,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     private CloseableIterable<T> newAvroIterable(
         InputFile inputFile, FileScanTask task, Schema readSchema) {
+      Expression residual = HiveIcebergInputFormat.residualForTask(task, context.getConfiguration());
       Avro.ReadBuilder avroReadBuilder = Avro.read(inputFile)
           .project(readSchema)
           .split(task.start(), task.length());
@@ -396,11 +400,13 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
                   DataReader.create(expIcebergSchema, expAvroSchema,
                       constantsMap(task, IdentityPartitionConverters::convertConstant)));
       }
-      return applyResidualFiltering(avroReadBuilder.build(), task.residual(), readSchema);
+      return applyResidualFiltering(avroReadBuilder.build(), residual, readSchema);
     }
 
     private CloseableIterable<T> newParquetIterable(InputFile inputFile, FileScanTask task, Schema readSchema) {
       Map<Integer, ?> idToConstant = constantsMap(task, IdentityPartitionConverters::convertConstant);
+      Expression residual = HiveIcebergInputFormat.residualForTask(task, context.getConfiguration());
+
       CloseableIterable<T> parquetIterator = null;
 
       switch (inMemoryDataModel) {
@@ -416,7 +422,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         case GENERIC:
           Parquet.ReadBuilder parquetReadBuilder = Parquet.read(inputFile)
               .project(readSchema)
-              .filter(task.residual())
+              .filter(residual)
               .caseSensitive(caseSensitive)
               .split(task.start(), task.length());
           if (reuseContainers) {
@@ -431,12 +437,13 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
           parquetIterator = parquetReadBuilder.build();
       }
-      return applyResidualFiltering(parquetIterator, task.residual(), readSchema);
+      return applyResidualFiltering(parquetIterator, residual, readSchema);
     }
 
     private CloseableIterable<T> newOrcIterable(InputFile inputFile, FileScanTask task, Schema readSchema) {
       Map<Integer, ?> idToConstant = constantsMap(task, IdentityPartitionConverters::convertConstant);
       Schema readSchemaWithoutConstantAndMetadataFields = schemaWithoutConstantsAndMeta(readSchema, idToConstant);
+      Expression residual = HiveIcebergInputFormat.residualForTask(task, context.getConfiguration());
 
       CloseableIterable<T> orcIterator = null;
       // ORC does not support reuse containers yet
@@ -454,7 +461,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         case GENERIC:
           ORC.ReadBuilder orcReadBuilder = ORC.read(inputFile)
               .project(readSchemaWithoutConstantAndMetadataFields)
-              .filter(task.residual())
+              .filter(residual)
               .caseSensitive(caseSensitive)
               .split(task.start(), task.length());
           orcReadBuilder.createReaderFunc(
@@ -467,7 +474,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           orcIterator = orcReadBuilder.build();
       }
 
-      return applyResidualFiltering(orcIterator, task.residual(), readSchema);
+      return applyResidualFiltering(orcIterator, residual, readSchema);
     }
 
     private Map<Integer, ?> constantsMap(FileScanTask task, BiFunction<Type, Object, Object> converter) {

@@ -17,12 +17,8 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -44,7 +40,6 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.iceberg.AppendFiles;
-import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DataFile;
@@ -59,9 +54,7 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
-import org.apache.iceberg.mr.Catalogs;
-import org.apache.iceberg.mr.InputFormatConfig;
-import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.mr.mapreduce.IcebergInputFormat;
@@ -81,9 +74,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static org.apache.iceberg.types.Types.NestedField.required;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
@@ -210,34 +201,6 @@ public class TestIcebergInputFormats {
     // skip residual filtering
     builder.skipResidualFiltering();
     testInputFormat.create(builder.conf()).validate(writeRecords);
-  }
-
-  @Test
-  public void testFailedResidualFiltering() throws Exception {
-    helper.createTable();
-
-    List<Record> expectedRecords = helper.generateRandomRecords(2, 0L);
-    expectedRecords.get(0).set(2, "2020-03-20");
-    expectedRecords.get(1).set(2, "2020-03-20");
-
-    helper.appendToTable(Row.of("2020-03-20", 0), expectedRecords);
-
-    builder.useHiveRows()
-           .filter(Expressions.and(
-                   Expressions.equal("date", "2020-03-20"),
-                   Expressions.equal("id", 0)));
-
-    AssertHelpers.assertThrows(
-        "Residuals are not evaluated today for Iceberg Generics In memory model of HIVE",
-        UnsupportedOperationException.class, "Filter expression ref(name=\"id\") == 0 is not completely satisfied.",
-        () -> testInputFormat.create(builder.conf()));
-
-    builder.usePigTuples();
-
-    AssertHelpers.assertThrows(
-        "Residuals are not evaluated today for Iceberg Generics In memory model of PIG",
-        UnsupportedOperationException.class, "Filter expression ref(name=\"id\") == 0 is not completely satisfied.",
-        () -> testInputFormat.create(builder.conf()));
   }
 
   @Test
@@ -407,41 +370,6 @@ public class TestIcebergInputFormats {
 
     assertFalse("Cache affinity should be disabled for HiveIcebergInputFormat when LLAP is on, but vectorization not",
         mapWork.getCacheAffinity());
-  }
-
-  @Test
-  public void testResidualsUnserialized() throws Exception {
-    helper.createUnpartitionedTable();
-    List<Record> expectedRecords = helper.generateRandomRecords(10, 0L);
-    helper.appendToTable(null, expectedRecords);
-    builder.filter(Expressions.greaterThan("id", 123));
-
-    for (InputSplit split : testInputFormat.create(builder.conf()).getSplits()) {
-
-      HiveIcebergSplit originalSplit = new HiveIcebergSplit((IcebergSplit) split, "noop");
-
-      // In the original split, residual should still be there as per above expression
-      assertNotEquals(
-          Expressions.alwaysTrue(),
-          originalSplit.icebergSplit().task().files().stream().findFirst().get().residual()
-      );
-
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      DataOutputStream out = new DataOutputStream(baos);
-      originalSplit.write(out);
-
-      HiveIcebergSplit deserializedSplit = new HiveIcebergSplit();
-      ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-      DataInputStream in = new DataInputStream(bais);
-      deserializedSplit.readFields(in);
-
-      // After ser/de the expression should be always-true
-      assertEquals(
-          Expressions.alwaysTrue(),
-          deserializedSplit.icebergSplit().task().files().stream().findFirst().get().residual()
-      );
-    }
-
   }
 
   // TODO - Capture template type T in toString method: https://github.com/apache/iceberg/issues/1542

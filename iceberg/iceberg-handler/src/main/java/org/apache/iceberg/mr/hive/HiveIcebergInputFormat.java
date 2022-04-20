@@ -41,9 +41,12 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.common.DynConstructors;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.expressions.Expression;
+import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.mapred.AbstractMapredIcebergRecordReader;
@@ -80,20 +83,54 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     }
   }
 
-  @Override
-  public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
-    // Convert Hive filter to Iceberg filter
-    String hiveFilter = job.get(TableScanDesc.FILTER_EXPR_CONF_STR);
+  /**
+   * Converts the Hive filter found in the job conf to an Iceberg filter expression.
+   * @param conf - job conf
+   * @return - Iceberg data filter expression
+   */
+  static Expression icebergDataFilterFromHiveConf(Configuration conf) {
+    Expression icebergFilter = SerializationUtil.deserializeFromBase64(conf.get(InputFormatConfig.FILTER_EXPRESSION));
+    if (icebergFilter != null) {
+      // in case we already have it prepared..
+      return icebergFilter;
+    }
+    String hiveFilter = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
     if (hiveFilter != null) {
       ExprNodeGenericFuncDesc exprNodeDesc = SerializationUtilities
-              .deserializeObject(hiveFilter, ExprNodeGenericFuncDesc.class);
-      SearchArgument sarg = ConvertAstToSearchArg.create(job, exprNodeDesc);
+          .deserializeObject(hiveFilter, ExprNodeGenericFuncDesc.class);
+      SearchArgument sarg = ConvertAstToSearchArg.create(conf, exprNodeDesc);
       try {
-        Expression filter = HiveIcebergFilterFactory.generateFilterExpression(sarg);
-        job.set(InputFormatConfig.FILTER_EXPRESSION, SerializationUtil.serializeToBase64(filter));
+        return HiveIcebergFilterFactory.generateFilterExpression(sarg);
       } catch (UnsupportedOperationException e) {
         LOG.warn("Unable to create Iceberg filter, continuing without filter (will be applied by Hive later): ", e);
       }
+    }
+    return null;
+  }
+
+  /**
+   * Converts Hive filter found in the passed job conf to an Iceberg filter expression. Then evaluates this
+   * against the task's partition value producing a residual filter expression.
+   * @param task - file scan task to evaluate the expression against
+   * @param conf - job conf
+   * @return - Iceberg residual filter expression
+   */
+  public static Expression residualForTask(FileScanTask task, Configuration conf) {
+    Expression dataFilter = icebergDataFilterFromHiveConf(conf);
+    if (dataFilter == null) {
+      return Expressions.alwaysTrue();
+    }
+    return ResidualEvaluator.of(
+        task.spec(), dataFilter,
+        conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT)
+    ).residualFor(task.file().partition());
+  }
+
+  @Override
+  public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
+    Expression filter = icebergDataFilterFromHiveConf(job);
+    if (filter != null) {
+      job.set(InputFormatConfig.FILTER_EXPRESSION, SerializationUtil.serializeToBase64(filter));
     }
 
     job.set(InputFormatConfig.SELECTED_COLUMNS, job.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
