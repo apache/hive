@@ -206,7 +206,7 @@ public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngi
   public void testFromTimeInTheFuture() throws IOException, InterruptedException {
     Table table = prepareTableWithVersions(5);
     AssertHelpers.assertThrows("Should throw error for future date in FROM clause", IllegalArgumentException.class,
-        "Provided FROM timestamp must be earlier than the latest snapshot of the table.",
+        "Provided FROM timestamp must be earlier than the commit time of latest snapshot of the table.",
         () -> shell.executeStatement("select * from customers for system_time from '2060-01-01 00:00:00'"));
   }
 
@@ -214,7 +214,7 @@ public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngi
   public void testToTimeInThePastBeforeTableCreation() throws IOException, InterruptedException {
     Table table = prepareTableWithVersions(5);
     AssertHelpers.assertThrows("Should throw error for future date in FROM clause", IllegalArgumentException.class,
-        "Provided TO timestamp must be after the first snapshot of the table.",
+        "Provided TO timestamp must be after the commit time of the first snapshot of the table.",
         () -> shell.executeStatement("select * from customers for system_time from '1981-01-01 00:00:00' to " +
             "'1993-01-01 00:00:00'"));
   }

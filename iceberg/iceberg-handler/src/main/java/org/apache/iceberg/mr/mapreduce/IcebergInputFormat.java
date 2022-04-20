@@ -121,12 +121,14 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
 
     long fromTime = conf.getLong(InputFormatConfig.FROM_TIMESTAMP, -1);
     if (fromTime != -1) {
-      scan = scanWithTimeRange(table, conf, scan, fromTime);
+      long toTime = conf.getLong(InputFormatConfig.TO_TIMESTAMP, -1);
+      scan = scanWithTimeRange(table, scan, fromTime, toTime);
     }
 
     long fromSnapshot = conf.getLong(InputFormatConfig.FROM_VERSION, -1);
     if (fromSnapshot != -1) {
-      scan = scanWithVersionRange(conf, scan, fromSnapshot);
+      long toSnapshot = conf.getLong(InputFormatConfig.TO_VERSION, -1);
+      scan = scanWithVersionRange(scan, fromSnapshot, toSnapshot);
     }
 
     long splitSize = conf.getLong(InputFormatConfig.SPLIT_SIZE, 0);
@@ -218,32 +220,30 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     return new IcebergRecordReader<>();
   }
 
-  private static TableScan scanWithTimeRange(Table table, Configuration conf, TableScan scan, long fromTime) {
+  private static TableScan scanWithTimeRange(Table table, TableScan scan, long fromTime, long toTime) {
+    if (toTime != -1 && fromTime >= toTime) {
+      throw new IllegalArgumentException(
+          "Provided FROM timestamp must precede the provided TO timestamp.");
+    }
     // let's find the corresponding snapshot ID - if the fromTime is before the table creation happened, let's use
     // the first snapshot of the table
     long fromSnapshot = IcebergTableUtil.findSnapshotForTimestamp(table, fromTime)
         .orElseGet(() -> table.history().get(0).snapshotId());
     if (fromSnapshot == table.currentSnapshot().snapshotId()) {
       throw new IllegalArgumentException(
-          "Provided FROM timestamp must be earlier than the latest snapshot of the table.");
+          "Provided FROM timestamp must be earlier than the commit time of latest snapshot of the table.");
     }
-    long toTime = conf.getLong(InputFormatConfig.TO_TIMESTAMP, -1);
     if (toTime != -1) {
-      if (fromTime >= toTime) {
-        throw new IllegalArgumentException(
-            "Provided FROM timestamp must precede the provided TO timestamp.");
-      }
       long toSnapshot = IcebergTableUtil.findSnapshotForTimestamp(table, toTime)
           .orElseThrow(() -> new IllegalArgumentException(
-              "Provided TO timestamp must be after the first snapshot of the table."));
+              "Provided TO timestamp must be after the commit time of the first snapshot of the table."));
       return scan.appendsBetween(fromSnapshot, toSnapshot);
     } else {
       return scan.appendsAfter(fromSnapshot);
     }
   }
 
-  private static TableScan scanWithVersionRange(Configuration conf, TableScan scan, long fromSnapshot) {
-    long toSnapshot = conf.getLong(InputFormatConfig.TO_VERSION, -1);
+  private static TableScan scanWithVersionRange(TableScan scan, long fromSnapshot, long toSnapshot) {
     if (toSnapshot != -1) {
       return scan.appendsBetween(fromSnapshot, toSnapshot);
     } else {
