@@ -20,12 +20,16 @@ package org.apache.hadoop.hive.ql.udf.ptf;
 import java.time.ZoneId;
 
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -173,6 +177,47 @@ public class TestValueBoundaryScanner {
         new StringValueBoundaryScanner(null, null, new OrderExpressionDef(argDef), false);
     Text w1 = new Text("a");
     Text w2 = new Text("b");
+
+    Assert.assertTrue(scanner.isEqual(w1, w1));
+
+    Assert.assertFalse(scanner.isEqual(w1, w2));
+    Assert.assertFalse(scanner.isEqual(w2, w1));
+
+    Assert.assertFalse(scanner.isEqual(null, w2));
+    Assert.assertFalse(scanner.isEqual(w1, null));
+
+    Assert.assertTrue(scanner.isEqual(null, null));
+  }
+
+  @Test
+  public void testVarcharEquals() {
+    PTFExpressionDef argDef = new PTFExpressionDef();
+    argDef.setOI(PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector);
+
+    VarcharValueBoundaryScanner scanner =
+        new VarcharValueBoundaryScanner(null, null, new OrderExpressionDef(argDef), false);
+    HiveVarcharWritable w1 = new HiveVarcharWritable(new HiveVarchar("abc", 3));
+    HiveVarcharWritable w2 = new HiveVarcharWritable(new HiveVarchar("bcd", 3));
+
+    Assert.assertTrue(scanner.isEqual(w1, w1));
+
+    Assert.assertFalse(scanner.isEqual(w1, w2));
+    Assert.assertFalse(scanner.isEqual(w2, w1));
+
+    Assert.assertFalse(scanner.isEqual(null, w2));
+    Assert.assertFalse(scanner.isEqual(w1, null));
+
+    Assert.assertTrue(scanner.isEqual(null, null));
+  }
+
+  @Test
+  public void testCharEquals() {
+    PTFExpressionDef argDef = new PTFExpressionDef();
+    argDef.setOI(PrimitiveObjectInspectorFactory.writableHiveCharObjectInspector);
+
+    CharValueBoundaryScanner scanner = new CharValueBoundaryScanner(null, null, new OrderExpressionDef(argDef), false);
+    HiveCharWritable w1 = new HiveCharWritable(new HiveChar("a", 1));
+    HiveCharWritable w2 = new HiveCharWritable(new HiveChar("b", 1));
 
     Assert.assertTrue(scanner.isEqual(w1, w1));
 

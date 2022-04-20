@@ -1,5 +1,5 @@
 PREHOOK: query: CREATE TABLE vector_ptf_part_simple_text(p_mfgr string, p_name string, p_date date, p_retailprice double,
-  p_type char(1), p_varchar varchar(5), rowindex int)
+  p_char char(1), p_varchar varchar(5), rowindex int)
         ROW FORMAT DELIMITED
         FIELDS TERMINATED BY ','
         STORED AS TEXTFILE
@@ -7,7 +7,7 @@ PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@vector_ptf_part_simple_text
 POSTHOOK: query: CREATE TABLE vector_ptf_part_simple_text(p_mfgr string, p_name string, p_date date, p_retailprice double,
-  p_type char(1), p_varchar varchar(5), rowindex int)
+  p_char char(1), p_varchar varchar(5), rowindex int)
         ROW FORMAT DELIMITED
         FIELDS TERMINATED BY ','
         STORED AS TEXTFILE
@@ -23,13 +23,13 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@vector_ptf_part_simple_text
 PREHOOK: query: CREATE TABLE vector_ptf_part_simple_orc (p_mfgr string, p_name string, p_date date, p_timestamp timestamp,
-  p_int int, p_retailprice double, p_decimal decimal(10,4), p_type char(1), p_varchar varchar(5),rowindex int) stored
+  p_int int, p_retailprice double, p_decimal decimal(10,4), p_char char(1), p_varchar varchar(5),rowindex int) stored
 as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@vector_ptf_part_simple_orc
 POSTHOOK: query: CREATE TABLE vector_ptf_part_simple_orc (p_mfgr string, p_name string, p_date date, p_timestamp timestamp,
-  p_int int, p_retailprice double, p_decimal decimal(10,4), p_type char(1), p_varchar varchar(5),rowindex int) stored
+  p_int int, p_retailprice double, p_decimal decimal(10,4), p_char char(1), p_varchar varchar(5),rowindex int) stored
 as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -42,7 +42,7 @@ POSTHOOK: query: SELECT * FROM vector_ptf_part_simple_text
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_text
 #### A masked pattern was here ####
-vector_ptf_part_simple_text.p_mfgr	vector_ptf_part_simple_text.p_name	vector_ptf_part_simple_text.p_date	vector_ptf_part_simple_text.p_retailprice	vector_ptf_part_simple_text.p_type	vector_ptf_part_simple_text.p_varchar	vector_ptf_part_simple_text.rowindex
+vector_ptf_part_simple_text.p_mfgr	vector_ptf_part_simple_text.p_name	vector_ptf_part_simple_text.p_date	vector_ptf_part_simple_text.p_retailprice	vector_ptf_part_simple_text.p_char	vector_ptf_part_simple_text.p_varchar	vector_ptf_part_simple_text.rowindex
 Manufacturer#2	almond aquamarine rose maroon antique	NULL	900.66	A	DA	1
 Manufacturer#1	almond aquamarine burnished black steel	1970-01-02	1414.42	B	AB	2
 Manufacturer#2	almond aquamarine rose maroon antique	1970-01-03	1698.66	C	CA	3
@@ -89,7 +89,7 @@ p_mfgr, p_name, p_date,
 CAST(FROM_UNIXTIME(UNIX_TIMESTAMP(p_date)) as TIMESTAMP), 
 CAST(UNIX_TIMESTAMP(p_date) as int), p_retailprice, 
 CAST(p_retailprice as DECIMAL(10,4)),
-p_type,
+p_char,
 p_varchar,
 rowindex 
 FROM vector_ptf_part_simple_text
@@ -102,13 +102,14 @@ p_mfgr, p_name, p_date,
 CAST(FROM_UNIXTIME(UNIX_TIMESTAMP(p_date)) as TIMESTAMP), 
 CAST(UNIX_TIMESTAMP(p_date) as int), p_retailprice, 
 CAST(p_retailprice as DECIMAL(10,4)),
-p_type,
+p_char,
 p_varchar,
 rowindex 
 FROM vector_ptf_part_simple_text
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_text
 POSTHOOK: Output: default@vector_ptf_part_simple_orc
+POSTHOOK: Lineage: vector_ptf_part_simple_orc.p_char SIMPLE [(vector_ptf_part_simple_text)vector_ptf_part_simple_text.FieldSchema(name:p_char, type:char(1), comment:null), ]
 POSTHOOK: Lineage: vector_ptf_part_simple_orc.p_date SIMPLE [(vector_ptf_part_simple_text)vector_ptf_part_simple_text.FieldSchema(name:p_date, type:date, comment:null), ]
 POSTHOOK: Lineage: vector_ptf_part_simple_orc.p_decimal EXPRESSION [(vector_ptf_part_simple_text)vector_ptf_part_simple_text.FieldSchema(name:p_retailprice, type:double, comment:null), ]
 POSTHOOK: Lineage: vector_ptf_part_simple_orc.p_int EXPRESSION [(vector_ptf_part_simple_text)vector_ptf_part_simple_text.FieldSchema(name:p_date, type:date, comment:null), ]
@@ -116,10 +117,9 @@ POSTHOOK: Lineage: vector_ptf_part_simple_orc.p_mfgr SIMPLE [(vector_ptf_part_si
 POSTHOOK: Lineage: vector_ptf_part_simple_orc.p_name SIMPLE [(vector_ptf_part_simple_text)vector_ptf_part_simple_text.FieldSchema(name:p_name, type:string, comment:null), ]
 POSTHOOK: Lineage: vector_ptf_part_simple_orc.p_retailprice SIMPLE [(vector_ptf_part_simple_text)vector_ptf_part_simple_text.FieldSchema(name:p_retailprice, type:double, comment:null), ]
 POSTHOOK: Lineage: vector_ptf_part_simple_orc.p_timestamp EXPRESSION [(vector_ptf_part_simple_text)vector_ptf_part_simple_text.FieldSchema(name:p_date, type:date, comment:null), ]
-POSTHOOK: Lineage: vector_ptf_part_simple_orc.p_type SIMPLE [(vector_ptf_part_simple_text)vector_ptf_part_simple_text.FieldSchema(name:p_type, type:char(1), comment:null), ]
 POSTHOOK: Lineage: vector_ptf_part_simple_orc.p_varchar SIMPLE [(vector_ptf_part_simple_text)vector_ptf_part_simple_text.FieldSchema(name:p_varchar, type:varchar(5), comment:null), ]
 POSTHOOK: Lineage: vector_ptf_part_simple_orc.rowindex SIMPLE [(vector_ptf_part_simple_text)vector_ptf_part_simple_text.FieldSchema(name:rowindex, type:int, comment:null), ]
-p_mfgr	p_name	p_date	_c3	_c4	p_retailprice	_c6	p_type	p_varchar	rowindex
+p_mfgr	p_name	p_date	_c3	_c4	p_retailprice	_c6	p_char	p_varchar	rowindex
 PREHOOK: query: SELECT * FROM vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@vector_ptf_part_simple_orc
@@ -128,7 +128,7 @@ POSTHOOK: query: SELECT * FROM vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
-vector_ptf_part_simple_orc.p_mfgr	vector_ptf_part_simple_orc.p_name	vector_ptf_part_simple_orc.p_date	vector_ptf_part_simple_orc.p_timestamp	vector_ptf_part_simple_orc.p_int	vector_ptf_part_simple_orc.p_retailprice	vector_ptf_part_simple_orc.p_decimal	vector_ptf_part_simple_orc.p_type	vector_ptf_part_simple_orc.p_varchar	vector_ptf_part_simple_orc.rowindex
+vector_ptf_part_simple_orc.p_mfgr	vector_ptf_part_simple_orc.p_name	vector_ptf_part_simple_orc.p_date	vector_ptf_part_simple_orc.p_timestamp	vector_ptf_part_simple_orc.p_int	vector_ptf_part_simple_orc.p_retailprice	vector_ptf_part_simple_orc.p_decimal	vector_ptf_part_simple_orc.p_char	vector_ptf_part_simple_orc.p_varchar	vector_ptf_part_simple_orc.rowindex
 Manufacturer#2	almond aquamarine rose maroon antique	NULL	NULL	NULL	900.66	900.6600	A	DA	1
 Manufacturer#1	almond aquamarine burnished black steel	1970-01-02	1970-01-02 00:00:00	115200	1414.42	1414.4200	B	AB	2
 Manufacturer#2	almond aquamarine rose maroon antique	1970-01-03	1970-01-03 00:00:00	201600	1698.66	1698.6600	C	CA	3
@@ -356,7 +356,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 11104 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_date (type: date)
                     null sort order: az
@@ -385,7 +385,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -1679,7 +1679,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 11104 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_date (type: date)
                     null sort order: az
@@ -1708,7 +1708,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -2254,7 +2254,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12424 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     null sort order: az
@@ -2283,7 +2283,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -2478,7 +2478,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12424 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_name (type: string)
                     null sort order: a
@@ -2506,7 +2506,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -2725,7 +2725,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12424 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -2761,7 +2761,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [string]
         Reducer 2 
@@ -2977,7 +2977,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12424 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_timestamp (type: timestamp)
                     null sort order: az
@@ -3006,7 +3006,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -3201,7 +3201,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12424 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_timestamp (type: timestamp)
                     null sort order: a
@@ -3229,7 +3229,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -3427,7 +3427,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12424 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -3463,7 +3463,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [timestamp]
         Reducer 2 
@@ -3702,7 +3702,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12424 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_date (type: date)
                     null sort order: az
@@ -3731,7 +3731,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -3926,7 +3926,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12424 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_date (type: date)
                     null sort order: a
@@ -3954,7 +3954,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -4152,7 +4152,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12424 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -4188,7 +4188,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [bigint]
         Reducer 2 
@@ -4427,7 +4427,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12556 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_int (type: int)
                     null sort order: az
@@ -4456,7 +4456,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 4, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -4651,7 +4651,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12556 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_int (type: int)
                     null sort order: a
@@ -4679,7 +4679,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 4, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -4877,7 +4877,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12556 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -4912,7 +4912,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 4, 5, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [string]
         Reducer 2 
@@ -5150,7 +5150,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 16568 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_decimal (type: decimal(10,4))
                     null sort order: az
@@ -5179,7 +5179,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 6, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -5374,7 +5374,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 16568 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_decimal (type: decimal(10,4))
                     null sort order: a
@@ -5402,7 +5402,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 6, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -5600,7 +5600,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 16568 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -5636,7 +5636,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 6, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [decimal(10,4)]
         Reducer 2 
@@ -5769,21 +5769,21 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 _c0
 ************ CHAR WINDOW RANGE TYPE (NON-VECTORIZED REFERENCE) ************
-PREHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_type,
-       count(*) over(partition by p_mfgr order by p_type range between 3 preceding and current row) as cs,
-       sum(p_retailprice) over(partition by p_mfgr order by p_type range between 3 preceding and current row) as s
+PREHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_char,
+       count(*) over(partition by p_mfgr order by p_char range between 3 preceding and current row) as cs,
+       sum(p_retailprice) over(partition by p_mfgr order by p_char range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_type,
-       count(*) over(partition by p_mfgr order by p_type range between 3 preceding and current row) as cs,
-       sum(p_retailprice) over(partition by p_mfgr order by p_type range between 3 preceding and current row) as s
+POSTHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_char,
+       count(*) over(partition by p_mfgr order by p_char range between 3 preceding and current row) as cs,
+       sum(p_retailprice) over(partition by p_mfgr order by p_char range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
-p_mfgr	p_name	p_timestamp	rowindex	p_date	p_retailprice	p_type	cs	s
+p_mfgr	p_name	p_timestamp	rowindex	p_date	p_retailprice	p_char	cs	s
 Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-05 00:00:00	20	1970-01-05	1753.76	A	3	2926.91
 Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-04 00:00:00	4	1970-01-04	NULL	A	3	2926.91
 Manufacturer#1	almond antique burnished rose metallic	1970-01-03 00:00:00	8	1970-01-03	1173.15	A	3	2926.91
@@ -5834,18 +5834,18 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 _c0
 ************ CHAR WINDOW RANGE TYPE (VECTORIZED) ************
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_type,
-                                    count(*) over(partition by p_mfgr order by p_type range between 3 preceding and
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,
+                                    count(*) over(partition by p_mfgr order by p_char range between 3 preceding and
                                     current row) as cs,
-                                    sum(p_retailprice) over(partition by p_mfgr order by p_type range between 3 preceding and current row) as s
+                                    sum(p_retailprice) over(partition by p_mfgr order by p_char range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_type,
-                                    count(*) over(partition by p_mfgr order by p_type range between 3 preceding and
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,
+                                    count(*) over(partition by p_mfgr order by p_char range between 3 preceding and
                                     current row) as cs,
-                                    sum(p_retailprice) over(partition by p_mfgr order by p_type range between 3 preceding and current row) as s
+                                    sum(p_retailprice) over(partition by p_mfgr order by p_char range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
@@ -5874,9 +5874,9 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 15824 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
-                    key expressions: p_mfgr (type: string), p_type (type: char(1))
+                    key expressions: p_mfgr (type: string), p_char (type: char(1))
                     null sort order: az
                     sort order: ++
                     Map-reduce partition columns: p_mfgr (type: string)
@@ -5903,7 +5903,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 7, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -5995,21 +5995,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_type,
-       count(*) over(partition by p_mfgr order by p_type range between 3 preceding and current row) as cs,
-       sum(p_retailprice) over(partition by p_mfgr order by p_type range between 3 preceding and current row) as s
+PREHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,
+       count(*) over(partition by p_mfgr order by p_char range between 3 preceding and current row) as cs,
+       sum(p_retailprice) over(partition by p_mfgr order by p_char range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_type,
-       count(*) over(partition by p_mfgr order by p_type range between 3 preceding and current row) as cs,
-       sum(p_retailprice) over(partition by p_mfgr order by p_type range between 3 preceding and current row) as s
+POSTHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,
+       count(*) over(partition by p_mfgr order by p_char range between 3 preceding and current row) as cs,
+       sum(p_retailprice) over(partition by p_mfgr order by p_char range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
-p_mfgr	p_name	p_timestamp	rowindex	p_date	p_retailprice	p_type	cs	s
+p_mfgr	p_name	p_timestamp	rowindex	p_date	p_retailprice	p_char	cs	s
 Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-05 00:00:00	20	1970-01-05	1753.76	A	3	2926.91
 Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-04 00:00:00	4	1970-01-04	NULL	A	3	2926.91
 Manufacturer#1	almond antique burnished rose metallic	1970-01-03 00:00:00	8	1970-01-03	1173.15	A	3	2926.91
@@ -6060,16 +6060,16 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 _c0
 ************ CHAR PARTITION ************
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_type,
-                                    count(*) over(partition by p_type) as cs,
-                                    sum(p_retailprice) over(partition by p_type) as s
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,
+                                    count(*) over(partition by p_char) as cs,
+                                    sum(p_retailprice) over(partition by p_char) as s
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_type,
-                                    count(*) over(partition by p_type) as cs,
-                                    sum(p_retailprice) over(partition by p_type) as s
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,
+                                    count(*) over(partition by p_char) as cs,
+                                    sum(p_retailprice) over(partition by p_char) as s
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
@@ -6098,12 +6098,12 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 15824 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
-                    key expressions: p_type (type: char(1))
+                    key expressions: p_char (type: char(1))
                     null sort order: a
                     sort order: +
-                    Map-reduce partition columns: p_type (type: char(1))
+                    Map-reduce partition columns: p_char (type: char(1))
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkStringOperator
                         keyColumns: 7:char(1)
@@ -6126,7 +6126,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 7, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -6218,21 +6218,21 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_type,
-       count(*) over(partition by p_type) as cs,
-       sum(p_retailprice) over(partition by p_type) as s
+PREHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,
+       count(*) over(partition by p_char) as cs,
+       sum(p_retailprice) over(partition by p_char) as s
 from vector_ptf_part_simple_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_type,
-       count(*) over(partition by p_type) as cs,
-       sum(p_retailprice) over(partition by p_type) as s
+POSTHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,
+       count(*) over(partition by p_char) as cs,
+       sum(p_retailprice) over(partition by p_char) as s
 from vector_ptf_part_simple_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
-p_mfgr	p_name	p_timestamp	rowindex	p_date	p_retailprice	p_type	cs	s
+p_mfgr	p_name	p_timestamp	rowindex	p_date	p_retailprice	p_char	cs	s
 Manufacturer#4	almond antique gainsboro frosted violet	NULL	25	NULL	NULL	A	9	7954.1900000000005
 Manufacturer#5	almond antique sky peru orange	1970-01-02 00:00:00	22	1970-01-02	1788.73	A	9	7954.1900000000005
 Manufacturer#2	almond aquamarine rose maroon antique	NULL	1	NULL	900.66	A	9	7954.1900000000005
@@ -6283,19 +6283,19 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 _c0
 ************ CHAR PARTITION WITH CONSTANT PARTITION EXPRESSION ************
-PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_type,
-                                    count(*) over(partition by p_type) as cs,
-                                    sum(p_retailprice) over(partition by p_type) as s
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,
+                                    count(*) over(partition by p_char) as cs,
+                                    sum(p_retailprice) over(partition by p_char) as s
 from vector_ptf_part_simple_orc
-where p_type = 'D'
+where p_char = 'D'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_type,
-                                    count(*) over(partition by p_type) as cs,
-                                    sum(p_retailprice) over(partition by p_type) as s
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,
+                                    count(*) over(partition by p_char) as cs,
+                                    sum(p_retailprice) over(partition by p_char) as s
 from vector_ptf_part_simple_orc
-where p_type = 'D'
+where p_char = 'D'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
@@ -6320,17 +6320,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_ptf_part_simple_orc
-                  filterExpr: (p_type = 'D') (type: boolean)
+                  filterExpr: (p_char = 'D') (type: boolean)
                   Statistics: Num rows: 40 Data size: 15824 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterStringGroupColEqualCharScalar(col 7:char(1), val D)
-                    predicate: (p_type = 'D') (type: boolean)
+                    predicate: (p_char = 'D') (type: boolean)
                     Statistics: Num rows: 10 Data size: 4034 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: CAST( 'D' AS CHAR(1)) (type: char(1))
@@ -6360,7 +6360,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 7, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [string]
         Reducer 2 
@@ -6453,23 +6453,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_type,
-       count(*) over(partition by p_type) as cs,
-       sum(p_retailprice) over(partition by p_type) as s
+PREHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_char,
+       count(*) over(partition by p_char) as cs,
+       sum(p_retailprice) over(partition by p_char) as s
 from vector_ptf_part_simple_orc
-where p_type = 'D'
+where p_char = 'D'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
-POSTHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_type,
-       count(*) over(partition by p_type) as cs,
-       sum(p_retailprice) over(partition by p_type) as s
+POSTHOOK: query: select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_char,
+       count(*) over(partition by p_char) as cs,
+       sum(p_retailprice) over(partition by p_char) as s
 from vector_ptf_part_simple_orc
-where p_type = 'D'
+where p_char = 'D'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
-p_mfgr	p_name	p_timestamp	rowindex	p_date	p_retailprice	p_type	cs	s
+p_mfgr	p_name	p_timestamp	rowindex	p_date	p_retailprice	p_char	cs	s
 Manufacturer#5	almond antique blue firebrick mint	NULL	7	NULL	1789.69	D	11	15886.86
 Manufacturer#4	almond aquamarine yellow dodger mint	1970-01-01 00:00:00	11	1970-01-01	1844.92	D	11	15886.86
 Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-02 00:00:00	12	1970-01-02	1753.76	D	11	15886.86
@@ -6604,7 +6604,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 15864 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_varchar (type: varchar(5))
                     null sort order: az
@@ -6633,7 +6633,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 8, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -6828,7 +6828,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 15864 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: p_varchar (type: varchar(5))
                     null sort order: a
@@ -6856,7 +6856,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 8, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
@@ -7071,7 +7071,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 15864 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_type:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:rowindex:int, 10:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 11:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -7107,7 +7107,7 @@ STAGE PLANS:
                 rowBatchContext:
                     dataColumnCount: 10
                     includeColumns: [0, 1, 2, 3, 5, 8, 9]
-                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_type:char(1), p_varchar:varchar(5), rowindex:int
+                    dataColumns: p_mfgr:string, p_name:string, p_date:date, p_timestamp:timestamp, p_int:int, p_retailprice:double, p_decimal:decimal(10,4)/DECIMAL_64, p_char:char(1), p_varchar:varchar(5), rowindex:int
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [string]
         Reducer 2 

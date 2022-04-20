@@ -754,9 +754,6 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
 
   public static SingleValueBoundaryScanner getBoundaryScanner(BoundaryDef start, BoundaryDef end,
       boolean nullsLast, OrderExpressionDef exprDef, String typeString) throws HiveException {
-    if (typeString.startsWith("decimal")){
-      typeString = "decimal"; //DecimalTypeInfo.getTypeName() includes scale/precision: "decimal(10,4)"
-    }
     switch (typeString) {
     case "int":
     case "bigint":
@@ -767,15 +764,16 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     case "double":
     case "float":
       return new DoublePrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
-    case "decimal":
-      return new HiveDecimalPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
     case "date":
       return new DatePrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
     case "string":
       return new StringPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
     default:
+      // The following types includes scale/precision: "decimal(10,4), char(10) and varchar(15)"
       if (typeString.startsWith("char") || typeString.startsWith("varchar")) {
         return new StringPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
+      } else if (typeString.startsWith("decimal")) {
+        return new HiveDecimalPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
       }
       throw new HiveException(String
           .format("Internal Error: attempt to setup a Window for typeString: '%s'", typeString));
