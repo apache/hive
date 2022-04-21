@@ -1334,4 +1334,32 @@ public final class FileUtils {
       LOG.debug("Unable to delete {}", path, e);
     }
   }
+
+  /**
+   * Checks if path belongs to a given file system
+   * @param path
+   * @param fs
+   * @return
+   */
+
+  public static boolean isPathOnFileSystem(Path path, FileSystem fs) {
+    URI fsUri = fs.getUri();
+    URI pathUri = path.toUri();
+
+    String fsAuthority = fsUri.getAuthority();
+    String pathAuthority = pathUri.getAuthority();
+
+    String pathScheme = pathUri.getScheme();
+
+    if (pathScheme == null) { // path is relative
+      return true;
+    }
+
+    if (fs.getScheme().equalsIgnoreCase(pathScheme)) { // schemes match
+      if (fsAuthority != null && fsAuthority.equalsIgnoreCase(pathAuthority)) { // authorities match
+        return true;
+      }
+    }
+    return false;
+  }
 }

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.info.show.status.formatter;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -123,13 +124,18 @@ public abstract class ShowTableStatusFormatter {
     if (!fileData.unknown) {
       for (Path location : locations) {
         try {
-          FileStatus status = fileSystem.getFileStatus(location);
+          // Reuse table path's file system when partition path and table path are on same file system.
+          // Use partition path's file system when partition path and table path are on different file systems.
+          FileSystem locationFileSystem = FileUtils.isPathOnFileSystem(location, fileSystem) ? fileSystem
+              : location.getFileSystem(conf);
+          FileStatus status = locationFileSystem.getFileStatus(location);
+
           // no matter loc is the table location or part location, it must be a
           // directory.
           if (!status.isDirectory()) {
             continue;
           }
-          processDir(status, fileSystem, fileData);
+          processDir(status, locationFileSystem, fileData);
         } catch (IOException e) {
           // ignore
         }
