@@ -1,4 +1,4 @@
-package org.apache.hadoop.hive.ql.optimizer.calcite;/*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -15,6 +15,8 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
