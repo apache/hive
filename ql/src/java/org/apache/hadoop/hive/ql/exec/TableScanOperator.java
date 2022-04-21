@@ -252,10 +252,19 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
         if (vectorized) {
           VectorizedRowBatch rowBatch = (VectorizedRowBatch) row;
+          ArrayList<ColumnVector> cv = new ArrayList<>();
           for (int i = 0; i < rowBatch.numCols; i++) {
             ColumnVector col = rowBatch.cols[i];
-            // TODO: may not be correct, find some method to get exact values.....
-            values.add(col == null ? defaultPartitionName : col.toString());
+            if (col != null) {
+              cv.add(col);
+            }
+          }
+          for (int i = 0; i < rowBatch.size; i++) {
+            for (ColumnVector c : cv) {
+              StringBuilder sb = new StringBuilder();
+              c.stringifyValue(sb, i);
+              values.add(sb.toString().equalsIgnoreCase("null") ? defaultPartitionName : sb.toString());
+            }
           }
         } else {
           ObjectInspectorUtils.partialCopyToStandardObject(writable, row, dpStartCol, conf.getPartColumns().size(),
