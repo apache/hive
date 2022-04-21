@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -42,10 +43,10 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.expressions.Binder;
 import org.apache.iceberg.expressions.Expression;
+import org.apache.iceberg.hadoop.HadoopInputFile;
 import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mapping.MappingUtil;
 import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
-import org.apache.orc.impl.BufferChunk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +63,7 @@ public class VectorizedReadUtils {
 
   /**
    * Opens the ORC inputFile and reads the metadata information to construct a byte buffer with OrcTail content.
+   * Note that org.apache.orc (aka Hive bundled) ORC is used, as it is the older version compared to Iceberg's ORC.
    * @param inputFile - the original ORC file - this needs to be accessed to retrieve the original schema for mapping
    * @param job - JobConf instance to adjust
    * @param fileId - FileID for the input file, serves as cache key in an LLAP setup
@@ -87,8 +89,7 @@ public class VectorizedReadUtils {
         // Schema has to be serialized and deserialized as it is passed between different packages of TypeDescription:
         // Iceberg expects org.apache.hive.iceberg.org.apache.orc.TypeDescription as it shades ORC, while LLAP provides
         // the unshaded org.apache.orc.TypeDescription type.
-        BufferChunk tailBuffer = LlapProxy.getIo().getOrcTailFromCache(path, job, cacheTag, fileId).getTailBuffer();
-        result = tailBuffer.getData();
+        return LlapProxy.getIo().getOrcTailFromCache(path, job, cacheTag, fileId).getSerializedTail();
       } catch (IOException ioe) {
         LOG.warn("LLAP is turned on but was unable to get file metadata information through its cache for {}",
             path, ioe);
@@ -98,8 +99,15 @@ public class VectorizedReadUtils {
 
     // Fallback to simple ORC reader file opening method in lack of or failure of LLAP.
     if (result == null) {
-      try (ReaderImpl orcFileReader = (ReaderImpl) ORC.newFileReader(inputFile, job)) {
-        result = orcFileReader.getSerializedFileFooter();
+      org.apache.orc.OrcFile.ReaderOptions readerOptions =
+          org.apache.orc.OrcFile.readerOptions(job).useUTCTimestamp(true);
+      if (inputFile instanceof HadoopInputFile) {
+        readerOptions.filesystem(((HadoopInputFile) inputFile).getFileSystem());
+      }
+
+      try (org.apache.orc.impl.ReaderImpl orcFileReader =
+               (org.apache.orc.impl.ReaderImpl) OrcFile.createReader(new Path(inputFile.location()), readerOptions)) {
+        return orcFileReader.getSerializedFileFooter();
       }
     }
 
