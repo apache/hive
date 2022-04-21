@@ -9,7 +9,7 @@ CREATE TABLE table1(
    t2_col3 date);
 
 insert into table1 values(1);
-insert into table2 values("1","1","1");
+insert into table2 partition(t2_col3='2021-01-01') values('1','1');
 
 set hive.support.quoted.identifiers=none;
 
