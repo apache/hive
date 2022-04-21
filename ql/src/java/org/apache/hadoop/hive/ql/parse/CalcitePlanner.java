@@ -166,6 +166,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSubQueryVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTezModelRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RuleEventLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSortLimitRule;
@@ -2121,7 +2122,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 queryToRewriteAST.getTokenStopIndex());
 
         ASTNode expandedAST = ParseUtils.parse(expandedQueryText, new Context(conf));
-        Set<TableName> tablesUsedByOriginalPlan = getTablesUsed(originalPlan);
+        Set<TableName> tablesUsedByOriginalPlan = getAllTablesUsed(originalPlan);
         RelNode mvScan = getMaterializedViewByAST(expandedAST, optCluster, ANY, db, tablesUsedByOriginalPlan, getTxnMgr());
         if (mvScan != null) {
           return mvScan;
@@ -2347,21 +2348,48 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return basePlan;
     }
 
+    /**
+     * Traverse the plan and collect table names from {@link TableScan} operators
+     * Use this method if plan does not have any sub query.
+     * Use {@link CalcitePlannerAction#getAllTablesUsed(RelNode)} to include sub-query expressions.
+     * @see HiveSubQueryRemoveRule
+     */
     protected Set<TableName> getTablesUsed(RelNode plan) {
       Set<TableName> tablesUsed = new HashSet<>();
       new RelVisitor() {
         @Override
         public void visit(RelNode node, int ordinal, RelNode parent) {
-          if (node instanceof TableScan) {
-            TableScan ts = (TableScan) node;
-            Table hiveTableMD = ((RelOptHiveTable) ts.getTable()).getHiveTableMD();
-            tablesUsed.add(hiveTableMD.getFullTableName());
-          }
+          addUsedTable(node, tablesUsed);
           super.visit(node, ordinal, parent);
         }
       }.go(plan);
       return tablesUsed;
     }
+
+    /**
+     * Traverse the plan including sub-query expressions and collect table names from {@link TableScan} operators.
+     */
+    protected Set<TableName> getAllTablesUsed(RelNode plan) {
+      Set<TableName> tablesUsed = new HashSet<>();
+      new HiveSubQueryVisitor() {
+        @Override
+        public void visit(RelNode node, int ordinal, RelNode parent) {
+          addUsedTable(node, tablesUsed);
+          super.visit(node, ordinal, parent);
+        }
+      }.go(plan);
+      return tablesUsed;
+    }
+
+    private void addUsedTable(RelNode node, Set<TableName> tablesUsed) {
+      if (!(node instanceof TableScan)) {
+        return;
+      }
+      TableScan ts = (TableScan) node;
+      Table hiveTableMD = ((RelOptHiveTable) ts.getTable()).getHiveTableMD();
+      tablesUsed.add(hiveTableMD.getFullTableName());
+    }
+
 
     protected List<Table> getMaterializedViewsUsed(RelNode plan) {
       List<Table> materializedViewsUsed = new ArrayList<>();
