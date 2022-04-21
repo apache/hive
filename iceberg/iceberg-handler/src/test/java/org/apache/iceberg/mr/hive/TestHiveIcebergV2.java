@@ -310,6 +310,50 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
   }
 
+  @Test
+  public void testDeleteStatementWithPartitionAndSchemaEvolution() {
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").bucket("customer_id", 16).build();
+
+    // create and insert an initial batch of records
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+    // insert one more batch so that we have multiple data files within the same partition
+    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
+        TableIdentifier.of("default", "customers"), false));
+
+    // change the partition spec + schema, and insert some new records
+    shell.executeStatement("ALTER TABLE customers SET PARTITION SPEC (bucket(64, last_name))");
+    shell.executeStatement("ALTER TABLE customers ADD COLUMNS (department string)");
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN first_name given_name string first");
+    shell.executeStatement("INSERT INTO customers VALUES ('Natalie', 20, 'Bloom', 'Finance'), ('Joanna', 22, " +
+        "'Huberman', 'Operations')");
+
+    // the delete should handle deleting records both from older specs and from the new spec without problems
+    // there are records with Joanna in both the old and new spec, as well as the old and new schema
+    shell.executeStatement("DELETE FROM customers WHERE customer_id=3 or given_name='Joanna'");
+
+    List<Object[]> objects = shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name");
+    Assert.assertEquals(7, objects.size());
+
+    Schema newSchema = new Schema(
+        optional(2, "given_name", Types.StringType.get()),
+        optional(1, "customer_id", Types.LongType.get()),
+        optional(3, "last_name", Types.StringType.get(), "This is last name"),
+        optional(4, "department", Types.StringType.get())
+    );
+    List<Record> expected = TestHelper.RecordsBuilder.newInstance(newSchema)
+        .add("Sharon", 1L, "Taylor", null)
+        .add("Jake", 2L, "Donnel", null)
+        .add("Susan", 2L, "Morrison", null)
+        .add("Bob", 2L, "Silver", null)
+        .add("Laci", 4L, "Zold", null)
+        .add("Peti", 5L, "Rozsaszin", null)
+        .add("Natalie", 20L, "Bloom", "Finance")
+        .build();
+    HiveIcebergTestUtils.validateData(expected, HiveIcebergTestUtils.valueForRow(newSchema, objects), 0);
+  }
+
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {
     PositionDelete<T> positionDelete = PositionDelete.create();
     return positionDelete.set(path, pos, row);

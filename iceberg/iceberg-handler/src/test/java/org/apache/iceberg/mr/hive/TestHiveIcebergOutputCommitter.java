@@ -266,7 +266,6 @@ public class TestHiveIcebergOutputCommitter {
     Table table = HiveIcebergStorageHandler.table(conf, name);
     FileIO io = table.io();
     Schema schema = HiveIcebergStorageHandler.schema(conf);
-    PartitionSpec spec = table.spec();
 
     for (int i = 0; i < taskNum; ++i) {
       List<Record> records = TestHelper.generateRandomRecords(schema, RECORD_NUM, i + attemptNum);
@@ -287,8 +286,8 @@ public class TestHiveIcebergOutputCommitter {
           null, fileFormat, null, null, null, null);
 
 
-      HiveIcebergRecordWriter testWriter = new HiveIcebergRecordWriter(schema, spec, fileFormat,
-          hfwf, outputFileFactory, io, TARGET_FILE_SIZE,
+      HiveIcebergRecordWriter testWriter = new HiveIcebergRecordWriter(schema, table.specs(),
+          table.spec().specId(), fileFormat, hfwf, outputFileFactory, io, TARGET_FILE_SIZE,
           TezUtil.taskAttemptWrapper(taskId), conf.get(Catalogs.NAME));
 
       Container<Record> container = new Container<>();

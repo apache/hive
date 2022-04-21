@@ -178,8 +178,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // For Tez, setting the committer here is enough to make sure it'll be part of the jobConf
     map.put("mapred.output.committer.class", HiveIcebergNoJobCommitter.class.getName());
     // For MR, the jobConf is set only in configureJobConf, so we're setting the write key here to detect it over there
-    String opType = SessionStateUtil.getProperty(conf, Context.Operation.class.getSimpleName())
-        .orElse(Context.Operation.OTHER.name());
+    String opType = getOperationType();
     map.put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
     // Putting the key into the table props as well, so that projection pushdown can be determined on a
     // table-level and skipped only for output tables in HiveIcebergSerde. Properties from the map will be present in
@@ -353,6 +352,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public DynamicPartitionCtx createDPContext(HiveConf hiveConf, org.apache.hadoop.hive.ql.metadata.Table hmsTable)
       throws SemanticException {
+    // delete records are already clustered by partition spec id and the hash of the partition struct
+    // there is no need to do any additional sorting based on partition columns
+    if (getOperationType().equals(Context.Operation.DELETE.name())) {
+      return null;
+    }
+
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     if (table.spec().isUnpartitioned()) {
@@ -770,6 +775,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       LOG.debug("Unable to find commit information in query state for table: {}", tableName);
       return Optional.empty();
     }
+  }
+
+  private String getOperationType() {
+    return SessionStateUtil.getProperty(conf, Context.Operation.class.getSimpleName())
+        .orElse(Context.Operation.OTHER.name());
   }
 
   private static class NonSerializingConfig implements Serializable {

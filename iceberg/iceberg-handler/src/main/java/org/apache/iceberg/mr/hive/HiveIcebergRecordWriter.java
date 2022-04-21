@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.DataFile;
@@ -37,17 +38,21 @@ import org.apache.iceberg.mr.mapred.Container;
 
 class HiveIcebergRecordWriter extends HiveIcebergWriter {
 
-  HiveIcebergRecordWriter(Schema schema, PartitionSpec spec, FileFormat format,
+  private final int currentSpecId;
+
+  HiveIcebergRecordWriter(
+      Schema schema, Map<Integer, PartitionSpec> specs, int currentSpecId, FileFormat format,
       FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
       TaskAttemptID taskAttemptID, String tableName) {
-    super(schema, spec, io, taskAttemptID, tableName,
+    super(schema, specs, io, taskAttemptID, tableName,
         new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize));
+    this.currentSpecId = currentSpecId;
   }
 
   @Override
   public void write(Writable row) throws IOException {
     Record record = ((Container<Record>) row).get();
-    writer.write(record, spec, partition(record));
+    writer.write(record, specs.get(currentSpecId), partition(record, currentSpecId));
   }
 
   @Override

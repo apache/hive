@@ -53,18 +53,18 @@ public abstract class HiveIcebergWriter implements FileSinkOperator.RecordWriter
     return writers.get(taskAttemptID);
   }
 
-  protected final PartitionKey currentKey;
   protected final FileIO io;
   protected final InternalRecordWrapper wrapper;
-  protected final PartitionSpec spec;
+  protected final Map<Integer, PartitionSpec> specs;
+  protected final Map<Integer, PartitionKey> partitionKeys;
   protected final PartitioningWriter writer;
 
-  protected HiveIcebergWriter(Schema schema, PartitionSpec spec, FileIO io, TaskAttemptID attemptID, String tableName,
-      PartitioningWriter writer) {
+  protected HiveIcebergWriter(Schema schema, Map<Integer, PartitionSpec> specs, FileIO io, TaskAttemptID attemptID,
+      String tableName, PartitioningWriter writer) {
     this.io = io;
-    this.currentKey = new PartitionKey(spec, schema);
     this.wrapper = new InternalRecordWrapper(schema.asStruct());
-    this.spec = spec;
+    this.specs = specs;
+    this.partitionKeys = Maps.newHashMapWithExpectedSize(specs.size());
     this.writer = writer;
     writers.putIfAbsent(attemptID, Maps.newConcurrentMap());
     writers.get(attemptID).put(tableName, this);
@@ -100,8 +100,10 @@ public abstract class HiveIcebergWriter implements FileSinkOperator.RecordWriter
         result.dataFiles().size(), result.deleteFiles().size());
   }
 
-  protected PartitionKey partition(Record row) {
-    currentKey.partition(wrapper.wrap(row));
-    return currentKey;
+  protected PartitionKey partition(Record row, int specId) {
+    PartitionKey partitionKey = partitionKeys.computeIfAbsent(specId,
+        id -> new PartitionKey(specs.get(id), specs.get(id).schema()));
+    partitionKey.partition(wrapper.wrap(row));
+    return partitionKey;
   }
 }

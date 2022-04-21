@@ -25,7 +25,6 @@ import java.util.Objects;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -93,7 +92,7 @@ public class IcebergAcidUtil {
    * @param rowData The record object to populate with the rowData fields only
    * @return The position delete object
    */
-  public static PositionDelete<Record> getPositionDelete(Record rec, GenericRecord rowData) {
+  public static PositionDelete<Record> getPositionDelete(Record rec, Record rowData) {
     PositionDelete<Record> positionDelete = PositionDelete.create();
     String filePath = rec.get(DELETE_SERDE_META_COLS.get(MetadataColumns.FILE_PATH), String.class);
     long filePosition = rec.get(DELETE_SERDE_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
@@ -107,21 +106,21 @@ public class IcebergAcidUtil {
     return positionDelete;
   }
 
-  public static int parseSpecId(GenericRecord rec) {
+  public static int parseSpecId(Record rec) {
     return rec.get(DELETE_FILE_READ_META_COLS.get(MetadataColumns.SPEC_ID), Integer.class);
   }
 
-  public static long computePartitionHash(GenericRecord rec) {
+  public static long computePartitionHash(Record rec) {
     StructProjection part = rec.get(DELETE_FILE_READ_META_COLS.get(PARTITION_STRUCT_META_COL), StructProjection.class);
     // we need to compute a hash value for the partition struct so that it can be used as a sorting key
     return computeHash(part);
   }
 
-  public static String parseFilePath(GenericRecord rec) {
+  public static String parseFilePath(Record rec) {
     return rec.get(DELETE_FILE_READ_META_COLS.get(MetadataColumns.FILE_PATH), String.class);
   }
 
-  public static long parseFilePosition(GenericRecord rec) {
+  public static long parseFilePosition(Record rec) {
     return rec.get(DELETE_FILE_READ_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
   }
 
