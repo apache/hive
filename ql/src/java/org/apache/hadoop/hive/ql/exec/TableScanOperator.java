@@ -248,14 +248,21 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
             break;
           }
         }
-        ObjectInspectorUtils.partialCopyToStandardObject(writable, row, dpStartCol, conf
-            .getPartColumns().size(),
-            (StructObjectInspector) inputObjInspectors[0], ObjectInspectorCopyOption.WRITABLE);
 
-        for (Object o : writable) {
-          // It's possible that a parition column may have NULL value, in which case the row belongs
-          // to the special partition, __HIVE_DEFAULT_PARTITION__.
-          values.add(o == null ? defaultPartitionName : o.toString());
+        if (vectorized) {
+          VectorizedRowBatch rowBatch = (VectorizedRowBatch) row;
+          for (int i = 0; i < rowBatch.numCols; i++) {
+            values.add(rowBatch.cols[0].toString());
+          }
+        } else {
+          ObjectInspectorUtils.partialCopyToStandardObject(writable, row, dpStartCol, conf.getPartColumns().size(),
+              (StructObjectInspector) inputObjInspectors[0], ObjectInspectorCopyOption.WRITABLE);
+
+          for (Object o : writable) {
+            // It's possible that a parition column may have NULL value, in which case the row belongs
+            // to the special partition, __HIVE_DEFAULT_PARTITION__.
+            values.add(o == null ? defaultPartitionName : o.toString());
+          }
         }
         partitionSpecs = FileUtils.makePartName(conf.getPartColumns(), values);
         LOG.info("Stats Gathering found a new partition spec = " + partitionSpecs);
@@ -279,7 +286,12 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     }
 
     // increase the row count
-    currentStat.addToStat(StatsSetupConst.ROW_COUNT, 1);
+    if (vectorized) {
+      currentStat.addToStat(StatsSetupConst.ROW_COUNT, ((VectorizedRowBatch)row).size);
+    }
+    else {
+      currentStat.addToStat(StatsSetupConst.ROW_COUNT, 1);
+    }
 
     // extract the raw data size, and update the stats for the current partition
     int rdSizeColumn = currentStat.getBookkeepingInfo(StatsSetupConst.RAW_DATA_SIZE);
@@ -288,7 +300,13 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       ObjectInspectorUtils.partialCopyToStandardObject(rdSize, row,
           rdSizeColumn, 1, (StructObjectInspector) inputObjInspectors[0],
           ObjectInspectorCopyOption.WRITABLE);
-      currentStat.addToStat(StatsSetupConst.RAW_DATA_SIZE, (((LongWritable) rdSize.get(0)).get()));
+      if (vectorized) {
+        currentStat.addToStat(StatsSetupConst.RAW_DATA_SIZE,
+            (((LongWritable) rdSize.get(0)).get()) * ((VectorizedRowBatch)row).size);
+      }
+      else {
+        currentStat.addToStat(StatsSetupConst.RAW_DATA_SIZE, (((LongWritable) rdSize.get(0)).get()));
+      }
     }
 
   }

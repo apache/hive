@@ -2055,11 +2055,8 @@ public class Vectorizer implements PhysicalPlanResolver {
       // Set "global" member indicating where to store "not vectorized" information if necessary.
       currentBaseWork = mapWork;
 
-      if (!validateTableScanOperator(tableScanOperator, mapWork)) {
-
-        // The "not vectorized" information has been stored in the MapWork vertex.
-        return false;
-      }
+      // After HIVE-24510, stats should be able to support vectorization, so removed the previous check in
+      // validateTableScanOperator.
       try {
         validateAndVectorizeMapOperators(tableScanOperator, isTezOrSpark, vectorTaskColumnInfo);
       } catch (VectorizerCannotVectorizeException e) {
@@ -2570,16 +2567,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     SMBJoinDesc desc = op.getConf();
     // Validation is the same as for map join, since the 'small' tables are not vectorized
     return validateMapJoinDesc(desc);
-  }
-
-  private boolean validateTableScanOperator(TableScanOperator op, MapWork mWork) {
-    TableScanDesc desc = op.getConf();
-    if (desc.isGatherStats()) {
-      setOperatorIssue("gather stats not supported");
-      return false;
-    }
-
-    return true;
   }
 
   private boolean validateMapJoinOperator(MapJoinOperator op) {
