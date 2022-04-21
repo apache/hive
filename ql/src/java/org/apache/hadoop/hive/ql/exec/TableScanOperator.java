@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -252,7 +253,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
         if (vectorized) {
           VectorizedRowBatch rowBatch = (VectorizedRowBatch) row;
           for (int i = 0; i < rowBatch.numCols; i++) {
-            values.add(rowBatch.cols[0].toString());
+            ColumnVector col = rowBatch.cols[i];
+            // TODO: may not be correct, find some method to get exact values.....
+            values.add(col == null ? defaultPartitionName : col.toString());
           }
         } else {
           ObjectInspectorUtils.partialCopyToStandardObject(writable, row, dpStartCol, conf.getPartColumns().size(),
