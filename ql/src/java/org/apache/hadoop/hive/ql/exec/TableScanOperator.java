@@ -253,8 +253,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
         if (vectorized) {
           VectorizedRowBatch rowBatch = (VectorizedRowBatch) row;
           ArrayList<ColumnVector> cv = new ArrayList<>();
-          for (int i = 0; i < rowBatch.numCols; i++) {
-            ColumnVector col = rowBatch.cols[i];
+          for (int i = 0; i < conf.getPartColumns().size(); i++) {
+            ColumnVector col = rowBatch.cols[dpStartCol + i];
             if (col != null) {
               cv.add(col);
             }
