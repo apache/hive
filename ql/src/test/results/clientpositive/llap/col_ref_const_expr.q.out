@@ -1,0 +1,96 @@
+PREHOOK: query: create table store(store_name string, store_sqft int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store
+POSTHOOK: query: create table store(store_name string, store_sqft int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store
+PREHOOK: query: insert into store values ('f', 10), ('a', 42), ('a', 12)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@store
+POSTHOOK: query: insert into store values ('f', 10), ('a', 42), ('a', 12)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@store
+POSTHOOK: Lineage: store.store_name SCRIPT []
+POSTHOOK: Lineage: store.store_sqft SCRIPT []
+PREHOOK: query: select 'HQ' || store_name as c1
+from store as store
+order by 'HQ' || store_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store
+#### A masked pattern was here ####
+POSTHOOK: query: select 'HQ' || store_name as c1
+from store as store
+order by 'HQ' || store_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+HQa
+HQa
+HQf
+PREHOOK: query: select distinct 'HQ' || store_name as c1
+from store as store
+order by 'HQ' || store_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct 'HQ' || store_name as c1
+from store as store
+order by 'HQ' || store_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+HQa
+HQf
+PREHOOK: query: select distinct 'HQ' || store_name as c1
+from store as store
+group by 'HQ' || store_name
+order by 'HQ' || store_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct 'HQ' || store_name as c1
+from store as store
+group by 'HQ' || store_name
+order by 'HQ' || store_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+HQa
+HQf
+PREHOOK: query: select 'HQ' || store_name as c1
+from store as store
+group by 'HQ' || store_name, store_sqft
+order by 'HQ' || store_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store
+#### A masked pattern was here ####
+POSTHOOK: query: select 'HQ' || store_name as c1
+from store as store
+group by 'HQ' || store_name, store_sqft
+order by 'HQ' || store_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+HQa
+HQa
+HQf
+PREHOOK: query: select distinct 'HQ' || store_name as c1
+from store as store
+group by 'HQ' || store_name, store_sqft
+order by 'HQ' || store_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct 'HQ' || store_name as c1
+from store as store
+group by 'HQ' || store_name, store_sqft
+order by 'HQ' || store_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+HQa
+HQf
