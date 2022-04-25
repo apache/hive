@@ -92,7 +92,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     checkColStat(identifier.name(), "customer_id", true);
     checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
 
-    insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS, identifier, false);
+    insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1, identifier, false);
     shell.executeStatement(insert);
 
     checkColStat(identifier.name(), "customer_id", true);
@@ -107,7 +107,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 
-    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS, identifier,
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1, identifier,
         true);
     shell.executeStatement(insert);
 

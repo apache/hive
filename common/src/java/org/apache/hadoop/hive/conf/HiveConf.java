@@ -1900,10 +1900,10 @@ public class HiveConf extends Configuration {
         "Whether to try to rewrite queries using the materialized views enabled for rewriting"),
     HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL("hive.materializedview.rewriting.sql", true,
         "Whether to try to rewrite queries using the materialized views enabled for rewriting by comparing the sql " +
-                "query text with the materialized views query text"),
+                "query syntax tree with the materialized views query syntax tree"),
     HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL("hive.materializedview.rewriting.sql.subquery", true,
         "Whether to try to rewrite sub-queries using the materialized views enabled for rewriting by comparing the sql " +
-                "sub-query text with the materialized views query text"),
+                "sub-query syntax tree with the materialized views query syntax tree"),
     HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY("hive.materializedview.rewriting.strategy", "heuristic",
         new StringSet("heuristic", "costbased"),
         "The strategy that should be used to cost and select the materialized view rewriting. \n" +

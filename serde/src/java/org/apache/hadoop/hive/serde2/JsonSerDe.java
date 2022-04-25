@@ -41,10 +41,10 @@ import org.apache.hive.common.util.TimestampParser;
 /**
  * Hive SerDe for processing JSON formatted data. This is typically paired with
  * the TextInputFormat and therefore each line provided to this SerDe must be a
- * single, and complete JSON object.<br/>
+ * single, and complete JSON object.<br>
  * <h2>Example</h2>
  * <p>
- * {"name="john","age"=30}<br/>
+ * {"name="john","age"=30}<br>
  * {"name="sue","age"=32}
  * </p>
  */

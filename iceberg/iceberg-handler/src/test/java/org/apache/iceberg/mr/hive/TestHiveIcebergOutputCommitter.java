@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContextImpl;
@@ -58,7 +59,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import static org.apache.iceberg.mr.hive.HiveIcebergRecordWriter.getWriters;
+import static org.apache.iceberg.mr.hive.HiveIcebergWriter.getWriters;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
 public class TestHiveIcebergOutputCommitter {
@@ -227,6 +228,7 @@ public class TestHiveIcebergOutputCommitter {
     conf.setNumReduceTasks(0);
     conf.set(HiveConf.ConfVars.HIVEQUERYID.varname, QUERY_ID);
     conf.set(InputFormatConfig.OUTPUT_TABLES, table.name());
+    conf.set(InputFormatConfig.OPERATION_TYPE_PREFIX + table.name(), Context.Operation.OTHER.name());
     conf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + table.name(),
             table.properties().get(InputFormatConfig.CATALOG_NAME));
     conf.set(InputFormatConfig.SERIALIZED_TABLE_PREFIX + table.name(), SerializationUtil.serializeToBase64(table));
@@ -264,7 +266,6 @@ public class TestHiveIcebergOutputCommitter {
     Table table = HiveIcebergStorageHandler.table(conf, name);
     FileIO io = table.io();
     Schema schema = HiveIcebergStorageHandler.schema(conf);
-    PartitionSpec spec = table.spec();
 
     for (int i = 0; i < taskNum; ++i) {
       List<Record> records = TestHelper.generateRandomRecords(schema, RECORD_NUM, i + attemptNum);
@@ -285,8 +286,8 @@ public class TestHiveIcebergOutputCommitter {
           null, fileFormat, null, null, null, null);
 
 
-      HiveIcebergRecordWriter testWriter = new HiveIcebergRecordWriter(schema, spec, fileFormat,
-          hfwf, outputFileFactory, io, TARGET_FILE_SIZE,
+      HiveIcebergRecordWriter testWriter = new HiveIcebergRecordWriter(schema, table.specs(),
+          table.spec().specId(), fileFormat, hfwf, outputFileFactory, io, TARGET_FILE_SIZE,
           TezUtil.taskAttemptWrapper(taskId), conf.get(Catalogs.NAME));
 
       Container<Record> container = new Container<>();

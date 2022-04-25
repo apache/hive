@@ -934,6 +934,139 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         .verifyResults(new String[] { "beejing", "chengdu" });
   }
 
+  @Test
+  public void testOverwriteDuringBootstrap() throws Throwable {
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+
+    // Do a bootstrap cycle.
+    primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    // Create some partitioned and non partitioned tables and do a dump & load.
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+        .run("create table t1 (id int)")
+        .run("insert into table t1 values (1)")
+        .run("insert into table t1 values (2),(3),(4)")
+        .run("create table t2 (id int)")
+        .run("insert into table t2 values (15),(16)")
+        .run("create table t3 (place string) partitioned by (country string)")
+        .run("insert into table t3 partition(country='india') values ('chennai')")
+        .run("insert into table t3 partition(country='us') values ('new york')")
+        .run("create table t4 (place string) partitioned by (country string)")
+        .run("insert into table t4 partition(country='china') values ('beejing')")
+        .run("insert into table t4 partition(country='nepal') values ('kathmandu')")
+        .dump(primaryDbName, withClause);
+
+    // Do the load and check all the external & managed tables are present.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("repl status " + replicatedDbName)
+        .verifyResult(tuple.lastReplicationId)
+        .run("use " + replicatedDbName)
+        .run("show tables like 't1'")
+        .verifyResult("t1")
+        .run("show tables like 't2'")
+        .verifyResult("t2")
+        .run("show tables like 't3'")
+        .verifyResult("t3")
+        .run("show tables like 't4'")
+        .verifyResult("t4")
+        .verifyReplTargetProperty(replicatedDbName);
+
+    // Prepare for reverse bootstrap.
+    // Do some modifications on original source cluster. The diff becomes(tnew_managed, t1, t2, t3)
+    // Create one new table: It should get dropped. (tnew_managed)
+    // Create some new partition: The new partition should get dropped. (t2: france)
+    // Modify a table, the data should get overwritten. (t1)
+    // Modify a partition, the data should be overwritten. (t3: india value delhi)
+    // Drop a table, the table should be recreated(t2)
+    primary.run("use " + primaryDbName)
+        .run("create table tnew_managed (id int)")
+        .run("insert into table t1 values (25)")
+        .run("insert into table tnew_managed values (110)")
+        .run("insert into table t3 partition(country='france') values ('lyon')")
+        .run("insert into table t3 partition(country='india') values ('delhi')")
+        .run("drop table t2");
+
+    // Do some modifications on the target cluster. (t1, t2, t3: bootstrap & t2, t4, t5: incremental)
+    replica.run("use " + replicatedDbName)
+        .run("insert into table t1 values (101)")
+        .run("insert into table t1 values (121),(211)")
+        .run("insert into table t3 partition(country='india') values ('lucknow')")
+        .run("insert into table t2 values (11)")
+        .run("insert into table t4 partition(country='india') values ('kanpur')")
+        .run("create table t5 (place string) partitioned by (country string)")
+        .run("insert into table t5 partition(country='china') values ('beejing')")
+        .run("insert into table t4 partition(country='china') values ('Shanghai')");
+
+    // Prepare for reverse replication.
+    DistributedFileSystem replicaFs = replica.miniDFSCluster.getFileSystem();
+    Path newReplDir = new Path(replica.repldDir + "1");
+    replicaFs.mkdirs(newReplDir);
+    withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+
+    // Do a reverse dump
+    tuple = replica.dump(replicatedDbName, withClause);
+
+    // Check the event ack file got created.
+    assertTrue(new Path(tuple.dumpLocation, EVENT_ACK_FILE).toString() + " doesn't exist",
+        replicaFs.exists(new Path(tuple.dumpLocation, EVENT_ACK_FILE)));
+
+    Path dumpPath = new Path(tuple.dumpLocation);
+
+    // Do a load, this should create a table_diff_complete directory
+    primary.load(primaryDbName, replicatedDbName, withClause);
+
+    // Check the table diff directory exist.
+    assertTrue(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY).toString() + " doesn't exist",
+        replicaFs.exists(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY)));
+
+    // Check the table diff has all the modified table, including the dropped and empty ones
+    HashSet<String> tableDiffEntries = getTablesFromTableDiffFile(dumpPath, conf);
+    assertTrue("Table Diff Contains " + tableDiffEntries, tableDiffEntries
+        .containsAll(Arrays.asList("tnew_managed", "t1", "t2", "t3")));
+
+    // Do a reverse second dump, this should do a bootstrap dump for the tables in the table_diff and incremental for
+    // rest.
+    tuple = replica.dump(replicatedDbName, withClause);
+
+    String hiveDumpDir = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
+    // _bootstrap directory should be created as bootstrap enabled on external tables.
+    Path dumpPath1 = new Path(hiveDumpDir, INC_BOOTSTRAP_ROOT_DIR_NAME +"/metadata/" + replicatedDbName);
+    FileStatus[] listStatus =
+        dumpPath1.getFileSystem(conf).listStatus(dumpPath1);
+    ArrayList<String> tablesBootstrapped = new ArrayList<String>();
+    for (FileStatus file : listStatus) {
+      tablesBootstrapped.add(file.getPath().getName());
+    }
+
+    assertTrue(tablesBootstrapped.containsAll(Arrays.asList("t1", "t2", "t3")));
+
+    // Do a reverse load, this should do a bootstrap load for the tables in table_diff and incremental for the rest.
+    primary.load(primaryDbName, replicatedDbName, withClause);
+
+    primary.run("use " + primaryDbName)
+        .run("select id from t1")
+        .verifyResults(new String[] { "1", "2", "3", "4", "101", "121", "211" })
+        .run("select id from t2")
+        .verifyResults(new String[] { "15", "16", "11" })
+        .run("select place from t3 where country = 'india'")
+        .verifyResults(new String[] {"chennai", "lucknow" })
+        .run("select place from t3 where country = 'us'")
+        .verifyResults(new String[] {"new york" })
+        .run("select place from t3 where country = 'france'")
+        .verifyFailure(new String[] { "lyon" })
+        .run("select place from t4 where country = 'china'")
+        .verifyResults(new String[] { "beejing", "Shanghai" })
+        .run("select place from t4 where country = 'india'")
+        .verifyResults(new String[] { "kanpur" })
+        .run("select place from t5 where country = 'china'")
+        .verifyResults(new String[] { "beejing" })
+        .run("show tables like 'tnew_managed'")
+        .verifyFailure(new String[]{"tnew_managed"});
+  }
+
   @NotNull
   private List<String> setUpFirstIterForOptimisedBootstrap() throws Throwable {
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);

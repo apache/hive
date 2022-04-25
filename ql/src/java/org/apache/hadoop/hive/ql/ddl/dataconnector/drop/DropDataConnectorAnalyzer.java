@@ -50,7 +50,8 @@ public class DropDataConnectorAnalyzer extends BaseSemanticAnalyzer {
     }
 
     inputs.add(new ReadEntity(connector));
-    outputs.add(new WriteEntity(connector, WriteEntity.WriteType.DDL_EXCLUSIVE));
+    // Neither DummyTxnManager nor DbTxnManageer acquire any locks with `DATACONNECTOR` type
+    outputs.add(new WriteEntity(connector, WriteEntity.WriteType.DDL_NO_LOCK));
 
     DropDataConnectorDesc desc = new DropDataConnectorDesc(connectorName, ifExists);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));

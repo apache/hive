@@ -290,7 +290,7 @@ public interface RawStore extends Configurable {
    * Get the dataconnector with a given name, if exists.
    * @param dcName pattern names should match
    * @return DataConnector object.
-   * @throws MetaException something went wrong, usually with the database.
+   * @throws NoSuchObjectException something went wrong, usually with the database.
    */
   DataConnector getDataConnector(String dcName) throws NoSuchObjectException;
 
@@ -542,7 +542,6 @@ public interface RawStore extends Configurable {
    * Retrieve all materialized views.
    * @return all materialized views in a catalog
    * @throws MetaException error querying the RDBMS
-   * @throws NoSuchObjectException no such database
    */
   List<Table> getAllMaterializedViewObjectsForRewriting(String catName)
       throws MetaException;
@@ -1638,7 +1637,7 @@ public interface RawStore extends Configurable {
   /**
    * SQLPrimaryKey represents a single primary key column.
    * Since a table can have one or more primary keys ( in case of composite primary key ),
-   * this method returns List<SQLPrimaryKey>
+   * this method returns List&lt;SQLPrimaryKey&gt;
    * @param request primary key request
    * @return list of primary key columns or an empty list if the table does not have a primary key
    * @throws MetaException error accessing the RDBMS
@@ -1667,7 +1666,7 @@ public interface RawStore extends Configurable {
   /**
    * SQLForeignKey represents a single foreign key column.
    * Since a table can have one or more foreign keys ( in case of composite foreign key ),
-   * this method returns List<SQLForeignKey>
+   * this method returns List&lt;SQLForeignKey&gt;
    * @param request ForeignKeysRequest object
    * @return List of all matching foreign key columns.  Note that if more than one foreign key
    * matches the arguments the results here will be all mixed together into a single list.
@@ -1691,7 +1690,7 @@ public interface RawStore extends Configurable {
   /**
    * SQLUniqueConstraint represents a single unique constraint column.
    * Since a table can have one or more unique constraint ( in case of composite unique constraint ),
-   * this method returns List<SQLUniqueConstraint>
+   * this method returns List&lt;SQLUniqueConstraint&gt;
    * @param request UniqueConstraintsRequest object.
    * @return list of unique constraints
    * @throws MetaException error access the RDBMS.
@@ -1713,7 +1712,7 @@ public interface RawStore extends Configurable {
   /**
    * SQLNotNullConstraint represents a single not null constraint column.
    * Since a table can have one or more not null constraint ( in case of composite not null constraint ),
-   * this method returns List<SQLNotNullConstraint>
+   * this method returns List&lt;SQLNotNullConstraint&gt;
    * @param request NotNullConstraintsRequest object.
    * @return list of not null constraints
    * @throws MetaException error accessing the RDBMS.
@@ -1735,7 +1734,7 @@ public interface RawStore extends Configurable {
   /**
    * SQLDefaultConstraint represents a single default constraint column.
    * Since a table can have one or more default constraint ( in case of composite default constraint ),
-   * this method returns List<SQLDefaultConstraint>
+   * this method returns List&lt;SQLDefaultConstraint&gt;
    * @param request DefaultConstraintsRequest object.
    * @return list of default values defined on the table.
    * @throws MetaException error accessing the RDBMS
@@ -1757,7 +1756,7 @@ public interface RawStore extends Configurable {
   /**
    * SQLCheckConstraint represents a single check constraint column.
    * Since a table can have one or more check constraint ( in case of composite check constraint ),
-   * this method returns List<SQLCheckConstraint>
+   * this method returns List&lt;SQLCheckConstraint&gt;
    * @param request CheckConstraintsRequest object.
    * @return ccheck constraints for this table
    * @throws MetaException error accessing the RDBMS

@@ -2367,7 +2367,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             "Inconsistent data structure detected: we are writing to " + ts.tableHandle  + " in " +
                 name + " but it's not in isInsertIntoTable() or getInsertOverwriteTables()";
         // Disallow update and delete on non-acid tables
-        boolean isFullAcid = AcidUtils.isFullAcidTable(ts.tableHandle);
+        boolean isFullAcid = AcidUtils.isFullAcidTable(ts.tableHandle) || AcidUtils.isNonNativeAcidTable(ts.tableHandle);
         if ((updating(name) || deleting(name)) && !isFullAcid) {
           if (!AcidUtils.isInsertOnlyTable(ts.tableHandle)) {
             // Whether we are using an acid compliant transaction manager has already been caught in
@@ -6912,7 +6912,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         partnCols = getPartitionColsFromBucketCols(dest, qb, dest_tab, table_desc, input, false);
       }
     } else {
-      if(updating(dest) || deleting(dest)) {
+      if (updating(dest) || deleting(dest)) {
         partnCols = getPartitionColsFromBucketColsForUpdateDelete(input, true);
         enforceBucketing = true;
       }
@@ -7823,8 +7823,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ColumnInfo> vecCol = new ArrayList<ColumnInfo>();
 
     if (updating(dest) || deleting(dest)) {
-      vecCol.add(new ColumnInfo(VirtualColumn.ROWID.getName(), VirtualColumn.ROWID.getTypeInfo(),
-          "", true));
+      if (AcidUtils.isNonNativeAcidTable(destinationTable)) {
+        destinationTable.getStorageHandler().acidVirtualColumns().stream()
+            .map(col -> new ColumnInfo(col.getName(), col.getTypeInfo(), "", true))
+            .forEach(vecCol::add);
+      } else {
+        vecCol.add(new ColumnInfo(VirtualColumn.ROWID.getName(), VirtualColumn.ROWID.getTypeInfo(),
+            "", true));
+      }
     } else {
       try {
         // If we already have a specific inspector (view or directory as a target) use that
@@ -11434,19 +11440,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
       }
 
+      List<VirtualColumn> vcList = new ArrayList<>();
+      boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(tab);
+      boolean isUpdateDelete = this instanceof UpdateDeleteSemanticAnalyzer;
       // put all virtual columns in RowResolver.
-      Iterator<VirtualColumn> vcs = VirtualColumn.getRegistry(conf).iterator();
-      // use a list for easy cumtomize
-      List<VirtualColumn> vcList = new ArrayList<VirtualColumn>();
-      if(!tab.isNonNative()) {
-        // Virtual columns are only for native tables
-        while (vcs.hasNext()) {
-          VirtualColumn vc = vcs.next();
-          rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
-                  vc.getTypeInfo(), alias, true, vc.getIsHidden()
-          ));
-          vcList.add(vc);
+      if (!tab.isNonNative() || (nonNativeAcid && isUpdateDelete)) {
+        vcList = VirtualColumn.getRegistry(conf);
+        if (nonNativeAcid && isUpdateDelete) {
+          vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
         }
+        vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
+            vc.getTypeInfo(), alias, true, vc.getIsHidden()
+        )));
       }
 
       // Create the root of the operator tree

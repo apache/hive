@@ -62,7 +62,7 @@ import java.util.TreeSet;
  * Druid rules with Hive builder factory.
  *
  * Simplify this class when upgrading to Calcite 1.26 using
- * <a href="https://issues.apache.org/jira/browse/CALCITE-4200">
+ * <a href="https://issues.apache.org/jira/browse/CALCITE-4200">CALCITE-4200</a>
  */
 public class HiveDruidRules {
 

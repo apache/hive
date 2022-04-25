@@ -68,7 +68,7 @@ public class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
 
   @Override
   protected void configurePositionDelete(Avro.DeleteWriteBuilder builder) {
-
+    builder.createWriterFunc(DataWriter::create);
   }
 
   @Override

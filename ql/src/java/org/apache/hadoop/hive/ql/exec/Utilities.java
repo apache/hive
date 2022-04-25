@@ -1112,7 +1112,8 @@ public final class Utilities {
    * @param destFileName
    *          the target filename
    * @return The final path the file was moved to.
-   * @throws IOException, HiveException
+   * @throws IOException
+   * @throws HiveException
    */
   public static Path moveFile(FileSystem fs, Path srcFile, Path destDir, String destFileName)
       throws IOException, HiveException {

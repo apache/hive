@@ -67,7 +67,7 @@ import com.google.common.collect.Lists;
 /**
  * This rule could rewrite aggregate calls to be calculated using sketch based functions.
  *
- * <br/>
+ * <br>
  * Currently it can rewrite:
  * <ul>
  *  <li>{@code count(distinct(x))} using {@code CountDistinctRewrite}
@@ -652,7 +652,7 @@ public final class HiveRewriteToDataSketchesRules {
    *  <pre>
    *   SELECT id, NTILE(4) OVER (ORDER BY id) FROM sketch_input;
    *     ⇒ SELECT id, CASE
-   *                    WHEN CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]) < 1
+   *                    WHEN CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]) &lt; 1
    *                      THEN 1
    *                    ELSE CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0])
    *                  END
@@ -708,7 +708,7 @@ public final class HiveRewriteToDataSketchesRules {
    *  <pre>
    *   SELECT id, RANK() OVER (ORDER BY id) FROM sketch_input;
    *     ⇒ SELECT id, CASE
-   *                    WHEN ds_kll_n(ds) < (ceil(ds_kll_rank(ds, CAST(id AS FLOAT) )*ds_kll_n(ds))+1)
+   *                    WHEN ds_kll_n(ds) &lt; (ceil(ds_kll_rank(ds, CAST(id AS FLOAT) )*ds_kll_n(ds))+1)
    *                    THEN ds_kll_n(ds)
    *                    ELSE (ceil(ds_kll_rank(ds, CAST(id AS FLOAT) )*ds_kll_n(ds))+1)
    *                  END

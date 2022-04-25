@@ -191,7 +191,6 @@ import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogBatchRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -209,6 +208,7 @@ import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -2252,17 +2252,16 @@ public class Hive {
    * specified sql query text. It is guaranteed that it will always return an up-to-date version wrt metastore.
    * This method filters out outdated Materialized views. It compares the transaction ids of the passed usedTables and
    * the materialized view using the txnMgr.
-   * @param querySql extended query text (has fully qualified identifiers)
    * @param tablesUsed List of tables to verify whether materialized view is outdated
    * @param txnMgr Transaction manager to get open transactions affects used tables.
    * @return List of materialized views has matching query definition with querySql
    * @throws HiveException - an exception is thrown during validation or unable to pull transaction ids
    */
-  public List<HiveRelOptMaterialization> getMaterializedViewsBySql(
-          String querySql, Set<TableName> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
+  public List<HiveRelOptMaterialization> getMaterializedViewsByAST(
+          ASTNode astNode, Set<TableName> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
 
     List<HiveRelOptMaterialization> materializedViews =
-            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(querySql);
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(astNode);
     if (materializedViews.isEmpty()) {
       return Collections.emptyList();
     }
@@ -5038,7 +5037,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param isSrcLocal true if source is on local file system
    * @param isAcidIUD true if this is an ACID based Insert/Update/Delete
    * @param isOverwrite if true, then overwrite if destination file exist, else add a duplicate copy
-   * @param newFiles if this is non-null, a list of files that were created as a result of this
+   * @param newFilesStatus if this is non-null, a list of files that were created as a result of this
    *                 move will be returned.
    * @param isManaged if table is managed.
    * @param isCompactionTable is table used in query-based compaction
@@ -5378,7 +5377,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
       // not the destf or its subdir?
       isOldPathUnderDestf = isSubDir(oldPath, destPath, oldFs, destFs, false);
-      if (isOldPathUnderDestf) {
+      if (isOldPathUnderDestf && oldFs.exists(oldPath)) {
         cleanUpOneDirectoryForReplace(oldPath, oldFs, pathFilter, conf, purge, isNeedRecycle);
       }
     } catch (IOException e) {

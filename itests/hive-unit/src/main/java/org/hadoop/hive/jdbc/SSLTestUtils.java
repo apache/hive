@@ -67,6 +67,12 @@ public class SSLTestUtils {
             KEY_STORE_TRUST_STORE_PASSWORD);
   }
 
+  public static void setMetastoreHttpsConf(HiveConf conf) {
+    setMetastoreSslConf(conf);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_TRANSPORT_MODE, "http");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_THRIFT_TRANSPORT_MODE, "http");
+  }
+
   public static void clearSslConfOverlay(Map<String, String> confOverlay) {
     confOverlay.put(HiveConf.ConfVars.HIVE_SERVER2_USE_SSL.varname, "false");
   }

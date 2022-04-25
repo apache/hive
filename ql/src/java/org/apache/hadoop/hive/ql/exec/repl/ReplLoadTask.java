@@ -311,7 +311,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         } else {
           LoadTable loadTable = new LoadTable(tableEvent, loadContext, iterator.replLogger(), tableContext,
               loadTaskTracker, work.getMetricCollector());
-          tableTracker = loadTable.tasks(work.isIncrementalLoad());
+          tableTracker = loadTable.tasks(work.isIncrementalLoad(), work.isSecondFailover);
         }
 
         setUpDependencies(dbTracker, tableTracker);
@@ -336,7 +336,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
           // for a table we explicitly try to load partitions as there is no separate partitions events.
           LoadPartitions loadPartitions =
               new LoadPartitions(loadContext, iterator.replLogger(), loadTaskTracker, tableEvent,
-                  work.dbNameToLoadIn, tableContext, work.getMetricCollector());
+                  work.dbNameToLoadIn, tableContext, work.getMetricCollector(), work.tablesToBootstrap);
           TaskTracker partitionsTracker = loadPartitions.tasks();
           partitionsPostProcessing(iterator, scope, loadTaskTracker, tableTracker,
               partitionsTracker);
@@ -445,7 +445,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     LoadPartitions loadPartitions =
         new LoadPartitions(loadContext, iterator.replLogger(), tableContext, loadTaskTracker,
         event.asTableEvent(), work.dbNameToLoadIn, event.lastPartitionReplicated(), work.getMetricCollector(),
-          event.lastPartSpecReplicated(), event.lastStageReplicated());
+          event.lastPartSpecReplicated(), event.lastStageReplicated(), getWork().tablesToBootstrap);
         /*
              the tableTracker here should be a new instance and not an existing one as this can
              only happen when we break in between loading partitions.
@@ -733,10 +733,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         return 0;
       }
     } else if (work.isSecondFailover) {
-      // DROP the tables to be bootstrapped.
+      // DROP the tables extra on target, which are not on source cluster.
 
       Hive db = getHive();
-      for (String table : work.tablesToBootstrap) {
+      for (String table : work.tablesToDrop) {
+        LOG.info("Dropping table {} for optimised bootstarap", work.dbNameToLoadIn + "." + table);
         db.dropTable(work.dbNameToLoadIn + "." + table, true);
       }
     }

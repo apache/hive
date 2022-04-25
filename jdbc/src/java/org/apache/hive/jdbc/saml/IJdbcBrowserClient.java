@@ -53,7 +53,7 @@ public interface IJdbcBrowserClient extends Closeable {
   /**
    * Initializes the browser client context. The client context contains a client
    * identifier which must be used to set the http header with key
-   * {@link HiveSamlUtils.SSO_CLIENT_IDENTIFIER}.
+   * {@link HiveSamlUtils#SSO_CLIENT_IDENTIFIER}.
    */
   void init(JdbcBrowserClientContext context);
 

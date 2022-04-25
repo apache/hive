@@ -1,5 +1,6 @@
 --! qt:dataset:src1
 --! qt:dataset:src
+--! qt:disabled:HIVE-26138 Fix mapjoin_memcheck
 set hive.mapred.mode=nonstrict;
 
 set hive.auto.convert.join = true;

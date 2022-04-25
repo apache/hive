@@ -71,9 +71,9 @@ import com.google.common.base.Preconditions;
 /**
  * This class converts JSON strings into Java or Hive Primitive objects.
  *
- * Support types are:<br/>
- * <br/>
- * <table border="1">
+ * Support types are:<br>
+ * <br>
+ * <table border="1" summary="">
  * <tr>
  * <th>JSON Type</th>
  * <th>Java Type</th>

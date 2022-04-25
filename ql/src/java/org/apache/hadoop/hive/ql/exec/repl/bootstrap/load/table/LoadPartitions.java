@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.TableEvent;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -80,21 +81,19 @@ public class LoadPartitions {
   private final ReplicationMetricCollector metricCollector;
 
   private final ImportTableDesc tableDesc;
+  private final List<String> tablesToBootstrap;
   private Table table;
 
-  public LoadPartitions(Context context, ReplLogger replLogger, TaskTracker tableTracker,
-                        TableEvent event, String dbNameToLoadIn,
-                        TableContext tableContext, ReplicationMetricCollector metricCollector) throws HiveException {
-    this(context, replLogger, tableContext, tableTracker, event, dbNameToLoadIn, null,
-      metricCollector, null, PartitionState.Stage.PARTITION);
+  public LoadPartitions(Context context, ReplLogger replLogger, TaskTracker tableTracker, TableEvent event, String dbNameToLoadIn,
+      TableContext tableContext, ReplicationMetricCollector metricCollector, List<String> tablesToBootstrap) throws HiveException {
+    this(context, replLogger, tableContext, tableTracker, event, dbNameToLoadIn, null, metricCollector, null,
+        PartitionState.Stage.PARTITION, tablesToBootstrap);
   }
 
-  public LoadPartitions(Context context, ReplLogger replLogger, TableContext tableContext,
-                        TaskTracker limiter, TableEvent event, String dbNameToLoadIn,
-                        AlterTableAddPartitionDesc lastReplicatedPartition,
-                        ReplicationMetricCollector metricCollector,
-                        AlterTableAddPartitionDesc.PartitionDesc lastReplicatedPartitionDesc,
-                        ReplicationState.PartitionState.Stage lastReplicatedStage) throws HiveException {
+  public LoadPartitions(Context context, ReplLogger replLogger, TableContext tableContext, TaskTracker limiter,
+      TableEvent event, String dbNameToLoadIn, AlterTableAddPartitionDesc lastReplicatedPartition,
+      ReplicationMetricCollector metricCollector, AlterTableAddPartitionDesc.PartitionDesc lastReplicatedPartitionDesc,
+      PartitionState.Stage lastReplicatedStage, List<String> tablesToBootstrap) throws HiveException {
     this.tracker = new TaskTracker(limiter);
     this.event = event;
     this.context = context;
@@ -106,6 +105,7 @@ public class LoadPartitions {
     this.metricCollector = metricCollector;
     this.lastReplicatedPartitionDesc = lastReplicatedPartitionDesc;
     this.lastReplicatedStage = lastReplicatedStage;
+    this.tablesToBootstrap = tablesToBootstrap;
   }
 
   public TaskTracker tasks() throws Exception {
@@ -134,6 +134,17 @@ public class LoadPartitions {
     } else {
       // existing
       if (table.isPartitioned()) {
+        if (tablesToBootstrap.stream().anyMatch(table.getTableName()::equalsIgnoreCase)) {
+          Hive hiveDb = Hive.get(context.hiveConf);
+          // Collect the non-existing partitions to drop.
+          List<Partition> partitions = hiveDb.getPartitions(table);
+          List<String> newParts = event.partitions(tableDesc);
+          for (Partition part : partitions) {
+            if (!newParts.contains(part.getName())) {
+              hiveDb.dropPartition(table.getDbName(), table.getTableName(), part.getValues(), true);
+            }
+          }
+        }
         List<AlterTableAddPartitionDesc> partitionDescs = event.partitionDescriptions(tableDesc);
         if (!event.replicationSpec().isMetadataOnly() && !partitionDescs.isEmpty()) {
           updateReplicationState(initialReplicationState());

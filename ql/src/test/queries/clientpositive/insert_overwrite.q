@@ -77,6 +77,10 @@ SELECT count(*) FROM ext_part;
 
 SELECT * FROM ext_part ORDER BY par, col;
 
+-- removing a partition manually should not fail the next insert overwrite operation
+dfs -rm -r ${hiveconf:hive.metastore.warehouse.dir}/ext_part/par=1;
+INSERT OVERWRITE TABLE ext_part PARTITION (par) SELECT * FROM b;
+
 drop table ext_part;
 drop table b;
 
