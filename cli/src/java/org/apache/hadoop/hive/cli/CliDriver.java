@@ -445,6 +445,11 @@ public class CliDriver {
   public static List<String> splitSemiColon(String line) {
     boolean inQuotes = false;
     boolean escape = false;
+    boolean inComment = false;
+    boolean isStatementSensitiveForCommentSymbol = false;
+    boolean isStatementBegin = true;
+    String[] commandsIgnoreComment = {"!", "DFS", "CRYPTO", "ERASURE"};
+    Arrays.sort(commandsIgnoreComment);
 
     List<String> ret = new ArrayList<>();
 
@@ -454,15 +459,17 @@ public class CliDriver {
       char c = line.charAt(index);
       switch (c) {
       case ';':
-        if (!inQuotes) {
+        if (!inQuotes && !inComment) {
           ret.add(line.substring(beginIndex, index));
           beginIndex = index + 1;
+          isStatementBegin = true;
+          isStatementSensitiveForCommentSymbol = false;
         }
         break;
       case '"':
       case '`':
       case '\'':
-        if (!escape) {
+        if (!escape && !inComment) {
           if (!inQuotes) {
             quoteChar = c;
             inQuotes = !inQuotes;
@@ -473,10 +480,28 @@ public class CliDriver {
           }
         }
         break;
+      case '\n':
+        inComment = false;
+        break;
+      case '-':
+        if (!inComment && index > 0 && line.charAt(index-1) == '-' && !inQuotes && !isStatementSensitiveForCommentSymbol){
+          inComment = true;
+        }
+        break;
       default:
         break;
       }
-
+      if (isStatementBegin && !Character.isWhitespace(c) && c != ';') {
+        isStatementBegin = false;
+        for (int i = commandsIgnoreComment.length - 1; i >= 0; i--) {
+          String cmd = commandsIgnoreComment[i];
+          if (index + cmd.length() < line.length() && line.substring(index, index + cmd.length()).equalsIgnoreCase(cmd)){
+            isStatementSensitiveForCommentSymbol = true;
+            index = index + cmd.length();
+            break;
+          }
+        }
+      }
       if (escape) {
         escape = false;
       } else if (c == '\\') {
