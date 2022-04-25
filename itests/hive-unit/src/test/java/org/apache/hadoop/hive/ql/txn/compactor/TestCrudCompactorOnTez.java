@@ -128,10 +128,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   @Test
   public void secondCompactionShouldBeRefusedBeforeEnqueueing() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
-    // Set delta numbuer threshold to 2 to avoid skipping compaction because of too few deltas
-    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 2);
-    // Set delta percentage to a high value to suppress selecting major compression based on that
-    conf.setFloatVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD, 1000f);
 
     final String dbName = "default";
     final String tableName = "compaction_test";
