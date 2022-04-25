@@ -1851,6 +1851,7 @@ public interface IMetaStoreClient {
    * @throws MetaException something went wrong, usually either in the RDBMS or storage.
    * @throws TException general thrift error.
    */
+  @Deprecated
   default void dropDatabase(String catName, String dbName, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
     DropDatabaseRequest req = new DropDatabaseRequest();
@@ -1879,8 +1880,7 @@ public interface IMetaStoreClient {
    * @throws MetaException something went wrong, usually either in the RDBMS or storage.
    * @throws TException general thrift error.
    */
-  default void dropDatabase(String catName, String dbName, boolean deleteData,
-                            boolean ignoreUnknownDb)
+  default void dropDatabase(String catName, String dbName, boolean deleteData, boolean ignoreUnknownDb)
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
     dropDatabase(catName, dbName, deleteData, ignoreUnknownDb, false);
   }

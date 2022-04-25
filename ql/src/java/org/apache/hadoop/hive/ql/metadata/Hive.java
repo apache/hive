@@ -663,8 +663,7 @@ public class Hive {
    */
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
       throws HiveException, NoSuchObjectException {
-    dropDatabase(
-      new DropDatabaseDesc(name, ignoreUnknownDb, cascade, deleteData));
+    dropDatabase(new DropDatabaseDesc(name, ignoreUnknownDb, cascade, deleteData));
   }
 
   public void dropDatabase(DropDatabaseDesc desc) 

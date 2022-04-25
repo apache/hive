@@ -3937,14 +3937,17 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   public void testDropDatabaseNonBlocking() throws Exception {
     dropDatabaseNonBlocking(false, false);
   }
+  
   @Test
   public void testDropDatabaseCascadeAllTablesWithSuffix() throws Exception {
     dropDatabaseNonBlocking(true, true);
   }
+  
   @Test
   public void testDropDatabaseCascadeMixed() throws Exception {
     dropDatabaseNonBlocking(false, true);
   }
+  
   private void dropDatabaseNonBlocking(boolean allTablesWithSuffix, boolean cascade) throws Exception {
     String database = "mydb";
     String tableName = "tab_acid";
