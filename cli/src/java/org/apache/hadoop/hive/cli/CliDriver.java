@@ -445,6 +445,9 @@ public class CliDriver {
   public static List<String> splitSemiColon(String line) {
     boolean inQuotes = false;
     boolean escape = false;
+    boolean inComment = false;
+    boolean isShellStatement = false;
+    boolean isStatementBegin = true;
 
     List<String> ret = new ArrayList<>();
 
@@ -453,16 +456,21 @@ public class CliDriver {
     for (int index = 0; index < line.length(); index++) {
       char c = line.charAt(index);
       switch (c) {
+      case '\n':
+        inComment = false;
+        break;
       case ';':
-        if (!inQuotes) {
+        if (!inQuotes && !inComment) {
           ret.add(line.substring(beginIndex, index));
           beginIndex = index + 1;
+          isStatementBegin = true;
+          isShellStatement = false;
         }
         break;
       case '"':
       case '`':
       case '\'':
-        if (!escape) {
+        if (!escape && !inComment) {
           if (!inQuotes) {
             quoteChar = c;
             inQuotes = !inQuotes;
@@ -473,10 +481,35 @@ public class CliDriver {
           }
         }
         break;
+      case '-':
+        if (!inComment && index > 0 && line.charAt(index-1) == '-' && !inQuotes && !isShellStatement){
+          inComment = true;
+        }
+        break;
+      case 's':
+      case 'S':
+      case '!':
+        if (isStatementBegin){
+          isStatementBegin = false;
+          isShellStatement = true;
+        };
+        break;
       default:
         break;
       }
-
+      if (!Character.isWhitespace(c) && c != ';') {
+        if (c == 'd' || c == 'D' ) {
+          if (isStatementBegin && index > 0 && !Character.isWhitespace(line.charAt(index-1))) {
+            isStatementBegin = false;
+          }
+        } else if (c == 'f' || c == 'F') {
+          if (isStatementBegin && index > 0 && line.charAt(index-1) != 'd' && line.charAt(index-1) != 'D') {
+            isStatementBegin = false;
+          }
+        } else {
+          isStatementBegin = false;
+        }
+      }
       if (escape) {
         escape = false;
       } else if (c == '\\') {
