@@ -39,6 +39,7 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Util;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -65,23 +66,15 @@ import com.google.common.collect.Sets;
  */
 public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
 
-  public static final HiveJoinPushTransitivePredicatesRule INSTANCE_JOIN =
-          new HiveJoinPushTransitivePredicatesRule(HiveJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
-
-  public static final HiveJoinPushTransitivePredicatesRule INSTANCE_SEMIJOIN =
-          new HiveJoinPushTransitivePredicatesRule(HiveSemiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
-
-  public static final HiveJoinPushTransitivePredicatesRule INSTANCE_ANTIJOIN =
-          new HiveJoinPushTransitivePredicatesRule(HiveAntiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
-
+  private final HiveConf conf;
+  private final FilterFactory filterFactory;
   private final UnsafeOperatorsFinder unsafeOperatorsFinder = new UnsafeOperatorsFinder();
 
-  private final FilterFactory filterFactory;
-
   public HiveJoinPushTransitivePredicatesRule(Class<? extends Join> clazz,
-      FilterFactory filterFactory) {
+      FilterFactory filterFactory, HiveConf conf) {
     super(operand(clazz, any()));
     this.filterFactory = filterFactory;
+    this.conf = conf;
   }
 
   @Override
@@ -145,19 +138,25 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
       }
     }
 
-    // We need to filter i) those that have been pushed already as stored in the join,
-    // ii) those that were already in the subtree rooted at child,
-    // iii) predicates that are not safe for transitive inference.
+    // We need to filter:
+    //  i) those that have been pushed already as stored in the join,
+    //  ii) those that were already in the subtree rooted at child.
+    List<RexNode> toPush = HiveCalciteUtil.getPredsNotPushedAlready(predicatesToExclude, child, valids);
+
+    // If we run the rule in conservative mode, we also filter:
+    //  iii) predicates that are not safe for transitive inference.
     //
     // There is no formal definition of safety for predicate inference, only an empirical one.
     // An unsafe predicate in this context is one that when pushed across join operands, can lead
     // to redundant predicates that cannot be simplified (by means of predicates merging with other existing ones).
     // This situation can lead to an OOM for cases where lack of simplification allows inferring new predicates
-    // (from LHS to RHS) recursively, predicates which are redundant, but that RexSimplify cannot handle.
+    // (from LHS to RHS and vice-versa) recursively, predicates which are redundant, but that RexSimplify cannot handle.
     // This notion can be relaxed as soon as RexSimplify gets more powerful, and it can handle such cases.
-    List<RexNode> toPush = HiveCalciteUtil.getPredsNotPushedAlready(predicatesToExclude, child, valids).stream()
-        .filter(unsafeOperatorsFinder::isSafe)
-        .collect(Collectors.toList());
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_JOIN_PUSH_TRANSITIVE_PREDICATES_CONSERVATIVE)) {
+      toPush = toPush.stream()
+          .filter(unsafeOperatorsFinder::isSafe)
+          .collect(Collectors.toList());
+    }
 
     return ImmutableList.copyOf(toPush);
   }
