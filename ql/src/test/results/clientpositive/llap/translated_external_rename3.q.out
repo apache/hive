@@ -1,92 +1,61 @@
-PREHOOK: query: create external table t (a integer)
+PREHOOK: query: CREATE TABLE part_test(
+c1 string
+,c2 string
+)PARTITIONED BY (dat string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create external table t (a integer)
+PREHOOK: Output: default@part_test
+POSTHOOK: query: CREATE TABLE part_test(
+c1 string
+,c2 string
+)PARTITIONED BY (dat string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values(1)
+POSTHOOK: Output: default@part_test
+PREHOOK: query: insert into part_test values ("11","th","20220101")
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values(1)
+PREHOOK: Output: default@part_test
+POSTHOOK: query: insert into part_test values ("11","th","20220101")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.a SCRIPT []
-PREHOOK: query: alter table t rename to t2
+POSTHOOK: Output: default@part_test
+POSTHOOK: Output: default@part_test@dat=20220101
+POSTHOOK: Lineage: part_test PARTITION(dat=20220101).c1 SCRIPT []
+POSTHOOK: Lineage: part_test PARTITION(dat=20220101).c2 SCRIPT []
+PREHOOK: query: insert into part_test values ("22","th","20220102")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@part_test
+POSTHOOK: query: insert into part_test values ("22","th","20220102")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@part_test
+POSTHOOK: Output: default@part_test@dat=20220102
+POSTHOOK: Lineage: part_test PARTITION(dat=20220102).c1 SCRIPT []
+POSTHOOK: Lineage: part_test PARTITION(dat=20220102).c2 SCRIPT []
+PREHOOK: query: alter table part_test rename to part_test11
 PREHOOK: type: ALTERTABLE_RENAME
-PREHOOK: Input: default@t
-PREHOOK: Output: default@t
-POSTHOOK: query: alter table t rename to t2
+PREHOOK: Input: default@part_test
+PREHOOK: Output: default@part_test
+POSTHOOK: query: alter table part_test rename to part_test11
 POSTHOOK: type: ALTERTABLE_RENAME
-POSTHOOK: Input: default@t
-POSTHOOK: Output: default@t
-POSTHOOK: Output: default@t2
-PREHOOK: query: create table t (a integer)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@t
-POSTHOOK: query: create table t (a integer)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t
-PREHOOK: query: insert into t values(2)
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t
-POSTHOOK: query: insert into t values(2)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t
-POSTHOOK: Lineage: t.a SCRIPT []
-PREHOOK: query: select assert_true(count(1) = 2) from t
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t
-#### A masked pattern was here ####
-POSTHOOK: query: select assert_true(count(1) = 2) from t
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
-#### A masked pattern was here ####
-NULL
-PREHOOK: query: select assert_true(count(1) = 2) from t2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
-#### A masked pattern was here ####
-POSTHOOK: query: select assert_true(count(1) = 2) from t2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
-#### A masked pattern was here ####
-NULL
-PREHOOK: query: select * from t
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t
-#### A masked pattern was here ####
-POSTHOOK: query: select * from t
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t
-#### A masked pattern was here ####
-1
-2
-PREHOOK: query: select * from t2
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t2
-#### A masked pattern was here ####
-POSTHOOK: query: select * from t2
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t2
-#### A masked pattern was here ####
-1
-2
-PREHOOK: query: desc formatted t
+POSTHOOK: Input: default@part_test
+POSTHOOK: Output: default@part_test
+POSTHOOK: Output: default@part_test11
+PREHOOK: query: desc formatted part_test11
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@t
-POSTHOOK: query: desc formatted t
+PREHOOK: Input: default@part_test11
+POSTHOOK: query: desc formatted part_test11
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@t
+POSTHOOK: Input: default@part_test11
 # col_name            	data_type           	comment             
-a                   	int                 	                    
+c1                  	string              	                    
+c2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dat                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -95,15 +64,17 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	EXTERNAL            	TRUE                
 	TRANSLATED_TO_EXTERNAL	TRUE                
 	bucketing_version   	2                   
 	external.table.purge	TRUE                
+#### A masked pattern was here ####
 	numFiles            	2                   
-	numRows             	1                   
-	rawDataSize         	1                   
-	totalSize           	4                   
+	numPartitions       	2                   
+	numRows             	2                   
+	rawDataSize         	10                  
+	totalSize           	12                  
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -116,30 +87,31 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: desc formatted t2
+PREHOOK: query: desc formatted part_test11 partition(dat="20220101")
 PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@t2
-POSTHOOK: query: desc formatted t2
+PREHOOK: Input: default@part_test11
+POSTHOOK: query: desc formatted part_test11 partition(dat="20220101")
 POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@t2
+POSTHOOK: Input: default@part_test11
 # col_name            	data_type           	comment             
-a                   	int                 	                    
+c1                  	string              	                    
+c2                  	string              	                    
 	 	 
-# Detailed Table Information	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dat                 	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[20220101]          	 
 Database:           	default             	 
+Table:              	part_test11         	 
 #### A masked pattern was here ####
-Retention:          	0                   	 
-#### A masked pattern was here ####
-Table Type:         	EXTERNAL_TABLE      	 
-Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
-	EXTERNAL            	TRUE                
-	bucketing_version   	2                   
-#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c1\":\"true\",\"c2\":\"true\"}}
 	numFiles            	1                   
 	numRows             	1                   
-	rawDataSize         	1                   
-	totalSize           	2                   
+	rawDataSize         	5                   
+	totalSize           	6                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
