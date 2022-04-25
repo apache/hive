@@ -108,3 +108,9 @@ Useful mailing lists
 3. commits@hive.apache.org - In order to monitor commits to the source
    repository. Send an empty email to commits-subscribe@hive.apache.org
    in order to subscribe to this mailing list.
+
+
+
+# Mosher notes
+
+made the changes from https://issues.apache.org/jira/browse/HIVE-21939
