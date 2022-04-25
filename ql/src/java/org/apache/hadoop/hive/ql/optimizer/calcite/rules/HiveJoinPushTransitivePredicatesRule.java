@@ -142,11 +142,8 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     // never be simplified by RexSimplify, in this way the fix-point is never reached.
     // This restriction can be lifted if RexSimplify gets more powerful, and it can handle such cases.
     if (!allowDisjunctivePredicates) {
-      HiveCalciteUtil.DisjunctivePredicatesFinder disjunctivePredicatesFinder =
-          new HiveCalciteUtil.DisjunctivePredicatesFinder();
-
       toPush = toPush.stream()
-          .filter(e -> !disjunctivePredicatesFinder.hasDisjunction(e))
+          .filter(e -> !HiveCalciteUtil.hasDisjuction(e))
           .collect(Collectors.toList());
     }
 

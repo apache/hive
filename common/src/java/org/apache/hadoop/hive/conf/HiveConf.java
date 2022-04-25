@@ -2549,7 +2549,8 @@ public class HiveConf extends Configuration {
         "is also left in the operator tree at the original place."),
     HIVE_JOIN_DISJ_TRANSITIVE_PREDICATES_PUSHDOWN("hive.optimize.join.disjunctive.transitive.predicates.pushdown",
         true, "Whether to transitively infer disjunctive predicates across joins. \n"
-            + "Disjunctive predicates can lead to OOM in transitive inference."),
+        + "Disjunctive predicates are hard to simplify and pushing them down might lead to infinite rule matching "
+        + "causing stackoverflow and OOM errors"),
     HIVEPOINTLOOKUPOPTIMIZER("hive.optimize.point.lookup", true,
          "Whether to transform OR clauses in Filter operators into IN clauses"),
     HIVEPOINTLOOKUPOPTIMIZERMIN("hive.optimize.point.lookup.min", 2,
