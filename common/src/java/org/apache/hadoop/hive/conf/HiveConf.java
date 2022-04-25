@@ -2547,9 +2547,9 @@ public class HiveConf extends Configuration {
         "If this config is true only pushed down filters remain in the operator tree, \n" +
         "and the original filter is removed. If this config is false, the original filter \n" +
         "is also left in the operator tree at the original place."),
-    HIVE_JOIN_PUSH_TRANSITIVE_PREDICATES_CONSERVATIVE("hive.optimize.join.transitive.predicates.conservative",
-        false, "Whether to avoid pushing predicates that are hard to simplify. \n"
-            + "To be used in case of OOM due to transitive predicate inference."),
+    HIVE_JOIN_DISJ_TRANSITIVE_PREDICATES_PUSHDOWN("hive.optimize.join.disjunctive.transitive.predicates.pushdown",
+        true, "Whether to transitively infer disjunctive predicates across joins. \n"
+            + "Disjunctive predicates can lead to OOM in transitive inference."),
     HIVEPOINTLOOKUPOPTIMIZER("hive.optimize.point.lookup", true,
          "Whether to transform OR clauses in Filter operators into IN clauses"),
     HIVEPOINTLOOKUPOPTIMIZERMIN("hive.optimize.point.lookup.min", 2,

@@ -1,4 +1,4 @@
-set hive.optimize.join.transitive.predicates.conservative=true;
+set hive.optimize.join.disjunctive.transitive.predicates.pushdown=false;
 
 CREATE TABLE tableA (
   bd_id      bigint,

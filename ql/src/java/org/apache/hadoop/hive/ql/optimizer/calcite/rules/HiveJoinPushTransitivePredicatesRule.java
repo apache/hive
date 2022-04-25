@@ -27,7 +27,6 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
-import org.apache.calcite.rel.core.RelFactories.FilterFactory;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
@@ -39,13 +38,9 @@ import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Util;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hive.common.util.AnnotationUtils;
 
@@ -66,15 +61,11 @@ import com.google.common.collect.Sets;
  */
 public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
 
-  private final HiveConf conf;
-  private final FilterFactory filterFactory;
-  private final UnsafeOperatorsFinder unsafeOperatorsFinder = new UnsafeOperatorsFinder();
+  private final boolean allowDisjunctivePredicates;
 
-  public HiveJoinPushTransitivePredicatesRule(Class<? extends Join> clazz,
-      FilterFactory filterFactory, HiveConf conf) {
+  public HiveJoinPushTransitivePredicatesRule(Class<? extends Join> clazz, boolean allowDisjunctivePredicates) {
     super(operand(clazz, any()));
-    this.filterFactory = filterFactory;
-    this.conf = conf;
+    this.allowDisjunctivePredicates = allowDisjunctivePredicates;
   }
 
   @Override
@@ -104,13 +95,15 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
 
     if (!newLeftPredicate.isAlwaysTrue()) {
       RelNode curr = lChild;
-      lChild = filterFactory.createFilter(lChild, newLeftPredicate.accept(new RexReplacer(lChild)), ImmutableSet.of());
+      lChild = HiveRelFactories.HIVE_FILTER_FACTORY.createFilter(
+          lChild, newLeftPredicate.accept(new RexReplacer(lChild)), ImmutableSet.of());
       call.getPlanner().onCopy(curr, lChild);
     }
 
     if (!newRightPredicate.isAlwaysTrue()) {
       RelNode curr = rChild;
-      rChild = filterFactory.createFilter(rChild, newRightPredicate.accept(new RexReplacer(rChild)), ImmutableSet.of());
+      rChild = HiveRelFactories.HIVE_FILTER_FACTORY.createFilter(
+          rChild, newRightPredicate.accept(new RexReplacer(rChild)), ImmutableSet.of());
       call.getPlanner().onCopy(curr, rChild);
     }
 
@@ -143,18 +136,17 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     //  ii) those that were already in the subtree rooted at child.
     List<RexNode> toPush = HiveCalciteUtil.getPredsNotPushedAlready(predicatesToExclude, child, valids);
 
-    // If we run the rule in conservative mode, we also filter:
-    //  iii) predicates that are not safe for transitive inference.
-    //
-    // There is no formal definition of safety for predicate inference, only an empirical one.
-    // An unsafe predicate in this context is one that when pushed across join operands, can lead
-    // to redundant predicates that cannot be simplified (by means of predicates merging with other existing ones).
-    // This situation can lead to an OOM for cases where lack of simplification allows inferring new predicates
-    // (from LHS to RHS and vice-versa) recursively, predicates which are redundant, but that RexSimplify cannot handle.
-    // This notion can be relaxed as soon as RexSimplify gets more powerful, and it can handle such cases.
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_JOIN_PUSH_TRANSITIVE_PREDICATES_CONSERVATIVE)) {
+    // Disjunctive predicates, when merged with other existing predicates, might become redundant but RexSimplify still
+    // cannot simplify them. This situation generally leads to OOM, since these new predicates keep getting inferred
+    // between the LHS and the RHS recursively, they grow by getting merged with existing predicates, but they can
+    // never be simplified by RexSimplify, in this way the fix-point is never reached.
+    // This restriction can be lifted if RexSimplify gets more powerful, and it can handle such cases.
+    if (!allowDisjunctivePredicates) {
+      HiveCalciteUtil.DisjunctivePredicatesFinder disjunctivePredicatesFinder =
+          new HiveCalciteUtil.DisjunctivePredicatesFinder();
+
       toPush = toPush.stream()
-          .filter(unsafeOperatorsFinder::isSafe)
+          .filter(e -> !disjunctivePredicatesFinder.hasDisjunction(e))
           .collect(Collectors.toList());
     }
 
@@ -162,59 +154,6 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
   }
 
   //~ Inner Classes ----------------------------------------------------------
-
-  /**
-   * Finds unsafe operators in an expression (at any level of nesting).
-   * At the moment, the only unsafe operator is OR.
-   *
-   * Example 1: OR(=($0, $1), IS NOT NULL($2))):INTEGER (OR in the top-level expression)
-   * Example 2: NOT(AND(=($0, $1), IS NOT NULL($2))
-   *   this is equivalent to OR((<>($0, $1), IS NULL($2))
-   * Example 3: AND(OR(=($0, $1), IS NOT NULL($2)))) (OR in inner expression)
-   */
-  private static class UnsafeOperatorsFinder extends RexVisitorImpl<Void> {
-    // accounting for DeMorgan's law
-    boolean inNegation = false;
-    boolean isSafe = true;
-
-    protected UnsafeOperatorsFinder() {
-      super(true);
-    }
-
-    @Override
-    public Void visitCall(RexCall call) {
-      switch (call.getKind()) {
-      case OR:
-        if (inNegation) {
-          return super.visitCall(call);
-        } else {
-          this.isSafe = false;
-          return null;
-        }
-      case AND:
-        if (inNegation) {
-          this.isSafe = false;
-          return null;
-        } else {
-          return super.visitCall(call);
-        }
-      case NOT:
-        inNegation = !inNegation;
-        return super.visitCall(call);
-      default:
-        return super.visitCall(call);
-      }
-    }
-
-    boolean isSafe(RexNode node) {
-      // the visitor is re-used, clear the state
-      inNegation = false;
-      isSafe = true;
-
-      node.accept(this);
-      return isSafe;
-    }
-  }
 
   private static class InputRefValidator extends RexVisitorImpl<Void> {
 
@@ -227,7 +166,8 @@ public class HiveJoinPushTransitivePredicatesRule extends RelOptRule {
     @Override
     public Void visitCall(RexCall call) {
 
-      if(AnnotationUtils.getAnnotation(GenericUDFOPNotNull.class, Description.class).name().equals(call.getOperator().getName())) {
+      if(AnnotationUtils.getAnnotation(
+          GenericUDFOPNotNull.class, Description.class).name().equals(call.getOperator().getName())) {
         if(call.getOperands().get(0) instanceof RexInputRef &&
             !types.get(((RexInputRef)call.getOperands().get(0)).getIndex()).getType().isNullable()) {
           // No need to add not null filter for a constant.

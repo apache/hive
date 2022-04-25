@@ -1,4 +1,4 @@
-set hive.optimize.join.transitive.predicates.conservative=true;
+set hive.optimize.join.disjunctive.transitive.predicates.pushdown=false;
 
 CREATE TABLE test1 (act_nbr string);
 CREATE TABLE test2 (month int);

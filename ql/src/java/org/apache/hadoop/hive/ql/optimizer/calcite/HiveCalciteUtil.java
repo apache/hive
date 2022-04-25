@@ -1215,6 +1215,58 @@ public class HiveCalciteUtil {
   }
 
   /**
+   * Find disjunction (OR) in an expression (at any level of nesting).
+   *
+   * Example 1: OR(=($0, $1), IS NOT NULL($2))):INTEGER (OR in the top-level expression)
+   * Example 2: NOT(AND(=($0, $1), IS NOT NULL($2))
+   *   this is equivalent to OR((<>($0, $1), IS NULL($2))
+   * Example 3: AND(OR(=($0, $1), IS NOT NULL($2)))) (OR in inner expression)
+   */
+  public static class DisjunctivePredicatesFinder extends RexVisitorImpl<Void> {
+    // accounting for DeMorgan's law
+    boolean inNegation = false;
+    boolean hasDisjunction = false;
+
+    public DisjunctivePredicatesFinder() {
+      super(true);
+    }
+
+    @Override
+    public Void visitCall(RexCall call) {
+      switch (call.getKind()) {
+      case OR:
+        if (inNegation) {
+          return super.visitCall(call);
+        } else {
+          this.hasDisjunction = true;
+          return null;
+        }
+      case AND:
+        if (inNegation) {
+          this.hasDisjunction = true;
+          return null;
+        } else {
+          return super.visitCall(call);
+        }
+      case NOT:
+        inNegation = !inNegation;
+        return super.visitCall(call);
+      default:
+        return super.visitCall(call);
+      }
+    }
+
+    public boolean hasDisjunction(RexNode node) {
+      // clear the state
+      inNegation = false;
+      hasDisjunction = false;
+
+      node.accept(this);
+      return hasDisjunction;
+    }
+  }
+
+  /**
    * Checks if any of the expression given as list expressions are from right side of the join.
    *  This is used during anti join conversion.
    *
