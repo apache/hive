@@ -266,16 +266,18 @@ public class HiveAlterHandler implements AlterHandler {
 
             newt.getSd().setLocation(destPath.toString());
 
-            // check that destination does not exist otherwise we will be
-            // overwriting data
             // check that src and dest are on the same file system
-            if (!FileUtils.equalsFileSystem(srcFs, destFs)) {
-              throw new InvalidOperationException("table new location " + destPath
+            Path dbLocation = wh.getDatabaseManagedPath(db);
+            FileSystem dbFs = wh.getFs(dbLocation);
+            if (!FileUtils.equalsFileSystem(srcFs, dbFs)) {
+              throw new InvalidOperationException("table new db location " + dbLocation
                       + " is on a different file system than the old location "
                       + srcPath + ". This operation is not supported");
             }
 
             try {
+              // check that destination does not exist otherwise we will be
+              // overwriting data
               if (destFs.exists(destPath)) {
                 throw new InvalidOperationException("New location for this table " +
                         TableName.getQualified(catName, newDbName, newTblName) +
