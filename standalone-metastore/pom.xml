@@ -81,7 +81,10 @@
     <log4j2.version>2.17.1</log4j2.version>
     <mockito-all.version>1.10.19</mockito-all.version>
     <orc.version>1.5.1</orc.version>
-    <protobuf.version>2.5.0</protobuf.version>
+    <!-- com.google repo will be used except on Aarch64 platform. -->
+    <protobuf.group>com.google.protobuf</protobuf.group>
+    <protobuf.version>2.6.1</protobuf.version>
+    <protobuf-exc.version>2.6.1</protobuf-exc.version>
     <sqlline.version>1.3.0</sqlline.version>
     <storage-api.version>2.7.0</storage-api.version>
 
@@ -604,7 +607,7 @@
               <goal>run</goal>
             </goals>
             <configuration>
-              <protocArtifact>com.google.protobuf:protoc:2.5.0</protocArtifact>
+              <protocArtifact>${protobuf.group}:protoc:${protobuf-exc.version}</protocArtifact>
               <addSources>none</addSources>
               <inputDirectories>
                 <include>${basedir}/src/main/protobuf/org/apache/hadoop/hive/metastore</include>
@@ -812,5 +815,20 @@
     </plugins>
   </build>
 
-
+  <profiles>
+  <!-- use com.github.os72 on aarch64 platform -->
+  <profile>
+    <id>aarch64</id>
+    <properties>
+      <protobuf.group>com.github.os72</protobuf.group>
+      <protobuf-exc.version>2.6.1-build3</protobuf-exc.version>
+    </properties>
+    <activation>
+      <os>
+        <family>linux</family>
+        <arch>aarch64</arch>
+      </os>
+    </activation>
+    </profile>
+  </profiles>
 </project>
