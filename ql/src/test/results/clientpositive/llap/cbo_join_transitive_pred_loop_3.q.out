@@ -1,54 +1,52 @@
-PREHOOK: query: CREATE TABLE tableA
-(
-    `bd_id`            bigint,
-    `quota_type`       string
+PREHOOK: query: CREATE TABLE tableA (
+  bd_id      bigint,
+  quota_type string
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tableA
-POSTHOOK: query: CREATE TABLE tableA
-(
-    `bd_id`            bigint,
-    `quota_type`       string
+POSTHOOK: query: CREATE TABLE tableA (
+  bd_id      bigint,
+  quota_type string
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tableA
-PREHOOK: query: explain cbo
-select a.bd_id
-from (
-    select t.bd_id
-    from tableA t
-    where (t.bd_id = 8 and t.quota_type in('A','C')) or (t.bd_id = 9 and t.quota_type in ('A','B'))
- ) a join (
-     select t.bd_id
-     from tableA t
-     where t.bd_id = 9 and t.quota_type in ('A','B')
-     union all
-     select t.bd_id
-     from tableA t
-     where (t.bd_id = 8 and t.quota_type in('A','C')) or (t.bd_id = 9 and t.quota_type in ('A','B'))
-) b on a.bd_id = b.bd_id
-where a.bd_id = 8 or a.bd_id <>8
+PREHOOK: query: EXPLAIN CBO
+SELECT a.bd_id
+FROM (
+    SELECT t.bd_id
+    FROM tableA t
+    WHERE (t.bd_id = 8 AND t.quota_type IN ('A','C')) OR (t.bd_id = 9 AND t.quota_type IN  ('A','B'))
+ ) a JOIN (
+     SELECT t.bd_id
+     FROM tableA t
+     WHERE t.bd_id = 9 AND t.quota_type IN ('A','B')
+     UNION ALL
+     SELECT t.bd_id
+     FROM tableA t
+     WHERE (t.bd_id = 8 AND t.quota_type IN ('A','C')) OR (t.bd_id = 9 AND t.quota_type IN ('A','B'))
+) b ON a.bd_id = b.bd_id
+WHERE a.bd_id = 8 OR a.bd_id <> 8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tablea
 #### A masked pattern was here ####
-POSTHOOK: query: explain cbo
-select a.bd_id
-from (
-    select t.bd_id
-    from tableA t
-    where (t.bd_id = 8 and t.quota_type in('A','C')) or (t.bd_id = 9 and t.quota_type in ('A','B'))
- ) a join (
-     select t.bd_id
-     from tableA t
-     where t.bd_id = 9 and t.quota_type in ('A','B')
-     union all
-     select t.bd_id
-     from tableA t
-     where (t.bd_id = 8 and t.quota_type in('A','C')) or (t.bd_id = 9 and t.quota_type in ('A','B'))
-) b on a.bd_id = b.bd_id
-where a.bd_id = 8 or a.bd_id <>8
+POSTHOOK: query: EXPLAIN CBO
+SELECT a.bd_id
+FROM (
+    SELECT t.bd_id
+    FROM tableA t
+    WHERE (t.bd_id = 8 AND t.quota_type IN ('A','C')) OR (t.bd_id = 9 AND t.quota_type IN  ('A','B'))
+ ) a JOIN (
+     SELECT t.bd_id
+     FROM tableA t
+     WHERE t.bd_id = 9 AND t.quota_type IN ('A','B')
+     UNION ALL
+     SELECT t.bd_id
+     FROM tableA t
+     WHERE (t.bd_id = 8 AND t.quota_type IN ('A','C')) OR (t.bd_id = 9 AND t.quota_type IN ('A','B'))
+) b ON a.bd_id = b.bd_id
+WHERE a.bd_id = 8 OR a.bd_id <> 8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tablea
 #### A masked pattern was here ####

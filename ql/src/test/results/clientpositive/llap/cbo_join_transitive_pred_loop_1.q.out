@@ -1,24 +1,24 @@
-PREHOOK: query: create table test1 (act_nbr string)
+PREHOOK: query: CREATE TABLE test1 (act_nbr string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test1
-POSTHOOK: query: create table test1 (act_nbr string)
+POSTHOOK: query: CREATE TABLE test1 (act_nbr string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test1
-PREHOOK: query: create table test2 (month int)
+PREHOOK: query: CREATE TABLE test2 (month int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test2
-POSTHOOK: query: create table test2 (month int)
+POSTHOOK: query: CREATE TABLE test2 (month int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test2
-PREHOOK: query: create table test3 (mth int, con_usd double)
+PREHOOK: query: CREATE TABLE test3 (mth int, con_usd double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test3
-POSTHOOK: query: create table test3 (mth int, con_usd double)
+POSTHOOK: query: CREATE TABLE test3 (mth int, con_usd double)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test3

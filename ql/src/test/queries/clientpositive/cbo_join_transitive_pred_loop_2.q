@@ -1,11 +1,13 @@
+set hive.optimize.join.transitive.predicates.conservative=true;
+
 CREATE EXTERNAL TABLE table2 (
-tenant_id int
+  tenant_id int
 ) PARTITIONED BY (date_key int)
 STORED AS PARQUET;
 
 CREATE EXTERNAL TABLE tenant_1 (
-tenant_id int,
-tenant_key bigint
+  tenant_id int,
+  tenant_key bigint
 ) STORED AS PARQUET;
 
 EXPLAIN CBO
