@@ -1247,26 +1247,23 @@ public class HiveCalciteUtil {
         return super.visitCall(call);
       }
     }
-
-    public boolean hasDisjunction(RexNode node) {
-      node.accept(this);
-      return hasDisjunction;
-    }
   }
 
   /**
-   * Find disjunction (OR) in an expression (at any level of nesting).
-   *
-   * Example 1: OR(=($0, $1), IS NOT NULL($2))):INTEGER (OR in the top-level expression)
-   * Example 2: NOT(AND(=($0, $1), IS NOT NULL($2))
-   *   this is equivalent to OR((<>($0, $1), IS NULL($2))
-   * Example 3: AND(OR(=($0, $1), IS NOT NULL($2)))) (OR in inner expression)
-   *
+   * Returns whether the expression has disjunctions (OR) at any level of nesting.
+   * <ul>
+   * <li> Example 1: OR(=($0, $1), IS NOT NULL($2))):INTEGER (OR in the top-level expression) </li>
+   * <li> Example 2: NOT(AND(=($0, $1), IS NOT NULL($2)) </li>
+   *   this is equivalent to OR((&lt&gt($0, $1), IS NULL($2))
+   * <li> Example 3: AND(OR(=($0, $1), IS NOT NULL($2)))) (OR in inner expression) </li>
+   * </ul>
    * @param node the expression where to look for disjunctions.
    * @return true if the given expressions contains a disjunction, false otherwise.
    */
   public static boolean hasDisjuction(RexNode node) {
-    return new DisjunctivePredicatesFinder().hasDisjunction(node);
+    DisjunctivePredicatesFinder finder = new DisjunctivePredicatesFinder();
+    node.accept(finder);
+    return finder.hasDisjunction;
   }
 
   /**
