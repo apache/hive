@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
@@ -48,14 +49,14 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
   @Override
   public List<String> filterTableNames(String dbName, List<String> tableList)
       throws MetaException {
-    List<HivePrivilegeObject> listObjs = getHivePrivObjects(dbName, tableList);
-    return getTableNames(getFilteredObjects(listObjs));
+    return filterTableNames(MetaStoreUtils.getDefaultCatalog(conf), dbName, tableList);
   }
 
   @Override
   public List<String> filterTableNames(String catName, String dbName, List<String> tableList)
       throws MetaException {
-    return filterTableNames(dbName, tableList);
+    List<HivePrivilegeObject> listObjs = getHivePrivObjects(catName, dbName, tableList);
+    return getTableNames(getFilteredObjects(listObjs));
   }
 
   @Override
@@ -132,10 +133,10 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     }
   }
 
-  private List<HivePrivilegeObject> getHivePrivObjects(String dbName, List<String> tableList) {
+  private List<HivePrivilegeObject> getHivePrivObjects(String catName, String dbName, List<String> tableList) {
     List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
     for(String tname : tableList) {
-      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, dbName, tname));
+      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, catName, dbName, tname));
     }
     return objs;
   }

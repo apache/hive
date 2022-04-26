@@ -35,7 +35,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
  * Default no-op implementation of the MetaStoreFilterHook that returns the result as is
  */
 public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
-  private final Configuration conf;
+  protected final Configuration conf;
 
   public DefaultMetaStoreFilterHookImpl(Configuration conf) {
     this.conf = conf;

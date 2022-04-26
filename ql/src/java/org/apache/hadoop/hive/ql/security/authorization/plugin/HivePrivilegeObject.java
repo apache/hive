@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import org.apache.hadoop.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 
@@ -41,6 +42,11 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   @Override
   public int compareTo(HivePrivilegeObject o) {
     int compare = type.compareTo(o.type);
+    if (compare == 0) {
+      compare = catName != null ?
+          (o.catName != null ? catName.compareTo(o.catName) : 1) :
+          (o.catName != null ? -1 : 0);
+    }
     if (compare == 0) {
       compare = dbname != null ?
           (o.dbname != null ? dbname.compareTo(o.dbname) : 1) :
@@ -124,6 +130,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   }
 
   private final HivePrivilegeObjectType type;
+  private final String catName;
   private final String dbname;
   private final String objectName;
   private final List<String> commandParams;
@@ -146,6 +153,11 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName) {
     this(type, dbname, objectName, HivePrivObjectActionType.OTHER);
+  }
+
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName) {
+    this(type, catName, dbname, objectName, null, null, HivePrivObjectActionType.OTHER,
+        null, null, null, null);
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName
@@ -187,7 +199,14 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName, List<String> partKeys,
       List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams, String className,
       String ownerName, PrincipalType ownerType) {
+    this(type, null, dbname, objectName, partKeys, columns, actionType, commandParams, className, ownerName, ownerType);
+  }
+
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName,
+      List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams,
+      String className, String ownerName, PrincipalType ownerType) {
     this.type = type;
+    this.catName = catName;
     this.dbname = dbname;
     this.objectName = objectName;
     this.partKeys = partKeys;
@@ -207,6 +226,13 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
 
   public HivePrivilegeObjectType getType() {
     return type;
+  }
+
+  /**
+   * @return the catalog name
+   */
+  public String getCatName() {
+    return catName;
   }
 
   /**
@@ -269,13 +295,13 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
       break;
     case TABLE_OR_VIEW:
     case PARTITION:
-      name = getDbObjectName(dbname, objectName);
+      name = getDbObjectName();
       if (partKeys != null) {
         name += partKeys.toString();
       }
       break;
     case FUNCTION:
-      name = getDbObjectName(dbname, objectName);
+      name = getDbObjectName();
       break;
     case COLUMN:
     case LOCAL_URI:
@@ -321,8 +347,8 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     return this.ownerType;
   }
 
-  private String getDbObjectName(String dbname2, String objectName2) {
-    return (dbname == null ? "" : dbname + ".") + objectName;
+  private String getDbObjectName() {
+    return DatabaseName.getQualified(catName, dbname) + "." + objectName;
   }
 
   public List<String> getCellValueTransformers() {
