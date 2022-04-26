@@ -123,4 +123,18 @@ public class TestDagUtils {
 
     Assert.assertEquals("value", reduce.getTaskEnvironment().get("key"));
   }
+
+  @Test
+  public void testCreateConfigurationStripHiddenConf() throws IOException {
+    HiveConf conf = new HiveConf();
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD, "secret");
+    conf.set("fs.azure.account.oauth2.client.secret", "secret");
+
+    JobConf jobConf = DagUtils.getInstance().createConfiguration(conf);
+
+    // createConfiguration -> stripHiddenConfigurationsForExecutionEngines doesn't touch
+    // options defined in HIVE_CONF_PROPAGATE_EXEC_ENGINES
+    Assert.assertEquals("", jobConf.get(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname));
+    Assert.assertEquals("secret", jobConf.get("fs.azure.account.oauth2.client.secret"));
+  }
 }

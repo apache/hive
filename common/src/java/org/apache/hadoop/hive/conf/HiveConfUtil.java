@@ -86,14 +86,20 @@ public class HiveConfUtil {
    * @return The list of the configuration values to hide
    */
   public static Set<String> getHiddenSet(Configuration configuration) {
-    Set<String> hiddenSet = new HashSet<String>();
-    String hiddenListStr = HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST);
-    if (hiddenListStr != null) {
-      for (String entry : hiddenListStr.split(",")) {
-        hiddenSet.add(entry.trim());
-      }
+    return getConfigurationKeyset(configuration, HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST);
+  }
+
+  public static Set<String> getPropagateToExecutionEnginesList(Configuration configuration) {
+    return getConfigurationKeyset(configuration, HiveConf.ConfVars.HIVE_CONF_PROPAGATE_EXEC_ENGINES);
+  }
+
+  private static Set<String> getConfigurationKeyset(Configuration configuration, ConfVars name) {
+    Set<String> confSet = new HashSet<>();
+    String confSetList = HiveConf.getVar(configuration, name);
+    if (confSetList != null) {
+      Collections.addAll(confSet, confSetList.split(","));
     }
-    return hiddenSet;
+    return confSet;
   }
 
   /**

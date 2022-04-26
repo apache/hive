@@ -1540,7 +1540,7 @@ public class DagUtils {
     conf.unset("mapreduce.job.credentials.binary");
 
     // TODO: convert this to a predicate too
-    hiveConf.stripHiddenConfigurations(conf);
+    hiveConf.stripHiddenConfigurationsForExecutionEngines(conf);
 
     // Remove hive configs which are used only in HS2 and not needed for execution
     conf.unset(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname); 

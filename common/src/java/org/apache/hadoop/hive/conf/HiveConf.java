@@ -5455,6 +5455,22 @@ public class HiveConf extends Configuration {
         + ",hive.zookeeper.ssl.truststore.location"
         + ",hive.zookeeper.ssl.truststore.password",
         "Comma separated list of configuration options which should not be read by normal user like passwords"),
+    HIVE_CONF_PROPAGATE_EXEC_ENGINES("hive.conf.propagate.exec.engines",
+        "fs.s3.awsAccessKeyId"
+        + ",fs.s3.awsSecretAccessKey"
+        + ",fs.s3n.awsAccessKeyId"
+        + ",fs.s3n.awsSecretAccessKey"
+        + ",fs.s3a.access.key"
+        + ",fs.s3a.secret.key"
+        + ",fs.s3a.proxy.password"
+        + ",dfs.adls.oauth2.credential"
+        + ",fs.adl.oauth2.credential"
+        + ",fs.azure.account.oauth2.client.secret",
+        "Comma separated list of configuration options which must be propagated to execution engines." +
+        " The options listed here are still excluded from everywhere that the user would expect them to be excluded" +
+        " (e.g. set command output) because of 'hive.conf.hidden.list', but they are included into the Configuration" +
+        " that is passed to the execution engines. This is needed as long as Hadoop enables users" +
+        " to store passwords in config (instead of CredentialProvider API)."),
     HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
         "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
         "Comma separated list of variables which are used internally and should not be configurable."),
@@ -6835,6 +6851,16 @@ public class HiveConf extends Configuration {
    */
   public void stripHiddenConfigurations(Configuration conf) {
     HiveConfUtil.stripConfigurations(conf, hiddenSet);
+  }
+
+  /**
+   * Strips hidden config entries from configuration, but takes care of entries for execution engines.
+   */
+  public void stripHiddenConfigurationsForExecutionEngines(Configuration conf) {
+    Set<String> propsToBePropagatedToExecEngines = HiveConfUtil.getPropagateToExecutionEnginesList(conf);
+    Set<String> propsToBeStripped = new HashSet<>(hiddenSet);
+    propsToBeStripped.removeAll(propsToBePropagatedToExecEngines);
+    HiveConfUtil.stripConfigurations(conf, propsToBeStripped);
   }
 
   /**

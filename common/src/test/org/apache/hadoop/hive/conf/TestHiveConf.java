@@ -176,6 +176,39 @@ public class TestHiveConf {
   }
 
   @Test
+  public void testHiddenConfigWithExecutionEngines() throws Exception {
+    HiveConf conf = new HiveConf();
+
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD, "secret");
+    conf.set("fs.azure.account.oauth2.client.secret", "secret");
+
+
+    Assert.assertEquals("secret", conf.get(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname));
+    Assert.assertEquals("secret", conf.get("fs.azure.account.oauth2.client.secret"));
+
+    conf.stripHiddenConfigurations(conf);
+
+    // stripHiddenConfigurations strips every hidden option without respecting options for execution engines
+    Assert.assertEquals("", conf.get(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname));
+    Assert.assertEquals("", conf.get("fs.azure.account.oauth2.client.secret"));
+
+
+    conf = new HiveConf();
+
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD, "secret");
+    conf.set("fs.azure.account.oauth2.client.secret", "secret");
+
+    Assert.assertEquals("secret", conf.get(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname));
+    Assert.assertEquals("secret", conf.get("fs.azure.account.oauth2.client.secret"));
+
+    conf.stripHiddenConfigurationsForExecutionEngines(conf);
+
+    // stripHiddenConfigurationsForExecutionEngines doesn't touch options defined in HIVE_CONF_PROPAGATE_EXEC_ENGINES
+    Assert.assertEquals("", conf.get(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname));
+    Assert.assertEquals("secret", conf.get("fs.azure.account.oauth2.client.secret"));
+  }
+
+  @Test
   public void testEncodingDecoding() throws UnsupportedEncodingException {
     HiveConf conf = new HiveConf();
     String query = "select blah, '\u0001' from random_table";

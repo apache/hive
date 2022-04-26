@@ -181,7 +181,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     initializeFiles("tmpfiles", getResource(conf, SessionState.ResourceType.FILE));
     initializeFiles("tmparchives", getResource(conf, SessionState.ResourceType.ARCHIVE));
 
-    conf.stripHiddenConfigurations(job);
+    conf.stripHiddenConfigurationsForExecutionEngines(job);
     this.jobExecHelper = new HadoopJobExecHelper(job, console, this, this);
   }
 

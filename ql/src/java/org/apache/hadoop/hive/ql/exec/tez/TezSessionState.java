@@ -316,7 +316,7 @@ public class TezSessionState {
 
     // set up the staging directory to use
     tezConfig.set(TezConfiguration.TEZ_AM_STAGING_DIR, tezScratchDir.toUri().toString());
-    conf.stripHiddenConfigurations(tezConfig);
+    conf.stripHiddenConfigurationsForExecutionEngines(tezConfig);
 
     ServicePluginsDescriptor servicePluginsDescriptor;
 
