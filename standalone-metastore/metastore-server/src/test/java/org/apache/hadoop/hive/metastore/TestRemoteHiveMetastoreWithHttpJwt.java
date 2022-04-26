@@ -49,6 +49,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
@@ -58,6 +59,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
 public class TestRemoteHiveMetastoreWithHttpJwt {
@@ -102,10 +104,8 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
     modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
     field.set(null, value);
   }
-
-  private static boolean isServerStarted = false;
   private static int port;
-  private Configuration conf = null;
+  private static Configuration conf = null;
 
   public TestRemoteHiveMetastoreWithHttpJwt() {
     // default constructor
@@ -116,8 +116,8 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
     System.getenv().remove("HMS_JWT");
   }
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
 
     // set some values to use for getting conf. vars
@@ -131,7 +131,6 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
     MetastoreConf.setLongVar(conf, ConfVars.LIMIT_PARTITION_REQUEST, 100);
     MetastoreConf.setVar(conf, ConfVars.STORAGE_SCHEMA_READER_IMPL, "no.such.class");
 
-    initEnvMap();
     setupMockServer();
     MetastoreConf.setBoolVar(conf, ConfVars.EXECUTE_SET_UGI, false);
     MetastoreConf.setVar(conf, ConfVars.THRIFT_TRANSPORT_MODE, "http");
@@ -139,32 +138,23 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
 
     MetastoreConf.setVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE, "JWT");
     MetastoreConf.setVar(conf, ConfVars.THRIFT_METASTORE_AUTHENTICATION, "JWT");
-    assertFalse("Did not expect thrift metastore server to be running at this point",
-        isServerStarted);
     startMetastoreServer();
   }
 
-  protected void startMetastoreServer() throws Exception {
+  private static void startMetastoreServer() throws Exception {
     port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(),
         conf);
     MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
     System.out.println("Starting MetaStore Server on port " + port);
-    isServerStarted = true;
   }
 
-  private void initEnvMap() {
+  @Before
+  public void initEnvMap() {
     envMap.clear();
     envMap.putAll(DEFAULTS);
-
   }
 
-  private void setupMockServer() throws Exception {
-    for(Map.Entry<String, String> entry: DEFAULTS.entrySet()) {
-      LOG.info("Env key: " + entry.getKey() + ", Env value: " + entry.getValue());
-    }
-
-    LOG.info(System.getProperties().toString());
-
+  private static void setupMockServer() throws Exception {
     MOCK_JWKS_SERVER.stubFor(get("/jwks")
         .willReturn(ok()
             .withBody(Files.readAllBytes(jwtVerificationJWKSFile.toPath()))));
@@ -177,9 +167,8 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
     String validJwtToken = generateJWT(USER_1, jwtAuthorizedKeyFile.toPath(),
         TimeUnit.MINUTES.toMillis(5));
     System.getenv().put("HMS_JWT", validJwtToken);
-    String dbName = (TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
+    String dbName = ("valid_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
     HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
-
     try {
       Database createdDb = new Database();
       createdDb.setName(dbName);
@@ -191,6 +180,11 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
         client.dropDatabase(dbName);
       } catch (Exception e) {
         LOG.warn("Failed to drop database: " + dbName + ". Error message: " + e);
+      }
+      try {
+        client.close();
+      } catch (Exception e) {
+        LOG.error("Failed to close metastore client");
       }
     }
   }
@@ -209,6 +203,12 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
       client.createDatabase(createdDb);
     } catch (InterruptedException e) {
       // ignore
+    } finally {
+      try {
+        client.close();
+      } catch (Exception e) {
+        LOG.error("Failed to close metastore client");
+      }
     }
   }
 
@@ -226,6 +226,12 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
       client.createDatabase(createdDb);
     } catch (InterruptedException e) {
       // ignore
+    } finally {
+      try {
+        client.close();
+      } catch (Exception e) {
+        LOG.error("Failed to close metastore client");
+      }
     }
   }
 

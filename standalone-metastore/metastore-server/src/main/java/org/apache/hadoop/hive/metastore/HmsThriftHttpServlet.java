@@ -84,7 +84,7 @@ public class HmsThriftHttpServlet extends TServlet {
   protected void doPost(HttpServletRequest request,
       HttpServletResponse response) throws ServletException, IOException {
     if (LOG.isDebugEnabled()) {
-      LOG.debug(" Logging headers in request");
+      LOG.debug(" Logging headers in doPost request");
       Enumeration<String> headerNames = request.getHeaderNames();
       while (headerNames.hasMoreElements()) {
         String headerName = headerNames.nextElement();
@@ -94,7 +94,6 @@ public class HmsThriftHttpServlet extends TServlet {
     }
     try {
       String userFromHeader = extractUserName(request, response);
-
       UserGroupInformation clientUgi;
       // Temporary, and useless for now. Here only to allow this to work on an otherwise kerberized
       // server.
@@ -126,44 +125,6 @@ public class HmsThriftHttpServlet extends TServlet {
       LOG.error("Authentication error: ", e);
     }
   }
-
-  /**
-   * Returns the base64 encoded auth header payload.
-   * @param request request to interrogate
-   * @return base64 encoded auth header payload
-   * @throws ServletException exception if header is missing or empty
-   */
-  private String getAuthHeader(HttpServletRequest request)
-      throws ServletException {
-    String authHeader = request.getHeader(AUTHORIZATION);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Logging headers in request");
-      Enumeration<String> headerNames = request.getHeaderNames();
-      while (headerNames.hasMoreElements()) {
-        String headerName = headerNames.nextElement();
-        LOG.debug("Header: [{}], Value: [{}]", headerName,
-            request.getHeader(headerName));
-      }
-    }
-    // Each http request must have an Authorization header
-    if (authHeader == null || authHeader.isEmpty()) {
-      throw new ServletException("no authorization header received " +
-          "from the client");
-    }
-
-    String[] parts = authHeader.split(" ");
-
-    // Assume the Base-64 string is always the last thing in the header
-    String authHeaderBase64String = parts[parts.length - 1];
-
-    // Authorization header must have a payload
-    if (authHeaderBase64String.isEmpty()) {
-      throw new ServletException("Authorization header received " +
-          "from the client does not contain any data.");
-    }
-    return authHeaderBase64String;
-  }
-
   private String extractUserName(HttpServletRequest request, HttpServletResponse response)
       throws HttpAuthenticationException {
     if (!jwtAuthEnabled) {
@@ -173,18 +134,6 @@ public class HmsThriftHttpServlet extends TServlet {
       }
       return userFromHeader;
     }
-    // JWT auth enabled
-
-    // TODO: Should we skip getting and validating auth header and
-    // instead rely on extractBearerToken?
-    /*
-    String base64AuthHeader = getAuthHeader(request);
-    // JWT token should be of format a.b.c
-    if (base64AuthHeader.split("\\.").length != 3) {
-      throw new ServletException("authorization header bearer token does not have valid jwt token");
-    }
-    */
-
     String signedJwt = extractBearerToken(request, response);
     if (signedJwt == null) {
       throw new HttpAuthenticationException("Couldn't find bearer token in the auth header in the request");
