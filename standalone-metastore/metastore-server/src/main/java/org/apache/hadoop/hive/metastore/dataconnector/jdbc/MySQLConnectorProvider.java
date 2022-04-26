@@ -21,14 +21,12 @@ package org.apache.hadoop.hive.metastore.dataconnector.jdbc;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 
 public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
   private static Logger LOG = LoggerFactory.getLogger(MySQLConnectorProvider.class);
