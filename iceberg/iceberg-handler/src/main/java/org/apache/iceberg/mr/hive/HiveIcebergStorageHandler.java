@@ -78,6 +78,7 @@ import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
@@ -167,14 +168,14 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> map) {
     overlayTableProperties(conf, tableDesc, map);
     // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
-    fallbackToNonVectorizedModeForV2(tableDesc.getProperties());
+    fallbackToNonVectorizedModeBasedOnProperties(tableDesc.getProperties());
   }
 
   @Override
   public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> map) {
     overlayTableProperties(conf, tableDesc, map);
     // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
-    fallbackToNonVectorizedModeForV2(tableDesc.getProperties());
+    fallbackToNonVectorizedModeBasedOnProperties(tableDesc.getProperties());
     // For Tez, setting the committer here is enough to make sure it'll be part of the jobConf
     map.put("mapred.output.committer.class", HiveIcebergNoJobCommitter.class.getName());
     // For MR, the jobConf is set only in configureJobConf, so we're setting the write key here to detect it over there
@@ -744,8 +745,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return column;
   }
 
-  private void fallbackToNonVectorizedModeForV2(Properties tableProps) {
-    if ("2".equals(tableProps.get(TableProperties.FORMAT_VERSION))) {
+  /**
+   * If any of the following checks is true we fall back to non vectorized mode:
+   * <ul>
+   *   <li>iceberg format-version is "2"</li>
+   *   <li>fileformat is set to avro</li>
+   * </ul>
+   * @param tableProps table properties, must be not null
+   */
+  private void fallbackToNonVectorizedModeBasedOnProperties(Properties tableProps) {
+    if ("2".equals(tableProps.get(TableProperties.FORMAT_VERSION)) ||
+        FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
       conf.setBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname, false);
     }
   }

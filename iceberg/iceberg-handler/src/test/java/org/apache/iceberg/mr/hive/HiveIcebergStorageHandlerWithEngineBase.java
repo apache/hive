@@ -112,8 +112,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
         if (javaVersion.equals("1.8")) {
           testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, false});
           // test for vectorization=ON in case of ORC and PARQUET format with Tez engine
-          if ((fileFormat == FileFormat.ORC || fileFormat == FileFormat.PARQUET) &&
-               "tez".equals(engine) && MetastoreUtil.hive3PresentOnClasspath()) {
+          if (fileFormat != FileFormat.METADATA && "tez".equals(engine) && MetastoreUtil.hive3PresentOnClasspath()) {
             testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, true});
           }
         }
