@@ -57,14 +57,6 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
-  public DataSource create(Configuration hdpConfig) throws SQLException {
-    int maxPoolSize = MetastoreConf.getIntVar(hdpConfig,
-            MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
-    return create(hdpConfig, maxPoolSize);
-  }
-
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  @Override
   public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
     LOG.debug("Creating dbcp connection pool for the MetaStore");
 

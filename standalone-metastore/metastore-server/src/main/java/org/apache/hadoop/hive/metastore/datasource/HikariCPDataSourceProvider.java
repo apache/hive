@@ -44,13 +44,6 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
   private static final String LEAK_DETECTION_THRESHOLD = HIKARI + ".leakDetectionThreshold";
 
   @Override
-  public DataSource create(Configuration hdpConfig) throws SQLException {
-    int maxPoolSize = MetastoreConf.getIntVar(hdpConfig,
-            MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
-    return create(hdpConfig, maxPoolSize);
-  }
-
-  @Override
   public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
     LOG.debug("Creating Hikari connection pool for the MetaStore");
 

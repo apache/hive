@@ -32,7 +32,10 @@ public interface DataSourceProvider {
    * @param hdpConfig
    * @return the new connection pool
    */
-  DataSource create(Configuration hdpConfig) throws SQLException;
+  default DataSource create(Configuration hdpConfig) throws SQLException {
+    int maxPoolSize = MetastoreConf.getIntVar(hdpConfig, MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
+    return create(hdpConfig, maxPoolSize);
+  }
 
   /**
    * @param hdpConfig
