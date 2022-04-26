@@ -1680,8 +1680,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         LOG.debug("Initial CBO Plan:\n" + RelOptUtil.toString(calcitePlan));
       }
 
-      calcitePlan = applyMaterializedViewRewritingByText(ast, calcitePlan, optCluster);
-
       // Create executor
       RexExecutor executorProvider = new HiveRexExecutorImpl();
       calcitePlan.getCluster().getPlanner().setExecutor(executorProvider);
@@ -1690,6 +1688,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       HiveDefaultRelMetadataProvider mdProvider = new HiveDefaultRelMetadataProvider(conf, HIVE_REL_NODE_CLASSES);
       RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
       optCluster.invalidateMetadataQuery();
+
+      calcitePlan = applyMaterializedViewRewritingByText(
+              ast, calcitePlan, optCluster, mdProvider.getMetadataProvider());
 
       // We need to get the ColumnAccessInfo and viewToTableSchema for views.
       HiveRelFieldTrimmer.get()
@@ -2107,7 +2108,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode applyMaterializedViewRewritingByText(
-            ASTNode queryToRewriteAST, RelNode originalPlan, RelOptCluster optCluster) {
+            ASTNode queryToRewriteAST,
+            RelNode originalPlan,
+            RelOptCluster optCluster,
+            RelMetadataProvider metadataProvider) {
       if (!isMaterializedViewRewritingByTextEnabled()) {
         return originalPlan;
       }
@@ -2121,8 +2125,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 queryToRewriteAST.getTokenStopIndex());
 
         ASTNode expandedAST = ParseUtils.parse(expandedQueryText, new Context(conf));
-        Set<TableName> tablesUsedByOriginalPlan = getTablesUsed(originalPlan);
-        RelNode mvScan = getMaterializedViewByAST(expandedAST, optCluster, ANY, db, tablesUsedByOriginalPlan, getTxnMgr());
+        Set<TableName> tablesUsedByOriginalPlan = getTablesUsed(removeSubqueries(originalPlan, metadataProvider));
+        RelNode mvScan = getMaterializedViewByAST(
+                expandedAST, optCluster, ANY, db, tablesUsedByOriginalPlan, getTxnMgr());
         if (mvScan != null) {
           return mvScan;
         }
