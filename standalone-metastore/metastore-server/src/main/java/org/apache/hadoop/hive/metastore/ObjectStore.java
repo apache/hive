@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_USE_CUSTOM_POOL;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -413,7 +414,8 @@ public class ObjectStore implements RawStore, Configurable {
     LOG.debug("ObjectStore, initialize called");
     // if this method fails, PersistenceManagerProvider will retry for the configured number of times
     // before giving up
-    pm = PersistenceManagerProvider.getPersistenceManager();
+    boolean isForCompactor = MetastoreConf.getBoolVar(conf, COMPACTOR_USE_CUSTOM_POOL);
+    pm = PersistenceManagerProvider.getPersistenceManager(isForCompactor);
     LOG.info("RawStore: {}, with PersistenceManager: {}" +
         " created in the thread with id: {}", this, pm, Thread.currentThread().getId());
 

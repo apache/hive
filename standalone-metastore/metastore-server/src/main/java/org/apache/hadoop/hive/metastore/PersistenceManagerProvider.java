@@ -80,6 +80,7 @@ import java.util.function.Supplier;
  */
 public class PersistenceManagerProvider {
   private static PersistenceManagerFactory pmf;
+  private static PersistenceManagerFactory compactorPmf;
   private static Properties prop;
   private static final ReentrantReadWriteLock pmfLock = new ReentrantReadWriteLock();
   private static final Lock pmfReadLock = pmfLock.readLock();
@@ -209,7 +210,8 @@ public class PersistenceManagerProvider {
             retryInterval = MetastoreConf
                 .getTimeVar(conf, ConfVars.HMS_HANDLER_INTERVAL, TimeUnit.MILLISECONDS);
             // init PMF with retry logic
-            retry(() -> {initPMF(conf); return null;});
+            pmf = retry(() -> initPMF(conf, true));
+            compactorPmf = retry(() -> initPMF(conf, false));
           }
           // downgrade by acquiring read lock before releasing write lock
           pmfReadLock.lock();
@@ -225,14 +227,17 @@ public class PersistenceManagerProvider {
     }
   }
 
-  private static void initPMF(Configuration conf) {
+  private static PersistenceManagerFactory initPMF(Configuration conf, boolean forCompactor) {
     DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
+    PersistenceManagerFactory pmf;
 
     if (dsp == null) {
       pmf = JDOHelper.getPersistenceManagerFactory(prop);
     } else {
       try {
-        DataSource ds = dsp.create(conf);
+        DataSource ds =
+                forCompactor ? dsp.create(conf, MetastoreConf.getIntVar(conf, ConfVars.HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS)) :
+                        dsp.create(conf);
         Map<Object, Object> dsProperties = new HashMap<>();
         //Any preexisting datanucleus property should be passed along
         dsProperties.putAll(prop);
@@ -269,6 +274,7 @@ public class PersistenceManagerProvider {
       LOG.warn("PersistenceManagerFactory returned null DataStoreCache object. "
           + "Unable to initialize object pin types defined by hive.metastore.cache.pinobjtypes");
     }
+    return pmf;
   }
 
   /**
@@ -399,13 +405,19 @@ public class PersistenceManagerProvider {
    * @return PersistenceManager from the current PersistenceManagerFactory instance
    */
   public static PersistenceManager getPersistenceManager() {
+    return getPersistenceManager(false);
+  }
+
+  public static PersistenceManager getPersistenceManager(boolean forCompactor) {
     pmfReadLock.lock();
     try {
-      if (pmf == null) {
+      if ((!forCompactor && pmf == null) || (forCompactor && compactorPmf == null)) {
         throw new RuntimeException(
             "Cannot create PersistenceManager. PersistenceManagerFactory is not yet initialized");
       }
-      return retry(pmf::getPersistenceManager);
+      return forCompactor ?
+              retry(compactorPmf::getPersistenceManager) :
+              retry(pmf::getPersistenceManager);
     } catch (Exception e) {
       throw new RuntimeException(e);
     } finally {
