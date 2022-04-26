@@ -1,9 +1,0 @@
-PREHOOK: query: SELECT SUM(abs(ctinyint)) from alltypesparquet
-PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesparquet
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT SUM(abs(ctinyint)) from alltypesparquet
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesparquet
-#### A masked pattern was here ####
-261468

@@ -35,9 +35,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc.ReduceSinkKeyType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 
 /**
@@ -127,10 +124,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   // whether this RS is deduplicated
   private transient boolean isDeduplicated = false;
 
-  // used by spark mode to decide whether global order is needed
+  // used to decide whether global order is needed
   private transient boolean hasOrderBy = false;
-
-  private static transient Logger LOG = LoggerFactory.getLogger(ReduceSinkDesc.class);
 
   private AcidUtils.Operation writeType;
 
@@ -547,7 +542,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   // Use LinkedHashSet to give predictable display order.
   private static final Set<String> vectorizableReduceSinkNativeEngines =
-      new LinkedHashSet<String>(Arrays.asList("tez", "spark"));
+      new LinkedHashSet<String>(Arrays.asList("tez"));
 
   public class ReduceSinkOperatorExplainVectorization extends OperatorExplainVectorization {
 

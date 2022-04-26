@@ -176,19 +176,6 @@ public class TestHiveConf {
   }
 
   @Test
-  public void testSparkConfigUpdate(){
-    HiveConf conf = new HiveConf();
-    Assert.assertFalse(conf.getSparkConfigUpdated());
-
-    conf.verifyAndSet("spark.master", "yarn");
-    Assert.assertTrue(conf.getSparkConfigUpdated());
-    conf.verifyAndSet("hive.execution.engine", "spark");
-    Assert.assertTrue("Expected spark config updated.", conf.getSparkConfigUpdated());
-
-    conf.setSparkConfigUpdated(false);
-    Assert.assertFalse(conf.getSparkConfigUpdated());
-  }
-  @Test
   public void testEncodingDecoding() throws UnsupportedEncodingException {
     HiveConf conf = new HiveConf();
     String query = "select blah, '\u0001' from random_table";

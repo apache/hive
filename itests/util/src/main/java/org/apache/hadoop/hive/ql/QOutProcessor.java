@@ -336,8 +336,6 @@ public class QOutProcessor {
     ppm.add(new PatternReplacementPair(Pattern.compile("attempt_[0-9_]+"), "attempt_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("vertex_[0-9_]+"), "vertex_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("task_[0-9_]+"), "task_#ID#"));
-    ppm.add(new PatternReplacementPair(Pattern.compile("for Spark session.*?:"),
-            "#SPARK_SESSION_ID#:"));
 
     ppm.add(new PatternReplacementPair(Pattern.compile("rowcount = [0-9]+(\\.[0-9]+(E[0-9]+)?)?, cumulative cost = \\{.*\\}, id = [0-9]*"),
         "rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###"));

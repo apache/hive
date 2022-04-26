@@ -51,7 +51,6 @@ drop table dp_mm;
 
 
 set hive.merge.mapredfiles=false;
-set hive.merge.sparkfiles=false;
 set hive.merge.tezfiles=false;
 
 create table dp_mm (key int) partitioned by (key1 string, key2 int) stored as orc
@@ -223,7 +222,6 @@ select * from multi0_1_mm order by key, key2;
 select * from multi0_2_mm order by key, key2;
 
 set hive.merge.mapredfiles=true;
-set hive.merge.sparkfiles=true;
 set hive.merge.tezfiles=true;
 
 from intermediate_n0
@@ -234,7 +232,6 @@ select * from multi0_1_mm order by key, key2;
 select * from multi0_2_mm order by key, key2;
 
 set hive.merge.mapredfiles=false;
-set hive.merge.sparkfiles=false;
 set hive.merge.tezfiles=false;
 
 drop table multi0_1_mm;

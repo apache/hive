@@ -97,7 +97,6 @@ int _kOperatorTypeValues[] = {
   OperatorType::ORCFILEMERGE,
   OperatorType::RCFILEMERGE,
   OperatorType::MERGEJOIN,
-  OperatorType::SPARKPRUNINGSINK,
   OperatorType::TOPNKEY
 };
 const char* _kOperatorTypeNames[] = {
@@ -126,10 +125,9 @@ const char* _kOperatorTypeNames[] = {
   "ORCFILEMERGE",
   "RCFILEMERGE",
   "MERGEJOIN",
-  "SPARKPRUNINGSINK",
   "TOPNKEY"
 };
-const std::map<int, const char*> _OperatorType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(27, _kOperatorTypeValues, _kOperatorTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _OperatorType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(26, _kOperatorTypeValues, _kOperatorTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const OperatorType::type& val) {
   std::map<int, const char*>::const_iterator it = _OperatorType_VALUES_TO_NAMES.find(val);

@@ -121,43 +121,6 @@ public class ParsedOutputFileNameTest {
   }
 
   @Test
-  public void testSparkFileNameSuffixed() {
-    ParsedOutputFileName p = ParsedOutputFileName.parse(
-        "part-00026-23003837-facb-49ec-b1c4-eeda902cacf3.c000.zlib.orc");
-    Assert.assertTrue(p.matches());
-    Assert.assertEquals("00026", p.getTaskId());
-    Assert.assertEquals("00026", p.getPrefixedTaskId());
-    Assert.assertNull(p.getTaskIdPrefix());
-    Assert.assertEquals("1", p.getAttemptId());
-    Assert.assertNull(p.getCopyIndex());
-    Assert.assertFalse(p.isCopyFile());
-    Assert.assertEquals(".zlib.orc", p.getSuffix());
-    try {
-      p.makeFilenameWithCopyIndex(1);
-      Assert.fail("Expected HiveException");
-    } catch(HiveException e) {
-    }
-  }
-
-  @Test
-  public void testSparkFileName() {
-    ParsedOutputFileName p = ParsedOutputFileName.parse("part-00003-c6acfdee-0c32-492e-b209-c2f1cf477770.c000");
-    Assert.assertTrue(p.matches());
-    Assert.assertEquals("00003", p.getTaskId());
-    Assert.assertEquals("00003", p.getPrefixedTaskId());
-    Assert.assertNull(p.getTaskIdPrefix());
-    Assert.assertEquals("1", p.getAttemptId());
-    Assert.assertNull(p.getCopyIndex());
-    Assert.assertFalse(p.isCopyFile());
-    Assert.assertNull(p.getSuffix());
-    try {
-      p.makeFilenameWithCopyIndex(1);
-      Assert.fail("Expected HiveException");
-    } catch(HiveException e) {
-    }
-  }
-
-  @Test
   public void testNoMatch() {
     ParsedOutputFileName p = ParsedOutputFileName.parse("ZfsLke");
     Assert.assertFalse(p.matches());
