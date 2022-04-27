@@ -36,7 +36,7 @@ import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.mapred.Container;
 
-class HiveIcebergRecordWriter extends HiveIcebergWriter {
+class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
 
   private final int currentSpecId;
 

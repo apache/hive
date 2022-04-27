@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -58,6 +59,15 @@ public class IcebergAcidUtil {
     DELETE_SERDE_META_COLS.put(MetadataColumns.ROW_POSITION, 3);
   }
 
+  private static final Map<Types.NestedField, Integer> UPDATE_SERDE_META_COLS = Maps.newLinkedHashMap();
+
+  static {
+    UPDATE_SERDE_META_COLS.put(MetadataColumns.SPEC_ID, 0);
+    UPDATE_SERDE_META_COLS.put(PARTITION_HASH_META_COL, 1);
+    UPDATE_SERDE_META_COLS.put(MetadataColumns.FILE_PATH, 2);
+    UPDATE_SERDE_META_COLS.put(MetadataColumns.ROW_POSITION, 3);
+  }
+
   /**
    * @param dataCols The columns of the original file read schema
    * @param table The table object - it is used for populating the partition struct meta column
@@ -88,6 +98,8 @@ public class IcebergAcidUtil {
   }
 
   /**
+   * Based on `rec` the method creates a position delete object, and also populates the data filed of `rowData` with
+   * the field values from `rec`.
    * @param rec The record read by the file scan task, which contains both the metadata fields and the row data fields
    * @param rowData The record object to populate with the rowData fields only
    * @return The position delete object
@@ -104,6 +116,57 @@ public class IcebergAcidUtil {
 
     positionDelete.set(filePath, filePosition, rowData);
     return positionDelete;
+  }
+
+  /**
+   * @param dataCols The columns of the original file read schema
+   * @param table The table object - it is used for populating the partition struct meta column
+   * @return The schema for reading files, extended with metadata columns needed for deletes
+   */
+  public static Schema createFileReadSchemaForUpdate(List<Types.NestedField> dataCols, Table table) {
+    List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + UPDATE_SERDE_META_COLS.size());
+    UPDATE_SERDE_META_COLS.forEach((metaCol, index) -> {
+      if (metaCol == PARTITION_STRUCT_META_COL) {
+        cols.add(MetadataColumns.metadataColumn(table, MetadataColumns.PARTITION_COLUMN_NAME));
+      } else {
+        cols.add(metaCol);
+      }
+    });
+    // New column values
+    cols.addAll(dataCols);
+    // Old column values
+    cols.addAll(dataCols.stream()
+        .map(f -> Types.NestedField.optional(1147483545 + f.fieldId(), "__old_value_for" + f.name(), f.type()))
+        .collect(Collectors.toSet()));
+    return new Schema(cols);
+  }
+
+  /**
+   * @param dataCols The columns of the serde projection schema
+   * @return The schema for SerDe operations, extended with metadata columns needed for deletes
+   */
+  public static Schema createSerdeSchemaForUpdate(List<Types.NestedField> dataCols) {
+    List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + UPDATE_SERDE_META_COLS.size());
+    UPDATE_SERDE_META_COLS.forEach((metaCol, index) -> cols.add(metaCol));
+    // New column values
+    cols.addAll(dataCols);
+    // Old column values
+    cols.addAll(dataCols.stream()
+        .map(f -> Types.NestedField.optional(1147483545 + f.fieldId(), "__old_value_for_" + f.name(), f.type()))
+        .collect(Collectors.toSet()));
+    return new Schema(cols);
+  }
+
+  /**
+   * Populate the `rowData` with the filed values from `rec`.
+   * @param rec The record read by the file scan task, which contains both the metadata fields and the row data fields
+   * @param rowData The record object to populate with the rowData fields only
+   */
+  public static void getUpdatedRecord(Record rec, Record rowData) {
+    int dataOffset = UPDATE_SERDE_META_COLS.size() + rowData.size();
+    for (int i = dataOffset; i < dataOffset + rowData.size(); ++i) {
+      rowData.set(i - dataOffset, rec.get(i));
+    }
   }
 
   public static int parseSpecId(Record rec) {
