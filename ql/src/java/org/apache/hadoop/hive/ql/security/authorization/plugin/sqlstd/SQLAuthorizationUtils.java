@@ -271,7 +271,16 @@ public class SQLAuthorizationUtils {
         thriftTableObj = metastoreClient.getTable(hivePrivObject.getDbname(),
             hivePrivObject.getObjectName());
       } catch (Exception e) {
-        throwGetObjErr(e, hivePrivObject);
+        boolean isTableExists = true;
+        try {
+          if(!metastoreClient.tableExists(hivePrivObject.getDbname(), hivePrivObject.getObjectName())) {
+            // Do not throw any exception when table object is not present.
+            // return true since the current user the owner of new table.
+            return true;
+          }
+        } catch (TException ex){
+          throwGetObjErr(ex, hivePrivObject);
+        }
       }
       return userName.equals(thriftTableObj.getOwner());
     }

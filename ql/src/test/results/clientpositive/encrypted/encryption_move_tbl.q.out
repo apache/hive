@@ -96,11 +96,12 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true
 PREHOOK: query: ALTER TABLE default.encrypted_table_n1 RENAME TO encrypted_db.encrypted_table_2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@encrypted_table_n1
-PREHOOK: Output: default@encrypted_table_n1
+PREHOOK: Output: database:encrypted_db
+PREHOOK: Output: encrypted_db@encrypted_table_2
 POSTHOOK: query: ALTER TABLE default.encrypted_table_n1 RENAME TO encrypted_db.encrypted_table_2
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@encrypted_table_n1
-POSTHOOK: Output: default@encrypted_table_n1
+POSTHOOK: Output: database:encrypted_db
 POSTHOOK: Output: encrypted_db@encrypted_table_2
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
@@ -134,11 +135,12 @@ Encryption zone created: '/build/ql/test/data/specified_table_location' using ke
 PREHOOK: query: ALTER TABLE encrypted_table_outloc RENAME TO renamed_encrypted_table_outloc
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@encrypted_table_outloc
-PREHOOK: Output: default@encrypted_table_outloc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@renamed_encrypted_table_outloc
 POSTHOOK: query: ALTER TABLE encrypted_table_outloc RENAME TO renamed_encrypted_table_outloc
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@encrypted_table_outloc
-POSTHOOK: Output: default@encrypted_table_outloc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@renamed_encrypted_table_outloc
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
@@ -185,11 +187,12 @@ POSTHOOK: Lineage: encrypted_table_n1.value SIMPLE [(src)src.FieldSchema(name:va
 PREHOOK: query: ALTER TABLE encrypted_table_n1 RENAME TO renamed_encrypted_table_n1
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: encrypted_db_outloc@encrypted_table_n1
-PREHOOK: Output: encrypted_db_outloc@encrypted_table_n1
+PREHOOK: Output: database:encrypted_db_outloc
+PREHOOK: Output: encrypted_db_outloc@renamed_encrypted_table_n1
 POSTHOOK: query: ALTER TABLE encrypted_table_n1 RENAME TO renamed_encrypted_table_n1
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: encrypted_db_outloc@encrypted_table_n1
-POSTHOOK: Output: encrypted_db_outloc@encrypted_table_n1
+POSTHOOK: Output: database:encrypted_db_outloc
 POSTHOOK: Output: encrypted_db_outloc@renamed_encrypted_table_n1
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
@@ -201,7 +204,8 @@ renamed_encrypted_table_n1
 PREHOOK: query: ALTER TABLE encrypted_db_outloc.renamed_encrypted_table_n1 RENAME TO default.plain_table_2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: encrypted_db_outloc@renamed_encrypted_table_n1
-PREHOOK: Output: encrypted_db_outloc@renamed_encrypted_table_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@plain_table_2
 FAILED: Execution Error, return code 40013 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. Alter Table operation for encrypted_db_outloc.renamed_encrypted_table_n1 failed to move data due to: 'Got exception: org.apache.hadoop.ipc.RemoteException /build/ql/test/data/specified_db_location/renamed_encrypted_table_n1 can't be moved from an encryption zone.' See hive log file for details.
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES

@@ -432,12 +432,13 @@ POSTHOOK: Input: default@old_name@ds=1
 PREHOOK: query: ALTER TABLE old_name RENAME TO new_name
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@old_name
-PREHOOK: Output: default@old_name
+PREHOOK: Output: database:default
+PREHOOK: Output: default@new_name
 POSTHOOK: query: ALTER TABLE old_name RENAME TO new_name
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@old_name
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@new_name
-POSTHOOK: Output: default@old_name
 PREHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
 FROM (SELECT * FROM new_name WHERE ds='1') subq1) subq2
 PREHOOK: type: QUERY

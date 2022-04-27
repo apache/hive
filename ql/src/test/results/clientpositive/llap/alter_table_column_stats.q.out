@@ -179,11 +179,12 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"tru
 PREHOOK: query: alter table statsdb1.testtable0 rename to statsdb1.testtable1
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testtable0
-PREHOOK: Output: statsdb1@testtable0
+PREHOOK: Output: database:statsdb1
+PREHOOK: Output: statsdb1@testtable1
 POSTHOOK: query: alter table statsdb1.testtable0 rename to statsdb1.testtable1
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: statsdb1@testtable0
-POSTHOOK: Output: statsdb1@testtable0
+POSTHOOK: Output: database:statsdb1
 POSTHOOK: Output: statsdb1@testtable1
 PREHOOK: query: describe formatted statsdb1.testtable1
 PREHOOK: type: DESCTABLE
@@ -486,11 +487,12 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"tru
 PREHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testtable1
-PREHOOK: Output: statsdb1@testtable1
+PREHOOK: Output: database:statsdb2
+PREHOOK: Output: statsdb2@testtable2
 POSTHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: statsdb1@testtable1
-POSTHOOK: Output: statsdb1@testtable1
+POSTHOOK: Output: database:statsdb2
 POSTHOOK: Output: statsdb2@testtable2
 PREHOOK: query: describe formatted statsdb2.testtable2
 PREHOOK: type: DESCTABLE
@@ -832,11 +834,12 @@ comment             	from deserializer
 PREHOOK: query: alter table statsdb1.testpart0 rename to statsdb1.testpart1
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testpart0
-PREHOOK: Output: statsdb1@testpart0
+PREHOOK: Output: database:statsdb1
+PREHOOK: Output: statsdb1@testpart1
 POSTHOOK: query: alter table statsdb1.testpart0 rename to statsdb1.testpart1
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: statsdb1@testpart0
-POSTHOOK: Output: statsdb1@testpart0
+POSTHOOK: Output: database:statsdb1
 POSTHOOK: Output: statsdb1@testpart1
 PREHOOK: query: describe formatted statsdb1.testpart1
 PREHOOK: type: DESCTABLE
@@ -1779,11 +1782,12 @@ comment             	from deserializer
 PREHOOK: query: alter table statsdb1.testpart1 rename to statsdb2.testpart2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testpart1
-PREHOOK: Output: statsdb1@testpart1
+PREHOOK: Output: database:statsdb2
+PREHOOK: Output: statsdb2@testpart2
 POSTHOOK: query: alter table statsdb1.testpart1 rename to statsdb2.testpart2
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: statsdb1@testpart1
-POSTHOOK: Output: statsdb1@testpart1
+POSTHOOK: Output: database:statsdb2
 POSTHOOK: Output: statsdb2@testpart2
 PREHOOK: query: describe formatted statsdb2.testpart2
 PREHOOK: type: DESCTABLE
@@ -2160,11 +2164,12 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"tru
 PREHOOK: query: alter table statsdb1.testtable0 rename to statsdb1.testtable1
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testtable0
-PREHOOK: Output: statsdb1@testtable0
+PREHOOK: Output: database:statsdb1
+PREHOOK: Output: statsdb1@testtable1
 POSTHOOK: query: alter table statsdb1.testtable0 rename to statsdb1.testtable1
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: statsdb1@testtable0
-POSTHOOK: Output: statsdb1@testtable0
+POSTHOOK: Output: database:statsdb1
 POSTHOOK: Output: statsdb1@testtable1
 PREHOOK: query: describe formatted statsdb1.testtable1
 PREHOOK: type: DESCTABLE
@@ -2467,11 +2472,12 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col2\":\"tru
 PREHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testtable1
-PREHOOK: Output: statsdb1@testtable1
+PREHOOK: Output: database:statsdb2
+PREHOOK: Output: statsdb2@testtable2
 POSTHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: statsdb1@testtable1
-POSTHOOK: Output: statsdb1@testtable1
+POSTHOOK: Output: database:statsdb2
 POSTHOOK: Output: statsdb2@testtable2
 PREHOOK: query: describe formatted statsdb2.testtable2
 PREHOOK: type: DESCTABLE
@@ -2813,11 +2819,12 @@ comment             	from deserializer
 PREHOOK: query: alter table statsdb1.testpart0 rename to statsdb1.testpart1
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testpart0
-PREHOOK: Output: statsdb1@testpart0
+PREHOOK: Output: database:statsdb1
+PREHOOK: Output: statsdb1@testpart1
 POSTHOOK: query: alter table statsdb1.testpart0 rename to statsdb1.testpart1
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: statsdb1@testpart0
-POSTHOOK: Output: statsdb1@testpart0
+POSTHOOK: Output: database:statsdb1
 POSTHOOK: Output: statsdb1@testpart1
 PREHOOK: query: describe formatted statsdb1.testpart1
 PREHOOK: type: DESCTABLE
@@ -3760,11 +3767,12 @@ comment             	from deserializer
 PREHOOK: query: alter table statsdb1.testpart1 rename to statsdb2.testpart2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testpart1
-PREHOOK: Output: statsdb1@testpart1
+PREHOOK: Output: database:statsdb2
+PREHOOK: Output: statsdb2@testpart2
 POSTHOOK: query: alter table statsdb1.testpart1 rename to statsdb2.testpart2
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: statsdb1@testpart1
-POSTHOOK: Output: statsdb1@testpart1
+POSTHOOK: Output: database:statsdb2
 POSTHOOK: Output: statsdb2@testpart2
 PREHOOK: query: describe formatted statsdb2.testpart2
 PREHOOK: type: DESCTABLE

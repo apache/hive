@@ -172,11 +172,13 @@ POSTHOOK: Output: newDB@tab_n1
 PREHOOK: query: explain alter table tab_n1 rename to newName
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: newdb@tab_n1
-PREHOOK: Output: newdb@tab_n1
+PREHOOK: Output: database:newdb
+PREHOOK: Output: newDB@newName
 POSTHOOK: query: explain alter table tab_n1 rename to newName
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: newdb@tab_n1
-POSTHOOK: Output: newdb@tab_n1
+POSTHOOK: Output: database:newdb
+POSTHOOK: Output: newDB@newName
 Stage-0
   Rename Table{"table name:":"newDB.tab_n1","new table name:":"newDB.newName"}
 

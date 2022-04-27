@@ -17,12 +17,13 @@ POSTHOOK: Output: default@jsontable_n0
 PREHOOK: query: ALTER TABLE jsontable_n0 RENAME TO jsontable2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@jsontable_n0
-PREHOOK: Output: default@jsontable_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jsontable2
 POSTHOOK: query: ALTER TABLE jsontable_n0 RENAME TO jsontable2
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@jsontable_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jsontable2
-POSTHOOK: Output: default@jsontable_n0
 PREHOOK: query: SHOW TABLE EXTENDED LIKE jsontable2
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE jsontable2
