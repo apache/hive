@@ -675,6 +675,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       return;
     }
 
+    cancelAsyncInitOps();
+
     // set state as CLOSE as long as all parents are closed
     // state == CLOSE doesn't mean all children are also in state CLOSE
     state = State.CLOSE;
