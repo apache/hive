@@ -646,7 +646,7 @@ public class TestObjectStore {
     checkBackendTableSize("SKEWED_COL_NAMES", 3);
     checkBackendTableSize("SDS", 4); // Table has an SDS
     checkBackendTableSize("SORT_COLS", 3);
-    checkBackendTableSize("SERDE_PARAMS", 3);
+    checkBackendTableSize("SERDE_PARAMS", 4);
     checkBackendTableSize("SERDES", 4); // Table has a serde
 
     // drop the partitions
@@ -667,7 +667,7 @@ public class TestObjectStore {
     checkBackendTableSize("SKEWED_COL_NAMES", 0);
     checkBackendTableSize("SDS", 1); // Table has an SDS
     checkBackendTableSize("SORT_COLS", 0);
-    checkBackendTableSize("SERDE_PARAMS", 0);
+    checkBackendTableSize("SERDE_PARAMS", 1);
     checkBackendTableSize("SERDES", 1); // Table has a serde
   }
 

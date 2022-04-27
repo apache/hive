@@ -5152,8 +5152,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
     oldp.setParameters(newPart.getParameters());
     if (!TableType.VIRTUAL_VIEW.name().equals(oldp.getTable().getTableType())) {
-      Ref<Boolean> cdChanged = new Ref<>();
-      Ref<Boolean> serdeChanged = new Ref<>();
       copyMSD(newp.getSd(), oldp.getSd());
       if (oldSD != null && oldSD.getCD() != oldCD) {
         oldCdRef.t = oldCD;
@@ -5503,7 +5501,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (oldSerDeInfo == null) {
       return;
     }
-    LOG.debug("execute removeUnusedSerDeInfo");
+    LOG.debug("executing removeUnusedSerDeInfo");
     boolean committed = false;
 
     try {
