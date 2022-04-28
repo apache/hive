@@ -52,6 +52,12 @@ import org.roaringbitmap.longlong.Roaring64Bitmap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The {@link HiveIcebergBufferedDeleteWriter} needs to handle out of order records.
+ * We need to keep the incoming records in memory until they are written out. To keep the memory consumption minimal
+ * we only write out {@link PositionDelete} files where the row data is omitted, so only the filenames and the rowIds
+ * have to be in the memory.
+ */
 public class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergBufferedDeleteWriter.class);
 
@@ -110,7 +116,7 @@ public class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
       LOG.info("Delete file flush is started");
       Tasks.foreach(buffer.keySet())
           .retry(3)
-          .executeWith(fileExecutor(configuration))
+          .executeWith(fileExecutor(configuration, buffer.size()))
           .onFailure((partition, exception) -> LOG.debug("Failed to write delete file {}", partition, exception))
           .run(partition -> {
             PositionDelete<Record> positionDelete = PositionDelete.create();
@@ -153,8 +159,8 @@ public class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
    * @param conf The configuration containing the pool size
    * @return The generated executor service
    */
-  private static ExecutorService fileExecutor(Configuration conf) {
-    int size = conf.getInt(DELETE_FILE_THREAD_POOL_SIZE, DELETE_FILE_THREAD_POOL_SIZE_DEFAULT);
+  private static ExecutorService fileExecutor(Configuration conf, int maxSize) {
+    int size = Math.min(maxSize, conf.getInt(DELETE_FILE_THREAD_POOL_SIZE, DELETE_FILE_THREAD_POOL_SIZE_DEFAULT));
     return Executors.newFixedThreadPool(
         size,
         new ThreadFactoryBuilder()

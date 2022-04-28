@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
@@ -30,6 +31,7 @@ import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.ClusteredDataWriter;
@@ -38,6 +40,12 @@ import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.mapred.Container;
 
+/**
+ * Hive update queries are converted to an insert statement where the result contains the updated rows.
+ * The schema is defined by {@link IcebergAcidUtil#createFileReadSchemaForUpdate(List, Table)}}.
+ * The rows are sorted based on the requirements of the {@link HiveIcebergRecordWriter}.
+ * The {@link HiveIcebergBufferedDeleteWriter} needs to handle out of order records.
+ */
 class HiveIcebergUpdateWriter extends HiveIcebergWriterBase {
 
   private final HiveIcebergBufferedDeleteWriter deleteWriter;
