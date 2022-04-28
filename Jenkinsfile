@@ -246,17 +246,18 @@ fi
       }
       checkPrHead()
       stage('Sonar') {
-        withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
-          sh '''#!/bin/bash -e
-          sw java 11 && . /etc/profile.d/java.sh
-          export MAVEN_OPTS=-Xmx5G
-          mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-           -Dsonar.pullrequest.github.repository=asolimando/hive \
-           -Dsonar.pullrequest.key=${CHANGE_ID} \
-           -Dsonar.pullrequest.branch=${CHANGE_BRANCH} \
-           -Dsonar.pullrequest.base=${CHANGE_TARGET} \
-           -DskipTests -Dmaven.javadoc.skip
-          '''
+        if(env.CHANGE_BRANCH == 'master-sonar_analysis') {
+          withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
+            sh '''#!/bin/bash -e
+            sw java 11 && . /etc/profile.d/java.sh
+            export MAVEN_OPTS=-Xmx5G
+            mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+             -Dsonar.pullrequest.github.repository=asolimando/hive \
+             -DskipTests -Dmaven.javadoc.skip
+            '''
+          }
+        } else {
+          echo "skipping sonar analysis, running only on master branch"
         }
       }
       stage('Upload') {
