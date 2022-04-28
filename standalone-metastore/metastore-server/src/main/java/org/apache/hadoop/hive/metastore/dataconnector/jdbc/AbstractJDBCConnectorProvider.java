@@ -207,6 +207,10 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   protected abstract ResultSet fetchTableNames() throws MetaException;
 
+  protected abstract String getCatalogName();
+
+  protected abstract String getDatabaseName();
+
   /**
    * Fetch a single table with the given name, returns a Hive Table object from the remote database
    * @return Table A Table object for the matching table, null otherwise.
@@ -220,6 +224,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       rs = fetchColumnsViaDBMetaData(tableName);
       List<FieldSchema> cols = new ArrayList<>();
       while (rs.next()) {
+        String typename = rs.getString("TYPE_NAME");
         FieldSchema fs = new FieldSchema();
         fs.setName(rs.getString("COLUMN_NAME"));
         fs.setType(getDataType(rs.getString("TYPE_NAME"), rs.getInt("COLUMN_SIZE")));
@@ -236,7 +241,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       //Setting the table properties.
       table.getParameters().put(JDBC_DATABASE_TYPE, this.type);
       table.getParameters().put(JDBC_DRIVER, this.driverClassName);
-      table.getParameters().put(JDBC_TABLE, tableName);
+      table.getParameters().put(JDBC_TABLE, scoped_db+"."+tableName);
       table.getParameters().put(JDBC_URL, this.jdbcUrl);
       table.getParameters().put(hive_metastoreConstants.META_TABLE_STORAGE, JDBC_HIVE_STORAGE_HANDLER_ID);
       table.getParameters().put("EXTERNAL", "TRUE");
@@ -263,7 +268,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   private ResultSet fetchTablesViaDBMetaData(String regex) throws SQLException {
     ResultSet rs = null;
     try {
-      rs = getConnection().getMetaData().getTables(scoped_db, null, regex, new String[] { "TABLE" });
+      rs = getConnection().getMetaData().getTables(getCatalogName(), getDatabaseName(), regex, new String[]{"TABLE"});
     } catch (SQLException sqle) {
       LOG.warn("Could not retrieve tables from JDBC table, cause:" + sqle.getMessage());
       throw sqle;
@@ -274,7 +279,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   private ResultSet fetchColumnsViaDBMetaData(String tableName) throws SQLException {
     ResultSet rs = null;
     try {
-      rs = getConnection().getMetaData().getColumns(scoped_db, null, tableName, null);
+      rs = getConnection().getMetaData().getColumns(getCatalogName(), getDatabaseName(), tableName, null);
     } catch (SQLException sqle) {
       LOG.warn("Could not retrieve columns from JDBC table, cause:" + sqle.getMessage());
       throw sqle;
@@ -308,6 +313,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       case "mediumblob":
       case "longblob":
       case "bytea":
+      case "binary":
         return ColumnType.BINARY_TYPE_NAME;
       case "tinyint":
         return ColumnType.TINYINT_TYPE_NAME;
