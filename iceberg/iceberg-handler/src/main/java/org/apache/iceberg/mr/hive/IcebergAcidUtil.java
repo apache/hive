@@ -137,7 +137,7 @@ public class IcebergAcidUtil {
     // Old column values
     cols.addAll(dataCols.stream()
         .map(f -> Types.NestedField.optional(1147483545 + f.fieldId(), "__old_value_for" + f.name(), f.type()))
-        .collect(Collectors.toSet()));
+        .collect(Collectors.toList()));
     return new Schema(cols);
   }
 
@@ -153,7 +153,7 @@ public class IcebergAcidUtil {
     // Old column values
     cols.addAll(dataCols.stream()
         .map(f -> Types.NestedField.optional(1147483545 + f.fieldId(), "__old_value_for_" + f.name(), f.type()))
-        .collect(Collectors.toSet()));
+        .collect(Collectors.toList()));
     return new Schema(cols);
   }
 
