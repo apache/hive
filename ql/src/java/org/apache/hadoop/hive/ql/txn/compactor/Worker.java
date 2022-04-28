@@ -201,7 +201,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         Map<String, String> hiveVariables = sessionState.getHiveVariables();
         hiveVariables.put(Constants.INSIDE_COMPACTION_TRANSACTION_FLAG, "true");
         sessionState.setHiveVariables(hiveVariables);
-        DriverUtils.runOnDriver(statusUpdaterConf, userName, sessionState, sb.toString());
+        DriverUtils.runOnDriver(statusUpdaterConf, sessionState, sb.toString(), ci.highestWriteId);
       } catch (Throwable t) {
         LOG.error(ci + ": gatherStats(" + ci.dbname + "," + ci.tableName + "," + ci.partName +
                       ") failed due to: " + t.getMessage(), t);
@@ -526,8 +526,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
               UserGroupInformation.getLoginUser());
 
+          ValidCompactorWriteIdList finalTblValidWriteIds = tblValidWriteIds;
           ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
-            cleanupResultDirs(sd, tblValidWriteIds, ctype, dir);
+            cleanupResultDirs(sd, finalTblValidWriteIds, ctype, dir);
             return null;
           });
           try {

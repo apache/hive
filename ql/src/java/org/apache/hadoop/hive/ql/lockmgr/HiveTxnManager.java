@@ -302,7 +302,15 @@ public interface HiveTxnManager {
    */
   long getCurrentTxnId();
 
-  /**
+ /**
+  * if {@code writeId > 0}, sets it in the tableWriteId cache, otherwise, calls {@link #getTableWriteId(String, String)}.
+  * @param dbName
+  * @param tableName
+  * @throws LockException
+  */
+ void setTableWriteId(String dbName, String tableName, long writeId) throws LockException;
+
+ /**
    * if {@code isTxnOpen()}, returns the table write ID associated with current active transaction.
    */
   long getTableWriteId(String dbName, String tableName) throws LockException;
@@ -317,15 +325,6 @@ public interface HiveTxnManager {
   * @throws LockException
   */
  long getAllocatedTableWriteId(String dbName, String tableName) throws LockException;
-
- /**
-  * Finds the max allocated table write ID and caches it. As a result all subsequent
-  * {@link #getTableWriteId(String, String)} calls will return it.
-  * @param dbName
-  * @param tableName
-  * @throws LockException
-  */
- void allocateMaxTableWriteId(String dbName, String tableName) throws LockException;
 
  /**
    * Allocates write id for each transaction in the list.
