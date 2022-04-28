@@ -226,12 +226,14 @@ public class HiveAlterHandler implements AlterHandler {
       // 2) the table is not an external table, and
       // 3) the user didn't change the default location (or new location is empty), and
       // 4) the table was not initially created with a specified location
-      if (replDataLocationChanged
-              || (rename
-              && !oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())
-              && (oldt.getSd().getLocation().compareTo(newt.getSd().getLocation()) == 0
+      boolean renamedManagedTable = rename && !oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())
+          && (oldt.getSd().getLocation().compareTo(newt.getSd().getLocation()) == 0
               || StringUtils.isEmpty(newt.getSd().getLocation()))
-              && !MetaStoreUtils.isExternalTable(oldt))) {
+          && (!MetaStoreUtils.isExternalTable(oldt));
+      boolean renamedTranslatedToExternalTable = rename && MetaStoreUtils.isTranslatedToExternalTable(oldt)
+          && MetaStoreUtils.isTranslatedToExternalTable(newt);
+      if (replDataLocationChanged
+          || renamedManagedTable || renamedTranslatedToExternalTable) {
         srcPath = new Path(oldt.getSd().getLocation());
 
         if (replDataLocationChanged) {
@@ -249,7 +251,7 @@ public class HiveAlterHandler implements AlterHandler {
           // in the table rename, its data location should not be changed. We can check
           // if the table directory was created directly under its database directory to tell
           // if it is such a table
-          // Same applies to the ACID tables suffixed with the `txnId`, case with `lockless reads`. 
+          // Same applies to the ACID tables suffixed with the `txnId`, case with `lockless reads`.
           String oldtRelativePath = wh.getDatabaseManagedPath(olddb).toUri()
               .relativize(srcPath.toUri()).toString();
           boolean tableInSpecifiedLoc = !oldtRelativePath.equalsIgnoreCase(name)
@@ -677,7 +679,7 @@ public class HiveAlterHandler implements AlterHandler {
               if (!wh.mkdirs(destParentPath)) {
                   throw new MetaException("Unable to create path " + destParentPath);
               }
-              
+
               boolean clonePart = Optional.ofNullable(environmentContext)
                   .map(EnvironmentContext::getProperties)
                   .map(prop -> prop.get(RENAME_PARTITION_MAKE_COPY))
@@ -687,7 +689,7 @@ public class HiveAlterHandler implements AlterHandler {
 
               if (writeId > 0 && clonePart) {
                 LOG.debug("Making a copy of the partition directory: {} under a new location: {}", srcPath, destPath);
-                
+
                 if (!wh.copyDir(srcPath, destPath, ReplChangeManager.shouldEnableCm(db, tbl))) {
                   LOG.error("Copy failed for source: " + srcPath + " to destination: " + destPath);
                   throw new IOException("File copy failed.");
