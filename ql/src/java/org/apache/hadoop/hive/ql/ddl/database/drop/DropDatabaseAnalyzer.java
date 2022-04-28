@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 import java.util.List;
-import java.util.function.Predicate;
 
 /**
  * Analyzer for database dropping commands.
@@ -59,28 +58,30 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
       return;
     }
     // if cascade=true, then we need to authorize the drop table action as well, and add the tables to the outputs
-    boolean allTablesWithSuffix = false;
+    boolean isDbLevelLock = true;
     if (cascade) {
       try {
         List<Table> tables = db.getAllTableObjects(databaseName);
-        allTablesWithSuffix = tables.stream().allMatch(
-            table -> AcidUtils.isTableSoftDeleteEnabled(table, conf));
+        isDbLevelLock = !isSoftDelete || tables.stream().allMatch(
+          table -> AcidUtils.isTableSoftDeleteEnabled(table, conf));
         for (Table table : tables) {
+          WriteEntity.WriteType lockType = WriteEntity.WriteType.DDL_NO_LOCK;
           // Optimization used to limit number of requested locks. Check if table lock is needed or we could get away with single DB level lock,
-          boolean isTableLockNeeded = isSoftDelete && !allTablesWithSuffix;
-          outputs.add(new WriteEntity(table, isTableLockNeeded ?
-            AcidUtils.isTableSoftDeleteEnabled(table, conf) ?
-                WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE :
-            WriteEntity.WriteType.DDL_NO_LOCK));
+          if (!isDbLevelLock) {
+            lockType = AcidUtils.isTableSoftDeleteEnabled(table, conf) ?
+              WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
+          }
+          outputs.add(new WriteEntity(table, lockType));
         }
       } catch (HiveException e) {
         throw new SemanticException(e);
       }
     }
     inputs.add(new ReadEntity(database));
-    if (!isSoftDelete || !cascade || allTablesWithSuffix) {
-      outputs.add(new WriteEntity(database, isSoftDelete ?
-        WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE));
+    if (isDbLevelLock) {
+      WriteEntity.WriteType lockType = isSoftDelete ?
+        WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
+      outputs.add(new WriteEntity(database, lockType));
     }
     DropDatabaseDesc desc = new DropDatabaseDesc(databaseName, ifExists, cascade, new ReplicationSpec());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
