@@ -89,7 +89,7 @@ public class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
   @Override
   public void write(Writable row) throws IOException {
     Record rec = ((Container<Record>) row).get();
-    IcebergAcidUtil.getUpdatedRecord(rec, record);
+    IcebergAcidUtil.getOriginalFromUpdatedRecord(rec, record);
     String filePath = (String) rec.getField(MetadataColumns.FILE_PATH.name());
     int specId = IcebergAcidUtil.parseSpecId(rec);
 

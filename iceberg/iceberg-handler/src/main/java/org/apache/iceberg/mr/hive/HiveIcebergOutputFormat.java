@@ -88,7 +88,7 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
           targetFileSize, taskAttemptID, tableName);
     } else {
       return new HiveIcebergRecordWriter(schema, table.specs(), table.spec().specId(), fileFormat, writerFactory,
-          outputFileFactory, io, targetFileSize, taskAttemptID, tableName);
+          outputFileFactory, io, targetFileSize, taskAttemptID, tableName, false);
     }
   }
 }

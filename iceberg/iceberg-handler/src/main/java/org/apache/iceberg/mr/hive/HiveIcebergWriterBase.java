@@ -60,14 +60,16 @@ public abstract class HiveIcebergWriterBase implements FileSinkOperator.RecordWr
   protected final PartitioningWriter writer;
 
   protected HiveIcebergWriterBase(Schema schema, Map<Integer, PartitionSpec> specs, FileIO io, TaskAttemptID attemptID,
-      String tableName, PartitioningWriter writer) {
+      String tableName, PartitioningWriter writer, boolean wrapped) {
     this.io = io;
     this.wrapper = new InternalRecordWrapper(schema.asStruct());
     this.specs = specs;
     this.partitionKeys = Maps.newHashMapWithExpectedSize(specs.size());
     this.writer = writer;
-    writers.putIfAbsent(attemptID, Maps.newConcurrentMap());
-    writers.get(attemptID).put(tableName, this);
+    if (!wrapped) {
+      writers.putIfAbsent(attemptID, Maps.newConcurrentMap());
+      writers.get(attemptID).put(tableName, this);
+    }
   }
 
   @Override

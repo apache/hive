@@ -19,45 +19,64 @@
 
 package org.apache.iceberg.mr.hive;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.ClusteredDataWriter;
-import org.apache.iceberg.io.DataWriteResult;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.mapred.Container;
 
-class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
 
-  private final int currentSpecId;
+class HiveIcebergUpdateWriter extends HiveIcebergWriterBase {
 
-  HiveIcebergRecordWriter(
+  private final HiveIcebergBufferedDeleteWriter deleteWriter;
+  private final HiveIcebergRecordWriter insertWriter;
+  private final Container<Record> container;
+
+  HiveIcebergUpdateWriter(
       Schema schema, Map<Integer, PartitionSpec> specs, int currentSpecId, FileFormat format,
       FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
-      TaskAttemptID taskAttemptID, String tableName, boolean wrapped) {
+      TaskAttemptID taskAttemptID, String tableName, Configuration configuration) {
     super(schema, specs, io, taskAttemptID, tableName,
-        new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize), wrapped);
-    this.currentSpecId = currentSpecId;
+        new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize), false);
+    this.deleteWriter = new HiveIcebergBufferedDeleteWriter(schema, specs, format, fileWriterFactory, fileFactory, io,
+        targetFileSize, configuration);
+    this.insertWriter = new HiveIcebergRecordWriter(schema, specs, currentSpecId, format, fileWriterFactory,
+        fileFactory, io, targetFileSize, taskAttemptID, tableName, true);
+    this.container = new Container<>();
+    Record record = GenericRecord.create(schema);
+    container.set(record);
   }
 
   @Override
   public void write(Writable row) throws IOException {
-    Record record = ((Container<Record>) row).get();
-    writer.write(record, specs.get(currentSpecId), partition(record, currentSpecId));
+    deleteWriter.write(row);
+    IcebergAcidUtil.getNewFromUpdatedRecord(((Container<Record>) row).get(), container.get());
+    insertWriter.write(container);
+  }
+
+  @Override
+  public void close(boolean abort) throws IOException {
+    deleteWriter.close(abort);
+    insertWriter.close(abort);
   }
 
   @Override
   public FilesForCommit files() {
-    List<DataFile> dataFiles = ((DataWriteResult) writer.result()).dataFiles();
-    return FilesForCommit.onlyData(dataFiles);
+    Collection<DataFile> dataFiles = insertWriter.files().dataFiles();
+    Collection<DeleteFile> deleteFiles = deleteWriter.files().deleteFiles();
+    return new FilesForCommit(dataFiles, deleteFiles);
   }
 }

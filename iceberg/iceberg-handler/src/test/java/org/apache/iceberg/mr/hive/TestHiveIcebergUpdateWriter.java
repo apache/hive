@@ -25,6 +25,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.mapred.JobID;
+import org.apache.hadoop.mapred.TaskAttemptID;
+import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.RowDelta;
@@ -44,6 +47,9 @@ import org.junit.runners.Parameterized;
 @RunWith(Parameterized.class)
 public class TestHiveIcebergUpdateWriter extends HiveIcebergWriterTestBase {
   private static final long TARGET_FILE_SIZE = 128 * 1024 * 1024;
+  private static final JobID JOB_ID = new JobID("test", 0);
+  private static final TaskAttemptID TASK_ATTEMPT_ID =
+      new TaskAttemptID(JOB_ID.getJtIdentifier(), JOB_ID.getId(), TaskType.MAP, 0, 0);
   private static final Map<Integer, GenericRecord> UPDATED_RECORDS = ImmutableMap.of(
       29, record(29, "d"),
       61, record(61, "h"),
@@ -51,10 +57,55 @@ public class TestHiveIcebergUpdateWriter extends HiveIcebergWriterTestBase {
       100, record(132, "e"),
       122, record(142, "k"));
 
+  /**
+   * This test just runs sends the data through the DeleteWriter. Here we make sure that the correct rows are removed.
+   * @throws IOException It here is an error
+   */
   @Test
   public void testDelete() throws IOException {
-    HiveIcebergBufferedDeleteWriter testWriter = deleteWriter();
+    HiveIcebergWriter testWriter = new HiveIcebergBufferedDeleteWriter(table.schema(), table.specs(), fileFormat,
+        hiveFileWriterFactory(), outputFileFactory(), table.io(), TARGET_FILE_SIZE, new HiveConf());
 
+    update(table, testWriter);
+
+    StructLikeSet expected = rowSetWithoutIds(RECORDS, UPDATED_RECORDS.keySet());
+    StructLikeSet actual = actualRowSet(table);
+
+    Assert.assertEquals("Table should contain expected rows", expected, actual);
+  }
+
+  /**
+   * This test uses the full
+   * @throws IOException
+   */
+  @Test
+  public void testUpdate() throws IOException {
+    HiveIcebergWriter testWriter = new HiveIcebergUpdateWriter(table.schema(), table.specs(), table.spec().specId(),
+        fileFormat, hiveFileWriterFactory(), outputFileFactory(), table.io(), TARGET_FILE_SIZE, TASK_ATTEMPT_ID,
+        "table_name", new HiveConf());
+
+    update(table, testWriter);
+
+    StructLikeSet expected = rowSetWithoutIds(RECORDS, UPDATED_RECORDS.keySet());
+    expected.addAll(UPDATED_RECORDS.values());
+    StructLikeSet actual = actualRowSet(table);
+
+    Assert.assertEquals("Table should contain expected rows", expected, actual);
+  }
+
+  private OutputFileFactory outputFileFactory() {
+    return OutputFileFactory.builderFor(table, 1, 2)
+        .format(fileFormat)
+        .operationId("3")
+        .build();
+  }
+
+  private HiveFileWriterFactory hiveFileWriterFactory() {
+    return  new HiveFileWriterFactory(table, fileFormat, SCHEMA, null, fileFormat, null, null,
+        null, null);
+  }
+
+  private static void update(Table table, HiveIcebergWriter testWriter) throws IOException{
     List<GenericRecord> updateRecords = updateRecords(table, UPDATED_RECORDS);
 
     Collections.sort(updateRecords, Comparator.comparing(a -> a.getField("data").toString()));
@@ -69,25 +120,8 @@ public class TestHiveIcebergUpdateWriter extends HiveIcebergWriterTestBase {
 
     RowDelta rowDelta = table.newRowDelta();
     testWriter.files().deleteFiles().forEach(rowDelta::addDeletes);
+    testWriter.files().dataFiles().forEach(rowDelta::addRows);
     rowDelta.commit();
-
-    StructLikeSet expected = rowSetWithoutIds(RECORDS, UPDATED_RECORDS.keySet());
-    StructLikeSet actual = actualRowSet(table);
-
-    Assert.assertEquals("Table should contain expected rows", expected, actual);
-  }
-
-  private HiveIcebergBufferedDeleteWriter deleteWriter() {
-    OutputFileFactory outputFileFactory = OutputFileFactory.builderFor(table, 1, 2)
-        .format(fileFormat)
-        .operationId("3")
-        .build();
-
-    HiveFileWriterFactory hfwf = new HiveFileWriterFactory(table, fileFormat, SCHEMA, null, fileFormat, null, null,
-        null, null);
-
-    return new HiveIcebergBufferedDeleteWriter(table.schema(), table.specs(), fileFormat, hfwf, outputFileFactory,
-        table.io(), TARGET_FILE_SIZE, new HiveConf());
   }
 
   private static List<GenericRecord> updateRecords(Table table, Map<Integer, GenericRecord> updated)

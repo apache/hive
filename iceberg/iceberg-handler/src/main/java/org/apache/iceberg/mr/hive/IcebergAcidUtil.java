@@ -158,12 +158,24 @@ public class IcebergAcidUtil {
   }
 
   /**
-   * Populate the `rowData` with the filed values from `rec`.
+   * Get the original record from the updated record. Populate the `rowData` with the filed values from `rec`.
    * @param rec The record read by the file scan task, which contains both the metadata fields and the row data fields
    * @param rowData The record object to populate with the rowData fields only
    */
-  public static void getUpdatedRecord(Record rec, Record rowData) {
+  public static void getOriginalFromUpdatedRecord(Record rec, Record rowData) {
     int dataOffset = UPDATE_SERDE_META_COLS.size() + rowData.size();
+    for (int i = dataOffset; i < dataOffset + rowData.size(); ++i) {
+      rowData.set(i - dataOffset, rec.get(i));
+    }
+  }
+
+  /**
+   * Get the new record from the updated record. Populate the `rowData` with the filed values from `rec`.
+   * @param rec The record read by the file scan task, which contains both the metadata fields and the row data fields
+   * @param rowData The record object to populate with the rowData fields only
+   */
+  public static void getNewFromUpdatedRecord(Record rec, Record rowData) {
+    int dataOffset = UPDATE_SERDE_META_COLS.size();
     for (int i = dataOffset; i < dataOffset + rowData.size(); ++i) {
       rowData.set(i - dataOffset, rec.get(i));
     }
