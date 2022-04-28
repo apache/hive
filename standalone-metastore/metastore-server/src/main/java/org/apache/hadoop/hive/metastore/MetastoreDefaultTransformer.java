@@ -761,7 +761,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       if (oldTable.getSd().getLocation().equals(oldPath.toString())) {
         Path newPath = getTranslatedToExternalTableDefaultLocation(hmsHandler, newDb, newTable);
         newTable.getSd().setLocation(newPath.toString());
-        hmsHandler.getWh().renameDir(oldPath, newPath, ReplChangeManager.shouldEnableCm(oldDb, oldTable));
+        //        hmsHandler.getWh().renameDir(oldPath, newPath, ReplChangeManager.shouldEnableCm(oldDb, oldTable));
       }
     }
 

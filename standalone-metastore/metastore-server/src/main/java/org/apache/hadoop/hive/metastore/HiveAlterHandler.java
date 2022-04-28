@@ -235,8 +235,10 @@ public class HiveAlterHandler implements AlterHandler {
 
       boolean renamedTranslatedToExternalTable = rename && MetaStoreUtils.isTranslatedToExternalTable(oldt)
           && MetaStoreUtils.isTranslatedToExternalTable(newt)
-          && oldt.getSd().getLocation().equals(handler.getWh().getDefaultTablePath(olddb, oldt.getTableName(), true))
-          && newt.getSd().getLocation().equals(handler.getWh().getDefaultTablePath(db, newt.getTableName(), true));
+          && oldt.getSd().getLocation()
+              .equals(handler.getWh().getDefaultTablePath(olddb, oldt.getTableName(), true).toString())
+          && newt.getSd().getLocation()
+              .equals(handler.getWh().getDefaultTablePath(db, newt.getTableName(), true).toString());
       ;
       if (replDataLocationChanged
           || renamedManagedTable || renamedTranslatedToExternalTable) {
