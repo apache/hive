@@ -236,7 +236,7 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
 
   private <TDesc extends AbstractOperatorDesc, TParentDesc extends AbstractOperatorDesc> void pushDownThrough(
           CommonKeyPrefix commonKeyPrefix, TopNKeyOperator topNKey,
-          Operator<TDesc> join, Operator<TParentDesc> reduceSinkOperator)
+          Operator<TDesc> operator, Operator<TParentDesc> parentOperator)
           throws SemanticException {
 
     final TopNKeyDesc topNKeyDesc = topNKey.getConf();
@@ -251,12 +251,12 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
       return;
     }
     LOG.debug("Pushing a copy of {} through {} and {}",
-            topNKey.getName(), join.getName(), reduceSinkOperator.getName());
-    pushdown((TopNKeyOperator) copyDown(reduceSinkOperator, newTopNKeyDesc));
+            topNKey.getName(), operator.getName(), parentOperator.getName());
+    pushdown((TopNKeyOperator) copyDown(parentOperator, newTopNKeyDesc));
 
     if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
-      LOG.debug("Removing {} above {}", topNKey.getName(), join.getName());
-      join.removeChildAndAdoptItsChildren(topNKey);
+      LOG.debug("Removing {} above {}", topNKey.getName(), operator.getName());
+      operator.removeChildAndAdoptItsChildren(topNKey);
     }
   }
 
