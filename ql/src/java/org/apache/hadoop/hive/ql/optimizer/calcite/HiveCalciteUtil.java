@@ -1253,8 +1253,8 @@ public class HiveCalciteUtil {
    * Returns whether the expression has disjunctions (OR) at any level of nesting.
    * <ul>
    * <li> Example 1: OR(=($0, $1), IS NOT NULL($2))):INTEGER (OR in the top-level expression) </li>
-   * <li> Example 2: NOT(AND(=($0, $1), IS NOT NULL($2)) </li>
-   *   this is equivalent to OR((&lt&gt($0, $1), IS NULL($2))
+   * <li> Example 2: NOT(AND(=($0, $1), IS NOT NULL($2))
+   *   this is equivalent to OR((&lt;&gt;($0, $1), IS NULL($2)) </li>
    * <li> Example 3: AND(OR(=($0, $1), IS NOT NULL($2)))) (OR in inner expression) </li>
    * </ul>
    * @param node the expression where to look for disjunctions.
