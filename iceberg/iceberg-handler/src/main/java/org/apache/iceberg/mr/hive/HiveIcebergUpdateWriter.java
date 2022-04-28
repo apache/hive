@@ -19,6 +19,9 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.TaskAttemptID;
@@ -34,10 +37,6 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.mapred.Container;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
 
 class HiveIcebergUpdateWriter extends HiveIcebergWriterBase {
 

@@ -59,7 +59,7 @@ public class TestHiveIcebergUpdateWriter extends HiveIcebergWriterTestBase {
 
   /**
    * This test just runs sends the data through the DeleteWriter. Here we make sure that the correct rows are removed.
-   * @throws IOException It here is an error
+   * @throws IOException If here is an error
    */
   @Test
   public void testDelete() throws IOException {
@@ -75,8 +75,8 @@ public class TestHiveIcebergUpdateWriter extends HiveIcebergWriterTestBase {
   }
 
   /**
-   * This test uses the full
-   * @throws IOException
+   * This test uses the UpdateWriter to check that the values are correctly updated.
+   * @throws IOException If there is an error
    */
   @Test
   public void testUpdate() throws IOException {
@@ -105,7 +105,7 @@ public class TestHiveIcebergUpdateWriter extends HiveIcebergWriterTestBase {
         null, null);
   }
 
-  private static void update(Table table, HiveIcebergWriter testWriter) throws IOException{
+  private static void update(Table table, HiveIcebergWriter testWriter) throws IOException {
     List<GenericRecord> updateRecords = updateRecords(table, UPDATED_RECORDS);
 
     Collections.sort(updateRecords, Comparator.comparing(a -> a.getField("data").toString()));
