@@ -709,8 +709,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     return newTable;
   }
 
-  private Path getTranslatedToExternalTableDefaultLocation(Database db, Table table)
-      throws MetaException {
+  private Path getTranslatedToExternalTableDefaultLocation(Database db, Table table) throws MetaException {
     String strategyVar =
         MetastoreConf.getVar(hmsHandler.getConf(), ConfVars.METASTORE_METADATA_TRANSFORMER_LOCATION_MODE);
     TableLocationStrategy strategy = TableLocationStrategy.valueOf(strategyVar);
