@@ -245,6 +245,20 @@ fi
         buildHive("install -Dtest=noMatches")
       }
       checkPrHead()
+      stage('Sonar') {
+        withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
+          sh '''#!/bin/bash -e
+          sw java 11 && . /etc/profile.d/java.sh
+          export MAVEN_OPTS=-Xmx5G
+          mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+           -Dsonar.pullrequest.github.repository=asolimando/hive \
+           -Dsonar.pullrequest.key=${CHANGE_ID} \
+           -Dsonar.pullrequest.branch=${CHANGE_BRANCH} \
+           -Dsonar.pullrequest.base=${CHANGE_TARGET} \
+           -DskipTests -Dmaven.javadoc.skip
+          '''
+        }
+      }
       stage('Upload') {
         saveWS()
         sh '''#!/bin/bash -e
