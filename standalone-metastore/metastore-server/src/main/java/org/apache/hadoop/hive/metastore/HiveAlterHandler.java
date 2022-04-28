@@ -234,12 +234,7 @@ public class HiveAlterHandler implements AlterHandler {
       Database db = msdb.getDatabase(catName, newDbName);
 
       boolean renamedTranslatedToExternalTable = rename && MetaStoreUtils.isTranslatedToExternalTable(oldt)
-          && MetaStoreUtils.isTranslatedToExternalTable(newt)
-          && oldt.getSd().getLocation()
-              .equals(handler.getWh().getDefaultTablePath(olddb, oldt.getTableName(), true).toString())
-          && newt.getSd().getLocation()
-              .equals(handler.getWh().getDefaultTablePath(db, newt.getTableName(), true).toString());
-      ;
+          && MetaStoreUtils.isTranslatedToExternalTable(newt);
       if (replDataLocationChanged
           || renamedManagedTable || renamedTranslatedToExternalTable) {
         srcPath = new Path(oldt.getSd().getLocation());
