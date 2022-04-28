@@ -72,6 +72,11 @@
     <hive.path.to.root>.</hive.path.to.root>
     <hive.jdbc.driver.classifier>standalone</hive.jdbc.driver.classifier>
     <checkstyle.conf.dir>${basedir}/${hive.path.to.root}/checkstyle</checkstyle.conf.dir>
+    <!-- SonarCloud-related variables -->
+    <sonar.organization>asolimando</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    <sonar.projectKey>asolimando_hive</sonar.projectKey>
+    <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
     <!-- Test Properties -->
     <test.extra.path/>
     <!--suppress UnresolvedMavenProperty -->
