@@ -39,6 +39,7 @@ public class TableFilterContext extends HiveMetaStoreAuthorizableEvent {
 
   List<Table> tables = null;
   List<String> tableNames = null;
+  String catName = null;
   String dbName = null;
 
   public TableFilterContext(List<Table> tables) {
@@ -47,8 +48,9 @@ public class TableFilterContext extends HiveMetaStoreAuthorizableEvent {
     getAuthzContext();
   }
 
-  public TableFilterContext(String dbName, List<String> tableNames) {
+  public TableFilterContext(String catName, String dbName, List<String> tableNames) {
     super(null);
+    this.catName = catName;
     this.dbName = dbName;
     this.tableNames = tableNames;
   }
@@ -69,7 +71,7 @@ public class TableFilterContext extends HiveMetaStoreAuthorizableEvent {
         HivePrivilegeObjectType type = HivePrivilegeObjectType.TABLE_OR_VIEW;
         HivePrivObjectActionType objectActionType = HivePrivilegeObject.HivePrivObjectActionType.OTHER;
         HivePrivilegeObject hivePrivilegeObject =
-            new HivePrivilegeObject(type, table.getDbName(), table.getTableName(), null, null, objectActionType, null, null, table.getOwner(), table.getOwnerType());
+            new HivePrivilegeObject(type, table.getCatName(), table.getDbName(), table.getTableName(), null, null, objectActionType, null, null, table.getOwner(), table.getOwnerType());
         ret.add(hivePrivilegeObject);
       }
     } else {
@@ -77,7 +79,7 @@ public class TableFilterContext extends HiveMetaStoreAuthorizableEvent {
         HivePrivilegeObjectType type = HivePrivilegeObjectType.TABLE_OR_VIEW;
         HivePrivObjectActionType objectActionType = HivePrivilegeObject.HivePrivObjectActionType.OTHER;
         HivePrivilegeObject hivePrivilegeObject =
-            new HivePrivilegeObject(type, dbName, tableName, null, null, objectActionType, null, null);
+            new HivePrivilegeObject(type, catName, dbName, tableName, null, null, objectActionType, null);
         ret.add(hivePrivilegeObject);
       }
     }

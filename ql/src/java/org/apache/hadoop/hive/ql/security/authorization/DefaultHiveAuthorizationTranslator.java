@@ -74,7 +74,7 @@ public class DefaultHiveAuthorizationTranslator implements HiveAuthorizationTran
       columns = privSubjectDesc.getColumns();
       objectType = AuthorizationUtils.getPrivObjectType(privSubjectDesc);
     }
-    return new HivePrivilegeObject(objectType, dbTable[0], dbTable[1], partSpec, columns, null);
+    return new HivePrivilegeObject(objectType, dbTable[0], dbTable[1], partSpec, columns);
   }
 
 

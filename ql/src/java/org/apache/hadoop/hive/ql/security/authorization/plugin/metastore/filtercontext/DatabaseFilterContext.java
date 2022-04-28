@@ -58,7 +58,7 @@ public class DatabaseFilterContext extends HiveMetaStoreAuthorizableEvent {
       HivePrivilegeObjectType type = HivePrivilegeObjectType.DATABASE;
       HivePrivObjectActionType objectActionType = HivePrivObjectActionType.OTHER;
       HivePrivilegeObject hivePrivilegeObject =
-          new HivePrivilegeObject(type, database, null, null, null, objectActionType, null, null);
+          new HivePrivilegeObject(type, database, null, null, null, objectActionType, null);
       ret.add(hivePrivilegeObject);
     }
     LOG.debug("<== DatabaseFilterContext.getOutputHObjs(): ret=" + ret);

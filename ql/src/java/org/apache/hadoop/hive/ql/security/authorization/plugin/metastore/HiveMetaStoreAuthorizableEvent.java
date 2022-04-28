@@ -52,13 +52,13 @@ public abstract class HiveMetaStoreAuthorizableEvent {
   }
 
   protected HivePrivilegeObject getHivePrivilegeObject(Database database) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATABASE, database.getName(),
+    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATABASE, database.getCatalogName(), database.getName(),
         null, null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
         database.getOwnerName(), database.getOwnerType());
   }
 
   protected HivePrivilegeObject getHivePrivilegeObject(Table table) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, table.getDbName(),
+    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, table.getCatName(), table.getDbName(),
         table.getTableName(), null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
         table.getOwner(), table.getOwnerType());
   }

@@ -68,9 +68,10 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
   private List<Table> getFilteredTableList(List<HivePrivilegeObject> hivePrivilegeObjects, List<Table> tableList) {
     List<Table> ret = new ArrayList<>();
     for(HivePrivilegeObject hivePrivilegeObject:hivePrivilegeObjects) {
+      String catName = hivePrivilegeObject.getCatName();
       String dbName  = hivePrivilegeObject.getDbname();
       String tblName = hivePrivilegeObject.getObjectName();
-      Table  table   = getFilteredTable(dbName,tblName,tableList);
+      Table  table   = getFilteredTable(catName, dbName, tblName, tableList);
       if (table != null) {
         ret.add(table);
       }
@@ -78,9 +79,13 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     return ret;
   }
 
-  private Table getFilteredTable(String dbName, String tblName, List<Table> tableList) {
+  private Table getFilteredTable(String catName, String dbName, String tblName, List<Table> tableList) {
     Table ret = null;
     for (Table table: tableList) {
+      // do not check catalog name if catName is null
+      if (catName != null && !catName.equals(table.getCatName())) {
+        continue;
+      }
       String databaseName = table.getDbName();
       String tableName = table.getTableName();
       if (dbName.equals(databaseName) && tblName.equals(tableName)) {
@@ -144,8 +149,10 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
   private List<HivePrivilegeObject> getHivePrivObjects(List<Table> tableList) {
     List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
     for(Table tableObject : tableList) {
-      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, tableObject.getDbName(), tableObject.getTableName(), null, null,
-              HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null, tableObject.getOwner(), tableObject.getOwnerType()));
+      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW,
+          tableObject.getCatName(), tableObject.getDbName(), tableObject.getTableName(), null, null,
+              HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
+                  tableObject.getOwner(), tableObject.getOwnerType()));
     }
     return objs;
   }

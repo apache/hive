@@ -12235,7 +12235,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             List<String> colNames = new ArrayList<>();
             extractColumnInfos(table, colNames, new ArrayList<>());
 
-            basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames), null);
+            basicInfos.put(new HivePrivilegeObject(table.getCatName(), table.getDbName(), table.getTableName(), colNames), null);
           }
         } else {
           List<String> colNames;
@@ -12251,7 +12251,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             extractColumnInfos(table, colNames, colTypes);
           }
 
-          basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames),
+          basicInfos.put(new HivePrivilegeObject(table.getCatName(), table.getDbName(), table.getTableName(), colNames),
               new MaskAndFilterInfo(colTypes, additionalTabInfo.toString(), alias, astNode, table.isView(), table.isNonNative()));
         }
       }
@@ -12273,13 +12273,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             // Currently we do not support querying directly a materialized view
             // when mask/filter should be applied on source tables
             throw new SemanticException(ErrorMsg.MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES,
-                privObj.getDbname(), privObj.getObjectName());
+                privObj.getCatName(), privObj.getDbname(), privObj.getObjectName());
           } else {
             String replacementText = tableMask.create(privObj, info);
             // We don't support masking/filtering against ACID query at the moment
             if (ctx.getIsUpdateDeleteMerge()) {
               throw new SemanticException(ErrorMsg.MASKING_FILTERING_ON_ACID_NOT_SUPPORTED,
-                  privObj.getDbname(), privObj.getObjectName());
+                  privObj.getCatName(), privObj.getDbname(), privObj.getObjectName());
             }
             tableMask.setNeedsRewrite(true);
             tableMask.addTranslation(info.astNode, replacementText);

@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -152,24 +151,31 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   private String rowFilterExpression;
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName) {
-    this(type, dbname, objectName, HivePrivObjectActionType.OTHER);
+    this(type, null, dbname, objectName);
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName) {
-    this(type, catName, dbname, objectName, null, null, HivePrivObjectActionType.OTHER,
-        null, null, null, null);
-  }
-
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName
-      , HivePrivObjectActionType actionType) {
-    this(type, dbname, objectName, null, null, actionType, null, null);
+    this(type, catName, dbname, objectName, null, null);
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
-      List<String> partKeys, String column) {
-    this(type, dbname, objectName, partKeys,
-        column == null ? null : Arrays.asList(column),
-        HivePrivObjectActionType.OTHER, null, null);
+      List<String> partKeys, List<String> columns) {
+    this(type, null, dbname, objectName, partKeys, columns);
+  }
+
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName,
+      List<String> partKeys, List<String> columns) {
+    this(type, catName, dbname, objectName, partKeys, columns, HivePrivObjectActionType.OTHER, null);
+  }
+
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
+      List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams) {
+    this(type, null, dbname, objectName, partKeys, columns, actionType, commandParams);
+  }
+
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName,
+      List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams) {
+    this(type, catName, dbname, objectName, partKeys, columns, actionType, commandParams, null, null, null);
   }
 
   /**
@@ -178,22 +184,12 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
    * @return
    */
   public static HivePrivilegeObject createHivePrivilegeObject(List<String> cmdParams) {
-    return new HivePrivilegeObject(HivePrivilegeObjectType.COMMAND_PARAMS, null, null, null, null,
+    return new HivePrivilegeObject(HivePrivilegeObjectType.COMMAND_PARAMS, null, null, null, null,null,
         cmdParams);
   }
 
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
-    List<String> partKeys, List<String> columns, List<String> commandParams) {
-    this(type, dbname, objectName, partKeys, columns, HivePrivObjectActionType.OTHER, commandParams, null);
-  }
-
-  public HivePrivilegeObject(String dbname, String objectName, List<String> columns) {
-    this(HivePrivilegeObjectType.TABLE_OR_VIEW, dbname, objectName, null, columns, null);
-  }
-
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName, List<String> partKeys,
-      List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams, String className) {
-    this(type, dbname, objectName, partKeys, columns, actionType, commandParams, className, null, null);
+  public HivePrivilegeObject(String catName, String dbname, String objectName, List<String> columns) {
+    this(HivePrivilegeObjectType.TABLE_OR_VIEW, catName, dbname, objectName, null, columns);
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName, List<String> partKeys,

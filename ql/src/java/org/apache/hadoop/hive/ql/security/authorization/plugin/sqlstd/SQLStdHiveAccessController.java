@@ -430,7 +430,8 @@ public class SQLStdHiveAccessController implements HiveAccessController {
 
         HivePrivilegeObject resPrivObj = new HivePrivilegeObject(
             getPluginPrivilegeObjType(msObjRef.getObjectType()), msObjRef.getDbName(),
-            msObjRef.getObjectName(), msObjRef.getPartValues(), msObjRef.getColumnName());
+            msObjRef.getObjectName(), msObjRef.getPartValues(),
+            msObjRef.isSetColumnName() ? Arrays.asList(msObjRef.getColumnName()) : null);
 
         // result grantor principal
         HivePrincipal grantorPrincipal = new HivePrincipal(msGrantInfo.getGrantor(),

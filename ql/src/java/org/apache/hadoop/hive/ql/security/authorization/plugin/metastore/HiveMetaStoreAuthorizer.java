@@ -152,15 +152,14 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   }
 
   @Override
-  public final List<String> filterTableNames(String s, String s1, List<String> list) throws MetaException {
+  public final List<String> filterTableNames(String catName, String dbName, List<String> tableList) throws MetaException {
     LOG.debug("==> HiveMetaStoreAuthorizer.filterTableNames()");
 
     List<String> filteredTableNames = null;
-    if (list != null) {
-      String dbName = getDBName(s1);
-      TableFilterContext tableFilterContext = new TableFilterContext(dbName, list);
+    if (tableList != null) {
+      TableFilterContext tableFilterContext = new TableFilterContext(catName, dbName, tableList);
       HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo = tableFilterContext.getAuthzContext();
-      filteredTableNames = filterTableNames(hiveMetaStoreAuthzInfo, dbName, list);
+      filteredTableNames = filterTableNames(hiveMetaStoreAuthzInfo, catName, dbName, tableList);
       if (CollectionUtils.isEmpty(filteredTableNames)) {
         filteredTableNames = Collections.emptyList();
       }
@@ -303,9 +302,10 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   private List<Table> getFilteredTableList(List<HivePrivilegeObject> hivePrivilegeObjects, List<Table> tableList) {
     List<Table> ret = new ArrayList<>();
     for (HivePrivilegeObject hivePrivilegeObject : hivePrivilegeObjects) {
+      String catName = hivePrivilegeObject.getCatName();
       String dbName = hivePrivilegeObject.getDbname();
       String tblName = hivePrivilegeObject.getObjectName();
-      Table table = getFilteredTable(dbName, tblName, tableList);
+      Table table = getFilteredTable(catName, dbName, tblName, tableList);
       if (table != null) {
         ret.add(table);
       }
@@ -313,9 +313,12 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     return ret;
   }
 
-  private Table getFilteredTable(String dbName, String tblName, List<Table> tableList) {
+  private Table getFilteredTable(String catName, String dbName, String tblName, List<Table> tableList) {
     Table ret = null;
     for (Table table: tableList) {
+      if (catName != null && !catName.equals(table.getCatName())) {
+        continue;
+      }
       String databaseName = table.getDbName();
       String tableName = table.getTableName();
       if (dbName.equals(databaseName) && tblName.equals(tableName)) {
@@ -326,7 +329,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     return ret;
   }
 
-  private List<String> filterTableNames(HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo, String dbName,
+  private List<String> filterTableNames(HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo, String catName, String dbName,
       List<String> tableNames) throws MetaException {
     List<String> ret = null;
 
@@ -337,7 +340,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
       List<HivePrivilegeObject> filteredHivePrivilegeObjects =
           hiveAuthorizer.filterListCmdObjects(hivePrivilegeObjects, hiveAuthzContext);
       if (CollectionUtils.isNotEmpty(filteredHivePrivilegeObjects)) {
-        ret = getFilteredTableNames(filteredHivePrivilegeObjects, dbName, tableNames);
+        ret = getFilteredTableNames(filteredHivePrivilegeObjects, catName, dbName, tableNames);
       }
       LOG.info(String.format("Filtered %d table names out of %d", filteredHivePrivilegeObjects.size(),
           hivePrivilegeObjects.size()));
@@ -347,13 +350,14 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     return ret;
   }
 
-  private List<String> getFilteredTableNames(List<HivePrivilegeObject> hivePrivilegeObjects, String databaseName,
+  private List<String> getFilteredTableNames(List<HivePrivilegeObject> hivePrivilegeObjects, String catalogName, String databaseName,
       List<String> tableNames) {
     List<String> ret = new ArrayList<>();
     for (HivePrivilegeObject hivePrivilegeObject : hivePrivilegeObjects) {
+      String catName = hivePrivilegeObject.getCatName();
       String dbName = hivePrivilegeObject.getDbname();
       String tblName = hivePrivilegeObject.getObjectName();
-      String table = getFilteredTableNames(dbName, tblName, databaseName, tableNames);
+      String table = getFilteredTableNames(catName, dbName, tblName, catalogName, databaseName, tableNames);
       if (table != null) {
         ret.add(table);
       }
@@ -361,15 +365,15 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     return ret;
   }
 
-  private String getFilteredTableNames(String dbName, String tblName, String databaseName, List<String> tableNames) {
-    String ret = null;
-    for (String tableName : tableNames) {
-      if (dbName.equals(databaseName) && tblName.equals(tableName)) {
-        ret = tableName;
-        break;
+  private String getFilteredTableNames(String catName, String dbName, String tblName, String catalogName, String databaseName, List<String> tableNames) {
+    if (catName.equals(catalogName) && dbName.equals(databaseName)) {
+      for (String tableName : tableNames) {
+        if (tblName.equals(tableName)) {
+          return tableName;
+        }
       }
     }
-    return ret;
+    return null;
   }
 
   private String getDBName(String str) {

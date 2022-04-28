@@ -170,7 +170,8 @@ public class PrivilegeSynchronizer implements Runnable {
 
     case COLUMN:
       objectAcls = policyProvider
-          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.COLUMN, dbName, objName, null, columnName));
+          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.COLUMN, dbName, objName, null,
+              columnName == null ? null : Arrays.asList(columnName)));
       break;
 
     default:

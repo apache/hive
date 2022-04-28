@@ -52,7 +52,7 @@ public class HDFSPermissionPolicyProvider implements HivePolicyProvider {
     try {
       switch (hiveObject.getType()) {
       case DATABASE:
-        Database db = Hive.get().getDatabase(hiveObject.getDbname());
+        Database db = Hive.get().getDatabase(hiveObject.getCatName(), hiveObject.getDbname());
         acls = getResourceACLs(new Path(db.getLocationUri()));
         break;
       case TABLE_OR_VIEW:

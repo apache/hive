@@ -179,14 +179,14 @@ final class CommandAuthorizerV2 {
     switch(privObject.getType()){
     case DATABASE:
       Database database = privObject.getDatabase();
-      hivePrivObject = new HivePrivilegeObject(privObjType, database.getName(), null, null, null, actionType, null,
-          null, database.getOwnerName(), database.getOwnerType());
+      hivePrivObject = new HivePrivilegeObject(privObjType, database.getCatalogName(), database.getName(),
+          null, null, null, actionType, null, null, database.getOwnerName(), database.getOwnerType());
       break;
     case TABLE:
       Table table = privObject.getTable();
       List<String> columns = tableName2Cols == null ? null :
           tableName2Cols.get(Table.getCompleteName(table.getDbName(), table.getTableName()));
-      hivePrivObject = new HivePrivilegeObject(privObjType, table.getDbName(), table.getTableName(),
+      hivePrivObject = new HivePrivilegeObject(privObjType, table.getCatalogName(), table.getDbName(), table.getTableName(),
           null, columns, actionType, null, null, table.getOwner(), table.getOwnerType());
       if (table.getStorageHandler() != null) {
         //TODO: add hive privilege object for storage based handlers for create and alter table commands.
@@ -207,11 +207,16 @@ final class CommandAuthorizerV2 {
     case DFS_DIR:
     case LOCAL_DIR:
       hivePrivObject = new HivePrivilegeObject(privObjType, null, privObject.getD().toString(), null, null,
-          actionType, null, null, null, null);
+          actionType, null);
       break;
     case FUNCTION:
-      String dbName = privObject.getDatabase() != null ? privObject.getDatabase().getName() : null;
-      hivePrivObject = new HivePrivilegeObject(privObjType, dbName, privObject.getFunctionName(),
+      String catName = null;
+      String dbName = null;
+      if (privObject.getDatabase() != null) {
+        catName = privObject.getDatabase().getCatalogName();
+        dbName = privObject.getDatabase().getName();
+      }
+      hivePrivObject = new HivePrivilegeObject(privObjType, catName, dbName, privObject.getFunctionName(),
           null, null, actionType, null, privObject.getClassName(), null, null);
       break;
     case DUMMYPARTITION:
@@ -220,7 +225,7 @@ final class CommandAuthorizerV2 {
       return;
     case SERVICE_NAME:
       hivePrivObject = new HivePrivilegeObject(privObjType, null, privObject.getServiceName(), null,
-          null, actionType, null, null, null, null);
+          null, actionType, null);
       break;
     case DATACONNECTOR:
       DataConnector connector = privObject.getDataConnector();

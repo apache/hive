@@ -121,7 +121,7 @@ class CommandUtil {
     List<String> command, String serviceObject) throws HiveAuthzPluginException, HiveAccessControlException {
     HivePrivilegeObject commandObj = HivePrivilegeObject.createHivePrivilegeObject(command);
     HivePrivilegeObject serviceObj = new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.SERVICE_NAME,
-      null, serviceObject, null, null, null);
+      null, serviceObject);
     HiveAuthzContext.Builder ctxBuilder = new HiveAuthzContext.Builder();
     ctxBuilder.setCommandString(Joiner.on(' ').join(command));
     ctxBuilder.setUserIpAddress(ss.getUserIpAddress());
