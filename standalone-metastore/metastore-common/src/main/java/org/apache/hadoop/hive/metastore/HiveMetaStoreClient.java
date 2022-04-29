@@ -609,7 +609,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     String httpUrl = (useSSL ? "https://" : "http://") + store.getHost() + ":" + store.getPort() + path;
 
     HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-    String authType = MetastoreConf.getAsString(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE).toLowerCase(
+    String authType = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE).toLowerCase(
         Locale.ROOT);
     String user = null;
     if (authType.equals("jwt")) {

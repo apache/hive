@@ -21,12 +21,12 @@ import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Enumeration;
-
 import java.util.Optional;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.auth.HttpAuthenticationException;
 import org.apache.hadoop.hive.metastore.auth.jwt.JWTValidator;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -84,7 +84,7 @@ public class HmsThriftHttpServlet extends TServlet {
   protected void doPost(HttpServletRequest request,
       HttpServletResponse response) throws ServletException, IOException {
     if (LOG.isDebugEnabled()) {
-      LOG.debug(" Logging headers in doPost request");
+      LOG.debug("Logging headers in doPost request");
       Enumeration<String> headerNames = request.getHeaderNames();
       while (headerNames.hasMoreElements()) {
         String headerName = headerNames.nextElement();
