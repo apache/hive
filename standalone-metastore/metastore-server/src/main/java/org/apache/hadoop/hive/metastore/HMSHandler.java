@@ -1821,10 +1821,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       if (parsedDbNamed[DB_NAME] == null) {
         ret = getMS().getAllDatabases(parsedDbNamed[CAT_NAME]);
-        ret = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook, ret);
+        ret = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook, parsedDbNamed[CAT_NAME], ret);
       } else {
         ret = getMS().getDatabases(parsedDbNamed[CAT_NAME], parsedDbNamed[DB_NAME]);
-        ret = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook, ret);
+        ret = FilterUtils.filterDbNamesIfEnabled(isServerFilterEnabled, filterHook, parsedDbNamed[CAT_NAME], ret);
       }
     } catch (Exception e) {
       ex = e;

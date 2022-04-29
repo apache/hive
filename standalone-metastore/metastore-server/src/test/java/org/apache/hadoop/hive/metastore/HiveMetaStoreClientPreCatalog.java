@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.callEmbeddedMetastore;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -1285,7 +1287,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public List<String> getDatabases(String databasePattern)
     throws MetaException {
     try {
-      return filterHook.filterDatabases(client.get_databases(databasePattern));
+      String[] parsedDbName = parseDbName(databasePattern, conf);
+      return filterHook.filterDatabases(parsedDbName[CAT_NAME], client.get_databases(databasePattern));
     } catch (Exception e) {
       MetaStoreUtils.throwMetaException(e);
     }
@@ -1296,7 +1299,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public List<String> getAllDatabases() throws MetaException {
     try {
-      return filterHook.filterDatabases(client.get_all_databases());
+      return filterHook.filterDatabases(null, client.get_all_databases());
     } catch (Exception e) {
       MetaStoreUtils.throwMetaException(e);
     }

@@ -42,7 +42,7 @@ public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
   }
 
   @Override
-  public List<String> filterDatabases(List<String> dbList) throws MetaException {
+  public List<String> filterDatabases(String catName, List<String> dbList) throws MetaException {
     return dbList;
   }
 

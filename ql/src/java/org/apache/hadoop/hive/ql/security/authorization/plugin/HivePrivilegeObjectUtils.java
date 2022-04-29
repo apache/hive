@@ -39,10 +39,10 @@ public class HivePrivilegeObjectUtils {
    * @param dbList
    * @return
    */
-  public static List<HivePrivilegeObject> getHivePrivDbObjects(List<String> dbList) {
+  public static List<HivePrivilegeObject> getHivePrivDbObjects(String catName, List<String> dbList) {
     List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
     for (String dbname : dbList) {
-      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, dbname, dbname));
+      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, catName, dbname, dbname));
     }
     return objs;
 

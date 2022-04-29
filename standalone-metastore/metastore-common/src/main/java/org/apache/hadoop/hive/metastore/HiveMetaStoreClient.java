@@ -1948,7 +1948,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public List<String> getDatabases(String catName, String databasePattern) throws TException {
     List<String> databases = client.get_databases(prependCatalogToDbName(
         catName, databasePattern, conf));
-    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook, databases);
+    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook, catName, databases);
   }
 
   @Override
@@ -1959,7 +1959,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<String> getAllDatabases(String catName) throws TException {
     List<String> databases = client.get_databases(prependCatalogToDbName(catName, null, conf));
-    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook, databases);
+    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook, catName, databases);
   }
 
   @Override

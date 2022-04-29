@@ -115,14 +115,14 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   }
 
   @Override
-  public final List<String> filterDatabases(List<String> list) throws MetaException {
+  public final List<String> filterDatabases(String catName, List<String> list) throws MetaException {
     LOG.debug("HiveMetaStoreAuthorizer.filterDatabases()");
 
     if (list == null) {
       return Collections.emptyList();
     }
 
-    DatabaseFilterContext databaseFilterContext = new DatabaseFilterContext(list);
+    DatabaseFilterContext databaseFilterContext = new DatabaseFilterContext(catName, list);
     HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo = databaseFilterContext.getAuthzContext();
     List<String> filteredDatabases = filterDatabaseObjects(hiveMetaStoreAuthzInfo);
     if (CollectionUtils.isEmpty(filteredDatabases)) {
@@ -138,7 +138,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   public final Database filterDatabase(Database database) throws MetaException, NoSuchObjectException {
     if (database != null) {
       String dbName = database.getName();
-      List<String> databases = filterDatabases(Collections.singletonList(dbName));
+      List<String> databases = filterDatabases(database.getCatalogName(), Collections.singletonList(dbName));
       if (databases.isEmpty()) {
         throw new NoSuchObjectException(String.format("Database %s does not exist", dbName));
       }

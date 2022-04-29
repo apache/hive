@@ -36,10 +36,12 @@ public class DatabaseFilterContext extends HiveMetaStoreAuthorizableEvent {
 
   private static final Logger LOG = LoggerFactory.getLogger(DatabaseFilterContext.class);
 
+  String catName = null;
   List<String> databases = null;
 
-  public DatabaseFilterContext(List<String> databases) {
+  public DatabaseFilterContext(String catName, List<String> databases) {
     super(null);
+    this.catName = catName;
     this.databases = databases;
     getAuthzContext();
   }
@@ -58,7 +60,7 @@ public class DatabaseFilterContext extends HiveMetaStoreAuthorizableEvent {
       HivePrivilegeObjectType type = HivePrivilegeObjectType.DATABASE;
       HivePrivObjectActionType objectActionType = HivePrivObjectActionType.OTHER;
       HivePrivilegeObject hivePrivilegeObject =
-          new HivePrivilegeObject(type, database, null, null, null, objectActionType, null);
+          new HivePrivilegeObject(type, catName, database, null, null, null, objectActionType, null);
       ret.add(hivePrivilegeObject);
     }
     LOG.debug("<== DatabaseFilterContext.getOutputHObjs(): ret=" + ret);

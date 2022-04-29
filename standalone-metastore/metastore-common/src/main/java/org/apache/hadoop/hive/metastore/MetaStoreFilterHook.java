@@ -62,10 +62,11 @@ public interface MetaStoreFilterHook {
 
   /**
    * Filter given list of databases
+   * @param catName
    * @param dbList
    * @return List of filtered Db names
    */
-  List<String> filterDatabases(List<String> dbList) throws MetaException;
+  List<String> filterDatabases(String catName, List<String> dbList) throws MetaException;
 
   /**
    * filter to given database object if applicable

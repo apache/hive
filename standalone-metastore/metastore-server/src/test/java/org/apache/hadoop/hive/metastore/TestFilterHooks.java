@@ -66,7 +66,7 @@ public class TestFilterHooks {
     }
 
     @Override
-    public List<String> filterDatabases(List<String> dbList) throws MetaException  {
+    public List<String> filterDatabases(String catName, List<String> dbList) throws MetaException  {
       if (blockResults) {
         return new ArrayList<>();
       }

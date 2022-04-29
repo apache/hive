@@ -86,10 +86,11 @@ public class FilterUtils {
   public static List<String> filterDbNamesIfEnabled(
       boolean isFilterEnabled,
       MetaStoreFilterHook filterHook,
+      String catName,
       List<String> dbNames) throws MetaException {
 
     if (isFilterEnabled) {
-      return filterHook.filterDatabases(dbNames);
+      return filterHook.filterDatabases(catName, dbNames);
     }
 
     return dbNames;
@@ -110,7 +111,7 @@ public class FilterUtils {
       List<String> connectorNames) throws MetaException {
 
     if (isFilterEnabled) {
-      return filterHook.filterDatabases(connectorNames); // TODO add a new ATZ call
+      return filterHook.filterDatabases(null, connectorNames); // TODO add a new ATZ call
     }
     return connectorNames;
   }
@@ -379,7 +380,7 @@ public class FilterUtils {
       throw new NoSuchObjectException("dbName is not valid");
     }
 
-    List<String> filteredDb = filterDbNamesIfEnabled(isFilterEnabled, filterHook,
+    List<String> filteredDb = filterDbNamesIfEnabled(isFilterEnabled, filterHook, catName,
         Collections.singletonList(dbName));
 
     if (filteredDb.isEmpty()) {
