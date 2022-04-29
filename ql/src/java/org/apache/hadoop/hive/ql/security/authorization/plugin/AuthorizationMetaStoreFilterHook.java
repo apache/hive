@@ -83,7 +83,7 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     Table ret = null;
     for (Table table: tableList) {
       // do not check catalog name if catName is null
-      if (catName != null && !catName.equals(table.getCatName())) {
+      if (catName != null && table.getCatName() != null && !catName.equals(table.getCatName())) {
         continue;
       }
       String databaseName = table.getDbName();

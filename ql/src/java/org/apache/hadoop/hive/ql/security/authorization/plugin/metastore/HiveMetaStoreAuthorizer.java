@@ -316,7 +316,8 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   private Table getFilteredTable(String catName, String dbName, String tblName, List<Table> tableList) {
     Table ret = null;
     for (Table table: tableList) {
-      if (catName != null && !catName.equals(table.getCatName())) {
+      // do not check catalog name if catName is null
+      if (catName != null && table.getCatName() != null && !catName.equals(table.getCatName())) {
         continue;
       }
       String databaseName = table.getDbName();

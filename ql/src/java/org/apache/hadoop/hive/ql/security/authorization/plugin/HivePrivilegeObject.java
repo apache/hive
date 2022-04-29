@@ -18,9 +18,12 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import org.apache.hadoop.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.metastore.HMSHandlerContext;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -102,6 +105,15 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
       }
     }
     return o1.size() > o2.size() ? 1 : (o1.size() < o2.size() ? -1 : 0);
+  }
+
+  /**
+   * Try to get thread local configuration from HMSHandler, otherwise create a new one.
+   * @return configuration
+   */
+  public static Configuration getConf() {
+    return HMSHandlerContext.getConfiguration()
+        .orElse(new Configuration());
   }
 
   /**
@@ -202,7 +214,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
       List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams,
       String className, String ownerName, PrincipalType ownerType) {
     this.type = type;
-    this.catName = catName;
+    this.catName = catName == null ? MetaStoreUtils.getDefaultCatalog(getConf()) : catName;
     this.dbname = dbname;
     this.objectName = objectName;
     this.partKeys = partKeys;
