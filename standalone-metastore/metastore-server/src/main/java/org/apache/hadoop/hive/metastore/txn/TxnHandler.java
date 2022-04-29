@@ -3707,11 +3707,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         long id = generateCompactionQueueId(stmt);
 
-        final ValidCompactorWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
-            getValidWriteIds(new GetValidWriteIdsRequest(
-                Collections.singletonList(getFullTableName(rqst.getDbname(), rqst.getTablename()))
-            )).getTblValidWriteIds().get(0)
-        );
+        GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(
+            Collections.singletonList(getFullTableName(rqst.getDbname(), rqst.getTablename())));
+        final ValidCompactorWriteIdList tblValidWriteIds =
+            TxnUtils.createValidCompactWriteIdList(getValidWriteIds(request).getTblValidWriteIds().get(0));
         LOG.debug("ValidCompactWriteIdList: " + tblValidWriteIds.writeToString());
 
         List<String> params = new ArrayList<>();

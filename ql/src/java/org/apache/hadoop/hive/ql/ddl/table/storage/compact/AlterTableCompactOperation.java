@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -53,8 +54,8 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     String partitionName = getPartitionName(table);
 
     CompactionResponse resp = compact(table, partitionName);
-    if(!resp.isAccepted()) {
-      String message = "No detailed message available";
+    if (!resp.isAccepted()) {
+      String message = Constants.ERROR_MESSAGE_NO_DETAILS_AVAILABLE;
       if (resp.isSetErrormessage()) {
         message = resp.getErrormessage();
       }

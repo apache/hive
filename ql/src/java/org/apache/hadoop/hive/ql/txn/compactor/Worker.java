@@ -522,9 +522,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
               UserGroupInformation.getLoginUser());
 
-          ValidCompactorWriteIdList finalTblValidWriteIds = tblValidWriteIds;
           ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
-            cleanupResultDirs(sd, finalTblValidWriteIds, ctype, dir);
+            cleanupResultDirs(sd, tblValidWriteIds, ctype, dir);
             return null;
           });
           try {

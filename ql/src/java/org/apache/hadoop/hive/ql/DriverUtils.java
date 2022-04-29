@@ -62,7 +62,7 @@ public final class DriverUtils {
   public static void runOnDriver(HiveConf conf,
       SessionState sessionState, String query, ValidWriteIdList writeIds, long compactorTxnId)
       throws HiveException {
-    if(writeIds != null && compactorTxnId < 0) {
+    if (writeIds != null && compactorTxnId < 0) {
       throw new IllegalArgumentException(JavaUtils.txnIdToString(compactorTxnId) +
           " is not valid. Context: " + query);
     }
@@ -70,11 +70,11 @@ public final class DriverUtils {
   }
 
   /**
-   * For Query Based compaction to run the query to generate the compacted data.
+   * For Statistics gathering after compaction. Using this overload won't increment the writeid during stats gathering.
    */
   public static void runOnDriver(HiveConf conf, SessionState sessionState, String query, long analyzeTableWriteId)
       throws HiveException {
-    if(analyzeTableWriteId < 0) {
+    if (analyzeTableWriteId < 0) {
       throw new IllegalArgumentException(JavaUtils.txnIdToString(analyzeTableWriteId) +
           " is not valid. Context: " + query);
     }
@@ -85,7 +85,12 @@ public final class DriverUtils {
     SessionState.setCurrentSessionState(sessionState);
     boolean isOk = false;
     try {
-      Driver driver = creator.createDriver(new QueryState.Builder().withHiveConf(conf).withGenerateNewQueryId(true).nonIsolated().build());
+      Driver driver = creator.createDriver(
+          new QueryState.Builder()
+              .withHiveConf(conf)
+              .withGenerateNewQueryId(true)
+              .nonIsolated()
+              .build());
       try {
         try {
           driver.run(query);
