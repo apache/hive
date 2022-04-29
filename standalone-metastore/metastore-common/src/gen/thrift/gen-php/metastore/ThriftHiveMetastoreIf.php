@@ -97,6 +97,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function drop_database($name, $deleteData, $cascade);
     /**
+     * @param \metastore\DropDatabaseRequest $req
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\InvalidOperationException
+     * @throws \metastore\MetaException
+     */
+    public function drop_database_req(\metastore\DropDatabaseRequest $req);
+    /**
      * @param string $pattern
      * @return string[]
      * @throws \metastore\MetaException

@@ -824,6 +824,8 @@ class ExtendedTableInfo;
 
 class GetDatabaseRequest;
 
+class DropDatabaseRequest;
+
 class CmRecycleRequest;
 
 class CmRecycleResponse;
@@ -13036,6 +13038,94 @@ class GetDatabaseRequest : public virtual ::apache::thrift::TBase {
 void swap(GetDatabaseRequest &a, GetDatabaseRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const GetDatabaseRequest& obj);
+
+typedef struct _DropDatabaseRequest__isset {
+  _DropDatabaseRequest__isset() : catalogName(false), softDelete(true), txnId(true), deleteManagedDir(true) {}
+  bool catalogName :1;
+  bool softDelete :1;
+  bool txnId :1;
+  bool deleteManagedDir :1;
+} _DropDatabaseRequest__isset;
+
+class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  DropDatabaseRequest(const DropDatabaseRequest&);
+  DropDatabaseRequest& operator=(const DropDatabaseRequest&);
+  DropDatabaseRequest() : name(), catalogName(), ignoreUnknownDb(0), deleteData(0), cascade(0), softDelete(false), txnId(0LL), deleteManagedDir(true) {
+  }
+
+  virtual ~DropDatabaseRequest() noexcept;
+  std::string name;
+  std::string catalogName;
+  bool ignoreUnknownDb;
+  bool deleteData;
+  bool cascade;
+  bool softDelete;
+  int64_t txnId;
+  bool deleteManagedDir;
+
+  _DropDatabaseRequest__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_catalogName(const std::string& val);
+
+  void __set_ignoreUnknownDb(const bool val);
+
+  void __set_deleteData(const bool val);
+
+  void __set_cascade(const bool val);
+
+  void __set_softDelete(const bool val);
+
+  void __set_txnId(const int64_t val);
+
+  void __set_deleteManagedDir(const bool val);
+
+  bool operator == (const DropDatabaseRequest & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (__isset.catalogName != rhs.__isset.catalogName)
+      return false;
+    else if (__isset.catalogName && !(catalogName == rhs.catalogName))
+      return false;
+    if (!(ignoreUnknownDb == rhs.ignoreUnknownDb))
+      return false;
+    if (!(deleteData == rhs.deleteData))
+      return false;
+    if (!(cascade == rhs.cascade))
+      return false;
+    if (__isset.softDelete != rhs.__isset.softDelete)
+      return false;
+    else if (__isset.softDelete && !(softDelete == rhs.softDelete))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.deleteManagedDir != rhs.__isset.deleteManagedDir)
+      return false;
+    else if (__isset.deleteManagedDir && !(deleteManagedDir == rhs.deleteManagedDir))
+      return false;
+    return true;
+  }
+  bool operator != (const DropDatabaseRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DropDatabaseRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DropDatabaseRequest &a, DropDatabaseRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const DropDatabaseRequest& obj);
 
 
 class CmRecycleRequest : public virtual ::apache::thrift::TBase {

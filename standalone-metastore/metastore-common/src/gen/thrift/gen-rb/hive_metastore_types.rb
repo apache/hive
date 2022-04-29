@@ -636,6 +636,8 @@ class ExtendedTableInfo; end
 
 class GetDatabaseRequest; end
 
+class DropDatabaseRequest; end
+
 class CmRecycleRequest; end
 
 class CmRecycleResponse; end
@@ -5616,6 +5618,40 @@ class GetDatabaseRequest
   def struct_fields; FIELDS; end
 
   def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class DropDatabaseRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NAME = 1
+  CATALOGNAME = 2
+  IGNOREUNKNOWNDB = 3
+  DELETEDATA = 4
+  CASCADE = 5
+  SOFTDELETE = 6
+  TXNID = 7
+  DELETEMANAGEDDIR = 8
+
+  FIELDS = {
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+    CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
+    IGNOREUNKNOWNDB => {:type => ::Thrift::Types::BOOL, :name => 'ignoreUnknownDb'},
+    DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData'},
+    CASCADE => {:type => ::Thrift::Types::BOOL, :name => 'cascade'},
+    SOFTDELETE => {:type => ::Thrift::Types::BOOL, :name => 'softDelete', :default => false, :optional => true},
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :default => 0, :optional => true},
+    DELETEMANAGEDDIR => {:type => ::Thrift::Types::BOOL, :name => 'deleteManagedDir', :default => true, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field name is unset!') unless @name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field ignoreUnknownDb is unset!') if @ignoreUnknownDb.nil?
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field deleteData is unset!') if @deleteData.nil?
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field cascade is unset!') if @cascade.nil?
   end
 
   ::Thrift::Struct.generate_accessors self

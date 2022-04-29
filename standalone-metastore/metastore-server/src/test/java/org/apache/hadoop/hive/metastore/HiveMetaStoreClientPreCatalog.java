@@ -950,13 +950,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb)
-      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+      throws TException {
     dropDatabase(name, deleteData, ignoreUnknownDb, false);
   }
 
   @Override
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
-      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+      throws TException {
     try {
       getDatabase(name);
     } catch (NoSuchObjectException e) {
@@ -3552,9 +3552,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void dropDatabase(String catName, String dbName, boolean deleteData,
-                           boolean ignoreUnknownDb, boolean cascade) throws NoSuchObjectException,
-      InvalidOperationException, MetaException, TException {
+  public void dropDatabase(DropDatabaseRequest req) throws TException {
     throw new UnsupportedOperationException();
   }
 

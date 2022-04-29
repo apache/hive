@@ -1851,10 +1851,21 @@ public interface IMetaStoreClient {
    * @throws MetaException something went wrong, usually either in the RDBMS or storage.
    * @throws TException general thrift error.
    */
-  void dropDatabase(String catName, String dbName, boolean deleteData, boolean ignoreUnknownDb,
-                    boolean cascade)
-      throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
+  @Deprecated
+  default void dropDatabase(String catName, String dbName, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+    DropDatabaseRequest req = new DropDatabaseRequest();
+    req.setName(dbName);
+    req.setCatalogName(catName);
+    req.setIgnoreUnknownDb(ignoreUnknownDb);
+    req.setDeleteData(deleteData);
+    req.setCascade(cascade);
 
+    dropDatabase(req);
+  }
+
+  void dropDatabase(DropDatabaseRequest req) throws TException;
+  
   /**
    * Drop a database.  Equivalent to
    * {@link #dropDatabase(String, String, boolean, boolean, boolean)} with cascade = false.
@@ -1869,8 +1880,8 @@ public interface IMetaStoreClient {
    * @throws MetaException something went wrong, usually either in the RDBMS or storage.
    * @throws TException general thrift error.
    */
-  default void dropDatabase(String catName, String dbName, boolean deleteData,
-                            boolean ignoreUnknownDb)
+  @Deprecated
+  default void dropDatabase(String catName, String dbName, boolean deleteData, boolean ignoreUnknownDb)
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
     dropDatabase(catName, dbName, deleteData, ignoreUnknownDb, false);
   }

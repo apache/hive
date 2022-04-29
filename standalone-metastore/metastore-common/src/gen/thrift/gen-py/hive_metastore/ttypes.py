@@ -19965,6 +19965,148 @@ class GetDatabaseRequest(object):
         return not (self == other)
 
 
+class DropDatabaseRequest(object):
+    """
+    Attributes:
+     - name
+     - catalogName
+     - ignoreUnknownDb
+     - deleteData
+     - cascade
+     - softDelete
+     - txnId
+     - deleteManagedDir
+
+    """
+
+
+    def __init__(self, name=None, catalogName=None, ignoreUnknownDb=None, deleteData=None, cascade=None, softDelete=False, txnId=0, deleteManagedDir=True,):
+        self.name = name
+        self.catalogName = catalogName
+        self.ignoreUnknownDb = ignoreUnknownDb
+        self.deleteData = deleteData
+        self.cascade = cascade
+        self.softDelete = softDelete
+        self.txnId = txnId
+        self.deleteManagedDir = deleteManagedDir
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.catalogName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.BOOL:
+                    self.ignoreUnknownDb = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.BOOL:
+                    self.deleteData = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.BOOL:
+                    self.cascade = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.BOOL:
+                    self.softDelete = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I64:
+                    self.txnId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.BOOL:
+                    self.deleteManagedDir = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('DropDatabaseRequest')
+        if self.name is not None:
+            oprot.writeFieldBegin('name', TType.STRING, 1)
+            oprot.writeString(self.name.encode('utf-8') if sys.version_info[0] == 2 else self.name)
+            oprot.writeFieldEnd()
+        if self.catalogName is not None:
+            oprot.writeFieldBegin('catalogName', TType.STRING, 2)
+            oprot.writeString(self.catalogName.encode('utf-8') if sys.version_info[0] == 2 else self.catalogName)
+            oprot.writeFieldEnd()
+        if self.ignoreUnknownDb is not None:
+            oprot.writeFieldBegin('ignoreUnknownDb', TType.BOOL, 3)
+            oprot.writeBool(self.ignoreUnknownDb)
+            oprot.writeFieldEnd()
+        if self.deleteData is not None:
+            oprot.writeFieldBegin('deleteData', TType.BOOL, 4)
+            oprot.writeBool(self.deleteData)
+            oprot.writeFieldEnd()
+        if self.cascade is not None:
+            oprot.writeFieldBegin('cascade', TType.BOOL, 5)
+            oprot.writeBool(self.cascade)
+            oprot.writeFieldEnd()
+        if self.softDelete is not None:
+            oprot.writeFieldBegin('softDelete', TType.BOOL, 6)
+            oprot.writeBool(self.softDelete)
+            oprot.writeFieldEnd()
+        if self.txnId is not None:
+            oprot.writeFieldBegin('txnId', TType.I64, 7)
+            oprot.writeI64(self.txnId)
+            oprot.writeFieldEnd()
+        if self.deleteManagedDir is not None:
+            oprot.writeFieldBegin('deleteManagedDir', TType.BOOL, 8)
+            oprot.writeBool(self.deleteManagedDir)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.name is None:
+            raise TProtocolException(message='Required field name is unset!')
+        if self.ignoreUnknownDb is None:
+            raise TProtocolException(message='Required field ignoreUnknownDb is unset!')
+        if self.deleteData is None:
+            raise TProtocolException(message='Required field deleteData is unset!')
+        if self.cascade is None:
+            raise TProtocolException(message='Required field cascade is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class CmRecycleRequest(object):
     """
     Attributes:
@@ -31133,6 +31275,18 @@ GetDatabaseRequest.thrift_spec = (
     (2, TType.STRING, 'catalogName', 'UTF8', None, ),  # 2
     (3, TType.LIST, 'processorCapabilities', (TType.STRING, 'UTF8', False), None, ),  # 3
     (4, TType.STRING, 'processorIdentifier', 'UTF8', None, ),  # 4
+)
+all_structs.append(DropDatabaseRequest)
+DropDatabaseRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'name', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'catalogName', 'UTF8', None, ),  # 2
+    (3, TType.BOOL, 'ignoreUnknownDb', None, None, ),  # 3
+    (4, TType.BOOL, 'deleteData', None, None, ),  # 4
+    (5, TType.BOOL, 'cascade', None, None, ),  # 5
+    (6, TType.BOOL, 'softDelete', None, False, ),  # 6
+    (7, TType.I64, 'txnId', None, 0, ),  # 7
+    (8, TType.BOOL, 'deleteManagedDir', None, True, ),  # 8
 )
 all_structs.append(CmRecycleRequest)
 CmRecycleRequest.thrift_spec = (
