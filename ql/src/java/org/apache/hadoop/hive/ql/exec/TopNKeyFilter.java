@@ -28,8 +28,9 @@ import java.util.Set;
 
 /**
  * Implementation of filtering out keys.
- * An instance of this class is wrapped in {@link TopNKeyOperator} and
+ * Instances of this class is wrapped in {@link TopNKeyOperator} and
  * {@link org.apache.hadoop.hive.ql.exec.vector.VectorTopNKeyOperator}
+ * Empty key means forwarding all rows.
  */
 public final class TopNKeyFilter {
   private final int topN;

@@ -39,6 +39,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 /**
  * TopNKeyOperator passes rows that contains top N keys only.
+ *
+ * Wraps {@link TopNKeyFilter} instances mapped to partition key values.
+ * When processing a row a TopNKeyFilter is looked up for the row using the partition keys and
+ * the filter decides whether the row should be filtered out.
  */
 public class TopNKeyOperator extends Operator<TopNKeyDesc> implements Serializable {
 

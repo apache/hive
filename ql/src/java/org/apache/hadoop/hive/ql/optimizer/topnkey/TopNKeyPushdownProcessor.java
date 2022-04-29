@@ -247,7 +247,8 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
     final TopNKeyDesc newTopNKeyDesc = topNKeyDesc.combine(commonKeyPrefix);
     if (newTopNKeyDesc.getKeyColumns().size() > 0 &&
             newTopNKeyDesc.getKeyColumns().size() <= newTopNKeyDesc.getPartitionKeyColumns().size()) {
-      // All keys are partition keys -> bail out
+      // All keys are partition keys which identical with the no key TNK operator. Such operator forwards all
+      // records and it can be removed.
       return;
     }
     LOG.debug("Pushing a copy of {} through {} and {}",
