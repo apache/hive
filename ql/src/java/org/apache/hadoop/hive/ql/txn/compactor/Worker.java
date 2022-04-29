@@ -27,7 +27,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
@@ -198,9 +197,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           statusUpdaterConf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);
         }
         SessionState sessionState = DriverUtils.setUpSessionState(statusUpdaterConf, userName, true);
-        Map<String, String> hiveVariables = sessionState.getHiveVariables();
-        hiveVariables.put(Constants.INSIDE_COMPACTION_TRANSACTION_FLAG, "true");
-        sessionState.setHiveVariables(hiveVariables);
         DriverUtils.runOnDriver(statusUpdaterConf, sessionState, sb.toString(), ci.highestWriteId);
       } catch (Throwable t) {
         LOG.error(ci + ": gatherStats(" + ci.dbname + "," + ci.tableName + "," + ci.partName +
