@@ -18,6 +18,17 @@
 -->
 <configuration>
     <property>
+        <name>hive.metastore.client.cache.v2.enabled</name>
+        <value>true</value>
+        <description>This property enables a Caffeine Cache for Metastore client</description>
+    </property>
+
+    <property>
+        <name>hive.metastore.client.cache.v2.recordStats</name>
+        <value>true</value>
+        <description>This property enables recording metastore client cache stats in DEBUG logs</description>
+    </property>
+    <property>
         <name>hive.in.test</name>
         <value>true</value>
         <description>Internal marker for test. Used for masking env-dependent values</description>

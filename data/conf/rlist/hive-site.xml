@@ -20,12 +20,6 @@
 <configuration>
 
   <property>
-    <name>hive.metastore.client.cache.v2.maxSize</name>
-    <value>10Mb</value>
-    <description>Max size for hive metastore client local cache</description>
-  </property>
-
-  <property>
     <name>hive.metastore.client.cache.v2.enabled</name>
     <value>true</value>
     <description>This property enables a Caffeine Cache for Metastore client</description>
