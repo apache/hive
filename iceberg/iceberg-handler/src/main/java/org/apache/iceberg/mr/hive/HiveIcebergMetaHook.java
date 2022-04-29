@@ -130,6 +130,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   private UpdatePartitionSpec updatePartitionSpec;
   private Transaction transaction;
   private AlterTableType currentAlterTableOp;
+  private boolean createHMSTableInHook = false;
 
   public HiveIcebergMetaHook(Configuration conf) {
     this.conf = conf;
@@ -183,6 +184,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(schema));
     catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
     setCommonHmsTablePropertiesForIceberg(hmsTable);
+
+    if (hmsTable.getParameters().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
+      createHMSTableInHook = true;
+    }
   }
 
   @Override
@@ -197,7 +202,12 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         catalogProperties.put(TableProperties.ENGINE_HIVE_ENABLED, true);
       }
 
-      Catalogs.createTable(conf, catalogProperties);
+      String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+      if (metadataLocation != null) {
+        Catalogs.registerTable(conf, catalogProperties, metadataLocation);
+      } else {
+        Catalogs.createTable(conf, catalogProperties);
+      }
     }
   }
 
@@ -430,6 +440,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     delete.deleteFromRowFilter(Expressions.alwaysTrue());
     delete.commit();
     context.putToProperties("truncateSkipDataDeletion", "true");
+  }
+
+  @Override public boolean createHMSTableInHook() {
+    return createHMSTableInHook;
   }
 
   private void alterTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable,

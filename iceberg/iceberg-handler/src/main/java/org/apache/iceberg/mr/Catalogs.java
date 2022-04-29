@@ -137,26 +137,12 @@ public final class Catalogs {
    * @return the created Iceberg table
    */
   public static Table createTable(Configuration conf, Properties props) {
-    String schemaString = props.getProperty(InputFormatConfig.TABLE_SCHEMA);
-    Preconditions.checkNotNull(schemaString, "Table schema not set");
-    Schema schema = SchemaParser.fromJson(props.getProperty(InputFormatConfig.TABLE_SCHEMA));
-
-    String specString = props.getProperty(InputFormatConfig.PARTITION_SPEC);
-    PartitionSpec spec = PartitionSpec.unpartitioned();
-    if (specString != null) {
-      spec = PartitionSpecParser.fromJson(schema, specString);
-    }
-
+    Schema schema = schema(props);
+    PartitionSpec spec = spec(props, schema);
     String location = props.getProperty(LOCATION);
     String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
 
-    // Create a table property map without the controlling properties
-    Map<String, String> map = Maps.newHashMapWithExpectedSize(props.size());
-    for (Object key : props.keySet()) {
-      if (!PROPERTIES_TO_REMOVE.contains(key)) {
-        map.put(key.toString(), props.get(key).toString());
-      }
-    }
+    Map<String, String> map = filterIcebergTableProperties(props);
 
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
 
@@ -212,6 +198,31 @@ public final class Catalogs {
       return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(catalogType);
     }
     return getCatalogProperties(conf, catalogName, catalogType).get(CatalogProperties.CATALOG_IMPL) == null;
+  }
+
+  /**
+   * Register a table with the configured catalog if it does not exist.
+   * @param conf a Hadoop conf
+   * @param props the controlling properties
+   * @param metadataLocation the location of a metadata file
+   * @return the created Iceberg table
+   */
+  public static Table registerTable(Configuration conf, Properties props, String metadataLocation) {
+    Schema schema = schema(props);
+    PartitionSpec spec = spec(props, schema);
+    Map<String, String> map = filterIcebergTableProperties(props);
+    String location = props.getProperty(LOCATION);
+    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+
+    Optional<Catalog> catalog = loadCatalog(conf, catalogName);
+    if (catalog.isPresent()) {
+      String name = props.getProperty(NAME);
+      Preconditions.checkNotNull(name, "Table identifier not set");
+      return catalog.get().registerTable(TableIdentifier.parse(name), metadataLocation);
+    }
+
+    Preconditions.checkNotNull(location, "Table location not set");
+    return new HadoopTables(conf).create(schema, spec, map, location);
   }
 
   @VisibleForTesting
@@ -294,5 +305,46 @@ public final class Catalogs {
         return catalogType;
       }
     }
+  }
+
+  /**
+   * Parse the table schema from the properties
+   * @param props the controlling properties
+   * @return schema instance
+   */
+  private static Schema schema(Properties props) {
+    String schemaString = props.getProperty(InputFormatConfig.TABLE_SCHEMA);
+    Preconditions.checkNotNull(schemaString, "Table schema not set");
+    return SchemaParser.fromJson(props.getProperty(InputFormatConfig.TABLE_SCHEMA));
+  }
+
+  /**
+   * Get the partition spec from the properties
+   * @param props the controlling properties
+   * @param schema instance of the iceberg schema
+   * @return  instance of the partition spec
+   */
+  private static PartitionSpec spec(Properties props, Schema schema) {
+    String specString = props.getProperty(InputFormatConfig.PARTITION_SPEC);
+    PartitionSpec spec = PartitionSpec.unpartitioned();
+    if (specString != null) {
+      spec = PartitionSpecParser.fromJson(schema, specString);
+    }
+    return spec;
+  }
+
+  /**
+   * Create the iceberg table properties without the {@link Catalogs#PROPERTIES_TO_REMOVE}
+   * @param props the controlling properties
+   * @return map of iceberg table properties
+   */
+  private static Map<String, String> filterIcebergTableProperties(Properties props) {
+    Map<String, String> map = Maps.newHashMapWithExpectedSize(props.size());
+    for (Object key : props.keySet()) {
+      if (!PROPERTIES_TO_REMOVE.contains(key)) {
+        map.put(key.toString(), props.get(key).toString());
+      }
+    }
+    return map;
   }
 }

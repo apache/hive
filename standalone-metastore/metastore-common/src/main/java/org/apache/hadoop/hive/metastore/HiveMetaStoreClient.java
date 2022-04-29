@@ -1385,7 +1385,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     boolean success = false;
     try {
       // Subclasses can override this step (for example, for temporary tables)
-      create_table(request);
+      if (hook == null || !hook.createHMSTableInHook()) {
+        create_table(request);
+      }
       if (hook != null) {
         hook.commitCreateTable(tbl);
       }

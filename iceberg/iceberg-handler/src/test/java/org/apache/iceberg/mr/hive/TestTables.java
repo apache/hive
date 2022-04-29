@@ -170,7 +170,25 @@ abstract class TestTables {
   }
 
   /**
-   * Creates an non partitioned Hive test table. Creates the Iceberg table/data and creates the corresponding Hive
+   * Creates a non partitioned Hive test table. Creates the Iceberg table/data and creates the corresponding Hive
+   * table as well when needed. The table will be in the 'default' database. The table will be populated with the
+   * provided List of {@link Record}s.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param tblProperties Additional table properties
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTable(TestHiveShell shell, String tableName, Schema schema, FileFormat fileFormat,
+      List<Record> records, Map<String, String> tblProperties) throws IOException {
+    return createTable(shell, tableName, schema, fileFormat, records, 1, tblProperties);
+  }
+
+  /**
+   * Creates a non partitioned Hive test table. Creates the Iceberg table/data and creates the corresponding Hive
    * table as well when needed. The table will be in the 'default' database. The table will be populated with the
    * provided List of {@link Record}s.
    * @param shell The HiveShell used for Hive table creation
@@ -184,7 +202,27 @@ abstract class TestTables {
    */
   public Table createTable(TestHiveShell shell, String tableName, Schema schema, FileFormat fileFormat,
       List<Record> records, int formatVersion) throws IOException {
-    Map<String, String> tblProps = ImmutableMap.of(TableProperties.FORMAT_VERSION, Integer.toString(formatVersion));
+    return createTable(shell, tableName, schema, fileFormat, records, formatVersion, Collections.emptyMap());
+  }
+
+  /**
+   * Creates a non partitioned Hive test table. Creates the Iceberg table/data and creates the corresponding Hive
+   * table as well when needed. The table will be in the 'default' database. The table will be populated with the
+   * provided List of {@link Record}s.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param formatVersion The version of the spec the table should use (format-version)
+   * @param tblProperties Additional table properties
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTable(TestHiveShell shell, String tableName, Schema schema, FileFormat fileFormat,
+      List<Record> records, int formatVersion, Map<String, String> tblProperties) throws IOException {
+    ImmutableMap<String, String> tblProps = ImmutableMap.<String, String>builder().putAll(tblProperties)
+        .put(TableProperties.FORMAT_VERSION, Integer.toString(formatVersion)).build();
     Table table = createIcebergTable(shell.getHiveConf(), tableName, schema, fileFormat, tblProps, records);
     String createHiveSQL = createHiveTableSQL(TableIdentifier.of("default", tableName), tblProps);
     if (createHiveSQL != null) {
@@ -226,13 +264,32 @@ abstract class TestTables {
    */
   public Table createTable(TestHiveShell shell, String tableName, Schema schema, PartitionSpec spec,
       FileFormat fileFormat, List<Record> records, Integer formatVersion)  {
-    TableIdentifier identifier = TableIdentifier.of("default", tableName);
-    String tblProps = propertiesForCreateTableSQL(ImmutableMap.of(
-        TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString(),
-        InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(schema),
-        InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec),
-        TableProperties.FORMAT_VERSION, Integer.toString(formatVersion)));
+    return createTable(shell, tableName, schema, spec, fileFormat, records, formatVersion, Collections.emptyMap());
+  }
 
+  /**
+   * Creates a partitioned Hive test table using Hive SQL. The table will be in the 'default' database.
+   * The table will be populated with the provided List of {@link Record}s using a Hive insert statement.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param spec The partition specification for the table
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param formatVersion The version of the spec the table should use (format-version)
+   * @param tblProperties Additional table properties
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTable(TestHiveShell shell, String tableName, Schema schema, PartitionSpec spec,
+      FileFormat fileFormat, List<Record> records, Integer formatVersion, Map<String, String> tblProperties) {
+    TableIdentifier identifier = TableIdentifier.of("default", tableName);
+    String tblProps = propertiesForCreateTableSQL(ImmutableMap.<String, String>builder().putAll(tblProperties)
+        .put(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString())
+        .put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(schema))
+        .put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec))
+        .put(TableProperties.FORMAT_VERSION, Integer.toString(formatVersion))
+        .build());
     shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
         " STORED BY ICEBERG " + locationForCreateTableSQL(identifier) + tblProps);
 
