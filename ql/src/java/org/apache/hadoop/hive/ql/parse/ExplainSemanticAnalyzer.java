@@ -282,4 +282,11 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return super.skipAuthorization();
   }
+
+  @Override
+  public void startAnalysis() {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
+      queryState.createHMSCache();
+    }
+  }
 }
