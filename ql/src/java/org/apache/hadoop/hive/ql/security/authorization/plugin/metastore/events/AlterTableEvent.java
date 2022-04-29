@@ -108,7 +108,7 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
         HiveStorageHandler hiveStorageHandler = (HiveStorageHandler) ReflectionUtils.newInstance(
                 conf.getClassByName(newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE)), event.getHandler().getConf());
         String storageUri = hiveStorageHandler.getURIForAuth(newTable).toString();
-        ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageUri, null, null,
+        ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, null, storageUri, null, null,
             HivePrivObjectActionType.OTHER, null, newTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE), newTable.getOwner(), newTable.getOwnerType()));
       } catch (Exception ex) {
         LOG.error("Exception occurred while getting the URI from storage handler: " + ex.getMessage(), ex);

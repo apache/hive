@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -120,7 +121,7 @@ public class KillQueryImpl implements KillQuery {
   private static boolean isAdmin() {
     boolean isAdmin = false;
     // RANGER-1851
-    HivePrivilegeObject serviceNameObj = new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.SERVICE_NAME, null, "hiveservice");
+    HivePrivilegeObject serviceNameObj = new HivePrivilegeObject(HivePrivilegeObjectType.SERVICE_NAME, "hiveservice");
     SessionState ss = SessionState.get();
     if (!HiveConf.getBoolVar(ss.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
       // If authorization is disabled, hs2 process owner should have kill privileges

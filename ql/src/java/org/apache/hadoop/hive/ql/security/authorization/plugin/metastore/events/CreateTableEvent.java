@@ -64,7 +64,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     String                    uri   = getSdLocation(table.getSd());
 
     if (StringUtils.isNotEmpty(uri)) {
-      ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
+      ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, uri));
     }
     return ret;
   }
@@ -82,7 +82,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     ret.add(getHivePrivilegeObject(table));
 
     if (StringUtils.isNotEmpty(uri)) {
-      ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
+      ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, uri));
     }
 
     COMMAND_STR = buildCommandString(COMMAND_STR,table);

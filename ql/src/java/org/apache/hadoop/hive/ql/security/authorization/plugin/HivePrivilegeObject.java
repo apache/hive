@@ -162,27 +162,17 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   // is applied to the table.
   private String rowFilterExpression;
 
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName) {
-    this(type, null, dbname, objectName);
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String objectName) {
+    this(type, null, null, objectName);
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName) {
     this(type, catName, dbname, objectName, null, null);
   }
 
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
-      List<String> partKeys, List<String> columns) {
-    this(type, null, dbname, objectName, partKeys, columns);
-  }
-
   public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName,
       List<String> partKeys, List<String> columns) {
     this(type, catName, dbname, objectName, partKeys, columns, HivePrivObjectActionType.OTHER, null);
-  }
-
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
-      List<String> partKeys, List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams) {
-    this(type, null, dbname, objectName, partKeys, columns, actionType, commandParams);
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName,
@@ -196,18 +186,8 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
    * @return
    */
   public static HivePrivilegeObject createHivePrivilegeObject(List<String> cmdParams) {
-    return new HivePrivilegeObject(HivePrivilegeObjectType.COMMAND_PARAMS, null, null, null, null,null,
-        cmdParams);
-  }
-
-  public HivePrivilegeObject(String catName, String dbname, String objectName, List<String> columns) {
-    this(HivePrivilegeObjectType.TABLE_OR_VIEW, catName, dbname, objectName, null, columns);
-  }
-
-  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName, List<String> partKeys,
-      List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams, String className,
-      String ownerName, PrincipalType ownerType) {
-    this(type, null, dbname, objectName, partKeys, columns, actionType, commandParams, className, ownerName, ownerType);
+    return new HivePrivilegeObject(HivePrivilegeObjectType.COMMAND_PARAMS, null, null,
+        null, null, null,null, cmdParams);
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName,
@@ -227,7 +207,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   }
 
   public static HivePrivilegeObject forScheduledQuery(String owner, String clusterNamespace, String scheduleName) {
-    return new HivePrivilegeObject(HivePrivilegeObjectType.SCHEDULED_QUERY,
+    return new HivePrivilegeObject(HivePrivilegeObjectType.SCHEDULED_QUERY, null,
         /*dbName*/clusterNamespace, /*objectName*/scheduleName, null, null, null, null, null,
         /*ownerName*/owner, null);
   }

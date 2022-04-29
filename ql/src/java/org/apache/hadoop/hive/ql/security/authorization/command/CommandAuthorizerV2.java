@@ -195,7 +195,7 @@ final class CommandAuthorizerV2 {
                 hiveOpType == HiveOperationType.CREATETABLE_AS_SELECT) {
           try {
             String storageUri = table.getStorageHandler().getURIForAuth(table.getTTable()).toString();
-            hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageUri, null, null,
+            hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, null, storageUri, null, null,
                 actionType, null, table.getStorageHandler().getClass().getName(), table.getOwner(), table.getOwnerType()));
           } catch (Exception ex) {
             LOG.error("Exception occurred while getting the URI from storage handler: " + ex.getMessage(), ex);
@@ -206,8 +206,8 @@ final class CommandAuthorizerV2 {
       break;
     case DFS_DIR:
     case LOCAL_DIR:
-      hivePrivObject = new HivePrivilegeObject(privObjType, null, privObject.getD().toString(), null, null,
-          actionType, null);
+      hivePrivObject = new HivePrivilegeObject(privObjType, null, null, privObject.getD().toString(),
+          null, null, actionType, null);
       break;
     case FUNCTION:
       String catName = null;
@@ -224,13 +224,13 @@ final class CommandAuthorizerV2 {
       // TODO: not currently handled
       return;
     case SERVICE_NAME:
-      hivePrivObject = new HivePrivilegeObject(privObjType, null, privObject.getServiceName(), null,
+      hivePrivObject = new HivePrivilegeObject(privObjType, null, null, privObject.getServiceName(), null,
           null, actionType, null);
       break;
     case DATACONNECTOR:
       DataConnector connector = privObject.getDataConnector();
-      hivePrivObject = new HivePrivilegeObject(privObjType, null, connector.getName(), null, null, actionType, null,
-              null, connector.getOwnerName(), connector.getOwnerType());
+      hivePrivObject = new HivePrivilegeObject(privObjType, null, null, connector.getName(), null, null,
+          actionType, null, null, connector.getOwnerName(), connector.getOwnerType());
       break;
     default:
       throw new AssertionError("Unexpected object type");

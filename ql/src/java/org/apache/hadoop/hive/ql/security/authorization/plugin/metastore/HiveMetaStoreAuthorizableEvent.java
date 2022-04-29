@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 
 import java.util.Collections;
 import java.util.List;
@@ -52,23 +53,23 @@ public abstract class HiveMetaStoreAuthorizableEvent {
   }
 
   protected HivePrivilegeObject getHivePrivilegeObject(Database database) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATABASE, database.getCatalogName(), database.getName(),
+    return new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, database.getCatalogName(), database.getName(),
         null, null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
         database.getOwnerName(), database.getOwnerType());
   }
 
   protected HivePrivilegeObject getHivePrivilegeObject(Table table) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, table.getCatName(), table.getDbName(),
+    return new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, table.getCatName(), table.getDbName(),
         table.getTableName(), null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
         table.getOwner(), table.getOwnerType());
   }
 
   protected HivePrivilegeObject getHivePrivilegeObjectDfsUri(String uri) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI, null, uri);
+    return new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, uri);
   }
 
   protected HivePrivilegeObject getHivePrivilegeObjectLocalUri(String uri) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.LOCAL_URI, null, uri);
+    return new HivePrivilegeObject(HivePrivilegeObjectType.LOCAL_URI, uri);
   }
 
 }
