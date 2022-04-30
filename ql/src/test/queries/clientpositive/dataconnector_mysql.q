@@ -14,6 +14,9 @@ SHOW DATABASES;
 USE db_mysql;
 SHOW TABLES;
 
+SHOW CREATE TABLE country;
+SELECT * FROM country;
+
 -- clean up so it won't affect other tests
 DROP DATABASE db_mysql;
 DROP CONNECTOR mysql_qtest;

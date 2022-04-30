@@ -241,7 +241,8 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       //Setting the table properties.
       table.getParameters().put(JDBC_DATABASE_TYPE, this.type);
       table.getParameters().put(JDBC_DRIVER, this.driverClassName);
-      table.getParameters().put(JDBC_TABLE, scoped_db+"."+tableName);
+      table.getParameters().put(JDBC_TABLE, tableName);
+      table.getParameters().put(JDBC_SCHEMA, scoped_db);
       table.getParameters().put(JDBC_URL, this.jdbcUrl);
       table.getParameters().put(hive_metastoreConstants.META_TABLE_STORAGE, JDBC_HIVE_STORAGE_HANDLER_ID);
       table.getParameters().put("EXTERNAL", "TRUE");
