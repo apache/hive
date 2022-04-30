@@ -22,6 +22,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -116,9 +117,6 @@ public class Driver implements IDriver {
     driverContext = new DriverContext(queryState, queryInfo, new HookRunner(queryState.getConf(), CONSOLE),
         txnManager);
     driverTxnHandler = new DriverTxnHandler(driverContext, driverState);
-    if (SessionState.get() != null) {
-      SessionState.get().addQueryState(getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname), queryState);
-    }
   }
 
   @Override
@@ -214,12 +212,6 @@ public class Driver implements IDriver {
       } else {
         releaseResources();
       }
-
-      if (SessionState.get() != null) {
-        // Remove any query state reference from the session state
-        SessionState.get().removeQueryState(getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname));
-      }
-      
       driverState.executionFinishedWithLocking(isFinishedWithError);
     }
 
@@ -430,7 +422,6 @@ public class Driver implements IDriver {
     if (metrics != null) {
       metrics.incrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
     }
-
     PerfLogger perfLogger = SessionState.getPerfLogger(true);
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.WAIT_COMPILE);
 
@@ -531,6 +522,11 @@ public class Driver implements IDriver {
     context.setHDFSCleanup(true);
 
     driverTxnHandler.setContext(context);
+
+    if (SessionState.get() != null) {
+      QueryState queryState = getQueryState();
+      SessionState.get().addQueryState(queryState.getQueryId(), queryState);
+    }
   }
 
   private void setQueryId() {
@@ -812,6 +808,18 @@ public class Driver implements IDriver {
           context.setHiveLocks(null);
         }
         context = null;
+      }
+
+      if (SessionState.get() != null) {
+        QueryState queryState = getQueryState();
+        // If the driver object is reused for several queries, make sure we empty the HMS query cache
+        Map<Object, Object> queryCache = SessionState.get().getQueryCache(queryState.getQueryId());
+        if (queryCache != null) {
+          queryCache.clear();
+        }
+        queryState.disableHMSCache();
+        // Remove any query state reference from the session state
+        SessionState.get().removeQueryState(queryState.getQueryId());
       }
     } catch (Exception e) {
       LOG.debug("Exception while clearing the context ", e);
