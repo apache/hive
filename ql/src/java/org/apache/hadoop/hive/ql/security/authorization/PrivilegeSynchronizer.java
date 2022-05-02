@@ -256,8 +256,8 @@ public class PrivilegeSynchronizer implements Runnable {
               }
             }
           }
-          LOG.info(String.format("Success synchronize privilege %s : %d catalogs, %d databases, %d tables.",
-              numCat, numDb, numTbl));
+          LOG.info("Success synchronize privilege " + policyProvider.getClass().getName() + ":" + numCat + " catalogs, "
+              + numDb + " databases, " + numTbl + " tables");
         }
       } catch (Exception e) {
         LOG.error("Error initializing PrivilegeSynchronizer: " + e.getMessage(), e);

@@ -1299,7 +1299,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public List<String> getAllDatabases() throws MetaException {
     try {
-      return filterHook.filterDatabases(null, client.get_all_databases());
+      return filterHook.filterDatabases(getDefaultCatalog(conf), client.get_all_databases());
     } catch (Exception e) {
       MetaStoreUtils.throwMetaException(e);
     }
