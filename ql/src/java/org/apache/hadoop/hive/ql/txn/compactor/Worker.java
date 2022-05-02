@@ -197,7 +197,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           statusUpdaterConf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);
         }
         SessionState sessionState = DriverUtils.setUpSessionState(statusUpdaterConf, userName, true);
-        DriverUtils.runOnDriver(statusUpdaterConf, userName, sessionState, sb.toString());
+        DriverUtils.runOnDriver(statusUpdaterConf, sessionState, sb.toString(), ci.highestWriteId);
       } catch (Throwable t) {
         LOG.error(ci + ": gatherStats(" + ci.dbname + "," + ci.tableName + "," + ci.partName +
                       ") failed due to: " + t.getMessage(), t);

@@ -106,11 +106,15 @@ public class Driver implements IDriver {
     this(queryState, queryInfo, null);
   }
 
-  public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager,
-      ValidWriteIdList compactionWriteIds, long compactorTxnId) {
-    this(queryState, queryInfo, txnManager);
+  public Driver(QueryState queryState, ValidWriteIdList compactionWriteIds, long compactorTxnId) {
+    this(queryState);
     driverContext.setCompactionWriteIds(compactionWriteIds);
     driverContext.setCompactorTxnId(compactorTxnId);
+  }
+
+  public Driver(QueryState queryState, long analyzeTableWriteId) {
+    this(queryState);
+    driverContext.setAnalyzeTableWriteId(analyzeTableWriteId);
   }
 
   public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager) {

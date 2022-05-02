@@ -520,6 +520,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
   @Test
   public void testDDLsAdvancingWriteIds() throws Exception {
+    hiveConf.setBoolVar(HiveConf.ConfVars.TRANSACTIONAL_CONCATENATE_NOBLOCK, true);
 
     String tableName = "alter_table";
     runStatementOnDriver("drop table if exists " + tableName);
@@ -557,6 +558,11 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver(String.format("ALTER TABLE %s PARTITION (ds='2013-04-05') COMPACT 'minor'", tableName));
     validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
     Assert.assertEquals("default.alter_table:6:9223372036854775807::", validWriteIds);
+
+    //Process the compaction request because otherwise the CONCATENATE (major compaction) command on the same table and
+    // partition would be refused.
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
 
     runStatementOnDriver(String.format("ALTER TABLE %s PARTITION (ds='2013-04-05') CONCATENATE", tableName));
     validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();

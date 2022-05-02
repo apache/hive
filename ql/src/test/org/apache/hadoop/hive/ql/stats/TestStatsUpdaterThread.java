@@ -776,7 +776,7 @@ public class TestStatsUpdaterThread {
   }
 
   private void executeQuery(String query) throws HiveException {
-    DriverUtils.runOnDriver(hiveConf, ss.getUserName(), ss, query);
+    DriverUtils.runOnDriver(hiveConf, ss, query);
   }
 
   private StatsUpdaterThread createUpdater() throws MetaException {

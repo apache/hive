@@ -69,6 +69,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -171,6 +172,7 @@ import static org.apache.commons.lang3.StringUtils.repeat;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatchNoCount;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatch;
+import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getFullTableName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -3704,12 +3706,21 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         long id = generateCompactionQueueId(stmt);
 
+        GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(
+            Collections.singletonList(getFullTableName(rqst.getDbname(), rqst.getTablename())));
+        final ValidCompactorWriteIdList tblValidWriteIds =
+            TxnUtils.createValidCompactWriteIdList(getValidWriteIds(request).getTblValidWriteIds().get(0));
+        LOG.debug("ValidCompactWriteIdList: " + tblValidWriteIds.writeToString());
+
         List<String> params = new ArrayList<>();
         StringBuilder sb = new StringBuilder("SELECT \"CQ_ID\", \"CQ_STATE\" FROM \"COMPACTION_QUEUE\" WHERE").
-          append(" \"CQ_STATE\" IN(").append(quoteChar(INITIATED_STATE)).
-            append(",").append(quoteChar(WORKING_STATE)).
-          append(") AND \"CQ_DATABASE\"=?").
-          append(" AND \"CQ_TABLE\"=?").append(" AND ");
+          append(" (\"CQ_STATE\" IN(").
+            append(quoteChar(INITIATED_STATE)).append(",").append(quoteChar(WORKING_STATE)).
+            append(") OR (\"CQ_STATE\" = ").append(quoteChar(READY_FOR_CLEANING)).
+            append(" AND \"CQ_HIGHEST_WRITE_ID\" = ?))").
+            append(" AND \"CQ_DATABASE\"=?").
+            append(" AND \"CQ_TABLE\"=?").append(" AND ");
+        params.add(Long.toString(tblValidWriteIds.getHighWatermark()));
         params.add(rqst.getDbname());
         params.add(rqst.getTablename());
         if(rqst.getPartitionname() == null) {
@@ -3720,7 +3731,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         pst = sqlGenerator.prepareStmtWithParameters(dbConn, sb.toString(), params);
-        LOG.debug("Going to execute query <" + sb.toString() + ">");
+        LOG.debug("Going to execute query <" + sb + ">");
         ResultSet rs = pst.executeQuery();
         if(rs.next()) {
           long enqueuedId = rs.getLong(1);
@@ -3728,7 +3739,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           LOG.info("Ignoring request to compact " + rqst.getDbname() + "/" + rqst.getTablename() +
             "/" + rqst.getPartitionname() + " since it is already " + quoteString(state) +
             " with id=" + enqueuedId);
-          return new CompactionResponse(enqueuedId, state, false);
+          CompactionResponse resp = new CompactionResponse(-1, REFUSED_RESPONSE, false);
+          resp.setErrormessage("Compaction is already scheduled with state=" + quoteString(state) +
+              " and id=" + enqueuedId);
+          return resp;
         }
         close(rs);
         closeStmt(pst);

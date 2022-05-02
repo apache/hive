@@ -873,7 +873,7 @@ public class TestCompactor {
         Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      Assert.assertEquals("base_0000005_v0000009", name);
+      Assert.assertEquals("base_0000004_v0000009", name);
       CompactorTestUtil
           .checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, null,
               1);
@@ -918,11 +918,11 @@ public class TestCompactor {
     runMajorCompaction(dbName, tblName);
 
     List<String> matchesNotFound = new ArrayList<>(5);
-    matchesNotFound.add(AcidUtils.deleteDeltaSubdir(4, 5) + VISIBILITY_PATTERN);
-    matchesNotFound.add(AcidUtils.deltaSubdir(4, 5) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.deleteDeltaSubdir(3, 4) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.deltaSubdir(3, 4) + VISIBILITY_PATTERN);
     matchesNotFound.add(AcidUtils.deleteDeltaSubdir(5, 5, 0));
     matchesNotFound.add(AcidUtils.deltaSubdir(5, 5, 1));
-    matchesNotFound.add(AcidUtils.baseDir(6) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.baseDir(5) + VISIBILITY_PATTERN);
 
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     Table table = msClient.getTable(dbName, tblName);
@@ -1722,7 +1722,7 @@ public class TestCompactor {
     msClient.abortTxns(Lists.newArrayList(openTxnId)); // Now abort 3.
     runMajorCompaction(dbName, tblName); // Compact 4 and 5.
     verifyFooBarResult(tblName, 2);
-    verifyHasBase(table.getSd(), fs, "base_0000006_v0000017");
+    verifyHasBase(table.getSd(), fs, "base_0000005_v0000017");
     runCleaner(conf);
     // in case when we have # of accumulated entries for the same table/partition - we need to process them one-by-one in ASC order of write_id's,
     // however, to support multi-threaded processing in the Cleaner, we have to move entries from the same group to the next Cleaner cycle, 
@@ -1791,7 +1791,7 @@ public class TestCompactor {
     verifyFooBarResult(tblName, 3);
     verifyDeltaCount(p3.getSd(), fs, 1);
     verifyHasBase(p1.getSd(), fs, "base_0000006_v0000010");
-    verifyHasBase(p2.getSd(), fs, "base_0000007_v0000015");
+    verifyHasBase(p2.getSd(), fs, "base_0000006_v0000015");
 
     executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(1, 'foo', 2)", driver);
     executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(2, 'bar', 2)", driver);
@@ -1802,7 +1802,7 @@ public class TestCompactor {
     verifyFooBarResult(tblName, 4);
     verifyDeltaCount(p3.getSd(), fs, 1);
     verifyHasBase(p1.getSd(), fs, "base_0000006_v0000010");
-    verifyHasBase(p2.getSd(), fs, "base_0000007_v0000015");
+    verifyHasBase(p2.getSd(), fs, "base_0000006_v0000015");
 
   }
 
@@ -2469,7 +2469,7 @@ public class TestCompactor {
     files = fs.listStatus(new Path(table.getSd().getLocation()));
     // base dir
     assertEquals(1, files.length);
-    assertEquals("base_0000004_v0000016", files[0].getPath().getName());
+    assertEquals("base_0000003_v0000016", files[0].getPath().getName());
     files = fs.listStatus(files[0].getPath(), AcidUtils.bucketFileFilter);
     // files
     assertEquals(2, files.length);

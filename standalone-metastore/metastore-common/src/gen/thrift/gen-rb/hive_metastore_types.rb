@@ -4629,11 +4629,13 @@ class CompactionResponse
   ID = 1
   STATE = 2
   ACCEPTED = 3
+  ERRORMESSAGE = 4
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
     STATE => {:type => ::Thrift::Types::STRING, :name => 'state'},
-    ACCEPTED => {:type => ::Thrift::Types::BOOL, :name => 'accepted'}
+    ACCEPTED => {:type => ::Thrift::Types::BOOL, :name => 'accepted'},
+    ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errormessage', :optional => true}
   }
 
   def struct_fields; FIELDS; end

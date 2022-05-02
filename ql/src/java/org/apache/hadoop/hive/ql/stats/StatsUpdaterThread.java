@@ -629,7 +629,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
       }
       cmd = req.buildCommand();
       LOG.debug("Running {} based on {}", cmd, req);
-      DriverUtils.runOnDriver(conf, user, ss, cmd);
+      DriverUtils.runOnDriver(conf, ss, cmd);
     } catch (Exception e) {
       LOG.error("Analyze command failed: " + cmd, e);
       try {

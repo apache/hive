@@ -304,7 +304,8 @@ class DriverTxnHandler {
   private void allocateWriteIdForAcidAnalyzeTable() throws LockException {
     if (driverContext.getPlan().getAcidAnalyzeTable() != null) {
       Table table = driverContext.getPlan().getAcidAnalyzeTable().getTable();
-      driverContext.getTxnManager().getTableWriteId(table.getDbName(), table.getTableName());
+      driverContext.getTxnManager().setTableWriteId(
+          table.getDbName(), table.getTableName(), driverContext.getAnalyzeTableWriteId());
     }
   }
 

@@ -110,7 +110,7 @@ abstract class QueryCompactor {
         try {
           LOG.info("Running {} compaction query into temp table with query: {}",
               compactionInfo.isMajorCompaction() ? "major" : "minor", query);
-          DriverUtils.runOnDriver(conf, user, sessionState, query);
+          DriverUtils.runOnDriver(conf, sessionState, query);
         } catch (Exception ex) {
           Throwable cause = ex;
           while (cause != null && !(cause instanceof AlreadyExistsException)) {
@@ -135,7 +135,7 @@ abstract class QueryCompactor {
           conf.set("hive.optimize.bucketingsorting", "false");
           conf.set("hive.vectorized.execution.enabled", "false");
         }
-        DriverUtils.runOnDriver(conf, user, sessionState, query, writeIds, compactorTxnId);
+        DriverUtils.runOnDriver(conf, sessionState, query, writeIds, compactorTxnId);
       }
       commitCompaction(storageDescriptor.getLocation(), tmpTableName, conf, writeIds, compactorTxnId);
     } catch (HiveException e) {
@@ -147,7 +147,7 @@ abstract class QueryCompactor {
         for (String query : dropQueries) {
           LOG.info("Running {} compaction query into temp table with query: {}",
               compactionInfo.isMajorCompaction() ? "major" : "minor", query);
-          DriverUtils.runOnDriver(conf, user, sessionState, query);
+          DriverUtils.runOnDriver(conf, sessionState, query);
         }
       } catch (HiveException e) {
         LOG.error("Unable to drop temp table {} which was created for running {} compaction", tmpTableName,

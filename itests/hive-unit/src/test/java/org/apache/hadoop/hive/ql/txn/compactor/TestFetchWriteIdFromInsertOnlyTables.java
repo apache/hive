@@ -38,9 +38,9 @@ public class TestFetchWriteIdFromInsertOnlyTables extends CompactorOnTezTest {
       "0\t10\t10",
       "0\t1\t1",
       "0\t2\t20",
-      "4\t2\t32",
-      "4\t10\t15",
-      "4\t42\t42"
+      "3\t2\t32",
+      "3\t10\t15",
+      "3\t42\t42"
   );
 
 
