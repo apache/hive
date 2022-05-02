@@ -27,9 +27,9 @@
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
   </properties>
-  <artifactId>kafka-handler</artifactId>
+  <artifactId>hive-kafka-handler</artifactId>
   <packaging>jar</packaging>
-  <name>Hive Kafka Storage Handler</name>
+  <name>Hive Kafka Handler</name>
   <dependencies>
     <!-- Intra-project -->
     <dependency>

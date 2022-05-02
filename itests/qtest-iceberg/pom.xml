@@ -92,7 +92,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>kafka-handler</artifactId>
+      <artifactId>hive-kafka-handler</artifactId>
       <scope>test</scope>
       <exclusions>
         <exclusion>
