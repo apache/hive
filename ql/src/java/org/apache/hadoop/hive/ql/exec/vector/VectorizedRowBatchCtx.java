@@ -608,12 +608,12 @@ public class VectorizedRowBatchCtx {
     case CHAR:
     case VARCHAR: {
       BytesColumnVector bcv = (BytesColumnVector) col;
-      String sVal = value.toString();
-      if (sVal == null) {
+      if (value == null) {
         bcv.noNulls = false;
         bcv.isNull[0] = true;
         bcv.isRepeating = true;
       } else {
+        String sVal = value.toString();
         bcv.fill(sVal.getBytes());
       }
     }

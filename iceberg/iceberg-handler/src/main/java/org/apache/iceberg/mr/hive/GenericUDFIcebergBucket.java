@@ -185,7 +185,7 @@ public class GenericUDFIcebergBucket extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
 
     DeferredObject argument = arguments[0];
-    if (argument == null) {
+    if (argument == null || argument.get() == null) {
       return null;
     } else {
       evaluator.apply(argument);
