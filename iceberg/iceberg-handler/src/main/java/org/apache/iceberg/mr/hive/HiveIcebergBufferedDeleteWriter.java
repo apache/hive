@@ -114,26 +114,33 @@ public class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
     Collection<DeleteFile> deleteFiles = new ConcurrentLinkedQueue<>();
     if (!abort) {
       LOG.info("Delete file flush is started");
-      Tasks.foreach(buffer.keySet())
-          .retry(3)
-          .executeWith(fileExecutor(configuration, buffer.size()))
-          .onFailure((partition, exception) -> LOG.debug("Failed to write delete file {}", partition, exception))
-          .run(partition -> {
-            PositionDelete<Record> positionDelete = PositionDelete.create();
-            PartitioningWriter writerForData =
-                new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, format, targetFileSize);
-            try (PartitioningWriter writer = writerForData) {
-              writerForData = writer;
-              for (String filePath : new TreeSet<>(buffer.get(partition).keySet())) {
-                Roaring64Bitmap deletes = buffer.get(partition).get(filePath);
-                deletes.forEach(position -> {
-                  positionDelete.set(filePath, position, null);
-                  writer.write(positionDelete, keyToSpec.get(partition), partition);
-                });
+      ExecutorService fileExecutor = fileExecutor(configuration, buffer.size());
+      try {
+        Tasks.foreach(buffer.keySet())
+            .retry(3)
+            .executeWith(fileExecutor)
+            .onFailure((partition, exception) -> LOG.info("Failed to write delete file {}", partition, exception))
+            .run(partition -> {
+              PositionDelete<Record> positionDelete = PositionDelete.create();
+              PartitioningWriter writerForFiles;
+              try (PartitioningWriter writer =
+                       new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, format, targetFileSize)) {
+                Map<String, Roaring64Bitmap> partitionData = buffer.get(partition);
+                for (String filePath : new TreeSet<>(partitionData.keySet())) {
+                  Roaring64Bitmap deletes = partitionData.get(filePath);
+                  deletes.forEach(position -> {
+                    positionDelete.set(filePath, position, null);
+                    writer.write(positionDelete, keyToSpec.get(partition), partition);
+                  });
+                }
+                // We need the writer object later to get the generated data files
+                writerForFiles = writer;
               }
-            }
-            deleteFiles.addAll(((DeleteWriteResult) writerForData.result()).deleteFiles());
-          }, IOException.class);
+              deleteFiles.addAll(((DeleteWriteResult) writerForFiles.result()).deleteFiles());
+            }, IOException.class);
+      } finally {
+        fileExecutor.shutdown();
+      }
     }
 
     LOG.info("HiveIcebergBufferedDeleteWriter is closed with abort={}. Created {} delete files and it took {} ns.",
