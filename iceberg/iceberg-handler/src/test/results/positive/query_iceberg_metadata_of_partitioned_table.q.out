@@ -541,19 +541,19 @@ POSTHOOK: query: ALTER TABLE partevv SET PARTITION SPEC (id)
 POSTHOOK: type: ALTERTABLE_SETPARTSPEC
 POSTHOOK: Input: default@partevv
 POSTHOOK: Output: default@partevv
-PREHOOK: query: INSERT INTO partevv VALUES (1, current_timestamp(), current_timestamp())
+PREHOOK: query: INSERT INTO partevv VALUES (1, '2022-04-29 16:32:01', '2022-04-29 16:32:01')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partevv
-POSTHOOK: query: INSERT INTO partevv VALUES (1, current_timestamp(), current_timestamp())
+POSTHOOK: query: INSERT INTO partevv VALUES (1, '2022-04-29 16:32:01', '2022-04-29 16:32:01')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partevv
-PREHOOK: query: INSERT INTO partevv VALUES (2, current_timestamp(), current_timestamp())
+PREHOOK: query: INSERT INTO partevv VALUES (2, '2022-04-29 16:32:02', '2022-04-29 16:32:02')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partevv
-POSTHOOK: query: INSERT INTO partevv VALUES (2, current_timestamp(), current_timestamp())
+POSTHOOK: query: INSERT INTO partevv VALUES (2, '2022-04-29 16:32:02', '2022-04-29 16:32:02')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partevv
@@ -564,11 +564,11 @@ POSTHOOK: query: ALTER TABLE partevv SET PARTITION SPEC (day(ts))
 POSTHOOK: type: ALTERTABLE_SETPARTSPEC
 POSTHOOK: Input: default@partevv
 POSTHOOK: Output: default@partevv
-PREHOOK: query: INSERT INTO partevv VALUES (100, current_timestamp(), current_timestamp())
+PREHOOK: query: INSERT INTO partevv VALUES (100, '2022-04-29 16:32:03', '2022-04-29 16:32:03')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@partevv
-POSTHOOK: query: INSERT INTO partevv VALUES (100, current_timestamp(), current_timestamp())
+POSTHOOK: query: INSERT INTO partevv VALUES (100, '2022-04-29 16:32:03', '2022-04-29 16:32:03')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partevv
