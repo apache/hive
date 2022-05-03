@@ -4003,4 +4003,29 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
         LockState.ACQUIRED, database, null, null, locks);
     }
   }
+
+  @Test
+  public void testAddDropConstraintNonBlocking() throws Exception {
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, true);
+    dropTable(new String[] {"tab_acid"});
+
+    driver.run("create table if not exists tab_acid (a int, b int) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid (a,b) values(1,2),(3,4)");
+
+    driver.compileAndRespond("alter table tab_acid ADD CONSTRAINT a_PK PRIMARY KEY (`a`) DISABLE NOVALIDATE");
+    driver.lockAndRespond();
+    
+    List<ShowLocksResponseElement> locks = getLocks();
+    checkLock(LockType.EXCL_WRITE,
+      LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    driver.close();
+    
+    driver.compileAndRespond("alter table tab_acid  DROP CONSTRAINT a_PK");
+    driver.lockAndRespond();
+
+    locks = getLocks();
+    checkLock(LockType.EXCL_WRITE,
+      LockState.ACQUIRED, "default", "tab_acid", null, locks);
+  }
 }
