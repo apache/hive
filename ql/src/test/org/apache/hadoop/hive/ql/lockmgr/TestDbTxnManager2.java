@@ -4007,23 +4007,13 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   }
 
   @Test
-  public void testAddPartitionIfNotExistsNonBlocking() throws Exception {
-    testAddPartitionIfNotExists(false);
-  }
-  @Test
-  public void testAddPartitionIfNotExistsBlocking() throws Exception {
-    testAddPartitionIfNotExists(true);
-  }
-
-  private void testAddPartitionIfNotExists(boolean blocking) throws Exception {
+  public void testAddPartitionIfNotExists() throws Exception {
     dropTable(new String[] {"T", "Tstage"});
     
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD, 1);
     driver = Mockito.spy(driver);
-
-    HiveConf.setBoolVar(driver2.getConf(), HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, !blocking);
     driver2 = Mockito.spy(driver2);
-
+    
     driver.run("create table if not exists T (a int, b int) partitioned by (p string) " +
       "stored as orc TBLPROPERTIES ('transactional'='true')");
     //bucketed just so that we get 2 files
@@ -4032,9 +4022,8 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.run("insert into Tstage values(1,2),(3,4)");
     String exportLoc = exportFolder.newFolder("1").toString();
     driver.run("export table Tstage to '" + exportLoc + "'");
-
+    
     driver.compileAndRespond("select * from T");
-    List<String> res = new ArrayList<>();
     
     driver.lockAndRespond();
     List<ShowLocksResponseElement> locks = getLocks();
@@ -4046,41 +4035,23 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     swapTxnManager(txnMgr2);
     driver2.compileAndRespond("alter table T add if not exists partition (p='foo') location '" + exportLoc + "/data'");
-
-    if (blocking) {
-      txnMgr2.acquireLocks(driver2.getPlan(), ctx, null, false);
-      locks = getLocks();
-
-      ShowLocksResponseElement checkLock = checkLock(LockType.EXCLUSIVE,
-        LockState.WAITING, "default", "T", null, locks);
-
-      swapTxnManager(txnMgr);
-      Mockito.doNothing().when(driver).lockAndRespond();
-      driver.run();
-      
-      driver.getFetchTask().fetch(res);
-      swapTxnManager(txnMgr2);
-
-      FieldSetter.setField(txnMgr2, txnMgr2.getClass().getDeclaredField("numStatements"), 0);
-      txnMgr2.getMS().unlock(checkLock.getLockid());
-    }
+    
     driver2.lockAndRespond();
     locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", blocking ? 1 : 2, locks.size());
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
 
-    checkLock(blocking ? LockType.EXCLUSIVE : LockType.EXCL_WRITE,
+    checkLock(LockType.EXCL_WRITE,
       LockState.ACQUIRED, "default", "T", null, locks);
 
     Mockito.doNothing().when(driver2).lockAndRespond();
     driver2.run();
-
-    if (!blocking) {
-      swapTxnManager(txnMgr);
-      Mockito.doNothing().when(driver).lockAndRespond();
-      driver.run();
-    }
-    Mockito.reset(driver, driver2);
     
+    swapTxnManager(txnMgr);
+    Mockito.doNothing().when(driver).lockAndRespond();
+    driver.run();
+    Mockito.reset(driver, driver2);
+
+    List<String> res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
     Assert.assertEquals("Expecting 0 rows and found " + res.size(), 0, res.size());
     
