@@ -4082,11 +4082,11 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Mockito.reset(driver, driver2);
     
     driver.getFetchTask().fetch(res);
-    Assert.assertEquals("Expecting 2 rows and found " + res.size(), 0, res.size());
+    Assert.assertEquals("Expecting 0 rows and found " + res.size(), 0, res.size());
     
     driver.run("select * from T where p='foo'");
     res = new ArrayList<>();
     driver.getFetchTask().fetch(res);
-    Assert.assertEquals("Expecting 0 rows and found " + res.size(), 2, res.size());
+    Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
   }
 }
