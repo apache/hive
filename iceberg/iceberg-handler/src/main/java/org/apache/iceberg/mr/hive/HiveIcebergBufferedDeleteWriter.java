@@ -30,7 +30,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
-import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
@@ -97,7 +96,7 @@ public class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
   public void write(Writable row) throws IOException {
     Record rec = ((Container<Record>) row).get();
     IcebergAcidUtil.populateWithOriginalValues(rec, record);
-    String filePath = (String) rec.getField(MetadataColumns.FILE_PATH.name());
+    String filePath = IcebergAcidUtil.parseFilePath(rec);
     int specId = IcebergAcidUtil.parseSpecId(rec);
 
     Map<String, Roaring64Bitmap> deleteMap =
@@ -106,7 +105,7 @@ public class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
           return Maps.newHashMap();
         });
     Roaring64Bitmap deletes = deleteMap.computeIfAbsent(filePath, unused -> new Roaring64Bitmap());
-    deletes.add((Long) rec.getField(MetadataColumns.ROW_POSITION.name()));
+    deletes.add(IcebergAcidUtil.parseFilePosition(rec));
   }
 
   @Override
