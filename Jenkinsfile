@@ -253,7 +253,7 @@ fi
             export MAVEN_OPTS=-Xmx5G
             mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
              -Dsonar.pullrequest.github.repository=asolimando/hive \
-             -DskipTests -Dmaven.javadoc.skip
+             -DskipTests -Dit.skipTests -Dmaven.javadoc.skip
             '''
           }
         } else {
