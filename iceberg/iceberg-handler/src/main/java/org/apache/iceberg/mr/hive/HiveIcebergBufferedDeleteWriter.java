@@ -48,6 +48,7 @@ import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.iceberg.util.Tasks;
+import org.roaringbitmap.longlong.PeekableLongIterator;
 import org.roaringbitmap.longlong.Roaring64Bitmap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +96,7 @@ public class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
   @Override
   public void write(Writable row) throws IOException {
     Record rec = ((Container<Record>) row).get();
-    IcebergAcidUtil.getOriginalFromUpdatedRecord(rec, record);
+    IcebergAcidUtil.populateWithOriginalValues(rec, record);
     String filePath = (String) rec.getField(MetadataColumns.FILE_PATH.name());
     int specId = IcebergAcidUtil.parseSpecId(rec);
 
@@ -125,13 +126,15 @@ public class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
               PartitioningWriter writerForFiles;
               try (PartitioningWriter writer =
                        new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, format, targetFileSize)) {
-                Map<String, Roaring64Bitmap> partitionData = buffer.get(partition);
-                for (String filePath : new TreeSet<>(partitionData.keySet())) {
-                  Roaring64Bitmap deletes = partitionData.get(filePath);
-                  deletes.forEach(position -> {
+                Map<String, Roaring64Bitmap> deleteRows = buffer.get(partition);
+                for (String filePath : new TreeSet<>(deleteRows.keySet())) {
+                  Roaring64Bitmap deletes = deleteRows.get(filePath);
+                  PeekableLongIterator longIterator = deletes.getLongIterator();
+                  while (longIterator.hasNext()) {
+                    long position = longIterator.next();
                     positionDelete.set(filePath, position, null);
                     writer.write(positionDelete, keyToSpec.get(partition), partition);
-                  });
+                  }
                 }
                 // We need the writer object later to get the generated data files
                 writerForFiles = writer;

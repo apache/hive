@@ -70,7 +70,7 @@ class HiveIcebergUpdateWriter extends HiveIcebergWriterBase {
   @Override
   public void write(Writable row) throws IOException {
     deleteWriter.write(row);
-    IcebergAcidUtil.getNewFromUpdatedRecord(((Container<Record>) row).get(), container.get());
+    IcebergAcidUtil.populateWithNewValues(((Container<Record>) row).get(), container.get());
     insertWriter.write(container);
   }
 
