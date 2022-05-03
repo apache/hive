@@ -78,11 +78,11 @@ drop table ice_meta_3;
 CREATE EXTERNAL TABLE `partevv`( `id` int, `ts` timestamp, `ts2` timestamp)  STORED BY ICEBERG STORED AS ORC TBLPROPERTIES  ('format-version'='1');
 
 ALTER TABLE partevv SET PARTITION SPEC (id);
-INSERT INTO partevv VALUES (1, current_timestamp(), current_timestamp());
-INSERT INTO partevv VALUES (2, current_timestamp(), current_timestamp());
+INSERT INTO partevv VALUES (1, '2022-04-29 16:32:01', '2022-04-29 16:32:01');
+INSERT INTO partevv VALUES (2, '2022-04-29 16:32:02', '2022-04-29 16:32:02');
 
 
 ALTER TABLE partevv SET PARTITION SPEC (day(ts));
-INSERT INTO partevv VALUES (100, current_timestamp(), current_timestamp());
+INSERT INTO partevv VALUES (100, '2022-04-29 16:32:03', '2022-04-29 16:32:03');
 
 select * from default.partevv.partitions;
