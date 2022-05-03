@@ -1840,7 +1840,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_QUALIFY:
-        qbp.setQualifyExprForClause(ctx_1.dest, (ASTNode) ast.getChild(0));
+        qbp.setQualifyExprForClause(ctx_1.dest, (ASTNode) ast);
+        qbp.addAggregationExprsForClause(ctx_1.dest,
+                doPhase1GetAggregationsFromSelect(ast, qb, ctx_1.dest));
         break;
 
       case HiveParser.KW_WINDOW:

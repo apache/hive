@@ -4376,7 +4376,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
 
-      return genSelectRelNode(projsForWindowSelOp, out_rwsch, srcRel, windowExpressions);
+      RelNode windowProjectRel = genSelectRelNode(projsForWindowSelOp, out_rwsch, srcRel, windowExpressions);
+
+      RelNode qualifyRel = genQualifyLogicalPlan(qb, windowProjectRel);
+      if (qualifyRel == null) {
+        return windowProjectRel;
+      }
+
+      return qualifyRel;
     }
 
     private RelNode genSelectRelNode(List<RexNode> calciteColLst, RowResolver out_rwsch,
@@ -5181,6 +5188,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       return gbFilter;
+    }
+
+    private RelNode genQualifyLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
+      QBParseInfo qbp = getQBParseInfo(qb);
+      String destClauseName = qbp.getClauseNames().iterator().next();
+      ASTNode qualifyClause = qbp.getQualifyExprForClause(destClauseName);
+
+      if (qualifyClause == null) {
+        return null;
+      }
+
+      ASTNode targetNode = (ASTNode) qualifyClause.getChild(0);
+      return genFilterRelNode(qb, targetNode, srcRel, null, null, true);
     }
 
     /*
