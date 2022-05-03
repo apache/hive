@@ -1839,6 +1839,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             doPhase1GetDistinctFuncExprs(qbp.getAggregationExprsForClause(ctx_1.dest)));
         break;
 
+      case HiveParser.TOK_QUALIFY:
+        qbp.setQualifyExprForClause(ctx_1.dest, (ASTNode) ast.getChild(0));
+        break;
+
       case HiveParser.KW_WINDOW:
         if (!qb.hasWindowingSpec(ctx_1.dest) ) {
           throw new SemanticException(generateErrorMessage(ast,
