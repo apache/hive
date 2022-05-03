@@ -4376,14 +4376,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
       }
 
-      RelNode windowProjectRel = genSelectRelNode(projsForWindowSelOp, out_rwsch, srcRel, windowExpressions);
-
-      RelNode qualifyRel = genQualifyLogicalPlan(qb, windowProjectRel);
-      if (qualifyRel == null) {
-        return windowProjectRel;
-      }
-
-      return qualifyRel;
+      return genSelectRelNode(projsForWindowSelOp, out_rwsch, srcRel, windowExpressions);
     }
 
     private RelNode genSelectRelNode(List<RexNode> calciteColLst, RowResolver out_rwsch,
@@ -4809,11 +4802,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
             }
           }
           outputRel = genSelectRelNode(columnList, outputRR, srcRel);
+          RelNode qualifyRel = genQualifyLogicalPlan(qb, outputRel);
+          if (qualifyRel != null) {
+            outputRel = qualifyRel;
+          }
           // outputRel is the generated augmented select with extra unselected
           // columns, and originalRR is the original generated select
           return new Pair<RelNode, RowResolver>(outputRel, originalRR);
         } else {
           outputRel = genSelectRelNode(columnList, outputRR, srcRel);
+          RelNode qualifyRel = genQualifyLogicalPlan(qb, outputRel);
+          if (qualifyRel != null) {
+            outputRel = qualifyRel;
+          }
         }
       }
       // 9. Handle select distinct as GBY if there exist windowing functions
