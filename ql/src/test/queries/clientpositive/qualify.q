@@ -5,9 +5,14 @@ insert into t1 (a, b, c) values
     (3, 'B', 1),
     (4, 'B', 2);
 
---select a, b, c
---  from t1
---qualify row_number() over (partition by b order by c) = 1;
+explain cbo
+select a, b, c
+  from t1
+qualify row_number() over (partition by b order by c) = 1;
+
+select a, b, c
+  from t1
+qualify row_number() over (partition by b order by c) = 1;
 
 explain cbo
 select a, b, c, row_number() over (partition by b order by c) as row_num
