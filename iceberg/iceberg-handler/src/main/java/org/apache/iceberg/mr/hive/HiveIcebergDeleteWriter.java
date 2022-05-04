@@ -38,7 +38,7 @@ import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.mapred.Container;
 
-public class HiveIcebergDeleteWriter extends HiveIcebergWriter {
+public class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
 
   private final GenericRecord rowDataTemplate;
 
@@ -46,7 +46,7 @@ public class HiveIcebergDeleteWriter extends HiveIcebergWriter {
       FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
       TaskAttemptID taskAttemptID, String tableName) {
     super(schema, specs, io, taskAttemptID, tableName,
-        new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, fileFormat, targetFileSize));
+        new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, fileFormat, targetFileSize), false);
     rowDataTemplate = GenericRecord.create(schema);
   }
 

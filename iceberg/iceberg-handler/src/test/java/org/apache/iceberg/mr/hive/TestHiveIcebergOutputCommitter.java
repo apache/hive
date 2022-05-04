@@ -59,7 +59,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import static org.apache.iceberg.mr.hive.HiveIcebergWriter.getWriters;
+import static org.apache.iceberg.mr.hive.HiveIcebergWriterBase.getWriters;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
 public class TestHiveIcebergOutputCommitter {
@@ -288,7 +288,7 @@ public class TestHiveIcebergOutputCommitter {
 
       HiveIcebergRecordWriter testWriter = new HiveIcebergRecordWriter(schema, table.specs(),
           table.spec().specId(), fileFormat, hfwf, outputFileFactory, io, TARGET_FILE_SIZE,
-          TezUtil.taskAttemptWrapper(taskId), conf.get(Catalogs.NAME));
+          TezUtil.taskAttemptWrapper(taskId), conf.get(Catalogs.NAME), false);
 
       Container<Record> container = new Container<>();
 

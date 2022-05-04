@@ -101,10 +101,15 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.iceberg</groupId>
+      <artifactId>iceberg-core</artifactId>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.roaringbitmap</groupId>
       <artifactId>RoaringBitmap</artifactId>
       <version>0.9.22</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
   <build>

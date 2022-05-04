@@ -36,16 +36,16 @@ import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.mapred.Container;
 
-class HiveIcebergRecordWriter extends HiveIcebergWriter {
+class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
 
   private final int currentSpecId;
 
   HiveIcebergRecordWriter(
       Schema schema, Map<Integer, PartitionSpec> specs, int currentSpecId, FileFormat format,
       FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
-      TaskAttemptID taskAttemptID, String tableName) {
+      TaskAttemptID taskAttemptID, String tableName, boolean wrapped) {
     super(schema, specs, io, taskAttemptID, tableName,
-        new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize));
+        new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize), wrapped);
     this.currentSpecId = currentSpecId;
   }
 
