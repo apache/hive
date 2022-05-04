@@ -251,13 +251,14 @@ fi
             sh '''#!/bin/bash -e
             sw java 11 && . /etc/profile.d/java.sh
             export MAVEN_OPTS=-Xmx5G
-            mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
              -Dsonar.pullrequest.github.repository=asolimando/hive \
-             -DskipTests -Dit.skipTests -Dmaven.javadoc.skip
+             -DskipTests -Dit.skipTests -Dmaven.javadoc.skip \
+             -pl '!upgrade-acid,!upgrade-acid/pre-upgrade'
             '''
           }
         } else {
-          echo "skipping sonar analysis, running only on master branch"
+          echo "Skipping sonar analysis, because we only run that on the master branch"
         }
       }
       stage('Upload') {
