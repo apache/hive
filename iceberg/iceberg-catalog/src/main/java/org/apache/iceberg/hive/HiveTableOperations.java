@@ -263,6 +263,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
     } finally {
       cleanupMetadataAndUnlock(commitStatus, newMetadataLocation, commitLock);
     }
+
+    LOG.info("Committed to table {} with the new metadata location {}", fullName, newMetadataLocation);
   }
 
   @VisibleForTesting
