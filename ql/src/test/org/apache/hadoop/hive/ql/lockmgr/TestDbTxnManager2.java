@@ -3116,29 +3116,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   @Rule
   public TemporaryFolder exportFolder = new TemporaryFolder();
 
-  /**
-   * see also {@link org.apache.hadoop.hive.ql.TestTxnAddPartition}
-   */
-  @Test
-  public void testAddPartitionLocks() throws Exception {
-    dropTable(new String[] {"T", "Tstage"});
-    driver.run("create table T (a int, b int) partitioned by (p int) " +
-        "stored as orc tblproperties('transactional'='true')");
-    //bucketed just so that we get 2 files
-    driver.run("create table Tstage (a int, b int)  clustered by (a) into 2 " +
-        "buckets stored as orc tblproperties('transactional'='false')");
-    driver.run("insert into Tstage values(0,2),(1,4)");
-    String exportLoc = exportFolder.newFolder("1").toString();
-    driver.run("export table Tstage to '" + exportLoc + "'");
-
-    driver.compileAndRespond("ALTER TABLE T ADD if not exists PARTITION (p=0) location '" + exportLoc + "/data'", true);
-    txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer"); //gets X lock on T
-
-    List<ShowLocksResponseElement> locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 1, locks.size());
-    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T", null, locks);
-  }
-
   @Test
   public void testLoadData() throws Exception {
     testLoadData(false);
@@ -4027,5 +4004,60 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     locks = getLocks();
     checkLock(LockType.EXCL_WRITE,
       LockState.ACQUIRED, "default", "tab_acid", null, locks);
+  }
+
+  @Test
+  public void testAddPartitionIfNotExists() throws Exception {
+    dropTable(new String[] {"T", "Tstage"});
+    
+    HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD, 1);
+    driver = Mockito.spy(driver);
+    driver2 = Mockito.spy(driver2);
+    
+    driver.run("create table if not exists T (a int, b int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    //bucketed just so that we get 2 files
+    driver.run("create table if not exists Tstage (a int, b int) clustered by (a) into 2 " +
+      "buckets stored as orc TBLPROPERTIES ('transactional'='false')");
+    driver.run("insert into Tstage values(1,2),(3,4)");
+    String exportLoc = exportFolder.newFolder("1").toString();
+    driver.run("export table Tstage to '" + exportLoc + "'");
+    
+    driver.compileAndRespond("select * from T");
+    
+    driver.lockAndRespond();
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+
+    checkLock(LockType.SHARED_READ,
+      LockState.ACQUIRED, "default", "T", null, locks);
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("alter table T add if not exists partition (p='foo') location '" + exportLoc + "/data'");
+    
+    driver2.lockAndRespond();
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+
+    checkLock(LockType.EXCL_WRITE,
+      LockState.ACQUIRED, "default", "T", null, locks);
+
+    Mockito.doNothing().when(driver2).lockAndRespond();
+    driver2.run();
+    
+    swapTxnManager(txnMgr);
+    Mockito.doNothing().when(driver).lockAndRespond();
+    driver.run();
+    Mockito.reset(driver, driver2);
+
+    List<String> res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("Expecting 0 rows and found " + res.size(), 0, res.size());
+    
+    driver.run("select * from T where p='foo'");
+    res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("Expecting 2 rows and found " + res.size(), 2, res.size());
   }
 }
