@@ -223,12 +223,12 @@ public class WriteEntity extends Entity implements Serializable {
     case SET_SKEWED_LOCATION:
     case INTO_BUCKETS:
     case ALTERPARTITION:
-    case ADDCOLS:
     case TRUNCATE:
     case MERGEFILES:
     case OWNER:
       return WriteType.DDL_EXCLUSIVE;
-      
+
+    case ADDCOLS:  
     case ADD_CONSTRAINT: 
     case DROP_CONSTRAINT:
     case RENAME:
