@@ -167,7 +167,7 @@ STAGE PLANS:
                                   className: VectorReduceSinkObjectHashOperator
                                   keyColumns: 2:struct<writeid:bigint,bucketid:int,rowid:bigint>
                                   native: true
-                                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                                   partitionColumns: 5:int
                               Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
                           Select Operator
@@ -176,14 +176,6 @@ STAGE PLANS:
                             Select Vectorization:
                                 className: VectorSelectOperator
                                 native: true
-<<<<<<< HEAD
-                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                                partitionColumns: 5:int
-                                valueColumns: 3:int, 4:string, 0:string, 1:string
-                                valueExpressions: ConstantVectorExpression(val 100) -> 3:int, ConstantVectorExpression(val updated name) -> 4:string
-                            Statistics: Num rows: 1 Data size: 357 Basic stats: COMPLETE Column stats: COMPLETE
-                            value expressions: 100 (type: int), 'updated name' (type: string), _col3 (type: string), _col4 (type: string)
-=======
                                 projectedOutputColumnNums: [3, 4, 0, 1]
                                 selectExpressions: ConstantVectorExpression(val 100) -> 3:int, ConstantVectorExpression(val updated name) -> 4:string
                             Statistics: Num rows: 1 Data size: 281 Basic stats: COMPLETE Column stats: COMPLETE
@@ -196,12 +188,11 @@ STAGE PLANS:
                                   className: VectorReduceSinkObjectHashOperator
                                   keyColumns: 3:int
                                   native: true
-                                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                                   partitionColumns: 3:int
                                   valueColumns: 4:string, 0:string, 1:string
                               Statistics: Num rows: 1 Data size: 281 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string)
->>>>>>> HIVE-21160: Rewrite Update statement as Multi-insert and do Update split early
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -323,7 +314,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: a
                 reduceColumnSortOrder: +
                 allNative: false
@@ -382,7 +373,7 @@ STAGE PLANS:
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkEmptyKeyOperator
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:int, 1:int, 2:bigint, 3:bigint, 4:binary, 5:int, 6:struct<count:bigint,sum:double,input:int>, 7:bigint, 8:binary, 9:int, 10:struct<count:bigint,sum:double,input:int>, 11:bigint, 12:binary, 13:int, 14:struct<count:bigint,sum:double,input:int>, 15:bigint, 16:binary
                       Statistics: Num rows: 1 Data size: 864 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary), _col13 (type: int), _col14 (type: struct<count:bigint,sum:double,input:int>), _col15 (type: bigint), _col16 (type: binary)
@@ -390,10 +381,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-<<<<<<< HEAD
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-=======
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
                 reduceColumnNullOrder: 
                 reduceColumnSortOrder: 
                 allNative: false
@@ -440,8 +428,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
->>>>>>> HIVE-21160: Rewrite Update statement as Multi-insert and do Update split early
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
