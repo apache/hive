@@ -360,14 +360,17 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
   public void testDeleteForSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
+
       // TODO: remove this filter when issue #1881 is resolved
       if (type == Types.UUIDType.get() && fileFormat == FileFormat.PARQUET) {
         continue;
       }
+
       // TODO: remove this filter when we figure out how we could test binary types
-      if (type == Types.BinaryType.get() || type == Types.FixedType.ofLength(5)) {
+      if (type == Types.BinaryType.get() || type.equals(Types.FixedType.ofLength(5))) {
         continue;
       }
+
       String tableName = type.typeId().toString().toLowerCase() + "_table_" + i;
       String columnName = type.typeId().toString().toLowerCase() + "_column";
 
