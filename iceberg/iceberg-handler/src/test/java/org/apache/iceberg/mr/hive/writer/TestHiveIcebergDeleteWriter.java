@@ -17,23 +17,21 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import org.apache.hadoop.mapred.JobID;
-import org.apache.hadoop.mapred.TaskAttemptID;
-import org.apache.hadoop.mapreduce.TaskType;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.RowDelta;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.io.OutputFileFactory;
+import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
@@ -45,13 +43,11 @@ import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
 public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
-  private static final long TARGET_FILE_SIZE = 128 * 1024 * 1024;
-  private static final JobID JOB_ID = new JobID("test", 0);
   private static final Set<Integer> DELETED_IDS = Sets.newHashSet(29, 61, 89, 100, 122);
 
   @Test
   public void testDelete() throws IOException {
-    HiveIcebergDeleteWriter testWriter = deleteWriter();
+    HiveIcebergWriter testWriter = deleteWriter();
 
     List<GenericRecord> deleteRecords = deleteRecords(table, DELETED_IDS);
 
@@ -99,18 +95,7 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
     return deleteRecords;
   }
 
-  private HiveIcebergDeleteWriter deleteWriter() {
-    OutputFileFactory outputFileFactory = OutputFileFactory.builderFor(table, 1, 2)
-        .format(fileFormat)
-        .operationId("3")
-        .build();
-
-    HiveFileWriterFactory hfwf = new HiveFileWriterFactory(table, fileFormat, SCHEMA, null, fileFormat, null, null,
-        null, null);
-
-    TaskAttemptID taskId = new TaskAttemptID(JOB_ID.getJtIdentifier(), JOB_ID.getId(), TaskType.MAP, 1, 0);
-
-    return new HiveIcebergDeleteWriter(table.schema(), table.specs(), fileFormat, hfwf, outputFileFactory, table.io(),
-        TARGET_FILE_SIZE, taskId, "partitioned");
+  private HiveIcebergWriter deleteWriter() {
+    return writerBuilder.operation(Context.Operation.DELETE).build();
   }
 }

@@ -571,6 +571,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         conf.get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName));
   }
 
+  public static Operation operation(Configuration conf, String tableName) {
+    if (conf == null || tableName == null) {
+      return Operation.OTHER;
+    }
+
+    String operation = conf.get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName);
+    return operation == null ? Operation.OTHER : Operation.valueOf(operation);
+  }
+
   /**
    * Returns the Table serialized to the configuration based on the table name.
    * If configuration is missing from the FileIO of the table, it will be populated with the input config.

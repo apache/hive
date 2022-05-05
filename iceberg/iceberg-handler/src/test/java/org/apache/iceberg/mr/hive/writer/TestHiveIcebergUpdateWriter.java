@@ -17,24 +17,21 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.mapred.JobID;
-import org.apache.hadoop.mapred.TaskAttemptID;
-import org.apache.hadoop.mapreduce.TaskType;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.RowDelta;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.io.OutputFileFactory;
+import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -46,10 +43,6 @@ import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
 public class TestHiveIcebergUpdateWriter extends HiveIcebergWriterTestBase {
-  private static final long TARGET_FILE_SIZE = 128 * 1024 * 1024;
-  private static final JobID JOB_ID = new JobID("test", 0);
-  private static final TaskAttemptID TASK_ATTEMPT_ID =
-      new TaskAttemptID(JOB_ID.getJtIdentifier(), JOB_ID.getId(), TaskType.MAP, 0, 0);
   private static final Map<Integer, GenericRecord> UPDATED_RECORDS = ImmutableMap.of(
       29, record(29, "d"),
       61, record(61, "h"),
@@ -58,15 +51,15 @@ public class TestHiveIcebergUpdateWriter extends HiveIcebergWriterTestBase {
       122, record(142, "k"));
 
   /**
-   * This test just runs sends the data through the DeleteWriter. Here we make sure that the correct rows are removed.
+   * This test just runs sends the data through the deleteWriter. Here we make sure that the correct rows are removed.
    * @throws IOException If here is an error
    */
   @Test
   public void testDelete() throws IOException {
-    HiveIcebergWriter testWriter = new HiveIcebergBufferedDeleteWriter(table.schema(), table.specs(), fileFormat,
-        hiveFileWriterFactory(), outputFileFactory(), table.io(), TARGET_FILE_SIZE, new HiveConf());
+    HiveIcebergWriter updateWriter = writerBuilder.poolSize(10).operation(Context.Operation.UPDATE).build();
+    HiveIcebergWriter deleteWriter = ((HiveIcebergUpdateWriter) updateWriter).deleteWriter();
 
-    update(table, testWriter);
+    update(table, deleteWriter);
 
     StructLikeSet expected = rowSetWithoutIds(RECORDS, UPDATED_RECORDS.keySet());
     StructLikeSet actual = actualRowSet(table);
@@ -80,9 +73,7 @@ public class TestHiveIcebergUpdateWriter extends HiveIcebergWriterTestBase {
    */
   @Test
   public void testUpdate() throws IOException {
-    HiveIcebergWriter testWriter = new HiveIcebergUpdateWriter(table.schema(), table.specs(), table.spec().specId(),
-        fileFormat, hiveFileWriterFactory(), outputFileFactory(), table.io(), TARGET_FILE_SIZE, TASK_ATTEMPT_ID,
-        "table_name", new HiveConf());
+    HiveIcebergWriter testWriter = writerBuilder.poolSize(10).operation(Context.Operation.UPDATE).build();
 
     update(table, testWriter);
 
@@ -91,18 +82,6 @@ public class TestHiveIcebergUpdateWriter extends HiveIcebergWriterTestBase {
     StructLikeSet actual = actualRowSet(table);
 
     Assert.assertEquals("Table should contain expected rows", expected, actual);
-  }
-
-  private OutputFileFactory outputFileFactory() {
-    return OutputFileFactory.builderFor(table, 1, 2)
-        .format(fileFormat)
-        .operationId("3")
-        .build();
-  }
-
-  private HiveFileWriterFactory hiveFileWriterFactory() {
-    return  new HiveFileWriterFactory(table, fileFormat, SCHEMA, null, fileFormat, null, null,
-        null, null);
   }
 
   private static void update(Table table, HiveIcebergWriter testWriter) throws IOException {

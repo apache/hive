@@ -17,15 +17,13 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
@@ -34,11 +32,13 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.io.ClusteredDataWriter;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
+import org.apache.iceberg.mr.hive.FilesForCommit;
+import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.mr.mapred.Container;
+import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 
 /**
  * Hive update queries are converted to an insert statement where the result contains the updated rows.
@@ -46,22 +46,19 @@ import org.apache.iceberg.mr.mapred.Container;
  * The rows are sorted based on the requirements of the {@link HiveIcebergRecordWriter}.
  * The {@link HiveIcebergBufferedDeleteWriter} needs to handle out of order records.
  */
-class HiveIcebergUpdateWriter extends HiveIcebergWriterBase {
+class HiveIcebergUpdateWriter implements HiveIcebergWriter {
 
   private final HiveIcebergBufferedDeleteWriter deleteWriter;
   private final HiveIcebergRecordWriter insertWriter;
   private final Container<Record> container;
 
-  HiveIcebergUpdateWriter(
-      Schema schema, Map<Integer, PartitionSpec> specs, int currentSpecId, FileFormat format,
-      FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
-      TaskAttemptID taskAttemptID, String tableName, Configuration configuration) {
-    super(schema, specs, io, taskAttemptID, tableName,
-        new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize), false);
-    this.deleteWriter = new HiveIcebergBufferedDeleteWriter(schema, specs, format, fileWriterFactory, fileFactory, io,
-        targetFileSize, configuration);
-    this.insertWriter = new HiveIcebergRecordWriter(schema, specs, currentSpecId, format, fileWriterFactory,
-        fileFactory, io, targetFileSize, taskAttemptID, tableName, true);
+  HiveIcebergUpdateWriter(Schema schema, Map<Integer, PartitionSpec> specs, int currentSpecId,
+      FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, OutputFileFactory deleteFileFactory,
+      FileFormat format, FileFormat deleteFormat, FileIO io, long targetFileSize, int poolSize) {
+    this.deleteWriter = new HiveIcebergBufferedDeleteWriter(schema, specs, fileWriterFactory, deleteFileFactory,
+        deleteFormat, io, targetFileSize, poolSize);
+    this.insertWriter = new HiveIcebergRecordWriter(schema, specs, currentSpecId, fileWriterFactory, fileFactory,
+        format, io, targetFileSize);
     this.container = new Container<>();
     Record record = GenericRecord.create(schema);
     container.set(record);
@@ -85,5 +82,10 @@ class HiveIcebergUpdateWriter extends HiveIcebergWriterBase {
     Collection<DataFile> dataFiles = insertWriter.files().dataFiles();
     Collection<DeleteFile> deleteFiles = deleteWriter.files().deleteFiles();
     return new FilesForCommit(dataFiles, deleteFiles);
+  }
+
+  @VisibleForTesting
+  HiveIcebergWriter deleteWriter() {
+    return deleteWriter;
   }
 }
