@@ -75,7 +75,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
         continue;
       }
       // TODO: remove this filter when we figure out how we could test binary types
-      if (type.equals(Types.BinaryType.get()) || type.equals(Types.FixedType.ofLength(5))) {
+      if (type == Types.BinaryType.get() || type == Types.FixedType.ofLength(5)) {
         continue;
       }
       String columnName = type.typeId().toString().toLowerCase() + "_column";
