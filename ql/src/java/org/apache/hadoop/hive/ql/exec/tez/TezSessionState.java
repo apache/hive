@@ -796,6 +796,11 @@ public class TezSessionState {
     FileSystem fs = tezDir.getFileSystem(conf);
     FsPermission fsPermission = new FsPermission(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION));
     fs.mkdirs(tezDir, fsPermission);
+    if(!fs.getFileStatus(tezDir).getPermission().equals(fsPermission)){
+        LOG.warn("Directory {} created with unexpected permissions : {}.Change permission to : ",
+            tezDir, fs.getFileStatus(tezDir).getPermission(), fsPermission);
+        fs.setPermission(tezDir, fsPermission);
+    }
     // Make sure the path is normalized (we expect validation to pass since we just created it).
     tezDir = DagUtils.validateTargetDir(tezDir, conf).getPath();
 

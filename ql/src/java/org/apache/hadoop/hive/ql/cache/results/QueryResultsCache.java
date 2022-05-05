@@ -371,6 +371,11 @@ public final class QueryResultsCache {
     FsPermission fsPermission = new FsPermission("700");
     fs.mkdirs(cacheDirPath, fsPermission);
 
+    if (!fs.getFileStatus(cacheDirPath).getPermission().equals(fsPermission)) {
+        LOG.warn("Directory {} created with unexpected permissions : {}.Change permission to : ",
+            cacheDirPath, fs.getFileStatus(cacheDirPath).getPermission(), fsPermission);
+        fs.setPermission(cacheDirPath, fsPermission);
+    }
     // Create non-existent path for 0-row results
     zeroRowsPath = new Path(cacheDirPath, "dummy_zero_rows");
 

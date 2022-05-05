@@ -558,6 +558,11 @@ public class Context {
             throw new RuntimeException("Cannot make directory: "
                 + dirPath.toString());
           }
+          if (!fs.getFileStatus(dirPath).getPermission().equals(fsPermission)) {
+              LOG.warn("Directory {} created with unexpected permissions : {}.Change permission to : ",
+                  dirPath, fs.getFileStatus(dirPath).getPermission(), fsPermission);
+              fs.setPermission(dirPath, fsPermission);
+          }
           if (isHDFSCleanup) {
             fs.deleteOnExit(dirPath);
           }
