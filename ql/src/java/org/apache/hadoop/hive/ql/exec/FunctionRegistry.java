@@ -586,6 +586,94 @@ public final class FunctionRegistry {
     system.registerGenericUDF(GenericUDFMaskShowLastN.UDF_NAME, GenericUDFMaskShowLastN.class);
     system.registerGenericUDF(GenericUDFMaskHash.UDF_NAME, GenericUDFMaskHash.class);
 
+    // GeoSpatial UDFs
+    system.registerFunction("ST_Length",com.esri.hadoop.hive.ST_Length.class);
+    system.registerFunction("ST_LineString",com.esri.hadoop.hive.ST_LineString.class);
+    system.registerFunction("ST_Point",com.esri.hadoop.hive.ST_Point.class);
+    system.registerFunction("ST_AsText",com.esri.hadoop.hive.ST_AsText.class);
+    system.registerFunction("ST_Aggr_ConvexHull",com.esri.hadoop.hive.ST_Aggr_ConvexHull.class);
+    system.registerFunction("ST_Aggr_Union",com.esri.hadoop.hive.ST_Aggr_Union.class);
+    system.registerFunction("ST_Area",com.esri.hadoop.hive.ST_Area.class);
+    system.registerFunction("ST_AsBinary",com.esri.hadoop.hive.ST_AsBinary.class);
+    system.registerFunction("ST_AsGeoJson",com.esri.hadoop.hive.ST_AsGeoJson.class);
+    system.registerFunction("ST_AsJson",com.esri.hadoop.hive.ST_AsJson.class);
+    system.registerFunction("ST_AsShape",com.esri.hadoop.hive.ST_AsShape.class);
+    system.registerFunction("ST_Bin",com.esri.hadoop.hive.ST_Bin.class);
+    system.registerFunction("ST_BinEnvelope",com.esri.hadoop.hive.ST_BinEnvelope.class);
+    system.registerFunction("ST_Boundary",com.esri.hadoop.hive.ST_Boundary.class);
+    system.registerFunction("ST_Buffer",com.esri.hadoop.hive.ST_Buffer.class);
+    system.registerFunction("ST_Centroid",com.esri.hadoop.hive.ST_Centroid.class);
+    system.registerFunction("ST_Contains",com.esri.hadoop.hive.ST_Contains.class);
+    system.registerFunction("ST_ConvexHull",com.esri.hadoop.hive.ST_ConvexHull.class);
+    system.registerFunction("ST_CoordDim",com.esri.hadoop.hive.ST_CoordDim.class);
+    system.registerFunction("ST_Crosses",com.esri.hadoop.hive.ST_Crosses.class);
+    system.registerFunction("ST_Difference",com.esri.hadoop.hive.ST_Difference.class);
+    system.registerFunction("ST_Dimension",com.esri.hadoop.hive.ST_Dimension.class);
+    system.registerFunction("ST_Disjoint",com.esri.hadoop.hive.ST_Disjoint.class);
+    system.registerFunction("ST_Distance",com.esri.hadoop.hive.ST_Distance.class);
+    system.registerFunction("ST_EndPoint",com.esri.hadoop.hive.ST_EndPoint.class);
+    system.registerFunction("ST_Envelope",com.esri.hadoop.hive.ST_Envelope.class);
+    system.registerFunction("ST_EnvIntersects",com.esri.hadoop.hive.ST_EnvIntersects.class);
+    system.registerFunction("ST_Equals",com.esri.hadoop.hive.ST_Equals.class);
+    system.registerFunction("ST_ExteriorRing",com.esri.hadoop.hive.ST_ExteriorRing.class);
+    system.registerFunction("ST_GeodesicLengthWGS84",com.esri.hadoop.hive.ST_GeodesicLengthWGS84.class);
+    system.registerFunction("ST_GeomCollection",com.esri.hadoop.hive.ST_GeomCollection.class);
+    system.registerFunction("ST_GeometryN",com.esri.hadoop.hive.ST_GeometryN.class);
+    system.registerFunction("ST_GeometryProcessing",com.esri.hadoop.hive.ST_GeometryProcessing.class);
+    system.registerFunction("ST_GeomFromGeoJson",com.esri.hadoop.hive.ST_GeomFromGeoJson.class);
+    system.registerFunction("ST_GeomFromJson",com.esri.hadoop.hive.ST_GeomFromJson.class);
+    system.registerFunction("ST_GeomFromShape",com.esri.hadoop.hive.ST_GeomFromShape.class);
+    system.registerFunction("ST_GeomFromText",com.esri.hadoop.hive.ST_GeomFromText.class);
+    system.registerFunction("ST_GeomFromWKB",com.esri.hadoop.hive.ST_GeomFromWKB.class);
+    system.registerFunction("ST_InteriorRingN",com.esri.hadoop.hive.ST_InteriorRingN.class);
+    system.registerFunction("ST_Intersection",com.esri.hadoop.hive.ST_Intersection.class);
+    system.registerFunction("ST_Intersects",com.esri.hadoop.hive.ST_Intersects.class);
+    system.registerFunction("ST_Is3D",com.esri.hadoop.hive.ST_Is3D.class);
+    system.registerFunction("ST_IsClosed",com.esri.hadoop.hive.ST_IsClosed.class);
+    system.registerFunction("ST_IsEmpty",com.esri.hadoop.hive.ST_IsEmpty.class);
+    system.registerFunction("ST_IsMeasured",com.esri.hadoop.hive.ST_IsMeasured.class);
+    system.registerFunction("ST_IsRing",com.esri.hadoop.hive.ST_IsRing.class);
+    system.registerFunction("ST_IsSimple",com.esri.hadoop.hive.ST_IsSimple.class);
+    system.registerFunction("ST_LineFromWKB",com.esri.hadoop.hive.ST_LineFromWKB.class);
+    system.registerFunction("ST_M",com.esri.hadoop.hive.ST_M.class);
+    system.registerFunction("ST_MaxM",com.esri.hadoop.hive.ST_MaxM.class);
+    system.registerFunction("ST_MaxX",com.esri.hadoop.hive.ST_MaxX.class);
+
+    system.registerFunction("ST_MaxY",com.esri.hadoop.hive.ST_MaxY.class);
+    system.registerFunction("ST_MaxZ",com.esri.hadoop.hive.ST_MaxZ.class);
+    system.registerFunction("ST_MinM",com.esri.hadoop.hive.ST_MinM.class);
+    system.registerFunction("ST_MinX",com.esri.hadoop.hive.ST_MinX.class);
+    system.registerFunction("ST_MinY",com.esri.hadoop.hive.ST_MinY.class);
+    system.registerFunction("ST_MinZ",com.esri.hadoop.hive.ST_MinZ.class);
+    system.registerFunction("ST_MLineFromWKB",com.esri.hadoop.hive.ST_MLineFromWKB.class);
+    system.registerFunction("ST_MPointFromWKB",com.esri.hadoop.hive.ST_MPointFromWKB.class);
+    system.registerFunction("ST_MPolyFromWKB",com.esri.hadoop.hive.ST_MPolyFromWKB.class);
+    system.registerFunction("ST_MultiLineString",com.esri.hadoop.hive.ST_MultiLineString.class);
+    system.registerFunction("ST_MultiPoint",com.esri.hadoop.hive.ST_MultiPoint.class);
+    system.registerFunction("ST_MultiPolygon",com.esri.hadoop.hive.ST_MultiPolygon.class);
+    system.registerFunction("ST_NumGeometries",com.esri.hadoop.hive.ST_NumGeometries.class);
+    system.registerFunction("ST_NumInteriorRing",com.esri.hadoop.hive.ST_NumInteriorRing.class);
+    system.registerFunction("ST_NumPoints",com.esri.hadoop.hive.ST_NumPoints.class);
+    system.registerFunction("ST_Overlaps",com.esri.hadoop.hive.ST_Overlaps.class);
+    system.registerFunction("ST_PointFromWKB",com.esri.hadoop.hive.ST_PointFromWKB.class);
+    system.registerFunction("ST_PointN",com.esri.hadoop.hive.ST_PointN.class);
+
+    system.registerFunction("ST_PointZ",com.esri.hadoop.hive.ST_PointZ.class);
+    system.registerFunction("ST_PolyFromWKB",com.esri.hadoop.hive.ST_PolyFromWKB.class);
+    system.registerFunction("ST_Polygon",com.esri.hadoop.hive.ST_Polygon.class);
+    system.registerFunction("ST_Relate",com.esri.hadoop.hive.ST_Relate.class);
+    system.registerFunction("ST_SetSRID",com.esri.hadoop.hive.ST_SetSRID.class);
+    system.registerFunction("ST_SRID",com.esri.hadoop.hive.ST_SRID.class);
+    system.registerFunction("ST_StartPoint",com.esri.hadoop.hive.ST_StartPoint.class);
+    system.registerFunction("ST_SymmetricDiff",com.esri.hadoop.hive.ST_SymmetricDiff.class);
+    system.registerFunction("ST_Touches",com.esri.hadoop.hive.ST_Touches.class);
+    system.registerFunction("ST_Union",com.esri.hadoop.hive.ST_Union.class);
+    system.registerFunction("ST_Within",com.esri.hadoop.hive.ST_Within.class);
+    system.registerFunction("ST_X",com.esri.hadoop.hive.ST_X.class);
+    system.registerFunction("ST_Y",com.esri.hadoop.hive.ST_Y.class);
+    system.registerFunction("ST_Z",com.esri.hadoop.hive.ST_Z.class);
+
+
     try {
       system.registerGenericUDF("iceberg_bucket",
           (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.GenericUDFIcebergBucket"));
