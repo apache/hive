@@ -34,12 +34,14 @@ import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
+import static org.apache.iceberg.types.Types.NestedField.required;
 
 /**
  * Tests Format V2 specific features, such as reading/writing V2 tables, using delete files, etc.
@@ -352,6 +354,30 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         .add("Natalie", 20L, "Bloom", "Finance")
         .build();
     HiveIcebergTestUtils.validateData(expected, HiveIcebergTestUtils.valueForRow(newSchema, objects), 0);
+  }
+
+  @Test
+  public void testDeleteForSupportedTypes() throws IOException {
+    for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
+      Type type = SUPPORTED_TYPES.get(i);
+      // TODO: remove this filter when issue #1881 is resolved
+      if (type == Types.UUIDType.get() && fileFormat == FileFormat.PARQUET) {
+        continue;
+      }
+      // TODO: remove this filter when we figure out how we could test binary types
+      if (type.equals(Types.BinaryType.get()) || type.equals(Types.FixedType.ofLength(5))) {
+        continue;
+      }
+      String tableName = type.typeId().toString().toLowerCase() + "_table_" + i;
+      String columnName = type.typeId().toString().toLowerCase() + "_column";
+
+      Schema schema = new Schema(required(1, columnName, type));
+      List<Record> records = TestHelper.generateRandomRecords(schema, 1, 0L);
+      Table table = testTables.createTable(shell, tableName, schema, fileFormat, records, 2);
+
+      shell.executeStatement("DELETE FROM " + tableName);
+      HiveIcebergTestUtils.validateData(table, ImmutableList.of(), 0);
+    }
   }
 
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {
