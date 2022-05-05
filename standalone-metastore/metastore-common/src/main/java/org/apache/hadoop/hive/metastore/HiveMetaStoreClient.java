@@ -609,10 +609,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     String httpUrl = (useSSL ? "https://" : "http://") + store.getHost() + ":" + store.getPort() + path;
 
     HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-    String authType = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE).toLowerCase(
-        Locale.ROOT);
-    String user = null;
-    if (authType.equals("jwt")) {
+    String authType = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE);
+    if (authType.equalsIgnoreCase("jwt")) {
       // fetch JWT token from environment and set it in Auth Header in HTTP request
       String jwtToken = System.getenv("HMS_JWT");
       if (jwtToken == null || jwtToken.isEmpty()) {
@@ -628,7 +626,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         }
       });
     } else {
-      user = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
+      String user = MetastoreConf.getVar(conf, ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
       if (user == null || user.equals("")) {
         try {
           user = UserGroupInformation.getCurrentUser().getShortUserName();

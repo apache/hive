@@ -314,12 +314,12 @@
     <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>nimbus-jose-jwt</artifactId>
-      <version>9.20</version>
+      <version>${nimbus-jose-jwt.version}</version>
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-core</artifactId>
-      <version>4.5.5</version>
+      <version>${pac4j-core.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.tomakehurst</groupId>

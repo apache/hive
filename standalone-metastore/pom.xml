@@ -104,6 +104,8 @@
     <caffeine.version>2.8.4</caffeine.version>
     <slf4j.version>1.7.30</slf4j.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
+    <pac4j-core.version>4.5.5</pac4j-core.version>
+    <nimbus-jose-jwt.version>9.20</nimbus-jose-jwt.version>
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>

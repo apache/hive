@@ -51,7 +51,7 @@ public class HmsThriftHttpServlet extends TServlet {
   private final boolean isSecurityEnabled;
   private final boolean jwtAuthEnabled;
   public static final String AUTHORIZATION = "Authorization";
-  private JWTValidator jwtValidator;
+  private JWTValidator jwtValidator = null;
   private Configuration conf;
 
   public HmsThriftHttpServlet(TProcessor processor,
@@ -64,7 +64,6 @@ public class HmsThriftHttpServlet extends TServlet {
       jwtAuthEnabled = true;
     } else {
       jwtAuthEnabled = false;
-      jwtValidator = null;
     }
   }
 
