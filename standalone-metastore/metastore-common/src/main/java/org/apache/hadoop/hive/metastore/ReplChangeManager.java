@@ -553,8 +553,8 @@ public class ReplChangeManager {
   public static String getReplPolicyIdString(Database db) {
     if (db != null) {
       Map<String, String> m = db.getParameters();
-      if ((m != null) && (m.containsKey(SOURCE_OF_REPLICATION))) {
-        String replPolicyId = m.get(SOURCE_OF_REPLICATION);
+      if ((m != null) && (m.containsKey(ReplConst.SOURCE_OF_REPLICATION))) {
+        String replPolicyId = m.get(ReplConst.SOURCE_OF_REPLICATION);
         LOG.debug("repl policy for database {} is {}", db.getName(), replPolicyId);
         return replPolicyId;
       }

@@ -77,7 +77,7 @@ import java.util.List;
 import java.util.Map;
 
 
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.junit.Assert.assertEquals;
@@ -172,7 +172,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       replica.run("REPL LOAD " + srcDbName + " INTO " + replicaDb);
       latestEventId = replica.getCurrentNotificationEventId().getEventId();
       //Assert that repl.target.id, hive.repl.ckpt.key and hive.repl.first.inc.pending is not captured in notificationLog.
-      assertEquals(latestEventId, lastEventId + 2); //This load will generate only 2 event i.e. CREATE_DATABASE, AlterDatabaseSetOwnerDesc
+      assertEquals(latestEventId, lastEventId + 1); //This load will generate only 1 event i.e. CREATE_DATABASE
 
       WarehouseInstance.Tuple incDump = primary.run("use " + srcDbName)
               .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +

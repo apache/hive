@@ -58,7 +58,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 
 /**
  * Tests for statistics replication.
