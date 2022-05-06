@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -1420,6 +1421,39 @@ public class TestHiveIcebergStorageHandlerNoScan {
     URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
 
     Assert.assertEquals("iceberg://" + hmsTable.getDbName() + "/" + hmsTable.getTableName(), uriForAuth.toString());
+  }
+
+  @Test
+  public void testCreateTableWithMetadataLocation() throws IOException {
+    Assume.assumeTrue("Create with metadata location is only supported for Hive Catalog tables",
+        testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    TableIdentifier sourceIdentifier = TableIdentifier.of("default", "source");
+    Table sourceTable =
+        testTables.createTable(shell, sourceIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1,
+            ImmutableMap.<String, String>builder().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE").build());
+    testTables.appendIcebergTable(shell.getHiveConf(), sourceTable, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    String metadataLocation = ((BaseTable) sourceTable).operations().current().metadataFileLocation();
+    shell.executeStatement("DROP TABLE " + sourceIdentifier.name());
+    TableIdentifier targetIdentifier = TableIdentifier.of("default", "target");
+    Table targetTable =
+        testTables.createTable(shell, targetIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1,
+            ImmutableMap.<String, String>builder().put("metadata_location", metadataLocation).build()
+        );
+    Assert.assertEquals(metadataLocation, ((BaseTable) targetTable).operations().current().metadataFileLocation());
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + targetIdentifier.name());
+    List<Record> records = HiveIcebergTestUtils.valueForRow(targetTable.schema(), rows);
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, records, 0);
+    // append a second set of data to the target table
+    testTables.appendIcebergTable(shell.getHiveConf(), targetTable, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    rows = shell.executeStatement("SELECT * FROM " + targetIdentifier.name());
+    records = HiveIcebergTestUtils.valueForRow(targetTable.schema(), rows);
+    HiveIcebergTestUtils.validateData(
+        Stream.concat(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.stream(),
+            HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.stream()).collect(Collectors.toList()), records, 0);
   }
 
   /**
