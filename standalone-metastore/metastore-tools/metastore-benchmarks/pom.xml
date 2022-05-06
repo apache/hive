@@ -131,10 +131,6 @@
   </dependencies>
   <profiles>
     <profile>
-      <!--
-      The dist profile generates two full jars with dependencies - obe for HMSBenchmarks and
-      another for HMSTool.
-      -->
       <id>perf</id>
       <build>
         <plugins>
@@ -149,9 +145,9 @@
                       <addClasspath>true</addClasspath>
                     </manifest>
                   </archive>
-                  <descriptorRefs>
-                    <descriptorRef>jar-with-dependencies</descriptorRef>
-                  </descriptorRefs>
+                  <descriptors>
+                    <descriptor>src/assembly/custom-jar-with-dependencies.xml</descriptor>
+                  </descriptors>
                   <finalName>hmsbench</finalName>
                 </configuration>
                 <id>make-assembly-hclient</id>

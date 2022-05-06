@@ -53,23 +53,23 @@ Alternatively you can use [bin/hbench](../bin/hbench) script which use Maven to 
 
 ### Using single jar
 
-    java -jar hbench-jar-with-dependencies.jar <optins> [test]...
+    java -jar hmsbench-custom-jar-with-dependencies.jar <optins> [test]...
 
 ### Using hbench on kerberized cluster
 
-    java -jar hbench-jar-with-dependencies.jar -H `hostname` <optins> [test]...
+    java -jar hmsbench-custom-jar-with-dependencies.jar -H `hostname` <optins> [test]...
 
 ### Examples
 1. Run all tests with default settings
-    java -jar hmsbench-jar-with-dependencies.jar -d `metastore_db_name` -H `hostname`
+    java -jar hmsbench-custom-jar-with-dependencies.jar -d `metastore_db_name` -H `hostname`
 
 2. Run tests with 500 objects created, 10 times warm-up and exclude concurrent operations and drop operations
 
-    java -jar hmsbench-jar-with-dependencies.jar -d `metastore_db_name` -H `hostname` -N 500 -W 10 -E 'drop.*' -E 'concurrent.*'
+    java -jar hmsbench-custom-jar-with-dependencies.jar -d `metastore_db_name` -H `hostname` -N 500 -W 10 -E 'drop.*' -E 'concurrent.*'
 
 3. Run tests, produce output in tab-separated format and write individual data points in 'data' directory
 
-    java -jar hmsbench-jar-with-dependencies.jar -d `metastore_db_name` -H `hostname` -o result.csv --csv --savedata data
+    java -jar hmsbench-custom-jar-with-dependencies.jar -d `metastore_db_name` -H `hostname` -o result.csv --csv --savedata data
 
 4. Run tests on localhost
  * save raw data in directory /tmp/benchdata
@@ -80,7 +80,7 @@ Alternatively you can use [bin/hbench](../bin/hbench) script which use Maven to 
  * run with 100 and thousand partitions
 
 
-       java -jar hmsbench-jar-with-dependencies.jar -H `hostname` \
+       java -jar hmsbench-custom-jar-with-dependencies.jar -H `hostname` \
             --savedata /tmp/benchdata \
             --sanitize \
             -N 100 -N 1000 \
