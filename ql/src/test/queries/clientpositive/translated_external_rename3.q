@@ -19,7 +19,3 @@ alter table part_test rename to part_test11;
 
 desc formatted part_test11;
 desc formatted part_test11 partition(dat="20220101");
-
---select * from part_test11 where dat="20220101";
---select * from part_test11;
-
