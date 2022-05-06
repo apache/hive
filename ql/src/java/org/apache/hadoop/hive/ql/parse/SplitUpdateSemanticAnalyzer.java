@@ -111,6 +111,7 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
       } else {
         selectExpressions.append(identifier);
       }
+      // Column can be a constant (ex. default value) an alias is added to enable referencing it from the insert branch
       selectExpressions.append(" AS ");
       selectExpressions.append(identifier);
 
