@@ -81,12 +81,19 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
         .operationId(operationId)
         .build();
     String tableName = jc.get(Catalogs.NAME);
-    HiveFileWriterFactory writerFactory = new HiveFileWriterFactory(table, fileFormat, schema, null, fileFormat,
-        null, null, null, schema);
     if (HiveIcebergStorageHandler.isDelete(jc, tableName)) {
+      HiveFileWriterFactory writerFactory = new HiveFileWriterFactory(table, fileFormat, schema, null, fileFormat,
+          null, null, null, schema);
       return new HiveIcebergDeleteWriter(schema, table.specs(), fileFormat, writerFactory, outputFileFactory, io,
           targetFileSize, taskAttemptID, tableName);
+    } else if (HiveIcebergStorageHandler.isUpdate(jc, tableName)) {
+      HiveFileWriterFactory writerFactory = new HiveFileWriterFactory(table, fileFormat, schema, null, fileFormat,
+          null, null, null, null);
+      return new HiveIcebergUpdateWriter(schema, table.specs(), table.spec().specId(), fileFormat, writerFactory,
+          outputFileFactory, io, targetFileSize, taskAttemptID, tableName, jc);
     } else {
+      HiveFileWriterFactory writerFactory = new HiveFileWriterFactory(table, fileFormat, schema, null, fileFormat,
+          null, null, null, schema);
       return new HiveIcebergRecordWriter(schema, table.specs(), table.spec().specId(), fileFormat, writerFactory,
           outputFileFactory, io, targetFileSize, taskAttemptID, tableName, false);
     }

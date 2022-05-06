@@ -259,6 +259,15 @@ abstract class TestTables {
     return query.toString();
   }
 
+  public String getUpdateQuery(String tableName, Record record) {
+    StringBuilder query = new StringBuilder("UPDATE ").append(tableName).append(" SET ");
+
+    query.append(record.struct().fields().stream()
+        .map(field -> field.name() + "=" + getStringValueForInsert(record.getField(field.name()), field.type()))
+        .collect(Collectors.joining(",")));
+    return query.toString();
+  }
+
   /**
    * Creates a Hive test table. Creates the Iceberg table/data and creates the corresponding Hive table as well when
    * needed. The table will be in the 'default' database. The table will be populated with the provided with randomly

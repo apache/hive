@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
+import org.apache.iceberg.relocated.com.google.common.base.MoreObjects;
 
 public class FilesForCommit implements Serializable {
 
@@ -60,5 +61,17 @@ public class FilesForCommit implements Serializable {
 
   public Collection<? extends ContentFile> allFiles() {
     return Stream.concat(dataFiles.stream(), deleteFiles.stream()).collect(Collectors.toList());
+  }
+
+  public boolean isEmpty() {
+    return dataFiles.isEmpty() && deleteFiles.isEmpty();
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("dataFiles", dataFiles.toString())
+        .add("deleteFiles", deleteFiles.toString())
+        .toString();
   }
 }

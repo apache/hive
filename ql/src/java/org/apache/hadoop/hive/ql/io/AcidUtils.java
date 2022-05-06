@@ -50,6 +50,7 @@ import com.google.common.base.Strings;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -98,6 +99,7 @@ import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
@@ -3328,6 +3330,23 @@ public class AcidUtils {
   public static boolean isNonNativeAcidTable(Table table) {
     return table != null && table.getStorageHandler() != null &&
         table.getStorageHandler().supportsAcidOperations() != HiveStorageHandler.AcidSupportType.NONE;
+  }
+
+  /**
+   * Returns the virtual columns needed for update queries. For ACID queries it is a single ROW__ID, for non-native
+   * tables the list is provided by the {@link HiveStorageHandler#acidVirtualColumns()}.
+   * @param table The table for which we run the query
+   * @return The list of virtual columns used
+   */
+  public static List<VirtualColumn> getAcidVirtualColumns(Table table) {
+    if (isTransactionalTable(table)) {
+      return Lists.newArrayList(VirtualColumn.ROWID);
+    } else {
+      if (isNonNativeAcidTable(table)) {
+        return table.getStorageHandler().acidVirtualColumns();
+      }
+    }
+    return Collections.emptyList();
   }
 
   public static boolean acidTableWithoutTransactions(Table table) {

@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
-import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -355,7 +355,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       throws SemanticException {
     // delete records are already clustered by partition spec id and the hash of the partition struct
     // there is no need to do any additional sorting based on partition columns
-    if (getOperationType().equals(Context.Operation.DELETE.name())) {
+    if (getOperationType().equals(Operation.DELETE.name())) {
       return null;
     }
 
@@ -380,12 +380,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       fieldOrderMap.put(fields.get(i).name(), i);
     }
 
+    int offset = acidSelectColumns(hmsTable, Operation.valueOf(getOperationType())).size();
     for (PartitionTransformSpec spec : partitionTransformSpecs) {
       int order = fieldOrderMap.get(spec.getColumnName());
       if (PartitionTransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {
-        customSortExprs.add(BUCKET_SORT_EXPR.apply(order, spec.getTransformParam().get()));
+        customSortExprs.add(BUCKET_SORT_EXPR.apply(order + offset, spec.getTransformParam().get()));
       } else {
-        customSortExprs.add(cols -> cols.get(order).clone());
+        customSortExprs.add(cols -> cols.get(order + offset).clone());
       }
     }
 
@@ -490,17 +491,30 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public List<FieldSchema> acidSelectColumns(org.apache.hadoop.hive.ql.metadata.Table table) {
-    // TODO: make it configurable whether we want to include the table columns in the select query
-    // it might make delete writes faster if we don't have to write out the row object
-    return Stream.of(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols())
-        .flatMap(Collection::stream)
-        .collect(Collectors.toList());
+  public List<FieldSchema> acidSelectColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
+    switch (operation) {
+      case DELETE:
+      case UPDATE:
+        // TODO: make it configurable whether we want to include the table columns in the select query.
+        // It might make delete writes faster if we don't have to write out the row object
+        return Stream.of(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols())
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+      default:
+        return ImmutableList.of();
+    }
   }
 
   @Override
-  public List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table) {
-    return ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
+  public List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
+    switch (operation) {
+      case DELETE:
+        return ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
+      default:
+        // For update operations we use the same sort order defined by
+        // {@link #createDPContext(HiveConf, org.apache.hadoop.hive.ql.metadata.Table)}
+        return ImmutableList.of();
+    }
   }
 
   private void setCommonJobConf(JobConf jobConf) {
@@ -543,12 +557,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   public static boolean isWrite(Configuration conf, String tableName) {
-    return conf != null && tableName != null && Context.Operation.OTHER.name().equals(
+    return conf != null && tableName != null && Operation.OTHER.name().equals(
         conf.get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName));
   }
 
   public static boolean isDelete(Configuration conf, String tableName) {
-    return conf != null && tableName != null && Context.Operation.DELETE.name().equals(
+    return conf != null && tableName != null && Operation.DELETE.name().equals(
+        conf.get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName));
+  }
+
+  public static boolean isUpdate(Configuration conf, String tableName) {
+    return conf != null && tableName != null && Operation.UPDATE.name().equals(
         conf.get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName));
   }
 
@@ -788,8 +807,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   private String getOperationType() {
-    return SessionStateUtil.getProperty(conf, Context.Operation.class.getSimpleName())
-        .orElse(Context.Operation.OTHER.name());
+    return SessionStateUtil.getProperty(conf, Operation.class.getSimpleName())
+        .orElse(Operation.OTHER.name());
   }
 
   private static class NonSerializingConfig implements Serializable {

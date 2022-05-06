@@ -115,20 +115,20 @@ public class IcebergAcidUtil {
    * @return The schema for reading files, extended with metadata columns needed for deletes
    */
   public static Schema createFileReadSchemaForUpdate(List<Types.NestedField> dataCols, Table table) {
-    List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + SERDE_META_COLS.size());
-    SERDE_META_COLS.forEach((metaCol, index) -> {
+    List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + FILE_READ_META_COLS.size());
+    FILE_READ_META_COLS.forEach((metaCol, index) -> {
       if (metaCol == PARTITION_STRUCT_META_COL) {
         cols.add(MetadataColumns.metadataColumn(table, MetadataColumns.PARTITION_COLUMN_NAME));
       } else {
         cols.add(metaCol);
       }
     });
-    // New column values
-    cols.addAll(dataCols);
     // Old column values
     cols.addAll(dataCols.stream()
         .map(f -> Types.NestedField.optional(1147483545 + f.fieldId(), "__old_value_for" + f.name(), f.type()))
         .collect(Collectors.toList()));
+    // New column values
+    cols.addAll(dataCols);
     return new Schema(cols);
   }
 
@@ -139,12 +139,12 @@ public class IcebergAcidUtil {
   public static Schema createSerdeSchemaForUpdate(List<Types.NestedField> dataCols) {
     List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + SERDE_META_COLS.size());
     SERDE_META_COLS.forEach((metaCol, index) -> cols.add(metaCol));
-    // New column values
-    cols.addAll(dataCols);
     // Old column values
     cols.addAll(dataCols.stream()
         .map(f -> Types.NestedField.optional(1147483545 + f.fieldId(), "__old_value_for_" + f.name(), f.type()))
         .collect(Collectors.toList()));
+    // New column values
+    cols.addAll(dataCols);
     return new Schema(cols);
   }
 
@@ -154,7 +154,7 @@ public class IcebergAcidUtil {
    * @param original The record object to populate. The end result is the original record before the update.
    */
   public static void populateWithOriginalValues(Record rec, Record original) {
-    int dataOffset = SERDE_META_COLS.size() + original.size();
+    int dataOffset = SERDE_META_COLS.size();
     for (int i = dataOffset; i < dataOffset + original.size(); ++i) {
       original.set(i - dataOffset, rec.get(i));
     }
@@ -166,7 +166,7 @@ public class IcebergAcidUtil {
    * @param newRecord The record object to populate. The end result is the new record after the update.
    */
   public static void populateWithNewValues(Record rec, Record newRecord) {
-    int dataOffset = SERDE_META_COLS.size();
+    int dataOffset = SERDE_META_COLS.size() + newRecord.size();
     for (int i = dataOffset; i < dataOffset + newRecord.size(); ++i) {
       newRecord.set(i - dataOffset, rec.get(i));
     }

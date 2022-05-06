@@ -383,6 +383,186 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
     }
   }
 
+  @Test
+  public void testUpdateStatementUnpartitioned() {
+    // create and insert an initial batch of records
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+    // insert one more batch so that we have multiple data files within the same partition
+    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
+        TableIdentifier.of("default", "customers"), false));
+
+    shell.executeStatement("UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'");
+
+    List<Object[]> objects =
+        shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, first_name");
+    Assert.assertEquals(12, objects.size());
+    List<Record> expected = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(1L, "Joanna", "Changed")
+        .add(1L, "Sharon", "Taylor")
+        .add(2L, "Joanna", "Changed")
+        .add(2L, "Jake", "Donnel")
+        .add(2L, "Susan", "Morrison")
+        .add(2L, "Bob", "Silver")
+        .add(3L, "Blake", "Changed")
+        .add(3L, "Marci", "Changed")
+        .add(3L, "Trudy", "Changed")
+        .add(3L, "Trudy", "Changed")
+        .add(4L, "Laci", "Zold")
+        .add(5L, "Peti", "Rozsaszin")
+        .build();
+    HiveIcebergTestUtils.validateData(expected,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
+  }
+
+  @Test
+  public void testUpdateStatementPartitioned() {
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").bucket("customer_id", 16).build();
+
+    // create and insert an initial batch of records
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+    // insert one more batch so that we have multiple data files within the same partition
+    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
+        TableIdentifier.of("default", "customers"), false));
+
+    shell.executeStatement("UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'");
+
+    List<Object[]> objects =
+        shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, first_name");
+    Assert.assertEquals(12, objects.size());
+    List<Record> expected = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(1L, "Joanna", "Changed")
+        .add(1L, "Sharon", "Taylor")
+        .add(2L, "Joanna", "Changed")
+        .add(2L, "Jake", "Donnel")
+        .add(2L, "Susan", "Morrison")
+        .add(2L, "Bob", "Silver")
+        .add(3L, "Blake", "Changed")
+        .add(3L, "Marci", "Changed")
+        .add(3L, "Trudy", "Changed")
+        .add(3L, "Trudy", "Changed")
+        .add(4L, "Laci", "Zold")
+        .add(5L, "Peti", "Rozsaszin")
+        .build();
+    HiveIcebergTestUtils.validateData(expected,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
+  }
+
+  @Test
+  public void testUpdateStatementWithOtherTable() {
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").bucket("customer_id", 16).build();
+
+    // create a couple of tables, with an initial batch of records
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+    testTables.createTable(shell, "other", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1, 2);
+
+    shell.executeStatement("UPDATE customers SET last_name='Changed' WHERE customer_id in " +
+        "(select t1.customer_id from customers t1 join other t2 on t1.customer_id = t2.customer_id) or " +
+        "first_name in (select first_name from customers where first_name = 'Bob')");
+
+    List<Object[]> objects =
+        shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, last_name");
+    Assert.assertEquals(9, objects.size());
+    List<Record> expected = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(1L, "Joanna", "Pierce")
+        .add(1L, "Sharon", "Taylor")
+        .add(2L, "Bob", "Changed")
+        .add(2L, "Jake", "Donnel")
+        .add(2L, "Susan", "Morrison")
+        .add(2L, "Joanna", "Silver")
+        .add(3L, "Blake", "Changed")
+        .add(3L, "Trudy", "Changed")
+        .add(3L, "Trudy", "Changed")
+        .build();
+    HiveIcebergTestUtils.validateData(expected,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
+  }
+
+  @Test
+  public void testUpdateStatementWithPartitionAndSchemaEvolution() {
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").bucket("customer_id", 16).build();
+
+    // create and insert an initial batch of records
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+    // insert one more batch so that we have multiple data files within the same partition
+    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
+        TableIdentifier.of("default", "customers"), false));
+
+    // change the partition spec + schema, and insert some new records
+    shell.executeStatement("ALTER TABLE customers SET PARTITION SPEC (bucket(64, last_name))");
+    shell.executeStatement("ALTER TABLE customers ADD COLUMNS (department string)");
+    shell.executeStatement("ALTER TABLE customers CHANGE COLUMN first_name given_name string first");
+    shell.executeStatement("INSERT INTO customers VALUES ('Natalie', 20, 'Bloom', 'Finance'), ('Joanna', 22, " +
+        "'Huberman', 'Operations')");
+
+    // update should handle changing records both from older specs and from the new spec without problems
+    // there are records with Joanna in both the old and new spec, as well as the old and new schema
+    shell.executeStatement("UPDATE customers set last_name='Changed' WHERE customer_id=3 or given_name='Joanna'");
+
+    List<Object[]> objects =
+        shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, given_name");
+    Assert.assertEquals(14, objects.size());
+
+    Schema newSchema = new Schema(
+        optional(2, "given_name", Types.StringType.get()),
+        optional(1, "customer_id", Types.LongType.get()),
+        optional(3, "last_name", Types.StringType.get(), "This is last name"),
+        optional(4, "department", Types.StringType.get())
+    );
+    List<Record> expected = TestHelper.RecordsBuilder.newInstance(newSchema)
+        .add("Joanna", 1L, "Changed", null)
+        .add("Sharon", 1L, "Taylor", null)
+        .add("Joanna", 2L, "Changed", null)
+        .add("Jake", 2L, "Donnel", null)
+        .add("Susan", 2L, "Morrison", null)
+        .add("Bob", 2L, "Silver", null)
+        .add("Blake", 3L, "Changed", null)
+        .add("Marci", 3L, "Changed", null)
+        .add("Trudy", 3L, "Changed", null)
+        .add("Trudy", 3L, "Changed", null)
+        .add("Laci", 4L, "Zold", null)
+        .add("Peti", 5L, "Rozsaszin", null)
+        .add("Natalie", 20L, "Bloom", "Finance")
+        .add("Joanna", 22L, "Changed", "Operations")
+        .build();
+    HiveIcebergTestUtils.validateData(expected, HiveIcebergTestUtils.valueForRow(newSchema, objects), 0);
+  }
+
+  @Test
+  public void testUpdateForSupportedTypes() throws IOException {
+    for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
+      Type type = SUPPORTED_TYPES.get(i);
+
+      // TODO: remove this filter when issue #1881 is resolved
+      if (type == Types.UUIDType.get() && fileFormat == FileFormat.PARQUET) {
+        continue;
+      }
+
+      // TODO: remove this filter when we figure out how we could test binary types
+      if (type == Types.BinaryType.get() || type.equals(Types.FixedType.ofLength(5))) {
+        continue;
+      }
+
+      String tableName = type.typeId().toString().toLowerCase() + "_table_" + i;
+      String columnName = type.typeId().toString().toLowerCase() + "_column";
+
+      Schema schema = new Schema(required(1, columnName, type));
+      List<Record> originalRecords = TestHelper.generateRandomRecords(schema, 1, 0L);
+      Table table = testTables.createTable(shell, tableName, schema, fileFormat, originalRecords, 2);
+
+      List<Record> newRecords = TestHelper.generateRandomRecords(schema, 1, 3L);
+      shell.executeStatement(testTables.getUpdateQuery(tableName, newRecords.get(0)));
+      HiveIcebergTestUtils.validateData(table, newRecords, 0);
+    }
+  }
+
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {
     PositionDelete<T> positionDelete = PositionDelete.create();
     return positionDelete.set(path, pos, row);

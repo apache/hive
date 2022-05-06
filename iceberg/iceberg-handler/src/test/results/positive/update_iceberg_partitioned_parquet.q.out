@@ -2,11 +2,11 @@ PREHOOK: query: drop table if exists tbl_ice
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists tbl_ice
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create external table tbl_ice(a int, b string, c int) stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: query: create external table tbl_ice(a int, b string, c int) partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_ice
-POSTHOOK: query: create external table tbl_ice(a int, b string, c int) stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: query: create external table tbl_ice(a int, b string, c int) partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg tblproperties ('format-version'='2')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice
@@ -18,25 +18,28 @@ POSTHOOK: query: insert into tbl_ice values (1, 'one', 50), (2, 'two', 51), (3, 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice
-PREHOOK: query: delete from tbl_ice where b in ('one', 'four') or a = 22
+PREHOOK: query: update tbl_ice set b='Changed' where b in ('one', 'four') or a = 22
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: default@tbl_ice
-POSTHOOK: query: delete from tbl_ice where b in ('one', 'four') or a = 22
+POSTHOOK: query: update tbl_ice set b='Changed' where b in ('one', 'four') or a = 22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: default@tbl_ice
-PREHOOK: query: select * from tbl_ice order by a
+PREHOOK: query: select * from tbl_ice order by a, b, c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from tbl_ice order by a
+POSTHOOK: query: select * from tbl_ice order by a, b, c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	Changed	50
 2	two	51
 3	three	52
+4	Changed	53
 5	five	54
+111	Changed	55
 333	two	56
 PREHOOK: query: insert into tbl_ice values (444, 'hola', 800), (555, 'schola', 801)
 PREHOOK: type: QUERY
@@ -48,24 +51,31 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice
 Warning: Shuffle Join MERGEJOIN[53][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[55][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
-PREHOOK: query: delete from tbl_ice where a in (select a from tbl_ice where a <= 5) or c in (select c from tbl_ice where c > 800)
+PREHOOK: query: update tbl_ice set b='Changed again' where a in (select a from tbl_ice where a <= 5) or c in (select c from tbl_ice where c > 800)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: default@tbl_ice
-POSTHOOK: query: delete from tbl_ice where a in (select a from tbl_ice where a <= 5) or c in (select c from tbl_ice where c > 800)
+POSTHOOK: query: update tbl_ice set b='Changed again' where a in (select a from tbl_ice where a <= 5) or c in (select c from tbl_ice where c > 800)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: default@tbl_ice
-PREHOOK: query: select * from tbl_ice order by a
+PREHOOK: query: select * from tbl_ice order by a, b, c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from tbl_ice order by a
+POSTHOOK: query: select * from tbl_ice order by a, b, c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	Changed again	50
+2	Changed again	51
+3	Changed again	52
+4	Changed again	53
+5	Changed again	54
+111	Changed	55
 333	two	56
 444	hola	800
+555	Changed again	801
 PREHOOK: query: drop table if exists tbl_ice_other
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists tbl_ice_other
@@ -86,25 +96,33 @@ POSTHOOK: query: insert into tbl_ice_other values (10, 'ten'), (333, 'hundred')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice_other
-PREHOOK: query: delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_ice_other t2 on t1.a = t2.a)
+PREHOOK: query: update tbl_ice set b='Changed forever' where a in (select t1.a from tbl_ice t1 join tbl_ice_other t2 on t1.a = t2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Input: default@tbl_ice_other
 PREHOOK: Output: default@tbl_ice
-POSTHOOK: query: delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_ice_other t2 on t1.a = t2.a)
+POSTHOOK: query: update tbl_ice set b='Changed forever' where a in (select t1.a from tbl_ice t1 join tbl_ice_other t2 on t1.a = t2.a)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_other
 POSTHOOK: Output: default@tbl_ice
-PREHOOK: query: select * from tbl_ice order by a
+PREHOOK: query: select * from tbl_ice order by a, b, c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from tbl_ice order by a
+POSTHOOK: query: select * from tbl_ice order by a, b, c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	Changed again	50
+2	Changed again	51
+3	Changed again	52
+4	Changed again	53
+5	Changed again	54
+111	Changed	55
+333	Changed forever	56
 444	hola	800
+555	Changed again	801
 PREHOOK: query: drop table if exists tbl_standard_other
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists tbl_standard_other
@@ -127,22 +145,30 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_standard_other
 POSTHOOK: Lineage: tbl_standard_other.a SCRIPT []
 POSTHOOK: Lineage: tbl_standard_other.b SCRIPT []
-PREHOOK: query: delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a)
+PREHOOK: query: update tbl_ice set b='The last one' where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Input: default@tbl_standard_other
 PREHOOK: Output: default@tbl_ice
-POSTHOOK: query: delete from tbl_ice where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a)
+POSTHOOK: query: update tbl_ice set b='The last one' where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_standard_other
 POSTHOOK: Output: default@tbl_ice
-PREHOOK: query: select count(*) from tbl_ice
+PREHOOK: query: select * from tbl_ice order by a, b, c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select count(*) from tbl_ice
+POSTHOOK: query: select * from tbl_ice order by a, b, c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-0
+1	Changed again	50
+2	Changed again	51
+3	Changed again	52
+4	Changed again	53
+5	Changed again	54
+111	Changed	55
+333	Changed forever	56
+444	The last one	800
+555	Changed again	801
