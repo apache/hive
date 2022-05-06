@@ -345,6 +345,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     }
   }
 
+  /**
+   * Creates and commits an Iceberg change with the provided data and delete files.
+   * If there are no delete files then an Iceberg 'append' is created, otherwise Iceberg 'overwrite' is created.
+   * @param table The table we are changing
+   * @param startTime The start time of the commit - used only for logging
+   * @param results The object containing the new files we would like to add to the table
+   */
   private void commitWrite(Table table, long startTime, FilesForCommit results) {
     if (results.deleteFiles().isEmpty()) {
       AppendFiles write = table.newAppend();
@@ -362,6 +369,16 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     LOG.debug("Added files {}", results);
   }
 
+  /**
+   * Creates and commits an Iceberg insert overwrite change with the provided data files.
+   * For unpartitioned tables the table content is replaced with the new data files. If not data files are provided
+   * then the unpartitioned table is truncated.
+   * For partitioned tables the relevant partitions are replaced with the new data files. If no data files are provided
+   * then the unpartitioned table remains unchanged.
+   * @param table The table we are changing
+   * @param startTime The start time of the commit - used only for logging
+   * @param results The object containing the new files
+   */
   private void commitOverwrite(Table table, long startTime, FilesForCommit results) {
     Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
     if (!results.dataFiles().isEmpty()) {
