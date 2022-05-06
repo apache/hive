@@ -336,6 +336,31 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       // that users can change data types or reorder columns too with this alter op type, so its name is misleading..)
       assertNotMigratedTable(hmsTable.getParameters(), "CHANGE COLUMN");
       handleChangeColumn(hmsTable);
+    } else if (AlterTableType.ADDPROPS.equals(currentAlterTableOp)) {
+      assertNotCrossTableMetadataLocationChange(hmsTable.getParameters());
+    }
+  }
+
+  /**
+   * Perform a check on the current iceberg table whether a metadata change can be performed. A table is eligible if
+   * the current metadata uuid and the new metadata uuid matches.
+   * @param tblParams hms table properties, must be non-null
+   */
+  private void assertNotCrossTableMetadataLocationChange(Map<String, String> tblParams) {
+    if (tblParams.containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
+      Preconditions.checkArgument(icebergTable != null,
+          "Cannot perform table migration to Iceberg and setting the snapshot location in one step. " +
+              "Please migrate the table first");
+      String newMetadataLocation = tblParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+      FileIO io = ((BaseTable) icebergTable).operations().io();
+      TableMetadata newMetadata = TableMetadataParser.read(io, newMetadataLocation);
+      TableMetadata currentMetadata = ((BaseTable) icebergTable).operations().current();
+      if (!currentMetadata.uuid().equals(newMetadata.uuid())) {
+        throw new UnsupportedOperationException(
+            String.format("Cannot change iceberg table %s metadata location pointing to another table's metadata %s",
+                icebergTable.name(), newMetadataLocation)
+        );
+      }
     }
   }
 
