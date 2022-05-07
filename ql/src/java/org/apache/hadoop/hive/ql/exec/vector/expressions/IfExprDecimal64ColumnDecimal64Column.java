@@ -52,4 +52,9 @@ public class IfExprDecimal64ColumnDecimal64Column extends IfExprLongColumnLongCo
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
   }
+
+  @Override
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return false;
+  }
 }
