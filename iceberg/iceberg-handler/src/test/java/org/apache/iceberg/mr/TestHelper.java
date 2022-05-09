@@ -151,6 +151,29 @@ public class TestHelper {
     return appender().writeFile(partition, records);
   }
 
+  public Map<DataFile, List<Record>> writeFiles(List<Record> rowSet) throws IOException {
+    // The rows collected by partitions
+    Map<PartitionKey, List<Record>> rows = Maps.newHashMap();
+    PartitionKey partitionKey = new PartitionKey(table.spec(), table.schema());
+    for (Record record : rowSet) {
+      partitionKey.partition(record);
+      List<Record> partitionRows = rows.get(partitionKey);
+      if (partitionRows == null) {
+        partitionRows = rows.put(partitionKey.copy(), Lists.newArrayList());
+      }
+
+      partitionRows.add(record);
+    }
+
+    // Write out the partitions one-by-one
+    Map<DataFile, List<Record>> dataFiles = Maps.newHashMapWithExpectedSize(rows.size());
+    for (PartitionKey partition : rows.keySet()) {
+      dataFiles.put(writeFile(partition, rows.get(partition)), rows.get(partition));
+    }
+
+    return dataFiles;
+  }
+
   private GenericAppenderHelper appender() {
     return new GenericAppenderHelper(table, fileFormat, tmp, conf);
   }

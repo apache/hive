@@ -24,7 +24,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -33,6 +32,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -54,7 +54,6 @@ import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.ReplacePartitions;
 import org.apache.iceberg.RowDelta;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.Transaction;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.Util;
@@ -63,6 +62,7 @@ import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.iceberg.util.Tasks;
@@ -252,11 +252,12 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             // list jobLocation to get number of forCommit files
             // we do this because map/reduce num in jobConf is unreliable and we have no access to vertex status info
             int numTasks = listForCommits(jobConf, jobLocation).size();
-            Collection<FilesForCommit> results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
+            FilesForCommit results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
                 table.io(), false);
-            // Check if we have files already committed and remove data files if there are any
-            List<? extends ContentFile> files = results.stream().map(FilesForCommit::allFiles)
-                .flatMap(Collection::stream).collect(Collectors.toList());
+            // Check if we have files already written and remove data and delta files if there are any
+            Collection<ContentFile> files = Stream.concat(results.dataFiles().stream(), results.deleteFiles().stream())
+                .collect(Collectors.toList());
+
             if (files.size() > 0) {
               Tasks.foreach(files)
                   .retry(3)
@@ -330,61 +331,71 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       return conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
     });
 
-    Collection<FilesForCommit> writeResults = collectResults(numTasks, executor, location, jobContext, io, true);
-    if (writeResults.isEmpty()) {
-      LOG.info("Not creating a new commit for table: {}, jobID: {}, isDelete: {}, since there were no new files to add",
-          table, jobContext.getJobID(), HiveIcebergStorageHandler.isDelete(conf, name));
-    } else {
-      if (HiveIcebergStorageHandler.isDelete(conf, name)) {
-        commitDelete(table, Optional.empty(), startTime, writeResults);
+    FilesForCommit writeResults = collectResults(numTasks, executor, location, jobContext, io, true);
+    if (!conf.getBoolean(InputFormatConfig.IS_OVERWRITE, false)) {
+      if (writeResults.isEmpty()) {
+        LOG.info(
+            "Not creating a new commit for table: {}, jobID: {}, isDelete: {}, since there were no new files to add",
+            table, jobContext.getJobID(), HiveIcebergStorageHandler.isDelete(conf, name));
       } else {
-        boolean isOverwrite = conf.getBoolean(InputFormatConfig.IS_OVERWRITE, false);
-        commitInsert(table, Optional.empty(), startTime, writeResults, isOverwrite);
+        commitWrite(table, startTime, writeResults);
       }
+    } else {
+      commitOverwrite(table, startTime, writeResults);
     }
   }
 
-  private void commitDelete(Table table, Optional<Transaction> txn, long startTime,
-      Collection<FilesForCommit> results) {
-    RowDelta append = txn.map(Transaction::newRowDelta).orElse(table.newRowDelta());
-    List<DeleteFile> deleteFiles = results.stream().map(FilesForCommit::deleteFiles)
-        .flatMap(Collection::stream).collect(Collectors.toList());
-    deleteFiles.forEach(append::addDeletes);
-    append.commit();
-    LOG.info("Delete commit took {} ms for table: {} with {} delete file(s)",
-        System.currentTimeMillis() - startTime, table, deleteFiles.size());
-    LOG.debug("Added delete files {}", deleteFiles);
+  /**
+   * Creates and commits an Iceberg change with the provided data and delete files.
+   * If there are no delete files then an Iceberg 'append' is created, otherwise Iceberg 'overwrite' is created.
+   * @param table The table we are changing
+   * @param startTime The start time of the commit - used only for logging
+   * @param results The object containing the new files we would like to add to the table
+   */
+  private void commitWrite(Table table, long startTime, FilesForCommit results) {
+    if (results.deleteFiles().isEmpty()) {
+      AppendFiles write = table.newAppend();
+      results.dataFiles().forEach(write::appendFile);
+      write.commit();
+    } else {
+      RowDelta write = table.newRowDelta();
+      results.dataFiles().forEach(write::addRows);
+      results.deleteFiles().forEach(write::addDeletes);
+      write.commit();
+    }
+
+    LOG.info("Write commit took {} ms for table: {} with {} data and {} delete file(s)",
+        System.currentTimeMillis() - startTime, table, results.dataFiles().size(), results.deleteFiles().size());
+    LOG.debug("Added files {}", results);
   }
 
-  private void commitInsert(Table table, Optional<Transaction> txn, long startTime,
-      Collection<FilesForCommit> results, boolean isOverwrite) {
-    List<DataFile> dataFiles = results.stream().map(FilesForCommit::dataFiles)
-        .flatMap(Collection::stream).collect(Collectors.toList());
-    if (isOverwrite) {
-      if (!dataFiles.isEmpty()) {
-        ReplacePartitions overwrite = txn.map(Transaction::newReplacePartitions).orElse(table.newReplacePartitions());
-        dataFiles.forEach(overwrite::addFile);
-        overwrite.commit();
-        LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
-            table, dataFiles.size());
-      } else if (table.spec().isUnpartitioned()) {
-        DeleteFiles deleteFiles = txn.map(Transaction::newDelete).orElse(table.newDelete());
-        deleteFiles.deleteFromRowFilter(Expressions.alwaysTrue());
-        deleteFiles.commit();
-        LOG.info("Cleared table contents as part of empty overwrite for unpartitioned table. " +
-            "Commit took {} ms for table: {}", System.currentTimeMillis() - startTime, table);
-      }
-      LOG.debug("Overwrote partitions with files {}", dataFiles);
-    } else if (!dataFiles.isEmpty()) {
-      // Appending data files to the table
-      // We only create a new commit if there's something to append
-      AppendFiles append = txn.map(Transaction::newAppend).orElse(table.newAppend());
-      dataFiles.forEach(append::appendFile);
-      append.commit();
-      LOG.info("Append commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime, table,
-          dataFiles.size());
-      LOG.debug("Added files {}", dataFiles);
+  /**
+   * Creates and commits an Iceberg insert overwrite change with the provided data files.
+   * For unpartitioned tables the table content is replaced with the new data files. If not data files are provided
+   * then the unpartitioned table is truncated.
+   * For partitioned tables the relevant partitions are replaced with the new data files. If no data files are provided
+   * then the unpartitioned table remains unchanged.
+   * @param table The table we are changing
+   * @param startTime The start time of the commit - used only for logging
+   * @param results The object containing the new files
+   */
+  private void commitOverwrite(Table table, long startTime, FilesForCommit results) {
+    Preconditions.checkArgument(results.deleteFiles().isEmpty(), "Can not handle deletes with overwrite");
+    if (!results.dataFiles().isEmpty()) {
+      ReplacePartitions overwrite = table.newReplacePartitions();
+      results.dataFiles().forEach(overwrite::addFile);
+      overwrite.commit();
+      LOG.info("Overwrite commit took {} ms for table: {} with {} file(s)", System.currentTimeMillis() - startTime,
+          table, results.dataFiles().size());
+    } else if (table.spec().isUnpartitioned()) {
+      DeleteFiles deleteFiles = table.newDelete();
+      deleteFiles.deleteFromRowFilter(Expressions.alwaysTrue());
+      deleteFiles.commit();
+      LOG.info("Cleared table contents as part of empty overwrite for unpartitioned table. " +
+          "Commit took {} ms for table: {}", System.currentTimeMillis() - startTime, table);
     }
+
+    LOG.debug("Overwrote partitions with files {}", results);
   }
 
   /**
@@ -464,22 +475,25 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param throwOnFailure If <code>true</code> then it throws an exception on failure
    * @return The list of the write results, which include the committed data or delete files
    */
-  private static Collection<FilesForCommit> collectResults(int numTasks, ExecutorService executor, String location,
+  private static FilesForCommit collectResults(int numTasks, ExecutorService executor, String location,
       JobContext jobContext, FileIO io, boolean throwOnFailure) {
     JobConf conf = jobContext.getJobConf();
     // Reading the committed files. The assumption here is that the taskIds are generated in sequential order
     // starting from 0.
-    Collection<FilesForCommit> writeResults = new ConcurrentLinkedQueue<>();
+    Collection<DataFile> dataFiles = new ConcurrentLinkedQueue<>();
+    Collection<DeleteFile> deleteFiles = new ConcurrentLinkedQueue<>();
     Tasks.range(numTasks)
         .throwFailureWhenFinished(throwOnFailure)
         .executeWith(executor)
         .retry(3)
         .run(taskId -> {
           String taskFileName = generateFileForCommitLocation(location, conf, jobContext.getJobID(), taskId);
-          writeResults.add(readFileForCommit(taskFileName, io));
+          FilesForCommit files = readFileForCommit(taskFileName, io);
+          dataFiles.addAll(files.dataFiles());
+          deleteFiles.addAll(files.deleteFiles());
         });
 
-    return writeResults;
+    return new FilesForCommit(dataFiles, deleteFiles);
   }
 
   /**

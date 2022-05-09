@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 
 /**
@@ -112,12 +111,17 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     addPartitionColsToInsert(mTable.getPartCols(), rewrittenQueryStr);
 
     boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
+    int columnOffset;
     if (nonNativeAcid) {
-      String selectCols = mTable.getStorageHandler().acidSelectColumns(mTable).stream()
-          .map(FieldSchema::getName).collect(Collectors.joining(","));
+      List<FieldSchema> acidColumns = mTable.getStorageHandler().acidSelectColumns(mTable, operation);
+      String selectCols = acidColumns.stream()
+          .map(fieldSchema -> HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf))
+          .collect(Collectors.joining(","));
       rewrittenQueryStr.append(" select ").append(selectCols);
+      columnOffset = acidColumns.size();
     } else {
       rewrittenQueryStr.append(" select ROW__ID");
+      columnOffset = 1;
     }
 
     Map<Integer, ASTNode> setColExprs = null;
@@ -143,7 +147,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
           // This is one of the columns we're setting, record it's position so we can come back
           // later and patch it up.
           // Add one to the index because the select has the ROW__ID as the first column.
-          setColExprs.put(i + 1, setCol);
+          setColExprs.put(columnOffset + i, setCol);
         }
       }
     }
@@ -162,9 +166,11 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     // Add a sort by clause so that the row ids come out in the correct order
     if (nonNativeAcid) {
-      String sortCols = mTable.getStorageHandler().acidSortColumns(mTable).stream()
-          .map(FieldSchema::getName).collect(Collectors.joining(","));
-      rewrittenQueryStr.append(" sort by ").append(sortCols).append(" ");
+      List<FieldSchema> sortColumns = mTable.getStorageHandler().acidSortColumns(mTable, operation);
+      if (!sortColumns.isEmpty()) {
+        String sortCols = sortColumns.stream().map(FieldSchema::getName).collect(Collectors.joining(","));
+        rewrittenQueryStr.append(" sort by ").append(sortCols).append(" ");
+      }
     } else {
       rewrittenQueryStr.append(" sort by ROW__ID ");
     }
@@ -191,16 +197,29 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       //          \-> TOK_INSERT -> TOK_INSERT_INTO
       //                        \-> TOK_SELECT
       //                        \-> TOK_SORTBY
+      // Or
+      // TOK_QUERY -> TOK_FROM
+      //          \-> TOK_INSERT -> TOK_INSERT_INTO
+      //                        \-> TOK_SELECT
+      //
       // The following adds the TOK_WHERE and its subtree from the original query as a child of
       // TOK_INSERT, which is where it would have landed if it had been there originally in the
       // string.  We do it this way because it's easy then turning the original AST back into a
-      // string and reparsing it.  We have to move the SORT_BY over one,
-      // so grab it and then push it to the second slot, and put the where in the first slot
-      ASTNode sortBy = (ASTNode)rewrittenInsert.getChildren().get(2);
-      assert sortBy.getToken().getType() == HiveParser.TOK_SORTBY :
-          "Expected TOK_SORTBY to be first child of TOK_SELECT, but found " + sortBy.getName();
-      rewrittenInsert.addChild(sortBy);
-      rewrittenInsert.setChild(2, where);
+      // string and reparsing it.
+      if (rewrittenInsert.getChildren().size() == 3) {
+        // We have to move the SORT_BY over one, so grab it and then push it to the second slot,
+        // and put the where in the first slot
+        ASTNode sortBy = (ASTNode) rewrittenInsert.getChildren().get(2);
+        assert sortBy.getToken().getType() == HiveParser.TOK_SORTBY :
+            "Expected TOK_SORTBY to be third child of TOK_INSERT, but found " + sortBy.getName();
+        rewrittenInsert.addChild(sortBy);
+        rewrittenInsert.setChild(2, where);
+      } else {
+        ASTNode select = (ASTNode) rewrittenInsert.getChildren().get(1);
+        assert select.getToken().getType() == HiveParser.TOK_SELECT :
+            "Expected TOK_SELECT to be second child of TOK_INSERT, but found " + select.getName();
+        rewrittenInsert.addChild(where);
+      }
     }
 
     // Patch up the projection list for updates, putting back the original set expressions.
