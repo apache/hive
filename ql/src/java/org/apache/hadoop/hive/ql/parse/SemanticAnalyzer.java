@@ -794,7 +794,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected List<String> getDefaultConstraints(Table tbl, List<String> targetSchema) throws SemanticException{
     Map<String, String> colNameToDefaultVal = getColNameToDefaultValueMap(tbl);
     List<String> defaultConstraints = new ArrayList<>();
-    if(targetSchema != null) {
+    if(targetSchema != null && !targetSchema.isEmpty()) {
       for (String colName : targetSchema) {
         defaultConstraints.add(colNameToDefaultVal.get(colName));
       }
