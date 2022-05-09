@@ -37,7 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Provides a way to get JWKS json. Hive will use this to verify the incoming JWTs.
+ * Provides a way to get JWKS json. HiveMetastore will use this to verify the incoming JWTs.
+ * This is cloned from URLBasedJWKSProvider in HS2 so as to NOT have any dependency on HS2 code.
  */
 public class URLBasedJWKSProvider {
 

@@ -43,14 +43,12 @@ import java.util.List;
  * This class is used to validate JWT. JWKS is fetched during instantiation and kept in the memory.
  * We disallow JWT signature verification with symmetric key, because that means anyone can get the same key
  * and use it to sign a JWT.
+ * This is cloned from JWTValidator in HS2 so as to NOT have any dependency on HS2 code.
  */
 public class JWTValidator {
-
   private static final Logger LOG = LoggerFactory.getLogger(JWTValidator.class.getName());
   private static final DefaultJWSVerifierFactory JWS_VERIFIER_FACTORY = new DefaultJWSVerifierFactory();
-
   private final URLBasedJWKSProvider jwksProvider;
-
   public JWTValidator(Configuration conf) throws IOException, ParseException {
     this.jwksProvider = new URLBasedJWKSProvider(conf);
   }

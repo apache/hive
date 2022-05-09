@@ -14,6 +14,10 @@
 
 package org.apache.hadoop.hive.metastore.auth;
 
+/*
+Encapsulates any exceptions thrown by HiveMetastore server
+when authenticating http requests
+ */
 public class HttpAuthenticationException extends Exception {
 
   private static final long serialVersionUID = 0;

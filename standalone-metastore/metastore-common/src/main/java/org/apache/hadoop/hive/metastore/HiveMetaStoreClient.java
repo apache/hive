@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
@@ -603,6 +602,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     client.rename_partition_req(req);
   }
 
+  /*
+  Creates a THttpClient if HTTP mode is enabled. If Client auth mode is set to JWT,
+  then the method fetches JWT from environment variable: HMS_JWT and sets in auth
+  header in http request
+   */
   private THttpClient createHttpClient(URI store, boolean useSSL) throws MetaException,
       TTransportException {
     String path = MetaStoreUtils.getHttpPath(MetastoreConf.getVar(conf, ConfVars.THRIFT_HTTP_PATH));

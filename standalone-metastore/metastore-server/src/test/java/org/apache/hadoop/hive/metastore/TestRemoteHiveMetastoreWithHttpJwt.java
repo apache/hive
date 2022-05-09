@@ -61,6 +61,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+/*
+Tests JWT auth in HiveMetastore server.
+ */
 @Category(MetastoreUnitTest.class)
 public class TestRemoteHiveMetastoreWithHttpJwt {
   private static final Map<String, String> DEFAULTS = new HashMap<>(System.getenv());
@@ -162,6 +165,9 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
         "http://localhost:" + MOCK_JWKS_SERVER_PORT + "/jwks");
   }
 
+  /*
+  Tests a valid JWT sent to metastore sever
+   */
   @Test
   public void testValidJWT() throws Exception {
     String validJwtToken = generateJWT(USER_1, jwtAuthorizedKeyFile.toPath(),
@@ -189,6 +195,10 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
     }
   }
 
+  /*
+  Tests that an exception is thrown when metastore client (in http mode)
+  sends a expired jwt to metastore server.
+   */
   @Test(expected = TTransportException.class)
   public void testExpiredJWT() throws Exception {
     String validJwtToken = generateJWT(USER_1, jwtAuthorizedKeyFile.toPath(),
@@ -212,6 +222,10 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
     }
   }
 
+  /*
+  Tests that an exception is thrown when metastore client (in http mode) sends an
+  invalid jwt to the metastore server
+   */
   @Test(expected = TTransportException.class)
   public void testInvalidJWT() throws Exception {
     String jwtToken = generateJWT(USER_1, jwtUnauthorizedKeyFile.toPath(),

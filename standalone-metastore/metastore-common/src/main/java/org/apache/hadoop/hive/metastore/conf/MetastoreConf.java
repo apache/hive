@@ -881,7 +881,8 @@ public class MetastoreConf {
                 "  JWT:  JSON Web Token authentication via JWT token. Only supported in Http/Https mode"),
     THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL("metastore.authentication.jwt.jwks.url",
         "hive.metastore.authentication.jwt.jwks.url", "", "File URL from where URLBasedJWKSProvider "
-        + "will try to load JWKS to match a JWT sent in HTTP request header"),
+        + "in metastore server will try to load JWKS to match a JWT sent in HTTP request header. Used only when "
+        + "Hive metastore server is running in JWT auth mode"),
     METASTORE_CUSTOM_AUTHENTICATION_CLASS("metastore.custom.authentication.class",
             "hive.metastore.custom.authentication.class",
             "",
@@ -1545,7 +1546,8 @@ public class MetastoreConf {
             new StringSetValidator("NOSASL", "PLAIN", "KERBEROS", "JWT"),
             "If PLAIN, clients will authenticate using plain authentication, by providing username" +
                     " and password. Any other value is ignored right now but may be used later."
-                + "For JWT - it is only supported in HTTP transport mode"),
+                + "If JWT- Supported only in HTTP transport mode. If set, HMS Client will pick the value of JWT from "
+                + "environment variable HMS_JWT and set it in Authorization header in http request"),
     METASTORE_CLIENT_PLAIN_USERNAME("metastore.client.plain.username",
             "hive.metastore.client.plain.username",  "",
         "The username used by the metastore client when " +

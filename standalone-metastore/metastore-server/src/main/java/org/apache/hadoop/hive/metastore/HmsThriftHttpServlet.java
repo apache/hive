@@ -42,15 +42,17 @@ import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.TServlet;
 
+/*
+Servlet class used by HiveMetastore server when running in HTTP mode.
+If JWT auth is enabled, then the servlet is also responsible for validating
+JWTs sent in the Authorization header in HTTP request.
+ */
 public class HmsThriftHttpServlet extends TServlet {
-
   private static final Logger LOG = LoggerFactory
       .getLogger(HmsThriftHttpServlet.class);
-
   private static final String X_USER = MetaStoreUtils.USER_NAME_HTTP_HEADER;
   private final boolean isSecurityEnabled;
   private final boolean jwtAuthEnabled;
-  public static final String AUTHORIZATION = "Authorization";
   private JWTValidator jwtValidator = null;
   private Configuration conf;
 
