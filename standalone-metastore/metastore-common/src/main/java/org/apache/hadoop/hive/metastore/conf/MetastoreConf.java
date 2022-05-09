@@ -438,6 +438,9 @@ public class MetastoreConf {
     COMPACTOR_RUN_AS_USER("metastore.compactor.run.as.user", "hive.compactor.run.as.user", "",
         "Specify the user to run compactor Initiator and Worker as. If empty string, defaults to table/partition " +
         "directory owner."),
+    COMPACTOR_USE_CUSTOM_POOL("metastore.compactor.use.custom.pool", "hive.compactor.use.custom.pool",
+            false, "internal usage only -- use custom connection pool specific to compactor components."
+    ),
     COMPACTOR_OLDEST_REPLICATION_OPENTXN_THRESHOLD_WARNING(
         "metastore.compactor.oldest.replication.open.txn.threshold.warning",
         "hive.compactor.oldest.replication.open.txn.threshold.warning",
