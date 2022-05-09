@@ -71,4 +71,12 @@ public class TestParseDefault {
 
     assertFalse(tree.toStringTree().contains("tok_default_value"));
   }
+
+  @Test
+  public void testSelectColumNamedDefault() throws Exception {
+    ASTNode tree = parseDriver.parse(
+        "select default from s_n1\n", null).getTree();
+
+    assertFalse(tree.toStringTree().contains("tok_default_value"));
+  }
 }
