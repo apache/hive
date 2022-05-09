@@ -528,7 +528,7 @@ atomExpression
     | (subQueryExpression)=> (subQueryExpression)
         -> ^(TOK_SUBQUERY_EXPR TOK_SUBQUERY_OP subQueryExpression)
     | (functionName LPAREN) => function
-    | (KW_DEFAULT) => defaultValue
+    | (KW_DEFAULT ~DOT) => defaultValue
     | tableOrColumn
     | expressionsInParenthesis[true, false]
     ;

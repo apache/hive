@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TestParseDefault {
@@ -53,5 +54,21 @@ public class TestParseDefault {
                 "WHEN NOT MATCHED THEN INSERT VALUES (s.a, DEFAuLT, DEFAULT)", null).getTree();
 
     assertEquals(3, StringUtils.countMatches(tree.toStringTree(), "(tok_table_or_col tok_default_value)"));
+  }
+
+  @Test
+  public void testParseStructNamedDefault() throws Exception {
+    ASTNode tree = parseDriver.parse(
+        "select default.src.`end`.key from s_n1\n", null).getTree();
+
+    assertFalse(tree.toStringTree().contains("tok_default_value"));
+  }
+
+  @Test
+  public void testParseStructFieldNamedDefault() throws Exception {
+    ASTNode tree = parseDriver.parse(
+        "select col0.default.key from s_n1\n", null).getTree();
+
+    assertFalse(tree.toStringTree().contains("tok_default_value"));
   }
 }
