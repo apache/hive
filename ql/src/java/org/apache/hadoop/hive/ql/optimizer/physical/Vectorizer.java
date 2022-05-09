@@ -4391,6 +4391,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     ExprNodeDesc predicateExpr = filterDesc.getPredicate();
     VectorExpression vectorPredicateExpr =
         vContext.getVectorExpression(predicateExpr, VectorExpressionDescriptor.Mode.FILTER);
+    if (vectorPredicateExpr != null) {
+      vectorPredicateExpr = fixDecimalDataTypePhysicalVariations(vectorPredicateExpr,
+          vectorPredicateExpr.getChildExpressions(), vContext);
+    }
     vectorFilterDesc.setPredicateExpression(vectorPredicateExpr);
     return OperatorFactory.getVectorOperator(
         filterOp.getCompilationOpContext(), filterDesc,

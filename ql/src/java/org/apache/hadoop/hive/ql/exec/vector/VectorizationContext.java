@@ -2173,10 +2173,6 @@ import com.google.common.annotations.VisibleForTesting;
 
       if ((child instanceof ExprNodeGenericFuncDesc) || (child instanceof ExprNodeFieldDesc)) {
         VectorExpression vChild = getVectorExpression(child, childrenMode);
-          if (returnDataTypePhysicalVariation == DataTypePhysicalVariation.NONE &&
-              vChild.getOutputDataTypePhysicalVariation() == DataTypePhysicalVariation.DECIMAL_64) {
-            vChild = wrapWithDecimal64ToDecimalConversion(vChild);
-          }
           children.add(vChild);
           arguments[i] = vChild.getOutputColumnNum();
 
