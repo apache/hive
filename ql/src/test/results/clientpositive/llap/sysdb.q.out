@@ -200,6 +200,10 @@ sys	locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -621,6 +625,8 @@ locks	partition
 locks	table
 locks	txnid
 locks	user
+min_history_level	mhl_min_open_txnid
+min_history_level	mhl_txnid
 moretypes	a
 moretypes	b
 moretypes	c
@@ -1228,7 +1234,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-75
+76
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -1624,6 +1630,7 @@ default	sys	global_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	hive_locks	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	key_constraints	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	locks	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	min_history_level	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	mv_creation_metadata	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	mv_tables_used	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	notification_log	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
