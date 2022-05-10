@@ -245,9 +245,9 @@ public class MetaStoreUtils {
   }
 
   public static boolean isTranslatedToExternalTable(Table table) {
-    Map<String, String> p = table.getParameters();
-    return p != null && MetaStoreUtils.isPropertyTrue(p, "EXTERNAL")
-        && MetaStoreUtils.isPropertyTrue(p, "TRANSLATED_TO_EXTERNAL") && table.getSd() != null
+    Map<String, String> params = table.getParameters();
+    return params != null && MetaStoreUtils.isPropertyTrue(params, "EXTERNAL")
+        && MetaStoreUtils.isPropertyTrue(params, "TRANSLATED_TO_EXTERNAL") && table.getSd() != null
         && table.getSd().isSetLocation();
   }
 
