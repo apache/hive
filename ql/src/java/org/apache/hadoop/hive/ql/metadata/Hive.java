@@ -223,6 +223,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -5008,10 +5009,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
         boolean isOwned = FileUtils.isOwnerOfFileHierarchy(srcFs, srcs, configuredOwner, false);
         if (configuredOwner.equals(runningUser)) {
           // Check if owner has write permission, else it will have to copy
-          if (!(isOwned &&
-              FileUtils.isActionPermittedForFileHierarchy(
-                  srcFs, srcs, configuredOwner, FsAction.WRITE, false))) {
-            return true;
+          UserGroupInformation proxyUser = null;
+          try {
+            proxyUser = FileUtils.getProxyUser(configuredOwner);
+            FileSystem fsAsUser = FileUtils.getFsAsUser(srcFs, proxyUser);
+            if (!(isOwned && FileUtils.isActionPermittedForFileHierarchy(srcFs, srcs, configuredOwner, FsAction.WRITE,
+                false, fsAsUser))) {
+              return true;
+            }
+          }
+          finally {
+            FileUtils.closeFs(proxyUser);
           }
         } else {
           // If the configured owner does not own the file, throw
