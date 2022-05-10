@@ -90,10 +90,20 @@ public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
     // map any db specific types here.
     switch (dbDataType.toLowerCase())
     {
+    case "bit":
+      return toHiveBitType(size);
     default:
       mappedType = ColumnType.VOID_TYPE_NAME;
       break;
     }
     return mappedType;
+  }
+
+  private String toHiveBitType(int size) {
+    if (size <= 1) {
+      return ColumnType.BOOLEAN_TYPE_NAME;
+    } else {
+      return ColumnType.BIGINT_TYPE_NAME;
+    }
   }
 }
