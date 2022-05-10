@@ -24,11 +24,15 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static java.util.Collections.singletonList;
 
 /**
  * A subclass of the {@link SemanticAnalyzer} that just handles
@@ -54,10 +58,7 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
   private void analyzeUpdate(ASTNode tree) throws SemanticException {
     operation = Context.Operation.UPDATE;
-    reparseAndSuperAnalyze(tree);
-  }
 
-  private void reparseAndSuperAnalyze(ASTNode tree) throws SemanticException {
     List<? extends Node> children = tree.getChildren();
 
 //    TOK_UPDATE_TABLE
@@ -86,63 +87,40 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
     Map<String, ASTNode> setCols = collectSetColumnsAndExpressions(setClause, setRCols, mTable);
     Map<Integer, ASTNode> setColExprs = new HashMap<>(setClause.getChildCount());
 
-    StringBuilder selectExpressions = new StringBuilder("ROW__ID");
-    StringBuilder aliasedSelectExpressions = new StringBuilder();
     List<FieldSchema> nonPartCols = mTable.getCols();
     Map<String, String> colNameToDefaultConstraint = getColNameToDefaultValueMap(mTable);
+    List<String> values = new ArrayList<>(mTable.getCols().size());
+    StringBuilder rewrittenQueryStr = createRewrittenQueryStrBuilder();
+    rewrittenQueryStr.append("(SELECT ROW__ID");
     for (int i = 0; i < nonPartCols.size(); i++) {
-      selectExpressions.append(',');
-      if (i != 0) {
-        aliasedSelectExpressions.append(',');
-      }
+      rewrittenQueryStr.append(',');
       String name = nonPartCols.get(i).getName();
       ASTNode setCol = setCols.get(name);
       String identifier = HiveUtils.unparseIdentifier(name, this.conf);
 
       if (setCol != null) {
         if (setCol.getChildCount() > 0 && "default".equalsIgnoreCase(setCol.getChild(0).getText())) {
-          selectExpressions.append(colNameToDefaultConstraint.get(name));
+          rewrittenQueryStr.append(colNameToDefaultConstraint.get(name));
         } else {
-          selectExpressions.append(identifier);
+          rewrittenQueryStr.append(identifier);
           // This is one of the columns we're setting, record it's position so we can come back
           // later and patch it up. 0th is ROW_ID
           setColExprs.put(i + 1, setCol);
         }
       } else {
-        selectExpressions.append(identifier);
+        rewrittenQueryStr.append(identifier);
       }
-      // Column can be a constant (ex. default value) an alias is added to enable referencing it from the insert branch
-      selectExpressions.append(" AS ");
-      selectExpressions.append(identifier);
+      rewrittenQueryStr.append(" AS ");
+      rewrittenQueryStr.append(identifier);
 
-      aliasedSelectExpressions.append("s.");
-      aliasedSelectExpressions.append(identifier);
+      values.add("s." + identifier);
     }
-    addPartitionColsToSelect(mTable.getPartCols(), selectExpressions);
-    addPartitionColsToSelect(mTable.getPartCols(), aliasedSelectExpressions, "s");
+    addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr);
+    rewrittenQueryStr.append(" FROM ").append(getFullTableNameForSQL(tabName)).append(") s\n");
 
-    StringBuilder rewrittenQueryStr = new StringBuilder();
-
-    rewrittenQueryStr.append("FROM (SELECT ");
-    rewrittenQueryStr.append(selectExpressions);
-    rewrittenQueryStr.append(" FROM ");
-    rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
-    rewrittenQueryStr.append(") s\n");
-
-    // First insert branch for insert new values
-    rewrittenQueryStr.append("INSERT INTO ");
-    rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
-    rewrittenQueryStr.append(" SELECT ");
-    rewrittenQueryStr.append(aliasedSelectExpressions);
-    rewrittenQueryStr.append("\n");
-
-    // Second insert branch for delete old values
-    rewrittenQueryStr.append("INSERT INTO ");
-    rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
-    rewrittenQueryStr.append(" SELECT s.ROW__ID ");
-    addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr, "s");
-    rewrittenQueryStr.append(" SORT BY s.ROW__ID");
-
+    appendInsertBranch(rewrittenQueryStr, null, values);
+    appendInsertBranch(rewrittenQueryStr, null, singletonList("s.ROW__ID"));
+    appendSortBy(rewrittenQueryStr, Collections.singletonList("s.ROW__ID "));
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
@@ -171,15 +149,15 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     updateOutputs(mTable);
 
-
     setUpAccessControlInfoForUpdate(mTable, setCols);
 
     // Add the setRCols to the input list
+    if (columnAccessInfo == null) { //assuming this means we are not doing Auth
+      return;
+    }
+
     for (String colName : setRCols) {
-      if (columnAccessInfo != null) { //assuming this means we are not doing Auth
-        columnAccessInfo.add(Table.getCompleteName(mTable.getDbName(), mTable.getTableName()),
-                colName);
-      }
+      columnAccessInfo.add(Table.getCompleteName(mTable.getDbName(), mTable.getTableName()), colName);
     }
   }
 }

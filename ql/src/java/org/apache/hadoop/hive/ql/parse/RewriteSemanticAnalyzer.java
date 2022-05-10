@@ -17,13 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.antlr.runtime.TokenRewriteStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -44,6 +46,8 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 
 /**
@@ -66,6 +70,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     if (useSuper) {
       super.analyzeInternal(tree);
     } else {
+      quotedIdentifierHelper = new IdentifierQuoter(ctx.getTokenRewriteStream());
       analyze(tree);
       cleanUpMetaColumnAccessControl();
     }
@@ -188,7 +193,11 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
    * @return the Metastore representation of the target table
    */
   protected Table getTargetTable(ASTNode tabRef) throws SemanticException {
-    return getTable(tabRef, db, true);
+    targetTableFullName = getFullTableNameForSQL(tabRef);
+    quotedTargetTableName = getSimpleTableName(tabRef);
+    targetTable = getTable(tabRef, db, true);
+    validateTargetTable(targetTable);
+    return targetTable;
   }
 
   /**
@@ -463,4 +472,110 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     }
   }
 
+  protected static final String INDENT = "  ";
+  private IdentifierQuoter quotedIdentifierHelper;
+
+  private Table targetTable;
+  private String targetTableFullName;
+  private String quotedTargetTableName;
+
+  protected StringBuilder createRewrittenQueryStrBuilder() {
+    return new StringBuilder("FROM\n");
+  }
+
+  protected void appendTarget(StringBuilder rewrittenQueryStr, ASTNode target, String targetName) {
+    rewrittenQueryStr.append(INDENT).append(targetTableFullName);
+    if (isAliased(target)) {
+      rewrittenQueryStr.append(" ").append(targetName);
+    }
+    rewrittenQueryStr.append('\n');
+  }
+
+  protected boolean isAliased(ASTNode n) {
+    switch (n.getType()) {
+      case HiveParser.TOK_TABREF:
+        return findTabRefIdxs(n)[0] != 0;
+      case HiveParser.TOK_TABNAME:
+        return false;
+      case HiveParser.TOK_SUBQUERY:
+        assert n.getChildCount() > 1 : "Expected Derived Table to be aliased";
+        return true;
+      default:
+        throw raiseWrongType("TOK_TABREF|TOK_TABNAME", n);
+    }
+  }
+
+  protected void appendInsertBranch(
+          StringBuilder rewrittenQueryStr, String hintStr, List<String> values)
+          throws SemanticException {
+    rewrittenQueryStr.append("INSERT INTO ").append(targetTableFullName);
+    addPartitionColsToInsert(targetTable.getPartCols(), rewrittenQueryStr);
+    rewrittenQueryStr.append("\n");
+
+    rewrittenQueryStr.append(INDENT);
+    rewrittenQueryStr.append("SELECT ");
+    if (isNotBlank(hintStr)) {
+      rewrittenQueryStr.append(hintStr);
+    }
+
+    rewrittenQueryStr.append(StringUtils.join(values, ","));
+    addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, quotedTargetTableName);
+    rewrittenQueryStr.append("\n");
+  }
+
+  protected void appendSortBy(StringBuilder rewrittenQueryStr, List<String> keys) {
+    rewrittenQueryStr.append(INDENT).append("SORT BY ");
+    rewrittenQueryStr.append(StringUtils.join(keys, ","));
+  }
+
+  /**
+   * This allows us to take an arbitrary ASTNode and turn it back into SQL that produced it.
+   * Since HiveLexer.g is written such that it strips away any ` (back ticks) around
+   * quoted identifiers we need to add those back to generated SQL.
+   * Additionally, the parser only produces tokens of type Identifier and never
+   * QuotedIdentifier (HIVE-6013).  So here we just quote all identifiers.
+   * (') around String literals are retained w/o issues
+   */
+  private static class IdentifierQuoter {
+    private final TokenRewriteStream trs;
+    private final IdentityHashMap<ASTNode, ASTNode> visitedNodes = new IdentityHashMap<>();
+
+    IdentifierQuoter(TokenRewriteStream trs) {
+      this.trs = trs;
+      if (trs == null) {
+        throw new IllegalArgumentException("Must have a TokenRewriteStream");
+      }
+    }
+
+    private void visit(ASTNode n) {
+      if (n.getType() == HiveParser.Identifier) {
+        if (visitedNodes.containsKey(n)) {
+          /**
+           * Since we are modifying the stream, it's not idempotent.  Ideally, the caller would take
+           * care to only quote Identifiers in each subtree once, but this makes it safe
+           */
+          return;
+        }
+        visitedNodes.put(n, n);
+        trs.insertBefore(n.getToken(), "`");
+        trs.insertAfter(n.getToken(), "`");
+      }
+      if (n.getChildCount() <= 0) {
+        return;
+      }
+      for (Node c : n.getChildren()) {
+        visit((ASTNode)c);
+      }
+    }
+  }
+
+  /**
+   * This allows us to take an arbitrary ASTNode and turn it back into SQL that produced it without
+   * needing to understand what it is (except for QuotedIdentifiers).
+   */
+  protected String getMatchedText(ASTNode n) {
+    quotedIdentifierHelper.visit(n);
+    return ctx.getTokenRewriteStream().toString(n.getTokenStartIndex(),
+            n.getTokenStopIndex() + 1).trim();
+  }
 }
