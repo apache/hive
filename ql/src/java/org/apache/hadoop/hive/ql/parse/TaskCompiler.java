@@ -470,7 +470,7 @@ public abstract class TaskCompiler {
     if (pCtx.getQueryProperties().isCTAS()) {
       CreateTableDesc ctd = pCtx.getCreateTable();
       dataSink = ctd.getAndUnsetWriter();
-      txnId = ctd.getInitialMmWriteId();
+      txnId = ctd.getInitialWriteId();
       loc = ctd.getLocation();
     } else {
       CreateMaterializedViewDesc cmv = pCtx.getCreateViewDesc();
@@ -517,17 +517,21 @@ public abstract class TaskCompiler {
     try {
       String protoName = null, suffix = "";
       boolean isExternal = false;
-      
+      boolean useSuffix = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+              || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
+
       if (pCtx.getQueryProperties().isCTAS()) {
         protoName = pCtx.getCreateTable().getDbTableName();
         isExternal = pCtx.getCreateTable().isExternal();
-      
+        if (!isExternal && useSuffix) {
+          long txnId = Optional.ofNullable(pCtx.getContext())
+                  .map(ctx -> ctx.getHiveTxnManager().getCurrentTxnId()).orElse(0L);
+          suffix = SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId);
+        }
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
         protoName = pCtx.getCreateViewDesc().getViewName();
-        boolean createMVUseSuffix = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
-          || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
 
-        if (createMVUseSuffix) {
+        if (useSuffix) {
           long txnId = Optional.ofNullable(pCtx.getContext())
             .map(ctx -> ctx.getHiveTxnManager().getCurrentTxnId()).orElse(0L);
           suffix = SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId);

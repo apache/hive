@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static java.util.Objects.nonNull;
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEARCHIVEENABLED;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
@@ -26,6 +27,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.DEFAULT_TABLE_TYPE;
 import static org.apache.hadoop.hive.ql.ddl.view.create.AbstractCreateViewAnalyzer.validateTablesUsed;
+import static org.apache.hadoop.hive.ql.io.AcidUtils.DELTA_DIGITS;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
 import java.io.FileNotFoundException;
@@ -7598,6 +7600,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       destTableIsTransactional = tblProps != null && AcidUtils.isTablePropertyTransactional(tblProps);
       if (destTableIsTransactional) {
+        boolean enableSuffixing = (conf.getBoolVar(ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+                || conf.getBoolVar(ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
+                && conf.getBoolVar(ConfVars.HIVE_ACID_DIRECT_INSERT_ENABLED);
+        isNonNativeTable = AcidUtils.isNonNativeTable(tblProps);
+        if (enableSuffixing && isNonNativeTable && tblDesc != null && tblDesc.getLocation() == null && tblDesc.isCTAS()) {
+          destinationPath = getCTASDestinationTableLocation(tblDesc);
+          acidOperation = getAcidType(dest);
+          destTableIsFullAcid = AcidUtils.isFullAcidTable(tblProps);
+          isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOperation);
+        }
         try {
           if (ctx.getExplainConfig() != null) {
             writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
@@ -7610,10 +7622,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (AcidUtils.isInsertOnlyTable(tblProps, true)) {
           isMmTable = isMmCreate = true;
           if (tblDesc != null) {
-            tblDesc.setInitialMmWriteId(writeId);
+            tblDesc.setInitialWriteId(writeId);
           } else {
             viewDesc.setInitialMmWriteId(writeId);
           }
+        } else if (isDirectInsert) {
+          tblDesc.setInitialWriteId(writeId);
         }
       }
 
@@ -7627,7 +7641,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // no copy is required. we may want to revisit this policy in future
         try {
           Path qPath = FileUtils.makeQualified(destinationPath, conf);
-          queryTmpdir = isMmTable ? qPath : ctx.getTempDirForFinalJobPath(qPath);
+          queryTmpdir = isMmTable || isDirectInsert ? qPath : ctx.getTempDirForFinalJobPath(qPath);
           if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
             Utilities.FILE_OP_LOGGER.trace("Setting query directory " + queryTmpdir
                 + " from " + destinationPath + " (" + isMmTable + ")");
@@ -7786,6 +7800,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           ltd.setLoadFileType(LoadFileType.KEEP_EXISTING);
           ltd.setInsertOverwrite(false);
+          ltd.setIsDirectInsert(isDirectInsert);
           loadTableWork.add(ltd);
         } else {
           // This is a non-native table.
@@ -7883,6 +7898,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         createVwDesc.setWriter(fileSinkDesc);
       }
+    } else if (qb.isCTAS() && isDirectInsert) {
+      if (tableDesc != null) {
+        tableDesc.setWriter(fileSinkDesc);
+      }
     }
 
     if (fileSinkDesc.getInsertOverwrite()) {
@@ -7938,6 +7957,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return output;
+  }
+
+  private Path getCTASDestinationTableLocation(CreateTableDesc tblDesc) throws SemanticException {
+    try {
+      String protoName = tblDesc.getDbTableName();
+      String[] names = Utilities.getDbTableName(protoName);
+      long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
+      String suffix = SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId);
+      if (!db.databaseExists(names[0])) {
+        throw new SemanticException("ERROR: The database " + names[0] + " does not exist.");
+      }
+      Warehouse wh = new Warehouse(conf);
+
+      return wh.getDefaultTablePath(db.getDatabase(names[0]), names[1] + suffix, false);
+    } catch (HiveException | MetaException e) {
+      throw new SemanticException(e);
+    }
   }
 
   private boolean isDirectInsert(boolean destTableIsFullAcid, AcidUtils.Operation acidOp) {
@@ -8229,9 +8265,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Path tlocation = null;
       String tName = Utilities.getDbTableName(tableDesc.getDbTableName())[1];
       try {
+        String suffix = "";
+        if (!tableDesc.isExternal()) {
+          boolean useSuffix = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+                  || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
+          if (useSuffix) {
+            long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
+            suffix = SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId);
+          }
+        }
         Warehouse wh = new Warehouse(conf);
         tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()),
-            tName, tableDesc.isExternal());
+            tName + suffix, tableDesc.isExternal());
       } catch (MetaException|HiveException e) {
         throw new SemanticException(e);
       }
