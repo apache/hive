@@ -30,7 +30,7 @@ public class TestParseDefault {
   @Test
   public void testParseDefaultKeywordInInsert() throws Exception {
     ASTNode tree = parseDriver.parse(
-        "INSERT INTO TABLE t1 values(deFaUlt, DEFAULT)", null).getTree();
+        "INSERT INTO TABLE t1 values(DEFAULT, deFaUlt)", null).getTree();
 
     assertTrue(tree.toStringTree().contains(
             "(tok_table_or_col tok_default_value) (tok_table_or_col tok_default_value)"));
