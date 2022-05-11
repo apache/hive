@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.DatabaseFilterContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.TableFilterContext;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -489,6 +490,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   boolean isSuperUser(String userName) {
     Configuration conf      = getConf();
     String        ipAddress = HMSHandler.getIPAddress();
+    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
     return (MetaStoreServerUtils.checkUserHasHostProxyPrivileges(userName, conf, ipAddress));
   }
 

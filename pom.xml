@@ -121,7 +121,7 @@
     <commons-math3.version>3.6.1</commons-math3.version>
     <commons-dbcp2.version>2.7.0</commons-dbcp2.version>
     <commons-text.version>1.8</commons-text.version>
-    <derby.version>10.14.1.0</derby.version>
+    <derby.version>10.14.2.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
     <druid.version>0.17.1</druid.version>
@@ -149,7 +149,7 @@
     <javax-servlet-jsp.version>2.3.1</javax-servlet-jsp.version>
     <javolution.version>5.5.1</javolution.version>
     <jettison.version>1.1</jettison.version>
-    <jetty.version>9.3.27.v20190418</jetty.version>
+    <jetty.version>9.4.43.v20210629</jetty.version>
     <jersey.version>1.19</jersey.version>
     <jline.version>2.14.6</jline.version>
     <jms.version>2.0.2</jms.version>
@@ -740,6 +740,11 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-webapp</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-http</artifactId>
         <version>${jetty.version}</version>
       </dependency>
       <dependency>

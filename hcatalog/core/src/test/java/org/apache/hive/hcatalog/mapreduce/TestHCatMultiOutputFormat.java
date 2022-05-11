@@ -19,19 +19,12 @@
 
 package org.apache.hive.hcatalog.mapreduce;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
@@ -73,6 +66,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
 
 public class TestHCatMultiOutputFormat {
 
@@ -279,6 +280,10 @@ public class TestHCatMultiOutputFormat {
     infoList.add(OutputJobInfo.create("default", tableNames[1], partitionValues));
     infoList.add(OutputJobInfo.create("default", tableNames[2], partitionValues));
 
+    // There are tests that check file permissions (which are manually set)
+    // Disable NN ACLS so that the manual permissions are observed
+    hiveConf.setBoolean(DFSConfigKeys.DFS_NAMENODE_ACLS_ENABLED_KEY, false);
+
     Job job = new Job(hiveConf, "SampleJob");
 
     job.setMapperClass(MyMapper.class);
@@ -315,18 +320,19 @@ public class TestHCatMultiOutputFormat {
 
     // Check permisssion on partition dirs and files created
     for (int i = 0; i < tableNames.length; i++) {
-      Path partitionFile = new Path(warehousedir + "/" + tableNames[i]
-        + "/ds=1/cluster=ag/part-m-00000");
-      FileSystem fs = partitionFile.getFileSystem(mrConf);
-      Assert.assertEquals("File permissions of table " + tableNames[i] + " is not correct",
-        fs.getFileStatus(partitionFile).getPermission(),
-        new FsPermission(tablePerms[i]));
-      Assert.assertEquals("File permissions of table " + tableNames[i] + " is not correct",
-        fs.getFileStatus(partitionFile.getParent()).getPermission(),
-        new FsPermission(tablePerms[i]));
-      Assert.assertEquals("File permissions of table " + tableNames[i] + " is not correct",
-        fs.getFileStatus(partitionFile.getParent().getParent()).getPermission(),
-        new FsPermission(tablePerms[i]));
+      final Path partitionFile = new Path(warehousedir + "/" + tableNames[i] + "/ds=1/cluster=ag/part-m-00000");
+      final Path grandParentOfPartitionFile = partitionFile.getParent();
+
+      final FileSystem fs = partitionFile.getFileSystem(mrConf);
+
+      Assert.assertEquals("File permissions of table " + tableNames[i] + " is not correct [" + partitionFile + "]",
+          new FsPermission(tablePerms[i]), fs.getFileStatus(partitionFile).getPermission());
+      Assert.assertEquals(
+          "File permissions of table " + tableNames[i] + " is not correct [" + partitionFile + "]",
+          new FsPermission(tablePerms[i]), fs.getFileStatus(partitionFile).getPermission());
+      Assert.assertEquals(
+          "File permissions of table " + tableNames[i] + " is not correct [" + grandParentOfPartitionFile + "]",
+          new FsPermission(tablePerms[i]), fs.getFileStatus(grandParentOfPartitionFile).getPermission());
 
     }
     LOG.info("File permissions verified");

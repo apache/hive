@@ -178,8 +178,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
 
   private static boolean userHasProxyPrivilege(String user, Configuration conf) {
     try {
-      if (MetaStoreServerUtils.checkUserHasHostProxyPrivileges(user, conf,
-              HMSHandler.getIPAddress())) {
+      if (MetaStoreServerUtils.checkUserHasHostProxyPrivileges(user, conf, HMSHandler.getIPAddress())) {
         LOG.info("user {} has host proxy privilege.", user);
         return true;
       }

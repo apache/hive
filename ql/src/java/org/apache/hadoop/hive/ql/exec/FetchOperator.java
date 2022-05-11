@@ -18,20 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.conf.Configurable;
@@ -44,8 +32,8 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveContextAwareRecordReader;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
-import org.apache.hadoop.hive.ql.io.HiveSequenceFileInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveRecordReader;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
@@ -79,8 +67,19 @@ import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * FetchTask implementation.
@@ -430,16 +429,18 @@ public class FetchOperator implements Serializable {
 
   private void generateWrappedSplits(InputFormat inputFormat, List<FetchInputFormatSplit> inputSplits, JobConf job)
       throws IOException {
-    InputSplit[] splits;
+    InputSplit[] splits = new InputSplit[0];
     try {
       splits = inputFormat.getSplits(job, 1);
+    } catch (InvalidInputException iie) {
+      LOG.warn("Input path " + currPath + " is empty", iie);
     } catch (Exception ex) {
       Throwable t = ExceptionUtils.getRootCause(ex);
       if (t instanceof FileNotFoundException || t instanceof InvalidInputException) {
-        LOG.warn("Input path " + currPath + " is empty", t.getMessage());
-        return;
+        LOG.warn("Input path " + currPath + " is empty", t);
+      } else {
+        throw ex;
       }
-      throw ex;
     }
     for (int i = 0; i < splits.length; i++) {
       inputSplits.add(new FetchInputFormatSplit(splits[i], inputFormat));
