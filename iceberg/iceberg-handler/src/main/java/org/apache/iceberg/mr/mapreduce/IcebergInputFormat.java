@@ -520,6 +520,9 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           case UPDATE:
             // for UPDATE queries, add additional metadata columns into the read schema
             return IcebergAcidUtil.createFileReadSchemaForUpdate(readSchema.columns(), table);
+          case OTHER:
+            // for INSERT queries no extra columns are needed
+            return readSchema;
           default:
             throw new IllegalArgumentException("Not supported operation " + operation);
         }
