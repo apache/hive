@@ -342,8 +342,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     assert whenMatchedUpdateClause.getType() == HiveParser.TOK_MATCHED;
     assert getWhenClauseOperation(whenMatchedUpdateClause).getType() == HiveParser.TOK_UPDATE;
     String targetName = getSimpleTableName(target);
-    List<String> values = new ArrayList<>(
-            targetTable.getCols().size() + targetTable.getPartCols().size() + (splitUpdateEarly ? 1 : 0));
+    List<String> values = new ArrayList<>(targetTable.getCols().size() + (splitUpdateEarly ? 1 : 0));
     if(!splitUpdateEarly) {
       values.add(targetName + ".ROW__ID, ");
     }
@@ -383,7 +382,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
             //do nothing
         }
 
-        rewrittenQueryStr.append(rhsExp);
+        values.add(rhsExp);
       } else {
         values.add(targetName + "." + HiveUtils.unparseIdentifier(name, this.conf));
       }
