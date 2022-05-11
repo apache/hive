@@ -1456,6 +1456,76 @@ public class TestHiveIcebergStorageHandlerNoScan {
             HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.stream()).collect(Collectors.toList()), records, 0);
   }
 
+  @Test
+  public void testAlterTableWithMetadataLocation() throws IOException {
+    Assume.assumeTrue("Alter table with metadata location is only supported for Hive Catalog tables",
+        testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    TableIdentifier tableIdentifier = TableIdentifier.of("default", "source");
+    // create a test table with some dummy data
+    Table table =
+        testTables.createTable(shell, tableIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1, Collections.emptyMap());
+    testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    String firstMetadataLocation = ((BaseTable) table).operations().current().metadataFileLocation();
+    testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    table.refresh();
+    String secondMetadataLocation = ((BaseTable) table).operations().current().metadataFileLocation();
+    Assert.assertNotEquals(firstMetadataLocation, secondMetadataLocation);
+    shell.executeStatement("ALTER TABLE " + tableIdentifier.name() + " SET TBLPROPERTIES('metadata_location'='" +
+        firstMetadataLocation + "')");
+    // during alter operation a new metadata file is created but reflecting the old metadata state
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + tableIdentifier.name());
+    List<Record> records = HiveIcebergTestUtils.valueForRow(table.schema(), rows);
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, records, 0);
+    // add another batch of data to the table to make sure data manipulation is working
+    testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    rows = shell.executeStatement("SELECT * FROM " + tableIdentifier.name());
+    records = HiveIcebergTestUtils.valueForRow(table.schema(), rows);
+    HiveIcebergTestUtils.validateData(
+        Stream.concat(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.stream(),
+            HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.stream()).collect(Collectors.toList()), records, 0);
+  }
+
+  @Test
+  public void testAlterTableWithMetadataLocationFromAnotherTable() throws IOException {
+    TableIdentifier sourceIdentifier = TableIdentifier.of("default", "source");
+    Table sourceTable =
+        testTables.createTable(shell, sourceIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1,
+            ImmutableMap.<String, String>builder().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE").build());
+    testTables.appendIcebergTable(shell.getHiveConf(), sourceTable, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    String metadataLocation = ((BaseTable) sourceTable).operations().current().metadataFileLocation();
+    shell.executeStatement("DROP TABLE " + sourceIdentifier.name());
+    TableIdentifier targetIdentifier = TableIdentifier.of("default", "target");
+    testTables.createTable(shell, targetIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1, Collections.emptyMap());
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "Cannot change iceberg table",
+        () -> {
+          shell.executeStatement("ALTER TABLE " + targetIdentifier.name() + " SET TBLPROPERTIES('metadata_location'='" +
+              metadataLocation + "')");
+        });
+  }
+
+  @Test
+  public void testAlterTableToIcebergAndMetadataLocation() throws IOException {
+    String tableName = "tbl";
+    String createQuery = "CREATE EXTERNAL TABLE " +  tableName + " (a int) STORED AS PARQUET " +
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of());
+    shell.executeStatement(createQuery);
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "Cannot perform table migration to Iceberg and setting the snapshot location in one step.",
+        () -> {
+          shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES(" +
+              "'storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler','metadata_location'='asdf')");
+        });
+  }
+
   /**
    * Checks that the new schema has newintcol and newstring col columns on both HMS and Iceberg sides
    * @throws Exception - any test error
