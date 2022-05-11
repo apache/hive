@@ -331,8 +331,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
       int maxParts) throws TException {
     if (isCacheEnabledAndInitialized()) {
       TableWatermark watermark = new TableWatermark(
-          getValidWriteIdList(dbName, tableName),
-          getTable(dbName, tableName).getId());
+          getValidWriteIdList(catName, dbName, tableName),
+          getTable(catName, dbName, tableName).getId());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_ALL, watermark,
             catName, dbName, tableName, maxParts);
@@ -371,8 +371,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     if (isCacheEnabledAndInitialized()) {
       // table should be transactional to get responses from the cache
       TableWatermark watermark = new TableWatermark(
-          getValidWriteIdList(req.getDbName(), req.getTblName()),
-          getTable(req.getDbName(), req.getTblName()).getId());
+          getValidWriteIdList(req.getCatName(), req.getDbName(), req.getTblName()),
+          getTable(req.getCatName(), req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, watermark, req);
         PartitionsSpecByExprResult r = (PartitionsSpecByExprResult) mscLocalCache.getIfPresent(cacheKey);
@@ -400,8 +400,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   protected TableStatsResult getTableColumnStatisticsInternal(TableStatsRequest req) throws TException {
     if (isCacheEnabledAndInitialized()) {
       TableWatermark watermark = new TableWatermark(
-          getValidWriteIdList(req.getDbName(), req.getTblName()),
-          getTable(req.getDbName(), req.getTblName()).getId());
+          getValidWriteIdList(req.getCatName(), req.getDbName(), req.getTblName()),
+          getTable(req.getCatName(), req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         // 1) Retrieve from the cache those ids present, gather the rest
@@ -438,7 +438,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   protected AggrStats getAggrStatsForInternal(PartitionsStatsRequest req) throws TException {
     if (isCacheEnabledAndInitialized()) {
       TableWatermark watermark = new TableWatermark(
-          req.getValidWriteIdList(), getTable(req.getDbName(), req.getTblName()).getId());
+          req.getValidWriteIdList(), getTable(req.getCatName(), req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
         CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, watermark, req);
         AggrStats r = (AggrStats) mscLocalCache.getIfPresent(cacheKey);

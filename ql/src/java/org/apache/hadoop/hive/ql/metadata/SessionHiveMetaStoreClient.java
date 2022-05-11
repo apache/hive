@@ -266,8 +266,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     GetTableRequest getTableRequest = new GetTableRequest(dbName, tableName);
     getTableRequest.setGetColumnStats(getColStats);
     getTableRequest.setEngine(engine);
+    getTableRequest.setCatName(catName);
     if (!getDefaultCatalog(conf).equals(catName)) {
-      getTableRequest.setCatName(catName);
       return super.getTable(getTableRequest);
     } else {
       return getTable(getTableRequest);
@@ -2506,13 +2506,13 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   }
 
   @Override
-  protected String getValidWriteIdList(String dbName, String tblName) {
+  protected String getValidWriteIdList(String catName, String dbName, String tblName) {
     try {
       final String validTxnsList = Hive.get().getConf().get(ValidTxnList.VALID_TXNS_KEY);
       if (validTxnsList == null) {
-        return super.getValidWriteIdList(dbName, tblName);
+        return super.getValidWriteIdList(catName, dbName, tblName);
       }
-      if (!AcidUtils.isTransactionalTable(getTable(dbName, tblName))) {
+      if (!AcidUtils.isTransactionalTable(getTable(catName, dbName, tblName))) {
         return null;
       }
       final String fullTableName = TableName.getDbTable(dbName, tblName);

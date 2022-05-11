@@ -2137,7 +2137,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest req)
       throws MetaException, TException, NoSuchObjectException {
     if (req.getValidWriteIdList() == null) {
-      req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
+      req.setValidWriteIdList(getValidWriteIdList(req.getCatName(), req.getDbName(), req.getTblName()));
     }
     if(req.getCatName() == null) {
       req.setCatName(getDefaultCatalog(conf));
@@ -2277,7 +2277,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (max_parts >= 0) {
       req.setMaxParts(shrinkMaxtoShort(max_parts));
     }
-    req.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
+    req.setValidWriteIdList(getValidWriteIdList(req.getCatName(), db_name, tbl_name));
     return req;
   }
 
@@ -2411,9 +2411,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public GetPartitionResponse getPartitionRequest(GetPartitionRequest req)
-      throws NoSuchObjectException, MetaException, TException {
+      throws TException {
     if (req.getValidWriteIdList() == null) {
-      req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
+      req.setValidWriteIdList(getValidWriteIdList(req.getCatName(), req.getDbName(), req.getTblName()));
     }
     GetPartitionResponse res = client.get_partition_req(req);
     res.setPartition(deepCopy(
@@ -2436,10 +2436,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public PartitionsResponse getPartitionsRequest(PartitionsRequest req)
-      throws NoSuchObjectException, MetaException, TException {
+      throws TException {
 
     if (req.getValidWriteIdList() == null) {
-      req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
+      req.setValidWriteIdList(getValidWriteIdList(req.getCatName(), req.getDbName(), req.getTblName()));
     }
     PartitionsResponse res = client.get_partitions_req(req);
     List<Partition> parts = deepCopyPartitions(
@@ -2901,9 +2901,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
-          throws NoSuchObjectException, MetaException, TException {
+          throws TException {
     if (req.getValidWriteIdList() == null) {
-      req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
+      req.setValidWriteIdList(getValidWriteIdList(req.getCatName(), req.getDbName(), req.getTblName()));
     }
     if( req.getCatName() == null ) {
       req.setCatName(getDefaultCatalog(conf));
@@ -3346,7 +3346,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PartitionsStatsRequest rqst = new PartitionsStatsRequest(dbName, tableName, colNames,
         partNames, engine);
     rqst.setCatName(catName);
-    rqst.setValidWriteIdList(getValidWriteIdList(dbName, tableName));
+    rqst.setValidWriteIdList(getValidWriteIdList(catName, dbName, tableName));
     return client.get_partitions_statistics_req(rqst).getPartStats();
   }
 
@@ -4455,7 +4455,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       }
       PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames, engine);
       req.setCatName(catName);
-      req.setValidWriteIdList(getValidWriteIdList(dbName, tblName));
+      req.setValidWriteIdList(getValidWriteIdList(catName, dbName, tblName));
 
       return getAggrStatsForInternal(req);
     } finally {
@@ -4867,7 +4867,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * this only covers a subset of cases, where we invoke get_* APIs after query compilation,
    * if the validWriteIdList is not explicitly passed (as a method argument) to the HMS APIs.
    */
-  protected String getValidWriteIdList(String dbName, String tblName) {
+  protected String getValidWriteIdList(String catName, String dbName, String tblName) {
     if (conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) == null) {
       return null;
     }
