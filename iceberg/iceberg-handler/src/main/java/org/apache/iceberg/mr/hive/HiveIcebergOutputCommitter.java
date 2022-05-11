@@ -337,8 +337,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     if (!conf.getBoolean(InputFormatConfig.IS_OVERWRITE, false)) {
       if (writeResults.isEmpty()) {
         LOG.info(
-            "Not creating a new commit for table: {}, jobID: {}, isDelete: {}, since there were no new files to add",
-            table, jobContext.getJobID(), HiveIcebergStorageHandler.isDelete(conf, name));
+            "Not creating a new commit for table: {}, jobID: {}, operation: {}, since there were no new files to add",
+            table, jobContext.getJobID(), HiveIcebergStorageHandler.operation(conf, name));
       } else {
         commitWrite(table, startTime, writeResults);
       }

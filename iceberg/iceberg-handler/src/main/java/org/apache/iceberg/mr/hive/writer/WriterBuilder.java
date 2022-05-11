@@ -37,7 +37,7 @@ import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT_DEFAULT;
 import static org.apache.iceberg.TableProperties.DELETE_DEFAULT_FILE_FORMAT;
 
 public class WriterBuilder {
-  private Table table;
+  private final Table table;
   private String tableName;
   private TaskAttemptID attemptID;
   private String queryId;
