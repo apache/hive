@@ -387,6 +387,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
         values.add(targetName + "." + HiveUtils.unparseIdentifier(name, this.conf));
       }
     }
+    addPartitionColsAsValues(targetTable.getPartCols(), targetName, values);
 
     rewrittenQueryStr.append("    -- update clause").append(splitUpdateEarly ? " (insert part)": "").append("\n");
     appendInsertBranch(rewrittenQueryStr, hintStr, values);
@@ -436,7 +437,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
         getWhenClauseOperation(whenMatchedDeleteClause).getType() == HiveParser.TOK_DELETE;
     String targetName = getSimpleTableName(target);
 
-    appendInsertBranch(rewrittenQueryStr, hintStr, Collections.singletonList(targetName + ".ROW__ID"));
+    appendDeleteBranch(rewrittenQueryStr, hintStr, targetName, Collections.singletonList(targetName + ".ROW__ID"));
 
     rewrittenQueryStr.append(INDENT).append("WHERE ").append(onClauseAsString);
     String extraPredicate = getWhenClausePredicate(whenMatchedDeleteClause);

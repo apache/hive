@@ -116,11 +116,14 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
       values.add("s." + identifier);
     }
     addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr);
+    addPartitionColsAsValues(mTable.getPartCols(), "s", values);
     rewrittenQueryStr.append(" FROM ").append(getFullTableNameForSQL(tabName)).append(") s\n");
 
     appendInsertBranch(rewrittenQueryStr, null, values);
-    appendInsertBranch(rewrittenQueryStr, null, singletonList("s.ROW__ID"));
+    appendDeleteBranch(rewrittenQueryStr, null, "s", Collections.singletonList("s.ROW__ID "));
+
     appendSortBy(rewrittenQueryStr, Collections.singletonList("s.ROW__ID "));
+
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
