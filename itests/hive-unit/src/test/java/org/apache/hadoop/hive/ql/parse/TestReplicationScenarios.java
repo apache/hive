@@ -165,7 +165,6 @@ public class TestReplicationScenarios {
   static HiveConf hconf;
   static HiveMetaStoreClient metaStoreClient;
   private static IDriver driver;
-  private static String proxySettingName;
   private static HiveConf hconfMirror;
   private static IDriver driverMirror;
   private static HiveMetaStoreClient metaStoreClientMirror;
@@ -198,14 +197,13 @@ public class TestReplicationScenarios {
       hconf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), metastoreUri);
       return;
     }
-
+    // Disable auth so the call should succeed
+    MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     hconf.set(MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS.getHiveName(),
         DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
     hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
     hconf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     hconf.setVar(HiveConf.ConfVars.REPLCMDIR, TEST_PATH + "/cmroot/");
-    proxySettingName = "hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts";
-    hconf.set(proxySettingName, "*");
     hconf.setVar(HiveConf.ConfVars.REPLDIR,TEST_PATH + "/hrepl/");
     hconf.set(MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES.getHiveName(), "3");
     hconf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
@@ -244,7 +242,6 @@ public class TestReplicationScenarios {
     FileUtils.deleteDirectory(new File("metastore_db2"));
     HiveConf hconfMirrorServer = new HiveConf();
     hconfMirrorServer.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
-    hconfMirrorServer.set(proxySettingName, "*");
     MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer, true);
     hconfMirror = new HiveConf(hconf);
     String thriftUri = MetastoreConf.getVar(hconfMirrorServer, MetastoreConf.ConfVars.THRIFT_URIS);
@@ -4204,7 +4201,6 @@ public class TestReplicationScenarios {
     } finally {
       // Restore the settings
       MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
-      hconf.set(proxySettingName, "*");
       MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
 
       // Restore Proxy configurations to test values

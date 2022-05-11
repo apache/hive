@@ -28,7 +28,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -165,15 +164,15 @@ public class TestReplicationOnHDFSEncryptedZones {
             .run("insert into table encrypted_table2 values (2,'value2')")
             .dump(primaryDbName, dumpWithClause);
 
-    replica
-            .run("repl load " + primaryDbName + " into " + replicatedDbName
-                    + " with('hive.repl.replica.external.table.base.dir'='" + replica.externalTableWarehouseRoot + "', "
-                    + "'hive.exec.copyfile.maxsize'='0', 'distcp.options.skipcrccheck'='')")
-            .run("use " + replicatedDbName)
-            .run("repl status " + replicatedDbName)
-            .verifyResult(tuple.lastReplicationId)
-            .run("select value from encrypted_table2")
-            .verifyResults(new String[] { "value1", "value2" });
+    try {
+      replica.run("repl load " + primaryDbName + " into " + replicatedDbName
+          + " with('hive.repl.add.raw.reserved.namespace'='true', " + "'hive.repl.replica.external.table.base.dir'='"
+          + replica.externalTableWarehouseRoot + "', "
+          + "'distcp.options.pugpbx'='', 'distcp.options.skipcrccheck'='')");
+      Assert.fail("Test should have thrown an exception because cross-encryption-zone is not allowed for RAW");
+    } catch (IOException ioe) {
+      // ignore
+    }
   }
 
   @Test
