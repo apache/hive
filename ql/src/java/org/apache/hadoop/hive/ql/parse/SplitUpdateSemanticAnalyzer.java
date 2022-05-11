@@ -99,7 +99,8 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
       String identifier = HiveUtils.unparseIdentifier(name, this.conf);
 
       if (setCol != null) {
-        if (setCol.getChildCount() > 0 && "default".equalsIgnoreCase(setCol.getChild(0).getText())) {
+        if (setCol.getType() == HiveParser.TOK_TABLE_OR_COL &&
+                setCol.getChildCount() == 1 && setCol.getChild(0).getType() == HiveParser.TOK_DEFAULT_VALUE) {
           rewrittenQueryStr.append(colNameToDefaultConstraint.get(name));
         } else {
           rewrittenQueryStr.append(identifier);
