@@ -108,8 +108,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
    * INSERT INTO T PARTITION(partCol1,partCol2...) SELECT col1, ... partCol1,partCol2...
    * @param alias table name or alias
    */
-  protected void addPartitionColsToSelect(List<FieldSchema> partCols, StringBuilder rewrittenQueryStr,
-                                        String alias) throws SemanticException {
+  protected void addPartitionColsToSelect(List<FieldSchema> partCols, StringBuilder rewrittenQueryStr, String alias) {
     // If the table is partitioned, we need to select the partition columns as well.
     if (partCols != null) {
       for (FieldSchema fschema : partCols) {
@@ -118,6 +117,14 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
         rewrittenQueryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
       }
     }
+  }
+
+  protected void addPartitionColsAsValues(List<FieldSchema> partCols, String alias, List<String> values) {
+    if (partCols == null) {
+      return;
+    }
+    partCols.forEach(
+            fieldSchema -> values.add(alias + "." + HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf)));
   }
 
   /**
@@ -505,9 +512,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     }
   }
 
-  protected void appendInsertBranch(
-          StringBuilder rewrittenQueryStr, String hintStr, List<String> values)
-          throws SemanticException {
+  protected void appendInsertBranch(StringBuilder rewrittenQueryStr, String hintStr, List<String> values) {
     rewrittenQueryStr.append("INSERT INTO ").append(targetTableFullName);
     addPartitionColsToInsert(targetTable.getPartCols(), rewrittenQueryStr);
     rewrittenQueryStr.append("\n");
@@ -519,8 +524,15 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     }
 
     rewrittenQueryStr.append(StringUtils.join(values, ","));
-    addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, quotedTargetTableName);
     rewrittenQueryStr.append("\n");
+  }
+
+  protected void appendDeleteBranch(StringBuilder rewrittenQueryStr, String hintStr, String alias, List<String> values) {
+    List<String> deleteValues = new ArrayList<>(targetTable.getPartCols().size() + values.size());
+    deleteValues.addAll(values);
+    addPartitionColsAsValues(targetTable.getPartCols(), alias, deleteValues);
+
+    appendInsertBranch(rewrittenQueryStr, hintStr, deleteValues);
   }
 
   protected void appendSortBy(StringBuilder rewrittenQueryStr, List<String> keys) {
