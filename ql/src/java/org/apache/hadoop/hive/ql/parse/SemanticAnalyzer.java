@@ -7604,7 +7604,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 || conf.getBoolVar(ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
                 && conf.getBoolVar(ConfVars.HIVE_ACID_DIRECT_INSERT_ENABLED);
         isNonNativeTable = AcidUtils.isNonNativeTable(tblProps);
-        if (enableSuffixing && isNonNativeTable && tblDesc != null && tblDesc.getLocation() == null && tblDesc.isCTAS()) {
+        if (enableSuffixing && !isNonNativeTable && tblDesc != null && tblDesc.getLocation() == null && tblDesc.isCTAS()) {
           destinationPath = getCTASDestinationTableLocation(tblDesc);
           acidOperation = getAcidType(dest);
           destTableIsFullAcid = AcidUtils.isFullAcidTable(tblProps);
