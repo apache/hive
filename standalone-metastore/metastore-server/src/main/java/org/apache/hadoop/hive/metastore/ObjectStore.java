@@ -11542,54 +11542,89 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void cleanWriteNotificationEvents(int olderThan) {
-    boolean commited = false;
-    Query query = null;
-    try {
-      openTransaction();
-      long tmp = System.currentTimeMillis() / 1000 - olderThan;
-      int tooOld = (tmp > Integer.MAX_VALUE) ? 0 : (int) tmp;
-      query = pm.newQuery(MTxnWriteNotificationLog.class, "eventTime < tooOld");
-      query.declareParameters("java.lang.Integer tooOld");
+    final int eventBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS);
 
-      int max_events = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS);
-      max_events = max_events > 0 ? max_events : Integer.MAX_VALUE;
-      query.setRange(0, max_events);
-      query.setOrdering("txnId ascending");
+    final long ageSec = olderThan;
+    final Instant now = Instant.now();
 
-      List<MTxnWriteNotificationLog> toBeRemoved = (List) query.execute(tooOld);
-      int iteration = 0;
-      int eventCount = 0;
-      long minTxnId = 0;
-      long minEventTime = 0;
-      long maxTxnId = 0;
-      long maxEventTime = 0;
-      while (CollectionUtils.isNotEmpty(toBeRemoved)) {
-        int listSize = toBeRemoved.size();
-        if (iteration == 0) {
-          MTxnWriteNotificationLog firstNotification = toBeRemoved.get(0);
-          minTxnId = firstNotification.getTxnId();
-          minEventTime = firstNotification.getEventTime();
-        }
-        MTxnWriteNotificationLog lastNotification = toBeRemoved.get(listSize - 1);
-        maxTxnId = lastNotification.getTxnId();
-        maxEventTime = lastNotification.getEventTime();
+    final int tooOld = Math.toIntExact(now.getEpochSecond() - ageSec);
 
-        pm.deletePersistentAll(toBeRemoved);
-        eventCount += listSize;
-        iteration++;
-        toBeRemoved = (List) query.execute(tooOld);
-      }
-      if (iteration == 0) {
-        LOG.info("No WriteNotification events found to be cleaned with eventTime < {}.", tooOld);
-      } else {
-        LOG.info("WriteNotification Cleaned {} events with eventTime < {} in {} iteration, " +
-            "minimum txnId {} (with eventTime {}) and maximum txnId {} (with eventTime {})",
-            eventCount, tooOld, iteration, minTxnId, minEventTime, maxTxnId, maxEventTime);
-      }
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, query);
+    final Optional<Integer> batchSize = (eventBatchSize > 0) ? Optional.of(eventBatchSize) : Optional.empty();
+
+    final long start = System.nanoTime();
+    int deleteCount = doCleanWriteNotificationEvents(tooOld, batchSize);
+
+    if (deleteCount == 0) {
+      LOG.info("No WriteNotification events found to be cleaned with eventTime < {}", tooOld);
+    } else {
+      int batchCount = 0;
+      do {
+        batchCount = doCleanWriteNotificationEvents(tooOld, batchSize);
+        deleteCount += batchCount;
+      } while (batchCount > 0);
     }
+
+    final long finish = System.nanoTime();
+
+    LOG.info("Deleted {} WriteNotification events older than epoch:{} in {}ms", deleteCount, tooOld,
+            TimeUnit.NANOSECONDS.toMillis(finish - start));
+  }
+
+  private int doCleanWriteNotificationEvents(final int ageSec, final Optional<Integer> batchSize) {
+    final Transaction tx = pm.currentTransaction();
+    int eventsCount = 0;
+
+    try {
+      tx.begin();
+
+      try (Query query = pm.newQuery(MTxnWriteNotificationLog.class, "eventTime <= tooOld")) {
+        query.declareParameters("java.lang.Integer tooOld");
+        query.setOrdering("txnId ascending");
+        if (batchSize.isPresent()) {
+          query.setRange(0, batchSize.get());
+        }
+
+        List<MTxnWriteNotificationLog> toBeRemoved = (List) query.execute(ageSec);
+        if (CollectionUtils.isNotEmpty(toBeRemoved)) {
+          eventsCount = toBeRemoved.size();
+
+          if (LOG.isDebugEnabled()) {
+            int minEventTime, maxEventTime;
+            long minTxnId, maxTxnId;
+            Iterator<MTxnWriteNotificationLog> iter = toBeRemoved.iterator();
+            MTxnWriteNotificationLog firstNotification = iter.next();
+
+            minEventTime = maxEventTime = firstNotification.getEventTime();
+            minTxnId = maxTxnId = firstNotification.getTxnId();
+
+            while (iter.hasNext()) {
+              MTxnWriteNotificationLog notification = iter.next();
+              minEventTime = Math.min(minEventTime, notification.getEventTime());
+              maxEventTime = Math.max(maxEventTime, notification.getEventTime());
+              minTxnId = Math.min(minTxnId, notification.getTxnId());
+              maxTxnId = Math.max(maxTxnId, notification.getTxnId());
+            }
+
+            LOG.debug(
+                    "Remove WriteNotification batch of {} events with eventTime < {}, min txnId {}, max txnId {}, min eventTime {}, max eventTime {}",
+                    eventsCount, ageSec, minTxnId, maxTxnId, minEventTime, maxEventTime);
+          }
+
+          pm.deletePersistentAll(toBeRemoved);
+        }
+      }
+
+      tx.commit();
+    } catch (Exception e) {
+      LOG.error("Unable to delete batch of write notification events", e);
+      eventsCount = 0;
+    } finally {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+    }
+
+    return eventsCount;
   }
 
   @Override

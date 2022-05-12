@@ -2090,7 +2090,7 @@ public interface RawStore extends Configurable {
 
   /**
    * Remove older notification events.
-   * @param olderThan Remove any events older than a given number of seconds
+   * @param olderThan Remove any events older or equal to a given number of seconds
    */
   void cleanWriteNotificationEvents(int olderThan);
 
