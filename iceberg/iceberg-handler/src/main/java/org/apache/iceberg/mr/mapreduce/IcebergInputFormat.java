@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
@@ -240,6 +241,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     private T current;
     private CloseableIterator<T> currentIterator;
     private Table table;
+    private boolean updateOrDelete;
 
     @Override
     public void initialize(InputSplit split, TaskAttemptContext newContext) {
@@ -257,6 +259,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       this.inMemoryDataModel = conf.getEnum(InputFormatConfig.IN_MEMORY_DATA_MODEL,
               InputFormatConfig.InMemoryDataModel.GENERIC);
       this.currentIterator = open(tasks.next(), expectedSchema).iterator();
+      Operation operation = HiveIcebergStorageHandler.operation(conf, conf.get(Catalogs.NAME));
+      this.updateOrDelete = Operation.DELETE.equals(operation) || Operation.UPDATE.equals(operation);
     }
 
     @Override
@@ -264,8 +268,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       while (true) {
         if (currentIterator.hasNext()) {
           current = currentIterator.next();
-          if (HiveIcebergStorageHandler.isDelete(conf, conf.get(Catalogs.NAME)) ||
-              HiveIcebergStorageHandler.isUpdate(conf, conf.get(Catalogs.NAME))) {
+          if (updateOrDelete) {
             GenericRecord rec = (GenericRecord) current;
             PositionDeleteInfo.setIntoConf(conf,
                 IcebergAcidUtil.parseSpecId(rec),
@@ -508,17 +511,24 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       readSchema = caseSensitive ? table.schema().select(selectedColumns) :
           table.schema().caseInsensitiveSelect(selectedColumns);
 
-      // for DELETE queries, add additional metadata columns into the read schema
-      if (HiveIcebergStorageHandler.isDelete(conf, conf.get(Catalogs.NAME))) {
-        readSchema = IcebergAcidUtil.createFileReadSchemaForDelete(readSchema.columns(), table);
+      Operation operation = HiveIcebergStorageHandler.operation(conf, conf.get(Catalogs.NAME));
+      if (operation != null) {
+        switch (operation) {
+          case DELETE:
+            // for DELETE queries, add additional metadata columns into the read schema
+            return IcebergAcidUtil.createFileReadSchemaForDelete(readSchema.columns(), table);
+          case UPDATE:
+            // for UPDATE queries, add additional metadata columns into the read schema
+            return IcebergAcidUtil.createFileReadSchemaForUpdate(readSchema.columns(), table);
+          case OTHER:
+            // for INSERT queries no extra columns are needed
+            return readSchema;
+          default:
+            throw new IllegalArgumentException("Not supported operation " + operation);
+        }
+      } else {
+        return readSchema;
       }
-
-      // for UPDATE queries, add additional metadata columns into the read schema
-      if (HiveIcebergStorageHandler.isUpdate(conf, conf.get(Catalogs.NAME))) {
-        readSchema = IcebergAcidUtil.createFileReadSchemaForUpdate(readSchema.columns(), table);
-      }
-
-      return readSchema;
     }
 
     private static Schema schemaWithoutConstantsAndMeta(Schema readSchema, Map<Integer, ?> idToConstant) {

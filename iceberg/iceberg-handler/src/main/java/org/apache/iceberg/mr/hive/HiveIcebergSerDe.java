@@ -31,6 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -144,15 +145,18 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   }
 
   private static Schema projectedSchema(Configuration configuration, String tableName, Schema tableSchema) {
-    if (HiveIcebergStorageHandler.isDelete(configuration, tableName)) {
-      // when writing delete files, we should use the full delete schema
-      return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
-    } else if (HiveIcebergStorageHandler.isUpdate(configuration, tableName)) {
-      // when writing delete files, we should use the full delete schema
-      return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
-    } else if (HiveIcebergStorageHandler.isWrite(configuration, tableName)) {
-      // when writing out data, we should not do projection push down
-      return tableSchema;
+    Context.Operation operation = HiveIcebergStorageHandler.operation(configuration, tableName);
+    if (operation != null) {
+      switch (operation) {
+        case DELETE:
+          return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
+        case UPDATE:
+          return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
+        case OTHER:
+          return tableSchema;
+        default:
+          throw new IllegalArgumentException("Unsupported operation " + operation);
+      }
     } else {
       configuration.setBoolean(InputFormatConfig.CASE_SENSITIVE, false);
       String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(configuration);

@@ -17,14 +17,10 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.util.Map;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
@@ -32,26 +28,15 @@ import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.PartitioningWriter;
-import org.apache.iceberg.mr.mapred.Container;
+import org.apache.iceberg.mr.hive.FilesForCommit;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("checkstyle:VisibilityModifier")
-public abstract class HiveIcebergWriterBase implements FileSinkOperator.RecordWriter,
-    org.apache.hadoop.mapred.RecordWriter<NullWritable, Container<Record>>, HiveIcebergWriter {
+abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergWriterBase.class);
-
-  private static final Map<TaskAttemptID, Map<String, HiveIcebergWriter>> writers = Maps.newConcurrentMap();
-
-  static Map<String, HiveIcebergWriter> removeWriters(TaskAttemptID taskAttemptID) {
-    return writers.remove(taskAttemptID);
-  }
-
-  static Map<String, HiveIcebergWriter> getWriters(TaskAttemptID taskAttemptID) {
-    return writers.get(taskAttemptID);
-  }
 
   protected final FileIO io;
   protected final InternalRecordWrapper wrapper;
@@ -59,27 +44,13 @@ public abstract class HiveIcebergWriterBase implements FileSinkOperator.RecordWr
   protected final Map<Integer, PartitionKey> partitionKeys;
   protected final PartitioningWriter writer;
 
-  protected HiveIcebergWriterBase(Schema schema, Map<Integer, PartitionSpec> specs, FileIO io, TaskAttemptID attemptID,
-      String tableName, PartitioningWriter writer, boolean wrapped) {
+  HiveIcebergWriterBase(Schema schema, Map<Integer, PartitionSpec> specs, FileIO io,
+      PartitioningWriter writer) {
     this.io = io;
     this.wrapper = new InternalRecordWrapper(schema.asStruct());
     this.specs = specs;
     this.partitionKeys = Maps.newHashMapWithExpectedSize(specs.size());
     this.writer = writer;
-    if (!wrapped) {
-      writers.putIfAbsent(attemptID, Maps.newConcurrentMap());
-      writers.get(attemptID).put(tableName, this);
-    }
-  }
-
-  @Override
-  public void write(NullWritable key, Container value) throws IOException {
-    write(value);
-  }
-
-  @Override
-  public void close(Reporter reporter) throws IOException {
-    close(false);
   }
 
   @Override

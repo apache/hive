@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.writer;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +25,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.mapred.JobID;
+import org.apache.hadoop.mapred.TaskAttemptID;
+import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.MetadataColumns;
@@ -69,6 +72,7 @@ public class HiveIcebergWriterTestBase {
   private final HadoopTables tables = new HadoopTables(new HiveConf());
   private TestHelper helper;
   protected Table table;
+  protected WriterBuilder writerBuilder;
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
@@ -108,6 +112,14 @@ public class HiveIcebergWriterTestBase {
     TableOperations ops = ((BaseTable) table).operations();
     TableMetadata meta = ops.current();
     ops.commit(meta, meta.upgradeToFormatVersion(2));
+
+    JobID jobId = new JobID("test", 0);
+    TaskAttemptID taskAttemptID =
+        new TaskAttemptID(jobId.getJtIdentifier(), jobId.getId(), TaskType.MAP, 0, 0);
+    writerBuilder = WriterBuilder.builderFor(table)
+        .attemptID(taskAttemptID)
+        .queryId("Q_ID")
+        .tableName("dummy");
   }
 
   @After

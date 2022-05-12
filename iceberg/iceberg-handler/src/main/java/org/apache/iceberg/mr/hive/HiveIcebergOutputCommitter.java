@@ -61,6 +61,8 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
+import org.apache.iceberg.mr.hive.writer.WriterRegistry;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -107,7 +109,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     TaskAttemptID attemptID = context.getTaskAttemptID();
     JobConf jobConf = context.getJobConf();
     Collection<String> outputs = HiveIcebergStorageHandler.outputTables(context.getJobConf());
-    Map<String, HiveIcebergWriter> writers = Optional.ofNullable(HiveIcebergWriterBase.getWriters(attemptID))
+    Map<String, HiveIcebergWriter> writers = Optional.ofNullable(WriterRegistry.writers(attemptID))
         .orElseGet(() -> {
           LOG.info("CommitTask found no writers for output tables: {}, attemptID: {}", outputs, attemptID);
           return ImmutableMap.of();
@@ -146,7 +148,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     }
 
     // remove the writer to release the object
-    HiveIcebergWriterBase.removeWriters(attemptID);
+    WriterRegistry.removeWriters(attemptID);
   }
 
   /**
@@ -159,7 +161,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     TaskAttemptContext context = TezUtil.enrichContextWithAttemptWrapper(originalContext);
 
     // Clean up writer data from the local store
-    Map<String, HiveIcebergWriter> writers = HiveIcebergWriterBase.removeWriters(context.getTaskAttemptID());
+    Map<String, HiveIcebergWriter> writers = WriterRegistry.removeWriters(context.getTaskAttemptID());
 
     // Remove files if it was not done already
     if (writers != null) {
@@ -335,8 +337,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     if (!conf.getBoolean(InputFormatConfig.IS_OVERWRITE, false)) {
       if (writeResults.isEmpty()) {
         LOG.info(
-            "Not creating a new commit for table: {}, jobID: {}, isDelete: {}, since there were no new files to add",
-            table, jobContext.getJobID(), HiveIcebergStorageHandler.isDelete(conf, name));
+            "Not creating a new commit for table: {}, jobID: {}, operation: {}, since there were no new files to add",
+            table, jobContext.getJobID(), HiveIcebergStorageHandler.operation(conf, name));
       } else {
         commitWrite(table, startTime, writeResults);
       }

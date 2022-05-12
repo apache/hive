@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -26,7 +26,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
@@ -43,6 +42,8 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.io.PartitioningWriter;
+import org.apache.iceberg.mr.hive.FilesForCommit;
+import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -58,11 +59,8 @@ import org.slf4j.LoggerFactory;
  * we only write out {@link PositionDelete} files where the row data is omitted, so only the filenames and the rowIds
  * have to be in the memory.
  */
-public class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
+class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergBufferedDeleteWriter.class);
-
-  private static final String DELETE_FILE_THREAD_POOL_SIZE = "iceberg.delete.file.thread.pool.size";
-  private static final int DELETE_FILE_THREAD_POOL_SIZE_DEFAULT = 10;
 
   // Storing deleted data in a map Partition -> FileName -> BitMap
   private final Map<PartitionKey, Map<String, Roaring64Bitmap>> buffer = Maps.newHashMap();
@@ -73,21 +71,21 @@ public class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
   private final OutputFileFactory fileFactory;
   private final FileIO io;
   private final long targetFileSize;
-  private final Configuration configuration;
+  private final int poolSize;
   private final Record record;
   private final InternalRecordWrapper wrapper;
   private FilesForCommit filesForCommit;
 
-  HiveIcebergBufferedDeleteWriter(Schema schema, Map<Integer, PartitionSpec> specs, FileFormat format,
-      FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io, long targetFileSize,
-      Configuration configuration) {
+  HiveIcebergBufferedDeleteWriter(Schema schema, Map<Integer, PartitionSpec> specs,
+      FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory,  FileFormat format, FileIO io,
+      long targetFileSize, int poolSize) {
     this.specs = specs;
     this.format = format;
     this.writerFactory = writerFactory;
     this.fileFactory = fileFactory;
     this.io = io;
     this.targetFileSize = targetFileSize;
-    this.configuration = configuration;
+    this.poolSize = poolSize;
     this.wrapper = new InternalRecordWrapper(schema.asStruct());
     this.record = GenericRecord.create(schema);
   }
@@ -114,7 +112,8 @@ public class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
     Collection<DeleteFile> deleteFiles = new ConcurrentLinkedQueue<>();
     if (!abort) {
       LOG.info("Delete file flush is started");
-      ExecutorService fileExecutor = fileExecutor(configuration, buffer.size());
+      int size = Math.min(buffer.size(), poolSize);
+      ExecutorService fileExecutor = fileExecutor(size);
       try {
         Tasks.foreach(buffer.keySet())
             .retry(3)
@@ -165,13 +164,12 @@ public class HiveIcebergBufferedDeleteWriter implements HiveIcebergWriter {
 
   /**
    * Executor service for parallel writing of delete files.
-   * @param conf The configuration containing the pool size
+   * @param poolSize The pool size
    * @return The generated executor service
    */
-  private static ExecutorService fileExecutor(Configuration conf, int maxSize) {
-    int size = Math.min(maxSize, conf.getInt(DELETE_FILE_THREAD_POOL_SIZE, DELETE_FILE_THREAD_POOL_SIZE_DEFAULT));
+  private static ExecutorService fileExecutor(int poolSize) {
     return Executors.newFixedThreadPool(
-        size,
+        poolSize,
         new ThreadFactoryBuilder()
             .setDaemon(true)
             .setPriority(Thread.NORM_PRIORITY)

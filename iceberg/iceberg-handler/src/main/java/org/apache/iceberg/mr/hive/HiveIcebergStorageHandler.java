@@ -556,19 +556,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return false;
   }
 
-  public static boolean isWrite(Configuration conf, String tableName) {
-    return conf != null && tableName != null && Operation.OTHER.name().equals(
-        conf.get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName));
-  }
+  public static Operation operation(Configuration conf, String tableName) {
+    if (conf == null || tableName == null) {
+      return null;
+    }
 
-  public static boolean isDelete(Configuration conf, String tableName) {
-    return conf != null && tableName != null && Operation.DELETE.name().equals(
-        conf.get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName));
-  }
-
-  public static boolean isUpdate(Configuration conf, String tableName) {
-    return conf != null && tableName != null && Operation.UPDATE.name().equals(
-        conf.get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName));
+    String operation = conf.get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName);
+    return operation == null ? null : Operation.valueOf(operation);
   }
 
   /**

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.writer;
 
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Schema;
@@ -32,9 +32,9 @@ import org.apache.iceberg.data.parquet.GenericParquetWriter;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
 
-public class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
+class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
 
-  protected HiveFileWriterFactory(
+  HiveFileWriterFactory(
       Table table,
       FileFormat dataFileFormat,
       Schema dataSchema,
