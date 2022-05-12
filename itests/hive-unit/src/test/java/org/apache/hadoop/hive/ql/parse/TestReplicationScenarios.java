@@ -165,6 +165,7 @@ public class TestReplicationScenarios {
   static HiveConf hconf;
   static HiveMetaStoreClient metaStoreClient;
   private static IDriver driver;
+  private static String proxySettingName;
   private static HiveConf hconfMirror;
   private static IDriver driverMirror;
   private static HiveMetaStoreClient metaStoreClientMirror;
@@ -204,6 +205,9 @@ public class TestReplicationScenarios {
     hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
     hconf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     hconf.setVar(HiveConf.ConfVars.REPLCMDIR, TEST_PATH + "/cmroot/");
+    proxySettingName = "hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts";
+    hconf.set(proxySettingName, "*");
+    MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     hconf.setVar(HiveConf.ConfVars.REPLDIR,TEST_PATH + "/hrepl/");
     hconf.set(MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES.getHiveName(), "3");
     hconf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
@@ -244,9 +248,10 @@ public class TestReplicationScenarios {
     hconfMirrorServer.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
     MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer, true);
     hconfMirror = new HiveConf(hconf);
+    MetastoreConf.setBoolVar(hconfMirror, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+    hconfMirrorServer.set(proxySettingName, "*");
     String thriftUri = MetastoreConf.getVar(hconfMirrorServer, MetastoreConf.ConfVars.THRIFT_URIS);
     MetastoreConf.setVar(hconfMirror, MetastoreConf.ConfVars.THRIFT_URIS, thriftUri);
-
     driverMirror = DriverFactory.newDriver(hconfMirror);
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 
@@ -4187,6 +4192,8 @@ public class TestReplicationScenarios {
     // Pretty hacky: Affects both instances of HMS
     ProxyUsers.refreshSuperUserGroupsConfiguration();
     try {
+      hconf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, false);
+      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
       rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
       Assert.fail("Get Next Nofitication should have failed due to no proxy auth");
     } catch (TException e) {
@@ -4200,8 +4207,9 @@ public class TestReplicationScenarios {
       assertEquals(1, rsp.getEventsSize());
     } finally {
       // Restore the settings
-      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
-      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
+      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+      hconf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, true);
+      hconf.set(proxySettingName, "*");
 
       // Restore Proxy configurations to test values
       // Pretty hacky: Applies one setting to both instances of HMS

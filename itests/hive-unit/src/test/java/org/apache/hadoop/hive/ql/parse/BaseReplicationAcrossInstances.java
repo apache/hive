@@ -96,7 +96,6 @@ public class BaseReplicationAcrossInstances {
     conf = new HiveConf(clazz);
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, primaryBaseDir);
     conf.set("dfs.client.use.datanode.hostname", "true");
-    conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniPrimaryDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
 
     // Setup primary warehouse.
