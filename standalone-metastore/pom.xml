@@ -56,7 +56,7 @@
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
-    <maven.surefire.version>2.20.1</maven.surefire.version>
+    <maven.surefire.version>3.0.0-M6</maven.surefire.version>
 
     <!-- Dependency versions -->
     <antlr.version>3.5.2</antlr.version>
@@ -640,7 +640,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.20.1</version>
+        <version>3.0.0-M6</version>
         <executions>
           <execution>
             <goals>
