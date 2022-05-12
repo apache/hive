@@ -143,6 +143,11 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.10.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version>${maven.antrun.plugin.version}</version>
                     <dependencies>
