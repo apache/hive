@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -448,6 +449,27 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public boolean isMetadataTableSupported() {
     return true;
+  }
+
+  @Override
+  public void executeOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable, AlterTableExecuteSpec executeSpec) {
+    switch (executeSpec.getOperationType()) {
+      case ROLLBACK:
+        TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+        Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+        LOG.info("Executing rollback operation on iceberg table. If you would like to revert rollback you could " +
+              "try altering the metadata location to the current metadata location by executing the following query:" +
+              "ALTER TABLE {}.{} SET TBLPROPERTIES('metadata_location'='{}'). This operation is supported for Hive " +
+              "Catalog tables.", hmsTable.getDbName(), hmsTable.getTableName(),
+            ((BaseTable) icebergTable).operations().current().metadataFileLocation());
+        AlterTableExecuteSpec.RollbackSpec rollbackSpec =
+            (AlterTableExecuteSpec.RollbackSpec) executeSpec.getOperationParams();
+        IcebergTableUtil.rollback(icebergTable, rollbackSpec.getRollbackType(), rollbackSpec.getParam());
+        break;
+      default:
+        throw new UnsupportedOperationException(
+            String.format("Operation type %s is not supported", executeSpec.getOperationType().name()));
+    }
   }
 
   @Override
