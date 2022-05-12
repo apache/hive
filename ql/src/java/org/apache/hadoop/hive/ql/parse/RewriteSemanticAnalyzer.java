@@ -201,7 +201,6 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
    */
   protected Table getTargetTable(ASTNode tabRef) throws SemanticException {
     targetTableFullName = getFullTableNameForSQL(tabRef);
-    quotedTargetTableName = getSimpleTableName(tabRef);
     targetTable = getTable(tabRef, db, true);
     validateTargetTable(targetTable);
     return targetTable;
@@ -484,7 +483,6 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
 
   private Table targetTable;
   private String targetTableFullName;
-  private String quotedTargetTableName;
 
   protected StringBuilder createRewrittenQueryStrBuilder() {
     return new StringBuilder("FROM\n");
@@ -536,6 +534,9 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   }
 
   protected void appendSortBy(StringBuilder rewrittenQueryStr, List<String> keys) {
+    if (keys.isEmpty()) {
+      return;
+    }
     rewrittenQueryStr.append(INDENT).append("SORT BY ");
     rewrittenQueryStr.append(StringUtils.join(keys, ","));
     rewrittenQueryStr.append("\n");
