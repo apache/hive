@@ -122,57 +122,24 @@ public class TestReplicationOnHDFSEncryptedZones {
               put(HiveConf.ConfVars.REPLDIR.varname, primary.repldDir);
             }}, "test_key123");
 
-    List<String> dumpWithClause = Arrays.asList(
-            "'hive.repl.add.raw.reserved.namespace'='true'",
-            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
-                    + replica.externalTableWarehouseRoot + "'",
-            "'distcp.options.skipcrccheck'=''",
-            "'" + HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname + "'='false'",
-            "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
-                    + UserGroupInformation.getCurrentUser().getUserName() +"'");
-    WarehouseInstance.Tuple tuple =
-            primary.run("use " + primaryDbName)
-                    .run("create table encrypted_table (id int, value string)")
-                    .run("insert into table encrypted_table values (1,'value1')")
-                    .run("insert into table encrypted_table values (2,'value2')")
-                    .dump(primaryDbName, dumpWithClause);
-
-    replica
-            .run("repl load " + primaryDbName + " into " + replicatedDbName
-                    + " with('hive.repl.add.raw.reserved.namespace'='true', "
-                    + "'hive.repl.replica.external.table.base.dir'='" + replica.externalTableWarehouseRoot + "', "
-                    + "'hive.exec.copyfile.maxsize'='0', 'distcp.options.skipcrccheck'='')")
-            .run("use " + replicatedDbName)
-            .run("repl status " + replicatedDbName)
-            .verifyResult(tuple.lastReplicationId);
-
-    try {
-      replica
-              .run("select value from encrypted_table")
-              .verifyResults(new String[] { "value1", "value2" });
-      Assert.fail("Src EZKey shouldn't be present on target");
-    } catch (IOException e) {
-      Assert.assertTrue(e.getCause().getMessage().contains("KeyVersion name 'test_key@0' does not exist"));
-    }
-
     //read should pass without raw-byte distcp
-    dumpWithClause = Arrays.asList( "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
+    List<String> dumpWithClause = Arrays.asList( "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
             + replica.externalTableWarehouseRoot + "'");
-    tuple = primary.run("use " + primaryDbName)
+    WarehouseInstance.Tuple tuple =
+        primary.run("use " + primaryDbName)
             .run("create external table encrypted_table2 (id int, value string)")
             .run("insert into table encrypted_table2 values (1,'value1')")
             .run("insert into table encrypted_table2 values (2,'value2')")
             .dump(primaryDbName, dumpWithClause);
 
-    try {
-      replica.run("repl load " + primaryDbName + " into " + replicatedDbName
-          + " with('hive.repl.add.raw.reserved.namespace'='true', " + "'hive.repl.replica.external.table.base.dir'='"
-          + replica.externalTableWarehouseRoot + "', "
-          + "'distcp.options.pugpbx'='', 'distcp.options.skipcrccheck'='')");
-      Assert.fail("Test should have thrown an exception because cross-encryption-zone is not allowed for RAW");
-    } catch (IOException ioe) {
-      // ignore
-    }
+    replica
+        .run("repl load " + primaryDbName + " into " + replicatedDbName
+            + " with('hive.repl.replica.external.table.base.dir'='" + replica.externalTableWarehouseRoot + "', "
+            + "'hive.exec.copyfile.maxsize'='0', 'distcp.options.skipcrccheck'='')")
+        .run("use " + replicatedDbName)
+        .run("repl status " + replicatedDbName)
+        .run("select value from encrypted_table2")
+        .verifyResults(new String[] { "value1", "value2" });
   }
 
   @Test
