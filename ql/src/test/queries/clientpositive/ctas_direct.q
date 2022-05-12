@@ -4,9 +4,10 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.acid.direct.insert.enabled=true;
-set hive.acid.createtable.softdelete=true;
 set hive.exec.max.dynamic.partitions=200;
 set hive.exec.max.dynamic.partitions.pernode=200;
+
+DROP TABLE IF EXISTS source;
 
 DROP TABLE IF EXISTS test_orc_ctas;
 
@@ -69,6 +70,8 @@ SELECT * FROM test_partition_parquet_mmctas ORDER BY cint;
 SELECT * FROM test_partition_avro_mmctas ORDER BY cint;
 
 SELECT * FROM test_partition_textfile_mmctas ORDER BY cint;
+
+DROP TABLE IF EXISTS source;
 
 DROP TABLE IF EXISTS test_orc_ctas;
 

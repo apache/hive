@@ -7600,15 +7600,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       destTableIsTransactional = tblProps != null && AcidUtils.isTablePropertyTransactional(tblProps);
       if (destTableIsTransactional) {
-        boolean enableSuffixing = (conf.getBoolVar(ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
-                || conf.getBoolVar(ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
-                && conf.getBoolVar(ConfVars.HIVE_ACID_DIRECT_INSERT_ENABLED);
         isNonNativeTable = AcidUtils.isNonNativeTable(tblProps);
-        if (enableSuffixing && !isNonNativeTable && tblDesc != null && tblDesc.getLocation() == null && tblDesc.isCTAS()) {
-          destinationPath = getCTASDestinationTableLocation(tblDesc);
-          acidOperation = getAcidType(dest);
+        boolean isCtas = tblDesc != null && tblDesc.isCTAS();
+        if (AcidUtils.isInsertOnlyTable(tblProps, true)) {
+          isMmTable = isMmCreate = true;
+        }
+        if (!isNonNativeTable && !destTableIsTemporary && isCtas) {
           destTableIsFullAcid = AcidUtils.isFullAcidTable(tblProps);
+          acidOperation = getAcidType(dest);
           isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOperation);
+          boolean enableSuffixing = conf.getBoolVar(ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+                  || conf.getBoolVar(ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
+          if (isDirectInsert || isMmTable) {
+            String location = tblDesc.getLocation();
+            destinationPath = location == null ? getCTASDestinationTableLocation(tblDesc, enableSuffixing) : new Path(location);
+          }
         }
         try {
           if (ctx.getExplainConfig() != null) {
@@ -7619,8 +7625,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } catch (LockException ex) {
           throw new SemanticException("Failed to allocate write Id", ex);
         }
-        if (AcidUtils.isInsertOnlyTable(tblProps, true)) {
-          isMmTable = isMmCreate = true;
+        if (isMmTable) {
           if (tblDesc != null) {
             tblDesc.setInitialWriteId(writeId);
           } else {
@@ -7959,17 +7964,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
-  private Path getCTASDestinationTableLocation(CreateTableDesc tblDesc) throws SemanticException {
+  private Path getCTASDestinationTableLocation(CreateTableDesc tblDesc, boolean enableSuffixing) throws SemanticException {
     try {
       String protoName = tblDesc.getDbTableName();
       String[] names = Utilities.getDbTableName(protoName);
-      long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
-      String suffix = SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId);
+      String suffix = "";
+      if (enableSuffixing) {
+        long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
+        suffix = SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId);
+      }
       if (!db.databaseExists(names[0])) {
         throw new SemanticException("ERROR: The database " + names[0] + " does not exist.");
       }
-      Warehouse wh = new Warehouse(conf);
 
+      Warehouse wh = new Warehouse(conf);
       return wh.getDefaultTablePath(db.getDatabase(names[0]), names[1] + suffix, false);
     } catch (HiveException | MetaException e) {
       throw new SemanticException(e);
