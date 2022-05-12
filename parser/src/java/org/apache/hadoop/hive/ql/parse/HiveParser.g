@@ -156,6 +156,7 @@ TOK_STRUCT;
 TOK_MAP;
 TOK_UNIONTYPE;
 TOK_COLTYPELIST;
+TOK_CREATECATALOG;
 TOK_CREATEDATABASE;
 TOK_CREATEDATACONNECTOR;
 TOK_CREATETABLE;
@@ -215,6 +216,7 @@ TOK_ALTERTABLE_UPDATECOLUMNS;
 TOK_ALTERTABLE_OWNER;
 TOK_ALTERTABLE_SETPARTSPEC;
 TOK_MSCK;
+TOK_SHOWCATALOGS;
 TOK_SHOWDATABASES;
 TOK_SHOWDATACONNECTORS;
 TOK_SHOWTABLES;
@@ -232,6 +234,7 @@ TOK_UNLOCKTABLE;
 TOK_LOCKDB;
 TOK_UNLOCKDB;
 TOK_SWITCHDATABASE;
+TOK_DROPCATALOG;
 TOK_DROPDATABASE;
 TOK_DROPTABLE;
 TOK_DATABASECOMMENT;
@@ -358,6 +361,10 @@ TOK_SHOW_ROLES;
 TOK_SHOW_CURRENT_ROLE;
 TOK_SHOW_ROLE_PRINCIPALS;
 TOK_SHOWDBLOCKS;
+TOK_DESCCATALOG;
+TOK_CATALOGLOCATION;
+TOK_CATALOGCOMMENT;
+TOK_ALTERCATALOG_LOCATION;
 TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
@@ -1044,7 +1051,9 @@ replStatusStatement
 ddlStatement
 @init { pushMsg("ddl statement", state); }
 @after { popMsg(state); }
-    : createDatabaseStatement
+    : createCatalogStatement
+    | dropCatalogStatement
+    | createDatabaseStatement
     | switchDatabaseStatement
     | dropDatabaseStatement
     | createTableStatement
@@ -1146,6 +1155,38 @@ orReplace
 @after { popMsg(state); }
     : KW_OR KW_REPLACE
     -> ^(TOK_ORREPLACE)
+    ;
+
+createCatalogStatement
+@init { pushMsg("create catalog statement", state); }
+@after { popMsg(state); }
+    : KW_CREATE KW_CATALOG
+        ifNotExists?
+        name=identifier
+        catLocation
+        catalogComment?
+    -> ^(TOK_CREATECATALOG $name catLocation ifNotExists? catalogComment?)
+    ;
+
+catLocation
+@init { pushMsg("catalog location specification", state); }
+@after { popMsg(state); }
+    :
+      KW_LOCATION locn=StringLiteral -> ^(TOK_CATALOGLOCATION $locn)
+    ;
+
+catalogComment
+@init { pushMsg("catalog's comment", state); }
+@after { popMsg(state); }
+    : KW_COMMENT comment=StringLiteral
+    -> ^(TOK_CATALOGCOMMENT $comment)
+    ;
+
+dropCatalogStatement
+@init { pushMsg("drop catalog statement", state); }
+@after { popMsg(state); }
+    : KW_DROP KW_CATALOG ifExists? identifier
+    -> ^(TOK_DROPCATALOG identifier ifExists?)
     ;
 
 createDatabaseStatement
@@ -1279,6 +1320,8 @@ descStatement
     :
     (KW_DESCRIBE|KW_DESC)
     (
+    (KW_CATALOG) => (KW_CATALOG) KW_EXTENDED? (catName=identifier) -> ^(TOK_DESCCATALOG $catName KW_EXTENDED?)
+    |
     (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) KW_EXTENDED? (dbName=identifier) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
     |
     (KW_DATACONNECTOR) => (KW_DATACONNECTOR) KW_EXTENDED? (dcName=identifier) -> ^(TOK_DESCDATACONNECTOR $dcName KW_EXTENDED?)
@@ -1307,7 +1350,8 @@ analyzeStatement
 showStatement
 @init { pushMsg("show statement", state); }
 @after { popMsg(state); }
-    : KW_SHOW (KW_DATABASES|KW_SCHEMAS) (KW_LIKE showStmtIdentifier)? -> ^(TOK_SHOWDATABASES showStmtIdentifier?)
+    : KW_SHOW KW_CATALOGS (KW_LIKE showStmtIdentifier)? -> ^(TOK_SHOWCATALOGS showStmtIdentifier?)
+    | KW_SHOW (KW_DATABASES|KW_SCHEMAS) (KW_LIKE showStmtIdentifier)? -> ^(TOK_SHOWDATABASES showStmtIdentifier?)
     | KW_SHOW (isExtended=KW_EXTENDED)? KW_TABLES ((KW_FROM|KW_IN) db_name=identifier)? (filter=showTablesFilterExpr)?
     -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? $filter? $isExtended?)
     | KW_SHOW KW_VIEWS ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWVIEWS (TOK_FROM $db_name)? showStmtIdentifier?)

@@ -106,24 +106,10 @@ import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
-import org.apache.hadoop.hive.metastore.api.GetTableRequest;
-import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
-import org.apache.hadoop.hive.ql.io.HdfsUtils;
-import org.apache.hadoop.hive.metastore.HiveMetaException;
-import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.PartitionDropOptions;
-import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
-import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
-import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -131,8 +117,8 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -146,10 +132,12 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalRequest;
 import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -159,6 +147,18 @@ import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.HiveMetaException;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.PartitionDropOptions;
+import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
+import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
@@ -180,6 +180,7 @@ import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMNullablePool;
@@ -188,10 +189,9 @@ import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
-import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
 import org.apache.hadoop.hive.metastore.api.WriteNotificationLogBatchRequest;
+import org.apache.hadoop.hive.metastore.api.WriteNotificationLogRequest;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -204,6 +204,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.PartitionDetails;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.TableSnapshot;
+import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
@@ -595,6 +596,46 @@ public class Hive {
       if (owner != null) {
         owner = null;
       }
+    }
+  }
+
+  /**
+   * Create a catalog
+   * @param catalog
+   * @param ifNotExist if true, will ignore AlreadyExistsException exception
+   * @throws AlreadyExistsException
+   * @throws HiveException
+   */
+  public void createCatalog(Catalog catalog, boolean ifNotExist)
+      throws AlreadyExistsException, HiveException {
+    try {
+      getMSC().createCatalog(catalog);
+    } catch (AlreadyExistsException e) {
+      if (!ifNotExist) {
+        throw e;
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Drop a catalog.
+   * @param catName
+   * @param ignoreUnknownCat if true, will ignore NoSuchObjectException.
+   * @throws HiveException
+   * @throws NoSuchObjectException
+   */
+  public void dropCatalog(String catName, boolean ignoreUnknownCat)
+      throws HiveException, NoSuchObjectException {
+    try {
+      getMSC().dropCatalog(catName);
+    } catch (NoSuchObjectException e) {
+      if (!ignoreUnknownCat) {
+        throw e;
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
     }
   }
 
@@ -2379,6 +2420,32 @@ public class Hive {
 
     if (!exists) {
       throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(databaseName));
+    }
+  }
+
+  public Catalog getCatalog(String catName) throws HiveException {
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_CATALOG);
+    try {
+      return getMSC().getCatalog(catName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    } finally {
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_CATALOG, "HS2-cache");
+    }
+  }
+
+  public void alterCatalog(String catName, Catalog catalog) throws HiveException {
+    try {
+      getMSC().alterCatalog(catName, catalog);
+    } catch (MetaException e) {
+      throw new HiveException("Unable to alter catalog " + catName + ". " + e.getMessage(), e);
+    } catch (NoSuchObjectException e) {
+      throw new HiveException("Catalog " + catName + " does not exists.", e);
+    } catch (TException e) {
+      throw new HiveException("Unable to alter catalog " + catName + ". " + e.getMessage(), e);
     }
   }
 
