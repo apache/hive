@@ -62,7 +62,7 @@ public class HiveShims {
   }
 
   /**
-   * Classes o.a.h.h.common.type Date & Timestamp were introduced in Hive-3.1 version.
+   * Classes o.a.h.h.common.type Date and Timestamp were introduced in Hive-3.1 version.
    */
   public static Long getPrimitiveEpoch(Object prim, TimeZone tz) {
     if (prim instanceof java.sql.Timestamp) {
