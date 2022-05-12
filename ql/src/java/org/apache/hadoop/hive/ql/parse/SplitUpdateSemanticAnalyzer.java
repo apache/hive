@@ -111,7 +111,11 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
       columnOffset = acidSelectColumns.size();
     } else {
       rewrittenQueryStr.append("ROW__ID,");
-      deleteValues = singletonList(SUB_QUERY_ALIAS + ".ROW__ID");
+      deleteValues = new ArrayList<>(1 + mTable.getPartCols().size());
+      deleteValues.add(SUB_QUERY_ALIAS + ".ROW__ID");
+      for (FieldSchema fieldSchema : mTable.getPartCols()) {
+        deleteValues.add(SUB_QUERY_ALIAS + "." + HiveUtils.unparseIdentifier(fieldSchema.getName(), conf));
+      }
       columnOffset = 1;
     }
 
