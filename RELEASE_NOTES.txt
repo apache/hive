@@ -1,10 +1,6 @@
-Release Notes - Hive - Version 3.1.3
+Release Notes - Hive - Version 3.1.4
 
 ** Bug
-    * [HIVE-22405] - Add ColumnVector support for ProlepticCalendar
-    * [HIVE-22407] - Hive metastore upgrade scripts have incorrect (or outdated) comment syntax
-    * [HIVE-22410] - CachedStore Prewarm Failure NPE
-    * [HIVE-22589] - Add storage support for ProlepticCalendar
+    * [HIVE-] -
 ** Improvement
-    * [HIVE-22241] - Implement UDF to interpret date/timestamp using its internal representation and Gregorian-Julian hybrid calendar
-    * [HIVE-22384] - Hive MetaStore CachedStore Funcion Cache Dev
+    * [HIVE-] -
