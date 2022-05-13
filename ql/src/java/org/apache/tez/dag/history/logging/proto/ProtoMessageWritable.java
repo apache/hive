@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.google.protobuf.ExtensionRegistryLite;
 import org.apache.hadoop.io.Writable;
 
 import com.google.protobuf.CodedInputStream;
@@ -39,6 +40,8 @@ public class ProtoMessageWritable<T extends MessageLite> implements Writable {
   private CodedOutputStream cos;
   private DataInputStream din;
   private CodedInputStream cin;
+
+  private final ExtensionRegistryLite extensionRegistryLite = ExtensionRegistryLite.newInstance();
 
   ProtoMessageWritable(Parser<T> parser) {
     this.parser = parser;
@@ -96,6 +99,6 @@ public class ProtoMessageWritable<T extends MessageLite> implements Writable {
       cin.setSizeLimit(Integer.MAX_VALUE);
     }
     din.in = in;
-    message = cin.readMessage(parser, null);
+    message = cin.readMessage(parser, extensionRegistryLite);
   }
 }

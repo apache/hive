@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.MiniHBaseCluster;
+import org.apache.hadoop.hbase.StartMiniClusterOption;
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -45,6 +46,8 @@ public class TestHBaseQueries {
   private final HiveConf baseConf;
   private IDriver driver;
 
+  private static HBaseTestingUtility util;
+
   /**
    * Test class for running queries using HBase tables. Creates a mini ZK and an HBase test cluster.
    * Each test method must instantiate a driver object first, using either the baseConf or a modified version of that.
@@ -64,9 +67,11 @@ public class TestHBaseQueries {
 
     // set up HBase
     baseConf.setBoolean("hbase.netty.nativetransport", false);
-    HBaseTestingUtility util = new HBaseTestingUtility(baseConf);
+    util = new HBaseTestingUtility(baseConf);
     util.setZkCluster(zooKeeperCluster);
-    miniHBaseCluster = util.startMiniHBaseCluster(1, 1);
+    miniHBaseCluster = util.startMiniHBaseCluster( StartMiniClusterOption.builder()
+            .numMasters(1).numRegionServers(1)
+            .build());
 
     // set up HMS backend DB
     TestTxnDbUtil.setConfValues(baseConf);
@@ -77,7 +82,7 @@ public class TestHBaseQueries {
   @AfterClass
   public static void tearDown() throws IOException {
     if (miniHBaseCluster != null) {
-      miniHBaseCluster.shutdown();
+      util.shutdownMiniHBaseCluster();
     }
     if (zooKeeperCluster != null) {
       zooKeeperCluster.shutdown();
