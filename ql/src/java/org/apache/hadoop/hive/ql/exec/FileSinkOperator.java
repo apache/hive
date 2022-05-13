@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities.MissingBucketsContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -1614,6 +1615,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   public void augmentPlan() {
     PlanUtils.configureOutputJobPropertiesForStorageHandler(
         getConf().getTableInfo());
+    if (getConf().isDeleteOfSplitUpdate() && getConf().getTableInfo() != null) {
+      String opKey = "iceberg.mr.operation.type." + getConf().getTableInfo().getTableName();
+      String opText = Context.Operation.DELETE.name();
+      if (getConf().getTableInfo().getJobProperties() != null) {
+        getConf().getTableInfo().getJobProperties().put(opKey, opText);
+      }
+      if (getConf().getTableInfo().getProperties() != null) {
+        getConf().getTableInfo().getProperties().put(opKey, opText);
+      }
+    }
   }
 
   public void checkOutputSpecs(FileSystem ignored, JobConf job) throws IOException {

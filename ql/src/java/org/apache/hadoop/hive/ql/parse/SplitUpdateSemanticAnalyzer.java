@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,6 +90,9 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
     ASTNode setClause = (ASTNode) children.get(1);
     Map<String, ASTNode> setCols = collectSetColumnsAndExpressions(setClause, setRCols, mTable);
     Map<Integer, ASTNode> setColExprs = new HashMap<>(setClause.getChildCount());
+
+    // save the operation type into the query state
+    SessionStateUtil.addResource(conf, Context.Operation.class.getSimpleName(), Context.Operation.OTHER.name());
 
     StringBuilder rewrittenQueryStr = createRewrittenQueryStrBuilder();
     rewrittenQueryStr.append("(SELECT ");
