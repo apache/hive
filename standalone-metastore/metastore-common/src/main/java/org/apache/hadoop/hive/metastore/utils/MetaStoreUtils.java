@@ -293,6 +293,7 @@ public class MetaStoreUtils {
                 String prop = (String) field.get(String.class);
                 return prop.replace("\"", "");
               } catch (IllegalAccessException e) {
+                LOG.error("Failed to collect replication specific properties. Reason: ", e);
                 throw new RuntimeException(e);
               }
             }).collect(Collectors.toList());
