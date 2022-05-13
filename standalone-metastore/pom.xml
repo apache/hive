@@ -89,8 +89,8 @@
     <orc.version>1.6.9</orc.version>
     <!-- com.google repo will be used except on Aarch64 platform. -->
     <protobuf.group>com.google.protobuf</protobuf.group>
-    <protobuf.version>2.6.1</protobuf.version>
-    <protobuf-exc.version>2.6.1</protobuf-exc.version>
+    <protobuf.version>3.16.1</protobuf.version>
+    <protobuf-exc.version>3.16.1</protobuf-exc.version>
     <sqlline.version>1.9.0</sqlline.version>
     <jline.version>2.14.6</jline.version>
     <ST4.version>4.0.4</ST4.version>
