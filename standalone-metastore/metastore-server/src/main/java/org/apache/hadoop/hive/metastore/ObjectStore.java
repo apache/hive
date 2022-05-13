@@ -24,7 +24,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
@@ -37,7 +36,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,7 +54,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 import javax.jdo.JDODataStoreException;
@@ -11542,89 +11539,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void cleanWriteNotificationEvents(int olderThan) {
-    final int eventBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS);
-
-    final long ageSec = olderThan;
-    final Instant now = Instant.now();
-
-    final int tooOld = Math.toIntExact(now.getEpochSecond() - ageSec);
-
-    final Optional<Integer> batchSize = (eventBatchSize > 0) ? Optional.of(eventBatchSize) : Optional.empty();
-
-    final long start = System.nanoTime();
-    int deleteCount = doCleanWriteNotificationEvents(tooOld, batchSize);
-
-    if (deleteCount == 0) {
-      LOG.info("No WriteNotification events found to be cleaned with eventTime < {}", tooOld);
-    } else {
-      int batchCount = 0;
-      do {
-        batchCount = doCleanWriteNotificationEvents(tooOld, batchSize);
-        deleteCount += batchCount;
-      } while (batchCount > 0);
-    }
-
-    final long finish = System.nanoTime();
-
-    LOG.info("Deleted {} WriteNotification events older than epoch:{} in {}ms", deleteCount, tooOld,
-            TimeUnit.NANOSECONDS.toMillis(finish - start));
-  }
-
-  private int doCleanWriteNotificationEvents(final int ageSec, final Optional<Integer> batchSize) {
-    final Transaction tx = pm.currentTransaction();
-    int eventsCount = 0;
-
-    try {
-      tx.begin();
-
-      try (Query query = pm.newQuery(MTxnWriteNotificationLog.class, "eventTime <= tooOld")) {
-        query.declareParameters("java.lang.Integer tooOld");
-        query.setOrdering("txnId ascending");
-        if (batchSize.isPresent()) {
-          query.setRange(0, batchSize.get());
-        }
-
-        List<MTxnWriteNotificationLog> toBeRemoved = (List) query.execute(ageSec);
-        if (CollectionUtils.isNotEmpty(toBeRemoved)) {
-          eventsCount = toBeRemoved.size();
-
-          if (LOG.isDebugEnabled()) {
-            int minEventTime, maxEventTime;
-            long minTxnId, maxTxnId;
-            Iterator<MTxnWriteNotificationLog> iter = toBeRemoved.iterator();
-            MTxnWriteNotificationLog firstNotification = iter.next();
-
-            minEventTime = maxEventTime = firstNotification.getEventTime();
-            minTxnId = maxTxnId = firstNotification.getTxnId();
-
-            while (iter.hasNext()) {
-              MTxnWriteNotificationLog notification = iter.next();
-              minEventTime = Math.min(minEventTime, notification.getEventTime());
-              maxEventTime = Math.max(maxEventTime, notification.getEventTime());
-              minTxnId = Math.min(minTxnId, notification.getTxnId());
-              maxTxnId = Math.max(maxTxnId, notification.getTxnId());
-            }
-
-            LOG.debug(
-                    "Remove WriteNotification batch of {} events with eventTime < {}, min txnId {}, max txnId {}, min eventTime {}, max eventTime {}",
-                    eventsCount, ageSec, minTxnId, maxTxnId, minEventTime, maxEventTime);
-          }
-
-          pm.deletePersistentAll(toBeRemoved);
-        }
-      }
-
-      tx.commit();
-    } catch (Exception e) {
-      LOG.error("Unable to delete batch of write notification events", e);
-      eventsCount = 0;
-    } finally {
-      if (tx.isActive()) {
-        tx.rollback();
-      }
-    }
-
-    return eventsCount;
+    cleanOlderEvents(olderThan, MTxnWriteNotificationLog.class, "TxnWriteNotificationLog");
   }
 
   @Override
@@ -11791,6 +11706,10 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public void cleanNotificationEvents(int olderThan) {
+    cleanOlderEvents(olderThan, MNotificationLog.class, "NotificationLog");
+  }
+
+  private void cleanOlderEvents(int olderThan, Class table, String tableName) {
     final int eventBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS);
 
     final long ageSec = olderThan;
@@ -11801,63 +11720,69 @@ public class ObjectStore implements RawStore, Configurable {
     final Optional<Integer> batchSize = (eventBatchSize > 0) ? Optional.of(eventBatchSize) : Optional.empty();
 
     final long start = System.nanoTime();
-    int deleteCount = doCleanNotificationEvents(tooOld, batchSize);
+    int deleteCount = doCleanOlderEvents(tooOld, batchSize, table, tableName);
 
     if (deleteCount == 0) {
-      LOG.info("No Notification events found to be cleaned with eventTime < {}", tooOld);
+      LOG.info("No {} events found to be cleaned with eventTime < {}", tableName, tooOld);
     } else {
       int batchCount = 0;
       do {
-        batchCount = doCleanNotificationEvents(tooOld, batchSize);
+        batchCount = doCleanOlderEvents(tooOld, batchSize, table, tableName);
         deleteCount += batchCount;
       } while (batchCount > 0);
     }
 
     final long finish = System.nanoTime();
 
-    LOG.info("Deleted {} notification events older than epoch:{} in {}ms", deleteCount, tooOld,
-        TimeUnit.NANOSECONDS.toMillis(finish - start));
+    LOG.info("Deleted {} {} events older than epoch:{} in {}ms", deleteCount, tableName, tooOld,
+            TimeUnit.NANOSECONDS.toMillis(finish - start));
   }
 
-  private int doCleanNotificationEvents(final int ageSec, final Optional<Integer> batchSize) {
+  private <T> int doCleanOlderEvents(final int ageSec, final Optional<Integer> batchSize, Class<T> tableClass, String tableName) {
     final Transaction tx = pm.currentTransaction();
     int eventsCount = 0;
 
     try {
+      String key = null;
       tx.begin();
 
-      try (Query query = pm.newQuery(MNotificationLog.class, "eventTime <= tooOld")) {
+      try (Query query = pm.newQuery(tableClass, "eventTime <= tooOld")) {
         query.declareParameters("java.lang.Integer tooOld");
-        query.setOrdering("eventId ascending");
+        if (MNotificationLog.class.equals(tableClass)) {
+          key = "eventId";
+        } else if (MTxnWriteNotificationLog.class.equals(tableClass)) {
+          key = "txnId";
+        }
+        query.setOrdering(key + " ascending");
         if (batchSize.isPresent()) {
           query.setRange(0, batchSize.get());
         }
 
-        List<MNotificationLog> events = (List) query.execute(ageSec);
+        List<T> events = (List) query.execute(ageSec);
         if (CollectionUtils.isNotEmpty(events)) {
           eventsCount = events.size();
-
-          if (LOG.isDebugEnabled()) {
-            int minEventTime, maxEventTime;
-            long minEventId, maxEventId;
-            Iterator<MNotificationLog> iter = events.iterator();
-            MNotificationLog firstNotification = iter.next();
-
-            minEventTime = maxEventTime = firstNotification.getEventTime();
-            minEventId = maxEventId = firstNotification.getEventId();
-
-            while (iter.hasNext()) {
-              MNotificationLog notification = iter.next();
-              minEventTime = Math.min(minEventTime, notification.getEventTime());
-              maxEventTime = Math.max(maxEventTime, notification.getEventTime());
-              minEventId = Math.min(minEventId, notification.getEventId());
-              maxEventId = Math.max(maxEventId, notification.getEventId());
-            }
-
-            LOG.debug(
-                "Remove notification batch of {} events with eventTime < {}, min eventId {}, max eventId {}, min eventTime {}, max eventTime {}",
-                eventsCount, ageSec, minEventId, maxEventId, minEventTime, maxEventTime);
+          int minEventTime, maxEventTime;
+          long minEventId, maxEventId;
+          T firstNotification = events.get(0);
+          T lastNotification = events.get(eventsCount - 1);
+          if (MNotificationLog.class.equals(tableClass)) {
+            minEventTime = ((MNotificationLog)firstNotification).getEventTime();
+            minEventId = ((MNotificationLog)firstNotification).getEventId();
+            maxEventTime = ((MNotificationLog)lastNotification).getEventTime();
+            maxEventId = ((MNotificationLog)lastNotification).getEventId();
+          } else if (MTxnWriteNotificationLog.class.equals(tableClass)) {
+            minEventTime = ((MTxnWriteNotificationLog)firstNotification).getEventTime();
+            minEventId = ((MTxnWriteNotificationLog)firstNotification).getTxnId();
+            maxEventTime = ((MTxnWriteNotificationLog)lastNotification).getEventTime();
+            maxEventId = ((MTxnWriteNotificationLog)lastNotification).getTxnId();
+          } else {
+            throw new RuntimeException("Cleaning of older " + tableName + " events failed. " +
+                    "Reason: Unknown table encountered " + tableClass.getName());
           }
+
+          LOG.debug(
+                  "Remove {} batch of {} events with eventTime < {}, min {}: {}, max {}: {}, min eventTime {}, max eventTime {}",
+                  tableName, eventsCount, ageSec, key, minEventId, key, maxEventId, minEventTime, maxEventTime);
 
           pm.deletePersistentAll(events);
         }
@@ -11865,7 +11790,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       tx.commit();
     } catch (Exception e) {
-      LOG.error("Unable to delete batch of notification events", e);
+      LOG.error("Unable to delete batch of " + tableName + " events", e);
       eventsCount = 0;
     } finally {
       if (tx.isActive()) {
