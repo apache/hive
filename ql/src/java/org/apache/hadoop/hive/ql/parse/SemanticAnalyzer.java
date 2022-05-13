@@ -13717,6 +13717,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // outputs is empty, which means this create table happens in the current
       // database.
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), crtTblDesc)));
+      String tblLocation = null;
+      if (location != null) {
+        tblLocation = location;
+      } else {
+        try {
+          Warehouse wh = new Warehouse(conf);
+          tblLocation = wh.getDefaultTablePath(db.getDatabase(qualifiedTabName.getDb()), qualifiedTabName.getTable(),
+                  isExt).toUri().getPath();
+        } catch (MetaException | HiveException e) {
+          throw new SemanticException(e);
+        }
+      }
+      if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.META_TABLE_LOCATION, tblLocation)) {
+        throw new SemanticException(
+            "Query state attached to Session state must be not null. Table location cannot be saved.");
+      }
       break;
     case ctt: // CREATE TRANSACTIONAL TABLE
       if (isExt && !isDefaultTableTypeChanged) {

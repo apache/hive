@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -78,6 +79,7 @@ import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.PartitionSpecParser;
@@ -457,8 +459,23 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public URI getURIForAuth(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws URISyntaxException {
     String dbName = hmsTable.getDbName();
     String tableName = hmsTable.getTableName();
-    return new URI(ICEBERG_URI_PREFIX + dbName + "/" + tableName);
+    StringBuilder authURI = new StringBuilder(ICEBERG_URI_PREFIX).append(dbName).append("/").append(tableName)
+        .append("?snapshot=");
+    Optional<String> locationProperty = SessionStateUtil.getProperty(conf, hive_metastoreConstants.META_TABLE_LOCATION);
+    if (locationProperty.isPresent()) {
+      Preconditions.checkArgument(locationProperty.get() != null,
+          "Table location is not set in SessionState. Authorization URI cannot be supplied.");
+      // this property is set during the create operation before the hive table was created
+      // we are returning a dummy iceberg metadata file
+      authURI.append(URI.create(locationProperty.get()).getPath()).append("/metadata/dummy.metadata.json");
+    } else {
+      Table table = IcebergTableUtil.getTable(conf, hmsTable);
+      authURI.append(URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath());
+    }
+    LOG.debug("Iceberg storage handler authorization URI {}", authURI);
+    return new URI(HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.encode(authURI.toString()));
   }
+
 
   @Override
   public void validateSinkDesc(FileSinkDesc sinkDesc) throws SemanticException {

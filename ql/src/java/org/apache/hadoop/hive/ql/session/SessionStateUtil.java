@@ -101,7 +101,7 @@ public class SessionStateUtil {
 
   private static Optional<QueryState> getQueryState(Configuration conf) {
     return Optional.ofNullable(SessionState.get())
-        .map(session -> session.getQueryState(conf.get(HiveConf.ConfVars.HIVEQUERYID.varname)));
+        .map(session -> session.getQueryState(conf.get(HiveConf.ConfVars.HIVEQUERYID.varname, "")));
   }
 
   /**
