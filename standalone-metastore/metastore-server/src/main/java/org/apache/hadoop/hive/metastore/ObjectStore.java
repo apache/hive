@@ -11763,19 +11763,19 @@ public class ObjectStore implements RawStore, Configurable {
           eventsCount = events.size();
           if (LOG.isDebugEnabled()) {
             int minEventTime, maxEventTime;
-            long minEventId, maxEventId;
+            long minId, maxId;
             T firstNotification = events.get(0);
             T lastNotification = events.get(eventsCount - 1);
             if (MNotificationLog.class.equals(tableClass)) {
               minEventTime = ((MNotificationLog)firstNotification).getEventTime();
-              minEventId = ((MNotificationLog)firstNotification).getEventId();
+              minId = ((MNotificationLog)firstNotification).getEventId();
               maxEventTime = ((MNotificationLog)lastNotification).getEventTime();
-              maxEventId = ((MNotificationLog)lastNotification).getEventId();
+              maxId = ((MNotificationLog)lastNotification).getEventId();
             } else if (MTxnWriteNotificationLog.class.equals(tableClass)) {
               minEventTime = ((MTxnWriteNotificationLog)firstNotification).getEventTime();
-              minEventId = ((MTxnWriteNotificationLog)firstNotification).getTxnId();
+              minId = ((MTxnWriteNotificationLog)firstNotification).getTxnId();
               maxEventTime = ((MTxnWriteNotificationLog)lastNotification).getEventTime();
-              maxEventId = ((MTxnWriteNotificationLog)lastNotification).getTxnId();
+              maxId = ((MTxnWriteNotificationLog)lastNotification).getTxnId();
             } else {
               throw new RuntimeException("Cleaning of older " + tableName + " events failed. " +
                       "Reason: Unknown table encountered " + tableClass.getName());
@@ -11783,7 +11783,7 @@ public class ObjectStore implements RawStore, Configurable {
 
             LOG.debug(
                     "Remove {} batch of {} events with eventTime < {}, min {}: {}, max {}: {}, min eventTime {}, max eventTime {}",
-                    tableName, eventsCount, ageSec, key, minEventId, key, maxEventId, minEventTime, maxEventTime);
+                    tableName, eventsCount, ageSec, key, minId, key, maxId, minEventTime, maxEventTime);
           }
 
           pm.deletePersistentAll(events);
