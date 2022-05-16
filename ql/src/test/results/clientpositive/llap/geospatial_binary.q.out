@@ -27,11 +27,11 @@ POSTHOOK: Lineage: dist_binary.pointb SCRIPT []
 PREHOOK: query: select ST_AsText(pointa) as First_Point, ST_AsText(pointb) as Second_Point from dist_binary
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dist_binary
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select ST_AsText(pointa) as First_Point, ST_AsText(pointb) as Second_Point from dist_binary
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dist_binary
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POINT (12.5 16.2)	POINT (18.7 4.5)
 POINT (1.5 15.1)	POINT (1.5 8.7)
 POINT (0 1)	POINT (0 1)
@@ -40,12 +40,12 @@ PREHOOK: query: select ST_AsText(pointa) as First_Point, ST_AsText(pointb) as Se
        ST_Length(ST_LineString(array(pointa,pointb))) as Distance from dist_binary
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dist_binary
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select ST_AsText(pointa) as First_Point, ST_AsText(pointb) as Second_Point,
        ST_Length(ST_LineString(array(pointa,pointb))) as Distance from dist_binary
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dist_binary
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POINT (12.5 16.2)	POINT (18.7 4.5)	13.241223508422474
 POINT (1.5 15.1)	POINT (1.5 8.7)	6.4
 POINT (0 1)	POINT (0 1)	0.0

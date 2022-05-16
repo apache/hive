@@ -29,11 +29,11 @@ POSTHOOK: Lineage: distances.blongitude SCRIPT []
 PREHOOK: query: select * from distances
 PREHOOK: type: QUERY
 PREHOOK: Input: default@distances
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from distances
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@distances
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 12.5	16.2	18.7	4.5
 1.5	15.1	1.5	8.7
 0.0	1.0	0.0	1.0
@@ -43,13 +43,13 @@ PREHOOK: query: select distances.alongitude,distances.alatitude,distances.blongi
 from distances
 PREHOOK: type: QUERY
 PREHOOK: Input: default@distances
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select distances.alongitude,distances.alatitude,distances.blongitude,distances.blatitude,
        ST_Length(ST_LineString(distances.alongitude,distances.alatitude,distances.blongitude,distances.blatitude)) AS distance
 from distances
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@distances
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 12.5	16.2	18.7	4.5	13.241223508422474
 1.5	15.1	1.5	8.7	6.4
 0.0	1.0	0.0	1.0	0.0
