@@ -310,13 +310,15 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     Preconditions.checkArgument(typeInfo.getCategory() == Category.PRIMITIVE);
     ColumnStatsType columnStatsType =
         ColumnStatsType.getColumnStatsType((PrimitiveTypeInfo) typeInfo);
+    List<ColumnStatsField> columnStatsFields = columnStatsType.getColumnStats();
+    columnStatsFields = ColumnStatsType.removeDisabledStatistics(conf, columnStatsFields);
     // The first column is always the type
     // The rest of columns will depend on the type itself
-    for (int i = 0; i < columnStatsType.getColumnStats().size(); i++) {
+    for (int i = 0; i < columnStatsFields.size(); i++) {
+      ColumnStatsField columnStatsField = columnStatsFields.get(i);
       if (i > 0) {
         rewrittenQueryBuilder.append(", ");
       }
-      ColumnStatsField columnStatsField = columnStatsType.getColumnStats().get(i);
       appendStatsField(rewrittenQueryBuilder, conf, columnStatsField, columnStatsType,
           columnName, pos);
     }

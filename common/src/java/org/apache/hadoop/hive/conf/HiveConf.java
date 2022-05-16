@@ -2828,6 +2828,8 @@ public class HiveConf extends Configuration {
         "The parameter k affects the accuracy and the size of KLL sketches.\n"
             + "Larger values of k result in smaller values of normalized rank error.\n"
             + "The default of 200 yields approximately an error of 1.65%."),
+    HIVE_STATS_KLL_ENABLE("hive.stats.kll.enable", false,
+        "Whether to compute KLL sketches to enable histogram statistics."),
     HIVE_STATS_ESTIMATORS_ENABLE("hive.stats.estimators.enable", true,
         "Estimators are able to provide more accurate column statistic infos for UDF results."),
 
