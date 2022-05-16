@@ -11720,14 +11720,14 @@ public class ObjectStore implements RawStore, Configurable {
     final Optional<Integer> batchSize = (eventBatchSize > 0) ? Optional.of(eventBatchSize) : Optional.empty();
 
     final long start = System.nanoTime();
-    int deleteCount = doCleanOlderEvents(tooOld, batchSize, table, tableName);
+    int deleteCount = doCleanNotificationEvents(tooOld, batchSize, table, tableName);
 
     if (deleteCount == 0) {
       LOG.info("No {} events found to be cleaned with eventTime < {}", tableName, tooOld);
     } else {
       int batchCount = 0;
       do {
-        batchCount = doCleanOlderEvents(tooOld, batchSize, table, tableName);
+        batchCount = doCleanNotificationEvents(tooOld, batchSize, table, tableName);
         deleteCount += batchCount;
       } while (batchCount > 0);
     }
@@ -11738,7 +11738,7 @@ public class ObjectStore implements RawStore, Configurable {
             TimeUnit.NANOSECONDS.toMillis(finish - start));
   }
 
-  private <T> int doCleanOlderEvents(final int ageSec, final Optional<Integer> batchSize, Class<T> tableClass, String tableName) {
+  private <T> int doCleanNotificationEvents(final int ageSec, final Optional<Integer> batchSize, Class<T> tableClass, String tableName) {
     final Transaction tx = pm.currentTransaction();
     int eventsCount = 0;
 
@@ -11761,28 +11761,30 @@ public class ObjectStore implements RawStore, Configurable {
         List<T> events = (List) query.execute(ageSec);
         if (CollectionUtils.isNotEmpty(events)) {
           eventsCount = events.size();
-          int minEventTime, maxEventTime;
-          long minEventId, maxEventId;
-          T firstNotification = events.get(0);
-          T lastNotification = events.get(eventsCount - 1);
-          if (MNotificationLog.class.equals(tableClass)) {
-            minEventTime = ((MNotificationLog)firstNotification).getEventTime();
-            minEventId = ((MNotificationLog)firstNotification).getEventId();
-            maxEventTime = ((MNotificationLog)lastNotification).getEventTime();
-            maxEventId = ((MNotificationLog)lastNotification).getEventId();
-          } else if (MTxnWriteNotificationLog.class.equals(tableClass)) {
-            minEventTime = ((MTxnWriteNotificationLog)firstNotification).getEventTime();
-            minEventId = ((MTxnWriteNotificationLog)firstNotification).getTxnId();
-            maxEventTime = ((MTxnWriteNotificationLog)lastNotification).getEventTime();
-            maxEventId = ((MTxnWriteNotificationLog)lastNotification).getTxnId();
-          } else {
-            throw new RuntimeException("Cleaning of older " + tableName + " events failed. " +
-                    "Reason: Unknown table encountered " + tableClass.getName());
-          }
+          if (LOG.isDebugEnabled()) {
+            int minEventTime, maxEventTime;
+            long minEventId, maxEventId;
+            T firstNotification = events.get(0);
+            T lastNotification = events.get(eventsCount - 1);
+            if (MNotificationLog.class.equals(tableClass)) {
+              minEventTime = ((MNotificationLog)firstNotification).getEventTime();
+              minEventId = ((MNotificationLog)firstNotification).getEventId();
+              maxEventTime = ((MNotificationLog)lastNotification).getEventTime();
+              maxEventId = ((MNotificationLog)lastNotification).getEventId();
+            } else if (MTxnWriteNotificationLog.class.equals(tableClass)) {
+              minEventTime = ((MTxnWriteNotificationLog)firstNotification).getEventTime();
+              minEventId = ((MTxnWriteNotificationLog)firstNotification).getTxnId();
+              maxEventTime = ((MTxnWriteNotificationLog)lastNotification).getEventTime();
+              maxEventId = ((MTxnWriteNotificationLog)lastNotification).getTxnId();
+            } else {
+              throw new RuntimeException("Cleaning of older " + tableName + " events failed. " +
+                      "Reason: Unknown table encountered " + tableClass.getName());
+            }
 
-          LOG.debug(
-                  "Remove {} batch of {} events with eventTime < {}, min {}: {}, max {}: {}, min eventTime {}, max eventTime {}",
-                  tableName, eventsCount, ageSec, key, minEventId, key, maxEventId, minEventTime, maxEventTime);
+            LOG.debug(
+                    "Remove {} batch of {} events with eventTime < {}, min {}: {}, max {}: {}, min eventTime {}, max eventTime {}",
+                    tableName, eventsCount, ageSec, key, minEventId, key, maxEventId, minEventTime, maxEventTime);
+          }
 
           pm.deletePersistentAll(events);
         }
