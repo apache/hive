@@ -6,7 +6,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=
         HiveJoin(condition=[=($11, $0)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveJoin(condition=[=($3, $2)], joinType=[inner], algorithm=[none], cost=[not available])
             HiveProject(ss_store_sk=[$6], ss_sales_price=[$12], ss_sold_date_sk=[$22])
-              HiveFilter(condition=[AND(IS NOT NULL($6), IS NOT NULL($22))])
+              HiveFilter(condition=[AND(IS NOT NULL($22), IS NOT NULL($6))])
                 HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
             HiveProject(d_date_sk=[$0], ==[=($14, _UTF-16LE'Sunday   ')], =2=[=($14, _UTF-16LE'Monday   ')], =3=[=($14, _UTF-16LE'Tuesday  ')], =4=[=($14, _UTF-16LE'Wednesday')], =5=[=($14, _UTF-16LE'Thursday ')], =6=[=($14, _UTF-16LE'Friday   ')], =7=[=($14, _UTF-16LE'Saturday ')])
               HiveFilter(condition=[=($6, 1998)])

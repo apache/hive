@@ -15,6 +15,6 @@ HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
               HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($33))])
                 HiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
             HiveProject(d_date_sk=[$0])
-              HiveFilter(condition=[AND(=($6, 2000), =($10, 2))])
+              HiveFilter(condition=[AND(=($10, 2), =($6, 2000))])
                 HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 
