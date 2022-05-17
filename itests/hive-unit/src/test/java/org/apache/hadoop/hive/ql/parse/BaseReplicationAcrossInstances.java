@@ -36,7 +36,7 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 
 public class BaseReplicationAcrossInstances {
   @Rule

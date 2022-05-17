@@ -1168,15 +1168,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   static boolean isDbReplicationTarget(Database db) {
-    if (db.getParameters() == null) {
-      return false;
-    }
-
-    if (!db.getParameters().containsKey(ReplConst.REPL_TARGET_DB_PROPERTY)) {
-      return false;
-    }
-
-    return !db.getParameters().get(ReplConst.REPL_TARGET_DB_PROPERTY).trim().isEmpty();
+    String dbCkptStatus = (db.getParameters() == null) ? null : db.getParameters().get(ReplConst.REPL_TARGET_DB_PROPERTY);
+    return dbCkptStatus != null && !dbCkptStatus.trim().isEmpty();
   }
 
   // Assumes that the catalog has already been set.
@@ -1501,10 +1494,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ms.alterDatabase(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], newDB);
 
       if (!transactionalListeners.isEmpty()) {
-        transactionalListenersResponses =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.ALTER_DATABASE,
-                new AlterDatabaseEvent(oldDB, newDB, true, this, isReplicated));
+        AlterDatabaseEvent event = new AlterDatabaseEvent(oldDB, newDB, true, this, isReplicated);
+        if (!event.shouldSkipCapturing()) {
+          transactionalListenersResponses =
+                  MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ALTER_DATABASE, event);
+        }
       }
 
       success = ms.commitTransaction();
@@ -1517,11 +1511,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
 
       if ((null != oldDB) && (!listeners.isEmpty())) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.ALTER_DATABASE,
-            new AlterDatabaseEvent(oldDB, newDB, success, this, isReplicated),
-            null,
-            transactionalListenersResponses, ms);
+        AlterDatabaseEvent event = new AlterDatabaseEvent(oldDB, newDB, success, this, isReplicated);
+        if (!event.shouldSkipCapturing()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+                  EventType.ALTER_DATABASE, event, null, transactionalListenersResponses, ms);
+        }
       }
       endFunction("alter_database", success, ex);
     }

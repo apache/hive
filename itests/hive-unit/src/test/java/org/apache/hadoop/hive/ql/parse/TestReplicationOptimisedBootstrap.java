@@ -550,9 +550,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         .getNextNotification(Long.parseLong(getEventIdFromFile(new Path(tuple.dumpLocation), conf)[1]), -1,
             new DatabaseAndTableFilter(replicatedDbName, null));
 
-    // There should be 4 events, one for alter db, second to remove first incremental pending and then two custom
-    // alter operations.
-    assertEquals(4, nl.getEvents().size());
+    // There should be 2 events, two custom alter operations.
+    assertEquals(2, nl.getEvents().size());
   }
 
   @Test
@@ -660,7 +659,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         .getNextNotification(Long.parseLong(getEventIdFromFile(new Path(tuple.dumpLocation), conf)[1]), 10,
             new DatabaseAndTableFilter(replicatedDbName, null));
 
-    assertEquals(1, nl.getEvents().size());
+    assertEquals(0, nl.getEventsSize());
   }
 
   @Test

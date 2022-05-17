@@ -45,6 +45,7 @@ import static org.apache.hadoop.fs.permission.AclEntryType.OTHER;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -74,7 +75,7 @@ public class ReplChangeManager {
   private static final String ORIG_LOC_TAG = "user.original-loc";
   static final String REMAIN_IN_TRASH_TAG = "user.remain-in-trash";
   private static final String URI_FRAGMENT_SEPARATOR = "#";
-  public static final String SOURCE_OF_REPLICATION = "repl.source.for";
+  public static final String SOURCE_OF_REPLICATION = ReplConst.SOURCE_OF_REPLICATION;
   private static final String TXN_WRITE_EVENT_FILE_SEPARATOR = "]";
   static final String CM_THREAD_NAME_PREFIX = "cmclearer-";
   private static final String NO_ENCRYPTION = "noEncryption";
@@ -552,8 +553,8 @@ public class ReplChangeManager {
   public static String getReplPolicyIdString(Database db) {
     if (db != null) {
       Map<String, String> m = db.getParameters();
-      if ((m != null) && (m.containsKey(SOURCE_OF_REPLICATION))) {
-        String replPolicyId = m.get(SOURCE_OF_REPLICATION);
+      if ((m != null) && (m.containsKey(ReplConst.SOURCE_OF_REPLICATION))) {
+        String replPolicyId = m.get(ReplConst.SOURCE_OF_REPLICATION);
         LOG.debug("repl policy for database {} is {}", db.getName(), replPolicyId);
         return replPolicyId;
       }

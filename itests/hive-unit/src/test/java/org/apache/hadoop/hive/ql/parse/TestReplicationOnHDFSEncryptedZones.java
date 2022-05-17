@@ -43,7 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 
 public class TestReplicationOnHDFSEncryptedZones {
   private static String jksFile = System.getProperty("java.io.tmpdir") + "/test.jks";

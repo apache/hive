@@ -58,4 +58,14 @@ public class ReplConst {
    * Tracks the event id with respect to the target cluster.
    */
   public static final String REPL_TARGET_DATABASE_PROPERTY = "repl.target.last.id";
+
+  public static final String SOURCE_OF_REPLICATION = "repl.source.for";
+
+  public static final String REPL_FIRST_INC_PENDING_FLAG = "hive.repl.first.inc.pending";
+
+  public static final String REPL_IS_CUSTOM_DB_LOC = "hive.repl.is.custom.db.loc";
+
+  public static final String REPL_IS_CUSTOM_DB_MANAGEDLOC = "hive.repl.is.custom.db.managedloc";
+
+  public static final String BOOTSTRAP_DUMP_STATE_KEY_PREFIX = "bootstrap.dump.state.";
 }

@@ -83,7 +83,7 @@ import javax.annotation.Nullable;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -728,20 +728,24 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     fs.delete(ackFile, false);
     fs.delete(ackLastEventID, false);
     //delete all the event folders except first event
-    long startEvent = Long.valueOf(tuple.lastReplicationId) + 1;
+    long startEvent = -1;
+    long endEvent = Long.valueOf(incrementalDump1.lastReplicationId);
+    for (long eventDir = Long.valueOf(tuple.lastReplicationId) + 1;  eventDir <= endEvent; eventDir++) {
+      Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventDir));
+      if (fs.exists(eventRoot)) {
+        if (startEvent == -1){
+          startEvent = eventDir;
+        } else {
+          fs.delete(eventRoot, true);
+        }
+      }
+    }
     Path startEventRoot = new Path(hiveDumpDir, String.valueOf(startEvent));
     Map<Path, Long> firstEventModTimeMap = new HashMap<>();
     for (FileStatus fileStatus: fs.listStatus(startEventRoot)) {
       firstEventModTimeMap.put(fileStatus.getPath(), fileStatus.getModificationTime());
     }
-    long endEvent = Long.valueOf(incrementalDump1.lastReplicationId);
     assertTrue(endEvent - startEvent > 1);
-    for (long eventDir = startEvent + 1;  eventDir <= endEvent; eventDir++) {
-      Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventDir));
-      if (fs.exists(eventRoot)) {
-        fs.delete(eventRoot, true);
-      }
-    }
     Utils.writeOutput(String.valueOf(startEvent), ackLastEventID, primary.hiveConf);
     WarehouseInstance.Tuple incrementalDump2 = primary.dump(primaryDbName, withClause);
     assertEquals(incrementalDump1.dumpLocation, incrementalDump2.dumpLocation);
