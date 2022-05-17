@@ -3156,7 +3156,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           if (partitionDetails.newFiles != null) {
             // If we already know the files from the direct insert manifest, use them
             newFiles = partitionDetails.newFiles;
-          } else if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPartition == null) {
+          } else if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
             // Otherwise only collect them, if we are going to fire write notifications
             newFiles = Collections.synchronizedList(new ArrayList<>());
           }
