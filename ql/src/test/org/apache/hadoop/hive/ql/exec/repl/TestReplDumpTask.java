@@ -149,7 +149,7 @@ public class TestReplDumpTask {
     task.setWork(replDumpWork);
 
     try {
-      task.bootStrapDump(new Path("mock"), new DumpMetaData(new Path("mock"), conf),
+      task.bootStrapDump(new Path("mock"), new DumpMetaData(new Path("mock"), conf, true),
         mock(Path.class), hive);
     } finally {
       Utils.resetDbBootstrapDumpState(same(hive), eq("default"), eq(dbRandomKey));

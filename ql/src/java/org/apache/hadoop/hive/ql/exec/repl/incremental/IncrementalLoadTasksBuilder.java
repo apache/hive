@@ -118,7 +118,7 @@ public class IncrementalLoadTasksBuilder {
     while (iterator.hasNext() && tracker.canAddMoreTasks()) {
       FileStatus dir = iterator.next();
       String location = dir.getPath().toUri().toString();
-      DumpMetaData eventDmd = new DumpMetaData(new Path(location), conf);
+      DumpMetaData eventDmd = new DumpMetaData(new Path(location), conf, true);
 
       if (!shouldReplayEvent(dir, eventDmd.getDumpType(), dbName)) {
         this.log.debug("Skipping event {} from {} for DB {} maxTasks: {}",

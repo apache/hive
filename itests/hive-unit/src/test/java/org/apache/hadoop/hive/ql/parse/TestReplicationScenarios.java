@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.ContentSummary;
@@ -118,9 +119,11 @@ import javax.management.MBeanException;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2114,6 +2117,43 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=2", ptnData2, driverMirror);
     verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", ptnData1, driverMirror);
     verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=2", ptnData2, driverMirror);
+  }
+
+  @Test
+  public void testDumpMetaDataInJSONFormat() throws Exception {
+    String testName = "testDumpmetaDataInJSONFormat";
+    String dbName = createDB(testName, driver);
+    String replDbName = dbName + "_dupe";
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    String[] unptn_data_1 = new String[]{ "eleven"};
+    String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();
+    createTestDataFile(unptn_locn, unptn_data_1);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data_1, driver);
+    Tuple bootstrapDump = replDumpDb(dbName);
+    Path hiveDumpRoot = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    Path dumpmetadata_v1 = new Path(hiveDumpRoot, DumpMetaData.DUMP_METADATA);
+    Path dumpmetadata_v2 = new Path(hiveDumpRoot, DumpMetaData.DUMP_METADATA_V2);
+    FileSystem fs = dumpmetadata_v1.getFileSystem(hconf);
+    assertFalse(fs.exists(dumpmetadata_v1));
+    assertTrue(fs.exists(dumpmetadata_v2));
+    verifyDumpMetaDataFormat(fs, dumpmetadata_v2);
+    loadAndVerify(replDbName, dbName, bootstrapDump.lastReplId);
+
+    String[] unptn_data_2 = new String[] {"twelve"};
+    String unptnLocn = new Path(TEST_PATH, testName + "_unptn").toUri().getPath();
+    createTestDataFile(unptnLocn, unptn_data_2);
+    String[] unptn_data = new String[] {"eleven", "twelve"};
+
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driverMirror);
+    Tuple incrDump = replDumpDb(dbName);
+    hiveDumpRoot = new Path(incrDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    dumpmetadata_v1 = new Path(hiveDumpRoot, DumpMetaData.DUMP_METADATA);
+    dumpmetadata_v2 = new Path(hiveDumpRoot, DumpMetaData.DUMP_METADATA_V2);
+    fs = dumpmetadata_v1.getFileSystem(hconf);
+    assertFalse(fs.exists(dumpmetadata_v1));
+    assertTrue(fs.exists(dumpmetadata_v2));
+    verifyDumpMetaDataFormat(fs, dumpmetadata_v2);
+    loadAndVerify(replDbName, dbName, incrDump.lastReplId);
   }
 
   @Test
@@ -4799,6 +4839,18 @@ public class TestReplicationScenarios {
     appender.removeFromLogger(logger.getName());
   }
 
+  private void verifyDumpMetaDataFormat(FileSystem fs, Path dumpmetadata_v2) throws Exception {
+    BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(dumpmetadata_v2)));
+    try {
+      String line = br.readLine();
+      DumpMetaData parsedDMD = new ObjectMapper().readValue(line, DumpMetaData.class);
+      assertFalse(org.apache.hadoop.hive.metastore.utils.StringUtils.isEmpty(line));
+      assertTrue(parsedDMD != null);
+    } finally {
+      br.close();
+    }
+  }
+
   @org.junit.Ignore("HIVE-26073")
   @Test
   public void testIncrementalStatisticsMetrics() throws Throwable {
@@ -5225,7 +5277,7 @@ public class TestReplicationScenarios {
 
   private void deleteNewMetadataFields(Tuple dump) throws SemanticException {
     Path dumpHiveDir = new Path(dump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
-    DumpMetaData dmd = new DumpMetaData(dumpHiveDir, hconf);
+    DumpMetaData dmd = new DumpMetaData(dumpHiveDir, hconf, true);
     Path dumpMetaPath = new Path(dumpHiveDir, DUMP_METADATA);
 
     List<List<String>> listValues = new ArrayList<>();

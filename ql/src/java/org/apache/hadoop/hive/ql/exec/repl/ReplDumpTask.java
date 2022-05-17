@@ -205,7 +205,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         if (previousValidHiveDumpPath == null && !isFailover) {
           work.setBootstrap(true);
         } else {
-          work.setOldReplScope(isFailover ? null : new DumpMetaData(previousValidHiveDumpPath, conf).getReplScope());
+          work.setOldReplScope(isFailover ? null : new DumpMetaData(previousValidHiveDumpPath, conf, true).getReplScope());
           isFailoverMarkerPresent = !isFailover && isDumpFailoverReady(previousValidHiveDumpPath);
         }
         //Proceed with dump operation in following cases:
@@ -229,7 +229,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           if (shouldDumpAuthorizationMetadata()) {
             initiateAuthorizationDumpTask();
           }
-          DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf);
+          DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf, true);
           // Initialize ReplChangeManager instance since we will require it to encode file URI.
           ReplChangeManager.getInstance(conf);
           Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
@@ -536,7 +536,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private Long getEventFromPreviousDumpMetadata(Path previousDumpPath) throws SemanticException {
     if (previousDumpPath != null) {
-      DumpMetaData dmd = new DumpMetaData(previousDumpPath, conf);
+      DumpMetaData dmd = new DumpMetaData(previousDumpPath, conf, true);
       if (dmd.isIncrementalDump()) {
         return dmd.getEventTo();
       }
@@ -1380,7 +1380,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return false;
     }
     Path hiveDumpPath = new Path(lastDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
-    DumpMetaData dumpMetaData = new DumpMetaData(hiveDumpPath, conf);
+    DumpMetaData dumpMetaData = new DumpMetaData(hiveDumpPath, conf, true);
     if (tableExpressionModified(dumpMetaData)) {
       return false;
     }

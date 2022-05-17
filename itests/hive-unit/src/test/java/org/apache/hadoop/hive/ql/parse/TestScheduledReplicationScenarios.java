@@ -221,7 +221,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
               .run("select id from t2 order by id")
               .verifyResults(new String[]{"1", "2"});
       long lastReplId = Long.parseLong(primary.status(replicatedDbName).getOutput().get(0));
-      DumpMetaData dumpMetaData = new DumpMetaData(ackPath.getParent(), primary.hiveConf);
+      DumpMetaData dumpMetaData = new DumpMetaData(ackPath.getParent(), primary.hiveConf, true);
       List<ReplicationMetric> replicationMetrics = MetricCollector.getInstance().getMetrics();
       Assert.assertEquals(2, replicationMetrics.size());
       //Generate expected metrics

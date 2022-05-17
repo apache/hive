@@ -340,7 +340,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
       }
       if (loadPath != null) {
-        DumpMetaData dmd = new DumpMetaData(loadPath, conf);
+        DumpMetaData dmd = new DumpMetaData(loadPath, conf, true);
 
         boolean evDump = false;
         // we will decide what hdfs locations needs to be copied over here as well.

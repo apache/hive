@@ -227,12 +227,15 @@ public class Utils {
     }
   }
 
-  public static boolean fileExists(Path filePath, HiveConf hiveConf) throws IOException {
-    FileSystem fs = filePath.getFileSystem(hiveConf);
-    if (fs.exists(filePath)) {
-      return true;
+  public static boolean fileExists(Path filePath, HiveConf hiveConf) throws SemanticException {
+    Retryable retryable = Retryable.builder()
+            .withHiveConf(hiveConf)
+            .withRetryOnException(IOException.class).build();
+    try {
+      return retryable.executeCallable(() -> filePath.getFileSystem(hiveConf).exists(filePath));
+    } catch (Exception e) {
+      throw new SemanticException(e);
     }
-    return false;
   }
 
   public static Iterable<String> matchesDb(Hive db, String dbPattern) throws HiveException {
