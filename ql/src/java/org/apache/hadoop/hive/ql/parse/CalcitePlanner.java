@@ -4797,6 +4797,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                         qualifyRel.getRowType().getFieldList().get(i).getType(), i));
               }
               outputRel = genSelectRelNode(topProjectColumnList, originalRR, qualifyRel);
+              outputRR = originalRR;
             }
           } else {
             outputRel = genSelectRelNode(columnList, outputRR, srcRel);
