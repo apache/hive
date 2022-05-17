@@ -36,11 +36,13 @@ import java.util.Stack;
 
 import com.google.common.base.Preconditions;
 import org.apache.calcite.rel.metadata.RelMdUtil;
+import org.apache.datasketches.SketchesArgumentException;
+import org.apache.datasketches.kll.KllFloatsSketch;
+import org.apache.datasketches.memory.Memory;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -968,14 +970,13 @@ public class StatsRulesProcFactory {
 
     private long evaluateComparator(Statistics stats, AnnotateStatsProcCtx aspCtx, ExprNodeGenericFuncDesc genFunc,
         long currNumRows) {
-      long numRows = currNumRows;
       GenericUDF udf = genFunc.getGenericUDF();
 
       ExprNodeColumnDesc columnDesc;
       ExprNodeConstantDesc constantDesc;
       boolean upperBound;
       boolean closedBound;
-      String boundValue = null;
+      String boundValue;
       if (genFunc.getChildren().get(0) instanceof ExprNodeColumnDesc &&
           genFunc.getChildren().get(1) instanceof ExprNodeConstantDesc) {
         columnDesc = (ExprNodeColumnDesc) genFunc.getChildren().get(0);
@@ -1004,13 +1005,23 @@ public class StatsRulesProcFactory {
         closedBound = isClosedBound(udf);
       } else {
         // default
-        return numRows / 3;
+        return currNumRows / 3;
       }
 
       ColStatistics cs = stats.getColumnStatisticsFromColName(columnDesc.getColumn());
+      String colTypeLowerCase = columnDesc.getTypeString().toLowerCase();
+
+      if (cs != null && cs.getHistogram() != null && cs.getHistogram().length > 0) {
+        try {
+          return evaluateComparatorWithHistogram(
+              cs, currNumRows, colTypeLowerCase, boundValue, upperBound, closedBound);
+        } catch (SketchesArgumentException e) {
+          LOG.info("Sketch-based statistics estimation failed, falling back to regular estimation", e);
+        }
+      }
+
       if (cs != null && cs.getRange() != null &&
           cs.getRange().maxValue != null && cs.getRange().minValue != null) {
-        String colTypeLowerCase = columnDesc.getTypeString().toLowerCase();
         try {
           if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)) {
             byte value = Byte.parseByte(boundValue);
@@ -1018,7 +1029,7 @@ public class StatsRulesProcFactory {
             byte minValue = cs.getRange().minValue.byteValue();
             if (upperBound) {
               if (maxValue < value || maxValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minValue > value || minValue == value && !closedBound) {
                 return 0;
@@ -1026,11 +1037,11 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * currNumRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
@@ -1038,7 +1049,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * currNumRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
@@ -1047,7 +1058,7 @@ public class StatsRulesProcFactory {
             short minValue = cs.getRange().minValue.shortValue();
             if (upperBound) {
               if (maxValue < value || maxValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minValue > value || minValue == value && !closedBound) {
                 return 0;
@@ -1055,11 +1066,11 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * currNumRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
@@ -1067,7 +1078,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * currNumRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME) ||
@@ -1084,7 +1095,7 @@ public class StatsRulesProcFactory {
             int minValue = cs.getRange().minValue.intValue();
             if (upperBound) {
               if (maxValue < value || maxValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minValue > value || minValue == value && !closedBound) {
                 return 0;
@@ -1092,11 +1103,11 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * currNumRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
@@ -1104,7 +1115,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * currNumRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME) ||
@@ -1120,7 +1131,7 @@ public class StatsRulesProcFactory {
             long minValue = cs.getRange().minValue.longValue();
             if (upperBound) {
               if (maxValue < value || maxValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minValue > value || minValue == value && !closedBound) {
                 return 0;
@@ -1128,11 +1139,11 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * currNumRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
@@ -1140,7 +1151,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * currNumRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
@@ -1149,7 +1160,7 @@ public class StatsRulesProcFactory {
             float minValue = cs.getRange().minValue.floatValue();
             if (upperBound) {
               if (maxValue < value || maxValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minValue > value || minValue == value && !closedBound) {
                 return 0;
@@ -1157,11 +1168,11 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (value - minValue) / (maxValue - minValue)) * currNumRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
@@ -1169,7 +1180,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * numRows);
+                return Math.round(((double) (maxValue - value) / (maxValue - minValue)) * currNumRows);
               }
             }
           } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
@@ -1178,7 +1189,7 @@ public class StatsRulesProcFactory {
             double minValue = cs.getRange().minValue.doubleValue();
             if (upperBound) {
               if (maxValue < value || maxValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minValue > value || minValue == value && !closedBound) {
                 return 0;
@@ -1186,11 +1197,11 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((value - minValue) / (maxValue - minValue)) * numRows);
+                return Math.round(((value - minValue) / (maxValue - minValue)) * currNumRows);
               }
             } else {
               if (minValue > value || minValue == value && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxValue < value || maxValue == value && !closedBound) {
                 return 0;
@@ -1198,7 +1209,7 @@ public class StatsRulesProcFactory {
               if (aspCtx.isUniformWithinRange()) {
                 // Assuming uniform distribution, we can use the range to calculate
                 // new estimate for the number of rows
-                return Math.round(((maxValue - value) / (maxValue - minValue)) * numRows);
+                return Math.round(((maxValue - value) / (maxValue - minValue)) * currNumRows);
               }
             }
           } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
@@ -1209,7 +1220,7 @@ public class StatsRulesProcFactory {
             int maxComparison = value.compareTo(maxValue);
             if (upperBound) {
               if (maxComparison > 0 || maxComparison == 0 && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (minComparison < 0 || minComparison == 0 && !closedBound) {
                 return 0;
@@ -1219,12 +1230,12 @@ public class StatsRulesProcFactory {
                 // new estimate for the number of rows
                 return Math.round(
                     ((value.subtract(minValue)).divide(maxValue.subtract(minValue), RoundingMode.UP))
-                        .multiply(BigDecimal.valueOf(numRows))
+                        .multiply(BigDecimal.valueOf(currNumRows))
                         .doubleValue());
               }
             } else {
               if (minComparison < 0 || minComparison == 0 && closedBound) {
-                return numRows;
+                return currNumRows;
               }
               if (maxComparison > 0 || maxComparison == 0 && !closedBound) {
                 return 0;
@@ -1234,17 +1245,101 @@ public class StatsRulesProcFactory {
                 // new estimate for the number of rows
                 return Math.round(
                     ((maxValue.subtract(value)).divide(maxValue.subtract(minValue), RoundingMode.UP))
-                        .multiply(BigDecimal.valueOf(numRows))
+                        .multiply(BigDecimal.valueOf(currNumRows))
                         .doubleValue());
               }
             }
           }
         } catch (NumberFormatException nfe) {
-          return numRows / 3;
+          return currNumRows / 3;
         }
       }
       // default
-      return numRows / 3;
+      return currNumRows / 3;
+    }
+
+    private long evaluateComparatorWithHistogram(ColStatistics cs, long currNumRows, String colTypeLowerCase,
+        String boundValue, boolean upperBound, boolean closedBound) {
+      final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(cs.getHistogram()));
+
+      if (kll.getN() == 0) {
+        return 0;
+      }
+
+      try {
+        float value;
+        if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)) {
+          value = Byte.parseByte(boundValue);
+        } else if (colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
+          value = Short.parseShort(boundValue);
+        } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
+          value = Integer.parseInt(boundValue);
+        } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
+          value = Long.parseLong(boundValue);
+        } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
+          value = Float.parseFloat(boundValue);
+        } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
+          value = (float) Double.parseDouble(boundValue);
+        } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+          value = new BigDecimal(boundValue).floatValue();
+        } else {
+          throw new IllegalStateException(
+              "Unsupported type for comparator selectivity evaluation using histogram: " + colTypeLowerCase);
+        }
+        // kll ignores null values (i.e., kll.getN() + numNulls = currNumRows), we therefore need to use kll.getN()
+        // instead of currNumRows since the CDF is expressed as a fraction of kll.getN(), not currNumRows
+        if (upperBound) {
+          if (value < kll.getMinValue()) {
+            return 0;
+          }
+          return Math.round(kll.getN() * (closedBound ?
+              lessThanOrEqualSelectivity(kll, value) : lessThanSelectivity(kll, value)));
+        } else {
+          if (value > kll.getMaxValue()) {
+            return 0;
+          }
+          return Math.round(kll.getN() * (closedBound ?
+              greaterThanOrEqualSelectivity(kll, value) : greaterThanSelectivity(kll, value)));
+        }
+      } catch (NumberFormatException nfe) {
+        return currNumRows / 3;
+      }
+    }
+
+    private double rangedSelectivity(KllFloatsSketch kll, float val1, float val2) {
+      float[] splitPoints;
+      if(val1 <= val2) {
+        splitPoints = new float[] { val1, val2 };
+      } else {
+        splitPoints = new float[] { val2, val1 };
+      }
+      double[] boundaries = kll.getCDF(splitPoints);
+      return boundaries[1] - boundaries[0];
+    }
+
+    private double greaterThanSelectivity(KllFloatsSketch kll, float value) {
+      float max = kll.getMaxValue();
+      float nextValue = Math.nextUp(value);
+      if (Double.compare(value, max) == 0 || Double.compare(nextValue, max) == 0) {
+        return 0;
+      }
+      return rangedSelectivity(kll, nextValue, Math.nextUp(max));
+    }
+
+    private double greaterThanOrEqualSelectivity(KllFloatsSketch kll, float value) {
+      return rangedSelectivity(kll, value, Math.nextUp(kll.getMaxValue()));
+    }
+
+    private double lessThanOrEqualSelectivity(KllFloatsSketch kll, float value) {
+      return kll.getCDF(new float[] { Math.nextUp(value) })[0];
+    }
+
+    private double lessThanSelectivity(KllFloatsSketch kll, float value) {
+      float min = kll.getMinValue();
+      if (Double.compare(value, min) == 0 || Double.compare(Math.nextUp(value), min) == 0) {
+        return 0;
+      }
+      return kll.getCDF(new float[] { value })[0];
     }
 
     private boolean isClosedBound(GenericUDF udf) {
