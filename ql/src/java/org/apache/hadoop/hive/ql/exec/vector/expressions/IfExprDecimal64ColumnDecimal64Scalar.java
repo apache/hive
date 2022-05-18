@@ -67,4 +67,9 @@ public class IfExprDecimal64ColumnDecimal64Scalar extends IfExprLongColumnLongSc
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
   }
+
+  @Override
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return false;
+  }
 }
