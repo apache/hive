@@ -19,7 +19,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[
                     HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($6), IS NOT NULL($22))])
                       HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
                   HiveProject(d_date_sk=[$0])
-                    HiveFilter(condition=[AND(=($8, 4), =($6, 2000))])
+                    HiveFilter(condition=[AND(=($6, 2000), =($8, 4))])
                       HiveTableScan(table=[[default, date_dim]], table:alias=[d1])
                 HiveProject(sr_item_sk=[$0], sr_customer_sk=[$1], sr_ticket_number=[$2], sr_net_loss=[$3], sr_returned_date_sk=[$4], d_date_sk=[$5])
                   HiveJoin(condition=[=($4, $5)], joinType=[inner], algorithm=[none], cost=[not available])
