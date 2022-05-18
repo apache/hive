@@ -612,6 +612,9 @@ public class WarehouseInstance implements Closeable {
     if (miniDFSCluster != null && miniDFSCluster.isClusterUp()) {
       miniDFSCluster.shutdown();
     }
+    if (client != null) {
+      client.close();
+    }
   }
 
   CurrentNotificationEventId getCurrentNotificationEventId() throws Exception {

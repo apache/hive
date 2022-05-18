@@ -51,8 +51,8 @@ public class DDLOperationContext {
     this.console = console;
   }
 
-  public Hive getDb() {
-    return db;
+  public Hive getDb() throws HiveException {
+    return Hive.getCurrHiveDb(db, conf);
   }
 
   public HiveConf getConf() {

@@ -223,7 +223,6 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -253,6 +252,7 @@ public class Hive {
   private SynchronizedMetaStoreClient syncMetaStoreClient;
   private UserGroupInformation owner;
   private boolean isAllowClose = true;
+  private boolean isCurrentClosed = false;
 
   // metastore calls timing information
   private final ConcurrentHashMap<String, Long> metaCallTimeMap = new ConcurrentHashMap<>();
@@ -500,6 +500,10 @@ public class Hive {
     return hiveDB.get();
   }
 
+  public static Hive getCurrHiveDb(Hive hiveDb, HiveConf c) throws HiveException {
+    return (hiveDb == null || hiveDb.isCurrentClosed) ? get(c, false) : hiveDb;
+  }
+
   public static Hive get() throws HiveException {
     return get(true);
   }
@@ -534,6 +538,7 @@ public class Hive {
   }
 
   public static void closeCurrent() {
+    hiveDB.get().isCurrentClosed = true;
     hiveDB.remove();
   }
 
