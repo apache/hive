@@ -267,10 +267,10 @@ public class TestReplicationScenarios {
     try {
       warehousePath.getFileSystem(hconf).delete(warehousePath, true);
       warehousePathReplica.getFileSystem(hconfMirror).delete(warehousePathReplica, true);
-      Hive.getCurrHiveDb(null, null).close(true);
-    } catch (IOException | HiveException e) {
+    } catch (IOException e) {
 
     }
+    Hive.getThreadLocal().close(true);
     if (metaStoreClient != null) {
       metaStoreClient.close();
     }

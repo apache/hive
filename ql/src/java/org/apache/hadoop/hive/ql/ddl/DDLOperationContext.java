@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
  * Context for DDL operations.
  */
 public class DDLOperationContext {
-  private final Hive db;
   private final HiveConf conf;
   private final Context context;
   private final DDLTask task;
@@ -40,8 +39,7 @@ public class DDLOperationContext {
   private final LogHelper console;
 
   public DDLOperationContext(HiveConf conf, Context context, DDLTask task, DDLWork work, QueryState queryState,
-      QueryPlan queryPlan, LogHelper console) throws HiveException {
-    this.db = Hive.get(conf);
+      QueryPlan queryPlan, LogHelper console){
     this.conf = conf;
     this.context = context;
     this.task = task;
@@ -52,7 +50,7 @@ public class DDLOperationContext {
   }
 
   public Hive getDb() throws HiveException {
-    return Hive.getCurrHiveDb(db, conf);
+    return Hive.get(conf);
   }
 
   public HiveConf getConf() {

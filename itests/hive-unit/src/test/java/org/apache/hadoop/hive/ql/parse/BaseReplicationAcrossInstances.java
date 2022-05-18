@@ -23,7 +23,6 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.Utils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -120,10 +119,10 @@ public class BaseReplicationAcrossInstances {
   }
 
   @AfterClass
-  public static void classLevelTearDown() throws IOException, HiveException {
+  public static void classLevelTearDown() throws IOException {
     primary.close();
     replica.close();
-    Hive.getCurrHiveDb(null, null).close(true);
+    Hive.getThreadLocal().close(true);
   }
 
   private static void setFullyQualifiedReplicaExternalTableBase(FileSystem fs) throws IOException {
