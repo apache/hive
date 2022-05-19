@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -142,6 +143,8 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   private String asOfVersion = null;
 
   private String asOfTimestamp = null;
+
+  private Context.Operation icebergOperation = Context.Operation.OTHER;
 
   public TableScanDesc() {
     this(null, null);
@@ -608,5 +611,13 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public boolean isFullAcidTable() {
     return isTranscationalTable() && !getAcidOperationalProperties().isInsertOnly();
+  }
+
+  public void setIcebergOperation(Context.Operation icebergOperation) {
+    this.icebergOperation = icebergOperation;
+  }
+
+  public Context.Operation getIcebergOperation() {
+    return icebergOperation;
   }
 }

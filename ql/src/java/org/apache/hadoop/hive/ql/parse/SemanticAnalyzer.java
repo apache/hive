@@ -11487,6 +11487,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // Create the root of the operator tree
       TableScanDesc tsDesc = new TableScanDesc(alias, vcList, tab);
+      if (nonNativeAcid && isUpdateDelete) {
+        tsDesc.setIcebergOperation(Context.Operation.UPDATE);
+      }
       setupStats(tsDesc, qb.getParseInfo(), tab, alias, rwsch);
 
       Map<String, String> tblProperties = tab.getParameters();

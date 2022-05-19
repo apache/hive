@@ -1049,6 +1049,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         AcidUtils.setAcidOperationalProperties(job, ts.getConf().isTranscationalTable(),
             ts.getConf().getAcidOperationalProperties());
         AcidUtils.setValidWriteIdList(job, ts.getConf());
+
+        jobConf.set("iceberg.mr.operation.type." + ts.getConf().getDatabaseName() + "." + ts.getConf().getTableName(), ts.getConf().getIcebergOperation().name());
       }
     }
   }

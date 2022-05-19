@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
+import static org.apache.hadoop.hive.ql.Context.Operation.DELETE;
 
 /**
  * A subclass of the {@link SemanticAnalyzer} that just handles
@@ -166,7 +167,7 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     List<String> sortKeys;
     if (nonNativeAcid) {
-      sortKeys = mTable.getStorageHandler().acidSortColumns(mTable, operation).stream()
+      sortKeys = mTable.getStorageHandler().acidSortColumns(mTable, DELETE).stream()
               .map(fieldSchema -> String.format(
                       "%s.%s",
                       SUB_QUERY_ALIAS,
