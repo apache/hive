@@ -849,6 +849,12 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>com.esri.geometry</groupId>
+      <artifactId>esri-geometry-api</artifactId>
+      <scope>compile</scope>
+      <version>2.2.4</version>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>
@@ -1063,6 +1069,7 @@
                   <include>org.apache.datasketches:*</include>
                   <include>org.apache.calcite:*</include>
                   <include>org.apache.calcite.avatica:avatica</include>
+                  <include>com.esri.geometry:esri-geometry-api</include>
                 </includes>
               </artifactSet>
               <filters>
