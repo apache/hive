@@ -92,4 +92,3 @@ DROP TABLE IF EXISTS test_partition_parquet_mmctas;
 DROP TABLE IF EXISTS test_partition_avro_mmctas;
 
 DROP TABLE IF EXISTS test_partition_textfile_mmctas;
-

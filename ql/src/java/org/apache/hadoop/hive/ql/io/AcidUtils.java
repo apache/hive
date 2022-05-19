@@ -2878,12 +2878,6 @@ public class AcidUtils {
     }
   }
 
-  public static boolean isNonNativeTable(Map<String, String> tblProps) {
-    return tblProps.get(
-            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE)
-            != null;
-  }
-
   /**
    * Create lock components from write/read entities.
    * @param outputs write entities

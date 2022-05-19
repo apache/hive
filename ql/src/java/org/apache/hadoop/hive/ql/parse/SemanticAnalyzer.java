@@ -7600,11 +7600,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       destTableIsTransactional = tblProps != null && AcidUtils.isTablePropertyTransactional(tblProps);
       if (destTableIsTransactional) {
-        isNonNativeTable = AcidUtils.isNonNativeTable(tblProps);
+        isNonNativeTable = MetaStoreUtils.isNonNativeTable(tblProps);
         boolean isCtas = tblDesc != null && tblDesc.isCTAS();
-        if (AcidUtils.isInsertOnlyTable(tblProps, true)) {
-          isMmTable = isMmCreate = true;
-        }
+        isMmTable = isMmCreate = AcidUtils.isInsertOnlyTable(tblProps);
         if (!isNonNativeTable && !destTableIsTemporary && isCtas) {
           destTableIsFullAcid = AcidUtils.isFullAcidTable(tblProps);
           acidOperation = getAcidType(dest);
@@ -7612,8 +7610,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           boolean enableSuffixing = conf.getBoolVar(ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
                   || conf.getBoolVar(ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
           if (isDirectInsert || isMmTable) {
-            String location = tblDesc.getLocation();
-            destinationPath = location == null ? getCTASDestinationTableLocation(tblDesc, enableSuffixing) : new Path(location);
+            destinationPath = getCTASDestinationTableLocation(tblDesc, enableSuffixing);
+            // Setting the location so that metadata transformers
+            // does not change the location later while creating the table.
+            tblDesc.setLocation(destinationPath.toString());
           }
         }
         try {
@@ -7930,7 +7930,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // operation is the same (the table location) and this can lead to invalid lineage information
     // in case of a merge statement.
     if (!isDirectInsert || acidOperation == AcidUtils.Operation.INSERT) {
-      handleLineage(ltd, output);
+      handleLineage(destinationTable, ltd, output);
     }
     setWriteIdForSurrogateKeys(ltd, input);
 
@@ -7965,20 +7965,39 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Path getCTASDestinationTableLocation(CreateTableDesc tblDesc, boolean enableSuffixing) throws SemanticException {
+    Path location;
+    String suffix = "";
     try {
-      String protoName = tblDesc.getDbTableName();
-      String[] names = Utilities.getDbTableName(protoName);
-      String suffix = "";
-      if (enableSuffixing) {
-        long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
-        suffix = SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId);
-      }
-      if (!db.databaseExists(names[0])) {
-        throw new SemanticException("ERROR: The database " + names[0] + " does not exist.");
+      if (tblDesc.getLocation() == null) {
+        String protoName = tblDesc.getDbTableName();
+        String[] names = Utilities.getDbTableName(protoName);
+        if (enableSuffixing) {
+          long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
+          suffix = SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId);
+        }
+        if (!db.databaseExists(names[0])) {
+          throw new SemanticException("ERROR: The database " + names[0] + " does not exist.");
+        }
+
+        Warehouse wh = new Warehouse(conf);
+        location = wh.getDefaultTablePath(db.getDatabase(names[0]), names[1] + suffix, false);
+      } else {
+        location = new Path(tblDesc.getLocation());
       }
 
-      Warehouse wh = new Warehouse(conf);
-      return wh.getDefaultTablePath(db.getDatabase(names[0]), names[1] + suffix, false);
+      // Handle table translation
+      // Property modifications of the table is handled later.
+      // We are interested in the location if it has changed
+      // due to table translation.
+      Table tbl = tblDesc.toTable(conf);
+      tbl = db.getTranslateTableDryrun(tbl.getTTable());
+      org.apache.hadoop.hive.metastore.api.Table tTable = tbl.getTTable();
+      if (tTable.getSd() != null && tTable.getSd().getLocation() != null) {
+        // Suffix is added when suffixing is enabled.
+        location = new Path(tTable.getSd().getLocation() + suffix);
+        tTable.getSd().setLocation(location.toString());
+      }
+      return location;
     } catch (HiveException | MetaException e) {
       throw new SemanticException(e);
     }
@@ -8263,7 +8282,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return fileSinkDesc;
   }
 
-  private void handleLineage(LoadTableDesc ltd, Operator output)
+  private void handleLineage(Table destinationTable, LoadTableDesc ltd, Operator output)
       throws SemanticException {
     if (ltd != null) {
       queryState.getLineageState().mapDirToOp(ltd.getSourcePath(), output);
@@ -8285,6 +8304,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Warehouse wh = new Warehouse(conf);
         tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()),
             tName + suffix, tableDesc.isExternal());
+
+        // Handle translation in lineage for CTAS queries.
+        if (destinationTable != null) {
+          Table translatedTable = db.getTranslateTableDryrun(destinationTable.getTTable());
+          org.apache.hadoop.hive.metastore.api.Table tbl = translatedTable.getTTable();
+          if (tbl.getSd() != null && tbl.getSd().getLocation() != null) {
+            tlocation = new Path(tbl.getSd().getLocation());
+          }
+        }
       } catch (MetaException|HiveException e) {
         throw new SemanticException(e);
       }
