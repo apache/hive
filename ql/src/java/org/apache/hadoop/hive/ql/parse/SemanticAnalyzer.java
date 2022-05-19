@@ -11434,6 +11434,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Determine row schema for TSOP.
       // Include column names from SerDe, the partition and virtual columns.
       rwsch = new RowResolver();
+
+      List<VirtualColumn> vcList = new ArrayList<>();
+      boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(tab);
+      boolean isUpdateDelete =
+              this instanceof UpdateDeleteSemanticAnalyzer  || this instanceof SplitUpdateSemanticAnalyzer;
+      // put all virtual columns in RowResolver.
+      if (nonNativeAcid && isUpdateDelete) {
+        vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
+        vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
+                vc.getTypeInfo(), alias, true, vc.getIsHidden()
+        )));
+      }
+
       try {
         // Including parameters passed in the query
         if (properties != null) {
@@ -11470,19 +11483,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
       }
 
-      List<VirtualColumn> vcList = new ArrayList<>();
-      boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(tab);
-      boolean isUpdateDelete =
-              this instanceof UpdateDeleteSemanticAnalyzer  || this instanceof SplitUpdateSemanticAnalyzer;
       // put all virtual columns in RowResolver.
-      if (!tab.isNonNative() || (nonNativeAcid && isUpdateDelete)) {
-        vcList = VirtualColumn.getRegistry(conf);
-        if (nonNativeAcid && isUpdateDelete) {
-          vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
+      if (!tab.isNonNative()) {
+        for (VirtualColumn vc : VirtualColumn.getRegistry(conf)) {
+          vcList.add(vc);
+          rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
+                  vc.getTypeInfo(), alias, true, vc.getIsHidden()
+          ));
         }
-        vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
-            vc.getTypeInfo(), alias, true, vc.getIsHidden()
-        )));
       }
 
       // Create the root of the operator tree
