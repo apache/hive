@@ -270,10 +270,7 @@ public class TestReplicationScenarios {
     } catch (IOException e) {
 
     }
-    Hive hiveDb = Hive.getThreadLocal();
-    if (hiveDb != null) {
-      hiveDb.close(true);
-    }
+    Hive.closeCurrent();
     if (metaStoreClient != null) {
       metaStoreClient.close();
     }

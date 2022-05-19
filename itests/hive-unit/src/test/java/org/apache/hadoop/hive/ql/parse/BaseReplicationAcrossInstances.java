@@ -122,10 +122,7 @@ public class BaseReplicationAcrossInstances {
   public static void classLevelTearDown() throws IOException {
     primary.close();
     replica.close();
-    Hive hiveDb = Hive.getThreadLocal();
-    if (hiveDb != null) {
-      hiveDb.close(true);
-    }
+    Hive.closeCurrent();
   }
 
   private static void setFullyQualifiedReplicaExternalTableBase(FileSystem fs) throws IOException {
