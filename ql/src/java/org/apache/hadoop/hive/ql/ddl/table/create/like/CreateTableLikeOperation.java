@@ -22,6 +22,7 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -121,7 +122,7 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
 
     setTableParameters(table);
 
-    if (desc.isUserStorageFormat()) {
+    if (desc.isUserStorageFormat() || (table.getInputFormatClass() == null) || (table.getOutputFormatClass() == null)) {
       setStorage(table);
     }
 
@@ -157,27 +158,12 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     }
     // We should copy only those table parameters that are specified in the config.
     SerDeSpec spec = AnnotationUtils.getAnnotation(serdeClass, SerDeSpec.class);
-
-    // for non-native table, property storage_handler should be retained
-    retainer.add(META_TABLE_STORAGE);
-    if (spec != null && spec.schemaProps() != null) {
-      retainer.addAll(Arrays.asList(spec.schemaProps()));
-    }
-
-    String paramsStr = HiveConf.getVar(context.getConf(), HiveConf.ConfVars.DDL_CTL_PARAMETERS_WHITELIST);
-    if (paramsStr != null) {
-      retainer.addAll(Arrays.asList(paramsStr.split(",")));
-    }
-
-    Map<String, String> params = tbl.getParameters();
-    if (!retainer.isEmpty()) {
-      params.keySet().retainAll(retainer);
-    } else {
-      params.clear();
-    }
+    //With Hive-25813, we'll not copy over table properties from the source.
+    //CTLT should should copy column schema but not table properties. It is also consistent with other query engines like mysql, redshift.
+    tbl.getParameters().clear();
 
     if (desc.getTblProps() != null) {
-      params.putAll(desc.getTblProps());
+      tbl.setParameters(params);
     }
   }
 
