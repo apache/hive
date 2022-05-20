@@ -3,7 +3,6 @@
 --! qt:replace:/("file_size_in_bytes":)\d+/$1#Masked#/
 --! qt:replace:/("total-files-size":)\d+/$1#Masked#/
 
-set hive.vectorized.execution.enabled = false;
 set tez.mrreader.config.update.properties=hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids;
 set hive.query.results.cache.enabled=false;
 set hive.fetch.task.conversion=none;
