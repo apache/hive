@@ -39,3 +39,27 @@ drop table test_external;
 drop table test_mm1;
 drop table test_external1;
 drop table test_mm2;
+
+-- Create JBDC based CTLT table, HIVE-25813
+CREATE EXTERNAL TABLE default.dbs (
+  DB_ID            bigint,
+  DB_LOCATION_URI  string,
+  NAME             string,
+  OWNER_NAME       string,
+  OWNER_TYPE       string )
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+  'hive.sql.database.type' = 'MYSQL',
+  'hive.sql.jdbc.driver'   = 'com.mysql.jdbc.Driver',
+  'hive.sql.jdbc.url'      = 'jdbc:mysql://localhost:3306/hive1',
+  'hive.sql.dbcp.username' = 'hive1',
+  'hive.sql.dbcp.password' = 'cloudera',
+  'hive.sql.query' = 'SELECT DB_ID, DB_LOCATION_URI, NAME, OWNER_NAME, OWNER_TYPE FROM DBS'
+);
+
+CREATE TABLE default.dbscopy LIKE default.dbs;
+
+desc formatted default.dbscopy;
+
+drop table default.dbs;
+drop table default.dbscopy;
