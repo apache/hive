@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
@@ -578,7 +579,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       return null;
     }
 
-    String operation = conf.get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableName);
+    String operation = conf.get(SerDeUtils.WRITE_OPERATION_CONFIG_PREFIX + tableName);
     return operation == null ? null : Operation.valueOf(operation);
   }
 

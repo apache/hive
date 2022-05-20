@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
+import static org.apache.hadoop.hive.serde2.SerDeUtils.WRITE_OPERATION_CONFIG_PREFIX;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -637,6 +638,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
       statsFromRecordWriter = new boolean[numFiles];
       AbstractSerDe serde = conf.getTableInfo().getSerDeClass().newInstance();
+      Configuration configuration = unsetNestedColumnPaths(hconf);
+      setWriteOperation(configuration);
       serde.initialize(unsetNestedColumnPaths(hconf), conf.getTableInfo().getProperties(), null);
 
       serializer = serde;
@@ -737,6 +740,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  private void setWriteOperation(Configuration conf) {
+    String opKey = WRITE_OPERATION_CONFIG_PREFIX + getConf().getTableInfo().getTableName();
+    conf.set(opKey, getConf().getWriteOperation().name());
   }
 
   /**
@@ -932,7 +940,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             && !FileUtils.mkdir(fs, outPath.getParent(), hconf)) {
           LOG.warn("Unable to create directory with inheritPerms: " + outPath);
         }
-        fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(jc, conf.getTableInfo(),
+        JobConf jobConf = new JobConf(jc);
+        setWriteOperation(jobConf);
+        fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(jobConf, conf.getTableInfo(),
             outputClass, conf, outPath, reporter);
         // If the record writer provides stats, get it from there instead of the serde
         statsFromRecordWriter[filesIdx] = fsp.outWriters[filesIdx] instanceof

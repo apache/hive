@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,6 +26,7 @@ import java.util.Set;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
@@ -96,6 +96,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   // Record what type of write this is.  Default is non-ACID (ie old style).
   private AcidUtils.Operation writeType = AcidUtils.Operation.NOT_ACID;
+  private Context.Operation writeOperation = Context.Operation.OTHER;
   private long tableWriteId = 0;  // table write id for this operation
   private int statementId = -1;
   private int maxStmtId = -1;
@@ -582,6 +583,15 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public AcidUtils.Operation getWriteType() {
     return writeType;
   }
+
+  public void setWriteOperation(Context.Operation writeOperation) {
+    this.writeOperation = writeOperation;
+  }
+
+  public Context.Operation getWriteOperation() {
+    return writeOperation;
+  }
+
   @Explain(displayName = "Write Type")
   public String getWriteTypeString() {
     return getWriteType() == AcidUtils.Operation.NOT_ACID ? null : getWriteType().toString();

@@ -786,6 +786,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, ""));;
     StringBuilder readColumnNamesBuffer = new StringBuilder(newjob.
       get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
+    boolean fetchVirtualColumns = newjob.getBoolean(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR, false);
     // for each dir, get the InputFormat, and do getSplits.
     for (Path dir : dirs) {
       PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
@@ -804,8 +805,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           readColumnsBuffer.setLength(0);
           readColumnNamesBuffer.setLength(0);
           // push down projections.
-          ColumnProjectionUtils.appendReadColumns(readColumnsBuffer, readColumnNamesBuffer,
+          ColumnProjectionUtils.appendReadColumns(
+                  readColumnsBuffer, readColumnNamesBuffer,
             tableScan.getNeededColumnIDs(), tableScan.getNeededColumns());
+          fetchVirtualColumns = tableScan.getConf().hasVirtualCols();
           pushDownProjection = true;
           // push down filters and as of information
           pushFiltersAndAsOf(newjob, tableScan, this.mrwork);
@@ -829,7 +832,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
         // set columns to read in conf
         if (pushDownProjection) {
-          pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer);
+          pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer, fetchVirtualColumns);
         }
 
         addSplitsForGroup(currentDirs, currentTableScan, newjob,
@@ -847,7 +850,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     // set columns to read in conf
     if (pushDownProjection) {
-      pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer);
+      pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer, fetchVirtualColumns);
     }
 
     if (dirs.length != 0) { // TODO: should this be currentDirs?
@@ -865,15 +868,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   private void pushProjection(final JobConf newjob, final StringBuilder readColumnsBuffer,
-      final StringBuilder readColumnNamesBuffer) {
+      final StringBuilder readColumnNamesBuffer, final boolean fetchVirtualColumns) {
     String readColIds = readColumnsBuffer.toString();
     String readColNames = readColumnNamesBuffer.toString();
     newjob.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
     newjob.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColIds);
     newjob.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColNames);
+    newjob.setBoolean(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR, fetchVirtualColumns);
 
     LOG.info("{} = {}", ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColIds);
     LOG.info("{} = {}", ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColNames);
+    LOG.info("{} = {}", ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR, fetchVirtualColumns);
   }
 
 
@@ -1042,7 +1047,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         TableScanOperator ts = (TableScanOperator) op;
         // push down projections.
         ColumnProjectionUtils.appendReadColumns(
-            jobConf, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
+                jobConf,
+                ts.getNeededColumnIDs(),
+                ts.getNeededColumns(),
+                ts.getNeededNestedColumnPaths(),
+                ts.getConf().hasVirtualCols());
         // push down filters and as of information
         pushFiltersAndAsOf(jobConf, ts, this.mrwork);
 

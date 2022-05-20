@@ -8187,6 +8187,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       acidFileSinks.add(fileSinkDesc);
     }
 
+    fileSinkDesc.setWriteOperation(getFSWriteType(dest));
+
     fileSinkDesc.setTemporary(destTableIsTemporary);
     fileSinkDesc.setMaterialization(destTableIsMaterialization);
 
@@ -11442,6 +11444,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Determine row schema for TSOP.
       // Include column names from SerDe, the partition and virtual columns.
       rwsch = new RowResolver();
+
       try {
         // Including parameters passed in the query
         if (properties != null) {
@@ -11478,19 +11481,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
       }
 
-      List<VirtualColumn> vcList = new ArrayList<>();
       boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(tab);
-      boolean isUpdateDelete = this instanceof UpdateDeleteSemanticAnalyzer;
       // put all virtual columns in RowResolver.
-      if (!tab.isNonNative() || (nonNativeAcid && isUpdateDelete)) {
-        vcList = VirtualColumn.getRegistry(conf);
-        if (nonNativeAcid && isUpdateDelete) {
-          vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
-        }
-        vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
-            vc.getTypeInfo(), alias, true, vc.getIsHidden()
-        )));
+      List<VirtualColumn> vcList = VirtualColumn.getRegistry(conf);
+      if (nonNativeAcid) {
+        vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
       }
+      vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
+          vc.getTypeInfo(), alias, true, vc.getIsHidden()
+      )));
 
       // Create the root of the operator tree
       TableScanDesc tsDesc = new TableScanDesc(alias, vcList, tab);
@@ -15016,6 +15015,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return deleting(destination) ? AcidUtils.Operation.DELETE :
         (updating(destination) ? AcidUtils.Operation.UPDATE :
             AcidUtils.Operation.INSERT);
+  }
+
+  private Context.Operation getFSWriteType(String destination) {
+    return deleting(destination) ? Context.Operation.DELETE :
+        (updating(destination) ? Context.Operation.UPDATE :
+            Context.Operation.OTHER);
   }
 
   private AcidUtils.Operation getAcidType(Class<? extends OutputFormat> of, String dest,
