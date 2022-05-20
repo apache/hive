@@ -3086,6 +3086,13 @@ public class AcidUtils {
             output.getWriteType().name()));
         break;
 
+      case CTAS:
+        if (AcidUtils.isNoRenameCtasEnabled(conf) && AcidUtils.isTransactionalTable(t)) {
+          compBuilder.setExclWrite();
+          compBuilder.setOperationType(DataOperationType.CTAS);
+          break;
+        }
+
       case DDL_NO_LOCK:
         continue; // No lock required here
 
@@ -3225,6 +3232,9 @@ public class AcidUtils {
     return (SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId));
   }
 
+  public static boolean isNoRenameCtasEnabled(Configuration conf) {
+    return HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_NO_RENAME_CTAS_ENABLED);
+  }
   @VisibleForTesting
   public static void initDirCache(int durationInMts) {
     if (dirCacheInited.get()) {

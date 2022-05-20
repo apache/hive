@@ -2390,6 +2390,46 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   }
 
   @Test
+  public void testCtasLockingExclWrite() throws Exception {
+    testLocksWithConcurrentCtas(true);
+  }
+
+  private void testLocksWithConcurrentCtas(boolean ctasLocking) throws Exception {
+    dropTable(new String[]{"target", "source"});
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_ACID_NO_RENAME_CTAS_ENABLED, ctasLocking);
+
+    driver.run("create table source (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into source values (1,2), (3,4)");
+
+    driver.compileAndRespond("create table target stored as orc TBLPROPERTIES ('transactional'='true') as select * from source");
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+
+    driver.compileAndRespond("create table target stored as orc TBLPROPERTIES ('transactional'='true') as select * from source");
+    try {
+      //Query should fail with Table already exists exception
+      txnMgr2.acquireLocks(driver.getPlan(), driver.getContext(), "T2", false);
+    } catch (LockException e) {
+      Assert.assertTrue(e.getMessage().contains("table already exists"));
+      e.printStackTrace();
+    }
+    List<ShowLocksResponseElement> locks = getLocks();
+
+    Assert.assertEquals("Unexpected lock count", 6, locks.size());
+
+    checkLock(LockType.EXCL_WRITE, LockState.ACQUIRED, "default", "target", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "source", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", null, null, locks);
+
+    checkLock(LockType.EXCL_WRITE, LockState.WAITING, "default", "target", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "source", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", null, null, locks);
+  }
+
+
+  @Test
   public void testConcurrent2MergeUpdatesConflict() throws Exception {
     testConcurrent2MergeUpdatesConflict(false);
   }

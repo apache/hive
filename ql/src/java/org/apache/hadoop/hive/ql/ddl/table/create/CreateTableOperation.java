@@ -98,8 +98,11 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
       }
       createTableNonReplaceMode(tbl);
     }
-
-    DDLUtils.addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK), context);
+    if (context.getQueryState().getCommandType().equals("CREATETABLE_AS_SELECT")) {
+      DDLUtils.addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.CTAS), context);
+    } else {
+      DDLUtils.addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK), context);
+    }
     return 0;
   }
 

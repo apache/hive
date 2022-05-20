@@ -300,7 +300,8 @@ int _kDataOperationTypeValues[] = {
   DataOperationType::UPDATE,
   DataOperationType::DELETE,
   DataOperationType::UNSET,
-  DataOperationType::NO_TXN
+  DataOperationType::NO_TXN,
+  DataOperationType::CTAS
 };
 const char* _kDataOperationTypeNames[] = {
   "SELECT",
@@ -308,9 +309,10 @@ const char* _kDataOperationTypeNames[] = {
   "UPDATE",
   "DELETE",
   "UNSET",
-  "NO_TXN"
+  "NO_TXN",
+  "CTAS"
 };
-const std::map<int, const char*> _DataOperationType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(6, _kDataOperationTypeValues, _kDataOperationTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
+const std::map<int, const char*> _DataOperationType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(7, _kDataOperationTypeValues, _kDataOperationTypeNames), ::apache::thrift::TEnumIterator(-1, nullptr, nullptr));
 
 std::ostream& operator<<(std::ostream& out, const DataOperationType::type& val) {
   std::map<int, const char*>::const_iterator it = _DataOperationType_VALUES_TO_NAMES.find(val);

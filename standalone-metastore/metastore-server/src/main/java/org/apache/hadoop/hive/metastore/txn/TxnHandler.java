@@ -3155,6 +3155,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         case INSERT:
         case UPDATE:
         case DELETE:
+        case CTAS:
           return true;
         case SELECT:
           return false;
@@ -5289,6 +5290,39 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             return response;
           }
         }
+
+        if (isValidTxn(txnId)) {
+          LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
+                  .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
+
+          if (lockType == LockType.EXCL_WRITE && blockedBy.state == LockState.ACQUIRED) {
+
+            String checkBlockedByTxnComp = "SELECT \"TC_OPERATION_TYPE\" FROM \"TXN_COMPONENTS\" WHERE" +
+                    " \"TC_TXNID\"=" + blockedBy.txnId;
+            System.out.println("Going to execute query <" + checkBlockedByTxnComp + ">");
+            ResultSet resultSet = stmt.executeQuery(checkBlockedByTxnComp);
+
+            if (resultSet.next()) {
+              if (resultSet.getString("TC_OPERATION_TYPE").equals(OperationType.CTAS.getSqlConst())) {
+                String deleteBlockedByTxnComp = "DELETE  FROM \"TXN_COMPONENTS\" WHERE" +
+                        " \"TC_TXNID\"=" + txnId;
+                System.out.println("Going to execute query <" + deleteBlockedByTxnComp + ">");
+                stmt.executeUpdate(deleteBlockedByTxnComp);
+                resultSet.close();
+                dbConn.commit();
+                String format = String.format(
+                        "Could not create a table as %s table already exists in database %s or " +
+                                " a concurrent ctas operation " +
+                                " is creating a table with same table name.", blockedBy.table, blockedBy.db);
+                response.setErrorMessage(format);
+                response.setState(LockState.NOT_ACQUIRED);
+                LOG.error(format);
+                return response;
+              }
+            }
+          }
+        }
+
         String updateBlockedByQuery = "UPDATE \"HIVE_LOCKS\"" +
             " SET \"HL_BLOCKEDBY_EXT_ID\" = " + blockedBy.extLockId +
             ", \"HL_BLOCKEDBY_INT_ID\" = " + blockedBy.intLockId +

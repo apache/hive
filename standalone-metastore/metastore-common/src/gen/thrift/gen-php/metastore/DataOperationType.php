@@ -30,6 +30,8 @@ final class DataOperationType
 
     const NO_TXN = 6;
 
+    const CTAS = 7;
+
     static public $__names = array(
         1 => 'SELECT',
         2 => 'INSERT',
@@ -37,6 +39,7 @@ final class DataOperationType
         4 => 'DELETE',
         5 => 'UNSET',
         6 => 'NO_TXN',
+        7 => 'CTAS',
     );
 }
 
