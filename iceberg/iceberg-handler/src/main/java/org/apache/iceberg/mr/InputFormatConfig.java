@@ -77,6 +77,7 @@ public class InputFormatConfig {
 
   public static final String CTAS_TABLE_NAME = "iceberg.mr.ctas.table.name";
   public static final String SELECTED_COLUMNS = "iceberg.mr.selected.columns";
+  public static final String SELECTED_VIRTUAL_COLUMNS = "iceberg.mr.selected.virtualcolumns";
   public static final String EXTERNAL_TABLE_PURGE = "external.table.purge";
 
   public static final String CONFIG_SERIALIZATION_DISABLED = "iceberg.mr.config.serialization.disabled";
@@ -227,7 +228,15 @@ public class InputFormatConfig {
   }
 
   public static String[] selectedColumns(Configuration conf) {
-    String readColumns = conf.get(InputFormatConfig.SELECTED_COLUMNS);
+    return selectedColumns(conf, InputFormatConfig.SELECTED_COLUMNS);
+  }
+
+  public static String[] selectedVirtualColumns(Configuration conf) {
+    return selectedColumns(conf, InputFormatConfig.SELECTED_VIRTUAL_COLUMNS);
+  }
+
+  public static String[] selectedColumns(Configuration conf, String configKey) {
+    String readColumns = conf.get(configKey);
     if (readColumns == null || readColumns.isEmpty()) {
       return null;
     }

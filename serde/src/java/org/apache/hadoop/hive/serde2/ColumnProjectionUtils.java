@@ -52,6 +52,7 @@ public final class ColumnProjectionUtils {
     "hive.io.file.readNestedColumn.paths";
   public static final String READ_ALL_COLUMNS = "hive.io.file.read.all.columns";
   public static final String READ_COLUMN_NAMES_CONF_STR = "hive.io.file.readcolumn.names";
+  public static final String READ_COLUMN_VIRTUAL_NAMES_CONF_STR = "hive.io.file.readvirtualcolumn.names";
   private static final String READ_COLUMN_IDS_CONF_STR_DEFAULT = "";
   private static final String READ_NESTED_COLUMN_PATH_CONF_STR_DEFAULT = "";
   private static final boolean READ_ALL_COLUMNS_DEFAULT = true;
@@ -161,21 +162,27 @@ public final class ColumnProjectionUtils {
    * @param names Column names.
    */
   public static void appendReadColumns(
-      Configuration conf, List<Integer> ids, List<String> names, List<String> groupPaths) {
+      Configuration conf,
+      List<Integer> ids,
+      List<String> names,
+      List<String> groupPaths,
+      List<String> virtualColNames) {
     if (ids.size() != names.size()) {
       LOG.warn("Read column counts do not match: "
           + ids.size() + " ids, " + names.size() + " names");
     }
     appendReadColumns(conf, ids);
-    appendReadColumnNames(conf, names);
+    appendReadColumnNames(conf, READ_COLUMN_NAMES_CONF_STR, names);
+    appendReadColumnNames(conf, READ_COLUMN_VIRTUAL_NAMES_CONF_STR, virtualColNames);
     appendNestedColumnPaths(conf, groupPaths);
   }
 
   public static void appendReadColumns(
-      StringBuilder readColumnsBuffer, StringBuilder readColumnNamesBuffer, List<Integer> ids,
-      List<String> names) {
+      StringBuilder readColumnsBuffer, StringBuilder readColumnNamesBuffer, StringBuilder readVirtualColumnNamesBuffer,
+      List<Integer> ids, List<String> names, List<String> virtualColumnNames) {
     CSV_JOINER.appendTo(readColumnsBuffer, ids);
     CSV_JOINER.appendTo(readColumnNamesBuffer, names);
+    CSV_JOINER.appendTo(readVirtualColumnNamesBuffer, virtualColumnNames);
   }
 
   /**
@@ -233,14 +240,17 @@ public final class ColumnProjectionUtils {
     }
   }
 
-  private static void appendReadColumnNames(Configuration conf, List<String> cols) {
-    String old = conf.get(READ_COLUMN_NAMES_CONF_STR, "");
+  private static void appendReadColumnNames(Configuration conf, String configKey, List<String> cols) {
+    if (cols == null) {
+      return;
+    }
+    String old = conf.get(configKey, "");
     String delim = conf.get(serdeConstants.COLUMN_NAME_DELIMITER, String.valueOf(SerDeUtils.COMMA));
     String result = String.join(delim, cols);
     if (!old.isEmpty()) {
       result = old + delim + result;
     }
-    conf.set(READ_COLUMN_NAMES_CONF_STR, result);
+    conf.set(configKey, result);
   }
 
   private static String toReadColumnIDString(List<Integer> ids) {

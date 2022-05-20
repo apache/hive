@@ -786,6 +786,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, ""));;
     StringBuilder readColumnNamesBuffer = new StringBuilder(newjob.
       get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
+    StringBuilder readVirtualColumnNamesBuffer = new StringBuilder(newjob.
+      get(ColumnProjectionUtils.READ_COLUMN_VIRTUAL_NAMES_CONF_STR, ""));
     // for each dir, get the InputFormat, and do getSplits.
     for (Path dir : dirs) {
       PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
@@ -804,8 +806,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           readColumnsBuffer.setLength(0);
           readColumnNamesBuffer.setLength(0);
           // push down projections.
-          ColumnProjectionUtils.appendReadColumns(readColumnsBuffer, readColumnNamesBuffer,
-            tableScan.getNeededColumnIDs(), tableScan.getNeededColumns());
+          ColumnProjectionUtils.appendReadColumns(
+                  readColumnsBuffer, readColumnNamesBuffer, readVirtualColumnNamesBuffer,
+            tableScan.getNeededColumnIDs(), tableScan.getNeededColumns(), tableScan.getNeededVirtualColumns());
           pushDownProjection = true;
           // push down filters and as of information
           pushFiltersAndAsOf(newjob, tableScan, this.mrwork);
@@ -829,7 +832,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
         // set columns to read in conf
         if (pushDownProjection) {
-          pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer);
+          pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer, readVirtualColumnNamesBuffer);
         }
 
         addSplitsForGroup(currentDirs, currentTableScan, newjob,
@@ -847,7 +850,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     // set columns to read in conf
     if (pushDownProjection) {
-      pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer);
+      pushProjection(newjob, readColumnsBuffer, readColumnNamesBuffer, readVirtualColumnNamesBuffer);
     }
 
     if (dirs.length != 0) { // TODO: should this be currentDirs?
@@ -865,15 +868,18 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   private void pushProjection(final JobConf newjob, final StringBuilder readColumnsBuffer,
-      final StringBuilder readColumnNamesBuffer) {
+      final StringBuilder readColumnNamesBuffer, final StringBuilder readVirtualColumnNamesBuffer) {
     String readColIds = readColumnsBuffer.toString();
     String readColNames = readColumnNamesBuffer.toString();
+    String readVirtualColNames = readVirtualColumnNamesBuffer.toString();
     newjob.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
     newjob.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColIds);
     newjob.set(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColNames);
+    newjob.set(ColumnProjectionUtils.READ_COLUMN_VIRTUAL_NAMES_CONF_STR, readVirtualColNames);
 
     LOG.info("{} = {}", ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, readColIds);
     LOG.info("{} = {}", ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, readColNames);
+    LOG.info("{} = {}", ColumnProjectionUtils.READ_COLUMN_VIRTUAL_NAMES_CONF_STR, readVirtualColNames);
   }
 
 
@@ -1042,7 +1048,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         TableScanOperator ts = (TableScanOperator) op;
         // push down projections.
         ColumnProjectionUtils.appendReadColumns(
-            jobConf, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
+                jobConf,
+                ts.getNeededColumnIDs(),
+                ts.getNeededColumns(),
+                ts.getNeededNestedColumnPaths(),
+                ts.getNeededVirtualColumns());
         // push down filters and as of information
         pushFiltersAndAsOf(jobConf, ts, this.mrwork);
 

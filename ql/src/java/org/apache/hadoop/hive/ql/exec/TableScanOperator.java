@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -381,6 +383,13 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   public List<String> getNeededColumns() {
     return conf.getNeededColumns();
+  }
+
+  public List<String> getNeededVirtualColumns() {
+    if (!conf.hasVirtualCols()) {
+      return null;
+    }
+    return conf.getVirtualCols().stream().map(VirtualColumn::getName).collect(Collectors.toList());
   }
 
   public void setReferencedColumns(List<String> referencedColumns) {

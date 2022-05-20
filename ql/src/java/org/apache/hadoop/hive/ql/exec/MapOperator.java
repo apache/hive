@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -370,12 +371,14 @@ public class MapOperator extends AbstractMapOperator {
           Configuration clonedConf = new Configuration(hconf);
           clonedConf.unset(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
           clonedConf.unset(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+          clonedConf.unset(ColumnProjectionUtils.READ_COLUMN_VIRTUAL_NAMES_CONF_STR);
           clonedConf.unset(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR);
           tableNameToConf.put(tableName, clonedConf);
         }
         Configuration newConf = tableNameToConf.get(tableName);
         ColumnProjectionUtils.appendReadColumns(newConf, tableScanDesc.getNeededColumnIDs(),
-            tableScanDesc.getOutputColumnNames(), tableScanDesc.getNeededNestedColumnPaths());
+            tableScanDesc.getOutputColumnNames(), tableScanDesc.getNeededNestedColumnPaths(),
+            tableScanDesc.getVirtualCols().stream().map(VirtualColumn::getName).collect(Collectors.toList()));
       }
     }
 

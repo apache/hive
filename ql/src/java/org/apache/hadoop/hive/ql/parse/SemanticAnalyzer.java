@@ -11473,15 +11473,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(tab);
       boolean isUpdateDelete = this instanceof UpdateDeleteSemanticAnalyzer;
       // put all virtual columns in RowResolver.
-      if (!tab.isNonNative() || (nonNativeAcid && isUpdateDelete)) {
-        vcList = VirtualColumn.getRegistry(conf);
-        if (nonNativeAcid && isUpdateDelete) {
-          vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
-        }
-        vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
-            vc.getTypeInfo(), alias, true, vc.getIsHidden()
-        )));
+      vcList = VirtualColumn.getRegistry(conf);
+      if (nonNativeAcid) {
+        vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
       }
+      vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
+          vc.getTypeInfo(), alias, true, vc.getIsHidden()
+      )));
 
       // Create the root of the operator tree
       TableScanDesc tsDesc = new TableScanDesc(alias, vcList, tab);

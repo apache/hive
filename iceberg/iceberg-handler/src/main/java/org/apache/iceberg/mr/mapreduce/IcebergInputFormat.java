@@ -508,27 +508,12 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         return table.schema();
       }
 
+      String[] selectedVirtualColumnNames = InputFormatConfig.selectedVirtualColumns(conf);
+
       readSchema = caseSensitive ? table.schema().select(selectedColumns) :
           table.schema().caseInsensitiveSelect(selectedColumns);
 
-      Operation operation = HiveIcebergStorageHandler.operation(conf, conf.get(Catalogs.NAME));
-      if (operation != null) {
-        switch (operation) {
-          case DELETE:
-            // for DELETE queries, add additional metadata columns into the read schema
-            return IcebergAcidUtil.createFileReadSchemaForDelete(readSchema.columns(), table);
-          case UPDATE:
-            // for UPDATE queries, add additional metadata columns into the read schema
-            return IcebergAcidUtil.createFileReadSchemaForUpdate(readSchema.columns(), table);
-          case OTHER:
-            // for INSERT queries no extra columns are needed
-            return readSchema;
-          default:
-            throw new IllegalArgumentException("Not supported operation " + operation);
-        }
-      } else {
-        return readSchema;
-      }
+      return IcebergAcidUtil.createSchemaForRead(readSchema.columns(), selectedVirtualColumnNames, table);
     }
 
     private static Schema schemaWithoutConstantsAndMeta(Schema readSchema, Map<Integer, ?> idToConstant) {
