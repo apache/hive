@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.tez.common.counters.TezCounter;
 import org.slf4j.Logger;
@@ -294,7 +295,10 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         LOG.info("Finished loading the queue for input: {} waiting {} minutes for TPool shutdown", inputName, 2);
         addQueueDoneSentinel();
         loadExecService.shutdown();
-        loadExecService.awaitTermination(2, TimeUnit.MINUTES);
+
+        if (!loadExecService.awaitTermination(2, TimeUnit.MINUTES)) {
+          throw new HiveException("Failed to complete the hash table loader. Loading timed out.");
+        }
         batchPool.clear();
         LOG.info("Total received entries: {} Threads {} HT entries: {}", receivedEntries, numLoadThreads, totalEntries.get());
 
@@ -314,12 +318,14 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
         throw new HiveException(e);
-      } catch (IOException e) {
-        throw new HiveException(e);
-      } catch (SerDeException e) {
-        throw new HiveException(e);
+      } catch (HiveException e) {
+        throw e;
       } catch (Exception e) {
         throw new HiveException(e);
+      } finally {
+        if (loadExecService != null && !loadExecService.isTerminated()) {
+          loadExecService.shutdownNow();
+        }
       }
     }
   }
