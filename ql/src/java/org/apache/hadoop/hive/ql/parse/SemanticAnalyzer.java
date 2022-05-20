@@ -11484,14 +11484,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       // put all virtual columns in RowResolver.
-      if (!tab.isNonNative()) {
-        for (VirtualColumn vc : VirtualColumn.getRegistry(conf)) {
-          vcList.add(vc);
-          rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
-                  vc.getTypeInfo(), alias, true, vc.getIsHidden()
-          ));
-        }
+      vcList = VirtualColumn.getRegistry(conf);
+      if (nonNativeAcid) {
+        vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
       }
+      vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
+          vc.getTypeInfo(), alias, true, vc.getIsHidden()
+      )));
 
       // Create the root of the operator tree
       TableScanDesc tsDesc = new TableScanDesc(alias, vcList, tab);

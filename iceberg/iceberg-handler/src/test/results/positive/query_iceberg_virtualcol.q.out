@@ -1,0 +1,54 @@
+PREHOOK: query: drop table if exists tbl_ice
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_ice
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table tbl_ice(a int, b string) partitioned by (c int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_ice
+POSTHOOK: query: create external table tbl_ice(a int, b string) partitioned by (c int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: insert into tbl_ice values (1, 'one', 50), (2, 'two', 50), (3, 'three', 50), (4, 'four', 52), (5, 'five', 54), (111, 'one', 52), (333, 'two', 56)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_ice
+POSTHOOK: query: insert into tbl_ice values (1, 'one', 50), (2, 'two', 50), (3, 'three', 50), (4, 'four', 52), (5, 'five', 54), (111, 'one', 52), (333, 'two', 56)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: select a, c, tbl_ice.PARTITION__SPEC__ID, tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION from tbl_ice
+order by tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select a, c, tbl_ice.PARTITION__SPEC__ID, tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION from tbl_ice
+order by tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	50	0	81	2
+2	50	0	81	1
+1	50	0	81	0
+111	52	0	83	1
+4	52	0	83	0
+5	54	0	85	0
+333	56	0	87	0
+PREHOOK: query: select a, c, tbl_ice.PARTITION__SPEC__ID, tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION from tbl_ice
+sort by tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select a, c, tbl_ice.PARTITION__SPEC__ID, tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION from tbl_ice
+sort by tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	50	0	81	2
+2	50	0	81	1
+1	50	0	81	0
+111	52	0	83	1
+4	52	0	83	0
+5	54	0	85	0
+333	56	0	87	0

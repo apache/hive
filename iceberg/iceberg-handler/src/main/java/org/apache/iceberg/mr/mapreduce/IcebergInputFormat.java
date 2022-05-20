@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
-import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
@@ -241,7 +240,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     private T current;
     private CloseableIterator<T> currentIterator;
     private Table table;
-    private boolean updateOrDelete;
+    private boolean fetchVirtualColumns;
 
     @Override
     public void initialize(InputSplit split, TaskAttemptContext newContext) {
@@ -259,8 +258,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       this.inMemoryDataModel = conf.getEnum(InputFormatConfig.IN_MEMORY_DATA_MODEL,
               InputFormatConfig.InMemoryDataModel.GENERIC);
       this.currentIterator = open(tasks.next(), expectedSchema).iterator();
-      Operation operation = HiveIcebergStorageHandler.operation(conf, conf.get(Catalogs.NAME));
-      this.updateOrDelete = Operation.DELETE.equals(operation) || Operation.UPDATE.equals(operation);
+      this.fetchVirtualColumns = InputFormatConfig.fetchVirtualColumns(conf);
     }
 
     @Override
@@ -268,13 +266,19 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       while (true) {
         if (currentIterator.hasNext()) {
           current = currentIterator.next();
-          if (updateOrDelete) {
+          if (fetchVirtualColumns) {
             GenericRecord rec = (GenericRecord) current;
             PositionDeleteInfo.setIntoConf(conf,
                 IcebergAcidUtil.parseSpecId(rec),
                 IcebergAcidUtil.computePartitionHash(rec),
                 IcebergAcidUtil.parseFilePath(rec),
                 IcebergAcidUtil.parseFilePosition(rec));
+            GenericRecord tmp = GenericRecord.create(
+                    new Schema(expectedSchema.columns().subList(4, expectedSchema.columns().size())));
+            for (int i = 4; i < expectedSchema.columns().size(); ++i) {
+              tmp.set(i - 4, rec.get(i));
+            }
+            current = (T) tmp;
           }
           return true;
         } else if (tasks.hasNext()) {
@@ -511,24 +515,11 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       readSchema = caseSensitive ? table.schema().select(selectedColumns) :
           table.schema().caseInsensitiveSelect(selectedColumns);
 
-      Operation operation = HiveIcebergStorageHandler.operation(conf, conf.get(Catalogs.NAME));
-      if (operation != null) {
-        switch (operation) {
-          case DELETE:
-            // for DELETE queries, add additional metadata columns into the read schema
-            return IcebergAcidUtil.createFileReadSchemaForDelete(readSchema.columns(), table);
-          case UPDATE:
-            // for UPDATE queries, add additional metadata columns into the read schema
-            return IcebergAcidUtil.createFileReadSchemaForUpdate(readSchema.columns(), table);
-          case OTHER:
-            // for INSERT queries no extra columns are needed
-            return readSchema;
-          default:
-            throw new IllegalArgumentException("Not supported operation " + operation);
-        }
-      } else {
-        return readSchema;
+      if (InputFormatConfig.fetchVirtualColumns(conf)) {
+        return IcebergAcidUtil.createFileReadSchemaForDelete(readSchema.columns(), table);
       }
+
+      return readSchema;
     }
 
     private static Schema schemaWithoutConstantsAndMeta(Schema readSchema, Map<Integer, ?> idToConstant) {

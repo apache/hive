@@ -78,8 +78,8 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
       if (source instanceof TableScanOperator) {
         TableScanOperator ts = (TableScanOperator) source;
         // push down projections
-        ColumnProjectionUtils.appendReadColumns(
-            job, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
+        ColumnProjectionUtils.appendReadColumns(job, ts.getNeededColumnIDs(), ts.getNeededColumns(),
+                ts.getNeededNestedColumnPaths(), ts.conf.hasVirtualCols());
         // push down filters and as of information
         HiveInputFormat.pushFiltersAndAsOf(job, ts, null);
 

@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -39,12 +40,18 @@ public class IcebergAcidUtil {
 
   private static final Types.NestedField PARTITION_STRUCT_META_COL = null; // placeholder value in the map
   private static final Map<Types.NestedField, Integer> FILE_READ_META_COLS = Maps.newLinkedHashMap();
+  private static final Map<String, Types.NestedField> VIRTUAL_COLS_TO_META_COLS = Maps.newLinkedHashMap();
 
   static {
     FILE_READ_META_COLS.put(MetadataColumns.SPEC_ID, 0);
     FILE_READ_META_COLS.put(PARTITION_STRUCT_META_COL, 1);
     FILE_READ_META_COLS.put(MetadataColumns.FILE_PATH, 2);
     FILE_READ_META_COLS.put(MetadataColumns.ROW_POSITION, 3);
+
+    VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.PARTITION_SPEC_ID.getName(), MetadataColumns.SPEC_ID);
+    VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.PARTITION_HASH.getName(), PARTITION_STRUCT_META_COL);
+    VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.FILE_PATH.getName(), MetadataColumns.FILE_PATH);
+    VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.ROW_POSITION.getName(), MetadataColumns.ROW_POSITION);
   }
 
   private static final Types.NestedField PARTITION_HASH_META_COL = Types.NestedField.required(
