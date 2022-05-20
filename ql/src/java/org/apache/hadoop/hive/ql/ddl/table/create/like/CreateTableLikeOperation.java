@@ -163,7 +163,7 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     tbl.getParameters().clear();
 
     if (desc.getTblProps() != null) {
-      tbl.setParameters(params);
+      tbl.setParameters(desc.getTblProps());
     }
   }
 
