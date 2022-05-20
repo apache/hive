@@ -1453,8 +1453,7 @@ class MetaStoreDirectSql {
     }
     ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tableName);
     csd.setCatName(catName);
-    ColumnStatistics result = makeColumnStats(list, csd, 0, engine);
-    return result;
+    return makeColumnStats(list, csd, 0, engine);
   }
 
   public List<HiveObjectPrivilege> getTableAllColumnGrants(String catName, String dbName,
@@ -2008,9 +2007,9 @@ class MetaStoreDirectSql {
     ColumnStatisticsObj cso = new ColumnStatisticsObj((String)row[i++], (String)row[i++], data);
     Object llow = row[i++], lhigh = row[i++], dlow = row[i++], dhigh = row[i++],
         declow = row[i++], dechigh = row[i++], nulls = row[i++], dist = row[i++], bitVector = row[i++],
-        avglen = row[i++], maxlen = row[i++], trues = row[i++], falses = row[i++];
+        histogram = row[i++], avglen = row[i++], maxlen = row[i++], trues = row[i++], falses = row[i];
     StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data,
-        llow, lhigh, dlow, dhigh, declow, dechigh, nulls, dist, bitVector, avglen, maxlen, trues, falses);
+        llow, lhigh, dlow, dhigh, declow, dechigh, nulls, dist, bitVector, histogram, avglen, maxlen, trues, falses);
     return cso;
   }
 
@@ -2018,7 +2017,10 @@ class MetaStoreDirectSql {
       boolean useDensityFunctionForNDVEstimation, double ndvTuner) throws MetaException {
     ColumnStatisticsData data = new ColumnStatisticsData();
     ColumnStatisticsObj cso = new ColumnStatisticsObj((String) row[i++], (String) row[i++], data);
-    Object llow = row[i++], lhigh = row[i++], dlow = row[i++], dhigh = row[i++], declow = row[i++], dechigh = row[i++], nulls = row[i++], dist = row[i++], avglen = row[i++], maxlen = row[i++], trues = row[i++], falses = row[i++], avgLong = row[i++], avgDouble = row[i++], avgDecimal = row[i++], sumDist = row[i++];
+    Object llow = row[i++], lhigh = row[i++], dlow = row[i++], dhigh = row[i++], declow = row[i++],
+        dechigh = row[i++], nulls = row[i++], dist = row[i++], avglen = row[i++], maxlen = row[i++],
+        trues = row[i++], falses = row[i++], avgLong = row[i++], avgDouble = row[i++],
+        avgDecimal = row[i++], sumDist = row[i++];
     StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data, llow, lhigh, dlow, dhigh,
         declow, dechigh, nulls, dist, avglen, maxlen, trues, falses, avgLong, avgDouble,
         avgDecimal, sumDist, useDensityFunctionForNDVEstimation, ndvTuner);
@@ -2119,7 +2121,7 @@ class MetaStoreDirectSql {
     return "\"COLUMN_NAME\", \"COLUMN_TYPE\", \"LONG_LOW_VALUE\", \"LONG_HIGH_VALUE\", "
         + "\"DOUBLE_LOW_VALUE\", \"DOUBLE_HIGH_VALUE\", \"BIG_DECIMAL_LOW_VALUE\", "
         + "\"BIG_DECIMAL_HIGH_VALUE\", \"NUM_NULLS\", \"NUM_DISTINCTS\", "
-        + (enableBitVector ? "\"BIT_VECTOR\", " : "\'\', ") + "\"AVG_COL_LEN\", "
+        + (enableBitVector ? "\"BIT_VECTOR\", " : "\'\', ")  + "\"HISTOGRAM\", " + "\"AVG_COL_LEN\", "
         + "\"MAX_COL_LEN\", \"NUM_TRUES\", \"NUM_FALSES\", \"LAST_ANALYZED\" ";
   }
 
@@ -2131,7 +2133,7 @@ class MetaStoreDirectSql {
     for (Object[] row : list) {
       // LastAnalyzed is stored per column but thrift has it per several;
       // get the lowest for now as nobody actually uses this field.
-      Object laObj = row[offset + 15];
+      Object laObj = row[offset + 16]; // 16 is the offset of "last analyzed" field
       if (laObj != null && (!csd.isSetLastAnalyzed() || csd.getLastAnalyzed() > MetastoreDirectSqlUtils
           .extractSqlLong(laObj))) {
         csd.setLastAnalyzed(MetastoreDirectSqlUtils.extractSqlLong(laObj));
