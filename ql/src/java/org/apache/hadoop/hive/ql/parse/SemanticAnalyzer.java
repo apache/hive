@@ -8364,7 +8364,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if ((dpCtx == null || dpCtx.getNumDPCols() == 0)) {
       output = new WriteEntity(dest_tab, determineWriteType(ltd, dest));
       if (!outputs.add(output)) {
-        if(!((this instanceof MergeSemanticAnalyzer || this instanceof SplitUpdateSemanticAnalyzer) &&
+        if(!((this instanceof MergeSemanticAnalyzer || this instanceof UpdateDeleteSemanticAnalyzer) &&
                 (conf.getBoolVar(ConfVars.SPLIT_UPDATE) || conf.getBoolVar(ConfVars.MERGE_SPLIT_UPDATE)))) {
           /**
            * Merge stmt with early split update may create several (2) writes to the same
