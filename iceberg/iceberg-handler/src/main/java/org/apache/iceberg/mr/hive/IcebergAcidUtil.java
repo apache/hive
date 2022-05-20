@@ -22,7 +22,6 @@ package org.apache.iceberg.mr.hive;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -139,10 +138,6 @@ public class IcebergAcidUtil {
   public static Schema createSerdeSchemaForUpdate(List<Types.NestedField> dataCols) {
     List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + SERDE_META_COLS.size());
     SERDE_META_COLS.forEach((metaCol, index) -> cols.add(metaCol));
-    // Old column values
-    cols.addAll(dataCols.stream()
-        .map(f -> Types.NestedField.optional(1147483545 + f.fieldId(), "__old_value_for_" + f.name(), f.type()))
-        .collect(Collectors.toList()));
     // New column values
     cols.addAll(dataCols);
     return new Schema(cols);
@@ -154,9 +149,8 @@ public class IcebergAcidUtil {
    * @param original The record object to populate. The end result is the original record before the update.
    */
   public static void populateWithOriginalValues(Record rec, Record original) {
-    int dataOffset = SERDE_META_COLS.size();
-    for (int i = dataOffset; i < dataOffset + original.size(); ++i) {
-      original.set(i - dataOffset, rec.get(i));
+    for (int i = 0; i < original.size(); ++i) {
+      original.set(i, rec.get(i));
     }
   }
 
@@ -166,9 +160,9 @@ public class IcebergAcidUtil {
    * @param newRecord The record object to populate. The end result is the new record after the update.
    */
   public static void populateWithNewValues(Record rec, Record newRecord) {
-    int dataOffset = SERDE_META_COLS.size() + newRecord.size();
-    for (int i = dataOffset; i < dataOffset + newRecord.size(); ++i) {
-      newRecord.set(i - dataOffset, rec.get(i));
+//    int dataOffset = SERDE_META_COLS.size() + newRecord.size();
+    for (int i = 0; i < newRecord.size(); ++i) {
+      newRecord.set(i, rec.get(i));
     }
   }
 

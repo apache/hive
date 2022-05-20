@@ -93,7 +93,7 @@ public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
     Map<Integer, ASTNode> setColExprs = new HashMap<>(setClause.getChildCount());
 
     // save the operation type into the query state
-    SessionStateUtil.addResource(conf, Context.Operation.class.getSimpleName(), Context.Operation.OTHER.name());
+//    SessionStateUtil.addResource(conf, Context.Operation.class.getSimpleName(), Context.Operation.UPDATE.name());
 
     StringBuilder rewrittenQueryStr = createRewrittenQueryStrBuilder();
     rewrittenQueryStr.append("(SELECT ");

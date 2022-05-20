@@ -97,6 +97,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import org.apache.hive.common.util.HiveStringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -638,7 +639,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
       statsFromRecordWriter = new boolean[numFiles];
       AbstractSerDe serde = conf.getTableInfo().getSerDeClass().newInstance();
-      serde.initialize(unsetNestedColumnPaths(hconf), conf.getTableInfo().getProperties(), null);
+      Configuration configuration = unsetNestedColumnPaths(hconf);
+      setIcebergOperation(configuration);
+      serde.initialize(configuration, conf.getTableInfo().getProperties(), null);
 
       serializer = serde;
 
@@ -738,6 +741,14 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  @NotNull
+  private void setIcebergOperation(Configuration conf) {
+    String opKey = "iceberg.mr.operation.type." + getConf().getTableInfo().getTableName();
+    String opText = getConf().isDeleteOfSplitUpdate() ?
+            Context.Operation.DELETE.name() : Context.Operation.OTHER.name();
+    conf.set(opKey, opText);
   }
 
   /**
@@ -933,7 +944,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             && !FileUtils.mkdir(fs, outPath.getParent(), hconf)) {
           LOG.warn("Unable to create directory with inheritPerms: " + outPath);
         }
-        fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(jc, conf.getTableInfo(),
+        JobConf jobConf = new JobConf(jc);
+        setIcebergOperation(jobConf);
+        fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(jobConf, conf.getTableInfo(),
             outputClass, conf, outPath, reporter);
         // If the record writer provides stats, get it from there instead of the serde
         statsFromRecordWriter[filesIdx] = fsp.outWriters[filesIdx] instanceof
@@ -1615,16 +1628,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   public void augmentPlan() {
     PlanUtils.configureOutputJobPropertiesForStorageHandler(
         getConf().getTableInfo());
-    if (getConf().isDeleteOfSplitUpdate() && getConf().getTableInfo() != null) {
-      String opKey = "iceberg.mr.operation.type." + getConf().getTableInfo().getTableName();
-      String opText = Context.Operation.DELETE.name();
-      if (getConf().getTableInfo().getJobProperties() != null) {
-        getConf().getTableInfo().getJobProperties().put(opKey, opText);
-      }
-      if (getConf().getTableInfo().getProperties() != null) {
-        getConf().getTableInfo().getProperties().put(opKey, opText);
-      }
-    }
   }
 
   public void checkOutputSpecs(FileSystem ignored, JobConf job) throws IOException {
