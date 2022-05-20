@@ -534,7 +534,7 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals(1, inputs.size());
     tableObj = inputs.get(0);
     assertEquals(2, tableObj.getColumns().size());
-    assertEquals("j", tableObj.getColumns().get(0 ));
+    assertEquals("j", tableObj.getColumns().get(0));
   }
 
   @Test
