@@ -4798,6 +4798,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
               }
               outputRel = genSelectRelNode(topProjectColumnList, originalRR, qualifyRel);
               outputRR = originalRR;
+            } else {
+              throw new SemanticException("Missing expression: qualify.");
             }
           } else {
             outputRel = genSelectRelNode(columnList, outputRR, srcRel);
