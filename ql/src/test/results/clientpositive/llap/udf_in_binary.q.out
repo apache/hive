@@ -6,11 +6,13 @@ POSTHOOK: query: create table test_binary(data_col timestamp, binary_col binary)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_binary
-PREHOOK: query: insert into test_binary partition(ts='202204200000') values ('2022-04-20 00:00:00.0', 'a'),('2022-04-20 00:00:00.0', 'b'), ('2022-04-20 00:00:00.0', 'c')
+PREHOOK: query: insert into test_binary partition(ts='202204200000') values ('2022-04-20 00:00:00.0', 'a'),
+('2022-04-20 00:00:00.0', 'b'),('2022-04-20 00:00:00.0', 'c'),('2022-04-20 00:00:00.0', NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test_binary@ts=202204200000
-POSTHOOK: query: insert into test_binary partition(ts='202204200000') values ('2022-04-20 00:00:00.0', 'a'),('2022-04-20 00:00:00.0', 'b'), ('2022-04-20 00:00:00.0', 'c')
+POSTHOOK: query: insert into test_binary partition(ts='202204200000') values ('2022-04-20 00:00:00.0', 'a'),
+('2022-04-20 00:00:00.0', 'b'),('2022-04-20 00:00:00.0', 'c'),('2022-04-20 00:00:00.0', NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_binary@ts=202204200000
@@ -57,6 +59,18 @@ PREHOOK: Input: default@test_binary
 PREHOOK: Input: default@test_binary@ts=202204200000
 #### A masked pattern was here ####
 POSTHOOK: query: select * from test_binary where ts='202204200000' and (binary_col = unhex('61') or binary_col = unhex('62'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_binary
+POSTHOOK: Input: default@test_binary@ts=202204200000
+#### A masked pattern was here ####
+2022-04-20 00:00:00	a	202204200000
+2022-04-20 00:00:00	b	202204200000
+PREHOOK: query: select * from test_binary where binary_col in (unhex('61'), unhex('62'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_binary
+PREHOOK: Input: default@test_binary@ts=202204200000
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_binary where binary_col in (unhex('61'), unhex('62'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_binary
 POSTHOOK: Input: default@test_binary@ts=202204200000
