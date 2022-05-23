@@ -30,7 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -96,7 +96,6 @@ import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkF
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.prepareTableDiffFile;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_METADATA;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.getExternalTableBaseDir;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase.AlterDatabase;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
@@ -549,8 +548,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         @Override
         public void run() throws SemanticException {
           try {
-            HiveMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
-            long currentNotificationID = metaStoreClient.getCurrentNotificationEventId().getEventId();
+            IMetaStoreClient client = getHive().getMSC();
+            long currentNotificationID = client.getCurrentNotificationEventId().getEventId();
             Path loadMetadataFilePath = new Path(work.dumpDirectory, LOAD_METADATA.toString());
             Utils.writeOutput(String.valueOf(currentNotificationID), loadMetadataFilePath, conf);
             LOG.info("Created LOAD Metadata file : {} with NotificationID : {}",
