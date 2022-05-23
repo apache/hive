@@ -53,6 +53,7 @@ public class TestHiveMetaStoreAuthorizer {
   private static final String viewName         = "tmpview";
   private static final String roleName         = "tmpRole";
   private static final String catalogName      = "testCatalog";
+  private static final String dcName           = "testDC";
   private static final String unAuthorizedUser = "bob";
   private static final String authorizedUser   = "sam";
   private static final String superUser        = "hive";
@@ -92,6 +93,7 @@ public class TestHiveMetaStoreAuthorizer {
       hmsHandler.drop_table(dbName, tblName, true);
       hmsHandler.drop_database(dbName, true, false);
       hmsHandler.drop_catalog(new DropCatalogRequest(catalogName));
+      hmsHandler.drop_dataconnector(dcName, true ,true);
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     } catch (Exception e) {
       // NoSuchObjectException will be ignored if the step objects are not there
@@ -358,6 +360,55 @@ public class TestHiveMetaStoreAuthorizer {
       if (StringUtils.isNotEmpty(err)) {
         assert(true);
       }
+    }
+  }
+
+  @Test
+  public void testR_CreateDataConnector_unAuthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
+    try {
+      DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
+      hmsHandler.create_dataconnector(connector);
+    } catch (Exception e) {
+      String err = e.getMessage();
+      String expected = "Operation type " + HiveOperationType.CREATEDATACONNECTOR+ " not allowed for user:" + unAuthorizedUser;
+      assertEquals(expected, err);
+    }
+  }
+
+  @Test
+  public void testS_CreateDataConnector_authorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
+      hmsHandler.create_dataconnector(connector);
+    } catch (Exception e) {
+      // No Exception for create database for authorized user
+    }
+  }
+
+  @Test
+  public void testT_AlterDataConnector_AuthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
+      hmsHandler.create_dataconnector(connector);
+
+      DataConnector newConnector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3308/hive");
+      hmsHandler.create_dataconnector(connector);
+      hmsHandler.alter_dataconnector(dcName, newConnector);
+    } catch (Exception e) {
+      // No Exception for create table for authorized user
+    }
+  }
+
+  @Test
+  public void testU_DropDataConnector_authorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      hmsHandler.drop_dataconnector(dcName, true, true);
+    } catch (Exception e) {
+      // No Exception for dropDatabase for authorized user
     }
   }
 }

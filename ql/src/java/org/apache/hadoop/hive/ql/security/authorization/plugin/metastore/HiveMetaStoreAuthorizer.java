@@ -434,6 +434,15 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
         case DROP_FUNCTION:
           authzEvent = new DropFunctionEvent(preEventContext);
           break;
+        case CREATE_DATACONNECTOR:
+          authzEvent = new CreateDataConnectorEvent(preEventContext);
+          break;
+        case ALTER_DATACONNECTOR:
+          authzEvent = new AlterDataConnectorEvent(preEventContext);
+          break;
+        case DROP_DATACONNECTOR:
+          authzEvent = new DropDataConnectorEvent(preEventContext);
+          break;
         case AUTHORIZATION_API_CALL:
         case READ_ISCHEMA:
         case CREATE_ISCHEMA:
