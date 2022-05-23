@@ -182,7 +182,9 @@ public final class ColumnProjectionUtils {
       List<Integer> ids, List<String> names, List<String> virtualColumnNames) {
     CSV_JOINER.appendTo(readColumnsBuffer, ids);
     CSV_JOINER.appendTo(readColumnNamesBuffer, names);
-    CSV_JOINER.appendTo(readVirtualColumnNamesBuffer, virtualColumnNames);
+    if (virtualColumnNames != null) {
+      CSV_JOINER.appendTo(readVirtualColumnNamesBuffer, virtualColumnNames);
+    }
   }
 
   /**

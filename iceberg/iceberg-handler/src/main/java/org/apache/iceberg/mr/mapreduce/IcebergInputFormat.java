@@ -518,7 +518,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       readSchema = caseSensitive ? table.schema().select(selectedColumns) :
           table.schema().caseInsensitiveSelect(selectedColumns);
 
-      if (selectedVirtualColumnNames.length > 0) {
+      if (selectedVirtualColumnNames != null && selectedVirtualColumnNames.length > 0) {
         return IcebergAcidUtil.createFileReadSchemaForDelete(readSchema.columns(), table);
       }
 
