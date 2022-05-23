@@ -864,6 +864,42 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     dropTable(new String[] {"tab_not_acid"});
   }
 
+  @Test
+  public void testLockingExternalInStrictModeInsert() throws Exception {
+    dropTable(new String[] {"tab_not_acid"});
+    driver.run("create external table if not exists tab_not_acid (na int, nb int) partitioned by (np string) " +
+        "clustered by (na) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='false')");
+    driver.run("insert into tab_not_acid partition(np) (na,nb,np) values(1,2,'blah'),(3,4,'doh')");
+
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_EXT_LOCKING_MODE, true);
+    HiveTxnManager txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    txnMgr.openTxn(ctx, "T1");
+    driver.compileAndRespond("insert into tab_not_acid partition(np='blah') values(7,8)", true);
+    ((DbTxnManager)txnMgr).acquireLocks(driver.getPlan(), ctx, "T1", false);
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_EXT_LOCKING_MODE, false);
+  }
+
+  @Test
+  public void testLockingExternalInStrictModeSelect() throws Exception {
+    dropTable(new String[] {"tab_not_acid"});
+    driver.run("create external table if not exists tab_not_acid (na int, nb int) " +
+        "stored as orc TBLPROPERTIES ('transactional'='false')");
+    driver.run("insert into tab_not_acid values(1,2),(3,4)");
+
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_EXT_LOCKING_MODE, true);
+    HiveTxnManager txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    txnMgr.openTxn(ctx, "T1");
+    driver.compileAndRespond("select * from tab_not_acid", true);
+    ((DbTxnManager)txnMgr).acquireLocks(driver.getPlan(), ctx, "T1", false);
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_EXT_LOCKING_MODE, false);
+  }
+
   /** The list is small, and the object is generated, so we don't use sets/equals/etc. */
   public static ShowLocksResponseElement checkLock(LockType expectedType, LockState expectedState, String expectedDb,
       String expectedTable, String expectedPartition, List<ShowLocksResponseElement> actuals) {
