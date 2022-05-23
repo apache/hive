@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -60,6 +61,11 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   protected static final Logger LOG = LoggerFactory.getLogger(RewriteSemanticAnalyzer.class);
 
   protected boolean useSuper = false;
+  protected static final String INDENT = "  ";
+  private IdentifierQuoter quotedIdentifierHelper;
+  private Table targetTable;
+  private String targetTableFullName;
+
 
   RewriteSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -76,7 +82,19 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     }
   }
 
-  protected abstract void analyze(ASTNode tree) throws SemanticException;
+  protected abstract ASTNode getTargetTableNode(ASTNode tree);
+
+  private void analyze(ASTNode tree) throws SemanticException {
+    ASTNode tableName = getTargetTableNode(tree);
+
+    targetTableFullName = getFullTableNameForSQL(tableName);
+    targetTable = getTable(tableName, db, true);
+    validateTxnManager(targetTable);
+    validateTargetTable(targetTable);
+    analyze(tree, targetTable, tableName);
+  }
+
+  protected abstract void analyze(ASTNode tree, Table table, ASTNode tableName) throws SemanticException;
 
   /**
    * Append list of partition columns to Insert statement, i.e. the 2nd set of partCol1,partCol2
@@ -197,17 +215,6 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   }
 
   /**
-   * @return the Metastore representation of the target table
-   */
-  protected Table getTargetTable(ASTNode tabRef) throws SemanticException {
-    targetTableFullName = getFullTableNameForSQL(tabRef);
-    quotedTargetTableName = getSimpleTableName(tabRef);
-    targetTable = getTable(tabRef, db, true);
-    validateTargetTable(targetTable);
-    return targetTable;
-  }
-
-  /**
    * @param throwException if false, return null if table doesn't exist, else throw
    */
   protected static Table getTable(ASTNode tabRef, Hive db, boolean throwException) throws SemanticException {
@@ -310,6 +317,12 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
       throw new SemanticException(ErrorMsg.UPDATEDELETE_PARSE_ERROR.getMsg(), e);
     }
     return new ReparseResult(rewrittenTree, rewrittenCtx);
+  }
+
+  private void validateTxnManager(Table mTable) throws SemanticException {
+    if (!AcidUtils.acidTableWithoutTransactions(mTable) && !getTxnMgr().supportsAcid()) {
+      throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getMsg());
+    }
   }
 
   /**
@@ -479,13 +492,6 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     }
   }
 
-  protected static final String INDENT = "  ";
-  private IdentifierQuoter quotedIdentifierHelper;
-
-  private Table targetTable;
-  private String targetTableFullName;
-  private String quotedTargetTableName;
-
   protected StringBuilder createRewrittenQueryStrBuilder() {
     return new StringBuilder("FROM\n");
   }
@@ -527,7 +533,8 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     rewrittenQueryStr.append("\n");
   }
 
-  protected void appendDeleteBranch(StringBuilder rewrittenQueryStr, String hintStr, String alias, List<String> values) {
+  protected void appendDeleteBranch(
+          StringBuilder rewrittenQueryStr, String hintStr, String alias, List<String> values) {
     List<String> deleteValues = new ArrayList<>(targetTable.getPartCols().size() + values.size());
     deleteValues.addAll(values);
     addPartitionColsAsValues(targetTable.getPartCols(), alias, deleteValues);

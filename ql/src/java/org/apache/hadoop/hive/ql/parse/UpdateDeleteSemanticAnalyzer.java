@@ -52,18 +52,22 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     super(queryState);
   }
 
-  protected void analyze(ASTNode tree) throws SemanticException {
+  @Override
+  protected ASTNode getTargetTableNode(ASTNode tree) {
+    // The first child should be the table we are updating / deleting from
     ASTNode tabName = (ASTNode)tree.getChild(0);
     assert tabName.getToken().getType() == HiveParser.TOK_TABNAME :
             "Expected tablename as first child of " + operation + " but found " + tabName.getName();
-    Table mTable = getTargetTable(tabName);
+    return tabName;
+  }
 
+  protected void analyze(ASTNode tree, Table table, ASTNode tabNameNode) throws SemanticException {
     switch (tree.getToken().getType()) {
     case HiveParser.TOK_DELETE_FROM:
-      analyzeDelete(tree, tabName, mTable);
+      analyzeDelete(tree, tabNameNode, table);
       break;
     case HiveParser.TOK_UPDATE_TABLE:
-      analyzeUpdate(tree, tabName, mTable);
+      analyzeUpdate(tree, tabNameNode, table);
       break;
     default:
       throw new RuntimeException("Asked to parse token " + tree.getName() + " in " +
@@ -71,20 +75,20 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
   }
 
-  private void analyzeUpdate(ASTNode tree, ASTNode tabName, Table mTable) throws SemanticException {
+  private void analyzeUpdate(ASTNode tree, ASTNode tabNameNode, Table mTable) throws SemanticException {
     operation = Context.Operation.UPDATE;
     boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
 
     if (HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.SPLIT_UPDATE) && !nonNativeAcid) {
-      analyzeSplitUpdate(tree);
+      analyzeSplitUpdate(tree, mTable, tabNameNode);
     } else {
-      reparseAndSuperAnalyze(tree, tabName, mTable);
+      reparseAndSuperAnalyze(tree, tabNameNode, mTable);
     }
   }
 
-  private void analyzeDelete(ASTNode tree, ASTNode tabName, Table mTable) throws SemanticException {
+  private void analyzeDelete(ASTNode tree, ASTNode tabNameNode, Table mTable) throws SemanticException {
     operation = Context.Operation.DELETE;
-    reparseAndSuperAnalyze(tree, tabName, mTable);
+    reparseAndSuperAnalyze(tree, tabNameNode, mTable);
   }
 
   /**
@@ -106,16 +110,15 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
    * The sort by clause is put in there so that records come out in the right order to enable
    * merge on read.
    */
-  private void reparseAndSuperAnalyze(ASTNode tree, ASTNode tabName, Table mTable) throws SemanticException {
+  private void reparseAndSuperAnalyze(ASTNode tree, ASTNode tabNameNode, Table mTable) throws SemanticException {
     List<? extends Node> children = tree.getChildren();
 
-    // The first child should be the table we are updating / deleting from
-    validateTxnManager(mTable);
-    validateTargetTable(mTable);
+    // save the operation type into the query state
+    SessionStateUtil.addResource(conf, Context.Operation.class.getSimpleName(), operation.name());
 
     StringBuilder rewrittenQueryStr = new StringBuilder();
     rewrittenQueryStr.append("insert into table ");
-    rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
+    rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
     addPartitionColsToInsert(mTable.getPartCols(), rewrittenQueryStr);
 
     boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
@@ -162,7 +165,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr);
     rewrittenQueryStr.append(" from ");
-    rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
+    rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
 
     ASTNode where = null;
     int whereIndex = deleting() ? 1 : 2;
@@ -259,18 +262,10 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
   }
 
-  private void analyzeSplitUpdate(ASTNode tree) throws SemanticException {
+  private void analyzeSplitUpdate(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
     operation = Context.Operation.UPDATE;
 
     List<? extends Node> children = tree.getChildren();
-
-//    TOK_UPDATE_TABLE
-//            TOK_TABNAME <- The first child should be the table we are updating
-    ASTNode tabName = (ASTNode) children.get(0);
-    assert tabName.getToken().getType() == HiveParser.TOK_TABNAME :
-            "Expected tablename as first child of " + operation + " but found " + tabName.getName();
-    Table mTable = getTargetTable(tabName);
-    validateTargetTable(mTable);
 
     ASTNode where = null;
     int whereIndex = 2;
@@ -321,7 +316,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
     addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr);
     addPartitionColsAsValues(mTable.getPartCols(), "s", values);
-    rewrittenQueryStr.append(" FROM ").append(getFullTableNameForSQL(tabName)).append(") s\n");
+    rewrittenQueryStr.append(" FROM ").append(getFullTableNameForSQL(tabNameNode)).append(") s\n");
 
     appendInsertBranch(rewrittenQueryStr, null, values);
     appendDeleteBranch(rewrittenQueryStr, null, "s", Collections.singletonList("s.ROW__ID "));
@@ -365,12 +360,6 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     for (String colName : setRCols) {
       columnAccessInfo.add(Table.getCompleteName(mTable.getDbName(), mTable.getTableName()), colName);
-    }
-  }
-
-  private void validateTxnManager(Table mTable) throws SemanticException {
-    if (!AcidUtils.acidTableWithoutTransactions(mTable) && !getTxnMgr().supportsAcid()) {
-      throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getMsg());
     }
   }
 

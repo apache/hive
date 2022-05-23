@@ -54,13 +54,18 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
   }
 
   @Override
-  public void analyze(ASTNode tree) throws SemanticException {
+  protected ASTNode getTargetTableNode(ASTNode tree) {
+    return (ASTNode)tree.getChild(0);
+  }
+
+  @Override
+  public void analyze(ASTNode tree, Table targetTable, ASTNode tableNameNode) throws SemanticException {
     if (tree.getToken().getType() != HiveParser.TOK_MERGE) {
       throw new RuntimeException("Asked to parse token " + tree.getName() + " in " +
           "MergeSemanticAnalyzer");
     }
     ctx.setOperation(Context.Operation.MERGE);
-    analyzeMerge(tree);
+    analyzeMerge(tree, targetTable, tableNameNode);
   }
 
   /**
@@ -75,7 +80,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
    *
    * @throws SemanticException
    */
-  private void analyzeMerge(ASTNode tree) throws SemanticException {
+  private void analyzeMerge(ASTNode tree, Table targetTable, ASTNode targetNameNode) throws SemanticException {
     /*
      * See org.apache.hadoop.hive.ql.parse.TestMergeStatement for some examples of the merge AST
       For example, given:
@@ -112,9 +117,8 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
      source is empty?  This should be a runtime error - maybe not the outer side of ROJ is empty => the join produces 0
      rows. If supporting WHEN NOT MATCHED BY SOURCE, then this should be a runtime error
     */
-    ASTNode target = (ASTNode)tree.getChild(0);
     ASTNode source = (ASTNode)tree.getChild(1);
-    String targetName = getSimpleTableName(target);
+    String targetName = getSimpleTableName(targetNameNode);
     String sourceName = getSimpleTableName(source);
     ASTNode onClause = (ASTNode) tree.getChild(2);
     String onClauseAsText = getMatchedText(onClause);
@@ -130,8 +134,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     List<ASTNode> whenClauses = findWhenClauses(tree, whenClauseBegins);
 
     StringBuilder rewrittenQueryStr = createRewrittenQueryStrBuilder();
-    Table targetTable = getTargetTable(target);
-    appendTarget(rewrittenQueryStr, target, targetName);
+    appendTarget(rewrittenQueryStr, targetNameNode, targetName);
 
     rewrittenQueryStr.append(INDENT).append(chooseJoinType(whenClauses)).append("\n");
     if (source.getType() == HiveParser.TOK_SUBQUERY) {
@@ -167,13 +170,13 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       switch (getWhenClauseOperation(whenClause).getType()) {
       case HiveParser.TOK_INSERT:
         numInsertClauses++;
-        handleInsert(whenClause, rewrittenQueryStr, target, onClause,
+        handleInsert(whenClause, rewrittenQueryStr, targetNameNode, onClause,
             targetTable, targetName, onClauseAsText, hintProcessed ? null : hintStr);
         hintProcessed = true;
         break;
       case HiveParser.TOK_UPDATE:
         numWhenMatchedUpdateClauses++;
-        String s = handleUpdate(whenClause, rewrittenQueryStr, target,
+        String s = handleUpdate(whenClause, rewrittenQueryStr, targetNameNode,
             onClauseAsText, targetTable, extraPredicate, hintProcessed ? null : hintStr,
             splitUpdateEarly);
         hintProcessed = true;
@@ -183,7 +186,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
         break;
       case HiveParser.TOK_DELETE:
         numWhenMatchedDeleteClauses++;
-        String s1 = handleDelete(whenClause, rewrittenQueryStr, target,
+        String s1 = handleDelete(whenClause, rewrittenQueryStr, targetNameNode,
             onClauseAsText, extraPredicate, hintProcessed ? null : hintStr, false);
         hintProcessed = true;
         if (numWhenMatchedUpdateClauses + numWhenMatchedDeleteClauses == 1) {
@@ -206,7 +209,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ctx.getCmd());
     }
 
-    boolean validating = handleCardinalityViolation(rewrittenQueryStr, target, onClauseAsText, targetTable,
+    boolean validating = handleCardinalityViolation(rewrittenQueryStr, targetNameNode, onClauseAsText, targetTable,
         numWhenMatchedDeleteClauses == 0 && numWhenMatchedUpdateClauses == 0);
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
