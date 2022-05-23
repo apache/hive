@@ -45,10 +45,10 @@ select
  union
  select 
  'catalog' as channel
- ,`catalog`.item
- ,`catalog`.return_ratio
- ,`catalog`.return_rank
- ,`catalog`.currency_rank
+ ,catalog.item
+ ,catalog.return_ratio
+ ,catalog.return_rank
+ ,catalog.currency_rank
  from (
  	select 
  	 item
@@ -78,12 +78,12 @@ select
                          and d_moy = 12
                  group by cs.cs_item_sk
  	) in_cat
- ) `catalog`
+ ) catalog
  where 
  (
- `catalog`.return_rank <= 10
+ catalog.return_rank <= 10
  or
- `catalog`.currency_rank <=10
+ catalog.currency_rank <=10
  )
  union
  select 
