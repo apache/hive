@@ -11153,13 +11153,14 @@ public class ObjectStore implements RawStore, Configurable {
         throw new MetaException("function " + funcName + " doesn't exist");
       }
 
-      // For now only alter name, owner, class name, type
+      // For now only alter name, owner, class name, type, resource uris
       oldf.setFunctionName(normalizeIdentifier(newf.getFunctionName()));
       oldf.setDatabase(newf.getDatabase());
       oldf.setOwnerName(newf.getOwnerName());
       oldf.setOwnerType(newf.getOwnerType());
       oldf.setClassName(newf.getClassName());
       oldf.setFunctionType(newf.getFunctionType());
+      oldf.setResourceUris(newf.getResourceUris());
 
       // commit the changes
       success = commitTransaction();

@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
@@ -56,6 +57,8 @@ import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.ResourceType;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -133,6 +136,7 @@ public class TestObjectStore {
   private static final String ENGINE = "hive";
   private static final String DB1 = "testobjectstoredb1";
   private static final String DB2 = "testobjectstoredb2";
+  private static final String FUNCTION1 = "testfunction1";
   private static final String TABLE1 = "testobjectstoretable1";
   private static final String KEY1 = "testobjectstorekey1";
   private static final String KEY2 = "testobjectstorekey2";
@@ -258,6 +262,54 @@ public class TestObjectStore {
     Assert.assertEquals(DB2, databases.get(0));
 
     objectStore.dropDatabase(catName, DB2);
+  }
+
+  /**
+   * Test function operations
+   */
+  @Test
+  public void testFunctionOps() throws MetaException, InvalidObjectException, NoSuchObjectException,
+      InvalidInputException {
+    Database db1 = new DatabaseBuilder()
+        .setName(DB1)
+        .setDescription("description")
+        .setLocation("locationurl")
+        .build(conf);
+    objectStore.createDatabase(db1);
+
+    Function func = new Function(FUNCTION1, DB1, "dump.class.name", "owner", PrincipalType.USER,
+        1, FunctionType.JAVA, null);
+    objectStore.createFunction(func);
+
+    List<Function> functions = objectStore.getAllFunctions(DEFAULT_CATALOG_NAME);
+    Assert.assertEquals(1, functions.size());
+    Assert.assertEquals(FUNCTION1, functions.get(0).getFunctionName());
+
+    Function newFunc = new Function("new" + FUNCTION1, DB1, "dump.class.name", "owner", PrincipalType.USER,
+        1, FunctionType.JAVA, null);
+
+    // Change different fields and verify they were altered
+    newFunc.setOwnerType(PrincipalType.ROLE);
+    newFunc.setResourceUris(Arrays.asList(new ResourceUri(ResourceType.JAR, "hdfs://dump/path/to/jar")));
+
+    objectStore.alterFunction(DEFAULT_CATALOG_NAME, DB1, FUNCTION1, newFunc);
+    functions = objectStore.getAllFunctions(DEFAULT_CATALOG_NAME);
+    Assert.assertEquals(1, functions.size());
+
+    // Verify fields were altered during the alterFunction operation
+    Function alteredFunction = objectStore.getFunction(DEFAULT_CATALOG_NAME, DB1, "new" + FUNCTION1);
+    Assert.assertEquals("Owner type of function was not altered", newFunc.getOwnerType(), alteredFunction.getOwnerType());
+    Assert.assertEquals("Resource uris of function were not altered", newFunc.getResourceUris(), alteredFunction.getResourceUris());
+
+    objectStore.dropFunction(DEFAULT_CATALOG_NAME, DB1, FUNCTION1);
+    functions = objectStore.getAllFunctions(DEFAULT_CATALOG_NAME);
+    Assert.assertEquals(1, functions.size());
+
+    objectStore.dropFunction(DEFAULT_CATALOG_NAME, DB1, "new" + FUNCTION1);
+    functions = objectStore.getAllFunctions(DEFAULT_CATALOG_NAME);
+    Assert.assertEquals(0, functions.size());
+
+    objectStore.dropDatabase(db1.getCatalogName(), DB1);
   }
 
   /**
