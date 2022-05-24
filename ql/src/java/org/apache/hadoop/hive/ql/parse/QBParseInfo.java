@@ -657,6 +657,10 @@ public class QBParseInfo {
     return destToQualify.get(dest);
   }
 
+  public boolean hasQualifyClause() {
+    return !destToQualify.isEmpty();
+  }
+
   protected static enum ClauseType {
     CLUSTER_BY_CLAUSE,
     DISTRIBUTE_BY_CLAUSE,

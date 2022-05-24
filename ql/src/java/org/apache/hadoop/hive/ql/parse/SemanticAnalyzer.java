@@ -1840,9 +1840,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_QUALIFY:
-        if (!ctx.isCboSucceeded()) {
-          throw new SemanticException(ErrorMsg.CBO_IS_REQUIRED.getErrorCodedMsg("Qualify clause"));
-        }
         qbp.setQualifyExprForClause(ctx_1.dest, ast);
         qbp.addAggregationExprsForClause(ctx_1.dest,
                 doPhase1GetAggregationsFromSelect(ast, qb, ctx_1.dest));
@@ -11793,6 +11790,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @SuppressWarnings("nls")
   private Operator genPlan(QB qb, boolean skipAmbiguityCheck)
       throws SemanticException {
+
+    if (!ctx.isCboSucceeded() && qb.getParseInfo().hasQualifyClause()) {
+      throw new SemanticException(ErrorMsg.CBO_IS_REQUIRED.getErrorCodedMsg("Qualify clause"));
+    }
 
     // First generate all the opInfos for the elements in the from clause
     // Must be deterministic order map - see HIVE-8707
