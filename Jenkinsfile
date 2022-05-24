@@ -27,6 +27,9 @@ properties([
     ])
 ])
 
+env.getEnvironment().each { name, value -> println "Name: $name -> Value $value" }
+error('asd')
+
 this.prHead = null;
 def checkPrHead() {
   if(env.CHANGE_ID) {
