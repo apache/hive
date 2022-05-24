@@ -1840,7 +1840,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_QUALIFY:
-        if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)) {
+        if (!ctx.isCboSucceeded()) {
           throw new SemanticException(ErrorMsg.CBO_IS_REQUIRED.getErrorCodedMsg("Qualify clause"));
         }
         qbp.setQualifyExprForClause(ctx_1.dest, ast);
