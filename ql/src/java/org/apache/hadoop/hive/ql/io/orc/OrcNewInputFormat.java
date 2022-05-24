@@ -66,8 +66,7 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
 
     OrcRecordReader(Reader file, Configuration conf,
                     long offset, long length) throws IOException {
-      List<OrcProto.Type> types = file.getTypes();
-      numColumns = (types.size() == 0) ? 0 : types.get(0).getSubtypesCount();
+      numColumns = file.getSchema().getChildren().size();
       value = new OrcStruct(numColumns);
       this.reader = OrcInputFormat.createReaderFromFile(file, conf, offset,
           length);
