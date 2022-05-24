@@ -1214,9 +1214,14 @@ public class GenVectorCode extends Task {
       {"VectorUDAFSum", "VectorUDAFSumLong", "long"},
       {"VectorUDAFSum", "VectorUDAFSumDouble", "double"},
 
+      // "long" as <ValueType> for "MERGING" is ignored
       {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorFinal", "long", "MERGING"},
       {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorLong", "long", "COMPLETE"},
       {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorDouble", "double", "COMPLETE"},
+
+      // "double" as <ValueType> for "MERGING" is ignored
+      {"VectorUDAFComputeKLL", "VectorUDAFComputeKLLFinal", "double", "MERGING"},
+      {"VectorUDAFComputeKLL", "VectorUDAFComputeKLLDouble", "double", "COMPLETE"},
 
 
       // Template, <ClassName>, <ValueType>, <IfDefined>
@@ -1472,6 +1477,8 @@ public class GenVectorCode extends Task {
         generateVectorUDAFAvgMerge(tdesc);
       } else if (tdesc[0].equals("VectorUDAFComputeBitVector")) {
         generateVectorUDAFComputeBitVector(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFComputeKLL")) {
+        generateVectorUDAFComputeKLL(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVar")) {
         generateVectorUDAFVar(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVarDecimal")) {
@@ -1955,6 +1962,27 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<UpperCaseColumnVectorType>", valueType.toUpperCase());
     templateString = templateString.replaceAll("<InputColumnVectorType>", columnType);
+    templateString = evaluateIfDefined(templateString, ifDefined);
+
+    writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateVectorUDAFComputeKLL(String[] tdesc) throws Exception {
+    String className = tdesc[1];
+    String valueType = tdesc[2];
+    String columnType = getColumnVectorType(valueType);
+    String ifDefined = "";
+    if (tdesc.length > 3) {
+      ifDefined = tdesc[3];
+    }
+
+    File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
+
+    String templateString = readFile(templateFile);
+    templateString = templateString.replace("<ClassName>", className);
+    templateString = templateString.replace("<UpperCaseColumnVectorType>", valueType.toUpperCase());
+    templateString = templateString.replace("<InputColumnVectorType>", columnType);
     templateString = evaluateIfDefined(templateString, ifDefined);
 
     writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
