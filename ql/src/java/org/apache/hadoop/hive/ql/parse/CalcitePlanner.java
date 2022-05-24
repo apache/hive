@@ -4790,17 +4790,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
             originalRR = appendInputColumns(srcRel, columnList, outputRR, inputRR);
             RelNode combinedProject = genSelectRelNode(columnList, outputRR, srcRel);
             RelNode qualifyRel = genQualifyLogicalPlan(qb, combinedProject);
-            if (qualifyRel != null) {
-              List<RexNode> topProjectColumnList = new ArrayList<>(originalColumnListSize);
-              for (int i = 0; i < originalColumnListSize; ++i) {
-                topProjectColumnList.add(qualifyRel.getCluster().getRexBuilder().makeInputRef(
-                        qualifyRel.getRowType().getFieldList().get(i).getType(), i));
-              }
-              outputRel = genSelectRelNode(topProjectColumnList, originalRR, qualifyRel);
-              outputRR = originalRR;
-            } else {
-              throw new SemanticException("Missing expression: qualify.");
+            List<RexNode> topProjectColumnList = new ArrayList<>(originalColumnListSize);
+            for (int i = 0; i < originalColumnListSize; ++i) {
+              topProjectColumnList.add(qualifyRel.getCluster().getRexBuilder().makeInputRef(
+                      qualifyRel.getRowType().getFieldList().get(i).getType(), i));
             }
+            outputRel = genSelectRelNode(topProjectColumnList, originalRR, qualifyRel);
+            outputRR = originalRR;
           } else {
             outputRel = genSelectRelNode(columnList, outputRR, srcRel);
           }
@@ -5213,7 +5209,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       ASTNode qualifyClause = qbp.getQualifyExprForClause(destClauseName);
 
       if (qualifyClause == null) {
-        return null;
+        throw new SemanticException("Missing expression: qualify.");
       }
 
       ASTNode targetNode = (ASTNode) qualifyClause.getChild(0);
