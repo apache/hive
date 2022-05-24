@@ -871,7 +871,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
         "clustered by (na) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='false')");
     driver.run("insert into tab_not_acid partition(np) (na,nb,np) values(1,2,'blah'),(3,4,'doh')");
 
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_EXT_LOCKING_MODE, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED, true);
     HiveTxnManager txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnMgr.openTxn(ctx, "T1");
     driver.compileAndRespond("insert into tab_not_acid partition(np='blah') values(7,8)", true);
@@ -879,7 +879,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_EXT_LOCKING_MODE, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED, false);
   }
 
   @Test
@@ -889,7 +889,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
         "stored as orc TBLPROPERTIES ('transactional'='false')");
     driver.run("insert into tab_not_acid values(1,2),(3,4)");
 
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_EXT_LOCKING_MODE, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED, true);
     HiveTxnManager txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnMgr.openTxn(ctx, "T1");
     driver.compileAndRespond("select * from tab_not_acid", true);
@@ -897,7 +897,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_EXT_LOCKING_MODE, false);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED, false);
   }
 
   /** The list is small, and the object is generated, so we don't use sets/equals/etc. */
