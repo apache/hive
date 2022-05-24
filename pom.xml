@@ -1653,6 +1653,7 @@
             <exclude>**/*.q.out_*</exclude>
             <exclude>**/*.xml</exclude>
             <exclude>**/*.yml</exclude>
+            <exclude>**/*json</exclude>
             <exclude>**/gen/**</exclude>
             <exclude>**/target/**</exclude>
             <exclude>**/scripts/**</exclude>
