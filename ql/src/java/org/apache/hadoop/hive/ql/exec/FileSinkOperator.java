@@ -295,7 +295,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
               outPaths[idx] + " to: " + finalPaths[idx], e);
         }
       }
-      if (isDirectInsert && AcidUtils.Operation.UPDATE.equals(conf.getAcidOperation())) {
+      if (isDirectInsert && AcidUtils.Operation.UPDATE.equals(conf.getWriteType())) {
         // In case of an update, the outPathsCommitted array only contains the delta directory,
         // but not the delete delta directory. The files from the delete delta directory has to be
         // added to the commitPath list, otherwise it will be cleaned up.
@@ -675,7 +675,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       if (!bDynParts) {
         fsp = new FSPaths(specPath, conf.isMmTable(), conf.isDirectInsert(), conf.getInsertOverwrite(),
-            conf.getAcidOperation());
+            conf.getWriteType());
         fsp.subdirAfterTxn = combinePathFragments(generateListBucketingDirName(null), unionPath);
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("creating new paths " + System.identityHashCode(fsp)
@@ -1276,7 +1276,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    */
   private FSPaths createNewPaths(String dpDir, String lbDir) throws HiveException {
     FSPaths fsp2 = new FSPaths(specPath, conf.isMmTable(), conf.isDirectInsert(), conf.getInsertOverwrite(),
-        conf.getAcidOperation());
+        conf.getWriteType());
     fsp2.subdirAfterTxn = combinePathFragments(lbDir, unionPath);
     fsp2.subdirBeforeTxn = dpDir;
     String pathKey = combinePathFragments(dpDir, lbDir);
@@ -1526,7 +1526,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
       if (conf.isMmTable() || conf.isDirectInsert()) {
-        boolean isDelete = AcidUtils.Operation.DELETE.equals(conf.getAcidOperation());
+        boolean isDelete = AcidUtils.Operation.DELETE.equals(conf.getWriteType());
         Utilities.writeCommitManifest(commitPaths, specPath, fs, originalTaskId, conf.getTableWriteId(),
             conf.getStatementId(), unionPath, conf.getInsertOverwrite(), bDynParts, dynamicPartitionSpecs,
             conf.getStaticSpec(), isDelete);
@@ -1593,7 +1593,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
               conf.getTableInfo(), numBuckets, conf.getCompressed());
           Utilities.handleDirectInsertTableFinalPath(specPath, unionSuffix, hconf, success, dpLevels, lbLevels, mbc,
               conf.getTableWriteId(), conf.getStatementId(), reporter, conf.isMmTable(), conf.isMmCtas(), conf
-                  .getInsertOverwrite(), conf.isDirectInsert(), conf.getStaticSpec(), conf.getAcidOperation(), conf);
+                  .getInsertOverwrite(), conf.isDirectInsert(), conf.getStaticSpec(), conf.getWriteType(), conf);
         }
       }
     } catch (IOException e) {

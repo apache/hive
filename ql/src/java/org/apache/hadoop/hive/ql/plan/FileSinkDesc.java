@@ -123,8 +123,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   private boolean isDirectInsert = false;
 
-  private AcidUtils.Operation acidOperation = null;
-
   private boolean isQuery = false;
 
   private boolean isCTASorCM = false;
@@ -139,7 +137,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
       final boolean multiFileSpray, final boolean canBeMerged, final int numFiles, final int totalFiles,
       final List<ExprNodeDesc> partitionCols, final DynamicPartitionCtx dpCtx, Path destPath, Long mmWriteId,
       boolean isMmCtas, boolean isInsertOverwrite, boolean isQuery, boolean isCTASorCM, boolean isDirectInsert,
-      AcidUtils.Operation acidOperation) {
+      AcidUtils.Operation writeType) {
     this.dirName = dirName;
     setTableInfo(tableInfo);
     this.compressed = compressed;
@@ -158,7 +156,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     this.isQuery = isQuery;
     this.isCTASorCM = isCTASorCM;
     this.isDirectInsert = isDirectInsert;
-    this.acidOperation = acidOperation;
+    this.writeType = writeType;
   }
 
   public FileSinkDesc(final Path dirName, final TableDesc tableInfo,
@@ -180,7 +178,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public Object clone() throws CloneNotSupportedException {
     FileSinkDesc ret = new FileSinkDesc(dirName, tableInfo, compressed, destTableId, multiFileSpray, canBeMerged,
         numFiles, totalFiles, partitionCols, dpCtx, destPath, mmWriteId, isMmCtas, isInsertOverwrite, isQuery,
-        isCTASorCM, isDirectInsert, acidOperation);
+        isCTASorCM, isDirectInsert, writeType);
     ret.setCompressCodec(compressCodec);
     ret.setCompressType(compressType);
     ret.setGatherStats(gatherStats);
@@ -190,7 +188,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     ret.setLinkedFileSinkDesc(linkedFileSinkDesc);
     ret.setStatsReliable(statsReliable);
     ret.setDpSortState(dpSortState);
-    ret.setWriteType(writeType);
     ret.setTableWriteId(tableWriteId);
     ret.setStatementId(statementId);
     ret.setStatsTmpDir(statsTmpDir);
@@ -199,7 +196,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     ret.setIsQuery(isQuery);
     ret.setIsCTASorCM(isCTASorCM);
     ret.setIsDirectInsert(isDirectInsert);
-    ret.setAcidOperation(acidOperation);
     ret.setMoveTaskId(moveTaskId);
     return ret;
   }
@@ -247,14 +243,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public boolean isDirectInsert() {
     return this.isDirectInsert;
   }
-
-  public void setAcidOperation(AcidUtils.Operation acidOperation) {
-    this.acidOperation = acidOperation;
-   }
-
-   public AcidUtils.Operation getAcidOperation() {
-     return acidOperation;
-   }
 
   @Explain(displayName = "directory", explainLevels = { Level.EXTENDED })
   public Path getDirName() {

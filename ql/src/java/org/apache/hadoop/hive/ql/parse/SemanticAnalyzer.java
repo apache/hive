@@ -8166,15 +8166,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         AcidUtils.isInsertOnlyTable(dest_part.getTable().getParameters()))
         || (table_desc != null && AcidUtils.isInsertOnlyTable(table_desc.getProperties()));
 
-    if (isDestInsertOnly) {
-      fileSinkDesc.setWriteType(Operation.INSERT);
-      acidFileSinks.add(fileSinkDesc);
-    }
-
-    if (destTableIsAcid) {
-      AcidUtils.Operation wt = updating(dest) ? AcidUtils.Operation.UPDATE :
-          (deleting(dest) ? AcidUtils.Operation.DELETE : AcidUtils.Operation.INSERT);
-      fileSinkDesc.setWriteType(wt);
+    if (isDestInsertOnly || destTableIsAcid) {
       acidFileSinks.add(fileSinkDesc);
     }
 

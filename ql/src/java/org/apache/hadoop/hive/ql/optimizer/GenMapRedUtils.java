@@ -1350,7 +1350,7 @@ public final class GenMapRedUtils {
     Path fsopPath = srcMmWriteId != null ? fsInputDesc.getFinalDirName() : finalName;
 
     Task<MoveWork> mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fsopPath, fsInputDesc.isMmTable(),
-        fsInputDesc.isDirectInsert(), fsInputDesc.getMoveTaskId(), fsInputDesc.getAcidOperation());
+        fsInputDesc.isDirectInsert(), fsInputDesc.getMoveTaskId(), fsInputDesc.getWriteType());
     ConditionalTask cndTsk = GenMapRedUtils.createCondTask(conf, currTask, dummyMv, work,
         fsInputDesc.getMergeInputDirName(), finalName, mvTask, dependencyTask, lineageState);
 
@@ -1543,10 +1543,6 @@ public final class GenMapRedUtils {
    *          the table scan operator that is the root of the MapReduce task.
    * @param fsDesc
    *          the file sink descriptor that serves as the input to this merge task.
-   * @param parentMR
-   *          the parent MapReduce work
-   * @param parentFS
-   *          the last FileSinkOperator in the parent MapReduce work
    * @return the MapredWork
    */
   private static MapWork createMRWorkForMergingFiles (HiveConf conf,
@@ -1727,7 +1723,7 @@ public final class GenMapRedUtils {
    *          HiveConf
    * @param currTask
    *          current leaf task
-   * @param dummyMoveWork
+   * @param mvWork
    *          MoveWork for the move task
    * @param mergeWork
    *          MapredWork for the merge task.
@@ -1891,7 +1887,8 @@ public final class GenMapRedUtils {
     // no need of merging if the move is to a local file system
     // We are looking based on the original FSOP, so use the original path as is.
     MoveTask mvTask = (MoveTask) GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fsOp.getConf().getFinalDirName(),
-        fsOp.getConf().isMmTable(), fsOp.getConf().isDirectInsert(), fsOp.getConf().getMoveTaskId(), fsOp.getConf().getAcidOperation());
+            fsOp.getConf().isMmTable(), fsOp.getConf().isDirectInsert(), fsOp.getConf().getMoveTaskId(),
+            fsOp.getConf().getWriteType());
 
     // TODO: wtf?!! why is this in this method? This has nothing to do with anything.
     if (isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
@@ -2002,7 +1999,7 @@ public final class GenMapRedUtils {
 
     if (!chDir) {
       mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fsOp.getConf().getFinalDirName(), isMmTable,
-          isDirectInsert, fsOp.getConf().getMoveTaskId(), fsOp.getConf().getAcidOperation());
+          isDirectInsert, fsOp.getConf().getMoveTaskId(), fsOp.getConf().getWriteType());
     }
 
     // Set the move task to be dependent on the current task

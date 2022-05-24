@@ -216,7 +216,7 @@ public class QueryPlan implements Serializable {
                                                 int originalStatementId) {
     FileSinkDesc result = null;
     for (FileSinkDesc acidSink : acidSinks) {
-      if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
+      if (acidOperation.equals(acidSink.getWriteType()) && path.equals(acidSink.getDestPath())
           && acidSink.getTableWriteId() == writeId
           && (moveTaskId == null || acidSink.getMoveTaskId() == null || moveTaskId.equals(acidSink.getMoveTaskId()))) {
         if (result != null) {
@@ -256,7 +256,7 @@ public class QueryPlan implements Serializable {
   public Map<String, List<Path>> getDynamicPartitionSpecs(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
     FileSinkDesc result = null;
     for (FileSinkDesc acidSink : acidSinks) {
-      if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
+      if (acidOperation.equals(acidSink.getWriteType()) && path.equals(acidSink.getDestPath())
           && acidSink.getTableWriteId() == writeId
           && (moveTaskId == null || acidSink.getMoveTaskId() == null || moveTaskId.equals(acidSink.getMoveTaskId()))) {
         if (result != null) {

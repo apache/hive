@@ -290,7 +290,6 @@ public class TestFileSinkOperator {
     } else {
       desc = new FileSinkDesc(basePath, tableDesc, false);
     }
-    desc.setWriteType(writeType);
     desc.setGatherStats(true);
     if (writeId > 0) {
       desc.setTableWriteId(writeId);
