@@ -80,4 +80,8 @@ public class KllHistogramEstimator {
   public KllFloatsSketch getSketch() {
     return kll;
   }
+
+  public int getK() {
+    return kll.getK();
+  }
 }

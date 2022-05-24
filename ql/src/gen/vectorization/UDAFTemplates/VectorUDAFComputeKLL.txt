@@ -41,12 +41,19 @@ import org.apache.hadoop.hive.ql.util.JavaDataModel;
     + " Values must be of type float.")
 public class <ClassName> extends VectorAggregateExpression {
 
+  private transient int k;
+
   public <ClassName>() {
     super();
   }
 
   public <ClassName>(VectorAggregationDesc vecAggrDesc) {
+    this(vecAggrDesc, 200);
+  }
+
+  public <ClassName>(VectorAggregationDesc vecAggrDesc, int k) {
     super(vecAggrDesc);
+    this.k = k;
   }
 
   @Override
@@ -74,7 +81,7 @@ public class <ClassName> extends VectorAggregateExpression {
     Aggregation myagg = (Aggregation) agg;
 
 #IF COMPLETE
-    myagg.prepare();
+    myagg.prepare(k);
     if (inputColumn.noNulls) {
       if (inputColumn.isRepeating) {
         for (int i = 0; i < batchSize; i++) {
@@ -120,9 +127,9 @@ public class <ClassName> extends VectorAggregateExpression {
 #IF MERGING
     if (inputColumn.isRepeating) {
       if (!inputColumn.isNull[0] && inputColumn.length[0] > 0) {
-        myagg.prepare();
         KllHistogramEstimator mergingKLL = KllHistogramEstimatorFactory.getKllHistogramEstimator(
             inputColumn.vector[0], inputColumn.start[0], inputColumn.length[0]);
+        myagg.prepare(mergingKLL.getK());
         myagg.estimator.mergeEstimators(mergingKLL);
       }
     } else {
@@ -132,9 +139,9 @@ public class <ClassName> extends VectorAggregateExpression {
           s = batch.selected[i];
         }
         if (!inputColumn.isNull[s] && inputColumn.length[s] > 0) {
-          myagg.prepare();
           KllHistogramEstimator mergingKLL = KllHistogramEstimatorFactory.getKllHistogramEstimator(
               inputColumn.vector[s], inputColumn.start[s], inputColumn.length[s]);
+          myagg.prepare(mergingKLL.getK());
           myagg.estimator.mergeEstimators(mergingKLL);
         }
       }
@@ -145,7 +152,7 @@ public class <ClassName> extends VectorAggregateExpression {
   private Aggregation getAggregation(VectorAggregationBufferRow[] sets, int rowid, int bufferIndex) {
     VectorAggregationBufferRow bufferRow = sets[rowid];
     Aggregation myagg = (Aggregation) bufferRow.getAggregationBuffer(bufferIndex);
-    myagg.prepare();
+    myagg.prepare(k);
     return myagg;
   }
 
@@ -298,9 +305,9 @@ public class <ClassName> extends VectorAggregateExpression {
       estimator = null;
     }
 
-    public void prepare() {
+    public void prepare(int k) {
       if (estimator == null) {
-        estimator = KllHistogramEstimatorFactory.getEmptyHistogramEstimator();
+        estimator = KllHistogramEstimatorFactory.getEmptyHistogramEstimator(k);
       }
     }
   }
