@@ -170,18 +170,4 @@ public class MapJoinTableContainerSerDe {
       throw new HiveException(msg, e);
     }
   }
-
-  // Get an empty container when the small table is empty.
-  private static MapJoinTableContainer getDefaultEmptyContainer(Configuration hconf,
-      MapJoinObjectSerDeContext keyCtx, MapJoinObjectSerDeContext valCtx) throws SerDeException {
-    boolean useOptimizedContainer = HiveConf.getBoolVar(
-        hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
-    if (useOptimizedContainer) {
-      return new MapJoinBytesTableContainer(hconf, valCtx, -1, 0);
-    }
-    MapJoinTableContainer container = new HashMapWrapper();
-    container.setSerde(keyCtx, valCtx);
-    container.seal();
-    return container;
-  }
 }
