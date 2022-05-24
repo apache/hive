@@ -245,21 +245,6 @@ fi
         buildHive("install -Dtest=noMatches")
       }
       checkPrHead()
-      stage('Sonar') {
-        if(env.CHANGE_BRANCH == 'master-sonar_analysis') {
-          withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
-            sh '''#!/bin/bash -e
-            sw java 11 && . /etc/profile.d/java.sh
-            export MAVEN_OPTS=-Xmx5G
-            mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
-             -Dsonar.pullrequest.github.repository=asolimando/hive \
-             -DskipTests -Dit.skipTests -Dmaven.javadoc.skip
-            '''
-          }
-        } else {
-          echo "Skipping sonar analysis, because we only run that on the master branch"
-        }
-      }
       stage('Upload') {
         saveWS()
         sh '''#!/bin/bash -e
@@ -317,6 +302,23 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
 '''
             buildHive("install -Dtest=noMatches -Pdist,iceberg -f apache-hive-*-nightly-*/pom.xml")
         }
+      }
+  }
+  branches['sonar'] = {
+      if(env.CHANGE_BRANCH == 'master-sonar_analysis') {
+          stage('Sonar') {
+              withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
+                  sh '''#!/bin/bash -e
+                  sw java 11 && . /etc/profile.d/java.sh
+                  export MAVEN_OPTS=-Xmx5G
+                  mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
+                   -Dsonar.pullrequest.github.repository=asolimando/hive \
+                   -DskipTests -Dit.skipTests -Dmaven.javadoc.skip
+                  '''
+             }
+          }
+      } else {
+          echo "Skipping sonar analysis, because we only run that on the master branch"
       }
   }
   for (int i = 0; i < splits.size(); i++) {
