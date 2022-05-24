@@ -27,7 +27,7 @@ properties([
     ])
 ])
 
-env.getEnvironment().each { name, value -> println "Name: $name -> Value $value" }
+env.each { name, value -> println "Name: $name -> Value $value" }
 error('asd')
 
 this.prHead = null;
