@@ -87,7 +87,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
    * insert into tmpTable select * from &lt;export table&gt; to filter/apply the events in current
    * context and then export the tmpTable.  This export artifact can now be imported into any
    * table on any cluster (subject to schema checks etc).
-   * See {@link #analyzeAcidExport(ASTNode)}
+   * See {@link #analyzeAcidExport(ASTNode, Table , ASTNode)}
    * @param tree Export statement
    * @return true if exporting an Acid table.
    */
