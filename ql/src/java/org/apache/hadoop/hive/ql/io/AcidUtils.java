@@ -2844,12 +2844,12 @@ public class AcidUtils {
     tblProps.remove(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
   }
 
-  private static boolean needsLock(Entity entity) {
+  private static boolean needsLock(Entity entity, boolean isExternalEnabled) {
     switch (entity.getType()) {
     case TABLE:
-      return isLockableTable(entity.getTable());
+      return isLockableTable(entity.getTable(), isExternalEnabled);
     case PARTITION:
-      return isLockableTable(entity.getPartition().getTable());
+      return isLockableTable(entity.getPartition().getTable(), isExternalEnabled);
     default:
       return true;
     }
@@ -2863,7 +2863,7 @@ public class AcidUtils {
     return t;
   }
 
-  private static boolean isLockableTable(Table t) {
+  private static boolean isLockableTable(Table t, boolean isExternalEnabled) {
     if (t.isTemporary()) {
       return false;
     }
@@ -2871,6 +2871,8 @@ public class AcidUtils {
     case MANAGED_TABLE:
     case MATERIALIZED_VIEW:
       return true;
+    case EXTERNAL_TABLE:
+      return isExternalEnabled;
     default:
       return false;
     }
@@ -2890,6 +2892,7 @@ public class AcidUtils {
     boolean skipReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_READ_LOCKS);
     boolean skipNonAcidReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_NONACID_READ_LOCKS);
     boolean sharedWrite = !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK);
+    boolean isExternalEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED);
     boolean isMerge = operation == Context.Operation.MERGE;
 
     // We don't want to acquire read locks during update or delete as we'll be acquiring write
@@ -2898,7 +2901,7 @@ public class AcidUtils {
       .filter(input -> !input.isDummy()
         && input.needsLock()
         && !input.isUpdateOrDelete()
-        && AcidUtils.needsLock(input)
+        && AcidUtils.needsLock(input, isExternalEnabled)
         && !skipReadLock)
       .collect(Collectors.toList());
 
@@ -2959,7 +2962,7 @@ public class AcidUtils {
     for (WriteEntity output : outputs) {
       LOG.debug("output is null " + (output == null));
       if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR || !AcidUtils
-          .needsLock(output)) {
+          .needsLock(output, isExternalEnabled)) {
         // We don't lock files or directories. We also skip locking temp tables.
         continue;
       }
