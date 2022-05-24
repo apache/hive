@@ -3008,6 +3008,12 @@ public class HiveConf extends Configuration {
         "and hive.exec.dynamic.partition.mode (nonstrict).\n" +
         "The default DummyTxnManager replicates pre-Hive-0.13 behavior and provides\n" +
         "no transactions."),
+    HIVE_TXN_EXT_LOCKING_ENABLED("hive.txn.ext.locking.enabled", false,
+        "When enabled use standard R/W lock semantics based on hive.txn.strict.locking.mode for external resources,\n" +
+        "e.g. INSERT will acquire lock based on hive.txn.strict.locking.mode\n" +
+        "(exclusive if it is true, shared if that is false),\n" +
+        "SELECT will acquire shared lock based on hive.txn.nonacid.read.locks.\n" +
+        "When disabled no locks are acquired for external resources."),
     HIVE_TXN_STRICT_LOCKING_MODE("hive.txn.strict.locking.mode", true, "In strict mode non-ACID\n" +
         "resources use standard R/W lock semantics, e.g. INSERT will acquire exclusive lock.\n" +
         "In nonstrict mode, for non-ACID resources, INSERT will only acquire shared lock, which\n" +
