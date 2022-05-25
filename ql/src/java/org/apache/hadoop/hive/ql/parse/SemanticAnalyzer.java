@@ -8187,7 +8187,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       acidFileSinks.add(fileSinkDesc);
     }
 
-    fileSinkDesc.setWriteOperation(getFSWriteType(dest));
+    fileSinkDesc.setWriteOperation(getWriteOperation(dest));
 
     fileSinkDesc.setTemporary(destTableIsTemporary);
     fileSinkDesc.setMaterialization(destTableIsMaterialization);
@@ -15017,7 +15017,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             AcidUtils.Operation.INSERT);
   }
 
-  private Context.Operation getFSWriteType(String destination) {
+  private Context.Operation getWriteOperation(String destination) {
     return deleting(destination) ? Context.Operation.DELETE :
         (updating(destination) ? Context.Operation.UPDATE :
             Context.Operation.OTHER);
