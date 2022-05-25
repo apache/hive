@@ -2121,8 +2121,25 @@ public class TestReplicationScenarios {
 
   @Test
   public void testDumpMetaDataInJSONFormat() throws Exception {
-    String testName = "testDumpmetaDataInJSONFormat";
-    String dbName = createDB(testName, driver);
+    testDumpMetadata(DumpMetaData.DUMP_METADATA_V2);
+  }
+
+  @Test
+  public void testDumpMetaDataV1() throws Exception {
+    boolean isTopLevelDmd = ReplDumpWork.isTopLevelDmd();
+    if (isTopLevelDmd) {
+      ReplDumpWork.setIsTopLevelDmd(false);
+    }
+    try {
+      testDumpMetadata(DUMP_METADATA);
+    } finally {
+      ReplDumpWork.setIsTopLevelDmd(isTopLevelDmd); //Reset this flag to existing value.
+    }
+  }
+
+  private void testDumpMetadata(String dmdVersion) throws Exception {
+    String name = testName.getMethodName();
+    String dbName = createDB(name, driver);
     String replDbName = dbName + "_dupe";
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
     String[] unptn_data_1 = new String[]{ "eleven"};
@@ -2134,9 +2151,14 @@ public class TestReplicationScenarios {
     Path dumpmetadata_v1 = new Path(hiveDumpRoot, DumpMetaData.DUMP_METADATA);
     Path dumpmetadata_v2 = new Path(hiveDumpRoot, DumpMetaData.DUMP_METADATA_V2);
     FileSystem fs = dumpmetadata_v1.getFileSystem(hconf);
-    assertFalse(fs.exists(dumpmetadata_v1));
-    assertTrue(fs.exists(dumpmetadata_v2));
-    verifyDumpMetaDataFormat(fs, dumpmetadata_v2);
+    if (dmdVersion.equals(DumpMetaData.DUMP_METADATA_V2)) {
+      assertFalse(fs.exists(dumpmetadata_v1));
+      assertTrue(fs.exists(dumpmetadata_v2));
+      verifyDumpMetaDataFormat(fs, dumpmetadata_v2);
+    } else if (dmdVersion.equals(DUMP_METADATA)) {
+      assertTrue(fs.exists(dumpmetadata_v1));
+      assertFalse(fs.exists(dumpmetadata_v2));
+    }
     loadAndVerify(replDbName, dbName, bootstrapDump.lastReplId);
 
     String[] unptn_data_2 = new String[] {"twelve"};
@@ -2150,9 +2172,14 @@ public class TestReplicationScenarios {
     dumpmetadata_v1 = new Path(hiveDumpRoot, DumpMetaData.DUMP_METADATA);
     dumpmetadata_v2 = new Path(hiveDumpRoot, DumpMetaData.DUMP_METADATA_V2);
     fs = dumpmetadata_v1.getFileSystem(hconf);
-    assertFalse(fs.exists(dumpmetadata_v1));
-    assertTrue(fs.exists(dumpmetadata_v2));
-    verifyDumpMetaDataFormat(fs, dumpmetadata_v2);
+    if (dmdVersion.equals(DumpMetaData.DUMP_METADATA_V2)) {
+      assertFalse(fs.exists(dumpmetadata_v1));
+      assertTrue(fs.exists(dumpmetadata_v2));
+      verifyDumpMetaDataFormat(fs, dumpmetadata_v2);
+    } else if (dmdVersion.equals(DUMP_METADATA)) {
+      assertTrue(fs.exists(dumpmetadata_v1));
+      assertFalse(fs.exists(dumpmetadata_v2));
+    }
     loadAndVerify(replDbName, dbName, incrDump.lastReplId);
   }
 

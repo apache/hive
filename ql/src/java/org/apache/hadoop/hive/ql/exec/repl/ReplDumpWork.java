@@ -61,6 +61,7 @@ public class ReplDumpWork implements Serializable {
   private static String testInjectDumpDir = null;
   private static boolean testInjectDumpDirAutoIncrement = false;
   static boolean testDeletePreviousDumpMetaPath = false;
+  private static boolean isTopLevelDmd = true;
   private Integer maxEventLimit;
   private transient Iterator<String> externalTblCopyPathIterator;
   private transient Iterator<String> managedTblCopyPathIterator;
@@ -95,6 +96,14 @@ public class ReplDumpWork implements Serializable {
 
   public static void testDeletePreviousDumpMetaPath(boolean failDeleteDumpMeta) {
     testDeletePreviousDumpMetaPath = failDeleteDumpMeta;
+  }
+
+  public static void setIsTopLevelDmd(boolean isTopLevelDumpMetadata) {
+    isTopLevelDmd = isTopLevelDumpMetadata;
+  }
+
+  public static boolean isTopLevelDmd() {
+    return isTopLevelDmd;
   }
 
   public ReplDumpWork(ReplScope replScope,

@@ -205,7 +205,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         if (previousValidHiveDumpPath == null && !isFailover) {
           work.setBootstrap(true);
         } else {
-          work.setOldReplScope(isFailover ? null : new DumpMetaData(previousValidHiveDumpPath, conf, true).getReplScope());
+          work.setOldReplScope(isFailover ? null : new DumpMetaData(previousValidHiveDumpPath, conf,
+                  ReplDumpWork.isTopLevelDmd()).getReplScope());
           isFailoverMarkerPresent = !isFailover && isDumpFailoverReady(previousValidHiveDumpPath);
         }
         //Proceed with dump operation in following cases:
@@ -229,7 +230,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           if (shouldDumpAuthorizationMetadata()) {
             initiateAuthorizationDumpTask();
           }
-          DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf, true);
+          DumpMetaData dmd = new DumpMetaData(hiveDumpRoot, conf, ReplDumpWork.isTopLevelDmd());
           // Initialize ReplChangeManager instance since we will require it to encode file URI.
           ReplChangeManager.getInstance(conf);
           Path cmRoot = new Path(conf.getVar(HiveConf.ConfVars.REPLCMDIR));
@@ -536,7 +537,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
 
   private Long getEventFromPreviousDumpMetadata(Path previousDumpPath) throws SemanticException {
     if (previousDumpPath != null) {
-      DumpMetaData dmd = new DumpMetaData(previousDumpPath, conf, true);
+      DumpMetaData dmd = new DumpMetaData(previousDumpPath, conf, ReplDumpWork.isTopLevelDmd());
       if (dmd.isIncrementalDump()) {
         return dmd.getEventTo();
       }
@@ -1380,7 +1381,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return false;
     }
     Path hiveDumpPath = new Path(lastDumpPath, ReplUtils.REPL_HIVE_BASE_DIR);
-    DumpMetaData dumpMetaData = new DumpMetaData(hiveDumpPath, conf, true);
+    DumpMetaData dumpMetaData = new DumpMetaData(hiveDumpPath, conf, ReplDumpWork.isTopLevelDmd());
     if (tableExpressionModified(dumpMetaData)) {
       return false;
     }
