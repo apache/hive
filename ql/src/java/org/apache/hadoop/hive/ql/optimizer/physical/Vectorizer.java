@@ -4792,8 +4792,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         children[i] = newChild;
       }
     }
-    if (parent.getOutputDataTypePhysicalVariation() == DataTypePhysicalVariation.NONE &&
-      !(parent instanceof ConvertDecimal64ToDecimal)) {
+    if (parent.shouldConvertDecimal64ToDecimal()) {
       boolean inputArgsChanged = false;
       DataTypePhysicalVariation[] dataTypePhysicalVariations = parent.getInputDataTypePhysicalVariations();
       for (int i = 0; i < children.length; i++) {
