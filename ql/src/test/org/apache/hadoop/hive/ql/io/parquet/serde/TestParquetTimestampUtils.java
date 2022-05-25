@@ -389,30 +389,6 @@ public class TestParquetTimestampUtils {
     verifyInt64TimestampValue("2262-04-11 23:47:16.854775808", LogicalTypeAnnotation.TimeUnit.NANOS, false);
   }
 
-  /**
-   * Timestamps for 9999-12-31 might go over 10000 with certain TimeZones.
-   * Test that the legacy conversion is working for these too.
-   */
-  @Test
-  public void testTimestamp9999() {
-  TimeZone oldTz = TimeZone.getDefault();
-    try {
-      // With the old writer and TZ we might end up writing out timestamps outside the allowed -9999/9999 range
-      // Simulate these timestamps
-      TimeZone.setDefault(TimeZone.getTimeZone("EST"));
-      String originalString = "9999-12-31 23:59:59.999";
-      // Hive 2.1.1 written this out with the following NanoTime
-      // We should be able to handle these with or without the legacy conversion
-      NanoTime nanoTime = new NanoTime(5373485, 17999999000000L);
-      Timestamp nonLegacy = NanoTimeUtils.getTimestamp(nanoTime, TimeZone.getTimeZone("EST").toZoneId(), false);
-      Assert.assertEquals(originalString, nonLegacy.toString());
-      Timestamp withLegacy = NanoTimeUtils.getTimestamp(nanoTime, TimeZone.getTimeZone("EST").toZoneId(), true);
-      Assert.assertEquals(originalString, withLegacy.toString());
-    } finally {
-      TimeZone.setDefault(oldTz);
-    }
-  }
-
   private void verifyInt64TimestampValue(String tsString, boolean legal) {
     verifyInt64TimestampValue(tsString, LogicalTypeAnnotation.TimeUnit.MILLIS, legal);
     verifyInt64TimestampValue(tsString, LogicalTypeAnnotation.TimeUnit.MICROS, legal);
