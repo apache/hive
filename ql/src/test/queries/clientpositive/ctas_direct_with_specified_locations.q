@@ -49,6 +49,14 @@ CREATE TABLE IF NOT EXISTS test_partition_avro_mmctas PARTITIONED BY (cint) STOR
 
 CREATE TABLE IF NOT EXISTS test_partition_textfile_mmctas PARTITIONED BY (cint) STORED AS TEXTFILE LOCATION '/build/ql/test/data/warehouse/test_mm_part_textfile' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
 
+CREATE TRANSACTIONAL TABLE IF NOT EXISTS test_transactional_orc_ctas STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_transactional_orc' AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+
+CREATE TRANSACTIONAL TABLE IF NOT EXISTS test_transactional_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_transactional_part_orc' AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+
+CREATE MANAGED TABLE IF NOT EXISTS test_managed_orc_ctas STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_managed_orc' AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+
+CREATE MANAGED TABLE IF NOT EXISTS test_managed_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_managed_part_orc' AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+
 SELECT * FROM test_orc_ctas ORDER BY cint;
 
 SELECT * FROM test_orc_mmctas ORDER BY cint;
@@ -68,6 +76,14 @@ SELECT * FROM test_partition_parquet_mmctas ORDER BY cint;
 SELECT * FROM test_partition_avro_mmctas ORDER BY cint;
 
 SELECT * FROM test_partition_textfile_mmctas ORDER BY cint;
+
+SELECT * FROM test_transactional_orc_ctas;
+
+SELECT * FROM test_transactional_part_orc_ctas;
+
+SELECT * FROM test_managed_orc_ctas;
+
+SELECT * FROM test_managed_part_orc_ctas;
 
 DROP TABLE IF EXISTS source;
 
@@ -90,3 +106,11 @@ DROP TABLE IF EXISTS test_partition_parquet_mmctas;
 DROP TABLE IF EXISTS test_partition_avro_mmctas;
 
 DROP TABLE IF EXISTS test_partition_textfile_mmctas;
+
+DROP TABLE IF EXISTS test_transactional_orc_ctas;
+
+DROP TABLE IF EXISTS test_transactional_part_orc_ctas;
+
+DROP TABLE IF EXISTS test_managed_orc_ctas;
+
+DROP TABLE IF EXISTS test_managed_part_orc_ctas;

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static java.util.Objects.nonNull;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEARCHIVEENABLED;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
@@ -7607,13 +7608,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           destTableIsFullAcid = AcidUtils.isFullAcidTable(tblProps);
           acidOperation = getAcidType(dest);
           isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOperation);
-          boolean enableSuffixing = conf.getBoolVar(ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
-                  || conf.getBoolVar(ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
+          boolean enableSuffixing = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+                  || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
           if (isDirectInsert || isMmTable) {
             destinationPath = getCTASDestinationTableLocation(tblDesc, enableSuffixing);
             // Setting the location so that metadata transformers
             // does not change the location later while creating the table.
             tblDesc.setLocation(destinationPath.toString());
+            // Property SOFT_DELETE_TABLE needs to be added to indicate that suffixing is used.
+            if (enableSuffixing) {
+              tblDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
+            }
           }
         }
         try {
@@ -7968,6 +7973,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Path location;
     String suffix = "";
     try {
+      // When location is specified, suffix is not added
       if (tblDesc.getLocation() == null) {
         String protoName = tblDesc.getDbTableName();
         String[] names = Utilities.getDbTableName(protoName);
@@ -8293,9 +8299,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String tName = Utilities.getDbTableName(tableDesc.getDbTableName())[1];
       try {
         String suffix = "";
-        if (!tableDesc.isExternal()) {
-          boolean useSuffix = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
-                  || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
+        if (AcidUtils.isTransactionalTable(destinationTable)) {
+          boolean useSuffix = Boolean.getBoolean(destinationTable.getProperty(SOFT_DELETE_TABLE));
           if (useSuffix) {
             long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
             suffix = SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId);
