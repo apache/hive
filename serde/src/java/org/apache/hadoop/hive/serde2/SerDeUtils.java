@@ -74,7 +74,6 @@ public final class SerDeUtils {
   private static final String JSON_NULL = "null";
   public static final String LIST_SINK_OUTPUT_FORMATTER = "list.sink.output.formatter";
   public static final String LIST_SINK_OUTPUT_PROTOCOL = "list.sink.output.protocol";
-  public static final String WRITE_OPERATION_CONFIG_PREFIX = "file.sink.write.operation.";
   public static final Logger LOG = LoggerFactory.getLogger(SerDeUtils.class.getName());
 
   /**

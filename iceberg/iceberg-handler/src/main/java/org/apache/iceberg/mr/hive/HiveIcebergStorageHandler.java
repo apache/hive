@@ -69,7 +69,6 @@ import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
@@ -573,15 +572,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // There is nothing to prune, or we could not use the filter
     LOG.debug("Not found Iceberg partition columns to prune with predicate {}", syntheticFilterPredicate);
     return false;
-  }
-
-  public static Operation operation(Configuration conf, String tableName) {
-    if (conf == null || tableName == null) {
-      return null;
-    }
-
-    String operation = conf.get(SerDeUtils.WRITE_OPERATION_CONFIG_PREFIX + tableName);
-    return operation == null ? null : Operation.valueOf(operation);
   }
 
   /**

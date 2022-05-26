@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
-import static org.apache.hadoop.hive.serde2.SerDeUtils.WRITE_OPERATION_CONFIG_PREFIX;
+import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.WRITE_OPERATION_CONFIG_PREFIX;
 
 import java.io.IOException;
 import java.io.Serializable;

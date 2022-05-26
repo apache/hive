@@ -38,6 +38,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
@@ -338,7 +339,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       if (writeResults.isEmpty()) {
         LOG.info(
             "Not creating a new commit for table: {}, jobID: {}, operation: {}, since there were no new files to add",
-            table, jobContext.getJobID(), HiveIcebergStorageHandler.operation(conf, name));
+            table, jobContext.getJobID(), HiveCustomStorageHandlerUtils.operation(conf, name));
       } else {
         commitWrite(table, startTime, writeResults);
       }
