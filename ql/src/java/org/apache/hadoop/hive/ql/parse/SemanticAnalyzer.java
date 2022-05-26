@@ -8131,6 +8131,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                           RowSchema fsRS, boolean canBeMerged, Table dest_tab, Long mmWriteId, boolean isMmCtas,
                                           Integer dest_type, QB qb, boolean isDirectInsert, AcidUtils.Operation acidOperation, String moveTaskId) throws SemanticException {
     boolean isInsertOverwrite = false;
+    Context.Operation writeOperation = getWriteOperation(dest);
     switch (dest_type) {
     case QBMetaData.DEST_PARTITION:
       //fall through
@@ -8146,7 +8147,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Some non-native tables might be partitioned without partition spec information being present in the Table object
       HiveStorageHandler storageHandler = dest_tab.getStorageHandler();
       if (storageHandler != null && storageHandler.alwaysUnpartitioned()) {
-        DynamicPartitionCtx nonNativeDpCtx = storageHandler.createDPContext(conf, dest_tab);
+        DynamicPartitionCtx nonNativeDpCtx = storageHandler.createDPContext(conf, dest_tab, writeOperation);
         if (dpCtx == null && nonNativeDpCtx != null) {
           dpCtx = nonNativeDpCtx;
         }
@@ -8187,7 +8188,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       acidFileSinks.add(fileSinkDesc);
     }
 
-    fileSinkDesc.setWriteOperation(getWriteOperation(dest));
+    fileSinkDesc.setWriteOperation(writeOperation);
 
     fileSinkDesc.setTemporary(destTableIsTemporary);
     fileSinkDesc.setMaterialization(destTableIsMaterialization);

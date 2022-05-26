@@ -354,11 +354,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public DynamicPartitionCtx createDPContext(HiveConf hiveConf, org.apache.hadoop.hive.ql.metadata.Table hmsTable)
+  public DynamicPartitionCtx createDPContext(
+          HiveConf hiveConf, org.apache.hadoop.hive.ql.metadata.Table hmsTable, Operation writeOperation)
       throws SemanticException {
     // delete records are already clustered by partition spec id and the hash of the partition struct
     // there is no need to do any additional sorting based on partition columns
-    if (getOperationType().equals(Operation.DELETE.name())) {
+    if (writeOperation == Operation.DELETE) {
       return null;
     }
 
@@ -383,7 +384,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       fieldOrderMap.put(fields.get(i).name(), i);
     }
 
-    int offset = acidSelectColumns(hmsTable, Operation.valueOf(getOperationType())).size();
+    int offset = acidSelectColumns(hmsTable, writeOperation).size();
     for (PartitionTransformSpec spec : partitionTransformSpecs) {
       int order = fieldOrderMap.get(spec.getColumnName());
       if (PartitionTransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {

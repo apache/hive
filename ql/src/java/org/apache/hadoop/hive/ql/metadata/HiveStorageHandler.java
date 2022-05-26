@@ -371,7 +371,8 @@ public interface HiveStorageHandler extends Configurable {
    * @return the created DP context object, null if DP context / sorting is not required
    * @throws SemanticException
    */
-  default DynamicPartitionCtx createDPContext(HiveConf conf, org.apache.hadoop.hive.ql.metadata.Table table)
+  default DynamicPartitionCtx createDPContext(
+          HiveConf conf, org.apache.hadoop.hive.ql.metadata.Table table, Operation writeOperation)
       throws SemanticException {
     Preconditions.checkState(alwaysUnpartitioned(), "Should only be called for table formats where partitioning " +
         "is not handled by Hive but the table format itself. See alwaysUnpartitioned() method.");
