@@ -259,6 +259,9 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
               InputFormatConfig.InMemoryDataModel.GENERIC);
       this.currentIterator = open(tasks.next(), expectedSchema).iterator();
       this.fetchVirtualColumns = InputFormatConfig.fetchVirtualColumns(conf);
+      if (fetchVirtualColumns) {
+        this.currentIterator = new VirtualColumnAwareIterator<>(currentIterator, expectedSchema, conf);
+      }
     }
 
     @Override
@@ -266,20 +269,6 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       while (true) {
         if (currentIterator.hasNext()) {
           current = currentIterator.next();
-          if (fetchVirtualColumns) {
-            GenericRecord rec = (GenericRecord) current;
-            PositionDeleteInfo.setIntoConf(conf,
-                IcebergAcidUtil.parseSpecId(rec),
-                IcebergAcidUtil.computePartitionHash(rec),
-                IcebergAcidUtil.parseFilePath(rec),
-                IcebergAcidUtil.parseFilePosition(rec));
-            GenericRecord tmp = GenericRecord.create(
-                    new Schema(expectedSchema.columns().subList(4, expectedSchema.columns().size())));
-            for (int i = 4; i < expectedSchema.columns().size(); ++i) {
-              tmp.set(i - 4, rec.get(i));
-            }
-            current = (T) tmp;
-          }
           return true;
         } else if (tasks.hasNext()) {
           currentIterator.close();
@@ -540,4 +529,46 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     }
   }
 
+  public static class VirtualColumnAwareIterator<T> implements CloseableIterator<T> {
+
+    private final CloseableIterator<T> currentIterator;
+
+    private GenericRecord current;
+    private final Schema expectedSchema;
+    private final Configuration conf;
+
+    public VirtualColumnAwareIterator(CloseableIterator<T> currentIterator, Schema expectedSchema, Configuration conf) {
+      this.currentIterator = currentIterator;
+      this.expectedSchema = expectedSchema;
+      this.conf = conf;
+      current = GenericRecord.create(
+              new Schema(expectedSchema.columns().subList(4, expectedSchema.columns().size())));
+    }
+
+    @Override
+    public void close() throws IOException {
+      currentIterator.close();
+    }
+
+    @Override
+    public boolean hasNext() {
+      return currentIterator.hasNext();
+    }
+
+    @Override
+    public T next() {
+      T next = currentIterator.next();
+      GenericRecord rec = (GenericRecord) next;
+      PositionDeleteInfo.setIntoConf(conf,
+              IcebergAcidUtil.parseSpecId(rec),
+              IcebergAcidUtil.computePartitionHash(rec),
+              IcebergAcidUtil.parseFilePath(rec),
+              IcebergAcidUtil.parseFilePosition(rec));
+      for (int i = 4; i < expectedSchema.columns().size(); ++i) {
+        current.set(i - 4, rec.get(i));
+      }
+
+      return (T) current;
+    }
+  }
 }
