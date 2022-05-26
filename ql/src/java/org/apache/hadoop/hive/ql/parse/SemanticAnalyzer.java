@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import static java.util.Objects.nonNull;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEARCHIVEENABLED;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
@@ -7616,7 +7617,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             // does not change the location later while creating the table.
             tblDesc.setLocation(destinationPath.toString());
             // Property SOFT_DELETE_TABLE needs to be added to indicate that suffixing is used.
-            if (enableSuffixing) {
+            if (enableSuffixing && tblDesc.getLocation().matches("(.*)" + SOFT_DELETE_TABLE_PATTERN)) {
               tblDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
             }
           }
@@ -8309,15 +8310,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Warehouse wh = new Warehouse(conf);
         tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()),
             tName + suffix, tableDesc.isExternal());
-
-        // Handle translation in lineage for CTAS queries.
-        if (destinationTable != null) {
-          Table translatedTable = db.getTranslateTableDryrun(destinationTable.getTTable());
-          org.apache.hadoop.hive.metastore.api.Table tbl = translatedTable.getTTable();
-          if (tbl.getSd() != null && tbl.getSd().getLocation() != null) {
-            tlocation = new Path(tbl.getSd().getLocation());
-          }
-        }
       } catch (MetaException|HiveException e) {
         throw new SemanticException(e);
       }
