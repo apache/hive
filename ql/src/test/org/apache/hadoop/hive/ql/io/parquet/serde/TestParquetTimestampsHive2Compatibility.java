@@ -175,7 +175,7 @@ class TestParquetTimestampsHive2Compatibility {
     // Exclude dates falling in the default Gregorian change date since legacy code does not handle that interval
     // gracefully. It is expected that these do not work well when legacy APIs are in use. 
     .filter(s -> !s.startsWith("1582-10"))
-    .limit(3), Stream.of("9999-12-31 23:59:59.999"));
+    .limit(3000), Stream.of("9999-12-31 23:59:59.999"));
   }
 
   private static int digits(int number) {
