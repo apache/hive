@@ -74,6 +74,7 @@ public class QBParseInfo {
   private final Set<String> destCubes;
   private final Set<String> destGroupingSets;
   private final Map<String, ASTNode> destToHaving;
+  private final Map<String, ASTNode> destToQualify;
   private final Map<String, Boolean> destToOpType;
   // insertIntoTables/insertOverwriteTables map a table's fullName to its ast;
   private final Map<String, ASTNode> insertIntoTables;
@@ -141,6 +142,7 @@ public class QBParseInfo {
     destToWhereExpr = new HashMap<String, ASTNode>();
     destToGroupby = new HashMap<String, ASTNode>();
     destToHaving = new HashMap<String, ASTNode>();
+    destToQualify = new HashMap<>();
     destToClusterby = new HashMap<String, ASTNode>();
     destToDistributeby = new HashMap<String, ASTNode>();
     destToSortby = new HashMap<String, ASTNode>();
@@ -645,6 +647,18 @@ public class QBParseInfo {
 
   public Map<String, ASTNode> getDestToLateralView() {
     return destToLateralView;
+  }
+
+  public void setQualifyExprForClause(String dest, ASTNode ast) {
+    destToQualify.put(dest, ast);
+  }
+
+  public ASTNode getQualifyExprForClause(String dest) {
+    return destToQualify.get(dest);
+  }
+
+  public boolean hasQualifyClause() {
+    return !destToQualify.isEmpty();
   }
 
   protected static enum ClauseType {
