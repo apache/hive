@@ -42,12 +42,12 @@ PREHOOK: query: DROP TABLE IF EXISTS test_partition_textfile_mmctas
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS test_partition_textfile_mmctas
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE IF NOT EXISTS source STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT cint, cfloat, cdouble, cstring1, ctimestamp1 FROM alltypesorc)
+PREHOOK: query: CREATE TABLE source STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT cint, cfloat, cdouble, cstring1, ctimestamp1 FROM alltypesorc)
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@source
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS source STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT cint, cfloat, cdouble, cstring1, ctimestamp1 FROM alltypesorc)
+POSTHOOK: query: CREATE TABLE source STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT cint, cfloat, cdouble, cstring1, ctimestamp1 FROM alltypesorc)
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
@@ -57,12 +57,12 @@ POSTHOOK: Lineage: source.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(na
 POSTHOOK: Lineage: source.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: source.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 POSTHOOK: Lineage: source.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-PREHOOK: query: CREATE TABLE IF NOT EXISTS test_orc_ctas STORED AS ORC TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE TABLE test_orc_ctas STORED AS ORC TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_orc_ctas
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS test_orc_ctas STORED AS ORC TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE TABLE test_orc_ctas STORED AS ORC TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
@@ -79,12 +79,12 @@ POSTHOOK: Lineage: test_orc_ctas.cstring2 EXPRESSION [(alltypesorc)alltypesorc.F
 POSTHOOK: Lineage: test_orc_ctas.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_orc_ctas.ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_orc_ctas.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: CREATE TABLE IF NOT EXISTS test_orc_mmctas STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE TABLE test_orc_mmctas STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_orc_mmctas
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS test_orc_mmctas STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE TABLE test_orc_mmctas STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
@@ -101,12 +101,12 @@ POSTHOOK: Lineage: test_orc_mmctas.cstring2 EXPRESSION [(alltypesorc)alltypesorc
 POSTHOOK: Lineage: test_orc_mmctas.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_orc_mmctas.ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_orc_mmctas.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: CREATE TABLE IF NOT EXISTS test_parquet_mmctas STORED AS PARQUET TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE TABLE test_parquet_mmctas STORED AS PARQUET TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_parquet_mmctas
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS test_parquet_mmctas STORED AS PARQUET TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE TABLE test_parquet_mmctas STORED AS PARQUET TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
@@ -123,12 +123,12 @@ POSTHOOK: Lineage: test_parquet_mmctas.cstring2 EXPRESSION [(alltypesorc)alltype
 POSTHOOK: Lineage: test_parquet_mmctas.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_parquet_mmctas.ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_parquet_mmctas.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: CREATE TABLE IF NOT EXISTS test_avro_mmctas STORED AS AVRO TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE TABLE test_avro_mmctas STORED AS AVRO TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@source
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_avro_mmctas
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS test_avro_mmctas STORED AS AVRO TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE TABLE test_avro_mmctas STORED AS AVRO TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@source
 POSTHOOK: Output: database:default
@@ -138,12 +138,12 @@ POSTHOOK: Lineage: test_avro_mmctas.cfloat EXPRESSION [(source)source.FieldSchem
 POSTHOOK: Lineage: test_avro_mmctas.cint EXPRESSION [(source)source.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: test_avro_mmctas.cstring1 EXPRESSION [(source)source.FieldSchema(name:cstring1, type:string, comment:null), ]
 POSTHOOK: Lineage: test_avro_mmctas.ctimestamp1 EXPRESSION [(source)source.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-PREHOOK: query: CREATE TABLE IF NOT EXISTS test_textfile_mmctas STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE TABLE test_textfile_mmctas STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_textfile_mmctas
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS test_textfile_mmctas STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE TABLE test_textfile_mmctas STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
@@ -160,13 +160,13 @@ POSTHOOK: Lineage: test_textfile_mmctas.cstring2 EXPRESSION [(alltypesorc)alltyp
 POSTHOOK: Lineage: test_textfile_mmctas.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_textfile_mmctas.ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_textfile_mmctas.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: CREATE TABLE IF NOT EXISTS test_partition_orc_ctas PARTITIONED BY (cint) STORED AS ORC TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE TABLE test_partition_orc_ctas PARTITIONED BY (cint) STORED AS ORC TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_partition_orc_ctas
 PREHOOK: Output: default@test_partition_orc_ctas
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS test_partition_orc_ctas PARTITIONED BY (cint) STORED AS ORC TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE TABLE test_partition_orc_ctas PARTITIONED BY (cint) STORED AS ORC TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
@@ -315,13 +315,13 @@ POSTHOOK: Lineage: test_partition_orc_ctas PARTITION(cint=528534767).cstring2 EX
 POSTHOOK: Lineage: test_partition_orc_ctas PARTITION(cint=528534767).ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_partition_orc_ctas PARTITION(cint=528534767).ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_partition_orc_ctas PARTITION(cint=528534767).ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: CREATE TABLE IF NOT EXISTS test_partition_orc_mmctas PARTITIONED BY (cint) STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE TABLE test_partition_orc_mmctas PARTITIONED BY (cint) STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_partition_orc_mmctas
 PREHOOK: Output: default@test_partition_orc_mmctas
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS test_partition_orc_mmctas PARTITIONED BY (cint) STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE TABLE test_partition_orc_mmctas PARTITIONED BY (cint) STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
@@ -470,13 +470,13 @@ POSTHOOK: Lineage: test_partition_orc_mmctas PARTITION(cint=528534767).cstring2 
 POSTHOOK: Lineage: test_partition_orc_mmctas PARTITION(cint=528534767).ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_partition_orc_mmctas PARTITION(cint=528534767).ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_partition_orc_mmctas PARTITION(cint=528534767).ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: CREATE TABLE IF NOT EXISTS test_partition_parquet_mmctas PARTITIONED BY (cint) STORED AS PARQUET TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE TABLE test_partition_parquet_mmctas PARTITIONED BY (cint) STORED AS PARQUET TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_partition_parquet_mmctas
 PREHOOK: Output: default@test_partition_parquet_mmctas
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS test_partition_parquet_mmctas PARTITIONED BY (cint) STORED AS PARQUET TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE TABLE test_partition_parquet_mmctas PARTITIONED BY (cint) STORED AS PARQUET TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
@@ -625,13 +625,13 @@ POSTHOOK: Lineage: test_partition_parquet_mmctas PARTITION(cint=528534767).cstri
 POSTHOOK: Lineage: test_partition_parquet_mmctas PARTITION(cint=528534767).ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_partition_parquet_mmctas PARTITION(cint=528534767).ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_partition_parquet_mmctas PARTITION(cint=528534767).ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: CREATE TABLE IF NOT EXISTS test_partition_avro_mmctas PARTITIONED BY (cint) STORED AS AVRO TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE TABLE test_partition_avro_mmctas PARTITIONED BY (cint) STORED AS AVRO TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@source
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_partition_avro_mmctas
 PREHOOK: Output: default@test_partition_avro_mmctas
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS test_partition_avro_mmctas PARTITIONED BY (cint) STORED AS AVRO TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE TABLE test_partition_avro_mmctas PARTITIONED BY (cint) STORED AS AVRO TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@source
 POSTHOOK: Output: database:default
@@ -696,13 +696,13 @@ POSTHOOK: Lineage: test_partition_avro_mmctas PARTITION(cint=528534767).cdouble 
 POSTHOOK: Lineage: test_partition_avro_mmctas PARTITION(cint=528534767).cfloat EXPRESSION [(source)source.FieldSchema(name:cfloat, type:float, comment:null), ]
 POSTHOOK: Lineage: test_partition_avro_mmctas PARTITION(cint=528534767).cstring1 EXPRESSION [(source)source.FieldSchema(name:cstring1, type:string, comment:null), ]
 POSTHOOK: Lineage: test_partition_avro_mmctas PARTITION(cint=528534767).ctimestamp1 EXPRESSION [(source)source.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-PREHOOK: query: CREATE TABLE IF NOT EXISTS test_partition_textfile_mmctas PARTITIONED BY (cint) STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE TABLE test_partition_textfile_mmctas PARTITIONED BY (cint) STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_partition_textfile_mmctas
 PREHOOK: Output: default@test_partition_textfile_mmctas
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS test_partition_textfile_mmctas PARTITIONED BY (cint) STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE TABLE test_partition_textfile_mmctas PARTITIONED BY (cint) STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
@@ -851,12 +851,12 @@ POSTHOOK: Lineage: test_partition_textfile_mmctas PARTITION(cint=528534767).cstr
 POSTHOOK: Lineage: test_partition_textfile_mmctas PARTITION(cint=528534767).ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_partition_textfile_mmctas PARTITION(cint=528534767).ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_partition_textfile_mmctas PARTITION(cint=528534767).ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: CREATE TRANSACTIONAL TABLE IF NOT EXISTS test_transactional_orc_ctas STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE TRANSACTIONAL TABLE test_transactional_orc_ctas STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_transactional_orc_ctas
-POSTHOOK: query: CREATE TRANSACTIONAL TABLE IF NOT EXISTS test_transactional_orc_ctas STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE TRANSACTIONAL TABLE test_transactional_orc_ctas STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
@@ -873,13 +873,13 @@ POSTHOOK: Lineage: test_transactional_orc_ctas.cstring2 EXPRESSION [(alltypesorc
 POSTHOOK: Lineage: test_transactional_orc_ctas.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_transactional_orc_ctas.ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_transactional_orc_ctas.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: CREATE TRANSACTIONAL TABLE IF NOT EXISTS test_transactional_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE TRANSACTIONAL TABLE test_transactional_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_transactional_part_orc_ctas
 PREHOOK: Output: default@test_transactional_part_orc_ctas
-POSTHOOK: query: CREATE TRANSACTIONAL TABLE IF NOT EXISTS test_transactional_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE TRANSACTIONAL TABLE test_transactional_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
@@ -1028,12 +1028,12 @@ POSTHOOK: Lineage: test_transactional_part_orc_ctas PARTITION(cint=528534767).cs
 POSTHOOK: Lineage: test_transactional_part_orc_ctas PARTITION(cint=528534767).ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_transactional_part_orc_ctas PARTITION(cint=528534767).ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_transactional_part_orc_ctas PARTITION(cint=528534767).ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: CREATE MANAGED TABLE IF NOT EXISTS test_managed_orc_ctas STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE MANAGED TABLE test_managed_orc_ctas STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_managed_orc_ctas
-POSTHOOK: query: CREATE MANAGED TABLE IF NOT EXISTS test_managed_orc_ctas STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE MANAGED TABLE test_managed_orc_ctas STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
@@ -1050,13 +1050,13 @@ POSTHOOK: Lineage: test_managed_orc_ctas.cstring2 EXPRESSION [(alltypesorc)allty
 POSTHOOK: Lineage: test_managed_orc_ctas.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_managed_orc_ctas.ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: test_managed_orc_ctas.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: CREATE MANAGED TABLE IF NOT EXISTS test_managed_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+PREHOOK: query: CREATE MANAGED TABLE test_managed_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_managed_part_orc_ctas
 PREHOOK: Output: default@test_managed_part_orc_ctas
-POSTHOOK: query: CREATE MANAGED TABLE IF NOT EXISTS test_managed_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
+POSTHOOK: query: CREATE MANAGED TABLE test_managed_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default

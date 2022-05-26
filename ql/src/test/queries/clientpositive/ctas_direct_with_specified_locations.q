@@ -4,8 +4,6 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.acid.direct.insert.enabled=true;
-set hive.exec.max.dynamic.partitions=200;
-set hive.exec.max.dynamic.partitions.pernode=200;
 
 DROP TABLE IF EXISTS test_orc_ctas;
 
@@ -27,35 +25,35 @@ DROP TABLE IF EXISTS test_partition_avro_mmctas;
 
 DROP TABLE IF EXISTS test_partition_textfile_mmctas;
 
-CREATE TABLE IF NOT EXISTS source STORED AS ORC LOCATION '/build/ql/test/data/warehouse/source1' TBLPROPERTIES('transactional'='true') AS (SELECT cint, cfloat, cdouble, cstring1, ctimestamp1 FROM alltypesorc);
+CREATE TABLE source STORED AS ORC LOCATION '/build/ql/test/data/warehouse/source1' TBLPROPERTIES('transactional'='true') AS (SELECT cint, cfloat, cdouble, cstring1, ctimestamp1 FROM alltypesorc);
 
-CREATE TABLE IF NOT EXISTS test_orc_ctas STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_orc' TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+CREATE TABLE test_orc_ctas STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_orc' TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
 
-CREATE TABLE IF NOT EXISTS test_orc_mmctas STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_mm_orc' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+CREATE TABLE test_orc_mmctas STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_mm_orc' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
 
-CREATE TABLE IF NOT EXISTS test_parquet_mmctas STORED AS PARQUET LOCATION '/build/ql/test/data/warehouse/test_mm_parquet' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+CREATE TABLE test_parquet_mmctas STORED AS PARQUET LOCATION '/build/ql/test/data/warehouse/test_mm_parquet' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
 
-CREATE TABLE IF NOT EXISTS test_avro_mmctas STORED AS AVRO LOCATION '/build/ql/test/data/warehouse/test_mm_avro' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10));
+CREATE TABLE test_avro_mmctas STORED AS AVRO LOCATION '/build/ql/test/data/warehouse/test_mm_avro' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10));
 
-CREATE TABLE IF NOT EXISTS test_textfile_mmctas STORED AS TEXTFILE LOCATION '/build/ql/test/data/warehouse/test_mm_textfile' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+CREATE TABLE test_textfile_mmctas STORED AS TEXTFILE LOCATION '/build/ql/test/data/warehouse/test_mm_textfile' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
 
-CREATE TABLE IF NOT EXISTS test_partition_orc_ctas PARTITIONED BY (cint) STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_part_orc' TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+CREATE TABLE test_partition_orc_ctas PARTITIONED BY (cint) STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_part_orc' TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
 
-CREATE TABLE IF NOT EXISTS test_partition_orc_mmctas PARTITIONED BY (cint) STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_mm_part_orc' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+CREATE TABLE test_partition_orc_mmctas PARTITIONED BY (cint) STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_mm_part_orc' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
 
-CREATE TABLE IF NOT EXISTS test_partition_parquet_mmctas PARTITIONED BY (cint) STORED AS PARQUET LOCATION '/build/ql/test/data/warehouse/test_mm_part_parquet' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+CREATE TABLE test_partition_parquet_mmctas PARTITIONED BY (cint) STORED AS PARQUET LOCATION '/build/ql/test/data/warehouse/test_mm_part_parquet' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
 
-CREATE TABLE IF NOT EXISTS test_partition_avro_mmctas PARTITIONED BY (cint) STORED AS AVRO LOCATION '/build/ql/test/data/warehouse/test_mm_part_avro' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10));
+CREATE TABLE test_partition_avro_mmctas PARTITIONED BY (cint) STORED AS AVRO LOCATION '/build/ql/test/data/warehouse/test_mm_part_avro' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10));
 
-CREATE TABLE IF NOT EXISTS test_partition_textfile_mmctas PARTITIONED BY (cint) STORED AS TEXTFILE LOCATION '/build/ql/test/data/warehouse/test_mm_part_textfile' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+CREATE TABLE test_partition_textfile_mmctas PARTITIONED BY (cint) STORED AS TEXTFILE LOCATION '/build/ql/test/data/warehouse/test_mm_part_textfile' TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
 
-CREATE TRANSACTIONAL TABLE IF NOT EXISTS test_transactional_orc_ctas STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_transactional_orc' AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+CREATE TRANSACTIONAL TABLE test_transactional_orc_ctas STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_transactional_orc' AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
 
-CREATE TRANSACTIONAL TABLE IF NOT EXISTS test_transactional_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_transactional_part_orc' AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+CREATE TRANSACTIONAL TABLE test_transactional_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_transactional_part_orc' AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
 
-CREATE MANAGED TABLE IF NOT EXISTS test_managed_orc_ctas STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_managed_orc' AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+CREATE MANAGED TABLE test_managed_orc_ctas STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_managed_orc' AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
 
-CREATE MANAGED TABLE IF NOT EXISTS test_managed_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_managed_part_orc' AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
+CREATE MANAGED TABLE test_managed_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC LOCATION '/build/ql/test/data/warehouse/test_managed_part_orc' AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10));
 
 SELECT * FROM test_orc_ctas ORDER BY cint;
 
