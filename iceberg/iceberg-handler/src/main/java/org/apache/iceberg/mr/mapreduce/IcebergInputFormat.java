@@ -569,10 +569,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
               IcebergAcidUtil.computePartitionHash(rec),
               IcebergAcidUtil.parseFilePath(rec),
               IcebergAcidUtil.parseFilePosition(rec));
-      for (int i = 4; i < expectedSchema.columns().size(); ++i) {
-        current.set(i - 4, rec.get(i));
-      }
-
+      IcebergAcidUtil.copyFields(rec, 4, current.size(), current);
       return (T) current;
     }
   }

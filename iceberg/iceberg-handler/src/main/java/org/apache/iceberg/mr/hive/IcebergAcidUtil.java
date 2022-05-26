@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -207,5 +208,11 @@ public class IcebergAcidUtil {
       partHash = Objects.hash(partFields);
     }
     return partHash;
+  }
+
+  public static void copyFields(GenericRecord source, int start, int len, GenericRecord target) {
+    for (int sourceIdx = start, targetIdx = 0; targetIdx < len; ++sourceIdx, ++targetIdx) {
+      target.set(targetIdx, source.get(sourceIdx));
+    }
   }
 }
