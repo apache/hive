@@ -3712,7 +3712,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             TxnUtils.createValidCompactWriteIdList(getValidWriteIds(request).getTblValidWriteIds().get(0));
         LOG.debug("ValidCompactWriteIdList: " + tblValidWriteIds.writeToString());
 
-        List<String> params = new ArrayList<>();
         StringBuilder sb = new StringBuilder("SELECT \"CQ_ID\", \"CQ_STATE\" FROM \"COMPACTION_QUEUE\" WHERE").
           append(" (\"CQ_STATE\" IN(").
             append(quoteChar(INITIATED_STATE)).append(",").append(quoteChar(WORKING_STATE)).
@@ -3720,17 +3719,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             append(" AND \"CQ_HIGHEST_WRITE_ID\" = ?))").
             append(" AND \"CQ_DATABASE\"=?").
             append(" AND \"CQ_TABLE\"=?").append(" AND ");
-        params.add(Long.toString(tblValidWriteIds.getHighWatermark()));
-        params.add(rqst.getDbname());
-        params.add(rqst.getTablename());
         if(rqst.getPartitionname() == null) {
           sb.append("\"CQ_PARTITION\" is null");
         } else {
           sb.append("\"CQ_PARTITION\"=?");
-          params.add(rqst.getPartitionname());
         }
 
-        pst = sqlGenerator.prepareStmtWithParameters(dbConn, sb.toString(), params);
+        pst = dbConn.prepareStatement(sqlGenerator.addEscapeCharacters(sb.toString()));
+        pst.setLong(1, tblValidWriteIds.getHighWatermark());
+        pst.setString(2, rqst.getDbname());
+        pst.setString(3, rqst.getTablename());
+        if(rqst.getPartitionname() != null) {
+          pst.setString(4, rqst.getPartitionname());
+        }
         LOG.debug("Going to execute query <" + sb + ">");
         ResultSet rs = pst.executeQuery();
         if(rs.next()) {
@@ -3746,7 +3747,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         close(rs);
         closeStmt(pst);
-        params.clear();
+        List<String> params = new ArrayList<>();
         StringBuilder buf = new StringBuilder("INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", " +
           "\"CQ_TABLE\", ");
         String partName = rqst.getPartitionname();
