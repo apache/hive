@@ -11445,7 +11445,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Determine row schema for TSOP.
       // Include column names from SerDe, the partition and virtual columns.
       rwsch = new RowResolver();
-
       try {
         // Including parameters passed in the query
         if (properties != null) {
