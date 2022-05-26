@@ -940,9 +940,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             && !FileUtils.mkdir(fs, outPath.getParent(), hconf)) {
           LOG.warn("Unable to create directory with inheritPerms: " + outPath);
         }
-        JobConf jobConf = new JobConf(jc);
-        setWriteOperation(jobConf);
-        fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(jobConf, conf.getTableInfo(),
+        fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(jc, conf.getTableInfo(),
             outputClass, conf, outPath, reporter);
         // If the record writer provides stats, get it from there instead of the serde
         statsFromRecordWriter[filesIdx] = fsp.outWriters[filesIdx] instanceof
