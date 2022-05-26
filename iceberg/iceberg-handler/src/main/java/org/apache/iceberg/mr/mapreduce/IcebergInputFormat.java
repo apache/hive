@@ -257,11 +257,16 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       this.reuseContainers = conf.getBoolean(InputFormatConfig.REUSE_CONTAINERS, false);
       this.inMemoryDataModel = conf.getEnum(InputFormatConfig.IN_MEMORY_DATA_MODEL,
               InputFormatConfig.InMemoryDataModel.GENERIC);
-      this.currentIterator = open(tasks.next(), expectedSchema).iterator();
       this.fetchVirtualColumns = InputFormatConfig.fetchVirtualColumns(conf);
-      if (fetchVirtualColumns) {
-        this.currentIterator = new VirtualColumnAwareIterator<>(currentIterator, expectedSchema, conf);
+      this.currentIterator = nextTask();
+    }
+
+    private CloseableIterator<T> nextTask() {
+      CloseableIterator<T> closeableIterator = open(tasks.next(), expectedSchema).iterator();
+      if (!fetchVirtualColumns) {
+        return closeableIterator;
       }
+      return new VirtualColumnAwareIterator<>(closeableIterator, expectedSchema, conf);
     }
 
     @Override
@@ -272,7 +277,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           return true;
         } else if (tasks.hasNext()) {
           currentIterator.close();
-          currentIterator = open(tasks.next(), expectedSchema).iterator();
+          this.currentIterator = nextTask();
         } else {
           currentIterator.close();
           return false;
