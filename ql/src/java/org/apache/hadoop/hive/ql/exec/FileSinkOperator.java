@@ -617,6 +617,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       initializeSpecPath();
       fs = specPath.getFileSystem(hconf);
 
+      hconf.set(WRITE_OPERATION_CONFIG_PREFIX + getConf().getTableInfo().getTableName(),
+              getConf().getWriteOperation().name());
       if (hconf instanceof JobConf) {
         jc = (JobConf) hconf;
       } else {
@@ -638,8 +640,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
       statsFromRecordWriter = new boolean[numFiles];
       AbstractSerDe serde = conf.getTableInfo().getSerDeClass().newInstance();
-      Configuration configuration = unsetNestedColumnPaths(hconf);
-      setWriteOperation(configuration);
       serde.initialize(unsetNestedColumnPaths(hconf), conf.getTableInfo().getProperties(), null);
 
       serializer = serde;
@@ -740,11 +740,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     } catch (Exception e) {
       throw new HiveException(e);
     }
-  }
-
-  private void setWriteOperation(Configuration conf) {
-    String opKey = WRITE_OPERATION_CONFIG_PREFIX + getConf().getTableInfo().getTableName();
-    conf.set(opKey, getConf().getWriteOperation().name());
   }
 
   /**
