@@ -1683,6 +1683,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               && ch.getChild(0) instanceof ASTNode) {
             ch = (ASTNode) ch.getChild(0);
             isTmpFileDest = ch.getToken().getType() == HiveParser.TOK_TMP_FILE;
+            if (ch.getToken().getType() == HiveParser.StringLiteral) {
+              qbp.setInsertOverwriteDirectory(true);
+            }
           } else {
             if (ast.getToken().getType() == HiveParser.TOK_DESTINATION
                 && ast.getChild(0).getType() == HiveParser.TOK_TAB) {
@@ -15229,6 +15232,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return false;
     }
     if (qb.getParseInfo().hasInsertTables()) {
+      return false;
+    }
+    if (qb.getParseInfo().isInsertOverwriteDirectory()) {
       return false;
     }
 
