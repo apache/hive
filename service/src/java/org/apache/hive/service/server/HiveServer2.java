@@ -117,7 +117,6 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -352,7 +351,7 @@ public class HiveServer2 extends CompositeService {
           if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL)) {
             String keyStorePath = hiveConf.getVar(
               ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH);
-            if (Strings.isBlank(keyStorePath)) {
+            if (isBlank(keyStorePath)) {
               throw new IllegalArgumentException(
                 ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH.varname
                   + " Not configured for SSL connection");
@@ -372,7 +371,7 @@ public class HiveServer2 extends CompositeService {
                 ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL);
             String spnegoKeytab = hiveConf.getVar(
                 ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB);
-            if (Strings.isBlank(spnegoPrincipal) || Strings.isBlank(spnegoKeytab)) {
+            if (isBlank(spnegoPrincipal) || isBlank(spnegoKeytab)) {
               throw new IllegalArgumentException(
                 ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL.varname
                   + "/" + ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB.varname
@@ -387,7 +386,7 @@ public class HiveServer2 extends CompositeService {
             String allowedOrigins = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS);
             String allowedMethods = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_METHODS);
             String allowedHeaders = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_HEADERS);
-            if (Strings.isBlank(allowedOrigins) || Strings.isBlank(allowedMethods) || Strings.isBlank(allowedHeaders)) {
+            if (isBlank(allowedOrigins) || isBlank(allowedMethods) || isBlank(allowedHeaders)) {
               throw new IllegalArgumentException("CORS enabled. But " +
                 ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS.varname + "/" +
                 ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_METHODS.varname + "/" +
@@ -440,6 +439,26 @@ public class HiveServer2 extends CompositeService {
 
     // Add a shutdown hook for catching SIGTERM & SIGINT
     ShutdownHookManager.addShutdownHook(() -> hiveServer2.stop());
+  }
+
+  /**
+   * Checks if a String is blank. A blank string is one that is either
+   * {@code null}, empty, or all characters are {@link Character#isWhitespace(char)}.
+   *
+   * @param s the String to check, may be {@code null}
+   * @return {@code true} if the String is {@code null}, empty, or or all characters are {@link Character#isWhitespace(char)}
+   */
+  private static boolean isBlank(final String s) {
+    if (s == null || s.isEmpty()) {
+      return true;
+    }
+    for (int i = 0; i < s.length(); i++) {
+      final char c = s.charAt(i);
+      if (!Character.isWhitespace(c)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private void logCompactionParameters(HiveConf hiveConf) {
