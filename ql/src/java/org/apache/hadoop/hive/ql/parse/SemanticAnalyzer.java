@@ -11481,12 +11481,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
       }
 
-      boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(tab);
-      // put all virtual columns in RowResolver.
-      List<VirtualColumn> vcList = nonNativeAcid ?
-              new ArrayList<>(tab.getStorageHandler().acidVirtualColumns()) : VirtualColumn.getRegistry(conf);
+      // put virtual columns into RowResolver.
+      List<VirtualColumn> vcList = new ArrayList<>();
+      if (!tab.isNonNative()) {
+        vcList.addAll(VirtualColumn.getRegistry(conf));
+      }
+      if (tab.isNonNative() && AcidUtils.isNonNativeAcidTable(tab)) {
+        vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
+      }
+
       vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
-          vc.getTypeInfo(), alias, true, vc.getIsHidden()
+              vc.getTypeInfo(), alias, true, vc.getIsHidden()
       )));
 
       // Create the root of the operator tree
