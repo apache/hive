@@ -11483,8 +11483,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(tab);
       // put all virtual columns in RowResolver.
-      List<VirtualColumn> vcList =
-              nonNativeAcid ? tab.getStorageHandler().acidVirtualColumns() : VirtualColumn.getRegistry(conf);
+      List<VirtualColumn> vcList = nonNativeAcid ?
+              new ArrayList<>(tab.getStorageHandler().acidVirtualColumns()) : VirtualColumn.getRegistry(conf);
       vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
           vc.getTypeInfo(), alias, true, vc.getIsHidden()
       )));
