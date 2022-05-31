@@ -306,17 +306,19 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
   }
   branches['sonar'] = {
       executorNode {
-          if(env.CHANGE_BRANCH == 'master-sonar_analysis') {
+          if(env.CHANGE_BRANCH == 'master-sonar_analysis' || (env.CHANGE_ID && pullRequest.labels.contains("sonar"))) {
               stage('Sonar') {
                   withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
-                      sh '''#!/bin/bash -e
+                      sh """#!/bin/bash -e
                       sw java 11 && . /etc/profile.d/java.sh
                       export MAVEN_OPTS=-Xmx5G
                       mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
-                       -Dsonar.pullrequest.github.repository=asolimando/hive \
-                       -Dsonar.branch.name=${env.CHANGE_BRANCH} \
+                       -Dsonar.organization=asolimando \
+                       -Dsonar.projectKey=asolimando_hive \
+                       -Dsonar.host.url=https://sonarcloud.io \
+                       -Dsonar.branch.name=${CHANGE_BRANCH} \
                        -DskipTests -Dit.skipTests -Dmaven.javadoc.skip
-                      '''
+                      """
                  }
               }
           } else {
