@@ -853,7 +853,7 @@
       <groupId>com.esri.geometry</groupId>
       <artifactId>esri-geometry-api</artifactId>
       <scope>compile</scope>
-      <version>2.2.4</version>
+      <version>${esri.version}</version>
     </dependency>
   </dependencies>
   <profiles>
