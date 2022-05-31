@@ -178,13 +178,8 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     Context rewrittenCtx = rr.rewrittenCtx;
     rewrittenCtx.setIsUpdateDeleteMerge(false); //it's set in parseRewrittenQuery()
     ASTNode rewrittenTree = rr.rewrittenTree;
-    try {
-      useSuper = true;
-      //newTable has to exist at this point to compile
-      super.analyze(rewrittenTree, rewrittenCtx);
-    } finally {
-      useSuper = false;
-    }
+    //newTable has to exist at this point to compile
+    analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
     //now we have the rootTasks set up for Insert ... Select
     removeStatsTasks(rootTasks);
     //now make an ExportTask from temp table

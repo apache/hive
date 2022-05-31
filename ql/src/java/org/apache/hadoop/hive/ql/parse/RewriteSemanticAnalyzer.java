@@ -96,6 +96,18 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
 
   protected abstract void analyze(ASTNode tree, Table table, ASTNode tableName) throws SemanticException;
 
+  public void analyzeRewrittenTree(ASTNode rewrittenTree, Context rewrittenCtx) throws SemanticException {
+    try {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Rewritten AST {}", rewrittenTree.dump());
+      }
+      useSuper = true;
+      super.analyze(rewrittenTree, rewrittenCtx);
+    } finally {
+      useSuper = false;
+    }
+  }
+
   /**
    * Append list of partition columns to Insert statement, i.e. the 2nd set of partCol1,partCol2
    * INSERT INTO T PARTITION(partCol1,partCol2...) SELECT col1, ... partCol1,partCol2...

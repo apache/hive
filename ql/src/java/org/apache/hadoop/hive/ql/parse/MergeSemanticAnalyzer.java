@@ -254,12 +254,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       rewrittenCtx.addDestNamePrefix(rewrittenTree.getChildCount() - 1, Context.DestClausePrefix.INSERT);
     }
 
-    try {
-      useSuper = true;
-      super.analyze(rewrittenTree, rewrittenCtx);
-    } finally {
-      useSuper = false;
-    }
+    analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
     updateOutputs(targetTable);
   }
 

@@ -237,14 +237,9 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       patchProjectionForUpdate(rewrittenInsert, setColExprs);
     }
 
-    try {
-      useSuper = true;
-      // Note: this will overwrite this.ctx with rewrittenCtx
-      rewrittenCtx.setEnableUnparse(false);
-      super.analyze(rewrittenTree, rewrittenCtx);
-    } finally {
-      useSuper = false;
-    }
+    // Note: this will overwrite this.ctx with rewrittenCtx
+    rewrittenCtx.setEnableUnparse(false);
+    analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
 
     updateOutputs(mTable);
 
