@@ -314,6 +314,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
                       export MAVEN_OPTS=-Xmx5G
                       mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
                        -Dsonar.pullrequest.github.repository=asolimando/hive \
+                       -Dsonar.branch.name=${env.CHANGE_BRANCH} \
                        -DskipTests -Dit.skipTests -Dmaven.javadoc.skip
                       '''
                  }
