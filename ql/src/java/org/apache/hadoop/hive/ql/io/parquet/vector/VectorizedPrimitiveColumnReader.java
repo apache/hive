@@ -521,31 +521,37 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     switch (primitiveColumnType.getPrimitiveCategory()) {
     case INT:
       for (int i = rowId; i < rowId + num; ++i) {
-        ((LongColumnVector) column).vector[i] =
-            dictionary.readInteger((int) dictionaryIds.vector[i]);
-        if (!dictionary.isValid()) {
-          setNullValue(column, i);
-          ((LongColumnVector) column).vector[i] = 0;
+        if (!column.isNull[i]) {
+          ((LongColumnVector) column).vector[i] =
+                  dictionary.readInteger((int) dictionaryIds.vector[i]);
+          if (!dictionary.isValid()) {
+            setNullValue(column, i);
+            ((LongColumnVector) column).vector[i] = 0;
+          }
         }
       }
       break;
     case BYTE:
       for (int i = rowId; i < rowId + num; ++i) {
-        ((LongColumnVector) column).vector[i] =
-            dictionary.readTinyInt((int) dictionaryIds.vector[i]);
-        if (!dictionary.isValid()) {
-          setNullValue(column, i);
-          ((LongColumnVector) column).vector[i] = 0;
+        if (!column.isNull[i]) {
+          ((LongColumnVector) column).vector[i] =
+                  dictionary.readTinyInt((int) dictionaryIds.vector[i]);
+          if (!dictionary.isValid()) {
+            setNullValue(column, i);
+            ((LongColumnVector) column).vector[i] = 0;
+          }
         }
       }
       break;
     case SHORT:
       for (int i = rowId; i < rowId + num; ++i) {
-        ((LongColumnVector) column).vector[i] =
-            dictionary.readSmallInt((int) dictionaryIds.vector[i]);
-        if (!dictionary.isValid()) {
-          setNullValue(column, i);
-          ((LongColumnVector) column).vector[i] = 0;
+        if (!column.isNull[i]) {
+          ((LongColumnVector) column).vector[i] =
+                  dictionary.readSmallInt((int) dictionaryIds.vector[i]);
+          if (!dictionary.isValid()) {
+            setNullValue(column, i);
+            ((LongColumnVector) column).vector[i] = 0;
+          }
         }
       }
       break;
@@ -553,74 +559,92 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       DateColumnVector dc = (DateColumnVector) column;
       dc.setUsingProlepticCalendar(true);
       for (int i = rowId; i < rowId + num; ++i) {
-        dc.vector[i] =
-            skipProlepticConversion ?
-                dictionary.readLong((int) dictionaryIds.vector[i]) :
-                CalendarUtils.convertDateToProleptic((int) dictionary.readLong((int) dictionaryIds.vector[i]));
-        if (!dictionary.isValid()) {
-          setNullValue(column, i);
-          dc.vector[i] = 0;
+        if (!column.isNull[i]) {
+          dc.vector[i] =
+                  skipProlepticConversion ?
+                          dictionary.readLong((int) dictionaryIds.vector[i]) :
+                          CalendarUtils.convertDateToProleptic((int) dictionary.readLong((int) dictionaryIds.vector[i]));
+          if (!dictionary.isValid()) {
+            setNullValue(column, i);
+            dc.vector[i] = 0;
+          }
         }
       }
       break;
     case INTERVAL_YEAR_MONTH:
     case LONG:
       for (int i = rowId; i < rowId + num; ++i) {
-        ((LongColumnVector) column).vector[i] =
-            dictionary.readLong((int) dictionaryIds.vector[i]);
-        if (!dictionary.isValid()) {
-          setNullValue(column, i);
-          ((LongColumnVector) column).vector[i] = 0;
+        if (!column.isNull[i]) {
+          ((LongColumnVector) column).vector[i] =
+                  dictionary.readLong((int) dictionaryIds.vector[i]);
+          if (!dictionary.isValid()) {
+            setNullValue(column, i);
+            ((LongColumnVector) column).vector[i] = 0;
+          }
         }
       }
       break;
     case BOOLEAN:
       for (int i = rowId; i < rowId + num; ++i) {
-        ((LongColumnVector) column).vector[i] =
-            dictionary.readBoolean((int) dictionaryIds.vector[i]) ? 1 : 0;
+        if (!column.isNull[i]) {
+          ((LongColumnVector) column).vector[i] =
+                  dictionary.readBoolean((int) dictionaryIds.vector[i]) ? 1 : 0;
+        }
       }
       break;
     case DOUBLE:
       for (int i = rowId; i < rowId + num; ++i) {
-        ((DoubleColumnVector) column).vector[i] =
-            dictionary.readDouble((int) dictionaryIds.vector[i]);
-        if (!dictionary.isValid()) {
-          setNullValue(column, i);
-          ((DoubleColumnVector) column).vector[i] = 0;
+        if (!column.isNull[i]) {
+          ((DoubleColumnVector) column).vector[i] =
+                  dictionary.readDouble((int) dictionaryIds.vector[i]);
+          if (!dictionary.isValid()) {
+            setNullValue(column, i);
+            ((DoubleColumnVector) column).vector[i] = 0;
+          }
         }
       }
       break;
     case BINARY:
       for (int i = rowId; i < rowId + num; ++i) {
-        ((BytesColumnVector) column)
-            .setVal(i, dictionary.readBytes((int) dictionaryIds.vector[i]));
+        if (!column.isNull[i]) {
+          ((BytesColumnVector) column)
+                  .setVal(i, dictionary.readBytes((int) dictionaryIds.vector[i]));
+        }
       }
       break;
     case STRING:
       for (int i = rowId; i < rowId + num; ++i) {
-        ((BytesColumnVector) column)
-            .setVal(i, dictionary.readString((int) dictionaryIds.vector[i]));
+        if (!column.isNull[i]) {
+          ((BytesColumnVector) column)
+                  .setVal(i, dictionary.readString((int) dictionaryIds.vector[i]));
+        }
       }
       break;
     case VARCHAR:
       for (int i = rowId; i < rowId + num; ++i) {
-        ((BytesColumnVector) column)
-            .setVal(i, dictionary.readVarchar((int) dictionaryIds.vector[i]));
+        if (!column.isNull[i]) {
+          ((BytesColumnVector) column)
+                  .setVal(i, dictionary.readVarchar((int) dictionaryIds.vector[i]));
+        }
       }
       break;
     case CHAR:
       for (int i = rowId; i < rowId + num; ++i) {
-        ((BytesColumnVector) column)
-            .setVal(i, dictionary.readChar((int) dictionaryIds.vector[i]));
+        if (!column.isNull[i]) {
+          ((BytesColumnVector) column)
+                  .setVal(i, dictionary.readChar((int) dictionaryIds.vector[i]));
+        }
       }
       break;
     case FLOAT:
       for (int i = rowId; i < rowId + num; ++i) {
-        ((DoubleColumnVector) column).vector[i] =
-            dictionary.readFloat((int) dictionaryIds.vector[i]);
-        if (!dictionary.isValid()) {
-          setNullValue(column, i);
-          ((DoubleColumnVector) column).vector[i] = 0;
+        if (!column.isNull[i]) {
+          ((DoubleColumnVector) column).vector[i] =
+                  dictionary.readFloat((int) dictionaryIds.vector[i]);
+          if (!dictionary.isValid()) {
+            setNullValue(column, i);
+            ((DoubleColumnVector) column).vector[i] = 0;
+          }
         }
       }
       break;
@@ -635,11 +659,13 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       fillDecimalPrecisionScale(decimalLogicalType, decimalColumnVector);
 
       for (int i = rowId; i < rowId + num; ++i) {
-        decimalData = dictionary.readDecimal((int) dictionaryIds.vector[i]);
-        if (dictionary.isValid()) {
-          decimalColumnVector.vector[i].set(decimalData, decimalColumnVector.scale);
-        } else {
-          setNullValue(column, i);
+        if (!column.isNull[i]) {
+          decimalData = dictionary.readDecimal((int) dictionaryIds.vector[i]);
+          if (dictionary.isValid()) {
+            decimalColumnVector.vector[i].set(decimalData, decimalColumnVector.scale);
+          } else {
+            setNullValue(column, i);
+          }
         }
       }
       break;
@@ -647,7 +673,9 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       TimestampColumnVector tsc = (TimestampColumnVector) column;
       tsc.setUsingProlepticCalendar(true);
       for (int i = rowId; i < rowId + num; ++i) {
-        tsc.set(i, dictionary.readTimestamp((int) dictionaryIds.vector[i]).toSqlTimestamp());
+        if (!column.isNull[i]) {
+          tsc.set(i, dictionary.readTimestamp((int) dictionaryIds.vector[i]).toSqlTimestamp());
+        }
       }
       break;
     case INTERVAL_DAY_TIME:
