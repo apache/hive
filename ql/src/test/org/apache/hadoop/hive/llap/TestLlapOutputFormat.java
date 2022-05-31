@@ -75,9 +75,8 @@ public class TestLlapOutputFormat {
     for (int k = 0; k < 5; ++k) {
       String id = "foobar" + k;
       job.set(LlapOutputFormat.LLAP_OF_ID_KEY, id);
-      LlapOutputFormat format = new LlapOutputFormat();
+      LlapOutputFormat<NullWritable, Text> format = new LlapOutputFormat<>();
 
-      HiveConf conf = new HiveConf();
       Socket socket = new Socket("localhost", service.getPort());
 
       LOG.debug("Socket connected");
@@ -104,8 +103,8 @@ public class TestLlapOutputFormat {
       writer.close(null);
 
       InputStream in = socket.getInputStream();
-      LlapBaseRecordReader reader = new LlapBaseRecordReader(
-          in, null, Text.class, job, null, null);
+      LlapBaseRecordReader<Text> reader = new LlapBaseRecordReader<>(
+          in, null, Text.class, null, null);
 
       LOG.debug("Have record reader");
 
@@ -130,18 +129,19 @@ public class TestLlapOutputFormat {
     JobConf job = new JobConf();
     String id = "foobar";
     job.set(LlapOutputFormat.LLAP_OF_ID_KEY, id);
-    LlapOutputFormat format = new LlapOutputFormat();
+    LlapOutputFormat<?, ?> format = new LlapOutputFormat<>();
 
-    Socket socket = new Socket("localhost", service.getPort());
+    try(Socket socket = new Socket("localhost", service.getPort())) {
 
-    LOG.debug("Socket connected");
+      LOG.debug("Socket connected");
 
-    OutputStream socketStream = socket.getOutputStream();
-    LlapOutputSocketInitMessage.newBuilder()
-      .setFragmentId(id).build().writeDelimitedTo(socketStream);
-    LlapOutputSocketInitMessage.newBuilder()
-      .setFragmentId(id).build().writeDelimitedTo(socketStream);
-    socketStream.flush();
+      OutputStream socketStream = socket.getOutputStream();
+      LlapOutputSocketInitMessage.newBuilder()
+              .setFragmentId(id).build().writeDelimitedTo(socketStream);
+      LlapOutputSocketInitMessage.newBuilder()
+              .setFragmentId(id).build().writeDelimitedTo(socketStream);
+      socketStream.flush();
+    }
 
     Thread.sleep(3000);
 

@@ -22,12 +22,13 @@ import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.arrow.vector.complex.NonNullableStructVector;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class ArrowWrapperWritable implements WritableComparable {
+public class ArrowWrapperWritable implements WritableComparable<Object> {
   private VectorSchemaRoot vectorSchemaRoot;
   private BufferAllocator allocator;
   private NonNullableStructVector rootVector;
@@ -70,7 +71,7 @@ public class ArrowWrapperWritable implements WritableComparable {
     throw new UnsupportedOperationException();
   }
 
-  @Override public int compareTo(Object o) {
+  @Override public int compareTo(@NotNull Object o) {
     return 0;
   }
 

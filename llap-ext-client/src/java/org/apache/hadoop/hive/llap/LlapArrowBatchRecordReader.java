@@ -25,7 +25,7 @@ import org.apache.arrow.vector.ipc.ArrowStreamReader;
 import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
 import org.apache.hadoop.hive.ql.io.arrow.RootAllocatorFactory;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapred.JobConf;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,21 +36,34 @@ import java.net.Socket;
  */
 public class LlapArrowBatchRecordReader extends LlapBaseRecordReader<ArrowWrapperWritable> {
 
-  private BufferAllocator allocator;
-  private ArrowStreamReader arrowStreamReader;
+  private final BufferAllocator allocator;
+  private final ArrowStreamReader arrowStreamReader;
+
+  /**
+   * Implements {@link LlapRecordReaderFactory}
+   */
+  public static LlapArrowBatchRecordReader createLlapArrowBatchRecordReader(InputStream in, Schema schema, Closeable client, Socket socket, BufferAllocator allocator, long arrowAllocatorLimit) throws IOException {
+    if (allocator != null) {
+      return new LlapArrowBatchRecordReader(
+              in, schema, ArrowWrapperWritable.class, client, socket, allocator);
+    } else {
+      return new LlapArrowBatchRecordReader(
+              in, schema, ArrowWrapperWritable.class, client, socket, arrowAllocatorLimit);
+    }
+  }
 
   //Allows client to provide and manage their own arrow BufferAllocator
   public LlapArrowBatchRecordReader(InputStream in, Schema schema, Class<ArrowWrapperWritable> clazz,
-      JobConf job, Closeable client, Socket socket, BufferAllocator allocator) throws IOException {
-    super(in, schema, clazz, job, client, socket);
+                                    Closeable client, Socket socket, BufferAllocator allocator) throws IOException {
+    super(in, schema, clazz, client, socket);
     this.allocator = allocator;
     this.arrowStreamReader = new ArrowStreamReader(socket.getInputStream(), allocator);
   }
 
   //Use the global arrow BufferAllocator
   public LlapArrowBatchRecordReader(InputStream in, Schema schema, Class<ArrowWrapperWritable> clazz,
-      JobConf job, Closeable client, Socket socket, long arrowAllocatorLimit) throws IOException {
-    this(in, schema, clazz, job, client, socket,
+                                    Closeable client, Socket socket, long arrowAllocatorLimit) throws IOException {
+    this(in, schema, clazz, client, socket,
         RootAllocatorFactory.INSTANCE.getOrCreateRootAllocator(arrowAllocatorLimit));
   }
 

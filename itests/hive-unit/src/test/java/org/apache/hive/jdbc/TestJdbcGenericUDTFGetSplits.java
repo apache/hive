@@ -18,6 +18,7 @@ package org.apache.hive.jdbc;
 
 import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
+import org.apache.hadoop.hive.llap.LlapBaseRecordReader;
 import org.apache.hadoop.hive.llap.LlapInputSplit;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.mapred.JobConf;
@@ -61,7 +62,6 @@ public class TestJdbcGenericUDTFGetSplits extends AbstractTestJdbcGenericUDTFGet
 
       String url = miniHS2.getJdbcURL();
       String user = System.getProperty("user.name");
-      String pwd = user;
       String handleId = UUID.randomUUID().toString();
       String sql = "SELECT avg(decimal_col)/3 FROM decimal_test_table";
 
@@ -69,11 +69,11 @@ public class TestJdbcGenericUDTFGetSplits extends AbstractTestJdbcGenericUDTFGet
       JobConf job = new JobConf(conf);
       job.set(LlapBaseInputFormat.URL_KEY, url);
       job.set(LlapBaseInputFormat.USER_KEY, user);
-      job.set(LlapBaseInputFormat.PWD_KEY, pwd);
+      job.set(LlapBaseInputFormat.PWD_KEY, user);
       job.set(LlapBaseInputFormat.QUERY_KEY, sql);
       job.set(LlapBaseInputFormat.HANDLE_ID, handleId);
 
-      LlapBaseInputFormat llapBaseInputFormat = new LlapBaseInputFormat();
+      LlapBaseInputFormat<?> llapBaseInputFormat = new LlapBaseInputFormat<>(LlapBaseRecordReader::createLlapBaseRecordReader);
       //schema split
       LlapInputSplit schemaSplit = (LlapInputSplit) llapBaseInputFormat.getSplits(job, 0)[0];
       assertNotNull(schemaSplit);
@@ -85,5 +85,4 @@ public class TestJdbcGenericUDTFGetSplits extends AbstractTestJdbcGenericUDTFGet
       LlapBaseInputFormat.close(handleId);
     }
   }
-
 }

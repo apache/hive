@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Pattern;
@@ -48,11 +47,8 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrB
 import org.apache.hadoop.hive.llap.ext.LlapDaemonInfo;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient.LlapTaskUmbilicalExternalResponder;
-import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
-import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
-import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.NullWritable;
@@ -60,7 +56,6 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.hadoop.mapreduce.MRJobConfig;
@@ -94,18 +89,17 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapBaseInputFormat.class);
 
-  private static String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final Object lock = new Object();
-  private static final Map<String, List<Connection>> connectionMap = new HashMap<String, List<Connection>>();
+  private static final Map<String, List<Connection>> connectionMap = new HashMap<>();
 
   private String url;  // "jdbc:hive2://localhost:10000/default"
   private String user; // "hive",
   private String pwd;  // ""
   private String query;
-  private boolean useArrow;
   private long arrowAllocatorLimit;
   private BufferAllocator allocator;
-  private final Random rand = new Random();
+
+  private final LlapRecordReaderFactory<? extends LlapBaseRecordReader<V>> llapRecordReaderFactory;
 
   public static final String URL_KEY = "llap.if.hs2.connection";
   public static final String QUERY_KEY = "llap.if.query";
@@ -119,7 +113,9 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
   public static final String SPLIT_QUERY = "select get_llap_splits(\"%s\",%d)";
 
-  public LlapBaseInputFormat(String url, String user, String pwd, String query) {
+  public LlapBaseInputFormat(LlapRecordReaderFactory<? extends LlapBaseRecordReader<V>> llapRecordReaderFactory,
+                             String url, String user, String pwd, String query) {
+    this.llapRecordReaderFactory = llapRecordReaderFactory;
     this.url = url;
     this.user = user;
     this.pwd = pwd;
@@ -127,24 +123,24 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   }
 
   //Exposed only for testing, clients should use LlapBaseInputFormat(boolean, BufferAllocator instead)
-  public LlapBaseInputFormat(boolean useArrow, long arrowAllocatorLimit) {
-    this.useArrow = useArrow;
+  public LlapBaseInputFormat(LlapRecordReaderFactory<? extends LlapBaseRecordReader<V>> llapRecordReaderFactory,
+                             long arrowAllocatorLimit) {
+    this.llapRecordReaderFactory = llapRecordReaderFactory;
     this.arrowAllocatorLimit = arrowAllocatorLimit;
   }
 
-  public LlapBaseInputFormat(boolean useArrow, BufferAllocator allocator) {
-    this.useArrow = useArrow;
+  public LlapBaseInputFormat(LlapRecordReaderFactory<? extends LlapBaseRecordReader<V>> llapRecordReaderFactory,
+                             BufferAllocator allocator) {
+    this.llapRecordReaderFactory = llapRecordReaderFactory;
     this.allocator = allocator;
   }
 
-  public LlapBaseInputFormat() {
-    this.useArrow = false;
+  public LlapBaseInputFormat(LlapRecordReaderFactory<? extends LlapBaseRecordReader<V>> llapRecordReaderFactory) {
+    this.llapRecordReaderFactory = llapRecordReaderFactory;
   }
 
-
-  @SuppressWarnings("unchecked")
   @Override
-  public RecordReader<NullWritable, V> getRecordReader(InputSplit split, JobConf job, Reporter reporter) throws IOException {
+  public LlapBaseRecordReader<V> getRecordReader(InputSplit split, JobConf job, Reporter reporter) throws IOException {
 
     LlapInputSplit llapSplit = (LlapInputSplit) split;
 
@@ -165,7 +161,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     if (llapTokenBytes != null) {
       DataInputBuffer in = new DataInputBuffer();
       in.reset(llapTokenBytes, 0, llapTokenBytes.length);
-      llapToken = new Token<LlapTokenIdentifier>();
+      llapToken = new Token<>();
       llapToken.readFields(in);
     }
 
@@ -219,26 +215,8 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
     LOG.info("Registered id: " + fragmentId);
 
-    @SuppressWarnings("rawtypes")
-    LlapBaseRecordReader recordReader;
-    if(useArrow) {
-      if(allocator != null) {
-        //Client provided their own allocator
-        recordReader = new LlapArrowBatchRecordReader(
-            socket.getInputStream(), llapSplit.getSchema(),
-            ArrowWrapperWritable.class, job, llapClient, socket,
-            allocator);
-      } else {
-        //Client did not provide their own allocator, use constructor for global allocator
-        recordReader = new LlapArrowBatchRecordReader(
-            socket.getInputStream(), llapSplit.getSchema(),
-            ArrowWrapperWritable.class, job, llapClient, socket,
-            arrowAllocatorLimit);
-      }
-    } else {
-      recordReader = new LlapBaseRecordReader(socket.getInputStream(),
-          llapSplit.getSchema(), BytesWritable.class, job, llapClient, (java.io.Closeable)socket);
-    }
+    LlapBaseRecordReader<V> recordReader = llapRecordReaderFactory.createRecordReader(socket.getInputStream(),
+          llapSplit.getSchema(), llapClient, socket, allocator, arrowAllocatorLimit);
     umbilicalResponder.setRecordReader(recordReader);
     return recordReader;
   }
@@ -249,7 +227,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
    */
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
-    List<InputSplit> ins = new ArrayList<InputSplit>();
+    List<InputSplit> ins = new ArrayList<>();
 
     if (url == null) url = job.get(URL_KEY);
     if (query == null) query = job.get(QUERY_KEY);
@@ -268,6 +246,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     }
 
     try {
+      String driverName = "org.apache.hive.jdbc.HiveDriver";
       Class.forName(driverName);
     } catch (ClassNotFoundException e) {
       throw new IOException(e);
@@ -278,9 +257,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     String sql = String.format(SPLIT_QUERY, escapedQuery, numSplits);
     try {
       Connection conn = DriverManager.getConnection(url,user,pwd);
-      try (
-        Statement stmt = conn.createStatement();
-      ) {
+      try (Statement stmt = conn.createStatement()) {
         if (database != null && !database.isEmpty()) {
           stmt.execute("USE " + database);
         }
@@ -349,16 +326,12 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     } catch (Exception e) {
       throw new IOException(e);
     }
-    return ins.toArray(new InputSplit[ins.size()]);
+    return ins.toArray(new InputSplit[0]);
   }
 
   private void addConnection(String handleId, Connection connection) {
     synchronized (lock) {
-      List<Connection> handleConnections = connectionMap.get(handleId);
-      if (handleConnections == null) {
-        handleConnections = new ArrayList<Connection>();
-        connectionMap.put(handleId, handleConnections);
-      }
+      List<Connection> handleConnections = connectionMap.computeIfAbsent(handleId, k -> new ArrayList<>());
       handleConnections.add(connection);
     }
   }
@@ -367,7 +340,6 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
    * Close the connection associated with the handle ID, if getSplits() was configured with a handle ID.
    * Call when the application is done using the splits generated by getSplits().
    * @param handleId Handle ID used in configuration for getSplits()
-   * @throws IOException
    */
   public static void close(String handleId) throws IOException {
     List<Connection> handleConnections;
@@ -399,7 +371,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     LOG.debug("Closing all handles");
     synchronized (lock) {
       Iterator<Map.Entry<String, List<Connection>>> itr = connectionMap.entrySet().iterator();
-      Map.Entry<String, List<Connection>> connHandle = null;
+      Map.Entry<String, List<Connection>> connHandle;
       while (itr.hasNext()) {
         connHandle = itr.next();
         closeConnections(connHandle.getKey(), connHandle.getValue());
@@ -410,12 +382,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
   static {
     // Shutdown hook to clean up resources at process end.
-    ShutdownHookManager.addShutdownHook(new Runnable() {
-      @Override
-      public void run() {
-        closeAll();
-      }
-    });
+    ShutdownHookManager.addShutdownHook(LlapBaseInputFormat::closeAll);
   }
 
   private SubmitWorkRequestProto constructSubmitWorkRequestProto(SubmitWorkInfo submitWorkInfo,
@@ -487,7 +454,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
   private static class LlapRecordReaderTaskUmbilicalExternalResponder implements LlapTaskUmbilicalExternalResponder {
     protected LlapBaseRecordReader<?> recordReader = null;
-    protected LinkedBlockingQueue<ReaderEvent> queuedEvents = new LinkedBlockingQueue<ReaderEvent>();
+    protected LinkedBlockingQueue<ReaderEvent> queuedEvents = new LinkedBlockingQueue<>();
 
     public LlapRecordReaderTaskUmbilicalExternalResponder() {
     }
@@ -553,7 +520,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
       return recordReader;
     }
 
-    public synchronized void setRecordReader(LlapBaseRecordReader recordReader) {
+    public synchronized void setRecordReader(LlapBaseRecordReader<?> recordReader) {
       this.recordReader = recordReader;
 
       if (recordReader == null) {
@@ -572,7 +539,6 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
      * Send the ReaderEvents to the record reader, if it is registered to this responder.
      * If there is no registered record reader, add them to a list of pending reader events
      * since we don't want to drop these events.
-     * @param readerEvent
      */
     protected synchronized void sendOrQueueEvent(ReaderEvent readerEvent) {
       LlapBaseRecordReader<?> recordReader = getRecordReader();

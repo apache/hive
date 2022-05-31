@@ -27,6 +27,7 @@ import org.apache.commons.collections4.multiset.HashMultiSet;
 import org.apache.hadoop.hive.common.type.CalendarUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.LlapArrowBatchRecordReader;
 import org.apache.hadoop.hive.llap.LlapArrowRowInputFormat;
 import org.apache.hadoop.hive.llap.LlapBaseInputFormat;
 import org.apache.hadoop.hive.llap.Row;
@@ -401,14 +402,13 @@ public class TestJdbcWithMiniLlapVectorArrowBatch extends BaseJdbcWithMiniLlap {
     }
 
     String user = System.getProperty("user.name");
-    String pwd = user;
     String handleId = UUID.randomUUID().toString();
 
     // Get splits
     JobConf job = new JobConf(conf);
     job.set(LlapBaseInputFormat.URL_KEY, url);
     job.set(LlapBaseInputFormat.USER_KEY, user);
-    job.set(LlapBaseInputFormat.PWD_KEY, pwd);
+    job.set(LlapBaseInputFormat.PWD_KEY, user);
     job.set(LlapBaseInputFormat.QUERY_KEY, query);
     job.set(LlapBaseInputFormat.HANDLE_ID, handleId);
     job.set(LlapBaseInputFormat.USE_NEW_SPLIT_FORMAT, "false");
@@ -416,7 +416,7 @@ public class TestJdbcWithMiniLlapVectorArrowBatch extends BaseJdbcWithMiniLlap {
     BufferAllocator allocator = RootAllocatorFactory.INSTANCE.getOrCreateRootAllocator(Long.MAX_VALUE)
         .newChildAllocator(UUID.randomUUID().toString(), 0, Long.MAX_VALUE);
 
-    LlapBaseInputFormat llapBaseInputFormat = new LlapBaseInputFormat(true, allocator);
+    LlapBaseInputFormat<ArrowWrapperWritable> llapBaseInputFormat = new LlapBaseInputFormat<>(LlapArrowBatchRecordReader::createLlapArrowBatchRecordReader, allocator);
     InputSplit[] splits = llapBaseInputFormat.getSplits(job, 1);
 
     assertTrue(splits.length > 0);
@@ -449,27 +449,27 @@ public class TestJdbcWithMiniLlapVectorArrowBatch extends BaseJdbcWithMiniLlap {
     return result;
   }
 
-  @Override public void testLlapInputFormatEndToEnd() throws Exception {
+  @Override public void testLlapInputFormatEndToEnd() {
     // to be implemented for this reader
   }
 
-  @Override public void testNonAsciiStrings() throws Exception {
+  @Override public void testNonAsciiStrings() {
     // to be implemented for this reader
   }
 
-  @Override public void testEscapedStrings() throws Exception {
+  @Override public void testEscapedStrings() {
     // to be implemented for this reader
   }
 
-  @Override public void testDataTypes() throws Exception {
+  @Override public void testDataTypes() {
     // to be implemented for this reader
   }
 
-  @Override public void testComplexQuery() throws Exception {
+  @Override public void testComplexQuery() {
     // to be implemented for this reader
   }
 
-  @Override public void testKillQuery() throws Exception {
+  @Override public void testKillQuery() {
     // to be implemented for this reader
   }
 

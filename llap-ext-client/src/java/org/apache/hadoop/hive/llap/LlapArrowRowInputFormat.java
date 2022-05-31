@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.llap;
 
+import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -35,7 +36,7 @@ import java.util.UUID;
  */
 public class LlapArrowRowInputFormat implements InputFormat<NullWritable, Row> {
 
-  private LlapBaseInputFormat baseInputFormat;
+  private final LlapBaseInputFormat<ArrowWrapperWritable> baseInputFormat;
 
   public LlapArrowRowInputFormat(long arrowAllocatorLimit) {
     BufferAllocator allocator = RootAllocatorFactory.INSTANCE.getOrCreateRootAllocator(arrowAllocatorLimit).newChildAllocator(
@@ -46,7 +47,7 @@ public class LlapArrowRowInputFormat implements InputFormat<NullWritable, Row> {
         0,
         //Limit passed in by client
         arrowAllocatorLimit);
-    baseInputFormat = new LlapBaseInputFormat(true, allocator);
+    baseInputFormat = new LlapBaseInputFormat<>(LlapArrowBatchRecordReader::createLlapArrowBatchRecordReader, allocator);
   }
 
   @Override
@@ -58,8 +59,7 @@ public class LlapArrowRowInputFormat implements InputFormat<NullWritable, Row> {
   public RecordReader<NullWritable, Row> getRecordReader(InputSplit split, JobConf job, Reporter reporter)
       throws IOException {
     LlapInputSplit llapSplit = (LlapInputSplit) split;
-    LlapArrowBatchRecordReader reader =
-        (LlapArrowBatchRecordReader) baseInputFormat.getRecordReader(llapSplit, job, reporter);
+    LlapBaseRecordReader<?> reader = baseInputFormat.getRecordReader(llapSplit, job, reporter);
     return new LlapArrowRowRecordReader(job, reader.getSchema(), reader);
   }
 }

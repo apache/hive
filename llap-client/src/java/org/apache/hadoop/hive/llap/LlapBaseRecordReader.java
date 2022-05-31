@@ -25,19 +25,22 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.DataInputStream;
+import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import org.apache.arrow.memory.BufferAllocator;
 import org.apache.hadoop.hive.llap.io.ChunkedInputStream;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.JobConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Base LLAP RecordReader to handle receiving of the data from the LLAP daemon.
  */
-public class LlapBaseRecordReader<V extends WritableComparable> implements RecordReader<NullWritable, V> {
+public class LlapBaseRecordReader<V extends WritableComparable<?>> implements RecordReader<NullWritable, V> {
   private static final Logger LOG = LoggerFactory.getLogger(LlapBaseRecordReader.class);
 
   protected final ChunkedInputStream cin;
@@ -45,14 +48,23 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
   protected final Schema schema;
   protected final Class<V> clazz;
 
-  protected Thread readerThread = null;
-  protected final LinkedBlockingQueue<ReaderEvent> readerEvents = new LinkedBlockingQueue<ReaderEvent>();
+  protected Thread readerThread;
+  protected final LinkedBlockingQueue<ReaderEvent> readerEvents = new LinkedBlockingQueue<>();
   protected final Closeable client;
   private final Closeable socket;
   private boolean closed = false;
 
+  /**
+   * Implements {@link LlapRecordReaderFactory}
+   */
+  public static LlapBaseRecordReader<BytesWritable> createLlapBaseRecordReader(
+          InputStream in, Schema schema, Closeable client, Socket socket,
+          BufferAllocator unused1, long unused2) {
+      return new LlapBaseRecordReader<>(in, schema, BytesWritable.class, client, socket);
+  }
+
   public LlapBaseRecordReader(InputStream in, Schema schema,
-      Class<V> clazz, JobConf job, Closeable client, Closeable socket) {
+                              Class<V> clazz, Closeable client, Closeable socket) {
     String clientId = (client == null ? "" : client.toString());
     this.cin = new ChunkedInputStream(in, clientId);  // Save so we can verify end of stream
     // We need mark support - wrap with BufferedInputStream.
@@ -151,12 +163,9 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
   protected void processReaderEvent() throws IOException {
     // There should be a reader event available, or coming soon, so okay to be blocking call.
     ReaderEvent event = getReaderEvent();
-    switch (event.getEventType()) {
-      case DONE:
-        break;
-      default:
-        throw new IOException("Expected reader event with done status, but got "
-            + event.getEventType() + " with message " + event.getMessage());
+    if (event.getEventType() != ReaderEvent.EventType.DONE) {
+      throw new IOException("Expected reader event with done status, but got "
+              + event.getEventType() + " with message " + event.getMessage());
     }
   }
 
@@ -173,13 +182,11 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
         } else {
           // Case 1. Fail the reader, sending back the error we received from the reader event.
           ReaderEvent event = getReaderEvent();
-          switch (event.getEventType()) {
-            case ERROR:
-              throw new IOException("Received reader event error: " + event.getMessage(), io);
-            default:
-              throw new IOException("Got reader event type " + event.getEventType()
-                  + ", expected error event", io);
+          if (event.getEventType() == ReaderEvent.EventType.ERROR) {
+            throw new IOException("Received reader event error: " + event.getMessage(), io);
           }
+          throw new IOException("Got reader event type " + event.getEventType()
+                  + ", expected error event", io);
         }
       } else {
         // If we weren't interrupted, just propagate the error
@@ -270,7 +277,7 @@ public class LlapBaseRecordReader<V extends WritableComparable> implements Recor
     return false;
   }
 
-  protected ReaderEvent getReaderEvent() throws IOException {
+  protected ReaderEvent getReaderEvent() {
     try {
       ReaderEvent event = readerEvents.take();
       Preconditions.checkNotNull(event);
