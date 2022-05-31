@@ -8306,6 +8306,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Warehouse wh = new Warehouse(conf);
         tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()),
             tName + suffix, tableDesc.isExternal());
+
+        if (destinationTable != null) {
+          Table tbl = db.getTranslateTableDryrun(destinationTable.getTTable());
+          org.apache.hadoop.hive.metastore.api.Table translatedTable = tbl.getTTable();
+          if (translatedTable.getSd() != null && translatedTable.getSd().getLocation() != null) {
+            tlocation = new Path(translatedTable.getSd().getLocation());
+          }
+        }
       } catch (MetaException|HiveException e) {
         throw new SemanticException(e);
       }
