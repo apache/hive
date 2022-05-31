@@ -109,7 +109,7 @@ public class DefaultIncompatibleTableChangeHandler implements
       throw new InvalidOperationException(
           "The following columns have types incompatible with the existing " +
               "columns in their respective positions :\n" +
-              org.apache.commons.lang.StringUtils.join(incompatibleCols, ',')
+              org.apache.commons.lang3.StringUtils.join(incompatibleCols, ',')
       );
     }
   }

@@ -56,7 +56,6 @@ public class BaseReplicationAcrossInstances {
       throws Exception {
     conf = new HiveConf(clazz);
     conf.set("dfs.client.use.datanode.hostname", "true");
-    conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     conf.set("hive.repl.cmrootdir", "/tmp/");
     conf.set("dfs.namenode.acls.enabled", "true");
     MiniDFSCluster miniDFSCluster =
@@ -64,6 +63,8 @@ public class BaseReplicationAcrossInstances {
     Map<String, String> localOverrides = new HashMap<String, String>() {{
       put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
       put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+      // Disable proxy authorization white-list for testing
+      put(MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.getVarname(), "false");
     }};
     localOverrides.putAll(overrides);
     setFullyQualifiedReplicaExternalTableBase(miniDFSCluster.getFileSystem());
@@ -88,7 +89,6 @@ public class BaseReplicationAcrossInstances {
     replicaConf = new HiveConf(clazz);
     replicaConf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, replicaBaseDir);
     replicaConf.set("dfs.client.use.datanode.hostname", "true");
-    replicaConf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniReplicaDFSCluster =
             new MiniDFSCluster.Builder(replicaConf).numDataNodes(2).format(true).build();
 
@@ -97,7 +97,6 @@ public class BaseReplicationAcrossInstances {
     conf = new HiveConf(clazz);
     conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, primaryBaseDir);
     conf.set("dfs.client.use.datanode.hostname", "true");
-    conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniPrimaryDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
 
     // Setup primary warehouse.
@@ -106,6 +105,8 @@ public class BaseReplicationAcrossInstances {
     localOverrides.put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
     localOverrides.put(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
     localOverrides.put("fs.defaultFS", miniPrimaryDFSCluster.getFileSystem().getUri().toString());
+    // Disable proxy authorization white-list for testing
+    localOverrides.put(MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.getVarname(), "false");
     localOverrides.putAll(primaryOverrides);
     primary = new WarehouseInstance(LOG, miniPrimaryDFSCluster, localOverrides);
 
@@ -114,6 +115,7 @@ public class BaseReplicationAcrossInstances {
     localOverrides.put(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
     localOverrides.put("fs.defaultFS", miniReplicaDFSCluster.getFileSystem().getUri().toString());
     localOverrides.put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+    localOverrides.put(MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.getVarname(), "false");
     localOverrides.putAll(replicaOverrides);
     replica = new WarehouseInstance(LOG, miniReplicaDFSCluster, localOverrides);
   }

@@ -75,7 +75,7 @@
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>19.0</guava.version>
-    <hadoop.version>3.1.0</hadoop.version>
+    <hadoop.version>3.3.3</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
     <jackson.version>2.12.7</jackson.version>
     <javolution.version>5.5.1</javolution.version>
@@ -240,6 +240,10 @@
         <artifactId>hadoop-mapreduce-client-core</artifactId>
         <version>${hadoop.version}</version>
         <exclusions>
+          <exclusion>
+            <groupId>org.jline</groupId>
+            <artifactId>jline</artifactId>
+          </exclusion>
           <exclusion>
             <groupId>io.netty</groupId>
             <artifactId>netty</artifactId>

@@ -141,6 +141,8 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       // This starts the reader in the background.
       rr.start();
       return result;
+    } catch (IOException ioe) {
+      throw ioe;
     } catch (Exception ex) {
       Throwable rootCause = JavaUtils.findRootCause(ex);
       if (checkLimitReached(job)

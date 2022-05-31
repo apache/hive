@@ -1,3 +1,5 @@
+--! qt:disabled:disabled Tests the output of LS and that changes, Not a functional test, just adds some masking logic
+--for tests, figure out later a better way to test this test util..
 set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
