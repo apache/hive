@@ -97,7 +97,7 @@ POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
 10	777
 30	777
-Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
 update acidtlb set b=350
 where a in (select a from acidtlb where a = 30)
@@ -124,7 +124,7 @@ HiveProject(row__id=[$1], a=[CAST(30):INTEGER], b=[350])
           HiveFilter(condition=[=($0, 30)])
             HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
 
-Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: update acidtlb set b=350
 where a in (select a from acidtlb where a = 30)
 PREHOOK: type: QUERY
