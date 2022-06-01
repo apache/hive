@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
-import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -60,7 +59,6 @@ import org.apache.iceberg.avro.Avro;
 import org.apache.iceberg.common.DynMethods;
 import org.apache.iceberg.data.DeleteFilter;
 import org.apache.iceberg.data.GenericDeleteFilter;
-import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.IdentityPartitionConverters;
 import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.avro.DataReader;
@@ -266,7 +264,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       if (!fetchVirtualColumns) {
         return closeableIterator;
       }
-      return new VirtualColumnAwareIterator<>(closeableIterator, expectedSchema, conf);
+      return new IcebergAcidUtil.VirtualColumnAwareIterator<T>(closeableIterator, expectedSchema, conf);
     }
 
     @Override
@@ -531,46 +529,6 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           .collect(Collectors.toSet());
 
       return TypeUtil.selectNot(readSchema, collect);
-    }
-  }
-
-  public static class VirtualColumnAwareIterator<T> implements CloseableIterator<T> {
-
-    private final CloseableIterator<T> currentIterator;
-
-    private GenericRecord current;
-    private final Schema expectedSchema;
-    private final Configuration conf;
-
-    public VirtualColumnAwareIterator(CloseableIterator<T> currentIterator, Schema expectedSchema, Configuration conf) {
-      this.currentIterator = currentIterator;
-      this.expectedSchema = expectedSchema;
-      this.conf = conf;
-      current = GenericRecord.create(
-              new Schema(expectedSchema.columns().subList(4, expectedSchema.columns().size())));
-    }
-
-    @Override
-    public void close() throws IOException {
-      currentIterator.close();
-    }
-
-    @Override
-    public boolean hasNext() {
-      return currentIterator.hasNext();
-    }
-
-    @Override
-    public T next() {
-      T next = currentIterator.next();
-      GenericRecord rec = (GenericRecord) next;
-      PositionDeleteInfo.setIntoConf(conf,
-              IcebergAcidUtil.parseSpecId(rec),
-              IcebergAcidUtil.computePartitionHash(rec),
-              IcebergAcidUtil.parseFilePath(rec),
-              IcebergAcidUtil.parseFilePosition(rec));
-      IcebergAcidUtil.copyFields(rec, 4, current.size(), current);
-      return (T) current;
     }
   }
 }
