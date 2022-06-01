@@ -44,7 +44,7 @@ POSTHOOK: query: select * from employee
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
 #### A masked pattern was here ####
-1	1879-12-31 23:52:58
+1	1880-01-01 00:00:00
 2	1884-01-01 00:00:00
 3	1990-01-01 00:00:00
 PREHOOK: query: select * from employee
