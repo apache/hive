@@ -306,7 +306,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
   }
   branches['sonar'] = {
       executorNode {
-          if(env.CHANGE_BRANCH == 'master-sonar_analysis' || (env.CHANGE_ID && pullRequest.labels.contains("sonar"))) {
+          if(env.CHANGE_BRANCH == 'master') {
               stage('Prepare') {
                   loadWS();
               }
@@ -316,16 +316,38 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
                       sw java 11 && . /etc/profile.d/java.sh
                       export MAVEN_OPTS=-Xmx5G
                       mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
-                       -Dsonar.organization=asolimando \
-                       -Dsonar.projectKey=asolimando_hive \
+                       -Dsonar.organization=apache \
+                       -Dsonar.projectKey=apache_hive \
                        -Dsonar.host.url=https://sonarcloud.io \
                        -Dsonar.branch.name=${CHANGE_BRANCH} \
                        -DskipTests -Dit.skipTests -Dmaven.javadoc.skip
                       """
                  }
               }
+          } else if(env.CHANGE_ID) {
+              stage('Prepare') {
+                  loadWS();
+              }
+              stage('Sonar') {
+                  withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
+                      sh """#!/bin/bash -e
+                      sw java 11 && . /etc/profile.d/java.sh
+                      export MAVEN_OPTS=-Xmx5G
+                      mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
+                       -Dsonar.organization=apache \
+                       -Dsonar.projectKey=apache_hive \
+                       -Dsonar.host.url=https://sonarcloud.io \
+                       -Dsonar.pullrequest.github.repository=apache/hive \
+                       -Dsonar.pullrequest.key=${CHANGE_ID} \
+                       -Dsonar.pullrequest.branch=${CHANGE_BRANCH} \
+                       -Dsonar.pullrequest.base=${CHANGE_TARGET} \
+                       -Dsonar.pullrequest.provider=GitHub \
+                       -DskipTests -Dit.skipTests -Dmaven.javadoc.skip
+                      """
+                 }
+              }
           } else {
-              echo "Skipping sonar analysis, because we only run that on the master branch"
+              echo "Skipping sonar analysis, we only run it on PRs and on the master branch"
           }
       }
   }
