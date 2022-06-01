@@ -63,4 +63,12 @@ public class HiveCustomStorageHandlerUtils {
         String operation = conf.get(WRITE_OPERATION_CONFIG_PREFIX + tableName);
         return operation == null ? null : Context.Operation.valueOf(operation);
     }
+
+    public static void setOperation(Configuration conf, String tableName, Context.Operation operation) {
+        if (conf == null || tableName == null) {
+            return;
+        }
+
+        conf.set(WRITE_OPERATION_CONFIG_PREFIX + tableName, operation.name());
+    }
 }

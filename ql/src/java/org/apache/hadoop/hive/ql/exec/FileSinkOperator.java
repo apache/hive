@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
-import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.WRITE_OPERATION_CONFIG_PREFIX;
+import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setOperation;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -617,8 +617,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       initializeSpecPath();
       fs = specPath.getFileSystem(hconf);
 
-      hconf.set(WRITE_OPERATION_CONFIG_PREFIX + getConf().getTableInfo().getTableName(),
-              getConf().getWriteOperation().name());
+      setOperation(hconf, getConf().getTableInfo().getTableName(), getConf().getWriteOperation());
       if (hconf instanceof JobConf) {
         jc = (JobConf) hconf;
       } else {
