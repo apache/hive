@@ -73,7 +73,7 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
         .tableName(tableName)
         .attemptID(taskAttemptID)
         .poolSize(poolSize)
-        .operation(HiveCustomStorageHandlerUtils.operation(jc, tableName))
+        .operation(HiveCustomStorageHandlerUtils.getWriteOperation(jc, tableName))
         .build();
   }
 }

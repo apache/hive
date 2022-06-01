@@ -146,7 +146,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   }
 
   private static Schema projectedSchema(Configuration configuration, String tableName, Schema tableSchema) {
-    Context.Operation operation = HiveCustomStorageHandlerUtils.operation(configuration, tableName);
+    Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(configuration, tableName);
     if (operation != null) {
       switch (operation) {
         case DELETE:

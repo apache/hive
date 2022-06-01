@@ -55,7 +55,7 @@ public class HiveCustomStorageHandlerUtils {
         return tblProps;
     }
 
-    public static Context.Operation operation(Configuration conf, String tableName) {
+    public static Context.Operation getWriteOperation(Configuration conf, String tableName) {
         if (conf == null || tableName == null) {
             return null;
         }
@@ -64,7 +64,7 @@ public class HiveCustomStorageHandlerUtils {
         return operation == null ? null : Context.Operation.valueOf(operation);
     }
 
-    public static void setOperation(Configuration conf, String tableName, Context.Operation operation) {
+    public static void setWriteOperation(Configuration conf, String tableName, Context.Operation operation) {
         if (conf == null || tableName == null) {
             return;
         }
