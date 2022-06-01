@@ -307,6 +307,9 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
   branches['sonar'] = {
       executorNode {
           if(env.CHANGE_BRANCH == 'master-sonar_analysis' || (env.CHANGE_ID && pullRequest.labels.contains("sonar"))) {
+              stage('Prepare') {
+                  loadWS();
+              }
               stage('Sonar') {
                   withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
                       sh """#!/bin/bash -e
