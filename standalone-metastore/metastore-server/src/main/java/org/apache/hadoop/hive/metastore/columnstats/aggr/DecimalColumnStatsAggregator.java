@@ -128,7 +128,8 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
         aggregateData.setNumDVs(ndvEstimator.estimateNumDistinctValues());
       } else {
         long estimation;
-        if (useDensityFunctionForNDVEstimation) {
+        if (useDensityFunctionForNDVEstimation && aggregateData != null
+            && aggregateData.isSetLowValue() && aggregateData.isSetHighValue()) {
           // We have estimation, lowerbound and higherbound. We use estimation
           // if it is between lowerbound and higherbound.
           double densityAvg = densityAvgSum / partNames.size();

@@ -99,9 +99,10 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
       for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
         ColumnStatisticsObj cso = csp.getColStatsObj();
         DateColumnStatsDataInspector newData = dateInspectorFromStats(cso);
+        lowerBound = Math.max(lowerBound, newData.getNumDVs());
         higherBound += newData.getNumDVs();
         if (newData.isSetLowValue() && newData.isSetHighValue()) {
-          densityAvgSum += (diff(newData.getHighValue(), newData.getLowValue())) / newData.getNumDVs();
+          densityAvgSum += ((double) diff(newData.getHighValue(), newData.getLowValue())) / newData.getNumDVs();
         }
         if (ndvEstimator != null) {
           ndvEstimator.mergeEstimators(newData.getNdvEstimator());
@@ -124,7 +125,8 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
         aggregateData.setNumDVs(ndvEstimator.estimateNumDistinctValues());
       } else {
         long estimation;
-        if (useDensityFunctionForNDVEstimation) {
+        if (useDensityFunctionForNDVEstimation && aggregateData != null
+            && aggregateData.isSetLowValue() && aggregateData.isSetHighValue()) {
           // We have estimation, lowerbound and higherbound. We use estimation
           // if it is between lowerbound and higherbound.
           double densityAvg = densityAvgSum / partNames.size();
@@ -161,7 +163,7 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
           String partName = csp.getPartName();
           DateColumnStatsData newData = cso.getStatsData().getDateStats();
           if (useDensityFunctionForNDVEstimation) {
-            densityAvgSum += diff(newData.getHighValue(), newData.getLowValue()) / newData.getNumDVs();
+            densityAvgSum += ((double) diff(newData.getHighValue(), newData.getLowValue())) / newData.getNumDVs();
           }
           adjustedIndexMap.put(partName, (double) indexMap.get(partName));
           adjustedStatsMap.put(partName, cso.getStatsData());
@@ -190,7 +192,7 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
               csd.setDateStats(aggregateData);
               adjustedStatsMap.put(pseudoPartName.toString(), csd);
               if (useDensityFunctionForNDVEstimation) {
-                densityAvgSum += diff(aggregateData.getHighValue(), aggregateData.getLowValue())
+                densityAvgSum += ((double) diff(aggregateData.getHighValue(), aggregateData.getLowValue()))
                     / aggregateData.getNumDVs();
               }
               // reset everything
@@ -223,7 +225,7 @@ public class DateColumnStatsAggregator extends ColumnStatsAggregator implements
           csd.setDateStats(aggregateData);
           adjustedStatsMap.put(pseudoPartName.toString(), csd);
           if (useDensityFunctionForNDVEstimation) {
-            densityAvgSum += diff(aggregateData.getHighValue(), aggregateData.getLowValue())
+            densityAvgSum += ((double) diff(aggregateData.getHighValue(), aggregateData.getLowValue()))
                 / aggregateData.getNumDVs();
           }
         }

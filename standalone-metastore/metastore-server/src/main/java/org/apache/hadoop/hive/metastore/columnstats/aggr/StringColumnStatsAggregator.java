@@ -42,7 +42,7 @@ import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.str
 public class StringColumnStatsAggregator extends ColumnStatsAggregator implements
     IExtrapolatePartStatus {
 
-  private static final Logger LOG = LoggerFactory.getLogger(LongColumnStatsAggregator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(StringColumnStatsAggregator.class);
 
   @Override
   public ColumnStatisticsObj aggregate(List<ColStatsObjWithSourceInfo> colStatsWithSourceInfo,
