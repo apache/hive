@@ -21,3 +21,5 @@ group by age, name;
 select age, name, avg(gpa), sum(age) over (partition by name)
 from studentnull100
 group by age, name;
+
+EXPLAIN VECTORIZATION ONLY SELECT ROW_NUMBER() OVER(order by age) AS rn FROM studentnull100;
