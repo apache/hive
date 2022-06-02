@@ -265,7 +265,7 @@ public class TestJdbcDriver2 {
   private void testExceucteMergeCounts(boolean splitUpdateEarly) throws Exception {
 
     Statement stmt =  con.createStatement();
-    stmt.execute("set " + ConfVars.MERGE_SPLIT_UPDATE.varname + "=" + splitUpdateEarly);
+    stmt.execute("set " + ConfVars.SPLIT_UPDATE.varname + "=" + splitUpdateEarly);
     stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
     stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
         "=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
