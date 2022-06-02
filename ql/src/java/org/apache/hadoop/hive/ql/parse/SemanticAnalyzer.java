@@ -108,6 +108,7 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
@@ -7609,17 +7610,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           destTableIsFullAcid = AcidUtils.isFullAcidTable(tblProps);
           acidOperation = getAcidType(dest);
           isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOperation);
-          boolean enableSuffixing = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
-                  || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
+
+          // Add suffix only when required confs are present
+          // and user has not specified a location to the table.
+          boolean createTableUseSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+                  || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
+                  && tblDesc.getLocation() == null;
           if (isDirectInsert || isMmTable) {
-            destinationPath = getCTASDestinationTableLocation(tblDesc, enableSuffixing);
+            destinationPath = getCtasLocation(tblDesc);
+            // Property SOFT_DELETE_TABLE needs to be added to indicate that suffixing is used.
+            if (createTableUseSuffix) {
+              long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
+              String suffix = AcidUtils.getPathSuffix(txnId);
+              destinationPath = new Path(destinationPath.toString() + suffix);
+              tblDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
+            }
             // Setting the location so that metadata transformers
             // does not change the location later while creating the table.
             tblDesc.setLocation(destinationPath.toString());
-            // Property SOFT_DELETE_TABLE needs to be added to indicate that suffixing is used.
-            if (enableSuffixing && tblDesc.getLocation().matches("(.*)" + SOFT_DELETE_TABLE_PATTERN)) {
-              tblDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
-            }
           }
         }
         try {
@@ -7970,40 +7978,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
-  private Path getCTASDestinationTableLocation(CreateTableDesc tblDesc, boolean enableSuffixing) throws SemanticException {
+  private Path getCtasLocation(CreateTableDesc tblDesc) throws SemanticException {
     Path location;
-    String suffix = "";
     try {
-      // When location is specified, suffix is not added
-      if (tblDesc.getLocation() == null) {
-        String protoName = tblDesc.getDbTableName();
-        String[] names = Utilities.getDbTableName(protoName);
-        if (enableSuffixing) {
-          long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
-          suffix = SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId);
-        }
-        if (!db.databaseExists(names[0])) {
-          throw new SemanticException("ERROR: The database " + names[0] + " does not exist.");
-        }
+      String protoName = tblDesc.getDbTableName();
+      String[] names = Utilities.getDbTableName(protoName);
 
-        Warehouse wh = new Warehouse(conf);
-        location = wh.getDefaultTablePath(db.getDatabase(names[0]), names[1] + suffix, false);
-      } else {
-        location = new Path(tblDesc.getLocation());
-      }
-
-      // Handle table translation
+      // Handle table translation initially and if not present
+      // use default table path.
       // Property modifications of the table is handled later.
       // We are interested in the location if it has changed
       // due to table translation.
       Table tbl = tblDesc.toTable(conf);
       tbl = db.getTranslateTableDryrun(tbl.getTTable());
-      org.apache.hadoop.hive.metastore.api.Table tTable = tbl.getTTable();
-      if (tTable.getSd() != null && tTable.getSd().getLocation() != null) {
-        // Suffix is added when suffixing is enabled.
-        location = new Path(tTable.getSd().getLocation() + suffix);
-        tTable.getSd().setLocation(location.toString());
+
+      Warehouse wh = new Warehouse(conf);
+      if (tbl.getSd() == null
+              || tbl.getSd().getLocation() == null) {
+        location = wh.getDefaultTablePath(db.getDatabase(names[0]), names[1], false);
+      } else {
+        location = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
       }
+      tbl.getSd().setLocation(location.toString());
+
       return location;
     } catch (HiveException | MetaException e) {
       throw new SemanticException(e);
@@ -8300,12 +8297,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String tName = Utilities.getDbTableName(tableDesc.getDbTableName())[1];
       try {
         String suffix = "";
-        if (AcidUtils.isTransactionalTable(destinationTable)) {
-          boolean useSuffix = Boolean.getBoolean(destinationTable.getProperty(SOFT_DELETE_TABLE));
-          if (useSuffix) {
-            long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
-            suffix = SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId);
-          }
+        if (AcidUtils.isTableSoftDeleteEnabled(destinationTable, conf)) {
+          long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
+          suffix = AcidUtils.getPathSuffix(txnId);
         }
         Warehouse wh = new Warehouse(conf);
         tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()),

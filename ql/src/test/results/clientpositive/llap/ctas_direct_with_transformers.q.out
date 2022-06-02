@@ -3658,6 +3658,11 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source
+POSTHOOK: Lineage: source.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: source.cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: source.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: source.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: source.ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 PREHOOK: query: CREATE TABLE test_orc_ctas STORED AS ORC TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -3668,6 +3673,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_orc_ctas
+POSTHOOK: Lineage: test_orc_ctas.cbigint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: test_orc_ctas.cboolean1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: test_orc_ctas.cboolean2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: test_orc_ctas.cdouble EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: test_orc_ctas.cfloat EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: test_orc_ctas.cint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: test_orc_ctas.csmallint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: test_orc_ctas.cstring1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: test_orc_ctas.cstring2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: test_orc_ctas.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: test_orc_ctas.ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: test_orc_ctas.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: CREATE TABLE test_orc_mmctas STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -3678,6 +3695,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_orc_mmctas
+POSTHOOK: Lineage: test_orc_mmctas.cbigint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmctas.cboolean1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmctas.cboolean2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmctas.cdouble EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmctas.cfloat EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmctas.cint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmctas.csmallint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmctas.cstring1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmctas.cstring2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmctas.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmctas.ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: test_orc_mmctas.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: CREATE TABLE test_parquet_mmctas STORED AS PARQUET TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -3688,6 +3717,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_parquet_mmctas
+POSTHOOK: Lineage: test_parquet_mmctas.cbigint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmctas.cboolean1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmctas.cboolean2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmctas.cdouble EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmctas.cfloat EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmctas.cint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmctas.csmallint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmctas.cstring1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmctas.cstring2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmctas.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmctas.ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: test_parquet_mmctas.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: CREATE TABLE test_avro_mmctas STORED AS AVRO TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM source WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM source WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@source
@@ -3698,6 +3739,11 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@source
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_avro_mmctas
+POSTHOOK: Lineage: test_avro_mmctas.cdouble EXPRESSION [(source)source.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: test_avro_mmctas.cfloat EXPRESSION [(source)source.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: test_avro_mmctas.cint EXPRESSION [(source)source.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: test_avro_mmctas.cstring1 EXPRESSION [(source)source.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: test_avro_mmctas.ctimestamp1 EXPRESSION [(source)source.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 PREHOOK: query: CREATE TABLE test_textfile_mmctas STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -3708,6 +3754,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_textfile_mmctas
+POSTHOOK: Lineage: test_textfile_mmctas.cbigint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmctas.cboolean1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmctas.cboolean2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmctas.cdouble EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmctas.cfloat EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmctas.cint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmctas.csmallint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmctas.cstring1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmctas.cstring2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmctas.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmctas.ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: test_textfile_mmctas.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: CREATE TABLE test_partition_orc_ctas PARTITIONED BY (cint) STORED AS ORC TBLPROPERTIES('transactional'='true') AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -4409,6 +4467,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_transactional_orc_ctas
+POSTHOOK: Lineage: test_transactional_orc_ctas.cbigint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: test_transactional_orc_ctas.cboolean1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: test_transactional_orc_ctas.cboolean2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: test_transactional_orc_ctas.cdouble EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: test_transactional_orc_ctas.cfloat EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: test_transactional_orc_ctas.cint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: test_transactional_orc_ctas.csmallint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: test_transactional_orc_ctas.cstring1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: test_transactional_orc_ctas.cstring2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: test_transactional_orc_ctas.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: test_transactional_orc_ctas.ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: test_transactional_orc_ctas.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: CREATE TRANSACTIONAL TABLE test_transactional_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -4574,6 +4644,18 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_managed_orc_ctas
+POSTHOOK: Lineage: test_managed_orc_ctas.cbigint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: test_managed_orc_ctas.cboolean1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), ]
+POSTHOOK: Lineage: test_managed_orc_ctas.cboolean2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: test_managed_orc_ctas.cdouble EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: test_managed_orc_ctas.cfloat EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: test_managed_orc_ctas.cint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: test_managed_orc_ctas.csmallint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
+POSTHOOK: Lineage: test_managed_orc_ctas.cstring1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: test_managed_orc_ctas.cstring2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
+POSTHOOK: Lineage: test_managed_orc_ctas.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: test_managed_orc_ctas.ctimestamp2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: test_managed_orc_ctas.ctinyint EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 PREHOOK: query: CREATE MANAGED TABLE test_managed_part_orc_ctas PARTITIONED BY (cint) STORED AS ORC AS ((SELECT * FROM alltypesorc WHERE cint > 200 LIMIT 10) UNION (SELECT * FROM alltypesorc WHERE cint < -100 LIMIT 10))
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc

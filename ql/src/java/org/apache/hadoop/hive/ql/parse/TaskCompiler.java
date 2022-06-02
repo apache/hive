@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ResultFileFormat;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -517,25 +518,16 @@ public abstract class TaskCompiler {
     try {
       String protoName = null, suffix = "";
       boolean isExternal = false;
-      boolean useSuffix = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+      boolean createTableOrMVUseSuffix = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
               || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
 
       if (pCtx.getQueryProperties().isCTAS()) {
         protoName = pCtx.getCreateTable().getDbTableName();
-        isExternal = pCtx.getCreateTable().isExternal();
-        if (!isExternal && useSuffix) {
-          long txnId = Optional.ofNullable(pCtx.getContext())
-                  .map(ctx -> ctx.getHiveTxnManager().getCurrentTxnId()).orElse(0L);
-          suffix = SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId);
-        }
+        createTableOrMVUseSuffix &= AcidUtils.isTransactionalTable(pCtx.getCreateTable().getTblProps());
+        suffix = getTableOrMVSuffix(pCtx, createTableOrMVUseSuffix);
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
         protoName = pCtx.getCreateViewDesc().getViewName();
-
-        if (useSuffix) {
-          long txnId = Optional.ofNullable(pCtx.getContext())
-            .map(ctx -> ctx.getHiveTxnManager().getCurrentTxnId()).orElse(0L);
-          suffix = SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId);
-        }
+        suffix = getTableOrMVSuffix(pCtx, createTableOrMVUseSuffix);
       }
       String[] names = Utilities.getDbTableName(protoName);
       if (!db.databaseExists(names[0])) {
@@ -546,6 +538,18 @@ public abstract class TaskCompiler {
     } catch (HiveException | MetaException e) {
       throw new SemanticException(e);
     }
+  }
+
+  public String getTableOrMVSuffix(ParseContext pCtx, boolean createTableOrMVUseSuffix) {
+    String suffix = "";
+    if (createTableOrMVUseSuffix) {
+      long txnId = Optional.ofNullable(pCtx.getContext())
+              .map(ctx -> ctx.getHiveTxnManager().getCurrentTxnId()).orElse(0L);
+      if (txnId != 0) {
+        suffix = AcidUtils.getPathSuffix(txnId);
+      }
+    }
+    return suffix;
   }
 
   private void patchUpAfterCTASorMaterializedView(List<Task<?>> rootTasks,
