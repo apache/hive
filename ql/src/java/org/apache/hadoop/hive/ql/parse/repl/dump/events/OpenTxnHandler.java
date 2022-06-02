@@ -39,6 +39,11 @@ class OpenTxnHandler extends AbstractEventHandler<OpenTxnMessage> {
     if (!ReplUtils.includeAcidTableInDump(withinContext.hiveConf)) {
       return;
     }
+
+    if (ReplUtils.filterTransactionOperations(withinContext.hiveConf)) {
+      return;
+    }
+
     LOG.info("Processing#{} OPEN_TXN message : {}", fromEventId(), eventMessageAsJSON);
     DumpMetaData dmd = withinContext.createDmd(this);
     dmd.setPayload(eventMessageAsJSON);

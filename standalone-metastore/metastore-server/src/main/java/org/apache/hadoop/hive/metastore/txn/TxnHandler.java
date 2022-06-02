@@ -1072,8 +1072,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (transactionalListeners != null && !isHiveReplTxn) {
+          List<String> dbsUpdated = getTxnDbsUpdated(txnid, dbConn);
           MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
-                  EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnid, txnType), dbConn, sqlGenerator);
+                  EventMessage.EventType.ABORT_TXN,
+                  new AbortTxnEvent(txnid, txnType, null, dbsUpdated), dbConn, sqlGenerator);
         }
 
         LOG.debug("Going to commit");
@@ -1133,9 +1135,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         if (transactionalListeners != null){
           for (Long txnId : txnIds) {
+            List<String> dbsUpdated = getTxnDbsUpdated(txnId, dbConn);
             MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                     EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnId,
-                nonReadOnlyTxns.getOrDefault(txnId, TxnType.READ_ONLY)), dbConn, sqlGenerator);
+                nonReadOnlyTxns.getOrDefault(txnId, TxnType.READ_ONLY), null, dbsUpdated), dbConn, sqlGenerator);
           }
         }
         LOG.debug("Going to commit");
@@ -1667,6 +1670,39 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return getLatestTxnIdInConflict(txnid);
     }
   }
+
+  /**
+   * Returns the databases updated by txnId.
+   * Queries TXN_TO_WRITE_ID using txnId.
+   *
+   * @param txnId
+   * @throws MetaException
+   */
+    private List<String> getTxnDbsUpdated(long txnId, Connection dbConn) throws MetaException {
+    try {
+      try (Statement stmt = dbConn.createStatement()) {
+
+        String query = "SELECT DISTINCT T2W_DATABASE " +
+                " FROM \"TXN_TO_WRITE_ID\" \"COMMITTED\"" +
+                "   WHERE \"T2W_TXNID\" = " + txnId;
+
+        LOG.debug("Going to execute query: <" + query + ">");
+        try (ResultSet rs = stmt.executeQuery(query)) {
+          List<String> dbsUpdated = new ArrayList<String>();
+          while (rs.next()) {
+            dbsUpdated.add(rs.getString(1));
+          }
+          return dbsUpdated;
+        }
+      } catch (SQLException e) {
+        checkRetryable(e, "getTxnDbsUpdated");
+        throw new MetaException(StringUtils.stringifyException(e));
+      }
+    } catch (RetryException e) {
+      return getTxnDbsUpdated(txnId, dbConn);
+    }
+  }
+
 
   private ResultSet checkForWriteConflict(Statement stmt, long txnid) throws SQLException, MetaException {
     String writeConflictQuery = sqlGenerator.addLimitClause(1, "\"COMMITTED\".\"WS_TXNID\", \"COMMITTED\".\"WS_COMMIT_ID\", " +

@@ -3652,6 +3652,10 @@ public class HiveConf extends Configuration {
         "org.apache.hive.hcatalog.api.repl.exim.EximReplicationTaskFactory",
         "Parameter that can be used to override which ReplicationTaskFactory will be\n" +
         "used to instantiate ReplicationTask events. Override for third party repl plugins"),
+    REPL_FILTER_TRANSACTIONS("hive.repl.filter.transactions", false,
+            "Enable transaction event filtering to save dump space.\n" +
+                    "When true, transactions are implicitly opened during REPL DUMP.\n" +
+                    "The default setting is false"),
     HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS("hive.mapper.cannot.span.multiple.partitions", false, ""),
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false,
         "should rework the mapred work or not.\n" +
