@@ -293,7 +293,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     }
   }
 
-  private void handleMaterializedView(Table table) throws LockException {
+  private void handleMaterializedView(Table table) throws HiveException {
     if (table.isMaterializedView()) {
       table.setOutdatedForRewriting(context.getDb().isOutdatedMaterializedView(
               table,

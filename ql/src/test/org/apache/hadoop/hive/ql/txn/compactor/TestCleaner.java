@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -93,7 +94,11 @@ public class TestCleaner extends CompactorTest {
     conf.setTimeVar(HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 2, TimeUnit.SECONDS);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS, 3);
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, 100, TimeUnit.MILLISECONDS);
-    String errorMessage = "Тут немає прибирання, сер!";
+    String errorMessage = "No cleanup here!";
+
+    //Prevent cleaner from marking the compaction as cleaned
+    TxnStore mockedHandler = spy(txnHandler);
+    doThrow(new RuntimeException(errorMessage)).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
 
     Table t = newTable("default", "retry_test", false);
 
@@ -106,9 +111,13 @@ public class TestCleaner extends CompactorTest {
     long compactTxn = compactInTxn(rqst);
     addBaseFile(t, null, 25L, 25, compactTxn);
 
-    //Prevent cleaner from marking the compaction as cleaned
-    TxnStore mockedHandler = spy(txnHandler);
-    doThrow(new RuntimeException(errorMessage)).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
+    //delayed start retention time
+    long retentionTime = delayEnabled ? conf.getTimeVar(HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS) : 0;
+    //retry retention time
+    long retryRetentionTime = getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS);
+    // Sleep 100ms longer than the actual retention to make sure the compaction will be picked by the cleaner
+    Thread.sleep(retentionTime + 100);
+
     for (int i = 1; i < 4; i++) {
       Cleaner cleaner = new Cleaner();
       cleaner.setConf(conf);
@@ -117,34 +126,22 @@ public class TestCleaner extends CompactorTest {
 
       cleaner.run();
 
-      // Sleep 100ms longer than the actual retention to make sure the compaciton will be picked up again by the cleaner
-      long sleep =
-              (delayEnabled ? conf.getTimeVar(HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS) : 0) + //delayed start retention time
-              (getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS) * (long)Math.pow(2, i)) + //retry retention time
-              100;
-      Thread.sleep(sleep);
+      // Sleep 100ms longer than the actual retry retention to make sure the compaction will be picked up again by the cleaner
+      Thread.sleep(retryRetentionTime * (long) Math.pow(2, i - 1) + 100);
 
       // Check retry attempts updated
-      List<CompactionInfo> compcationInfos = txnHandler.findReadyToClean(0, 0);
-      Assert.assertEquals(String.format("Expected %d CompactionInfo, but got %d", 1, compcationInfos.size()), 1, compcationInfos.size());
-      CompactionInfo ci = compcationInfos.get(0);
-      int cleanAttempts = 0;
-      if (ci.retryRetention > 0) {
-        cleanAttempts = (int)(Math.log(ci.retryRetention / getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)) / Math.log(2)) + 1;
-      }
+      Optional<CompactionInfo> compactionByTxnId = txnHandler.getCompactionByTxnId(compactTxn);
+      Assert.assertTrue("Expected compactionInfo, but got nothing returned", compactionByTxnId.isPresent());
+      CompactionInfo ci = compactionByTxnId.get();
+
+      // Check if state is still 'ready for cleaning'
+      Assert.assertEquals(String.format("Expected 'r' (ready for cleaning) state, but got: '%c'", ci.state), 'r', ci.state);
+      // Check if error message was set correctly
+      Assert.assertEquals(String.format("Expected error message: '%s', but got '%s'", errorMessage, ci.errorMessage),
+          errorMessage, ci.errorMessage);
+      // Check if retentionTime was set correctly
+      int cleanAttempts = (int)(Math.log(ci.retryRetention / retryRetentionTime) / Math.log(2)) + 1;
       Assert.assertEquals(String.format("Expected %d clean attempts, but got %d", i, cleanAttempts), i, cleanAttempts);
-
-      // Check state is still 'ready for cleaning'
-      ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
-      Assert.assertEquals(String.format("Expected %d CompactionInfo, but got %d", 1, scr.getCompactsSize()),
-              1, scr.getCompactsSize());
-      ShowCompactResponseElement scre = scr.getCompacts().get(0);
-
-      Assert.assertEquals(String.format("Expected '%s' state, but got '%s'", "ready for cleaning", scre.getState()),
-              "ready for cleaning", scre.getState());
-      Assert.assertEquals(String.format("Expected error message: '%s', but got '%s'", errorMessage, scre.getErrorMessage()),
-              errorMessage, scre.getErrorMessage() );
-
     }
 
     //Do a final run to reach the maximum retry attempts, so the state finally should be set to failed
@@ -157,12 +154,13 @@ public class TestCleaner extends CompactorTest {
 
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(String.format("Expected %d CompactionInfo, but got %d", 1, scr.getCompactsSize()),
-            1, scr.getCompactsSize());
+        1, scr.getCompactsSize());
     ShowCompactResponseElement scre = scr.getCompacts().get(0);
+    //The state finally should be set to failed.
     Assert.assertEquals(String.format("Expected '%s' state, but got '%s'", "failed", scre.getState()),
-            "failed", scre.getState());
+        "failed", scre.getState());
     Assert.assertEquals(String.format("Expected error message: '%s', but got '%s'", errorMessage, scre.getErrorMessage()),
-            errorMessage, scre.getErrorMessage() );
+        errorMessage, scre.getErrorMessage());
   }
 
   @Test

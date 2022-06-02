@@ -30,8 +30,10 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.UpdatePartitionSpec;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.mr.Catalogs;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +43,25 @@ public class IcebergTableUtil {
 
   private IcebergTableUtil() {
 
+  }
+
+  /**
+   * Constructs the table properties needed for the Iceberg table loading by retrieving the information from the
+   * hmsTable. It then calls {@link IcebergTableUtil#getTable(Configuration, Properties)} with these properties.
+   * @param configuration a Hadoop configuration
+   * @param hmsTable the HMS table
+   * @return the Iceberg table
+   */
+  static Table getTable(Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    Properties properties = new Properties();
+    properties.setProperty(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
+    properties.setProperty(Catalogs.LOCATION, hmsTable.getSd().getLocation());
+    hmsTable.getParameters().computeIfPresent(InputFormatConfig.CATALOG_NAME,
+        (k, v) -> {
+          properties.setProperty(k, v);
+          return v;
+        });
+    return getTable(configuration, properties);
   }
 
   /**

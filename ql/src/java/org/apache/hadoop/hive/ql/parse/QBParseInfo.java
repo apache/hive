@@ -74,6 +74,7 @@ public class QBParseInfo {
   private final Set<String> destCubes;
   private final Set<String> destGroupingSets;
   private final Map<String, ASTNode> destToHaving;
+  private final Map<String, ASTNode> destToQualify;
   private final Map<String, Boolean> destToOpType;
   // insertIntoTables/insertOverwriteTables map a table's fullName to its ast;
   private final Map<String, ASTNode> insertIntoTables;
@@ -126,6 +127,9 @@ public class QBParseInfo {
   // used by Windowing
   private final Map<String, Map<String, ASTNode>> destToWindowingExprs;
 
+  // is the query insert overwrite directory
+  private boolean isInsertOverwriteDir = false;
+
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(QBParseInfo.class.getName());
@@ -141,6 +145,7 @@ public class QBParseInfo {
     destToWhereExpr = new HashMap<String, ASTNode>();
     destToGroupby = new HashMap<String, ASTNode>();
     destToHaving = new HashMap<String, ASTNode>();
+    destToQualify = new HashMap<>();
     destToClusterby = new HashMap<String, ASTNode>();
     destToDistributeby = new HashMap<String, ASTNode>();
     destToSortby = new HashMap<String, ASTNode>();
@@ -219,6 +224,10 @@ public class QBParseInfo {
    */
   public boolean isInsertIntoTable(String fullTableName) {
     return insertIntoTables.containsKey(fullTableName.toLowerCase());
+  }
+
+  public void setInsertOverwriteDirectory(boolean isInsertOverwriteDir) {
+    this.isInsertOverwriteDir = isInsertOverwriteDir;
   }
 
   public Map<String, ASTNode> getAggregationExprsForClause(String clause) {
@@ -647,6 +656,18 @@ public class QBParseInfo {
     return destToLateralView;
   }
 
+  public void setQualifyExprForClause(String dest, ASTNode ast) {
+    destToQualify.put(dest, ast);
+  }
+
+  public ASTNode getQualifyExprForClause(String dest) {
+    return destToQualify.get(dest);
+  }
+
+  public boolean hasQualifyClause() {
+    return !destToQualify.isEmpty();
+  }
+
   protected static enum ClauseType {
     CLUSTER_BY_CLAUSE,
     DISTRIBUTE_BY_CLAUSE,
@@ -685,6 +706,10 @@ public class QBParseInfo {
 
   public boolean hasInsertTables() {
     return this.insertIntoTables.size() > 0 || this.insertOverwriteTables.size() > 0;
+  }
+
+  public boolean isInsertOverwriteDirectory() {
+    return isInsertOverwriteDir;
   }
 
   /**

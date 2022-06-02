@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.metric.MetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
@@ -134,7 +135,7 @@ import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL;
@@ -262,16 +263,19 @@ public class TestReplicationScenarios {
     // FIXME : should clean up TEST_PATH, but not doing it now, for debugging's sake
     //Clean up the warehouse after test run as we are restoring the warehouse path for other metastore creation
     Path warehousePath = new Path(MetastoreConf.getVar(hconf, MetastoreConf.ConfVars.WAREHOUSE));
-    try {
-      warehousePath.getFileSystem(hconf).delete(warehousePath, true);
-    } catch (IOException e) {
-
-    }
     Path warehousePathReplica = new Path(MetastoreConf.getVar(hconfMirror, MetastoreConf.ConfVars.WAREHOUSE));
     try {
+      warehousePath.getFileSystem(hconf).delete(warehousePath, true);
       warehousePathReplica.getFileSystem(hconfMirror).delete(warehousePathReplica, true);
     } catch (IOException e) {
 
+    }
+    Hive.closeCurrent();
+    if (metaStoreClient != null) {
+      metaStoreClient.close();
+    }
+    if (metaStoreClientMirror != null) {
+      metaStoreClientMirror.close();
     }
   }
 

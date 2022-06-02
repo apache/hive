@@ -86,16 +86,6 @@ import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER
 public class ReplUtils {
 
   public static final String LAST_REPL_ID_KEY = "hive.repl.last.repl.id";
-  public static final String REPL_CHECKPOINT_KEY = ReplConst.REPL_TARGET_DB_PROPERTY;
-  public static final String REPL_FIRST_INC_PENDING_FLAG = "hive.repl.first.inc.pending";
-
-  // write id allocated in the current execution context which will be passed through config to be used by different
-  // tasks.
-  public static final String REPL_CURRENT_TBL_WRITE_ID = "hive.repl.current.table.write.id";
-
-  public static final String REPL_IS_CUSTOM_DB_LOC = "hive.repl.is.custom.db.loc";
-
-  public static final String REPL_IS_CUSTOM_DB_MANAGEDLOC = "hive.repl.is.custom.db.managedloc";
 
   public static final String FUNCTIONS_ROOT_DIR_NAME = "_functions";
   public static final String CONSTRAINTS_ROOT_DIR_NAME = "_constraints";
@@ -230,7 +220,7 @@ public class ReplUtils {
                                                String dumpRoot, ReplicationMetricCollector metricCollector,
                                                HiveConf conf) throws SemanticException {
     HashMap<String, String> mapProp = new HashMap<>();
-    mapProp.put(REPL_CHECKPOINT_KEY, dumpRoot);
+    mapProp.put(ReplConst.REPL_TARGET_DB_PROPERTY, dumpRoot);
 
     final TableName tName = TableName.fromString(tableDesc.getTableName(), null, tableDesc.getDatabaseName());
     AlterTableSetPropertiesDesc alterTblDesc =  new AlterTableSetPropertiesDesc(tName, partSpec, null, false,
@@ -242,12 +232,13 @@ public class ReplUtils {
   public static boolean replCkptStatus(String dbName, Map<String, String> props, String dumpRoot)
           throws InvalidOperationException {
     // If ckpt property not set or empty means, bootstrap is not run on this object.
-    if ((props != null) && props.containsKey(REPL_CHECKPOINT_KEY) && !props.get(REPL_CHECKPOINT_KEY).isEmpty()) {
-      if (props.get(REPL_CHECKPOINT_KEY).equals(dumpRoot)) {
+    if ((props != null) && props.containsKey(ReplConst.REPL_TARGET_DB_PROPERTY)
+            && !props.get(ReplConst.REPL_TARGET_DB_PROPERTY).isEmpty()) {
+      if (props.get(ReplConst.REPL_TARGET_DB_PROPERTY).equals(dumpRoot)) {
         return true;
       }
       throw new InvalidOperationException(ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.format(dumpRoot,
-              props.get(REPL_CHECKPOINT_KEY)));
+              props.get(ReplConst.REPL_TARGET_DB_PROPERTY)));
     }
     return false;
   }
@@ -364,7 +355,7 @@ public class ReplUtils {
   public static boolean isFirstIncPending(Map<String, String> parameters) {
     // If flag is not set, then we assume first incremental load is done as the database/table may be created by user
     // and not through replication.
-    return parameters != null && ReplConst.TRUE.equalsIgnoreCase(parameters.get(ReplUtils.REPL_FIRST_INC_PENDING_FLAG));
+    return parameters != null && ReplConst.TRUE.equalsIgnoreCase(parameters.get(ReplConst.REPL_FIRST_INC_PENDING_FLAG));
   }
 
   public static EnvironmentContext setReplDataLocationChangedFlag(EnvironmentContext envContext) {

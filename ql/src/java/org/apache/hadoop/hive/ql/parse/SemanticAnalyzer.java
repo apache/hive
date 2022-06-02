@@ -1683,6 +1683,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               && ch.getChild(0) instanceof ASTNode) {
             ch = (ASTNode) ch.getChild(0);
             isTmpFileDest = ch.getToken().getType() == HiveParser.TOK_TMP_FILE;
+            if (ch.getToken().getType() == HiveParser.StringLiteral) {
+              qbp.setInsertOverwriteDirectory(true);
+            }
           } else {
             if (ast.getToken().getType() == HiveParser.TOK_DESTINATION
                 && ast.getChild(0).getType() == HiveParser.TOK_TAB) {
@@ -1837,6 +1840,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Clause might also refer to aggregations with distinct
         qbp.setDistinctFuncExprsForClause(ctx_1.dest,
             doPhase1GetDistinctFuncExprs(qbp.getAggregationExprsForClause(ctx_1.dest)));
+        break;
+
+      case HiveParser.TOK_QUALIFY:
+        qbp.setQualifyExprForClause(ctx_1.dest, ast);
+        qbp.addAggregationExprsForClause(ctx_1.dest,
+                doPhase1GetAggregationsFromSelect(ast, qb, ctx_1.dest));
         break;
 
       case HiveParser.KW_WINDOW:
@@ -11785,6 +11794,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator genPlan(QB qb, boolean skipAmbiguityCheck)
       throws SemanticException {
 
+    if (!ctx.isCboSucceeded() && qb.getParseInfo().hasQualifyClause()) {
+      throw new SemanticException(ErrorMsg.CBO_IS_REQUIRED.getErrorCodedMsg("Qualify clause"));
+    }
+
     // First generate all the opInfos for the elements in the from clause
     // Must be deterministic order map - see HIVE-8707
     Map<String, Operator> aliasToOpInfo = new LinkedHashMap<String, Operator>();
@@ -13717,6 +13730,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // outputs is empty, which means this create table happens in the current
       // database.
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), crtTblDesc)));
+      String tblLocation = null;
+      if (location != null) {
+        tblLocation = location;
+      } else {
+        try {
+          Warehouse wh = new Warehouse(conf);
+          tblLocation = wh.getDefaultTablePath(db.getDatabase(qualifiedTabName.getDb()), qualifiedTabName.getTable(),
+                  isExt).toUri().getPath();
+        } catch (MetaException | HiveException e) {
+          throw new SemanticException(e);
+        }
+      }
+      if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.META_TABLE_LOCATION, tblLocation)) {
+        throw new SemanticException(
+            "Query state attached to Session state must be not null. Table location cannot be saved.");
+      }
       break;
     case ctt: // CREATE TRANSACTIONAL TABLE
       if (isExt && !isDefaultTableTypeChanged) {
@@ -15203,6 +15232,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return false;
     }
     if (qb.getParseInfo().hasInsertTables()) {
+      return false;
+    }
+    if (qb.getParseInfo().isInsertOverwriteDirectory()) {
       return false;
     }
 

@@ -146,6 +146,13 @@ havingClause
     KW_HAVING havingCondition -> ^(TOK_HAVING havingCondition)
     ;
 
+qualifyClause
+@init { gParent.pushMsg("qualify clause", state); }
+@after { gParent.popMsg(state); }
+    :
+    KW_QUALIFY expression -> ^(TOK_QUALIFY expression)
+    ;
+
 havingCondition
 @init { gParent.pushMsg("having condition", state); }
 @after { gParent.popMsg(state); }

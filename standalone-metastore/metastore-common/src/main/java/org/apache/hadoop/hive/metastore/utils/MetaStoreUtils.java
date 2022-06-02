@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.utils;
 
 import java.io.File;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
@@ -300,6 +301,20 @@ public class MetaStoreUtils {
       return true;
     }
     return false;
+  }
+
+  public static List<String> getReplicationDbProps() {
+    return Arrays.stream(ReplConst.class.getDeclaredFields())
+            .filter(field -> Modifier.isStatic(field.getModifiers()))
+            .map(field -> {
+              try {
+                String prop = (String) field.get(String.class);
+                return prop.replace("\"", "");
+              } catch (IllegalAccessException e) {
+                LOG.error("Failed to collect replication specific properties. Reason: ", e);
+                throw new RuntimeException(e);
+              }
+            }).collect(Collectors.toList());
   }
 
   /**

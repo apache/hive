@@ -252,9 +252,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     OrcRecordReader(Reader file, Configuration conf,
                     FileSplit split) throws IOException {
-      List<OrcProto.Type> types = file.getTypes();
       this.file = file;
-      numColumns = (types.size() == 0) ? 0 : types.get(0).getSubtypesCount();
+      numColumns = file.getSchema().getChildren().size();
       this.offset = split.getStart();
       this.length = split.getLength();
       this.reader = createReaderFromFile(file, conf, offset, length);

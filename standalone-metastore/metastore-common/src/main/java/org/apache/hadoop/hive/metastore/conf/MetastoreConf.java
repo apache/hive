@@ -875,7 +875,7 @@ public class MetastoreConf {
             "The special string _HOST will be replaced automatically with the correct host name."),
     THRIFT_METASTORE_AUTHENTICATION("metastore.authentication", "hive.metastore.authentication",
             "NOSASL",
-      new StringSetValidator("NOSASL", "NONE", "LDAP", "KERBEROS", "CUSTOM"),
+      new StringSetValidator("NOSASL", "NONE", "LDAP", "KERBEROS", "CUSTOM", "JWT"),
         "Client authentication types.\n" +
                 "  NONE: no authentication check\n" +
                 "  LDAP: LDAP/AD based authentication\n" +
@@ -883,7 +883,12 @@ public class MetastoreConf {
                 "  CUSTOM: Custom authentication provider\n" +
                 "          (Use with property metastore.custom.authentication.class)\n" +
                 "  CONFIG: username and password is specified in the config" +
-                "  NOSASL:  Raw transport"),
+                "  NOSASL:  Raw transport" +
+                "  JWT:  JSON Web Token authentication via JWT token. Only supported in Http/Https mode"),
+    THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL("metastore.authentication.jwt.jwks.url",
+        "hive.metastore.authentication.jwt.jwks.url", "", "File URL from where URLBasedJWKSProvider "
+        + "in metastore server will try to load JWKS to match a JWT sent in HTTP request header. Used only when "
+        + "Hive metastore server is running in JWT auth mode"),
     METASTORE_CUSTOM_AUTHENTICATION_CLASS("metastore.custom.authentication.class",
             "hive.metastore.custom.authentication.class",
             "",
@@ -1544,9 +1549,11 @@ public class MetastoreConf {
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
     METASTORE_CLIENT_AUTH_MODE("metastore.client.auth.mode",
             "hive.metastore.client.auth.mode", "NOSASL",
-            new StringSetValidator("NOSASL", "PLAIN", "KERBEROS"),
+            new StringSetValidator("NOSASL", "PLAIN", "KERBEROS", "JWT"),
             "If PLAIN, clients will authenticate using plain authentication, by providing username" +
-                    " and password. Any other value is ignored right now but may be used later."),
+                    " and password. Any other value is ignored right now but may be used later."
+                + "If JWT- Supported only in HTTP transport mode. If set, HMS Client will pick the value of JWT from "
+                + "environment variable HMS_JWT and set it in Authorization header in http request"),
     METASTORE_CLIENT_PLAIN_USERNAME("metastore.client.plain.username",
             "hive.metastore.client.plain.username",  "",
         "The username used by the metastore client when " +

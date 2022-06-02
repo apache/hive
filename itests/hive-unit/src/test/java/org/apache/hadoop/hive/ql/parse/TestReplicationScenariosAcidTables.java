@@ -77,7 +77,7 @@ import java.util.List;
 import java.util.Map;
 
 
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.junit.Assert.assertEquals;
@@ -154,6 +154,50 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     replica.run("drop database if exists " + replicatedDbName + " cascade");
     replicaNonAcid.run("drop database if exists " + replicatedDbName + " cascade");
     primary.run("drop database if exists " + primaryDbName + "_extra cascade");
+  }
+
+  @Test
+  public void testReplAlterDbEventsNotCapturedInNotificationLog() throws Throwable {
+    String srcDbName = "srcDb";
+    String replicaDb = "tgtDb";
+    try {
+      //Perform empty bootstrap dump and load
+      primary.run("CREATE DATABASE " + srcDbName);
+      long lastEventId = primary.getCurrentNotificationEventId().getEventId();
+      //Assert that repl.source.for is not captured in NotificationLog
+      WarehouseInstance.Tuple dumpData = primary.dump(srcDbName);
+      long latestEventId = primary.getCurrentNotificationEventId().getEventId();
+      assertEquals(lastEventId, latestEventId);
+
+      replica.run("REPL LOAD " + srcDbName + " INTO " + replicaDb);
+      latestEventId = replica.getCurrentNotificationEventId().getEventId();
+      //Assert that repl.target.id, hive.repl.ckpt.key and hive.repl.first.inc.pending is not captured in notificationLog.
+      assertEquals(latestEventId, lastEventId + 1); //This load will generate only 1 event i.e. CREATE_DATABASE
+
+      WarehouseInstance.Tuple incDump = primary.run("use " + srcDbName)
+              .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                      "tblproperties (\"transactional\"=\"true\")")
+              .run("insert into t1 values(1)")
+              .dump(srcDbName);
+
+      //Assert that repl.last.id is not captured in notification log.
+      long noOfEventsInDumpDir = primary.getNoOfEventsDumped(incDump.dumpLocation, conf);
+      lastEventId = primary.getCurrentNotificationEventId().getEventId();
+      replica.run("REPL LOAD " + srcDbName + " INTO " + replicaDb);
+
+      latestEventId = replica.getCurrentNotificationEventId().getEventId();
+
+      //Validate that there is no addition event generated in notificationLog table apart from replayed ones.
+      assertEquals(latestEventId, lastEventId + noOfEventsInDumpDir);
+
+      long targetDbReplId = Long.parseLong(replica.getDatabase(replicaDb)
+              .getParameters().get(ReplConst.REPL_TARGET_TABLE_PROPERTY));
+      //Validate that repl.last.id db property has been updated successfully.
+      assertEquals(targetDbReplId, lastEventId);
+    } finally {
+      primary.run("DROP DATABASE IF EXISTS " + srcDbName + " CASCADE");
+      replica.run("DROP DATABASE IF EXISTS " + replicaDb + " CASCADE");
+    }
   }
 
   @Test
@@ -930,8 +974,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     lastEventId = replica.getCurrentNotificationEventId().getEventId();
     replica.run("REPL LOAD " + primaryDbName + " INTO " + replicatedDbName);
     currentEventId = replica.getCurrentNotificationEventId().getEventId();
-    //This iteration of repl load will have only one event i.e ALTER_DATABASE to update repl.last.id for the target db.
-    assert currentEventId == lastEventId + 1;
+    assert currentEventId == lastEventId;
 
     primary.run("ALTER DATABASE " + primaryDbName +
             " SET DBPROPERTIES('" + ReplConst.TARGET_OF_REPLICATION + "'='')");
@@ -1729,7 +1772,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             primary.dump(primaryDbName);
 
     long lastReplId = Long.parseLong(bootStrapDump.lastReplicationId);
-    primary.testEventCounts(primaryDbName, lastReplId, null, null, 12);
+    primary.testEventCounts(primaryDbName, lastReplId, null, null, 10);
 
     // Test load
     replica.load(replicatedDbName, primaryDbName)
@@ -2278,14 +2321,18 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     fs.delete(ackLastEventID, false);
     fs.delete(dumpMetaData, false);
     //delete all the event folder except first one.
-    long firstIncEventID = Long.parseLong(bootstrapDump.lastReplicationId) + 1;
+    long firstIncEventID = -1;
     long lastIncEventID = Long.parseLong(incrementalDump1.lastReplicationId);
     assertTrue(lastIncEventID > (firstIncEventID + 1));
 
-    for (long eventId=firstIncEventID + 1; eventId<=lastIncEventID; eventId++) {
+    for (long eventId=Long.parseLong(bootstrapDump.lastReplicationId) + 1; eventId<=lastIncEventID; eventId++) {
       Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventId));
       if (fs.exists(eventRoot)) {
-        fs.delete(eventRoot, true);
+        if (firstIncEventID == -1){
+          firstIncEventID = eventId;
+        } else {
+          fs.delete(eventRoot, true);
+        }
       }
     }
 

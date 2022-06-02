@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +38,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.BaseMetastoreTableOperations;
@@ -79,6 +83,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import static org.apache.iceberg.TableProperties.GC_ENABLED;
 import static org.apache.iceberg.types.Types.NestedField.optional;
@@ -128,7 +134,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
     for (TestTables.TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
       testParams.add(new Object[] {testTableType});
     }
-
     return testParams;
   }
 
@@ -1412,7 +1417,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Test
   public void testAuthzURI() throws TException, InterruptedException, URISyntaxException {
     TableIdentifier target = TableIdentifier.of("default", "target");
-    testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(target);
 
@@ -1420,7 +1425,52 @@ public class TestHiveIcebergStorageHandlerNoScan {
     storageHandler.setConf(shell.getHiveConf());
     URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
 
-    Assert.assertEquals("iceberg://" + hmsTable.getDbName() + "/" + hmsTable.getTableName(), uriForAuth.toString());
+    Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
+        URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath(),
+        HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(uriForAuth.toString()));
+
+  }
+
+  @Test
+  public void testAuthzURIWithAuthEnabledAndMockCommandAuthorizer() throws HiveException {
+    shell.setHiveSessionValue("hive.security.authorization.enabled", true);
+    shell.setHiveSessionValue("hive.security.authorization.manager",
+        "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());
+    HiveAuthorizer authorizer = CustomTestHiveAuthorizerFactory.getAuthorizer();
+    ArgumentCaptor<List<HivePrivilegeObject>> outputHObjsCaptor = ArgumentCaptor.forClass(List.class);
+    Mockito.verify(authorizer).checkPrivileges(Mockito.any(), Mockito.any(), outputHObjsCaptor.capture(),
+        Mockito.any());
+    Optional<HivePrivilegeObject> hivePrivObject = outputHObjsCaptor.getValue().stream()
+        .filter(hpo -> hpo.getType().equals(HivePrivilegeObject.HivePrivilegeObjectType.STORAGEHANDLER_URI)).findAny();
+    if (hivePrivObject.isPresent()) {
+      Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
+              new Path(((BaseTable) table).operations().current().metadataFileLocation()).getParent().toUri()
+                  .getPath() +
+              "/dummy.metadata.json",
+          HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(hivePrivObject.get().getObjectName()));
+    } else {
+      Assert.fail("StorageHandler auth URI is not found");
+    }
+  }
+
+  @Test
+  public void testAuthzURIWithAuthEnabled() throws TException, InterruptedException, URISyntaxException {
+    shell.setHiveSessionValue("hive.security.authorization.enabled", true);
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(target);
+
+    HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+    storageHandler.setConf(shell.getHiveConf());
+    URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
+    Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
+        URI.create(((BaseTable) table).operations().current()
+        .metadataFileLocation()).getPath(),
+        HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(uriForAuth.toString()));
   }
 
   @Test
