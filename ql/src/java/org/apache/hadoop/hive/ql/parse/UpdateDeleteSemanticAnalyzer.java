@@ -364,4 +364,9 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
   private boolean deleting() {
     return operation == Context.Operation.DELETE;
   }
+
+  @Override
+  protected boolean allowOutputMultipleTimes() {
+    return conf.getBoolVar(HiveConf.ConfVars.SPLIT_UPDATE);
+  }
 }

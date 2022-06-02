@@ -701,4 +701,9 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       return sb.toString();
     }
   }
+
+  @Override
+  protected boolean allowOutputMultipleTimes() {
+    return conf.getBoolVar(HiveConf.ConfVars.SPLIT_UPDATE) || conf.getBoolVar(HiveConf.ConfVars.MERGE_SPLIT_UPDATE);
+  }
 }
