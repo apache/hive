@@ -17,26 +17,25 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.ObjectPool;
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.hive.common.util.HiveStringUtils.SHUTDOWN_HOOK_PRIORITY;
 
 /**
  * Singleton service responsible for heartbeating the compaction transactions.
@@ -46,7 +45,7 @@ class CompactionHeartbeatService {
 
   private static final Logger LOG = LoggerFactory.getLogger(CompactionHeartbeatService.class);
 
-  private static volatile CompactionHeartbeatService INSTANCE;
+  private static volatile CompactionHeartbeatService instance;
 
   /**
    * Return the singleton instance of this class.
@@ -55,32 +54,32 @@ class CompactionHeartbeatService {
    * @throws IllegalStateException Thrown when the service has already been shut down.
    */
   static CompactionHeartbeatService getInstance(HiveConf conf) {
-    if (INSTANCE == null) {
+    if (instance == null) {
       synchronized (CompactionHeartbeatService.class) {
-        if (INSTANCE == null) {
+        if (instance == null) {
           LOG.debug("Initializing compaction txn heartbeater service.");
-          INSTANCE = new CompactionHeartbeatService(conf);
-          Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+          instance = new CompactionHeartbeatService(conf);
+          ShutdownHookManager.addShutdownHook(() -> {
             try {
-              INSTANCE.shutdown();
+              instance.shutdown();
             } catch (InterruptedException e) {
               Thread.currentThread().interrupt();
             }
-          }));
+          }, SHUTDOWN_HOOK_PRIORITY);
         }
       }
     }
-    if (INSTANCE.heartbeatExecutor.isShutdown()) {
+    if (instance.heartbeatExecutor.isShutdown()) {
       throw new IllegalStateException("The CompactionHeartbeatService is already shut down!");
     }
-    return INSTANCE;
+    return instance;
   }
 
   private final ScheduledExecutorService heartbeatExecutor;
   private final ObjectPool<IMetaStoreClient> clientPool;
   private final long initialDelay;
   private final long period;
-  private final ConcurrentHashMap<Long, TaskWrapper> tasks = new ConcurrentHashMap<>(30);
+  private final HashMap<Long, TaskWrapper> tasks = new HashMap<>(30);
 
   /**
    * Starts the heartbeat for the given transaction
@@ -105,7 +104,7 @@ class CompactionHeartbeatService {
    * @throws IllegalStateException Thrown when there is no {@link CompactionHeartbeater} task associated with the
    * given txnId.
    */
-  void stopHeartbeat(long txnId) {
+  void stopHeartbeat(long txnId) throws InterruptedException {
     LOG.info("Stopping heartbeat task for TXN {}", txnId);
     TaskWrapper wrapper = tasks.get(txnId);
     if (wrapper == null) {
@@ -113,12 +112,10 @@ class CompactionHeartbeatService {
     }
     wrapper.future.cancel(false);
     try {
-      wrapper.heartbeater.waitUntilFinish();
-    } catch (InterruptedException e) {
-      //Restore interrupted state, but let the compaction txn commit/abort
-      Thread.currentThread().interrupt();
+      wrapper.heartbeater.waitUntilFinish(initialDelay);
+    } finally {
+      tasks.remove(txnId);
     }
-    tasks.remove(txnId);
   }
 
   /**
@@ -139,7 +136,8 @@ class CompactionHeartbeatService {
   }
 
   private CompactionHeartbeatService(HiveConf conf) {
-    heartbeatExecutor = Executors.newScheduledThreadPool(1);
+    heartbeatExecutor = Executors.newScheduledThreadPool(
+        MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS));
     GenericObjectPoolConfig<IMetaStoreClient> config = new GenericObjectPoolConfig<>();
     config.setMinIdle(1);
     config.setMaxIdle(2);
@@ -154,38 +152,6 @@ class CompactionHeartbeatService {
     long txnTimeout = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     initialDelay = txnTimeout / 4;
     period = txnTimeout / 2;
-  }
-
-  private static final class IMetaStoreClientFactory extends BasePooledObjectFactory<IMetaStoreClient> {
-
-    private final HiveConf conf;
-
-    @Override
-    public IMetaStoreClient create() throws Exception {
-      return HiveMetaStoreUtils.getHiveMetastoreClient(conf);
-    }
-
-    @Override
-    public PooledObject<IMetaStoreClient> wrap(IMetaStoreClient iMetaStoreClient) {
-      return new DefaultPooledObject<>(iMetaStoreClient);
-    }
-
-    @Override
-    public void destroyObject(PooledObject<IMetaStoreClient> p) {
-      p.getObject().close();
-    }
-
-    @Override
-    public boolean validateObject(PooledObject<IMetaStoreClient> p) {
-      //Not in use currently, would be good to validate the client at borrowing/returning, but this needs support from
-      //MetaStoreClient side
-      return super.validateObject(p);
-    }
-
-    public IMetaStoreClientFactory(HiveConf conf) {
-      this.conf = Objects.requireNonNull(conf);
-    }
-
   }
 
   private final class CompactionHeartbeater implements Runnable {
@@ -226,10 +192,10 @@ class CompactionHeartbeatService {
       }
     }
 
-    public void waitUntilFinish() throws InterruptedException {
+    public void waitUntilFinish(long timeout) throws InterruptedException {
       synchronized (lock) {
         if (running) {
-          lock.wait();
+          lock.wait(timeout);
         }
       }
     }

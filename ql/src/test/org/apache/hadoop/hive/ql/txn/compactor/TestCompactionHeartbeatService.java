@@ -84,7 +84,7 @@ public class TestCompactionHeartbeatService {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void testStopHeartbeatForNonExistentTxn() {
+  public void testStopHeartbeatForNonExistentTxn() throws InterruptedException {
     CompactionHeartbeatService.getInstance(conf).stopHeartbeat(0);
   }
 
