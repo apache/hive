@@ -32,4 +32,10 @@ public abstract class ColumnStatsAggregator {
   public abstract ColumnStatisticsObj aggregate(
       List<ColStatsObjWithSourceInfo> colStatsWithSourceInfo, List<String> partNames,
       boolean areAllPartsFound) throws MetaException;
+
+  void checkStatisticsList(List<ColStatsObjWithSourceInfo> colStatsWithSourceInfo) {
+    if (colStatsWithSourceInfo.isEmpty()) {
+      throw new IllegalArgumentException("Column statistics list must not be empty when aggregating");
+    }
+  }
 }
