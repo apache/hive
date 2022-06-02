@@ -3698,6 +3698,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
          * compactions for any resource.
          */
         handle = getMutexAPI().acquireLock(MUTEX_KEY.CompactionScheduler.name());
+
         try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED)) {
           try (Statement stmt = dbConn.createStatement()) {
 
@@ -3798,6 +3799,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             }
             buf.append(")");
             String s = buf.toString();
+
             try (PreparedStatement pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params)) {
               LOG.debug("Going to execute update <" + s + ">");
               pst.executeUpdate();
