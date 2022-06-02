@@ -527,7 +527,7 @@ public abstract class TaskCompiler {
         suffix = getTableOrMVSuffix(pCtx, createTableOrMVUseSuffix);
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
         protoName = pCtx.getCreateViewDesc().getViewName();
-        createTableOrMVUseSuffix &= AcidUtils.isTransactionalTable(pCtx.getCreateViewDesc().getTblProps());
+        createTableOrMVUseSuffix &= AcidUtils.isTablePropertyTransactional(pCtx.getCreateViewDesc().getTblProps());
         suffix = getTableOrMVSuffix(pCtx, createTableOrMVUseSuffix);
       }
       String[] names = Utilities.getDbTableName(protoName);
