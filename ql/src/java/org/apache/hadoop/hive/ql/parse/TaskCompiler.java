@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ResultFileFormat;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -101,9 +100,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
-import static org.apache.hadoop.hive.ql.io.AcidUtils.DELTA_DIGITS;
 
 /**
  * TaskCompiler is a the base class for classes that compile
@@ -523,6 +519,7 @@ public abstract class TaskCompiler {
 
       if (pCtx.getQueryProperties().isCTAS()) {
         protoName = pCtx.getCreateTable().getDbTableName();
+        isExternal = pCtx.getCreateTable().isExternal();
         createTableOrMVUseSuffix &= AcidUtils.isTransactionalTable(pCtx.getCreateTable().getTblProps());
         suffix = getTableOrMVSuffix(pCtx, createTableOrMVUseSuffix);
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
