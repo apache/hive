@@ -64,10 +64,10 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
   protected void analyze(ASTNode tree, Table table, ASTNode tabNameNode) throws SemanticException {
     switch (tree.getToken().getType()) {
     case HiveParser.TOK_DELETE_FROM:
-      analyzeDelete(tree, tabNameNode, table);
+      analyzeDelete(tree, table, tabNameNode);
       break;
     case HiveParser.TOK_UPDATE_TABLE:
-      analyzeUpdate(tree, tabNameNode, table);
+      analyzeUpdate(tree, table, tabNameNode);
       break;
     default:
       throw new RuntimeException("Asked to parse token " + tree.getName() + " in " +
@@ -75,20 +75,20 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
   }
 
-  private void analyzeUpdate(ASTNode tree, ASTNode tabNameNode, Table mTable) throws SemanticException {
+  private void analyzeUpdate(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
     operation = Context.Operation.UPDATE;
     boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
 
     if (HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.SPLIT_UPDATE) && !nonNativeAcid) {
       analyzeSplitUpdate(tree, mTable, tabNameNode);
     } else {
-      reparseAndSuperAnalyze(tree, tabNameNode, mTable);
+      reparseAndSuperAnalyze(tree, mTable, tabNameNode);
     }
   }
 
-  private void analyzeDelete(ASTNode tree, ASTNode tabNameNode, Table mTable) throws SemanticException {
+  private void analyzeDelete(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
     operation = Context.Operation.DELETE;
-    reparseAndSuperAnalyze(tree, tabNameNode, mTable);
+    reparseAndSuperAnalyze(tree, mTable, tabNameNode);
   }
 
   /**
@@ -110,7 +110,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
    * The sort by clause is put in there so that records come out in the right order to enable
    * merge on read.
    */
-  private void reparseAndSuperAnalyze(ASTNode tree, ASTNode tabNameNode, Table mTable) throws SemanticException {
+  private void reparseAndSuperAnalyze(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
     List<? extends Node> children = tree.getChildren();
 
     // save the operation type into the query state
