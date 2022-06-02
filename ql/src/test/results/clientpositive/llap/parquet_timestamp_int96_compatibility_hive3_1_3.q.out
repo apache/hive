@@ -6,11 +6,11 @@ POSTHOOK: query: create table employee (eid INT, birth timestamp) stored as parq
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@employee
-PREHOOK: query: LOAD DATA LOCAL INPATH '/home/stamatis/Projects/Apache/hive/itests/qtest/../..//data/files/employee_hive_3_1_3_us_pacific.parquet' into table employee
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/employee_hive_3_1_3_us_pacific.parquet' into table employee
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@employee
-POSTHOOK: query: LOAD DATA LOCAL INPATH '/home/stamatis/Projects/Apache/hive/itests/qtest/../..//data/files/employee_hive_3_1_3_us_pacific.parquet' into table employee
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/employee_hive_3_1_3_us_pacific.parquet' into table employee
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@employee

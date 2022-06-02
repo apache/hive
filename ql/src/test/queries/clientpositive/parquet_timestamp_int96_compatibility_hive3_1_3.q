@@ -5,7 +5,7 @@
 -- allow us to infer that new Date/Time APIS should be used for the conversion. The
 -- hive.parquet.timestamp.legacy.conversion.enabled property shouldn't be taken into account in this
 -- case.
-LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/employee_hive_3_1_3_us_pacific.parquet' into table employee;    
+LOAD DATA LOCAL INPATH '../../data/files/employee_hive_3_1_3_us_pacific.parquet' into table employee;    
 
 -- Read timestamps using the non-vectorized reader
 set hive.vectorized.execution.enabled=false;
