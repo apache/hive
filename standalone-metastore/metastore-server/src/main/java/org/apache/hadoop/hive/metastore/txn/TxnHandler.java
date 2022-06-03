@@ -3808,14 +3808,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             dbConn.commit();
             return new CompactionResponse(id, INITIATED_RESPONSE, true);
           } catch (SQLException e) {
+            LOG.debug("Going to rollback: ", e);
             dbConn.rollback();
             throw e;
           }
         }
       } catch (SQLException e) {
-        LOG.debug("Going to rollback: ", e);
         checkRetryable(e, "COMPACT(" + rqst + ")");
-        throw new MetaException("Unable to select from transaction database " +
+        throw new MetaException("Unable to put the compaction request into the queue: " +
           StringUtils.stringifyException(e));
       } finally {
         if (handle != null) {
