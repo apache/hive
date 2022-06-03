@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.PartitionSpec;
@@ -32,8 +33,10 @@ import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
 import org.junit.Assert;
@@ -221,5 +224,59 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
     objects = shell.executeStatement("SELECT * FROM target");
     Assert.assertTrue(objects.isEmpty());
+  }
+
+  @Test
+  public void testCTASUnsupportedTypeWithoutAutoConversion() {
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Map<String, Type> notSupportedTypes = ImmutableMap.of(
+        "TINYINT", Types.IntegerType.get(),
+        "SMALLINT", Types.IntegerType.get(),
+        "VARCHAR(1)", Types.StringType.get(),
+        "CHAR(1)", Types.StringType.get());
+
+
+    for (String notSupportedType : notSupportedTypes.keySet()) {
+      shell.executeStatement(String.format("CREATE TABLE source (s %s) STORED AS ORC", notSupportedType));
+      AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+          "Unsupported Hive type: ", () -> {
+            shell.executeStatement(String.format(
+                "CREATE TABLE target STORED BY ICEBERG %s %s AS SELECT * FROM source",
+                testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),
+                testTables.propertiesForCreateTableSQL(
+                    ImmutableMap.of(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString())
+                )
+            ));
+          });
+      shell.executeStatement("DROP TABLE source");
+    }
+  }
+
+  @Test
+  public void testCTASUnsupportedTypeWithAutoConversion() {
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Map<String, Type> notSupportedTypes = ImmutableMap.of(
+        "TINYINT", Types.IntegerType.get(),
+        "SMALLINT", Types.IntegerType.get(),
+        "VARCHAR(1)", Types.StringType.get(),
+        "CHAR(1)", Types.StringType.get());
+
+    shell.setHiveSessionValue(InputFormatConfig.SCHEMA_AUTO_CONVERSION, "true");
+
+    for (String notSupportedType : notSupportedTypes.keySet()) {
+      shell.executeStatement(String.format("CREATE TABLE source (s %s) STORED AS ORC", notSupportedType));
+      shell.executeStatement(String.format(
+          "CREATE TABLE target STORED BY ICEBERG %s %s AS SELECT * FROM source",
+          testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),
+          testTables.propertiesForCreateTableSQL(
+              ImmutableMap.of(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString())
+          )
+      ));
+
+      org.apache.iceberg.Table icebergTable = testTables.loadTable(TableIdentifier.of("default", "target"));
+      Assert.assertEquals(notSupportedTypes.get(notSupportedType), icebergTable.schema().columns().get(0).type());
+      shell.executeStatement("DROP TABLE source");
+      shell.executeStatement("DROP TABLE target");
+    }
   }
 }
