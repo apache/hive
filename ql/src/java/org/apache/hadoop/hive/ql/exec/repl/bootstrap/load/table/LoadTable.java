@@ -182,7 +182,7 @@ public class LoadTable {
       return ReplLoadOpType.LOAD_REPLACE;
     }
 
-    if (ReplUtils.replCkptStatus(table.getDbName(), table.getParameters(), context.dumpDirectory)) {
+    if (ReplUtils.replCkptStatus(table.getParameters(), context.dumpDirectory)) {
       return ReplLoadOpType.LOAD_SKIP;
     }
     return ReplLoadOpType.LOAD_REPLACE;

@@ -417,7 +417,7 @@ public class LoadPartitions {
     if (ptn == null) {
       return ReplLoadOpType.LOAD_NEW;
     }
-    if (ReplUtils.replCkptStatus(tableContext.dbNameToLoadIn, ptn.getParameters(), context.dumpDirectory)) {
+    if (ReplUtils.replCkptStatus(ptn.getParameters(), context.dumpDirectory)) {
       return ReplLoadOpType.LOAD_SKIP;
     }
     return ReplLoadOpType.LOAD_REPLACE;

@@ -229,7 +229,7 @@ public class ReplUtils {
             true, (new Path(dumpRoot)).getParent().toString(), metricCollector), conf);
   }
 
-  public static boolean replCkptStatus(String dbName, Map<String, String> props, String dumpRoot)
+  public static boolean replCkptStatus(Map<String, String> props, String dumpRoot)
           throws InvalidOperationException {
     // If ckpt property not set or empty means, bootstrap is not run on this object.
     if ((props != null) && props.containsKey(ReplConst.REPL_TARGET_DB_PROPERTY)
