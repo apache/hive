@@ -134,6 +134,8 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     }
 
     job.set(InputFormatConfig.SELECTED_COLUMNS, job.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
+    job.setBoolean(InputFormatConfig.FETCH_VIRTUAL_COLUMNS,
+            job.getBoolean(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR, false));
     job.set(InputFormatConfig.AS_OF_TIMESTAMP, job.get(TableScanDesc.AS_OF_TIMESTAMP, "-1"));
     job.set(InputFormatConfig.SNAPSHOT_ID, job.get(TableScanDesc.AS_OF_VERSION, "-1"));
 
@@ -147,6 +149,8 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
   public RecordReader<Void, Container<Record>> getRecordReader(InputSplit split, JobConf job,
                                                                Reporter reporter) throws IOException {
     job.set(InputFormatConfig.SELECTED_COLUMNS, job.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, ""));
+    job.setBoolean(InputFormatConfig.FETCH_VIRTUAL_COLUMNS,
+            job.getBoolean(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR, false));
 
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) && Utilities.getIsVectorized(job)) {
       Preconditions.checkArgument(MetastoreUtil.hive3PresentOnClasspath(), "Vectorization only supported for Hive 3+");

@@ -32,8 +32,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
-import org.apache.hadoop.hive.ql.Context.Operation;
-import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -61,7 +59,6 @@ import org.apache.iceberg.avro.Avro;
 import org.apache.iceberg.common.DynMethods;
 import org.apache.iceberg.data.DeleteFilter;
 import org.apache.iceberg.data.GenericDeleteFilter;
-import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.IdentityPartitionConverters;
 import org.apache.iceberg.data.InternalRecordWrapper;
 import org.apache.iceberg.data.avro.DataReader;
@@ -241,7 +238,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
     private T current;
     private CloseableIterator<T> currentIterator;
     private Table table;
-    private boolean updateOrDelete;
+    private boolean fetchVirtualColumns;
 
     @Override
     public void initialize(InputSplit split, TaskAttemptContext newContext) {
@@ -258,9 +255,16 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       this.reuseContainers = conf.getBoolean(InputFormatConfig.REUSE_CONTAINERS, false);
       this.inMemoryDataModel = conf.getEnum(InputFormatConfig.IN_MEMORY_DATA_MODEL,
               InputFormatConfig.InMemoryDataModel.GENERIC);
-      this.currentIterator = open(tasks.next(), expectedSchema).iterator();
-      Operation operation = HiveIcebergStorageHandler.operation(conf, conf.get(Catalogs.NAME));
-      this.updateOrDelete = Operation.DELETE.equals(operation) || Operation.UPDATE.equals(operation);
+      this.fetchVirtualColumns = InputFormatConfig.fetchVirtualColumns(conf);
+      this.currentIterator = nextTask();
+    }
+
+    private CloseableIterator<T> nextTask() {
+      CloseableIterator<T> closeableIterator = open(tasks.next(), expectedSchema).iterator();
+      if (!fetchVirtualColumns) {
+        return closeableIterator;
+      }
+      return new IcebergAcidUtil.VirtualColumnAwareIterator<T>(closeableIterator, expectedSchema, conf);
     }
 
     @Override
@@ -268,18 +272,10 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       while (true) {
         if (currentIterator.hasNext()) {
           current = currentIterator.next();
-          if (updateOrDelete) {
-            GenericRecord rec = (GenericRecord) current;
-            PositionDeleteInfo.setIntoConf(conf,
-                IcebergAcidUtil.parseSpecId(rec),
-                IcebergAcidUtil.computePartitionHash(rec),
-                IcebergAcidUtil.parseFilePath(rec),
-                IcebergAcidUtil.parseFilePosition(rec));
-          }
           return true;
         } else if (tasks.hasNext()) {
           currentIterator.close();
-          currentIterator = open(tasks.next(), expectedSchema).iterator();
+          this.currentIterator = nextTask();
         } else {
           currentIterator.close();
           return false;
@@ -511,24 +507,11 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       readSchema = caseSensitive ? table.schema().select(selectedColumns) :
           table.schema().caseInsensitiveSelect(selectedColumns);
 
-      Operation operation = HiveIcebergStorageHandler.operation(conf, conf.get(Catalogs.NAME));
-      if (operation != null) {
-        switch (operation) {
-          case DELETE:
-            // for DELETE queries, add additional metadata columns into the read schema
-            return IcebergAcidUtil.createFileReadSchemaForDelete(readSchema.columns(), table);
-          case UPDATE:
-            // for UPDATE queries, add additional metadata columns into the read schema
-            return IcebergAcidUtil.createFileReadSchemaForUpdate(readSchema.columns(), table);
-          case OTHER:
-            // for INSERT queries no extra columns are needed
-            return readSchema;
-          default:
-            throw new IllegalArgumentException("Not supported operation " + operation);
-        }
-      } else {
-        return readSchema;
+      if (InputFormatConfig.fetchVirtualColumns(conf)) {
+        return IcebergAcidUtil.createFileReadSchemaWithVirtualColums(readSchema.columns(), table);
       }
+
+      return readSchema;
     }
 
     private static Schema schemaWithoutConstantsAndMeta(Schema readSchema, Map<Integer, ?> idToConstant) {
@@ -548,5 +531,4 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       return TypeUtil.selectNot(readSchema, collect);
     }
   }
-
 }

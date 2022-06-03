@@ -370,12 +370,14 @@ public class MapOperator extends AbstractMapOperator {
           Configuration clonedConf = new Configuration(hconf);
           clonedConf.unset(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
           clonedConf.unset(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+          clonedConf.unset(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR);
           clonedConf.unset(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR);
           tableNameToConf.put(tableName, clonedConf);
         }
         Configuration newConf = tableNameToConf.get(tableName);
         ColumnProjectionUtils.appendReadColumns(newConf, tableScanDesc.getNeededColumnIDs(),
-            tableScanDesc.getOutputColumnNames(), tableScanDesc.getNeededNestedColumnPaths());
+            tableScanDesc.getOutputColumnNames(), tableScanDesc.getNeededNestedColumnPaths(),
+            tableScanDesc.hasVirtualCols());
       }
     }
 

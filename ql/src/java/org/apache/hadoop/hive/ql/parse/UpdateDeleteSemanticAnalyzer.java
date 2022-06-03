@@ -102,9 +102,6 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     validateTxnManager(mTable);
     validateTargetTable(mTable);
 
-    // save the operation type into the query state
-    SessionStateUtil.addResource(conf, Context.Operation.class.getSimpleName(), operation.name());
-
     StringBuilder rewrittenQueryStr = new StringBuilder();
     rewrittenQueryStr.append("insert into table ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
