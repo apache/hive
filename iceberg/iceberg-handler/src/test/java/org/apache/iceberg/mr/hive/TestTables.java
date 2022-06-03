@@ -169,6 +169,36 @@ abstract class TestTables {
     return createTable(shell, tableName, schema, fileFormat, records, 1);
   }
 
+
+  /**
+   * Creates a non partitioned Hive test table. Creates the Iceberg table/data and creates the corresponding Hive
+   * table as well when needed. The table will be in the 'default' database. The table will be populated with the
+   * provided List of {@link Record}s and will create extra snapshots by inserting one more line into the table.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param versions The number of history elements we want to create
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTableWithVersions(TestHiveShell shell, String tableName, Schema schema, FileFormat fileFormat,
+      List<Record> records, int versions) throws IOException, InterruptedException {
+    Table table = createTable(shell, tableName, schema, fileFormat, records);
+
+    for (int i = 0; i < versions - 1; ++i) {
+      // Just wait a little so we definitely will not have the same timestamp for the snapshots
+      Thread.sleep(100);
+      shell.executeStatement("INSERT INTO " + tableName + " values(" +
+          (i + records.size()) + ",'Alice','Green_" + i + "')");
+    }
+
+    table.refresh();
+
+    return table;
+  }
+
   /**
    * Creates a non partitioned Hive test table. Creates the Iceberg table/data and creates the corresponding Hive
    * table as well when needed. The table will be in the 'default' database. The table will be populated with the
