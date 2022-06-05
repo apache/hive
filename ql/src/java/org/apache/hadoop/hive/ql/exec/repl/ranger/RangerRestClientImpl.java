@@ -428,9 +428,7 @@ public class RangerRestClientImpl implements RangerRestClient {
                                                                HiveConf conf) throws SemanticException {
     RangerExportPolicyList rangerExportPolicyList = null;
     Gson gsonBuilder = new GsonBuilder().setDateFormat("yyyyMMdd-HH:mm:ss.SSS-Z").setPrettyPrinting().create();
-    try {
-      FileSystem fs = filePath.getFileSystem(conf);
-      InputStream inputStream = fs.open(filePath);
+    try (InputStream inputStream = filePath.getFileSystem(conf).open(filePath)) {
       Reader reader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
       rangerExportPolicyList = gsonBuilder.fromJson(reader, RangerExportPolicyList.class);
     } catch (FileNotFoundException e) {
