@@ -114,11 +114,13 @@ PREHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testtable1
 PREHOOK: Output: database:statsdb2
+PREHOOK: Output: statsdb1@testtable1
 PREHOOK: Output: statsdb2@testtable2
 POSTHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: statsdb1@testtable1
 POSTHOOK: Output: database:statsdb2
+POSTHOOK: Output: statsdb1@testtable1
 POSTHOOK: Output: statsdb2@testtable2
 PREHOOK: query: describe formatted statsdb2.testtable2 col1
 PREHOOK: type: DESCTABLE
@@ -317,11 +319,13 @@ PREHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb1@testtable1
 PREHOOK: Output: database:statsdb2
+PREHOOK: Output: statsdb1@testtable1
 PREHOOK: Output: statsdb2@testtable2
 POSTHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: statsdb1@testtable1
 POSTHOOK: Output: database:statsdb2
+POSTHOOK: Output: statsdb1@testtable1
 POSTHOOK: Output: statsdb2@testtable2
 PREHOOK: query: describe formatted statsdb2.testtable2 col1
 PREHOOK: type: DESCTABLE

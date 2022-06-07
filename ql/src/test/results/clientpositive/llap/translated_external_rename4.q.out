@@ -38,11 +38,13 @@ PREHOOK: query: alter table part_test rename to part_test11
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@part_test
 PREHOOK: Output: database:default
+PREHOOK: Output: default@part_test
 PREHOOK: Output: default@part_test11
 POSTHOOK: query: alter table part_test rename to part_test11
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@part_test
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_test
 POSTHOOK: Output: default@part_test11
 PREHOOK: query: desc formatted part_test11
 PREHOOK: type: DESCTABLE

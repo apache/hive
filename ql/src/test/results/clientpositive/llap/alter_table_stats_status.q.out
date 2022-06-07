@@ -81,11 +81,13 @@ PREHOOK: query: alter table srctable rename to statstable
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: statsdb@srctable
 PREHOOK: Output: database:statsdb
+PREHOOK: Output: statsdb@srctable
 PREHOOK: Output: statsdb@statstable
 POSTHOOK: query: alter table srctable rename to statstable
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: statsdb@srctable
 POSTHOOK: Output: database:statsdb
+POSTHOOK: Output: statsdb@srctable
 POSTHOOK: Output: statsdb@statstable
 PREHOOK: query: alter table statstable add columns (newcol string)
 PREHOOK: type: ALTERTABLE_ADDCOLS

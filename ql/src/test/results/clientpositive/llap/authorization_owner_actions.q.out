@@ -53,9 +53,11 @@ PREHOOK: query: alter table t1_n108 rename to tnew1
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@t1_n108
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n108
 PREHOOK: Output: default@tnew1
 POSTHOOK: query: alter table t1_n108 rename to tnew1
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@t1_n108
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n108
 POSTHOOK: Output: default@tnew1

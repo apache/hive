@@ -123,11 +123,13 @@ PREHOOK: query: alter table tab1 rename to tab2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: ttp@tab1
 PREHOOK: Output: database:ttp
+PREHOOK: Output: ttp@tab1
 PREHOOK: Output: ttp@tab2
 POSTHOOK: query: alter table tab1 rename to tab2
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: ttp@tab1
 POSTHOOK: Output: database:ttp
+POSTHOOK: Output: ttp@tab1
 POSTHOOK: Output: ttp@tab2
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE

@@ -95,9 +95,11 @@ PREHOOK: type: ALTERVIEW_RENAME
 PREHOOK: Input: default@r3
 PREHOOK: Output: database:default
 PREHOOK: Output: default@r0
+PREHOOK: Output: default@r3
 POSTHOOK: query: alter view r3 rename to r0
 POSTHOOK: type: ALTERVIEW_RENAME
 POSTHOOK: Input: default@r3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@r0
+POSTHOOK: Output: default@r3
 FAILED: SemanticException Recursive view default.r0 detected (cycle: default.r0 -> default.r2 -> default.r1 -> default.r0).

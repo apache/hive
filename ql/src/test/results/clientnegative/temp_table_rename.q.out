@@ -19,4 +19,5 @@ PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@tmp2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp1
+PREHOOK: Output: default@tmp2
 FAILED: Execution Error, return code 40013 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. Cannot rename temporary table to tmp1 - temporary table already exists with the same name

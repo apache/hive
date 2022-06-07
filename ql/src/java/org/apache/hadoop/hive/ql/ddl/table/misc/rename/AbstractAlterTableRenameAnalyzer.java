@@ -55,8 +55,6 @@ public abstract class AbstractAlterTableRenameAnalyzer extends AbstractAlterTabl
       setAcidDdlDesc(desc);
     }
     addInputsOutputsAlterTable(tableName, null, desc, desc.getType(), false);
-//    inputs.add(new ReadEntity(table));
-    outputs.clear();
     String newDatabaseName = target.getDb() != null ? target.getDb() : table.getDbName(); // extract new database name from new table name, if not specified, then src dbname is used
     Database newDatabase = getDatabase(newDatabaseName);
     outputs.add(new WriteEntity(newDatabase, WriteEntity.WriteType.DDL_NO_LOCK));

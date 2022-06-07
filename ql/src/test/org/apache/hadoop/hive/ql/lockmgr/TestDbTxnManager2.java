@@ -3768,8 +3768,8 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       txnMgr2.acquireLocks(driver2.getPlan(), ctx, null, false);
       locks = getLocks();
 
-      ShowLocksResponseElement checkLock = checkLock(LockType.SHARED_READ,
-        LockState.ACQUIRED, "default", "tab_acid", null, locks);
+      ShowLocksResponseElement checkLock = checkLock(LockType.EXCLUSIVE,
+        LockState.WAITING, "default", "tab_acid", null, locks);
 
       swapTxnManager(txnMgr);
       Mockito.doNothing().when(driver).lockAndRespond();
@@ -3785,7 +3785,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
 
-    checkLock(LockType.SHARED_READ,
+    checkLock(blocking ? LockType.EXCLUSIVE : LockType.EXCL_WRITE,
       LockState.ACQUIRED, "default", "tab_acid", null, locks);
 
     Mockito.doNothing().when(driver2).lockAndRespond();

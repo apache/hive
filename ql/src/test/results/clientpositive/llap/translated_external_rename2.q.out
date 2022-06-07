@@ -19,11 +19,13 @@ PREHOOK: query: alter table t rename to t2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@t
 PREHOOK: Output: database:default
+PREHOOK: Output: default@t
 PREHOOK: Output: default@t2
 POSTHOOK: query: alter table t rename to t2
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@t
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
 POSTHOOK: Output: default@t2
 PREHOOK: query: create table t (a integer)
 PREHOOK: type: CREATETABLE

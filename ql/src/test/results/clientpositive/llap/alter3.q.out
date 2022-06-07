@@ -59,11 +59,13 @@ PREHOOK: query: alter table alter3 rename to alter3_renamed
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@alter3
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter3
 PREHOOK: Output: default@alter3_renamed
 POSTHOOK: query: alter table alter3 rename to alter3_renamed
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@alter3
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter3
 POSTHOOK: Output: default@alter3_renamed
 PREHOOK: query: describe extended alter3_renamed
 PREHOOK: type: DESCTABLE
@@ -130,11 +132,13 @@ PREHOOK: query: alter table alter3_like rename to alter3_like_renamed
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@alter3_like
 PREHOOK: Output: database:default
+PREHOOK: Output: default@alter3_like
 PREHOOK: Output: default@alter3_like_renamed
 POSTHOOK: query: alter table alter3_like rename to alter3_like_renamed
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@alter3_like
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter3_like
 POSTHOOK: Output: default@alter3_like_renamed
 PREHOOK: query: describe extended alter3_like_renamed
 PREHOOK: type: DESCTABLE
@@ -260,11 +264,13 @@ POSTHOOK: Input: alter3_db@alter3@pcol1=test_part%3A/pcol2=test_part%3A
 PREHOOK: query: ALTER TABLE alter3 RENAME TO alter3_renamed
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: alter3_db@alter3
+PREHOOK: Output: alter3_db@alter3
 PREHOOK: Output: alter3_db@alter3_renamed
 PREHOOK: Output: database:alter3_db
 POSTHOOK: query: ALTER TABLE alter3 RENAME TO alter3_renamed
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: alter3_db@alter3
+POSTHOOK: Output: alter3_db@alter3
 POSTHOOK: Output: alter3_db@alter3_renamed
 POSTHOOK: Output: database:alter3_db
 PREHOOK: query: DESCRIBE EXTENDED alter3_renamed
@@ -331,11 +337,13 @@ POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1
 PREHOOK: query: ALTER TABLE alter3_like RENAME TO alter3_like_renamed
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: alter3_db@alter3_like
+PREHOOK: Output: alter3_db@alter3_like
 PREHOOK: Output: alter3_db@alter3_like_renamed
 PREHOOK: Output: database:alter3_db
 POSTHOOK: query: ALTER TABLE alter3_like RENAME TO alter3_like_renamed
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: alter3_db@alter3_like
+POSTHOOK: Output: alter3_db@alter3_like
 POSTHOOK: Output: alter3_db@alter3_like_renamed
 POSTHOOK: Output: database:alter3_db
 PREHOOK: query: DESCRIBE EXTENDED alter3_like_renamed

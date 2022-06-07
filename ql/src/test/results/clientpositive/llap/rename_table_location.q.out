@@ -35,4 +35,5 @@ PREHOOK: query: ALTER TABLE rename_partition_table RENAME TO rename_partition_ta
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@rename_partition_table
 PREHOOK: Output: database:default
+PREHOOK: Output: default@rename_partition_table
 PREHOOK: Output: default@rename_partition_table_renamed
