@@ -324,7 +324,7 @@ class MetaStoreDirectSql {
       doCommit = true;
     }
     // Run a self-test query. If it doesn't work, we will self-disable. What a PITA...
-    String selfTestQuery = "select \"DB_ID\" from " + DBS + " WHERE DB_ID=1";
+    String selfTestQuery = "select \"DB_ID\" from " + DBS + " WHERE \"DB_ID\"=1";
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", selfTestQuery))) {
       prepareTxn();
       long start = doTrace ? System.nanoTime() : 0;
