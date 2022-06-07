@@ -50,6 +50,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmptab
+POSTHOOK: Lineage: tmptab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select count(*) from tmptab where key = 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptab
@@ -167,6 +169,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tmptab
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rct
+POSTHOOK: Lineage: rct.key SIMPLE [(tmptab)tmptab.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: rct.value SIMPLE [(tmptab)tmptab.FieldSchema(name:value, type:string, comment:null), ]
 test.comment="Cached query does not get used now that it resolves to a temp table"
 PREHOOK: query: explain
 select count(*) from rct where key = 0
@@ -279,6 +283,9 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tmptab
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rct_part
+POSTHOOK: Lineage: rct_part.ds SIMPLE []
+POSTHOOK: Lineage: rct_part.key SIMPLE [(tmptab)tmptab.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: rct_part.value SIMPLE [(tmptab)tmptab.FieldSchema(name:value, type:string, comment:null), ]
 test.comment="Cached query does not get used now that it resolves to a temp table"
 PREHOOK: query: explain
 select count(*) from rct_part where ds="2008-04-08" and key = 0
