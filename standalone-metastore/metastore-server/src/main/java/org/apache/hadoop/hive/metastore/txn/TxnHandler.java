@@ -60,6 +60,7 @@ import java.util.stream.Stream;
 import javax.sql.DataSource;
 
 import com.google.common.collect.ImmutableList;
+import jline.internal.Log;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -309,6 +310,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" FROM \"TXN_COMPONENTS\" " +
           "INNER JOIN \"TXNS\" ON \"TC_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
       " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" HAVING COUNT(\"TXN_ID\") > ?";
+  private static final String CONCURRENT_CTAS_SELECT_QUERY = "SELECT \"TC_OPERATION_TYPE\" FROM \"TXN_COMPONENTS\" WHERE" +
+          " \"TC_DATABASE\"= ? AND \"TC_TABLE\"= ?";
 
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
@@ -3050,7 +3053,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     stmt.executeBatch();
   }
 
-  private void insertTxnComponents(long txnid, LockRequest rqst, Connection dbConn) throws SQLException {
+  private void insertTxnComponents(long txnid, LockRequest rqst, Connection dbConn) throws SQLException, TxnAbortedException {
     if (txnid > 0) {
       Map<Pair<String, String>, Optional<Long>> writeIdCache = new HashMap<>();
       try (PreparedStatement pstmt = dbConn.prepareStatement(TXN_COMPONENTS_INSERT_QUERY)) {
@@ -3079,7 +3082,24 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           String tblName = normalizeCase(lc.getTablename());
           String partName = normalizePartitionCase(lc.getPartitionname());
           OperationType opType = OperationType.fromDataOperationType(lc.getOperationType());
+          if (opType.getSqlConst().equals(OperationType.CTAS.getSqlConst())) {
 
+            try (PreparedStatement stmt = dbConn.prepareStatement(CONCURRENT_CTAS_SELECT_QUERY)) {
+              stmt.setString(1, dbName);
+              stmt.setString(2, tblName);
+              Log.debug("Going to execute query <" + CONCURRENT_CTAS_SELECT_QUERY + ">");
+              ResultSet resultSet = stmt.executeQuery();
+              if (resultSet.next()) {
+                if (resultSet.getString("TC_OPERATION_TYPE").equals(OperationType.CTAS.getSqlConst())) {
+                  String err = String.format(
+                          "Could not create table: %s because table already exists in database: %s or " +
+                                  " a concurrent ctas operation " +
+                                  " is creating a table with same name.", tblName, dbName);
+                  throw new TxnAbortedException(err);
+                }
+              }
+            }
+          }
           if (isDynPart.test(lc)) {
             partName = null;
             if (writeIdCache.containsKey(groupKey.apply(lc))) {
@@ -5290,39 +5310,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             return response;
           }
         }
-
-        if (isValidTxn(txnId)) {
-          LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
-                  .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
-
-          if (lockType == LockType.EXCL_WRITE && blockedBy.state == LockState.ACQUIRED) {
-
-            String checkBlockedByTxnComp = "SELECT \"TC_OPERATION_TYPE\" FROM \"TXN_COMPONENTS\" WHERE" +
-                    " \"TC_TXNID\"=" + blockedBy.txnId;
-            System.out.println("Going to execute query <" + checkBlockedByTxnComp + ">");
-            ResultSet resultSet = stmt.executeQuery(checkBlockedByTxnComp);
-
-            if (resultSet.next()) {
-              if (resultSet.getString("TC_OPERATION_TYPE").equals(OperationType.CTAS.getSqlConst())) {
-                String deleteBlockedByTxnComp = "DELETE  FROM \"TXN_COMPONENTS\" WHERE" +
-                        " \"TC_TXNID\"=" + txnId;
-                System.out.println("Going to execute query <" + deleteBlockedByTxnComp + ">");
-                stmt.executeUpdate(deleteBlockedByTxnComp);
-                resultSet.close();
-                dbConn.commit();
-                String format = String.format(
-                        "Could not create a table as %s table already exists in database %s or " +
-                                " a concurrent ctas operation " +
-                                " is creating a table with same table name.", blockedBy.table, blockedBy.db);
-                response.setErrorMessage(format);
-                response.setState(LockState.NOT_ACQUIRED);
-                LOG.error(format);
-                return response;
-              }
-            }
-          }
-        }
-
         String updateBlockedByQuery = "UPDATE \"HIVE_LOCKS\"" +
             " SET \"HL_BLOCKEDBY_EXT_ID\" = " + blockedBy.extLockId +
             ", \"HL_BLOCKEDBY_INT_ID\" = " + blockedBy.intLockId +
