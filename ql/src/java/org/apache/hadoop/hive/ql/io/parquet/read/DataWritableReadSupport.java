@@ -278,15 +278,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       return null;
     }
     String value = metadata.get(DataWritableWriteSupport.WRITER_DATE_PROLEPTIC);
-    try {
-      if (value != null) {
-        return Boolean.valueOf(value);
-      }
-    } catch (DateTimeException e) {
-      throw new RuntimeException("Can't parse writer proleptic property stored in file metadata", e);
-    }
-
-    return null;
+    return value == null ? null : Boolean.valueOf(value);
   }
   
   /**

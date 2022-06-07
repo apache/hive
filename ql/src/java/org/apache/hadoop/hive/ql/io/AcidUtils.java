@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
 import static org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
@@ -3213,6 +3214,10 @@ public class AcidUtils {
       default:
         return false;
     }
+  }
+
+  public static String getPathSuffix(long txnId) {
+    return (SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId));
   }
 
   @VisibleForTesting

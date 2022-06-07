@@ -369,7 +369,13 @@ public class MetaStoreUtils {
     if (table == null || table.getParameters() == null) {
       return false;
     }
-    return (table.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE) != null);
+    return isNonNativeTable(table.getParameters());
+  }
+
+  public static boolean isNonNativeTable(Map<String, String> tblProps) {
+    return tblProps.get(
+            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE)
+            != null;
   }
 
   /**
