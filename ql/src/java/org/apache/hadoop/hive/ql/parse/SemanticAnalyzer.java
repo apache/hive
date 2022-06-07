@@ -8308,10 +8308,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()),
             tName + suffix, tableDesc.isExternal());
 
-        if (destinationTable != null) {
-          if (destinationTable.getSd() != null && destinationTable.getPath() != null) {
-            tlocation = destinationTable.getPath();
-          }
+        if (destinationTable != null && destinationTable.getSd() != null
+                && destinationTable.getPath() != null) {
+          tlocation = destinationTable.getPath();
         }
       } catch (MetaException|HiveException e) {
         throw new SemanticException(e);
