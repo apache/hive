@@ -7764,7 +7764,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean isDfsDir = (destType == QBMetaData.DEST_DFS_FILE);
 
       try {
-        destinationTable = tblDesc != null ? tblDesc.toTable(conf) : viewDesc != null ? viewDesc.toTable(conf) : null;
+        destinationTable = tblDesc != null ? db.getTranslateTableDryrun(tblDesc.toTable(conf).getTTable()) :
+                viewDesc != null ? viewDesc.toTable(conf) : null;
       } catch (HiveException e) {
         throw new SemanticException(e);
       }
@@ -8308,10 +8309,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             tName + suffix, tableDesc.isExternal());
 
         if (destinationTable != null) {
-          Table tbl = db.getTranslateTableDryrun(destinationTable.getTTable());
-          org.apache.hadoop.hive.metastore.api.Table translatedTable = tbl.getTTable();
-          if (translatedTable.getSd() != null && translatedTable.getSd().getLocation() != null) {
-            tlocation = new Path(translatedTable.getSd().getLocation());
+          if (destinationTable.getSd() != null && destinationTable.getPath() != null) {
+            tlocation = destinationTable.getPath();
           }
         }
       } catch (MetaException|HiveException e) {
