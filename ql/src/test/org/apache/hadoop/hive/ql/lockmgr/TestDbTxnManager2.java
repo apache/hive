@@ -2417,15 +2417,11 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     }
     List<ShowLocksResponseElement> locks = getLocks();
 
-    Assert.assertEquals("Unexpected lock count", 6, locks.size());
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
 
     checkLock(LockType.EXCL_WRITE, LockState.ACQUIRED, "default", "target", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "source", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", null, null, locks);
-
-    checkLock(LockType.EXCL_WRITE, LockState.WAITING, "default", "target", null, locks);
-    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "source", null, locks);
-    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", null, null, locks);
   }
 
 

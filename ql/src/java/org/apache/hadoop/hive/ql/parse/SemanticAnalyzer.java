@@ -13996,7 +13996,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       t.setSerdeParam(serdeMap.getKey(), serdeMap.getValue());
     }
     if (tblProps != null &&
-            tblProps.get(TABLE_IS_CTAS) == "true" &&
+            Boolean.parseBoolean(tblProps.get(TABLE_IS_CTAS)) &&
             AcidUtils.isNoRenameCtasEnabled(conf)) {
       outputs.add(new WriteEntity(t, WriteType.CTAS));
     } else {

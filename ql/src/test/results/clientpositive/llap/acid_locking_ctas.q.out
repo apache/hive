@@ -69,6 +69,8 @@ POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_update_orc_ctas
 POSTHOOK: Output: default@test_update_orc_ctas
+POSTHOOK: Lineage: test_update_orc_ctas.id EXPRESSION []
+POSTHOOK: Lineage: test_update_orc_ctas.value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE IF NOT EXISTS test_update_orc_mmctas STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2)
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@test_update_bucketed
@@ -81,6 +83,8 @@ POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_update_orc_mmctas
 POSTHOOK: Output: default@test_update_orc_mmctas
+POSTHOOK: Lineage: test_update_orc_mmctas.id EXPRESSION []
+POSTHOOK: Lineage: test_update_orc_mmctas.value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE IF NOT EXISTS test_update_parquet_mmctas STORED AS PARQUET TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2)
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@test_update_bucketed
@@ -93,6 +97,8 @@ POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_update_parquet_mmctas
 POSTHOOK: Output: default@test_update_parquet_mmctas
+POSTHOOK: Lineage: test_update_parquet_mmctas.id EXPRESSION []
+POSTHOOK: Lineage: test_update_parquet_mmctas.value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE IF NOT EXISTS test_update_avro_mmctas STORED AS AVRO TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2)
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@test_update_bucketed
@@ -105,6 +111,8 @@ POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_update_avro_mmctas
 POSTHOOK: Output: default@test_update_avro_mmctas
+POSTHOOK: Lineage: test_update_avro_mmctas.id EXPRESSION []
+POSTHOOK: Lineage: test_update_avro_mmctas.value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE IF NOT EXISTS test_update_textfile_mmctas STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2)
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@test_update_bucketed
@@ -117,6 +125,8 @@ POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_update_textfile_mmctas
 POSTHOOK: Output: default@test_update_textfile_mmctas
+POSTHOOK: Lineage: test_update_textfile_mmctas.id EXPRESSION []
+POSTHOOK: Lineage: test_update_textfile_mmctas.value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE IF NOT EXISTS test_update_partition_orc_ctas PARTITIONED BY (id) STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2)
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@test_update_bucketed
@@ -133,6 +143,7 @@ POSTHOOK: Output: default@test_update_partition_orc_ctas
 POSTHOOK: Output: default@test_update_partition_orc_ctas
 POSTHOOK: Output: default@test_update_partition_orc_ctas@id=1
 POSTHOOK: Output: default@test_update_partition_orc_ctas@id=2
+POSTHOOK: Lineage: test_update_partition_orc_ctas.value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_update_partition_orc_ctas PARTITION(id=1).value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_update_partition_orc_ctas PARTITION(id=2).value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE IF NOT EXISTS test_update_partition_orc_mmctas PARTITIONED BY (id) STORED AS ORC TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2)
@@ -151,6 +162,7 @@ POSTHOOK: Output: default@test_update_partition_orc_mmctas
 POSTHOOK: Output: default@test_update_partition_orc_mmctas
 POSTHOOK: Output: default@test_update_partition_orc_mmctas@id=1
 POSTHOOK: Output: default@test_update_partition_orc_mmctas@id=2
+POSTHOOK: Lineage: test_update_partition_orc_mmctas.value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_update_partition_orc_mmctas PARTITION(id=1).value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_update_partition_orc_mmctas PARTITION(id=2).value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE IF NOT EXISTS test_update_partition_parquet_mmctas PARTITIONED BY (id) STORED AS PARQUET TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2)
@@ -169,6 +181,7 @@ POSTHOOK: Output: default@test_update_partition_parquet_mmctas
 POSTHOOK: Output: default@test_update_partition_parquet_mmctas
 POSTHOOK: Output: default@test_update_partition_parquet_mmctas@id=1
 POSTHOOK: Output: default@test_update_partition_parquet_mmctas@id=2
+POSTHOOK: Lineage: test_update_partition_parquet_mmctas.value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_update_partition_parquet_mmctas PARTITION(id=1).value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_update_partition_parquet_mmctas PARTITION(id=2).value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE IF NOT EXISTS test_update_partition_avro_mmctas PARTITIONED BY (id) STORED AS AVRO TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2)
@@ -187,6 +200,7 @@ POSTHOOK: Output: default@test_update_partition_avro_mmctas
 POSTHOOK: Output: default@test_update_partition_avro_mmctas
 POSTHOOK: Output: default@test_update_partition_avro_mmctas@id=1
 POSTHOOK: Output: default@test_update_partition_avro_mmctas@id=2
+POSTHOOK: Lineage: test_update_partition_avro_mmctas.value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_update_partition_avro_mmctas PARTITION(id=1).value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_update_partition_avro_mmctas PARTITION(id=2).value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: CREATE TABLE IF NOT EXISTS test_update_partition_textfile_mmctas PARTITIONED BY (id) STORED AS TEXTFILE TBLPROPERTIES('transactional'='true', 'transactional_properties'='insert_only') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2)
@@ -205,6 +219,7 @@ POSTHOOK: Output: default@test_update_partition_textfile_mmctas
 POSTHOOK: Output: default@test_update_partition_textfile_mmctas
 POSTHOOK: Output: default@test_update_partition_textfile_mmctas@id=1
 POSTHOOK: Output: default@test_update_partition_textfile_mmctas@id=2
+POSTHOOK: Lineage: test_update_partition_textfile_mmctas.value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_update_partition_textfile_mmctas PARTITION(id=1).value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_update_partition_textfile_mmctas PARTITION(id=2).value EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM test_update_orc_ctas
@@ -215,6 +230,8 @@ POSTHOOK: query: SELECT * FROM test_update_orc_ctas
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_orc_ctas
 #### A masked pattern was here ####
+1	one
+2	two
 PREHOOK: query: SELECT * FROM test_update_orc_mmctas
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_orc_mmctas
@@ -223,6 +240,8 @@ POSTHOOK: query: SELECT * FROM test_update_orc_mmctas
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_orc_mmctas
 #### A masked pattern was here ####
+1	one
+2	two
 PREHOOK: query: SELECT * FROM test_update_parquet_mmctas
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_parquet_mmctas
@@ -231,6 +250,8 @@ POSTHOOK: query: SELECT * FROM test_update_parquet_mmctas
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_parquet_mmctas
 #### A masked pattern was here ####
+1	one
+2	two
 PREHOOK: query: SELECT * FROM test_update_avro_mmctas
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_avro_mmctas
@@ -239,6 +260,8 @@ POSTHOOK: query: SELECT * FROM test_update_avro_mmctas
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_avro_mmctas
 #### A masked pattern was here ####
+1	one
+2	two
 PREHOOK: query: SELECT * FROM test_update_textfile_mmctas
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_textfile_mmctas
@@ -247,6 +270,8 @@ POSTHOOK: query: SELECT * FROM test_update_textfile_mmctas
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_textfile_mmctas
 #### A masked pattern was here ####
+1	one
+2	two
 PREHOOK: query: SELECT * FROM test_update_partition_orc_ctas
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_partition_orc_ctas
