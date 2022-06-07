@@ -1,0 +1,93 @@
+PREHOOK: query: CREATE EXTERNAL TABLE author
+(
+    id int,
+    fname varchar(20),
+    lname varchar(20)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "MYSQL",
+    "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
+    "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qtestDB",
+    "hive.sql.dbcp.username" = "root",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "author"
+    )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@author
+POSTHOOK: query: CREATE EXTERNAL TABLE author
+(
+    id int,
+    fname varchar(20),
+    lname varchar(20)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "MYSQL",
+    "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
+    "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qtestDB",
+    "hive.sql.dbcp.username" = "root",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "author"
+    )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@author
+PREHOOK: query: CREATE EXTERNAL TABLE book
+(
+    id int,
+    title varchar(100),
+    author int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "MYSQL",
+    "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
+    "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qtestDB",
+    "hive.sql.dbcp.username" = "root",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "book"
+    )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@book
+POSTHOOK: query: CREATE EXTERNAL TABLE book
+(
+    id int,
+    title varchar(100),
+    author int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "MYSQL",
+    "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
+    "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qtestDB",
+    "hive.sql.dbcp.username" = "root",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "book"
+    )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@book
+PREHOOK: query: EXPLAIN CBO JOINCOST SELECT a.lname, b.title FROM author a JOIN book b ON a.id=b.author
+PREHOOK: type: QUERY
+PREHOOK: Input: default@author
+PREHOOK: Input: default@book
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO JOINCOST SELECT a.lname, b.title FROM author a JOIN book b ON a.id=b.author
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@author
+POSTHOOK: Input: default@book
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.MYSQL]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+  JdbcProject(lname=[$1], title=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    JdbcJoin(condition=[=($0, $3)], joinType=[inner]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+      JdbcProject(id=[$0], lname=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+        JdbcFilter(condition=[IS NOT NULL($0)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+          JdbcHiveTableScan(table=[[default, author]], table:alias=[a]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+      JdbcProject(title=[$1], author=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+        JdbcFilter(condition=[IS NOT NULL($2)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+          JdbcHiveTableScan(table=[[default, book]], table:alias=[b]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+
