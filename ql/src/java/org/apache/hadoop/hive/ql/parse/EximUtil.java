@@ -351,6 +351,9 @@ public class EximUtil {
   /* major version number should match for backward compatibility */
   public static final String METADATA_FORMAT_VERSION = "0.2";
 
+  /* If null, then the major version number should match */
+  public static final String METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION = null;
+
   public static void createDbExportDump(FileSystem fs, Path metadataPath, Database dbObj,
       ReplicationSpec replicationSpec, Configuration conf) throws IOException, SemanticException {
     updateIfCustomDbLocations(dbObj, conf);

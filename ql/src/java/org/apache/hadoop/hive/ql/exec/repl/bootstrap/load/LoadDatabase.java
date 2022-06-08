@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -66,7 +65,10 @@ public class LoadDatabase {
 
   public LoadDatabase(Context context, DatabaseEvent event, String dbNameToLoadIn,
                       TaskTracker loadTaskTracker, ReplicationMetricCollector metricCollector) {
-    this(context, event, dbNameToLoadIn, loadTaskTracker);
+    this.context = context;
+    this.event = event;
+    this.dbNameToLoadIn = dbNameToLoadIn;
+    this.tracker = new TaskTracker(loadTaskTracker);
     this.metricCollector = metricCollector;
   }
 
@@ -125,7 +127,7 @@ public class LoadDatabase {
       throw new InvalidOperationException("Bootstrap REPL LOAD is not allowed on Database: " + dbName
               + " as it was already done.");
     }
-    if (ReplUtils.replCkptStatus(db.getParameters(), context.dumpDirectory)) {
+    if (ReplUtils.replCkptStatus(dbName, db.getParameters(), context.dumpDirectory)) {
       return ReplLoadOpType.LOAD_SKIP;
     }
     if (isDbEmpty(dbName)) {
@@ -137,7 +139,9 @@ public class LoadDatabase {
 
   private boolean isDbAlreadyBootstrapped(Database db) {
     Map<String, String> props = db.getParameters();
-    return (props != null) && StringUtils.isNotEmpty(props.get(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString()));
+    return ((props != null)
+            && props.containsKey(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString())
+            && !props.get(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString()).isEmpty());
   }
 
   private boolean isDbEmpty(String dbName) throws HiveException {

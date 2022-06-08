@@ -705,7 +705,6 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private int executeIncrementalLoad(long loadStartTime) throws Exception {
     // If replication policy is changed between previous and current repl load, then drop the tables
     // that are excluded in the new replication policy.
-    this.childTasks = (this.childTasks == null) ? new ArrayList<>() : this.childTasks;
     if (work.replScopeModified) {
       dropTablesExcludedInReplScope(work.currentReplScope);
     }
@@ -728,6 +727,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (!isTableDiffPresent) {
         Long eventId = Long.parseLong(getEventIdFromFile(new Path(work.dumpDirectory).getParent(), conf)[0]);
         prepareTableDiffFile(eventId, getHive(), work, conf);
+      }
+      if (this.childTasks == null) {
+        this.childTasks = new ArrayList<>();
       }
       createReplLoadCompleteAckTask();
       return 0;
@@ -752,6 +754,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
               new PrincipalDesc(sourceDb.getOwnerName(), sourceDb.getOwnerType()), null);
       DDLWork ddlWork = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc, true,
               (new Path(work.dumpDirectory)).getParent().toString(), work.getMetricCollector());
+      if (this.childTasks == null) {
+        this.childTasks = new ArrayList<>();
+      }
       this.childTasks.add(TaskFactory.get(ddlWork, conf));
     }
     if (!MetaStoreUtils.isTargetOfReplication(targetDb)) {
@@ -765,6 +770,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       Task<?> addReplTargetPropTask =
               TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), setTargetDesc, true,
                       work.dumpDirectory, work.getMetricCollector()), conf);
+      if (this.childTasks == null) {
+        this.childTasks = new ArrayList<>();
+      }
       this.childTasks.add(addReplTargetPropTask);
     }
     IncrementalLoadTasksBuilder builder = work.incrementalLoadTasksBuilder();
@@ -841,10 +849,11 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Path dbMetadata = new Path(work.dumpDirectory, EximUtil.METADATA_PATH_NAME);
     BootstrapEventsIterator itr = new BootstrapEventsIterator(dbMetadata.toString(), work.dbNameToLoadIn,
             true, conf, work.getMetricCollector());
-    assert itr.hasNext();
     BootstrapEvent next = itr.next();
-    assert next.eventType().equals(BootstrapEvent.EventType.Database);
-    assert (!itr.hasNext());
+    if (!next.eventType().equals(BootstrapEvent.EventType.Database)) {
+      throw new SemanticException("Invalid eventType: " + next.eventType() + " encountered while fetching " +
+              "source db metadata from " + dbMetadata.toString());
+    }
     return ((DatabaseEvent) next).dbInMetadata(work.dbNameToLoadIn);
   }
 }
