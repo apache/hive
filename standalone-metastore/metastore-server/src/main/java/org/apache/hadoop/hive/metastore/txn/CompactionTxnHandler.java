@@ -64,7 +64,8 @@ class CompactionTxnHandler extends TxnHandler {
           + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
           + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
           + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
-          + "\"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_TXN_ID\" = ?";
+          + "\"CQ_RETRY_RETENTION\", \"CQ_NEXT_TXN_ID\", \"CQ_TXN_ID\", \"CQ_COMMIT_TIME\""
+          + " FROM \"COMPACTION_QUEUE\" WHERE \"CQ_TXN_ID\" = ?";
   private static final String SELECT_COMPACTION_METRICS_CACHE_QUERY =
       "SELECT \"CMC_METRIC_VALUE\", \"CMC_VERSION\" FROM \"COMPACTION_METRICS_CACHE\" " +
           "WHERE \"CMC_DATABASE\" = ? AND \"CMC_TABLE\" = ? AND \"CMC_METRIC_TYPE\" = ?";
