@@ -743,10 +743,14 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
       Database sourceDb = getSourceDbMetadata();  //This sourceDb was the actual target prior to failover.
       Map<String, String> sourceDbProps = sourceDb.getParameters();
-      List<String> replicationProps = MetaStoreUtils.getReplicationDbProps(); //Replication Props will be handled separately as part of preAckTask.
-      for (Map.Entry<String, String> currProp : targetDb.getParameters().entrySet()) {
+      Map<String, String> targetDbProps = new HashMap<>(targetDb.getParameters());
+      for (String key : MetaStoreUtils.getReplicationDbProps()) {
+        //Replication Props will be handled separately as part of preAckTask.
+        targetDbProps.remove(key);
+      }
+      for (Map.Entry<String, String> currProp : targetDbProps.entrySet()) {
         String actualVal = sourceDbProps.get(currProp.getKey());
-        if (!replicationProps.contains(currProp.getKey()) && !currProp.getValue().equals(actualVal)) {
+        if (!currProp.getValue().equals(actualVal)) {
           props.put(currProp.getKey(), (actualVal == null) ? "" : actualVal);
         }
       }
@@ -849,6 +853,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Path dbMetadata = new Path(work.dumpDirectory, EximUtil.METADATA_PATH_NAME);
     BootstrapEventsIterator itr = new BootstrapEventsIterator(dbMetadata.toString(), work.dbNameToLoadIn,
             true, conf, work.getMetricCollector());
+    if (!itr.hasNext()) {
+      throw new SemanticException("Unable to find source db metadata in " + dbMetadata.toString());
+    }
     BootstrapEvent next = itr.next();
     if (!next.eventType().equals(BootstrapEvent.EventType.Database)) {
       throw new SemanticException("Invalid eventType: " + next.eventType() + " encountered while fetching " +
