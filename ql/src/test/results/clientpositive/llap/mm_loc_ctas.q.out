@@ -36,3 +36,5 @@ POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test3
+POSTHOOK: Lineage: test3.id SIMPLE [(test)test.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: test3.name SIMPLE [(test)test.FieldSchema(name:name, type:string, comment:null), ]

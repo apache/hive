@@ -27,6 +27,8 @@ POSTHOOK: Input: default@sample_partitioned
 POSTHOOK: Input: default@sample_partitioned@y=1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sample
+POSTHOOK: Lineage: sample.x SIMPLE [(sample_partitioned)sample_partitioned.FieldSchema(name:x, type:int, comment:null), ]
+POSTHOOK: Lineage: sample.y SIMPLE [(sample_partitioned)sample_partitioned.FieldSchema(name:y, type:int, comment:null), ]
 PREHOOK: query: analyze table sample compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@sample

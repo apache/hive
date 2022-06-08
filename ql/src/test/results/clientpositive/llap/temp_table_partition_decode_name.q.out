@@ -18,6 +18,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sc_n0_temp
+POSTHOOK: Lineage: sc_n0_temp._c0 EXPRESSION []
+POSTHOOK: Lineage: sc_n0_temp._c1 EXPRESSION []
 PREHOOK: query: create table sc_part_n0_temp (key string) partitioned by (ts string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
