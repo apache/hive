@@ -38,10 +38,14 @@ PREHOOK: query: update acid_uanp set b = 'fred'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uanp
 PREHOOK: Output: default@acid_uanp
+PREHOOK: Output: default@acid_uanp
 POSTHOOK: query: update acid_uanp set b = 'fred'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uanp
 POSTHOOK: Output: default@acid_uanp
+POSTHOOK: Output: default@acid_uanp
+POSTHOOK: Lineage: acid_uanp.a SIMPLE [(acid_uanp)acid_uanp.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_uanp.b EXPRESSION []
 PREHOOK: query: select a,b from acid_uanp order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uanp
