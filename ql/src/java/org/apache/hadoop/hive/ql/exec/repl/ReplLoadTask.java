@@ -21,6 +21,8 @@ import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.ddl.database.alter.owner.AlterDatabaseSetOwnerDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
 import org.apache.thrift.TException;
@@ -722,15 +724,15 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
       boolean isTableDiffPresent =
           checkFileExists(new Path(work.dumpDirectory).getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY);
-      Long eventId = Long.parseLong(getEventIdFromFile(new Path(work.dumpDirectory).getParent(), conf)[0]);
       if (!isTableDiffPresent) {
+        Long eventId = Long.parseLong(getEventIdFromFile(new Path(work.dumpDirectory).getParent(), conf)[0]);
         prepareTableDiffFile(eventId, getHive(), work, conf);
-        if (this.childTasks == null) {
-          this.childTasks = new ArrayList<>();
-        }
-        createReplLoadCompleteAckTask();
-        return 0;
       }
+      if (this.childTasks == null) {
+        this.childTasks = new ArrayList<>();
+      }
+      createReplLoadCompleteAckTask();
+      return 0;
     } else if (work.isSecondFailover) {
       // DROP the tables extra on target, which are not on source cluster.
 
@@ -739,6 +741,27 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         LOG.info("Dropping table {} for optimised bootstarap", work.dbNameToLoadIn + "." + table);
         db.dropTable(work.dbNameToLoadIn + "." + table, true);
       }
+      Database sourceDb = getSourceDbMetadata();  //This sourceDb was the actual target prior to failover.
+      Map<String, String> sourceDbProps = sourceDb.getParameters();
+      Map<String, String> targetDbProps = new HashMap<>(targetDb.getParameters());
+      for (String key : MetaStoreUtils.getReplicationDbProps()) {
+        //Replication Props will be handled separately as part of preAckTask.
+        targetDbProps.remove(key);
+      }
+      for (Map.Entry<String, String> currProp : targetDbProps.entrySet()) {
+        String actualVal = sourceDbProps.get(currProp.getKey());
+        if (!currProp.getValue().equals(actualVal)) {
+          props.put(currProp.getKey(), (actualVal == null) ? "" : actualVal);
+        }
+      }
+      AlterDatabaseSetOwnerDesc alterDbDesc = new AlterDatabaseSetOwnerDesc(sourceDb.getName(),
+              new PrincipalDesc(sourceDb.getOwnerName(), sourceDb.getOwnerType()), null);
+      DDLWork ddlWork = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc, true,
+              (new Path(work.dumpDirectory)).getParent().toString(), work.getMetricCollector());
+      if (this.childTasks == null) {
+        this.childTasks = new ArrayList<>();
+      }
+      this.childTasks.add(TaskFactory.get(ddlWork, conf));
     }
     if (!MetaStoreUtils.isTargetOfReplication(targetDb)) {
       props.put(ReplConst.TARGET_OF_REPLICATION, ReplConst.TRUE);
@@ -824,5 +847,20 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     ((IncrementalLoadLogger)work.incrementalLoadTasksBuilder().getReplLogger()).initiateEventTimestamp(currentTimestamp);
     LOG.info("REPL_INCREMENTAL_LOAD stage duration : {} ms", currentTimestamp - loadStartTime);
     return 0;
+  }
+
+  private Database getSourceDbMetadata() throws IOException, SemanticException {
+    Path dbMetadata = new Path(work.dumpDirectory, EximUtil.METADATA_PATH_NAME);
+    BootstrapEventsIterator itr = new BootstrapEventsIterator(dbMetadata.toString(), work.dbNameToLoadIn,
+            true, conf, work.getMetricCollector());
+    if (!itr.hasNext()) {
+      throw new SemanticException("Unable to find source db metadata in " + dbMetadata.toString());
+    }
+    BootstrapEvent next = itr.next();
+    if (!next.eventType().equals(BootstrapEvent.EventType.Database)) {
+      throw new SemanticException("Invalid eventType: " + next.eventType() + " encountered while fetching " +
+              "source db metadata from " + dbMetadata.toString());
+    }
+    return ((DatabaseEvent) next).dbInMetadata(work.dbNameToLoadIn);
   }
 }

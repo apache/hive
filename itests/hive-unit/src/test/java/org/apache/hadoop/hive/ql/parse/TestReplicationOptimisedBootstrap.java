@@ -753,11 +753,13 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
 
     // Do a reverse second dump, this should do a bootstrap dump for the tables in the table_diff and incremental for
     // rest.
+
+    assertTrue("value1".equals(primary.getDatabase(primaryDbName).getParameters().get("key1")));
     WarehouseInstance.Tuple tuple = replica.dump(replicatedDbName, withClause);
 
     String hiveDumpDir = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
     // _bootstrap directory should be created as bootstrap enabled on external tables.
-    Path dumpPath1 = new Path(hiveDumpDir, INC_BOOTSTRAP_ROOT_DIR_NAME +"/metadata/" + replicatedDbName);
+    Path dumpPath1 = new Path(hiveDumpDir, INC_BOOTSTRAP_ROOT_DIR_NAME +"/" + EximUtil.METADATA_PATH_NAME +"/" + replicatedDbName);
     FileStatus[] listStatus = dumpPath1.getFileSystem(conf).listStatus(dumpPath1);
     ArrayList<String> tablesBootstrapped = new ArrayList<String>();
     for (FileStatus file : listStatus) {
@@ -768,6 +770,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
 
     // Do a reverse load, this should do a bootstrap load for the tables in table_diff and incremental for the rest.
     primary.load(primaryDbName, replicatedDbName, withClause);
+
+    assertFalse("value1".equals(primary.getDatabase(primaryDbName).getParameters().get("key1")));
 
     primary.run("use " + primaryDbName)
         .run("select id from t1")
@@ -898,6 +902,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
 
     // Check the properties on the new target database.
     assertTrue(targetParams.containsKey(TARGET_OF_REPLICATION));
+    assertTrue(targetParams.containsKey(CURR_STATE_ID_TARGET.toString()));
+    assertTrue(targetParams.containsKey(CURR_STATE_ID_SOURCE.toString()));
     assertFalse(targetParams.containsKey(SOURCE_OF_REPLICATION));
 
     // Check the properties on the new source database.
@@ -1096,7 +1102,10 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
     // Do some modifications on original source cluster. The diff becomes(tnew_managed, t1, t2, t3)
     primary.run("use " + primaryDbName).run("create table tnew_managed (id int)")
         .run("insert into table t1 values (25)").run("insert into table tnew_managed values (110)")
-        .run("insert into table t2 partition(country='france') values ('lyon')").run("drop table t3");
+        .run("insert into table t2 partition(country='france') values ('lyon')").run("drop table t3")
+        .run("alter database "+ primaryDbName + " set DBPROPERTIES ('key1'='value1')");
+
+    assertTrue("value1".equals(primary.getDatabase(primaryDbName).getParameters().get("key1")));
 
     // Do some modifications on the target cluster. (t1, t2, t3: bootstrap & t4, t5: incremental)
     replica.run("use " + replicatedDbName).run("insert into table t1 values (101)")

@@ -245,9 +245,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               String dbEventId = getReplEventIdFromDatabase(work.dbNameOrPattern, getHive());
               // Get the last replicated event id from the database with respect to target.
               String targetDbEventId = getTargetEventId(work.dbNameOrPattern, getHive());
-              // Check if the tableDiff directory is present or not.
-              boolean isTableDiffDirectoryPresent =
-                  checkFileExists(currentDumpPath, conf, TABLE_DIFF_COMPLETE_DIRECTORY);
 
               LOG.info("Creating event_ack file for database {} with event id {}.", work.dbNameOrPattern, dbEventId);
               lastReplId =
@@ -274,6 +271,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               // Generate the bootstrapped table list and put it in the new dump directory for the load to consume.
               createBootstrapTableList(currentDumpPath, tablesForBootstrap, conf);
 
+              dumpDbMetadata(work.dbNameOrPattern, new Path(hiveDumpRoot, EximUtil.METADATA_PATH_NAME),
+                      fromEventId, getHive());
               // Call the normal dump with the tablesForBootstrap set.
               lastReplId =  incrementalDump(hiveDumpRoot, dmd, cmRoot, getHive());
             }
