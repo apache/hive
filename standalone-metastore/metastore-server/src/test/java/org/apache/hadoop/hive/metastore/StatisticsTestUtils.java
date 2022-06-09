@@ -49,7 +49,7 @@ import java.util.Collections;
 
 public class StatisticsTestUtils {
 
-  public static final String HIVE_ENGINE = "hive";
+  private static final String HIVE_ENGINE = "hive";
 
   private static final double epsilon = Double.MIN_VALUE;
 
@@ -59,7 +59,7 @@ public class StatisticsTestUtils {
 
   /*------------ TYPE-AGNOSTIC METHODS ------------*/
   /**
-   * Methods creating column statistics for a given table and partition.
+   * Creates column statistics for a given table and partition.
    * @param data the statistics data
    * @param tbl the target table
    * @param column the target column
@@ -150,7 +150,7 @@ public class StatisticsTestUtils {
 
   /*------------ LONG-RELATED METHODS ------------*/
   /**
-   * Method for creating statistics for a column of the Long type family.
+   * Creates statistics for a column of the Long type family.
    * @param numNulls the number of null values
    * @param numDVs the number of distinct values
    * @param low the low value
@@ -183,7 +183,7 @@ public class StatisticsTestUtils {
   }
 
   /**
-   * Methods asserting that computed statistics for a column of family type Long conform to their expected values.
+   * Asserts that computed statistics for a column of family type Long conform to their expected values.
    * @param statsObj the computed statistics object to be compared
    * @param numNulls the expected number of null values
    * @param numDVs the expected number of distinct values
@@ -235,7 +235,7 @@ public class StatisticsTestUtils {
 
   /*------------ DOUBLE-RELATED METHODS ------------*/
   /**
-   * Method for creating statistics for a column of the Double type family.
+   * Creates statistics for a column of the Double type family.
    * @param numNulls the number of null values
    * @param numDVs the number of distinct values
    * @param low the low value
@@ -268,7 +268,7 @@ public class StatisticsTestUtils {
   }
 
   /**
-   * Methods asserting that computed statistics for a column of family type Double conform to their expected values.
+   * Asserts that computed statistics for a column of family type Double conform to their expected values.
    * @param statsObj the computed statistics object to be compared
    * @param numNulls the expected number of null values
    * @param numDVs the expected number of distinct values
@@ -320,7 +320,7 @@ public class StatisticsTestUtils {
 
   /*------------ DECIMAL-RELATED METHODS ------------*/
   /**
-   * Method for creating statistics for a column of the Decimal type family.
+   * Creates statistics for a column of the Decimal type family.
    * @param numNulls the number of null values
    * @param numDVs the number of distinct values
    * @param low the low value
@@ -353,7 +353,7 @@ public class StatisticsTestUtils {
   }
 
   /**
-   * Methods asserting that computed statistics for a column of family type Decimal conform to their expected values.
+   * Asserts that computed statistics for a column of family type Decimal conform to their expected values.
    * @param statsObj the computed statistics object to be compared
    * @param numNulls the expected number of null values
    * @param numDVs the expected number of distinct values
@@ -407,7 +407,7 @@ public class StatisticsTestUtils {
 
   /*------------ DATE-RELATED METHODS ------------*/
   /**
-   * Method for creating statistics for a column of the Date type family.
+   * Creates statistics for a column of the Date type family.
    * @param numNulls the number of null values
    * @param numDVs the number of distinct values
    * @param low the low value
@@ -440,7 +440,7 @@ public class StatisticsTestUtils {
   }
 
   /**
-   * Methods asserting that computed statistics for a column of family type Date conform to their expected values.
+   * Asserts that computed statistics for a column of family type Date conform to their expected values.
    * @param statsObj the computed statistics object to be compared
    * @param numNulls the expected number of null values
    * @param numDVs the expected number of distinct values
@@ -492,7 +492,7 @@ public class StatisticsTestUtils {
 
   /*------------ TIMESTAMP-RELATED METHODS ------------*/
   /**
-   * Method for creating statistics for a column of the Timestamp type family.
+   * Creates statistics for a column of the Timestamp type family.
    * @param numNulls the number of null values
    * @param numDVs the number of distinct values
    * @param low the low value
@@ -526,7 +526,7 @@ public class StatisticsTestUtils {
   }
 
   /**
-   * Methods asserting that computed statistics for a column of family type Timestamp conform to their expected values.
+   * Asserts that computed statistics for a column of family type Timestamp conform to their expected values.
    * @param statsObj the computed statistics object to be compared
    * @param numNulls the expected number of null values
    * @param numDVs the expected number of distinct values
@@ -578,7 +578,7 @@ public class StatisticsTestUtils {
 
   /*------------ STRING-RELATED METHODS ------------*/
   /**
-   * Method for creating statistics for a column of the String type family.
+   * Creates statistics for a column of the String type family.
    * @param numNulls the number of null values
    * @param numDVs the number of distinct values
    * @param avgColLen the expected average column length value
@@ -612,7 +612,7 @@ public class StatisticsTestUtils {
   }
 
   /**
-   * Methods asserting that computed statistics for a column of family type String conform to their expected values.
+   * Asserts that computed statistics for a column of family type String conform to their expected values.
    * @param statsObj the computed statistics object to be compared
    * @param numNulls the expected number of null values
    * @param numDVs the expected number of distinct values
@@ -664,7 +664,7 @@ public class StatisticsTestUtils {
 
   /*------------ BOOLEAN-RELATED METHODS ------------*/
   /**
-   * Method for creating statistics for a column of the Boolean type family.
+   * Creates statistics for a column of the Boolean type family.
    * @param numNulls the number of null values
    * @param numFalses the number of false values
    * @param numTrues the number of true values
@@ -686,7 +686,7 @@ public class StatisticsTestUtils {
   }
 
   /**
-   * Methods asserting that computed statistics for a column of family type Boolean conform to their expected values.
+   * Asserts that computed statistics for a column of family type Boolean conform to their expected values.
    * @param statsObj the computed statistics object to be compared
    * @param numNulls the expected number of null values
    * @param numFalses the expected number of false values
@@ -726,7 +726,7 @@ public class StatisticsTestUtils {
 
   /*------------ BINARY-RELATED METHODS ------------*/
   /**
-   * Method for creating statistics for a column of the Binary type family.
+   * Creates statistics for a column of the Binary type family.
    * @param numNulls the number of null values
    * @param avgColLen the expected average column length value
    * @param maxColLen the expected max column length value
@@ -748,7 +748,7 @@ public class StatisticsTestUtils {
   }
 
   /**
-   * Methods asserting that computed statistics for a column of family type Binary conform to their expected values.
+   * Asserts that computed statistics for a column of family type Binary conform to their expected values.
    * @param statsObj the computed statistics object to be compared
    * @param numNulls the expected number of null values
    * @param avgColLen the expected average column length value
