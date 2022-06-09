@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.LlapSerDeDataBuf
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.StripeData;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer.SerDeStripeMetadata;
 import org.apache.hadoop.hive.llap.io.decode.OrcEncodedDataConsumer;
@@ -63,7 +64,6 @@ import org.apache.hadoop.hive.llap.io.encoded.VectorDeserializeOrcWriter.AsyncCa
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterOptions;
@@ -224,10 +224,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
     fs = split.getPath().getFileSystem(daemonConf);
     PartitionDesc partitionDesc = LlapHiveUtils.partitionDescForPath(split.getPath(), parts);
-    fileKey = determineCacheKey(fs, split, partitionDesc,
-        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),
-        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID),
-        !HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_USE_FILEID_PATH));
+    fileKey = determineCacheKey(fs, split, partitionDesc);
     cacheTag = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE)
         ? LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), true, partitionDesc) : null;
     this.sourceInputFormat = sourceInputFormat;
@@ -1732,13 +1729,13 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     return true;
   }
 
-  private static Object determineCacheKey(FileSystem fs, FileSplit split, PartitionDesc partitionDesc,
-      boolean allowSynthetic, boolean checkDefaultFs, boolean forceSynthetic) throws IOException {
+  private static Object determineCacheKey(FileSystem fs, FileSplit split, PartitionDesc partitionDesc)
+      throws IOException {
     /* TODO: support this optionally? this is not OrcSplit, but we could add a custom split.
       Object fileKey = ((OrcSplit)split).getFileKey();
       if (fileKey != null) return fileKey; */
     LlapIoImpl.LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
-    Object fileId = HdfsUtils.getFileId(fs, split.getPath(), allowSynthetic, checkDefaultFs, forceSynthetic);
+    Object fileId = LlapProxy.getIo().createFileIdUsingFS(fs, split.getPath());
     return SchemaAwareCacheKey.buildCacheKey(fileId, LlapHiveUtils.getSchemaHash(partitionDesc));
   }
 
