@@ -17,13 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.database.alter.owner.AlterDatabaseSetOwnerDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
 import org.apache.thrift.TException;
 import com.google.common.collect.Collections2;
@@ -89,6 +93,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedList;
+import java.util.Arrays;
+import java.util.Set;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
@@ -107,6 +113,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private final static int ZERO_TASKS = 0;
   private final String STAGE_NAME = "REPL_LOAD";
+  private List<TxnType> excludedTxns = Arrays.asList(TxnType.READ_ONLY, TxnType.REPL_CREATED);
 
   @Override
   public String getName() {
@@ -724,9 +731,23 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
       boolean isTableDiffPresent =
           checkFileExists(new Path(work.dumpDirectory).getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY);
+      boolean isAbortTxnsListPresent =
+              checkFileExists(new Path(work.dumpDirectory).getParent(), conf, OptimisedBootstrapUtils.ABORT_TXNS_FILE);
+      Long eventId = Long.parseLong(getEventIdFromFile(new Path(work.dumpDirectory).getParent(), conf)[0]);
+      List<NotificationEvent> notificationEvents = OptimisedBootstrapUtils.getListOfNotificationEvents(eventId, getHive(), work);
+      if (!isAbortTxnsListPresent) {
+        //Abort the ongoing transactions(opened prior to failover) for the target database.
+        HiveTxnManager hiveTxnManager = getTxnMgr();
+        ValidTxnList validTxnList = hiveTxnManager.getValidTxns(excludedTxns);
+        Set<Long> allOpenTxns = new HashSet<>(ReplUtils.getOpenTxns(validTxnList));
+        abortOpenTxnsForDatabase(hiveTxnManager, validTxnList, work.dbNameToLoadIn, getHive());
+        //Re-fetch the list of notification events post failover eventId.
+        notificationEvents = OptimisedBootstrapUtils.getListOfNotificationEvents(eventId, getHive(), work);
+        OptimisedBootstrapUtils.prepareAbortTxnsFile(notificationEvents, allOpenTxns,
+                new Path(work.dumpDirectory).getParent(), conf);
+      }
       if (!isTableDiffPresent) {
-        Long eventId = Long.parseLong(getEventIdFromFile(new Path(work.dumpDirectory).getParent(), conf)[0]);
-        prepareTableDiffFile(eventId, getHive(), work, conf);
+        prepareTableDiffFile(notificationEvents, getHive(), work, conf);
       }
       if (this.childTasks == null) {
         this.childTasks = new ArrayList<>();
@@ -847,6 +868,22 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     ((IncrementalLoadLogger)work.incrementalLoadTasksBuilder().getReplLogger()).initiateEventTimestamp(currentTimestamp);
     LOG.info("REPL_INCREMENTAL_LOAD stage duration : {} ms", currentTimestamp - loadStartTime);
     return 0;
+  }
+
+  private void abortOpenTxnsForDatabase(HiveTxnManager hiveTxnManager, ValidTxnList validTxnList, String dbName,
+                                        Hive hiveDb) throws HiveException {
+    List<Long> openTxns = ReplUtils.getOpenTxns(hiveTxnManager, validTxnList, dbName);
+    if (!openTxns.isEmpty()) {
+      LOG.info("Rolling back write txns:" + openTxns.toString() + " for the database: " + dbName);
+      //abort only write transactions for the current database if abort transactions is enabled.
+      hiveDb.abortTransactions(openTxns);
+      validTxnList = hiveTxnManager.getValidTxns(excludedTxns);
+      openTxns = ReplUtils.getOpenTxns(hiveTxnManager, validTxnList, dbName);
+      if (!openTxns.isEmpty()) {
+        LOG.warn("Unable to force abort all the open txns: {}.", openTxns);
+        throw new IllegalStateException("Failover triggered abort txns request failed for unknown reasons.");
+      }
+    }
   }
 
   private Database getSourceDbMetadata() throws IOException, SemanticException {

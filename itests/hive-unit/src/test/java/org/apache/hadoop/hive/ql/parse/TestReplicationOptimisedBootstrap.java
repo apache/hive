@@ -24,12 +24,16 @@ import org.apache.hadoop.fs.QuotaUsage;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import org.jetbrains.annotations.NotNull;
@@ -55,7 +59,6 @@ import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLI
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.TABLE_DIFF_COMPLETE_DIRECTORY;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.TABLE_DIFF_INPROGRESS_DIRECTORY;
-import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getPathsFromTableFile;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getTablesFromTableDiffFile;
 
@@ -71,6 +74,10 @@ import static org.junit.Assert.fail;
 public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosAcidTables {
 
   String extraPrimaryDb;
+  HiveConf primaryConf;
+  TxnStore txnHandler;
+  List<Long> tearDownTxns = new ArrayList<>();
+  List<Long> tearDownLockIds = new ArrayList<>();
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -90,10 +97,19 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
   public void setup() throws Throwable {
     super.setup();
     extraPrimaryDb = "extra_" + primaryDbName;
+    primaryConf = primary.getConf();
+    txnHandler = TxnUtils.getTxnStore(primary.getConf());
   }
 
   @After
   public void tearDown() throws Throwable {
+    if (!tearDownTxns.isEmpty()) {
+      //Abort the left out transactions which might not be completed due to some test failures.
+      txnHandler.abortTxns(new AbortTxnsRequest(tearDownTxns));
+    }
+    //Release the unreleased locks acquired during tests. Although, we specifically release the locks when not required.
+    //But there may be case when test failed and locks are left in dangling state.
+    releaseLocks(txnHandler, tearDownLockIds);
     primary.run("drop database if exists " + extraPrimaryDb + " cascade");
     super.tearDown();
   }
@@ -468,46 +484,55 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
 
   @Test
   public void testReverseBootstrap() throws Throwable {
-    HiveConf primaryConf = primary.getConf();
-    TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
     List<String> withClause = setUpFirstIterForOptimisedBootstrap();
 
     // Open 3 txns for Database which is not under replication
     int numTxnsForSecDb = 3;
     List<Long> txnsForSecDb = openTxns(numTxnsForSecDb, txnHandler, primaryConf);
+    tearDownTxns.addAll(txnsForSecDb);
 
     Map<String, Long> tablesInSecDb = new HashMap<>();
-    tablesInSecDb.put("t1", (long) numTxnsForSecDb);
-    tablesInSecDb.put("t2", (long) numTxnsForSecDb);
+    tablesInSecDb.put("t1", (long) numTxnsForSecDb + 4);
+    tablesInSecDb.put("t2", (long) numTxnsForSecDb + 4);
     List<Long> lockIdsForSecDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName + "_extra",
             tablesInSecDb, txnHandler, txnsForSecDb, primaryConf);
+    tearDownLockIds.addAll(lockIdsForSecDb);
 
     //Open 2 txns for Primary Db
     int numTxnsForPrimaryDb = 2;
     List<Long> txnsForSourceDb = openTxns(numTxnsForPrimaryDb, txnHandler, primaryConf);
+    tearDownTxns.addAll(txnsForSourceDb);
 
     // Allocate write ids for both tables of source database.
     Map<String, Long> tablesInSourceDb = new HashMap<>();
-    tablesInSourceDb.put("t1", (long) numTxnsForPrimaryDb + 4);
+    tablesInSourceDb.put("t1", (long) numTxnsForPrimaryDb + 6);
     tablesInSourceDb.put("t2", (long) numTxnsForPrimaryDb);
-    allocateWriteIdsForTablesAndAcquireLocks(replicatedDbName, tablesInSourceDb, txnHandler,
+    List<Long> lockIdsForSourceDb = allocateWriteIdsForTablesAndAcquireLocks(replicatedDbName, tablesInSourceDb, txnHandler,
             txnsForSourceDb, replica.getConf());
+    tearDownLockIds.addAll(lockIdsForSourceDb);
 
     //Open 1 txn with no hive locks acquired
     List<Long> txnsWithNoLocks = openTxns(1, txnHandler, primaryConf);
+    tearDownTxns.addAll(txnsWithNoLocks);
 
     // Do a reverse second dump, this should do a bootstrap dump for the tables in the table_diff and incremental for
     // rest.
+    List<Long> allReplCreatedTxnsOnSource = getReplCreatedTxns();
+    tearDownTxns.addAll(allReplCreatedTxnsOnSource);
 
     assertTrue("value1".equals(primary.getDatabase(primaryDbName).getParameters().get("key1")));
     WarehouseInstance.Tuple tuple = replica.dump(replicatedDbName, withClause);
+
+    verifyAllOpenTxnsAborted(allReplCreatedTxnsOnSource, primaryConf);
 
     //Verify that openTxns for sourceDb were aborted before proceeding with bootstrap dump.
     verifyAllOpenTxnsAborted(txnsForSourceDb, primaryConf);
     verifyAllOpenTxnsNotAborted(txnsForSecDb, primaryConf);
     verifyAllOpenTxnsNotAborted(txnsWithNoLocks, primaryConf);
     txnHandler.abortTxns(new AbortTxnsRequest(txnsForSecDb));
+    txnHandler.abortTxns(new AbortTxnsRequest(txnsForSecDb));
     txnHandler.abortTxns(new AbortTxnsRequest(txnsWithNoLocks));
+    releaseLocks(txnHandler, lockIdsForSecDb);
     releaseLocks(txnHandler, lockIdsForSecDb);
 
     String hiveDumpDir = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
@@ -829,6 +854,35 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     primary.dump(primaryDbName, withClause);
     replica.load(replicatedDbName, primaryDbName, withClause);
 
+    // Open 3 txns for Database which is not under replication
+    int numTxnsForSecDb = 3;
+    List<Long> txnsForSecDb = openTxns(numTxnsForSecDb, txnHandler, primaryConf);
+    tearDownTxns.addAll(txnsForSecDb);
+
+    Map<String, Long> tablesInSecDb = new HashMap<>();
+    tablesInSecDb.put("t1", (long) numTxnsForSecDb);
+    tablesInSecDb.put("t2", (long) numTxnsForSecDb);
+    List<Long> lockIdsForSecDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName + "_extra",
+            tablesInSecDb, txnHandler, txnsForSecDb, primaryConf);
+    tearDownLockIds.addAll(lockIdsForSecDb);
+
+    //Open 2 txns for Primary Db
+    int numTxnsForPrimaryDb = 2;
+    List<Long> txnsForSourceDb = openTxns(numTxnsForPrimaryDb, txnHandler, primaryConf);
+    tearDownTxns.addAll(txnsForSourceDb);
+
+    // Allocate write ids for both tables of source database.
+    Map<String, Long> tablesInSourceDb = new HashMap<>();
+    tablesInSourceDb.put("t1", (long) numTxnsForPrimaryDb);
+    tablesInSourceDb.put("t5", (long) numTxnsForPrimaryDb);
+    List<Long> lockIdsForSourceDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName, tablesInSourceDb, txnHandler,
+            txnsForSourceDb, primary.getConf());
+    tearDownLockIds.addAll(lockIdsForSourceDb);
+
+    //Open 1 txn with no hive locks acquired
+    List<Long> txnsWithNoLocks = openTxns(1, txnHandler, primaryConf);
+    tearDownTxns.addAll(txnsWithNoLocks);
+
     // Create 4 managed tables and do a dump & load.
     WarehouseInstance.Tuple tuple =
         primary.run("use " + primaryDbName)
@@ -849,6 +903,49 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
         .verifyResult(tuple.lastReplicationId).run("use " + replicatedDbName).run("show tables like 't1'")
         .verifyResult("t1").run("show tables like 't2'").verifyResult("t2").run("show tables like 't3'")
         .verifyResult("t3").run("show tables like 't4'").verifyResult("t4").verifyReplTargetProperty(replicatedDbName);
+
+    String forwardReplPolicy = HiveUtils.getReplPolicy(replicatedDbName);
+    List<Long> targetReplCreatedTxnIds = new ArrayList<>();
+    for (Long txn: txnsForSecDb) {
+      targetReplCreatedTxnIds.add(txnHandler.getTargetTxnId(forwardReplPolicy, txn));
+    }
+    for (Long txn: txnsForSourceDb) {
+      targetReplCreatedTxnIds.add(txnHandler.getTargetTxnId(forwardReplPolicy, txn));
+    }
+    for (Long txn: txnsWithNoLocks) {
+      targetReplCreatedTxnIds.add(txnHandler.getTargetTxnId(forwardReplPolicy, txn));
+    }
+
+    verifyAllOpenTxnsNotAborted(targetReplCreatedTxnIds, primaryConf);
+
+    //Open New transactions on original source cluster post it went down.
+
+    // Open 1 txn for secondary Database
+    List<Long> newTxnsForSecDb = openTxns(1, txnHandler, primaryConf);
+    tearDownTxns.addAll(newTxnsForSecDb);
+
+    Map<String, Long> newTablesForSecDb = new HashMap<>();
+    newTablesForSecDb.put("t1", (long) numTxnsForSecDb + 1);
+    newTablesForSecDb.put("t2", (long) numTxnsForSecDb + 1);
+    List<Long> newLockIdsForSecDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName + "_extra",
+            newTablesForSecDb, txnHandler, newTxnsForSecDb, primaryConf);
+    tearDownLockIds.addAll(newLockIdsForSecDb);
+
+    //Open 1 txn for Primary Db
+    List<Long> newTxnsForSourceDb = openTxns(1, txnHandler, primaryConf);
+    tearDownTxns.addAll(newTxnsForSourceDb);
+
+    // Allocate write ids for both tables of source database.
+    Map<String, Long> newTablesInSourceDb = new HashMap<>();
+    newTablesInSourceDb.put("t1", (long) 5);
+    newTablesInSourceDb.put("t5", (long) 3);
+    List<Long> newLockIdsForSourceDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName, newTablesInSourceDb, txnHandler,
+            newTxnsForSourceDb, primary.getConf());
+    tearDownLockIds.addAll(newLockIdsForSourceDb);
+
+    //Open 1 txn with no hive locks acquired
+    List<Long> newTxnsWithNoLock = openTxns(1, txnHandler, primaryConf);
+    tearDownTxns.addAll(newTxnsWithNoLock);
 
     // Do some modifications on original source cluster. The diff becomes(tnew_managed, t1, t2, t3)
     primary.run("use " + primaryDbName).run("create table tnew_managed (id int) clustered by(id) into 3 buckets " +
@@ -886,14 +983,44 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     // Do a load, this should create a table_diff_complete directory
     primary.load(primaryDbName, replicatedDbName, withClause);
 
+    verifyAllOpenTxnsAborted(txnsForSourceDb, primaryConf);
+    verifyAllOpenTxnsNotAborted(txnsForSecDb, primaryConf);
+    verifyAllOpenTxnsNotAborted(txnsWithNoLocks, primaryConf);
+    verifyAllOpenTxnsAborted(newTxnsForSourceDb, primaryConf);
+    verifyAllOpenTxnsNotAborted(newTxnsForSecDb, primaryConf);
+    verifyAllOpenTxnsNotAborted(newTxnsWithNoLock, primaryConf);
+
+    txnHandler.abortTxns(new AbortTxnsRequest(txnsForSecDb));
+    releaseLocks(txnHandler, lockIdsForSecDb);
+    txnHandler.abortTxns(new AbortTxnsRequest(txnsWithNoLocks));
+    txnHandler.abortTxns(new AbortTxnsRequest(newTxnsForSecDb));
+    releaseLocks(txnHandler, newLockIdsForSecDb);
+    txnHandler.abortTxns(new AbortTxnsRequest(newTxnsWithNoLock));
+
     // Check the table diff directory exist.
     assertTrue(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY).toString() + " doesn't exist",
         replicaFs.exists(new Path(tuple.dumpLocation, TABLE_DIFF_COMPLETE_DIRECTORY)));
+
+    assertTrue(new Path(tuple.dumpLocation, OptimisedBootstrapUtils.ABORT_TXNS_FILE).toString() + " doesn't exist",
+            replicaFs.exists(new Path(tuple.dumpLocation, OptimisedBootstrapUtils.ABORT_TXNS_FILE)));
+
+    List<Long> txnsInAbortTxnFile = OptimisedBootstrapUtils.
+            getTxnIdFromAbortTxnsFile(new Path(tuple.dumpLocation), primaryConf);
+    assertTrue (txnsInAbortTxnFile.containsAll(txnsForSourceDb));
+    assertTrue (txnsInAbortTxnFile.containsAll(txnsForSecDb));
+    assertTrue (txnsInAbortTxnFile.containsAll(txnsWithNoLocks));
+    assertEquals (txnsInAbortTxnFile.size(), txnsForSecDb.size() + txnsForSourceDb.size() + txnsWithNoLocks.size());
 
     // Check the table diff has all the modified table, including the dropped and empty ones
     HashSet<String> tableDiffEntries = getTablesFromTableDiffFile(dumpPath, conf);
     assertTrue("Table Diff Contains " + tableDiffEntries,
         tableDiffEntries.containsAll(Arrays.asList("tnew_managed", "t1", "t2", "t3")));
     return withClause;
+  }
+
+  List<Long> getReplCreatedTxns() throws MetaException {
+    List<TxnType> excludedTxns = Arrays.asList(TxnType.DEFAULT, TxnType.READ_ONLY, TxnType.COMPACTION,
+            TxnType.MATER_VIEW_REBUILD, TxnType.SOFT_DELETE);
+    return txnHandler.getOpenTxns(excludedTxns).getOpen_txns();
   }
 }
