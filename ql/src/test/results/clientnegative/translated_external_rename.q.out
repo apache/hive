@@ -31,4 +31,4 @@ PREHOOK: query: create table t (a integer)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Exception determining external table location:Default location is not available for table: hdfs://### HDFS PATH ###)
+#### A masked pattern was here ####
