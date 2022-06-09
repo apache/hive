@@ -18,8 +18,6 @@
  */
 package org.apache.hadoop.hive.metastore.columnstats.aggr;
 
-import org.apache.hadoop.hive.common.ndv.fm.FMSketch;
-import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.metastore.StatisticsTestUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
@@ -29,7 +27,9 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.columnstats.ColStatsBuilder;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -37,17 +37,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertStringStats;
-import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createFMSketch;
-import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createHll;
-
 @Category(MetastoreUnitTest.class)
 public class StringColumnStatsAggregatorTest {
 
   private static final Table TABLE = new Table("dummy", "db", "hive", 0, 0,
       0, null, null, Collections.emptyMap(), null, null,
       TableType.MANAGED_TABLE.toString());
-  private static final FieldSchema COL = new FieldSchema("col", "int", "");
+  private static final FieldSchema COL = new FieldSchema("col", "string", "");
 
   private static final String S_1 = "test";
   private static final String S_2 = "try";
@@ -61,122 +57,61 @@ public class StringColumnStatsAggregatorTest {
   public void testAggregateSingleStat() throws MetaException {
     List<String> partitionNames = Collections.singletonList("part1");
 
-    HyperLogLog hll = createHll(S_1, S_3);
-    ColumnStatisticsData data1 = StatisticsTestUtils.createStringStats(1L, 2L, 8.5, 13L, hll);
+    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(2).avgColLen(8.5).maxColLen(13)
+        .hll(S_1, S_3).buildStringStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
         TABLE, partitionNames, Collections.singletonList(stats1));
 
     StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
-    ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
+    ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
 
-    assertStringStats(stats, 1L, 2L, 8.5, 13L, hll);
-  }
-
-  @Test
-  public void testAggregateSingleStatWhenNullValues() throws MetaException {
-    List<String> partitionNames = Collections.singletonList("part1");
-    ColumnStatisticsData data1 = StatisticsTestUtils.createStringStats(
-            1L, 2L, null, null, null);
-    ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
-
-    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
-        TABLE, partitionNames, Collections.singletonList(stats1));
-
-    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
-
-    ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
-    assertStringStats(statsObj, 1L, 2L, null, null, null);
-
-    aggregator.useDensityFunctionForNDVEstimation = true;
-    statsObj = aggregator.aggregate(statsList, partitionNames, true);
-    assertStringStats(statsObj, 1L, 2L, null, null, null);
-
-    aggregator.useDensityFunctionForNDVEstimation = false;
-    aggregator.ndvTuner = 1;
-    // ndv tuner does not have any effect because min numDVs and max numDVs coincide (we have a single stats)
-    statsObj = aggregator.aggregate(statsList, partitionNames, true);
-    assertStringStats(statsObj, 1L, 2L, null, null, null);
-  }
-
-  @Test
-  public void testAggregateMultipleStatsWhenSomeNullValues() throws MetaException {
-    List<String> partitionNames = Arrays.asList("part1", "part2");
-
-    HyperLogLog hll1 = createHll(S_1, S_2);
-    ColumnStatisticsData data1 = StatisticsTestUtils.createStringStats(
-        1L, 2L, 3.0, 4L, hll1);
-    ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
-
-    ColumnStatisticsData data2 = StatisticsTestUtils.createStringStats(
-        2L, 3L, null, null, null);
-    ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(0));
-
-    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
-        TABLE, partitionNames, Arrays.asList(stats1, stats2));
-
-    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
-
-    ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
-    assertStringStats(statsObj, 3L, 3L, 3.0, 4L, hll1);
-
-    // both useDensityFunctionForNDVEstimation and ndvTuner are ignored by StringColumnStatsAggregator
-    aggregator.useDensityFunctionForNDVEstimation = true;
-    statsObj = aggregator.aggregate(statsList, partitionNames, true);
-    assertStringStats(statsObj, 3L, 3L, 3.0, 4L, hll1);
-
-    aggregator.useDensityFunctionForNDVEstimation = false;
-    aggregator.ndvTuner = 1;
-    statsObj = aggregator.aggregate(statsList, partitionNames, true);
-    assertStringStats(statsObj, 3L, 3L, 3.0, 4L, hll1);
+    Assert.assertEquals(data1, computedStatsObj.getStatsData());
   }
 
   @Test
   public void testAggregateMultiStatsWhenAllAvailable() throws MetaException {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
-    HyperLogLog hll1 = createHll(S_1, S_2, S_3);
-    ColumnStatisticsData data1 = StatisticsTestUtils.createStringStats(
-        1L, 3L, 20.0 / 3, 13L, hll1);
+    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(3).avgColLen(20.0 / 3).maxColLen(13)
+        .hll(S_1, S_2, S_3).buildStringStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    HyperLogLog hll2 = createHll(S_3, S_4, S_5);
-    ColumnStatisticsData data2 = StatisticsTestUtils.createStringStats(
-        2L, 3L, 14.0, 18L, hll2);
+    ColumnStatisticsData data2 = new ColStatsBuilder().numNulls(2).numDVs(3).avgColLen(14).maxColLen(18)
+        .hll(S_3, S_4, S_5).buildStringStats();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(1));
 
-    HyperLogLog hll3 = createHll(S_6, S_7);
-    ColumnStatisticsData data3 = StatisticsTestUtils.createStringStats(
-        3L, 2L, 17.5, 18L, hll3);
+    ColumnStatisticsData data3 = new ColStatsBuilder().numNulls(3).numDVs(2).avgColLen(17.5).maxColLen(18)
+        .hll(S_6, S_7).buildStringStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
         TABLE, partitionNames, Arrays.asList(stats1, stats2, stats3));
 
     StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
-    ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
+    ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     // the aggregation does not update hll, only numNDVs is, it keeps the first hll
-    assertStringStats(stats, 6L, 7L, 17.5, 18L, hll1);
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numDVs(7).avgColLen(17.5).maxColLen(18)
+        .hll(S_1, S_2, S_3).buildStringStats();
+
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 
   @Test
   public void testAggregateMultiStatsWhenUnmergeableBitVectors() throws MetaException {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
-    FMSketch fmSketch = createFMSketch(S_1, S_2, S_3);
-    ColumnStatisticsData data1 = StatisticsTestUtils.createStringStats(
-        1L, 3L, 20.0 / 3, 13L, fmSketch);
+    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(3).avgColLen(20.0 / 3).maxColLen(13)
+        .fmSketch(S_1, S_2, S_3).buildStringStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    HyperLogLog hll2 = createHll(S_3, S_4, S_5);
-    ColumnStatisticsData data2 = StatisticsTestUtils.createStringStats(
-        2L, 3L, 14.0, 18L, hll2);
+    ColumnStatisticsData data2 = new ColStatsBuilder().numNulls(2).numDVs(3).avgColLen(14).maxColLen(18)
+        .hll(S_3, S_4, S_5).buildStringStats();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(1));
 
-    HyperLogLog hll3 = createHll(S_6, S_7);
-    ColumnStatisticsData data3 = StatisticsTestUtils.createStringStats(
-        3L, 2L, 17.5, 18L, hll3);
+    ColumnStatisticsData data3 = new ColStatsBuilder().numNulls(3).numDVs(2).avgColLen(17.5).maxColLen(18)
+        .hll(S_6, S_7).buildStringStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -184,46 +119,46 @@ public class StringColumnStatsAggregatorTest {
 
     StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
 
-    ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
+    ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     // the aggregation does not update the bitvector, only numDVs is, it keeps the first bitvector;
     // numDVs is set to the maximum among all stats when non-mergeable bitvectors are detected
-    assertStringStats(stats, 6L, 3L, 17.5, 18L, fmSketch);
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numDVs(3).avgColLen(17.5).maxColLen(18)
+        .fmSketch(S_1, S_2, S_3).buildStringStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     // both useDensityFunctionForNDVEstimation and ndvTuner are ignored by StringColumnStatsAggregator
     aggregator.useDensityFunctionForNDVEstimation = true;
-    stats = aggregator.aggregate(statsList, partitionNames, true);
-    assertStringStats(stats, 6L, 3L, 17.5, 18L, fmSketch);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     aggregator.ndvTuner = 0;
-    stats = aggregator.aggregate(statsList, partitionNames, true);
-    assertStringStats(stats, 6L, 3L, 17.5, 18L, fmSketch);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.ndvTuner = 0.5;
-    stats = aggregator.aggregate(statsList, partitionNames, true);
-    assertStringStats(stats, 6L, 3L, 17.5, 18L, fmSketch);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.ndvTuner = 0.75;
-    stats = aggregator.aggregate(statsList, partitionNames, true);
-    assertStringStats(stats, 6L, 3L, 17.5, 18L, fmSketch);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.ndvTuner = 1;
-    stats = aggregator.aggregate(statsList, partitionNames, true);
-    assertStringStats(stats, 6L, 3L, 17.5, 18L, fmSketch);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 
   @Test
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
-    HyperLogLog hll1 = createHll(S_1, S_2, S_3);
-    ColumnStatisticsData data1 = StatisticsTestUtils.createStringStats(
-        1L, 3L, 20.0 / 3, 13L, hll1);
+    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(3).avgColLen(20.0 / 3).maxColLen(13)
+        .hll(S_1, S_2, S_3).buildStringStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    HyperLogLog hll3 = createHll(S_6, S_7);
-    ColumnStatisticsData data3 = StatisticsTestUtils.createStringStats(
-        3L, 2L, 17.5, 18L, hll3);
+    ColumnStatisticsData data3 = new ColStatsBuilder().numNulls(3).numDVs(2).avgColLen(17.5).maxColLen(18)
+        .hll(S_6, S_7).buildStringStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -231,23 +166,24 @@ public class StringColumnStatsAggregatorTest {
 
     StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
 
-    ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
+    ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
-    assertStringStats(stats, 6L, 3L, 22.916666666666668, 22L, null);
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numDVs(3)
+        .avgColLen(22.916666666666668).maxColLen(22).buildStringStats();
+
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 
   @Test
   public void testAggregateMultiStatsOnlySomeAvailableButUnmergeableBitVector() throws MetaException {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
-    FMSketch fmSketch = createFMSketch(S_1, S_2, S_3);
-    ColumnStatisticsData data1 = StatisticsTestUtils.createStringStats(
-        1L, 3L, 20.0 / 3, 13L, fmSketch);
+    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(3).avgColLen(20.0 / 3).maxColLen(13)
+        .fmSketch(S_1, S_2, S_3).buildStringStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    HyperLogLog hll3 = createHll(S_6, S_7);
-    ColumnStatisticsData data3 = StatisticsTestUtils.createStringStats(
-        3L, 2L, 17.5, 18L, hll3);
+    ColumnStatisticsData data3 = new ColStatsBuilder().numNulls(3).numDVs(2).avgColLen(17.5).maxColLen(18)
+        .hll(S_6, S_7).buildStringStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -255,13 +191,15 @@ public class StringColumnStatsAggregatorTest {
 
     StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
 
-    ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
+    ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
-    assertStringStats(stats, 6L, 3L, 22.916666666666668, 22L, null);
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numDVs(3)
+        .avgColLen(22.916666666666668).maxColLen(22).buildStringStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     // both useDensityFunctionForNDVEstimation and ndvTuner are ignored by StringColumnStatsAggregator
     aggregator.useDensityFunctionForNDVEstimation = true;
-    stats = aggregator.aggregate(statsList, partitionNames, true);
-    assertStringStats(stats, 6L, 3L, 22.916666666666668, 22L, null);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 }

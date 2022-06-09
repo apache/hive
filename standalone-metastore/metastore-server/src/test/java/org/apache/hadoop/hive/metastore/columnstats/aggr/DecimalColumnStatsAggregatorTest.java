@@ -18,8 +18,6 @@
  */
 package org.apache.hadoop.hive.metastore.columnstats.aggr;
 
-import org.apache.hadoop.hive.common.ndv.fm.FMSketch;
-import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.metastore.StatisticsTestUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
@@ -31,7 +29,9 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
+import org.apache.hadoop.hive.metastore.columnstats.ColStatsBuilder;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -39,17 +39,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertDecimalStats;
-import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createFMSketch;
-import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createHll;
-
 @Category(MetastoreUnitTest.class)
 public class DecimalColumnStatsAggregatorTest {
 
   private static final Table TABLE = new Table("dummy", "db", "hive", 0, 0,
       0, null, null, Collections.emptyMap(), null, null,
       TableType.MANAGED_TABLE.toString());
-  private static final FieldSchema COL = new FieldSchema("col", "int", "");
+  private static final FieldSchema COL = new FieldSchema("col", "decimal", "");
 
   private static final Decimal ONE = DecimalUtils.createThriftDecimal("1.0");
   private static final Decimal TWO = DecimalUtils.createThriftDecimal("2.0");
@@ -65,24 +61,24 @@ public class DecimalColumnStatsAggregatorTest {
   public void testAggregateSingleStat() throws MetaException {
     List<String> partitionNames = Collections.singletonList("part1");
 
-    HyperLogLog hll = createHll(1, 3);
-    ColumnStatisticsData data1 = StatisticsTestUtils.createDecimalStats(1L, 2L, ONE, FOUR, hll);
+    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(2)
+        .lowValueDecimal(ONE).highValueDecimal(FOUR).hll(1, 4).buildDecimalStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
         TABLE, partitionNames, Collections.singletonList(stats1));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
-    ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
+    ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
 
-    assertDecimalStats(stats, 1L, 2L, ONE, FOUR, hll);
+    Assert.assertEquals(data1, computedStatsObj.getStatsData());
   }
 
   @Test
   public void testAggregateSingleStatWhenNullValues() throws MetaException {
     List<String> partitionNames = Collections.singletonList("part1");
-    ColumnStatisticsData data1 = StatisticsTestUtils.createDecimalStats(
-            1L, 2L, null, null, null);
+
+    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(2).buildDecimalStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -90,31 +86,30 @@ public class DecimalColumnStatsAggregatorTest {
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
 
-    ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
-    assertDecimalStats(statsObj, 1L, 2L, null, null, null);
+    ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(1).numDVs(2).buildDecimalStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
-    statsObj = aggregator.aggregate(statsList, partitionNames, true);
-    assertDecimalStats(statsObj, 1L, 2L, null, null, null);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     aggregator.ndvTuner = 1;
     // ndv tuner does not have any effect because min numDVs and max numDVs coincide (we have a single stats)
-    statsObj = aggregator.aggregate(statsList, partitionNames, true);
-    assertDecimalStats(statsObj, 1L, 2L, null, null, null);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 
   @Test
   public void testAggregateMultipleStatsWhenSomeNullValues() throws MetaException {
     List<String> partitionNames = Arrays.asList("part1", "part2");
 
-    HyperLogLog hll1 = createHll(1, 2);
-    ColumnStatisticsData data1 = StatisticsTestUtils.createDecimalStats(
-        1L, 2L, ONE, TWO, hll1);
+    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(2)
+        .lowValueDecimal(ONE).highValueDecimal(TWO).hll(1, 2).buildDecimalStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    ColumnStatisticsData data2 = StatisticsTestUtils.createDecimalStats(
-        2L, 3L, null, null, null);
+    ColumnStatisticsData data2 = new ColStatsBuilder().numNulls(2).numDVs(3).buildDecimalStats();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(0));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -122,59 +117,67 @@ public class DecimalColumnStatsAggregatorTest {
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
 
-    ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
-    assertDecimalStats(statsObj, 3L, 3L, ONE, TWO, hll1);
+    ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(3).numDVs(3)
+        .lowValueDecimal(ONE).highValueDecimal(TWO).hll(1, 2).buildDecimalStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
-    statsObj = aggregator.aggregate(statsList, partitionNames, true);
-    assertDecimalStats(statsObj, 3L, 4L, ONE, TWO, hll1);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    expectedStats = new ColStatsBuilder().numNulls(3).numDVs(4)
+        .lowValueDecimal(ONE).highValueDecimal(TWO).hll(1, 2).buildDecimalStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     aggregator.ndvTuner = 1;
-    statsObj = aggregator.aggregate(statsList, partitionNames, true);
-    assertDecimalStats(statsObj, 3L, 5L, ONE, TWO, hll1);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    expectedStats = new ColStatsBuilder().numNulls(3).numDVs(5)
+        .lowValueDecimal(ONE).highValueDecimal(TWO).hll(1, 2).buildDecimalStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 
   @Test
   public void testAggregateMultiStatsWhenAllAvailable() throws MetaException {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
-    HyperLogLog hll1 = createHll(1, 2, 3);
-    ColumnStatisticsData data1 = StatisticsTestUtils.createDecimalStats(1L, 3L, ONE, THREE, hll1);
+    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(3)
+        .lowValueDecimal(ONE).highValueDecimal(TWO).hll(1, 2, 3).buildDecimalStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    HyperLogLog hll2 = createHll(3, 4, 5);
-    ColumnStatisticsData data2 = StatisticsTestUtils.createDecimalStats(2L, 3L, THREE, FIVE, hll2);
+    ColumnStatisticsData data2 = new ColStatsBuilder().numNulls(2).numDVs(3)
+        .lowValueDecimal(THREE).highValueDecimal(FIVE).hll(3, 4, 5).buildDecimalStats();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(1));
 
-    HyperLogLog hll3 = createHll(6, 7);
-    ColumnStatisticsData data3 = StatisticsTestUtils.createDecimalStats(3L, 2L, SIX, SEVEN, hll3);
+    ColumnStatisticsData data3 = new ColStatsBuilder().numNulls(3).numDVs(2)
+        .lowValueDecimal(SIX).highValueDecimal(SEVEN).hll(6, 7).buildDecimalStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
         TABLE, partitionNames, Arrays.asList(stats1, stats2, stats3));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
-    ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
-
+    ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     // the aggregation does not update hll, only numNDVs is, it keeps the first hll
-    assertDecimalStats(stats, 6L, 7L, ONE, SEVEN, hll1);
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numDVs(7)
+        .lowValueDecimal(ONE).highValueDecimal(SEVEN).hll(1, 2, 3).buildDecimalStats();
+
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 
   @Test
   public void testAggregateMultiStatsWhenUnmergeableBitVectors() throws MetaException {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
-    FMSketch fmSketch = createFMSketch(1, 2, 3);
-    ColumnStatisticsData data1 = StatisticsTestUtils.createDecimalStats(1L, 3L, ONE, THREE, fmSketch);
+    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(3)
+        .lowValueDecimal(ONE).highValueDecimal(THREE).fmSketch(1, 2, 3).buildDecimalStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    HyperLogLog hll2 = createHll(3, 4, 5);
-    ColumnStatisticsData data2 = StatisticsTestUtils.createDecimalStats(2L, 3L, THREE, FIVE, hll2);
+    ColumnStatisticsData data2 = new ColStatsBuilder().numNulls(2).numDVs(3)
+        .lowValueDecimal(THREE).highValueDecimal(FIVE).hll(3, 4, 5).buildDecimalStats();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(1));
 
-    HyperLogLog hll3 = createHll(1, 2, 6, 8);
-    ColumnStatisticsData data3 = StatisticsTestUtils.createDecimalStats(3L, 4L, ONE, EIGHT, hll3);
+    ColumnStatisticsData data3 = new ColStatsBuilder().numNulls(3).numDVs(4)
+        .lowValueDecimal(ONE).highValueDecimal(EIGHT).hll(1, 2, 6, 8).buildDecimalStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -182,15 +185,19 @@ public class DecimalColumnStatsAggregatorTest {
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
 
-    ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
+    ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     // the aggregation does not update the bitvector, only numDVs is, it keeps the first bitvector;
     // numDVs is set to the maximum among all stats when non-mergeable bitvectors are detected
-    assertDecimalStats(stats, 6L, 4L, ONE, EIGHT, fmSketch);
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numDVs(4)
+        .lowValueDecimal(ONE).highValueDecimal(EIGHT).fmSketch(1, 2, 3).buildDecimalStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
-    stats = aggregator.aggregate(statsList, partitionNames, true);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     // the use of the density function leads to a different estimation for numNDV
-    assertDecimalStats(stats, 6L, 6L, ONE, EIGHT, fmSketch);
+    expectedStats = new ColStatsBuilder().numNulls(6).numDVs(6)
+        .lowValueDecimal(ONE).highValueDecimal(EIGHT).fmSketch(1, 2, 3).buildDecimalStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     // here the ndv lower bound is 4 (the highest individual numDVs), the higher bound is 10 (3 + 3 + 4, that is the
     // sum of all the numDVs for all partitions), ndv tuner influences the choice between the lower bound
@@ -198,56 +205,64 @@ public class DecimalColumnStatsAggregatorTest {
     aggregator.useDensityFunctionForNDVEstimation = false;
 
     aggregator.ndvTuner = 0;
-    stats = aggregator.aggregate(statsList, partitionNames, true);
-    assertDecimalStats(stats, 6L, 4L, ONE, EIGHT, fmSketch);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    expectedStats = new ColStatsBuilder().numNulls(6).numDVs(4)
+        .lowValueDecimal(ONE).highValueDecimal(EIGHT).fmSketch(1, 2, 3).buildDecimalStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.ndvTuner = 0.5;
-    stats = aggregator.aggregate(statsList, partitionNames, true);
-    assertDecimalStats(stats, 6L, 7L, ONE, EIGHT, fmSketch);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    expectedStats = new ColStatsBuilder().numNulls(6).numDVs(7)
+        .lowValueDecimal(ONE).highValueDecimal(EIGHT).fmSketch(1, 2, 3).buildDecimalStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.ndvTuner = 0.75;
-    stats = aggregator.aggregate(statsList, partitionNames, true);
-    assertDecimalStats(stats, 6L, 8L, ONE, EIGHT, fmSketch);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    expectedStats = new ColStatsBuilder().numNulls(6).numDVs(8)
+        .lowValueDecimal(ONE).highValueDecimal(EIGHT).fmSketch(1, 2, 3).buildDecimalStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.ndvTuner = 1;
-    stats = aggregator.aggregate(statsList, partitionNames, true);
-    assertDecimalStats(stats, 6L, 10L, ONE, EIGHT, fmSketch);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
+    expectedStats = new ColStatsBuilder().numNulls(6).numDVs(10)
+        .lowValueDecimal(ONE).highValueDecimal(EIGHT).fmSketch(1, 2, 3).buildDecimalStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 
   @Test
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
-    HyperLogLog hll1 = createHll(1, 2, 3);
-    ColumnStatisticsData data1 = StatisticsTestUtils.createDecimalStats(1L, 3L, ONE, THREE, hll1);
+    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(3)
+        .lowValueDecimal(ONE).highValueDecimal(THREE).hll(1, 2, 3).buildDecimalStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    HyperLogLog hll3 = createHll(7);
-    ColumnStatisticsData data3 = StatisticsTestUtils.createDecimalStats(3L, 1L, SEVEN, SEVEN, hll3);
+    ColumnStatisticsData data3 = new ColStatsBuilder().numNulls(3).numDVs(1)
+        .lowValueDecimal(SEVEN).highValueDecimal(SEVEN).hll(7).buildDecimalStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
         TABLE, partitionNames, Arrays.asList(stats1, null, stats3), Arrays.asList(0, 2));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
-    ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
-
+    ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
-    assertDecimalStats(stats, 6L, 3L, ONE, NINE, null);
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numDVs(3)
+        .lowValueDecimal(ONE).highValueDecimal(NINE).buildDecimalStats();
+
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
   
   @Test
   public void testAggregateMultiStatsOnlySomeAvailableButUnmergeableBitVector() throws MetaException {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
-    FMSketch fmSketch = createFMSketch(1, 2, 6);
-    ColumnStatisticsData data1 = StatisticsTestUtils.createDecimalStats(
-        1L, 3L, ONE, SIX, fmSketch);
+    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(3)
+        .lowValueDecimal(ONE).highValueDecimal(SIX).fmSketch(1, 2, 6).buildDecimalStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    HyperLogLog hll3 = createHll(7);
-    ColumnStatisticsData data3 = StatisticsTestUtils.createDecimalStats(
-        3L, 1L, SEVEN, SEVEN, hll3);
+    ColumnStatisticsData data3 = new ColStatsBuilder().numNulls(3).numDVs(1)
+        .lowValueDecimal(SEVEN).highValueDecimal(SEVEN).hll(7).buildDecimalStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -255,13 +270,17 @@ public class DecimalColumnStatsAggregatorTest {
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
 
-    ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
+    ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
-    assertDecimalStats(stats, 6L, 3L, ONE, DecimalUtils.createThriftDecimal("7.5"), null);
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numDVs(3)
+        .lowValueDecimal(ONE).highValueDecimal(DecimalUtils.createThriftDecimal("7.5")).buildDecimalStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
-    stats = aggregator.aggregate(statsList, partitionNames, true);
+    computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // the use of the density function leads to a different estimation for numNDV
-    assertDecimalStats(stats, 6L, 4L, ONE, DecimalUtils.createThriftDecimal("7.5"), null);
+    expectedStats = new ColStatsBuilder().numNulls(6).numDVs(4)
+        .lowValueDecimal(ONE).highValueDecimal(DecimalUtils.createThriftDecimal("7.5")).buildDecimalStats();
+    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 }
