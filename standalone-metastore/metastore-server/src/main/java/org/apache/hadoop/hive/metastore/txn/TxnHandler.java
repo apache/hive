@@ -4223,7 +4223,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.Idempotent
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
-      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException {
+        Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException {
+    cleanupRecords(type, db, table, partitionIterator, keepTxnToWriteIdMetaData, 0);
+  }
+
+  @Override
+  @RetrySemantics.Idempotent
+  public void cleanupRecords(HiveObjectType type, Database db, Table table,
+        Iterator<Partition> partitionIterator, long txnId) throws MetaException {
+    cleanupRecords(type, db , table, partitionIterator, false, txnId);
+  }
+  
+  private void cleanupRecords(HiveObjectType type, Database db, Table table,
+      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData, long txnId) throws MetaException {
 
     // cleanup should be done only for objects belonging to default catalog
     final String defaultCatalog = getDefaultCatalog(conf);
@@ -4259,11 +4271,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             buff.append(dbName);
             buff.append("'");
             queries.add(buff.toString());
-
+            
             buff.setLength(0);
             buff.append("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_DATABASE\"='");
             buff.append(dbName);
-            buff.append("'");
+            buff.append("' AND \"CQ_TXN_ID\"!=").append(txnId);
             queries.add(buff.toString());
 
             buff.setLength(0);
