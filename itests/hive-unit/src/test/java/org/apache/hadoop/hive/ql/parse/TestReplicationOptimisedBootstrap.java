@@ -25,12 +25,15 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -71,7 +74,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInstances {
+public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosAcidTables {
 
   String extraPrimaryDb;
 
@@ -84,8 +87,9 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
     overrides.put(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname, "true");
     overrides.put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname, UserGroupInformation.getCurrentUser().getUserName());
     overrides.put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "true");
-
-    internalBeforeClassSetupExclusiveReplica(overrides, overrides, TestReplicationOptimisedBootstrap.class);
+    overrides.put("hive.repl.bootstrap.dump.open.txn.timeout", "1s");
+    overrides.put("hive.in.repl.test", "true");
+    internalBeforeClassSetup(overrides, TestReplicationOptimisedBootstrap.class);
   }
 
   @Before
@@ -112,7 +116,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         .run("create external table t2 (place string) partitioned by (country string)")
         .run("insert into table t2 partition(country='india') values ('chennai')")
         .run("insert into table t2 partition(country='us') values ('new york')")
-        .run("create table t1_managed (id int)")
+        .run("create table t1_managed (id int) clustered by(id) into 3 buckets stored as orc " +
+                "tblproperties (\"transactional\"=\"true\")")
         .run("insert into table t1_managed values (10)")
         .run("insert into table t1_managed values (20),(31),(42)")
         .run("create table t2_managed (place string) partitioned by (country string)")
@@ -125,14 +130,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         .run("repl status " + replicatedDbName)
         .verifyResult(tuple.lastReplicationId)
         .run("use " + replicatedDbName)
-        .run("show tables like 't1'")
-        .verifyResult("t1")
-        .run("show tables like 't2'")
-        .verifyResult("t2")
-        .run("show tables like 't1_managed'")
-        .verifyResult("t1_managed")
-        .run("show tables like 't2_managed'")
-        .verifyResult("t2_managed")
+        .run("show tables")
+        .verifyResults(new String[]{"t1", "t2", "t1_managed", "t2_managed"})
         .verifyReplTargetProperty(replicatedDbName);
 
     // Do an incremental dump & load, Add one table which we can drop & an empty table as well.
@@ -145,10 +144,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
 
     replica.load(replicatedDbName, primaryDbName, withClause)
         .run("use " + replicatedDbName)
-        .run("show tables like 't5_managed'")
-        .verifyResult("t5_managed")
-        .run("show tables like 't6_managed'")
-        .verifyResult("t6_managed")
+        .run("show tables")
+        .verifyResults(new String[]{"t1", "t2", "t1_managed", "t2_managed", "t5_managed", "t6_managed"})
         .verifyReplTargetProperty(replicatedDbName);
 
     // Do some modifications on other database with similar table names &  some modifications on original source
@@ -161,7 +158,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         .run("create external table t4 (id int)")
         .run("insert into table t4 values (100)")
         .run("insert into table t4 values (201)")
-        .run("create table t4_managed (id int)")
+        .run("create table t4_managed (id int) clustered by(id) into 3 buckets stored as orc " +
+                "tblproperties (\"transactional\"=\"true\")")
         .run("insert into table t4_managed values (110)")
         .run("insert into table t4_managed values (220)")
         .run("insert into table t2 partition(country='france') values ('lyon')")
@@ -746,14 +744,47 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
     }
   }
 
-
   @Test
   public void testReverseBootstrap() throws Throwable {
+    HiveConf primaryConf = primary.getConf();
+    TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
     List<String> withClause = setUpFirstIterForOptimisedBootstrap();
+
+    // Open 3 txns for Database which is not under replication
+    int numTxnsForSecDb = 3;
+    List<Long> txnsForSecDb = openTxns(numTxnsForSecDb, txnHandler, primaryConf);
+
+    Map<String, Long> tablesInSecDb = new HashMap<>();
+    tablesInSecDb.put("t1", (long) numTxnsForSecDb);
+    tablesInSecDb.put("t2", (long) numTxnsForSecDb);
+    List<Long> lockIdsForSecDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName + "_extra",
+            tablesInSecDb, txnHandler, txnsForSecDb, primaryConf);
+
+    //Open 2 txns for Primary Db
+    int numTxnsForPrimaryDb = 2;
+    List<Long> txnsForSourceDb = openTxns(numTxnsForPrimaryDb, txnHandler, primaryConf);
+
+    // Allocate write ids for both tables of source database.
+    Map<String, Long> tablesInSourceDb = new HashMap<>();
+    tablesInSourceDb.put("t1", (long) numTxnsForPrimaryDb + 4);
+    tablesInSourceDb.put("t2", (long) numTxnsForPrimaryDb);
+    allocateWriteIdsForTablesAndAcquireLocks(replicatedDbName, tablesInSourceDb, txnHandler,
+            txnsForSourceDb, replica.getConf());
+
+    //Open 1 txn with no hive locks acquired
+    List<Long> txnsWithNoLocks = openTxns(1, txnHandler, primaryConf);
 
     // Do a reverse second dump, this should do a bootstrap dump for the tables in the table_diff and incremental for
     // rest.
     WarehouseInstance.Tuple tuple = replica.dump(replicatedDbName, withClause);
+
+    //Verify that openTxns for sourceDb were aborted before proceeding with bootstrap dump.
+    verifyAllOpenTxnsAborted(txnsForSourceDb, primaryConf);
+    verifyAllOpenTxnsNotAborted(txnsForSecDb, primaryConf);
+    verifyAllOpenTxnsNotAborted(txnsWithNoLocks, primaryConf);
+    txnHandler.abortTxns(new AbortTxnsRequest(txnsForSecDb));
+    txnHandler.abortTxns(new AbortTxnsRequest(txnsWithNoLocks));
+    releaseLocks(txnHandler, lockIdsForSecDb);
 
     String hiveDumpDir = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
     // _bootstrap directory should be created as bootstrap enabled on external tables.
@@ -944,7 +975,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
 
     // Create some partitioned and non partitioned tables and do a dump & load.
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
-        .run("create table t1 (id int)")
+        .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                "tblproperties (\"transactional\"=\"true\")")
         .run("insert into table t1 values (1)")
         .run("insert into table t1 values (2),(3),(4)")
         .run("create table t2 (id int)")
@@ -962,14 +994,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         .run("repl status " + replicatedDbName)
         .verifyResult(tuple.lastReplicationId)
         .run("use " + replicatedDbName)
-        .run("show tables like 't1'")
-        .verifyResult("t1")
-        .run("show tables like 't2'")
-        .verifyResult("t2")
-        .run("show tables like 't3'")
-        .verifyResult("t3")
-        .run("show tables like 't4'")
-        .verifyResult("t4")
+        .run("show tables")
+        .verifyResults(new String[]{"t1", "t2", "t3", "t4"})
         .verifyReplTargetProperty(replicatedDbName);
 
     // Prepare for reverse bootstrap.
@@ -1077,7 +1103,10 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
 
     // Create 4 managed tables and do a dump & load.
     WarehouseInstance.Tuple tuple =
-        primary.run("use " + primaryDbName).run("create table t1 (id int)").run("insert into table t1 values (1)")
+        primary.run("use " + primaryDbName)
+                .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                        "tblproperties (\"transactional\"=\"true\")")
+                .run("insert into table t1 values (1)")
             .run("insert into table t1 values (2),(3),(4)")
             .run("create table t2 (place string) partitioned by (country string)")
             .run("insert into table t2 partition(country='india') values ('chennai')")
@@ -1094,7 +1123,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationAcrossInst
         .verifyResult("t3").run("show tables like 't4'").verifyResult("t4").verifyReplTargetProperty(replicatedDbName);
 
     // Do some modifications on original source cluster. The diff becomes(tnew_managed, t1, t2, t3)
-    primary.run("use " + primaryDbName).run("create table tnew_managed (id int)")
+    primary.run("use " + primaryDbName).run("create table tnew_managed (id int) clustered by(id) into 3 buckets " +
+                    "stored as orc tblproperties (\"transactional\"=\"true\")")
         .run("insert into table t1 values (25)").run("insert into table tnew_managed values (110)")
         .run("insert into table t2 partition(country='france') values ('lyon')").run("drop table t3");
 

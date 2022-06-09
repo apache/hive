@@ -1089,9 +1089,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // of the ACID tables might be included for bootstrap during incremental dump. For old policy, its because the table
     // may not satisfying the old policy but satisfying the new policy. For filter, it may happen that the table
     // is renamed and started satisfying the policy.
-    return ((!work.replScope.includeAllTables())
-            || (previousReplScopeModified())
-            || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES));
+    return !work.replScope.includeAllTables() || previousReplScopeModified() || !tablesForBootstrap.isEmpty()
+            || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES);
   }
 
   private void dumpEvent(NotificationEvent ev, Path evRoot, Path dumpRoot, Path cmRoot, Hive db) throws Exception {
