@@ -43,9 +43,15 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataI
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.junit.Assert;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 public class StatisticsTestUtils {
 
@@ -75,6 +81,50 @@ public class StatisticsTestUtils {
     colStats.setStatsObj(Collections.singletonList(statObj));
     colStats.setEngine(HIVE_ENGINE);
     return colStats;
+  }
+
+  /**
+   * Creates a list of {@link ColStatsObjWithSourceInfo} for a given table, its partitions and using the given stats.
+   * @param table the table the statistics information relates to
+   * @param partitionNames the partition names of the given table
+   * @param stats the statistics for the table partitions
+   * @param indexes the indexes to select for which
+   * @return a list of {@link ColStatsObjWithSourceInfo} for a given table, its partitions and using the given stats.
+   */
+  public static List<ColStatsObjWithSourceInfo> createColStatsObjWithSourceInfoList(
+      Table table, List<String> partitionNames, List<ColumnStatistics> stats, List<Integer> indexes) {
+
+    if (partitionNames.size() != stats.size()) {
+      throw new IllegalArgumentException("partitionNames and stats lists must have the same length, found "
+          + partitionNames.size() + " and " + stats.size() + ", respectively");
+    }
+
+    if (indexes.size() > partitionNames.size()) {
+      throw new IllegalArgumentException("indexes list length can't be greater than the stats list length, found "
+          + indexes.size() + " and " + stats.size() + ", respectively");
+    }
+
+    return indexes.stream()
+        .map(i -> new ColStatsObjWithSourceInfo(stats.get(i).getStatsObj().get(0),
+            DEFAULT_CATALOG_NAME, table.getDbName(), table.getTableName(), partitionNames.get(i)))
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * Creates a list of {@link ColStatsObjWithSourceInfo} for a given table, its partitions and using the given stats.
+   * @param table the table the statistics information relates to
+   * @param partitionNames the partition names of the given table
+   * @param stats the statistics for the table partitions
+   * @return a list of {@link ColStatsObjWithSourceInfo} for a given table, its partitions and using the given stats.
+   */
+  public static List<ColStatsObjWithSourceInfo> createColStatsObjWithSourceInfoList(
+      Table table, List<String> partitionNames, List<ColumnStatistics> stats) {
+
+    List<Integer> indexes = IntStream.range(0, stats.size())
+        .boxed()
+        .collect(Collectors.toList());
+
+    return createColStatsObjWithSourceInfoList(table, partitionNames, stats, indexes);
   }
 
   /**

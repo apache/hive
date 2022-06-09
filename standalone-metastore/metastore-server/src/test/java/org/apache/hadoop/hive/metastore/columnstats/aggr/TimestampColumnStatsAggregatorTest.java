@@ -41,7 +41,6 @@ import java.util.List;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertTimestampStats;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createFMSketch;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createHll;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 @Category(MetastoreUnitTest.class)
 public class TimestampColumnStatsAggregatorTest {
@@ -69,9 +68,8 @@ public class TimestampColumnStatsAggregatorTest {
     ColumnStatisticsData data1 = StatisticsTestUtils.createTimestampStats(1L, 2L, TS_1, TS_4, hll);
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    List<ColStatsObjWithSourceInfo> statsList = Collections.singletonList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Collections.singletonList(stats1));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
@@ -85,9 +83,8 @@ public class TimestampColumnStatsAggregatorTest {
             1L, 2L, null, null, null);
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    List<ColStatsObjWithSourceInfo> statsList = Collections.singletonList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Collections.singletonList(stats1));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
 
@@ -118,11 +115,8 @@ public class TimestampColumnStatsAggregatorTest {
         2L, 3L, null, null, null);
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(0));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(1)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, stats2));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
 
@@ -158,13 +152,8 @@ public class TimestampColumnStatsAggregatorTest {
         3L, 2L, TS_6, TS_7, hll3);
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(1)),
-        new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, stats2, stats3));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
@@ -192,13 +181,8 @@ public class TimestampColumnStatsAggregatorTest {
         3L, 4L, TS_1, TS_8, hll3);
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(1)),
-        new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, stats2, stats3));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
 
@@ -248,11 +232,8 @@ public class TimestampColumnStatsAggregatorTest {
         3L, 1L, TS_7, TS_7, hll3);
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, null, stats3), Arrays.asList(0, 2));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
@@ -274,11 +255,8 @@ public class TimestampColumnStatsAggregatorTest {
         3L, 1L, TS_7, TS_7, hll3);
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, null, stats3), Arrays.asList(0, 2));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
 

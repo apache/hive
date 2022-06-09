@@ -42,7 +42,6 @@ import java.util.List;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertDecimalStats;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createFMSketch;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createHll;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 @Category(MetastoreUnitTest.class)
 public class DecimalColumnStatsAggregatorTest {
@@ -70,9 +69,8 @@ public class DecimalColumnStatsAggregatorTest {
     ColumnStatisticsData data1 = StatisticsTestUtils.createDecimalStats(1L, 2L, ONE, FOUR, hll);
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    List<ColStatsObjWithSourceInfo> statsList = Collections.singletonList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Collections.singletonList(stats1));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
@@ -87,9 +85,8 @@ public class DecimalColumnStatsAggregatorTest {
             1L, 2L, null, null, null);
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    List<ColStatsObjWithSourceInfo> statsList = Collections.singletonList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Collections.singletonList(stats1));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
 
@@ -120,11 +117,8 @@ public class DecimalColumnStatsAggregatorTest {
         2L, 3L, null, null, null);
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(0));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(1)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, stats2));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
 
@@ -157,13 +151,8 @@ public class DecimalColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = StatisticsTestUtils.createDecimalStats(3L, 2L, SIX, SEVEN, hll3);
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(1)),
-        new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, stats2, stats3));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
@@ -188,13 +177,8 @@ public class DecimalColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = StatisticsTestUtils.createDecimalStats(3L, 4L, ONE, EIGHT, hll3);
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(1)),
-        new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, stats2, stats3));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
 
@@ -242,11 +226,8 @@ public class DecimalColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = StatisticsTestUtils.createDecimalStats(3L, 1L, SEVEN, SEVEN, hll3);
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, null, stats3), Arrays.asList(0, 2));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
@@ -269,11 +250,8 @@ public class DecimalColumnStatsAggregatorTest {
         3L, 1L, SEVEN, SEVEN, hll3);
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, null, stats3), Arrays.asList(0, 2));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
 

@@ -40,7 +40,6 @@ import java.util.List;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertLongStats;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createFMSketch;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createHll;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 @Category(MetastoreUnitTest.class)
 public class LongColumnStatsAggregatorTest {
@@ -59,9 +58,8 @@ public class LongColumnStatsAggregatorTest {
         1L, 2L, 1L, 4L, hll);
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    List<ColStatsObjWithSourceInfo> statsList = Collections.singletonList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Collections.singletonList(stats1));
 
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
@@ -76,9 +74,8 @@ public class LongColumnStatsAggregatorTest {
             1L, 2L, null, null, null);
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    List<ColStatsObjWithSourceInfo> statsList = Collections.singletonList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Collections.singletonList(stats1));
 
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
 
@@ -109,11 +106,8 @@ public class LongColumnStatsAggregatorTest {
         2L, 3L, null, null, null);
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(0));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(1)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, stats2));
 
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
 
@@ -149,13 +143,8 @@ public class LongColumnStatsAggregatorTest {
         3L, 2L, 6L, 7L, hll3);
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(1)),
-        new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, stats2, stats3));
 
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
@@ -183,13 +172,8 @@ public class LongColumnStatsAggregatorTest {
         3L, 4L, 1L, 8L, hll3);
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(1)),
-        new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, stats2, stats3));
 
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
@@ -239,11 +223,8 @@ public class LongColumnStatsAggregatorTest {
         3L, 1L, 7L, 7L, hll3);
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, null, stats3), Arrays.asList(0, 2));
 
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
@@ -266,11 +247,8 @@ public class LongColumnStatsAggregatorTest {
         3L, 1L, 7L, 7L, hll3);
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
-        new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(0)),
-        new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
-            TABLE.getTableName(), partitionNames.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
+        TABLE, partitionNames, Arrays.asList(stats1, null, stats3), Arrays.asList(0, 2));
 
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
 
