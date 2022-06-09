@@ -48,7 +48,6 @@ public class BooleanColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateSingleStat() throws MetaException {
-    BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
     List<String> partitionNames = Collections.singletonList("part1");
 
     ColumnStatisticsData data1 = StatisticsTestUtils.createBooleanStats(1L, 2L, 13L);
@@ -58,14 +57,13 @@ public class BooleanColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(0)));
 
+    BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     assertBooleanStats(stats, 1L, 2L, 13L);
   }
 
   @Test
   public void testAggregateSingleStatWhenNullValues() throws MetaException {
-    BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
-
     List<String> partitionNames = Collections.singletonList("part1");
     ColumnStatisticsData data1 = StatisticsTestUtils.createBooleanStats(1L, null, null);
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
@@ -73,6 +71,8 @@ public class BooleanColumnStatsAggregatorTest {
     List<ColStatsObjWithSourceInfo> statsList = Collections.singletonList(
         new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(0)));
+
+    BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
 
     ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
     assertBooleanStats(statsObj, 1L, null, null);
@@ -90,8 +90,6 @@ public class BooleanColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultipleStatsWhenSomeNullValues() throws MetaException {
-    BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2");
 
     ColumnStatisticsData data1 = StatisticsTestUtils.createBooleanStats(
@@ -108,14 +106,13 @@ public class BooleanColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(1)));
 
+    BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
     ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
     assertBooleanStats(statsObj, 3L, 2L, 4L);
   }
 
   @Test
   public void testAggregateMultiStatsWhenAllAvailable() throws MetaException {
-    BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     ColumnStatisticsData data1 = StatisticsTestUtils.createBooleanStats(
@@ -138,6 +135,7 @@ public class BooleanColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
 
+    BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     // max among numDVs values is kept
     assertBooleanStats(stats, 6L, 11L, 49L);
@@ -145,7 +143,6 @@ public class BooleanColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
-    BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     ColumnStatisticsData data1 = StatisticsTestUtils.createBooleanStats(
@@ -162,6 +159,7 @@ public class BooleanColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
 
+    BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
     assertBooleanStats(stats, 4L, 5L, 31L);
   }

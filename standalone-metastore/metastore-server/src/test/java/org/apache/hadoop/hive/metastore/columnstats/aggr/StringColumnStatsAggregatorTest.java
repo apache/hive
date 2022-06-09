@@ -60,7 +60,6 @@ public class StringColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateSingleStat() throws MetaException {
-    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
     List<String> partitionNames = Collections.singletonList("part1");
 
     HyperLogLog hll = createHll(S_1, S_3);
@@ -71,14 +70,14 @@ public class StringColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(0)));
 
+    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
+
     assertStringStats(stats, 1L, 2L, 8.5, 13L, hll);
   }
 
   @Test
   public void testAggregateSingleStatWhenNullValues() throws MetaException {
-    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
-
     List<String> partitionNames = Collections.singletonList("part1");
     ColumnStatisticsData data1 = StatisticsTestUtils.createStringStats(
             1L, 2L, null, null, null);
@@ -87,6 +86,8 @@ public class StringColumnStatsAggregatorTest {
     List<ColStatsObjWithSourceInfo> statsList = Collections.singletonList(
         new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(0)));
+
+    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
 
     ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
     assertStringStats(statsObj, 1L, 2L, null, null, null);
@@ -104,8 +105,6 @@ public class StringColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultipleStatsWhenSomeNullValues() throws MetaException {
-    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2");
 
     HyperLogLog hll1 = createHll(S_1, S_2);
@@ -123,6 +122,8 @@ public class StringColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(1)));
 
+    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
+
     ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
     assertStringStats(statsObj, 3L, 3L, 3.0, 4L, hll1);
 
@@ -139,8 +140,6 @@ public class StringColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenAllAvailable() throws MetaException {
-    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     HyperLogLog hll1 = createHll(S_1, S_2, S_3);
@@ -166,6 +165,7 @@ public class StringColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
 
+    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     // the aggregation does not update hll, only numNDVs is, it keeps the first hll
     assertStringStats(stats, 6L, 7L, 17.5, 18L, hll1);
@@ -173,8 +173,6 @@ public class StringColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenUnmergeableBitVectors() throws MetaException {
-    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     FMSketch fmSketch = createFMSketch(S_1, S_2, S_3);
@@ -199,6 +197,8 @@ public class StringColumnStatsAggregatorTest {
             TABLE.getTableName(), partitionNames.get(1)),
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
+
+    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
 
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     // the aggregation does not update the bitvector, only numDVs is, it keeps the first bitvector;
@@ -230,7 +230,6 @@ public class StringColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
-    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     HyperLogLog hll1 = createHll(S_1, S_2, S_3);
@@ -249,6 +248,8 @@ public class StringColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
 
+    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
+
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
     assertStringStats(stats, 6L, 3L, 22.916666666666668, 22L, null);
@@ -256,7 +257,6 @@ public class StringColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsOnlySomeAvailableButUnmergeableBitVector() throws MetaException {
-    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     FMSketch fmSketch = createFMSketch(S_1, S_2, S_3);
@@ -274,6 +274,8 @@ public class StringColumnStatsAggregatorTest {
             TABLE.getTableName(), partitionNames.get(0)),
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
+
+    StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
 
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated

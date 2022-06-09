@@ -63,7 +63,6 @@ public class TimestampColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateSingleStat() throws MetaException {
-    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     List<String> partitionNames = Collections.singletonList("part1");
 
     HyperLogLog hll = createHll(TS_1.getSecondsSinceEpoch(), TS_3.getSecondsSinceEpoch());
@@ -74,14 +73,13 @@ public class TimestampColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(0)));
 
+    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     assertTimestampStats(stats, 1L, 2L, TS_1, TS_4, hll);
   }
 
   @Test
   public void testAggregateSingleStatWhenNullValues() throws MetaException {
-    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
-
     List<String> partitionNames = Collections.singletonList("part1");
     ColumnStatisticsData data1 = StatisticsTestUtils.createTimestampStats(
             1L, 2L, null, null, null);
@@ -90,6 +88,8 @@ public class TimestampColumnStatsAggregatorTest {
     List<ColStatsObjWithSourceInfo> statsList = Collections.singletonList(
         new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(0)));
+
+    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
 
     ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
     assertTimestampStats(statsObj, 1L, 2L, null, null, null);
@@ -107,8 +107,6 @@ public class TimestampColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultipleStatsWhenSomeNullValues() throws MetaException {
-    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2");
 
     HyperLogLog hll1 = createHll(TS_1.getSecondsSinceEpoch(), TS_2.getSecondsSinceEpoch());
@@ -126,6 +124,8 @@ public class TimestampColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(1)));
 
+    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
+
     ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
     assertTimestampStats(statsObj, 3L, 3L, TS_1, TS_2, hll1);
 
@@ -141,8 +141,6 @@ public class TimestampColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenAllAvailable() throws MetaException {
-    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     HyperLogLog hll1 = createHll(TS_1.getSecondsSinceEpoch(), TS_2.getSecondsSinceEpoch(), TS_3.getSecondsSinceEpoch());
@@ -168,6 +166,7 @@ public class TimestampColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
 
+    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     // the aggregation does not update hll, only numNDVs is, it keeps the first hll
     assertTimestampStats(stats, 6L, 7L, TS_1, TS_7, hll1);
@@ -175,8 +174,6 @@ public class TimestampColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenUnmergeableBitVectors() throws MetaException {
-    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     FMSketch fmSketch = createFMSketch(TS_1.getSecondsSinceEpoch(), TS_2.getSecondsSinceEpoch(), TS_3.getSecondsSinceEpoch());
@@ -202,6 +199,8 @@ public class TimestampColumnStatsAggregatorTest {
             TABLE.getTableName(), partitionNames.get(1)),
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
+
+    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
 
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     // the aggregation does not update the bitvector, only numDVs is, it keeps the first bitvector;
@@ -237,7 +236,6 @@ public class TimestampColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
-    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     HyperLogLog hll1 = createHll(TS_1.getSecondsSinceEpoch(), TS_2.getSecondsSinceEpoch(), TS_3.getSecondsSinceEpoch());
@@ -256,6 +254,7 @@ public class TimestampColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
 
+    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
     assertTimestampStats(stats, 6L, 3L, TS_1, TS_9, null);
@@ -263,7 +262,6 @@ public class TimestampColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsOnlySomeAvailableButUnmergeableBitVector() throws MetaException {
-    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     FMSketch fmSketch = createFMSketch(TS_1.getSecondsSinceEpoch(), TS_2.getSecondsSinceEpoch(), TS_6.getSecondsSinceEpoch());
@@ -281,6 +279,8 @@ public class TimestampColumnStatsAggregatorTest {
             TABLE.getTableName(), partitionNames.get(0)),
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
+
+    TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
 
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated

@@ -52,8 +52,6 @@ public class DoubleColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateSingleStat() throws MetaException {
-    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
-
     List<String> partitionNames = Collections.singletonList("part1");
 
     HyperLogLog hll = createHll(1, 3);
@@ -65,6 +63,7 @@ public class DoubleColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(0)));
 
+    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
 
     assertDoubleStats(stats, 1L, 2L, 1.0, 4.0, hll);
@@ -72,8 +71,6 @@ public class DoubleColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateSingleStatWhenNullValues() throws MetaException {
-    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
-
     List<String> partitionNames = Collections.singletonList("part1");
     ColumnStatisticsData data1 = StatisticsTestUtils.createDoubleStats(
             1L, 2L, null, null, null);
@@ -82,6 +79,8 @@ public class DoubleColumnStatsAggregatorTest {
     List<ColStatsObjWithSourceInfo> statsList = Collections.singletonList(
         new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(0)));
+
+    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
 
     ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
     assertDoubleStats(statsObj, 1L, 2L, null, null, null);
@@ -99,8 +98,6 @@ public class DoubleColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultipleStatsWhenSomeNullValues() throws MetaException {
-    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2");
 
     HyperLogLog hll1 = createHll(1, 2);
@@ -118,6 +115,8 @@ public class DoubleColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(1)));
 
+    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
+
     ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
     assertDoubleStats(statsObj, 3L, 3L, 1.0, 2.0, hll1);
 
@@ -133,8 +132,6 @@ public class DoubleColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenAllAvailable() throws MetaException {
-    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     HyperLogLog hll1 = createHll(1, 2, 3);
@@ -160,6 +157,8 @@ public class DoubleColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
 
+    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
+
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     // the aggregation does not update hll, only numNDVs is, it keeps the first hll
     assertDoubleStats(stats, 6L, 7L, 1.0, 7.0, hll1);
@@ -167,8 +166,6 @@ public class DoubleColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenUnmergeableBitVectors() throws MetaException {
-    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     FMSketch fmSketch = createFMSketch(1, 2, 3);
@@ -193,6 +190,8 @@ public class DoubleColumnStatsAggregatorTest {
             TABLE.getTableName(), partitionNames.get(1)),
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
+
+    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
 
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     // the aggregation does not update the bitvector, only numDVs is, it keeps the first bitvector;
@@ -228,8 +227,6 @@ public class DoubleColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
-    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     HyperLogLog hll1 = createHll(1, 2, 3);
@@ -248,6 +245,7 @@ public class DoubleColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
 
+    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
 
     // hll in case of missing stats is left as null, only numDVs is updated
@@ -256,7 +254,6 @@ public class DoubleColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsOnlySomeAvailableButUnmergeableBitVector() throws MetaException {
-    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     FMSketch fmSketch = createFMSketch(1, 2, 6);
@@ -274,6 +271,8 @@ public class DoubleColumnStatsAggregatorTest {
             TABLE.getTableName(), partitionNames.get(0)),
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
+
+    DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
 
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated

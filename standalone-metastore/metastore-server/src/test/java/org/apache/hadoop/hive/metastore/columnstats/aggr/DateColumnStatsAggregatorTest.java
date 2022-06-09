@@ -63,7 +63,6 @@ public class DateColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateSingleStat() throws MetaException {
-    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
     List<String> partitionNames = Collections.singletonList("part1");
 
     HyperLogLog hll = createHll(DATE_1.getDaysSinceEpoch(), DATE_3.getDaysSinceEpoch());
@@ -74,14 +73,13 @@ public class DateColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(0)));
 
+    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     assertDateStats(stats, 1L, 2L, DATE_1, DATE_4, hll);
   }
 
   @Test
   public void testAggregateSingleStatWhenNullValues() throws MetaException {
-    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
-
     List<String> partitionNames = Collections.singletonList("part1");
     ColumnStatisticsData data1 = StatisticsTestUtils.createDateStats(
             1L, 2L, null, null, null);
@@ -90,6 +88,8 @@ public class DateColumnStatsAggregatorTest {
     List<ColStatsObjWithSourceInfo> statsList = Collections.singletonList(
         new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(0)));
+
+    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
 
     ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
     assertDateStats(statsObj, 1L, 2L, null, null, null);
@@ -107,8 +107,6 @@ public class DateColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultipleStatsWhenSomeNullValues() throws MetaException {
-    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2");
 
     HyperLogLog hll1 = createHll(DATE_1.getDaysSinceEpoch(), DATE_2.getDaysSinceEpoch());
@@ -126,6 +124,8 @@ public class DateColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(1)));
 
+    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
+
     ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
     assertDateStats(statsObj, 3L, 3L, DATE_1, DATE_2, hll1);
 
@@ -141,8 +141,6 @@ public class DateColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenAllAvailable() throws MetaException {
-    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     HyperLogLog hll1 = createHll(DATE_1.getDaysSinceEpoch(), DATE_2.getDaysSinceEpoch(), DATE_3.getDaysSinceEpoch());
@@ -168,6 +166,7 @@ public class DateColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
 
+    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     // the aggregation does not update hll, only numNDVs is, it keeps the first hll
     assertDateStats(stats, 6L, 7L, DATE_1, DATE_7, hll1);
@@ -175,8 +174,6 @@ public class DateColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenUnmergeableBitVectors() throws MetaException {
-    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     FMSketch fmSketch = createFMSketch(DATE_1.getDaysSinceEpoch(), DATE_2.getDaysSinceEpoch(), DATE_3.getDaysSinceEpoch());
@@ -202,6 +199,8 @@ public class DateColumnStatsAggregatorTest {
             TABLE.getTableName(), partitionNames.get(1)),
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
+
+    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
 
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     // the aggregation does not update the bitvector, only numDVs is, it keeps the first bitvector;
@@ -237,7 +236,6 @@ public class DateColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
-    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     HyperLogLog hll1 = createHll(DATE_1.getDaysSinceEpoch(), DATE_2.getDaysSinceEpoch(), DATE_3.getDaysSinceEpoch());
@@ -256,6 +254,7 @@ public class DateColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
 
+    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
     assertDateStats(stats, 6L, 3L, DATE_1, DATE_9, null);
@@ -263,7 +262,6 @@ public class DateColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsOnlySomeAvailableButUnmergeableBitVector() throws MetaException {
-    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     FMSketch fmSketch = createFMSketch(DATE_1.getDaysSinceEpoch(), DATE_2.getDaysSinceEpoch(), DATE_6.getDaysSinceEpoch());
@@ -281,6 +279,8 @@ public class DateColumnStatsAggregatorTest {
             TABLE.getTableName(), partitionNames.get(0)),
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
+
+    DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
 
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated

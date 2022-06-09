@@ -48,7 +48,6 @@ public class BinaryColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateSingleStat() throws MetaException {
-    BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
     List<String> partitionNames = Collections.singletonList("part1");
     
     ColumnStatisticsData data1 = StatisticsTestUtils.createBinaryStats(1L, 8.5, 13L);
@@ -58,14 +57,13 @@ public class BinaryColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(0)));
 
+    BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     assertBinaryStats(stats, 1L, 8.5, 13L);
   }
 
   @Test
   public void testAggregateSingleStatWhenNullValues() throws MetaException {
-    BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
-
     List<String> partitionNames = Collections.singletonList("part1");
     ColumnStatisticsData data1 = StatisticsTestUtils.createBinaryStats(
             1L, null, null);
@@ -75,14 +73,13 @@ public class BinaryColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats1.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(0)));
 
+    BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
     ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
     assertBinaryStats(statsObj, 1L, null, null);
   }
 
   @Test
   public void testAggregateMultipleStatsWhenSomeNullValues() throws MetaException {
-    BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2");
 
     ColumnStatisticsData data1 = StatisticsTestUtils.createBinaryStats(
@@ -99,14 +96,13 @@ public class BinaryColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats2.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(1)));
 
+    BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
     ColumnStatisticsObj statsObj = aggregator.aggregate(statsList, partitionNames, true);
     assertBinaryStats(statsObj, 3L, 3.0, 4L);
   }
 
   @Test
   public void testAggregateMultiStatsWhenAllAvailable() throws MetaException {
-    BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
-
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     ColumnStatisticsData data1 = StatisticsTestUtils.createBinaryStats(
@@ -129,13 +125,13 @@ public class BinaryColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
 
+    BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, true);
     assertBinaryStats(stats, 6L, 17.5, 18L);
   }
 
   @Test
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
-    BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     ColumnStatisticsData data1 = StatisticsTestUtils.createBinaryStats(
@@ -152,6 +148,7 @@ public class BinaryColumnStatsAggregatorTest {
         new ColStatsObjWithSourceInfo(stats3.getStatsObj().get(0), DEFAULT_CATALOG_NAME, TABLE.getDbName(),
             TABLE.getTableName(), partitionNames.get(2)));
 
+    BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
     ColumnStatisticsObj stats = aggregator.aggregate(statsList, partitionNames, false);
     assertBinaryStats(stats, 4L, 17.5, 18L);
   }
