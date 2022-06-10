@@ -2396,7 +2396,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
   private void testLocksWithConcurrentCtas(boolean ctasLocking) throws Exception {
     dropTable(new String[]{"target", "source"});
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_ACID_NO_RENAME_CTAS_ENABLED, ctasLocking);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_ACID_CHECK_FOR_CONCURRENT_CTAS_ENABLED, ctasLocking);
 
     driver.run("create table source (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into source values (1,2), (3,4)");
@@ -4590,7 +4590,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   public void testMaterializedViewEnableRewriteNonBlocking() throws Exception {
     driver.run("drop materialized view if exists mv_tab_acid");
     dropTable(new String[]{"tab_acid"});
-
+    
     driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
       "stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");

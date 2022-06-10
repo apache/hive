@@ -3115,8 +3115,9 @@ public class AcidUtils {
   public static boolean isCTASOperation(List<LockComponent> lockComponents, HiveConf conf) {
     boolean isCtas = false;
     for (LockComponent lock : lockComponents) {
-
-      if (lock.getOperationType().name().equals(OperationType.CTAS.name()) && conf.getBoolVar(HiveConf.ConfVars.HIVE_ACID_NO_RENAME_CTAS_ENABLED)) isCtas = true;
+      if (lock.getOperationType().name().equals(OperationType.CTAS.name()) &&
+              conf.getBoolVar(ConfVars.HIVE_ACID_CHECK_FOR_CONCURRENT_CTAS_ENABLED))
+        isCtas = true;
     }
     return isCtas;
   }
@@ -3242,7 +3243,7 @@ public class AcidUtils {
   }
 
   public static boolean isNoRenameCtasEnabled(Configuration conf) {
-    return HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_NO_RENAME_CTAS_ENABLED);
+    return HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CHECK_FOR_CONCURRENT_CTAS_ENABLED);
   }
   @VisibleForTesting
   public static void initDirCache(int durationInMts) {

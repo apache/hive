@@ -309,8 +309,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" FROM \"TXN_COMPONENTS\" " +
           "INNER JOIN \"TXNS\" ON \"TC_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
       " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" HAVING COUNT(\"TXN_ID\") > ?";
-  private static final String CONCURRENT_CTAS_SELECT_QUERY = "SELECT \"TC_OPERATION_TYPE\" FROM \"TXN_COMPONENTS\" WHERE" +
-          " \"TC_DATABASE\"= ? AND \"TC_TABLE\"= ?";
 
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
@@ -3315,7 +3313,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //todo: strictly speaking there is a bug here.  heartbeat*() commits but both heartbeat and
         //checkLock() are in the same retry block, so if checkLock() throws, heartbeat is also retired
         //extra heartbeat is logically harmless, but ...
-        return checkLock(dbConn, extLockId, lockInfo.txnId, false,false);
+        return checkLock(dbConn, extLockId, lockInfo.txnId, false, false);
       } catch (SQLException e) {
         LOG.error("checkLock failed for request={}. Exception msg: {}", rqst, getMessage(e));
         rollbackDBConn(dbConn);
