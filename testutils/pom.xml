@@ -30,10 +30,6 @@
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- inter-project -->
     <dependency>
-      <groupId>com.google.code.tempus-fugit</groupId>
-      <artifactId>tempus-fugit</artifactId>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
