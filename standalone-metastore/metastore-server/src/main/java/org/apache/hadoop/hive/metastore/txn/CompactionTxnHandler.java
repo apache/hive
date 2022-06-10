@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
+import org.apache.hadoop.hive.metastore.DatabaseProduct.DbType;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
@@ -750,7 +751,10 @@ class CompactionTxnHandler extends TxnHandler {
               "  GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\") \"c2\" " +
               "ON \"tc\".\"CTC_DATABASE\" = \"c2\".\"CTC_DATABASE\" AND \"tc\".\"CTC_TABLE\" = \"c2\".\"CTC_TABLE\"" +
               "  AND (\"tc\".\"CTC_PARTITION\" = \"c2\".\"CTC_PARTITION\" OR (\"tc\".\"CTC_PARTITION\" IS NULL AND \"c2\".\"CTC_PARTITION\" IS NULL)) " +
-              "WHERE \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" AND \"tc\".\"CTC_WRITEID\" != \"c2\".\"updateWriteId\"";
+              "WHERE \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" " +
+              (DbType.MYSQL == dbProduct.dbType ?
+              "  AND NOT \"tc\".\"CTC_WRITEID\" <=> \"c2\".\"updateWriteId\"" :
+              "  AND (\"tc\".\"CTC_WRITEID\" != \"c2\".\"updateWriteId\" OR \"c2\".\"updateWriteId\" IS NULL)");
             break;
           case DERBY:
           case ORACLE:
@@ -762,7 +766,7 @@ class CompactionTxnHandler extends TxnHandler {
               "  WHERE \"CTC_DATABASE\" = \"tc\".\"CTC_DATABASE\"" +
               "    AND \"CTC_TABLE\" = \"tc\".\"CTC_TABLE\"" +
               "    AND (\"CTC_PARTITION\" = \"tc\".\"CTC_PARTITION\" OR (\"CTC_PARTITION\" IS NULL AND \"tc\".\"CTC_PARTITION\" IS NULL))" +
-              "    AND (\"tc\".\"CTC_UPDATE_DELETE\"='N' OR \"tc\".\"CTC_UPDATE_DELETE\"='Y' AND \"CTC_UPDATE_DELETE\"='Y')" +
+              "    AND (\"tc\".\"CTC_UPDATE_DELETE\"='N' OR \"CTC_UPDATE_DELETE\"='Y')" +
               "    AND \"tc\".\"CTC_WRITEID\" < \"CTC_WRITEID\")";
             break;
           case POSTGRES:
@@ -783,7 +787,8 @@ class CompactionTxnHandler extends TxnHandler {
               ") \"c\" " +
               "WHERE \"tc\".\"CTC_DATABASE\" = \"c\".\"CTC_DATABASE\" AND \"tc\".\"CTC_TABLE\" = \"c\".\"CTC_TABLE\"" +
               "  AND (\"tc\".\"CTC_PARTITION\" = \"c\".\"CTC_PARTITION\" OR (\"tc\".\"CTC_PARTITION\" IS NULL AND \"c\".\"CTC_PARTITION\" IS NULL))" +
-              "  AND \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" AND \"tc\".\"CTC_WRITEID\" != \"c\".\"updateWriteId\"";
+              "  AND \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" " +
+              "  AND \"tc\".\"CTC_WRITEID\" IS DISTINCT FROM \"c\".\"updateWriteId\"";
             break;
           default:
             String msg = "Unknown database product: " + dbProduct.dbType;
