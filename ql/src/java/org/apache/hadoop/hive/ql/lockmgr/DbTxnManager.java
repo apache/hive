@@ -420,6 +420,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     List<LockComponent> lockComponents = AcidUtils.makeLockComponents(plan.getOutputs(), plan.getInputs(),
         ctx.getOperation(), conf);
+    rqstBuilder.setCheckForConcurrentCtas(AcidUtils.isCTASOperation(lockComponents, conf));
     lockComponents.addAll(getGlobalLocks(ctx.getConf()));
 
     //It's possible there's nothing to lock even if we have w/r entities.

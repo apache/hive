@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.txn.OperationType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -3111,6 +3112,14 @@ public class AcidUtils {
     return lockComponents;
   }
 
+  public static boolean isCTASOperation(List<LockComponent> lockComponents, HiveConf conf) {
+    boolean isCtas = false;
+    for (LockComponent lock : lockComponents) {
+
+      if (lock.getOperationType().name().equals(OperationType.CTAS.name()) && conf.getBoolVar(HiveConf.ConfVars.HIVE_ACID_NO_RENAME_CTAS_ENABLED)) isCtas = true;
+    }
+    return isCtas;
+  }
   private static Set<Table> getFullTableLock(List<ReadEntity> readEntities, HiveConf conf) {
     int partLocksThreshold = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD);
 

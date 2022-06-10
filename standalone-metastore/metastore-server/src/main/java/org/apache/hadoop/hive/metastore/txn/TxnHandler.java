@@ -60,7 +60,6 @@ import java.util.stream.Stream;
 import javax.sql.DataSource;
 
 import com.google.common.collect.ImmutableList;
-import jline.internal.Log;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -2926,7 +2925,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     ConnectionLockIdPair connAndLockId = enqueueLockWithRetry(rqst);
     try {
       return checkLockWithRetry(connAndLockId.dbConn, connAndLockId.extLockId, rqst.getTxnid(),
-          rqst.isZeroWaitReadEnabled());
+          rqst.isZeroWaitReadEnabled(), rqst.isCheckForConcurrentCtas());
     }
     catch(NoSuchLockException e) {
       // This should never happen, as we just added the lock id
@@ -2968,7 +2967,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * 1. We use S4U (withe read_committed) to generate the next (ext) lock id.  This serializes
    * any 2 {@code enqueueLockWithRetry()} calls.
    * 2. We use S4U on the relevant TXNS row to block any concurrent abort/commit/etc operations
-   * @see #checkLockWithRetry(Connection, long, long, boolean)
+   * @see #checkLockWithRetry(Connection, long, long, boolean, boolean)
    */
   private ConnectionLockIdPair enqueueLockWithRetry(LockRequest rqst)
       throws NoSuchTxnException, TxnAbortedException, MetaException {
@@ -3053,7 +3052,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     stmt.executeBatch();
   }
 
-  private void insertTxnComponents(long txnid, LockRequest rqst, Connection dbConn) throws SQLException, TxnAbortedException {
+  private void insertTxnComponents(long txnid, LockRequest rqst, Connection dbConn) throws SQLException {
     if (txnid > 0) {
       Map<Pair<String, String>, Optional<Long>> writeIdCache = new HashMap<>();
       try (PreparedStatement pstmt = dbConn.prepareStatement(TXN_COMPONENTS_INSERT_QUERY)) {
@@ -3082,24 +3081,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           String tblName = normalizeCase(lc.getTablename());
           String partName = normalizePartitionCase(lc.getPartitionname());
           OperationType opType = OperationType.fromDataOperationType(lc.getOperationType());
-          if (opType.getSqlConst().equals(OperationType.CTAS.getSqlConst())) {
 
-            try (PreparedStatement stmt = dbConn.prepareStatement(CONCURRENT_CTAS_SELECT_QUERY)) {
-              stmt.setString(1, dbName);
-              stmt.setString(2, tblName);
-              Log.debug("Going to execute query <" + CONCURRENT_CTAS_SELECT_QUERY + ">");
-              ResultSet resultSet = stmt.executeQuery();
-              if (resultSet.next()) {
-                if (resultSet.getString("TC_OPERATION_TYPE").equals(OperationType.CTAS.getSqlConst())) {
-                  String err = String.format(
-                          "Could not create table: %s because table already exists in database: %s or " +
-                                  " a concurrent ctas operation " +
-                                  " is creating a table with same name.", tblName, dbName);
-                  throw new TxnAbortedException(err);
-                }
-              }
-            }
-          }
           if (isDynPart.test(lc)) {
             partName = null;
             if (writeIdCache.containsKey(groupKey.apply(lc))) {
@@ -3260,8 +3242,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return FileUtils.makePartName(new ArrayList<>(map.keySet()), new ArrayList<>(map.values()));
   }
 
-  private LockResponse checkLockWithRetry(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled)
-    throws NoSuchLockException, TxnAbortedException, MetaException {
+  private LockResponse checkLockWithRetry(Connection dbConn,
+                                          long extLockId,
+                                          long txnId,
+                                          boolean zeroWaitReadEnabled,
+                                          boolean checkForConcurrentCtas)
+          throws NoSuchLockException, TxnAbortedException, MetaException {
     try {
       try {
         lockInternal();
@@ -3269,7 +3255,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           //should only get here if retrying this op
           dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         }
-        return checkLock(dbConn, extLockId, txnId, zeroWaitReadEnabled);
+        return checkLock(dbConn, extLockId, txnId, zeroWaitReadEnabled, checkForConcurrentCtas);
       } catch (SQLException e) {
         LOG.error("checkLock failed for extLockId={}/txnId={}. Exception msg: {}", extLockId, txnId, getMessage(e));
         rollbackDBConn(dbConn);
@@ -3284,7 +3270,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     catch(RetryException e) {
       LOG.debug("Going to retry checkLock for extLockId={}/txnId={} after catching RetryException with message: {}",
               extLockId, txnId, e.getMessage());
-      return checkLockWithRetry(dbConn, extLockId, txnId, zeroWaitReadEnabled);
+      return checkLockWithRetry(dbConn, extLockId, txnId, zeroWaitReadEnabled, checkForConcurrentCtas);
     }
   }
   /**
@@ -3298,12 +3284,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * The clients that operate in blocking mode, can't heartbeat a lock until the lock is acquired.
    * We should make CheckLockRequest include timestamp or last request to skip unnecessary heartbeats. Thrift change.
    *
-   * {@link #checkLock(java.sql.Connection, long, long, boolean)}  must run at SERIALIZABLE
+   * {@link #checkLock(java.sql.Connection, long, long, boolean, boolean)}  must run at SERIALIZABLE
    * (make sure some lock we are checking against doesn't move from W to A in another txn)
    * but this method can heartbeat in separate txn at READ_COMMITTED.
    *
    * Retry-by-caller note:
-   * Retryable because {@link #checkLock(Connection, long, long, boolean)} is
+   * Retryable because {@link #checkLock(Connection, long, long, boolean, boolean)} is
    */
   @Override
   @RetrySemantics.SafeToRetry
@@ -3329,7 +3315,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //todo: strictly speaking there is a bug here.  heartbeat*() commits but both heartbeat and
         //checkLock() are in the same retry block, so if checkLock() throws, heartbeat is also retired
         //extra heartbeat is logically harmless, but ...
-        return checkLock(dbConn, extLockId, lockInfo.txnId, false);
+        return checkLock(dbConn, extLockId, lockInfo.txnId, false,false);
       } catch (SQLException e) {
         LOG.error("checkLock failed for request={}. Exception msg: {}", rqst, getMessage(e));
         rollbackDBConn(dbConn);
@@ -5152,7 +5138,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * checkLock() will in the worst case keep locks in Waiting state a little longer.
    */
   @RetrySemantics.SafeToRetry("See @SafeToRetry")
-  private LockResponse checkLock(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled)
+  private LockResponse checkLock(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled,
+                                 boolean checkForConcurrentCtas)
       throws NoSuchLockException, TxnAbortedException, MetaException, SQLException {
     Statement stmt = null;
     ResultSet rs = null;
@@ -5310,6 +5297,28 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             return response;
           }
         }
+
+        if (checkForConcurrentCtas && isValidTxn(txnId)) {
+          LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
+                  .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
+
+          if (lockType == LockType.EXCL_WRITE && blockedBy.state == LockState.ACQUIRED) {
+
+            String deleteBlockedByTxnComp = "DELETE  FROM \"TXN_COMPONENTS\" WHERE" + " \"TC_TXNID\"=" + txnId;
+            LOG.debug("Going to execute query <" + deleteBlockedByTxnComp + ">");
+            stmt.executeUpdate(deleteBlockedByTxnComp);
+            dbConn.commit();
+            String err = String.format(
+                    "Could not create a tableName: %s ,because table already exists in databaseName: %s or " +
+                            " a concurrent ctas operation is creating a table with same table name.", blockedBy.table,
+                    blockedBy.db);
+            response.setErrorMessage(err);
+            response.setState(LockState.NOT_ACQUIRED);
+            LOG.error(err);
+            return response;
+          }
+        }
+
         String updateBlockedByQuery = "UPDATE \"HIVE_LOCKS\"" +
             " SET \"HL_BLOCKEDBY_EXT_ID\" = " + blockedBy.extLockId +
             ", \"HL_BLOCKEDBY_INT_ID\" = " + blockedBy.intLockId +

@@ -91,6 +91,11 @@ public class LockRequestBuilder {
     return this;
   }
 
+  public LockRequestBuilder setCheckForConcurrentCtas(boolean ConcurrentCtas) {
+    req.setCheckForConcurrentCtas(ConcurrentCtas);
+    return this;
+  }
+
   /**
    * Add a lock component to the lock request
    * @param component to add

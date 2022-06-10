@@ -1206,7 +1206,8 @@ struct LockRequest {
     3: required string user,     // used in 'show locks' to help admins find who has open locks
     4: required string hostname, // used in 'show locks' to help admins find who has open locks
     5: optional string agentInfo = "Unknown",
-    6: optional bool zeroWaitReadEnabled = false
+    6: optional bool zeroWaitReadEnabled = false,
+    7: optional bool checkForConcurrentCtas = false
 }
 
 struct LockResponse {
