@@ -1613,10 +1613,10 @@ resourceType
 createFunctionStatement
 @init { pushMsg("create function statement", state); }
 @after { popMsg(state); }
-    : KW_CREATE (temp=KW_TEMPORARY)? KW_FUNCTION functionIdentifier KW_AS StringLiteral
+    : KW_CREATE (temp=KW_TEMPORARY)? KW_FUNCTION orReplace? ifNotExists? functionIdentifier KW_AS StringLiteral
       (KW_USING rList=resourceList)?
-    -> {$temp != null}? ^(TOK_CREATEFUNCTION functionIdentifier StringLiteral $rList? TOK_TEMPORARY)
-    ->                  ^(TOK_CREATEFUNCTION functionIdentifier StringLiteral $rList?)
+    -> {$temp != null}? ^(TOK_CREATEFUNCTION functionIdentifier StringLiteral orReplace? ifNotExists? $rList? TOK_TEMPORARY)
+    ->                  ^(TOK_CREATEFUNCTION functionIdentifier StringLiteral orReplace? ifNotExists? $rList?)
     ;
 
 dropFunctionStatement

@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for CREATE [TEMPORARY] FUNCTION commands.
+ * DDL task description for CREATE [TEMPORARY] FUNCTION [OR REPLACE] commands.
  */
 @Explain(displayName = "Create Function", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CreateFunctionDesc implements DDLDesc, Serializable {
@@ -37,14 +37,18 @@ public class CreateFunctionDesc implements DDLDesc, Serializable {
   private final String name;
   private final String className;
   private final boolean isTemporary;
+  private final boolean replace;
+  private final boolean ifNotExists;
   private final List<ResourceUri> resources;
   private final ReplicationSpec replicationSpec;
 
-  public CreateFunctionDesc(String name, String className, boolean isTemporary, List<ResourceUri> resources,
-      ReplicationSpec replicationSpec) {
+  public CreateFunctionDesc(String name, String className, boolean isTemporary, boolean replace,
+      boolean ifNotExists, List<ResourceUri> resources, ReplicationSpec replicationSpec) {
     this.name = name;
     this.className = className;
     this.isTemporary = isTemporary;
+    this.replace = replace;
+    this.ifNotExists = ifNotExists;
     this.resources = resources;
     this.replicationSpec = replicationSpec == null ? new ReplicationSpec() : replicationSpec;
   }
@@ -63,6 +67,17 @@ public class CreateFunctionDesc implements DDLDesc, Serializable {
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isTemp() {
     return isTemporary;
+  }
+
+  @Explain(displayName = "or replace", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public boolean isReplace() {
+    return replace;
+  }
+
+  @Explain(displayName = "if not exists",
+      explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public boolean getIfNotExists() {
+    return ifNotExists;
   }
 
   public List<ResourceUri> getResources() {

@@ -54,6 +54,14 @@ public class CreateFunctionAnalyzer extends AbstractFunctionAnalyzer {
   public void analyzeInternal(ASTNode root) throws SemanticException {
     String functionName = root.getChild(0).getText().toLowerCase();
     boolean isTemporary = (root.getFirstChildWithType(HiveParser.TOK_TEMPORARY) != null);
+    boolean replace = (root.getFirstChildWithType(HiveParser.TOK_ORREPLACE) != null);
+    boolean ifNotExists = (root.getFirstChildWithType(HiveParser.TOK_IFNOTEXISTS) != null);
+    if (ifNotExists && replace) {
+      throw new SemanticException("CREATE FUNCTION with both IF NOT EXISTS and REPLACE is not allowed.");
+    }
+    if (ifNotExists && isTemporary) {
+      throw new SemanticException("It is not allowed to define a TEMPORARY function with IF NOT EXISTS.");
+    }
     if (isTemporary && FunctionUtils.isQualifiedFunctionName(functionName)) {
       throw new SemanticException("Temporary function cannot be created with a qualified name.");
     }
@@ -65,7 +73,8 @@ public class CreateFunctionAnalyzer extends AbstractFunctionAnalyzer {
       SESSION_STATE_LOG.warn("permanent functions created without USING  clause will not be replicated.");
     }
 
-    CreateFunctionDesc desc = new CreateFunctionDesc(functionName, className, isTemporary, resources, null);
+    CreateFunctionDesc desc = new CreateFunctionDesc(
+        functionName, className, isTemporary, replace, ifNotExists, resources, null);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
     addEntities(functionName, className, isTemporary, resources);

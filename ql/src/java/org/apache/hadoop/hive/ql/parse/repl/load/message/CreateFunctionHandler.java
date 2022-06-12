@@ -140,7 +140,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
       // Only for incremental load, need to validate if event is newer than the database.
       ReplicationSpec replSpec = (context.dmd == null) ? null : context.eventOnlyReplicationSpec();
       return new CreateFunctionDesc(
-              fullQualifiedFunctionName, metadata.function.getClassName(), false,
+              fullQualifiedFunctionName, metadata.function.getClassName(), false, false, false,
               transformedUris, replSpec
       );
     }

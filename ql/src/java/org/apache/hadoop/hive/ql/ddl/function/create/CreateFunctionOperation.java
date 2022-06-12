@@ -54,6 +54,9 @@ public class CreateFunctionOperation extends DDLOperation<CreateFunctionDesc> {
   @Override
   public int execute() throws HiveException {
     if (desc.isTemp()) {
+      if (!desc.isReplace() && FunctionRegistry.isRegisteredFunction(desc.getName())) {
+        throw new HiveException("Function " + desc.getName() + " already exists.");
+      }
       return createTemporaryFunction();
     } else {
       try {
@@ -116,11 +119,26 @@ public class CreateFunctionOperation extends DDLOperation<CreateFunctionDesc> {
       return 1;
     }
 
-    boolean addToMetastoreSuccess = addToMetastore(dbName, functionName, registeredName);
-    if (!addToMetastoreSuccess) {
-      return 1;
+    // TODO: should this use getUserFromAuthenticator instead of SessionState.get().getUserName()?
+    Function function = new Function(functionName, dbName, desc.getClassName(), SessionState.get().getUserName(),
+        PrincipalType.USER, (int) (System.currentTimeMillis() / 1000), FunctionType.JAVA, desc.getResources());
+    boolean functionExists = context.getDb().functionExists(dbName, functionName);
+    try {
+      if (desc.isReplace() && functionExists) {
+        // Alter the function in the metastore
+        context.getDb().alterFunction(dbName, functionName, function);
+      } else {
+        // Add the function to the metastore
+        context.getDb().createFunction(function);
+      }
+    } catch (Exception e) {
+      // If failed, remove the function from the registry except if already exists.
+      if (!(e.getCause() instanceof AlreadyExistsException)) {
+        FunctionRegistry.unregisterPermanentFunction(registeredName);
+      }
+      context.getTask().setException(e);
+      LOG.error("Failed to add function " + desc.getName() + " to the metastore.", e);
     }
-
     return 0;
   }
 
@@ -184,24 +202,6 @@ public class CreateFunctionOperation extends DDLOperation<CreateFunctionDesc> {
       SessionState.get().setConf(oldConf);
     }
     return registered != null;
-  }
-
-  private boolean addToMetastore(String dbName, String functionName, String registeredName) throws HiveException {
-    try {
-      // TODO: should this use getUserFromAuthenticator instead of SessionState.get().getUserName()?
-      Function function = new Function(functionName, dbName, desc.getClassName(), SessionState.get().getUserName(),
-          PrincipalType.USER, (int) (System.currentTimeMillis() / 1000), FunctionType.JAVA, desc.getResources());
-      context.getDb().createFunction(function);
-      return true;
-    } catch (Exception e) {
-      // Addition to metastore failed, remove the function from the registry except if already exists.
-      if (!(e.getCause() instanceof AlreadyExistsException)) {
-        FunctionRegistry.unregisterPermanentFunction(registeredName);
-      }
-      context.getTask().setException(e);
-      LOG.error("Failed to add function " + desc.getName() + " to the metastore.", e);
-      return false;
-    }
   }
 
   private int handlePermanentFunctionCreationException(Exception e) {

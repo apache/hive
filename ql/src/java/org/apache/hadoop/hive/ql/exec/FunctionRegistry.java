@@ -778,6 +778,10 @@ public final class FunctionRegistry {
     return info != null ? info : system.getFunctionInfo(functionName);
   }
 
+  public static boolean isRegisteredFunction(String functionName) throws SemanticException {
+    return getFunctionInfo(functionName) != null;
+  }
+
   public static FunctionInfo getTemporaryFunctionInfo(String functionName) throws SemanticException {
     Registry registry = SessionState.getRegistry();
     return registry == null ? null : registry.getFunctionInfo(functionName);

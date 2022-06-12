@@ -5893,9 +5893,24 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  /**
+   * Query metadata to see if a function with the given name already exists.
+   *
+   * @param dbName
+   * @param funcName
+   * @return true if a function with the given name already exists, false if
+   *         does not exist.
+   * @throws HiveException
+   */
+  public boolean functionExists(String dbName, String funcName) throws HiveException {
+    return getFunction(dbName, funcName) != null;
+  }
+
   public Function getFunction(String dbName, String funcName) throws HiveException {
     try {
       return getMSC().getFunction(dbName, funcName);
+    } catch (NoSuchObjectException e) {
+      return null;
     } catch (TException te) {
       throw new HiveException(te);
     }
