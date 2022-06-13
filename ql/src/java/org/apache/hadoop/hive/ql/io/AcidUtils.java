@@ -2846,36 +2846,32 @@ public class AcidUtils {
   }
 
   private static boolean needsLock(Entity entity, boolean isExternalEnabled) {
+    return needsLock(entity, isExternalEnabled, false);
+  }
+
+  private static boolean needsLock(Entity entity, boolean isExternalEnabled, boolean isLocklessReads) {
     switch (entity.getType()) {
-    case TABLE:
-      return isLockableTable(entity.getTable(), isExternalEnabled);
-    case PARTITION:
-      return isLockableTable(entity.getPartition().getTable(), isExternalEnabled);
-    default:
-      return true;
+      case TABLE:
+        return isLockableTable(entity.getTable(), isExternalEnabled, isLocklessReads);
+      case PARTITION:
+        return isLockableTable(entity.getPartition().getTable(), isExternalEnabled, isLocklessReads);
+      default:
+        return true;
     }
   }
 
-  private static Table getTable(WriteEntity we) {
-    Table t = we.getTable();
-    if (t == null) {
-      throw new IllegalStateException("No table info for " + we);
-    }
-    return t;
-  }
-
-  private static boolean isLockableTable(Table t, boolean isExternalEnabled) {
+  private static boolean isLockableTable(Table t, boolean isExternalEnabled, boolean isLocklessReads) {
     if (t.isTemporary()) {
       return false;
     }
     switch (t.getTableType()) {
-    case MANAGED_TABLE:
-    case MATERIALIZED_VIEW:
-      return true;
-    case EXTERNAL_TABLE:
-      return isExternalEnabled;
-    default:
-      return false;
+      case MANAGED_TABLE:
+      case MATERIALIZED_VIEW:
+        return !(isLocklessReads && isTransactionalTable(t));
+      case EXTERNAL_TABLE:
+        return isExternalEnabled;
+      default:
+        return false;
     }
   }
 
@@ -2890,8 +2886,10 @@ public class AcidUtils {
       Context.Operation operation, HiveConf conf) {
 
     List<LockComponent> lockComponents = new ArrayList<>();
+    boolean isLocklessReadsEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
     boolean skipReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_READ_LOCKS);
     boolean skipNonAcidReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_NONACID_READ_LOCKS);
+    
     boolean sharedWrite = !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK);
     boolean isExternalEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED);
     boolean isMerge = operation == Context.Operation.MERGE;
@@ -2902,7 +2900,7 @@ public class AcidUtils {
       .filter(input -> !input.isDummy()
         && input.needsLock()
         && !input.isUpdateOrDelete()
-        && AcidUtils.needsLock(input, isExternalEnabled)
+        && AcidUtils.needsLock(input, isExternalEnabled, isLocklessReadsEnabled)
         && !skipReadLock)
       .collect(Collectors.toList());
 
@@ -2961,9 +2959,8 @@ public class AcidUtils {
     // overwrite) than we need a shared.  If it's update or delete then we
     // need a SHARED_WRITE.
     for (WriteEntity output : outputs) {
-      LOG.debug("output is null " + (output == null));
-      if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR || !AcidUtils
-          .needsLock(output, isExternalEnabled)) {
+      if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR 
+          || !AcidUtils.needsLock(output, isExternalEnabled)) {
         // We don't lock files or directories. We also skip locking temp tables.
         continue;
       }
@@ -3015,7 +3012,8 @@ public class AcidUtils {
       case INSERT_OVERWRITE:
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
-          if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) && !sharedWrite) {
+          if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) && !sharedWrite 
+              && !isLocklessReadsEnabled) {
             compBuilder.setExclusive();
           } else {
             compBuilder.setExclWrite();
@@ -3030,18 +3028,16 @@ public class AcidUtils {
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
           boolean isExclMergeInsert = conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge;
+          compBuilder.setSharedRead();
 
           if (sharedWrite) {
             compBuilder.setSharedWrite();
           } else {
             if (isExclMergeInsert) {
               compBuilder.setExclWrite();
-            } else {
-              if (AcidUtils.isLocklessReadsEnabled(t, conf)) {
-                compBuilder.setSharedWrite();
-              } else {
-                compBuilder.setSharedRead();
-              }
+              
+            } else if (isLocklessReadsEnabled) {
+              compBuilder.setSharedWrite();
             }
           }
           if (isExclMergeInsert) {
