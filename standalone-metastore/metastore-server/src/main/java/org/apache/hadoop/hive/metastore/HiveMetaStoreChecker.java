@@ -322,13 +322,9 @@ public class HiveMetaStoreChecker {
       List<String> partitions = new ArrayList<>();
       Set<Path> partDirs = new HashSet<Path>();
       boolean tablePathStrEndsWith = tablePathStr.endsWith("/");
-      allPartDirs.stream().forEach(path -> {
-        if (tablePathStrEndsWith) {
-          partitions.add(path.toString().substring(tablePathLength));
-        } else {
-          partitions.add(path.toString().substring(tablePathLength + 1));
-        }
-      });
+      int tablePathStrLen = tablePathStr.endsWith("/") ? tablePathStr.length() : tablePathStr.length() + 1;
+      allPartDirs.stream().forEach(path -> partitions.add(path.toString().substring(tablePathStrLen)));
+
       // Remove all partition paths which does not matches the filter expression.
       expressionProxy.filterPartitionsByExpr(partColumns, filterExp,
               conf.get(MetastoreConf.ConfVars.DEFAULTPARTITIONNAME.getVarname()), partitions);
@@ -356,14 +352,12 @@ public class HiveMetaStoreChecker {
       CheckResult.PartitionResult prFromMetastore = new CheckResult.PartitionResult();
       prFromMetastore.setPartitionName(getPartitionName(table, partition));
       prFromMetastore.setTableName(partition.getTableName());
-      if (allPartDirs.contains(partPath)) {
+      if (allPartDirs.remove(partPath)) {
         result.getCorrectPartitions().add(prFromMetastore);
-        allPartDirs.remove(partPath);
       } else {
         // There can be edge case where user can define partition directory outside of table directory
         // to avoid eviction of such partitions
         // we check existence of partition path which are not in table directory
-        // and add to result for getPartitionsNotOnFs.
         if (!partPath.toString().contains(tablePathStr)) {
           if (!fs.exists(partPath)) {
             result.getPartitionsNotOnFs().add(prFromMetastore);
