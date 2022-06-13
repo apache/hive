@@ -337,7 +337,15 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     LOG.info("Committing job has started for table: {}, using location: {}",
         table, generateJobLocation(location, conf, jobContext.getJobID()));
 
-    int numTasks = SessionStateUtil.getCommitInfo(conf, name).map(info -> info.getTaskNum()).orElseGet(() -> {
+    Optional<SessionStateUtil.CommitInfo> commitInfo;
+    if (SessionStateUtil.getCommitInfo(conf, name).isPresent()) {
+      commitInfo = SessionStateUtil.getCommitInfo(conf, name).get()
+              .stream().filter(ci -> ci.getJobIdStr().equals(jobContext.getJobID().toString())).findFirst();
+    } else {
+      commitInfo = Optional.empty();
+    }
+
+    int numTasks = commitInfo.map(SessionStateUtil.CommitInfo::getTaskNum).orElseGet(() -> {
       // Fallback logic, if number of tasks are not available in the config
       // If there are reducers, then every reducer will generate a result file.
       // If this is a map only task, then every mapper will generate a result file.

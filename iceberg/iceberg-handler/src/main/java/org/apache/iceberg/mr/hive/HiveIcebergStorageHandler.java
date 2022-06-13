@@ -411,23 +411,27 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     Configuration configuration = SessionState.getSessionConf();
-    Optional<JobContext> jobContext = generateJobContext(configuration, tableName, overwrite);
-    if (jobContext.isPresent()) {
+    Optional<List<JobContext>> jobContextList = generateJobContext(configuration, tableName, overwrite);
+    if (!jobContextList.isPresent()) {
+      return;
+    }
+
+    for (JobContext jobContext : jobContextList.get()) {
       OutputCommitter committer = new HiveIcebergOutputCommitter();
       try {
-        committer.commitJob(jobContext.get());
+        committer.commitJob(jobContext);
       } catch (Throwable e) {
         // Aborting the job if the commit has failed
         LOG.error("Error while trying to commit job: {}, starting rollback changes for table: {}",
-            jobContext.get().getJobID(), tableName, e);
+                jobContext.getJobID(), tableName, e);
         try {
-          committer.abortJob(jobContext.get(), JobStatus.State.FAILED);
+          committer.abortJob(jobContext, JobStatus.State.FAILED);
         } catch (IOException ioe) {
           LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", ioe);
           // no throwing here because the original exception should be propagated
         }
         throw new HiveException(
-            "Error committing job: " + jobContext.get().getJobID() + " for table: " + tableName, e);
+                "Error committing job: " + jobContext.getJobID() + " for table: " + tableName, e);
       }
     }
   }
@@ -865,19 +869,24 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * @param overwrite If we have to overwrite the existing table or just add the new data
    * @return The generated JobContext
    */
-  private Optional<JobContext> generateJobContext(Configuration configuration, String tableName, boolean overwrite) {
+  private Optional<List<JobContext>> generateJobContext(
+          Configuration configuration, String tableName, boolean overwrite) {
     JobConf jobConf = new JobConf(configuration);
-    Optional<SessionStateUtil.CommitInfo> commitInfo = SessionStateUtil.getCommitInfo(jobConf, tableName);
-    if (commitInfo.isPresent()) {
-      JobID jobID = JobID.forName(commitInfo.get().getJobIdStr());
-      commitInfo.get().getProps().forEach(jobConf::set);
-      jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
+    Optional<List<SessionStateUtil.CommitInfo>> commitInfoList = SessionStateUtil.getCommitInfo(jobConf, tableName);
+    if (commitInfoList.isPresent()) {
+      List<JobContext> jobContextList = Lists.newLinkedList();
+      for (SessionStateUtil.CommitInfo commitInfo : commitInfoList.get()) {
+        JobID jobID = JobID.forName(commitInfo.getJobIdStr());
+        commitInfo.getProps().forEach(jobConf::set);
+        jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
 
-      // we should only commit this current table because
-      // for multi-table inserts, this hook method will be called sequentially for each target table
-      jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
+        // we should only commit this current table because
+        // for multi-table inserts, this hook method will be called sequentially for each target table
+        jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
 
-      return Optional.of(new JobContextImpl(jobConf, jobID, null));
+        jobContextList.add(new JobContextImpl(jobConf, jobID, null));
+      }
+      return Optional.of(jobContextList);
     } else {
       // most likely empty write scenario
       LOG.debug("Unable to find commit information in query state for table: {}", tableName);
