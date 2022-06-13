@@ -24,6 +24,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -67,6 +68,7 @@ import org.apache.iceberg.mr.hive.writer.WriterRegistry;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
@@ -109,8 +111,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
     TaskAttemptID attemptID = context.getTaskAttemptID();
     JobConf jobConf = context.getJobConf();
-    Collection<String> outputs = HiveIcebergStorageHandler.outputTables(context.getJobConf());
-    Map<String, HiveIcebergWriter> writers = Optional.ofNullable(WriterRegistry.writers(attemptID))
+    Set<String> outputs = Sets.newHashSet(HiveIcebergStorageHandler.outputTables(context.getJobConf()));
+    Map<String, List<HiveIcebergWriter>> writers = Optional.ofNullable(WriterRegistry.writers(attemptID))
         .orElseGet(() -> {
           LOG.info("CommitTask found no writers for output tables: {}, attemptID: {}", outputs, attemptID);
           return ImmutableMap.of();
@@ -126,15 +128,16 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .executeWith(tableExecutor)
           .run(output -> {
             Table table = HiveIcebergStorageHandler.table(context.getJobConf(), output);
-            if (table != null) {
-              HiveIcebergWriter writer = writers.get(output);
-              String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
-                  attemptID.getJobID(), attemptID.getTaskID().getId());
-              if (writer != null) {
-                createFileForCommit(writer.files(), fileForCommitLocation, table.io());
-              } else {
-                LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
-                createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
+            if (table != null && writers.get(output) != null) {
+              for (HiveIcebergWriter writer : writers.get(output)) {
+                String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
+                        attemptID.getJobID(), attemptID.getTaskID().getId());
+                if (writer != null) {
+                  createFileForCommit(writer.files(), fileForCommitLocation, table.io());
+                } else {
+                  LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
+                  createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
+                }
               }
             } else {
               // When using Tez multi-table inserts, we could have more output tables in config than
@@ -162,12 +165,14 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     TaskAttemptContext context = TezUtil.enrichContextWithAttemptWrapper(originalContext);
 
     // Clean up writer data from the local store
-    Map<String, HiveIcebergWriter> writers = WriterRegistry.removeWriters(context.getTaskAttemptID());
+    Map<String, List<HiveIcebergWriter>> writerMap = WriterRegistry.removeWriters(context.getTaskAttemptID());
 
     // Remove files if it was not done already
-    if (writers != null) {
-      for (HiveIcebergWriter writer : writers.values()) {
-        writer.close(true);
+    if (writerMap != null) {
+      for (List<HiveIcebergWriter> writerList : writerMap.values()) {
+        for (HiveIcebergWriter writer : writerList) {
+          writer.close(true);
+        }
       }
     }
   }
@@ -186,7 +191,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     long startTime = System.currentTimeMillis();
     LOG.info("Committing job {} has started", jobContext.getJobID());
 
-    Collection<String> outputs = HiveIcebergStorageHandler.outputTables(jobContext.getJobConf());
+    Set<String> outputs = Sets.newHashSet(HiveIcebergStorageHandler.outputTables(jobContext.getJobConf()));
     Collection<String> jobLocations = new ConcurrentLinkedQueue<>();
 
     ExecutorService fileExecutor = fileExecutor(jobConf);
