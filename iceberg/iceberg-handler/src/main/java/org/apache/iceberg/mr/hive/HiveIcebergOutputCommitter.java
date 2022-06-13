@@ -68,6 +68,7 @@ import org.apache.iceberg.mr.hive.writer.WriterRegistry;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.iceberg.util.Tasks;
@@ -129,15 +130,21 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .run(output -> {
             Table table = HiveIcebergStorageHandler.table(context.getJobConf(), output);
             if (table != null && writers.get(output) != null) {
+              Collection<DataFile> dataFiles = Lists.newArrayList();
+              Collection<DeleteFile> deleteFiles = Lists.newArrayList();
+              String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
+                      attemptID.getJobID(), attemptID.getTaskID().getId());
               for (HiveIcebergWriter writer : writers.get(output)) {
-                String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
-                        attemptID.getJobID(), attemptID.getTaskID().getId());
                 if (writer != null) {
-                  createFileForCommit(writer.files(), fileForCommitLocation, table.io());
-                } else {
-                  LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
-                  createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
+                  dataFiles.addAll(writer.files().dataFiles());
+                  deleteFiles.addAll(writer.files().deleteFiles());
                 }
+              }
+              if (dataFiles.isEmpty() && deleteFiles.isEmpty()) {
+                LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
+                createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
+              } else {
+                createFileForCommit(new FilesForCommit(dataFiles, deleteFiles), fileForCommitLocation, table.io());
               }
             } else {
               // When using Tez multi-table inserts, we could have more output tables in config than
