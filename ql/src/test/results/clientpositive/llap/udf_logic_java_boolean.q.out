@@ -13,7 +13,9 @@ STAGE PLANS:
   Stage: Stage-0
     Create Function
       class: org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean
+      if not exists: false
       name: test_udf_get_java_boolean
+      or replace: false
       temporary: true
 
 PREHOOK: query: CREATE TEMPORARY FUNCTION test_udf_get_java_boolean AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean'

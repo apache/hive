@@ -44,7 +44,9 @@ STAGE PLANS:
   Stage: Stage-0
     Create Function
       class: org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper
+      if not exists: false
       name: mydb.func1
+      or replace: false
 
 PREHOOK: query: create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 PREHOOK: type: CREATEFUNCTION
@@ -120,7 +122,9 @@ STAGE PLANS:
   Stage: Stage-0
     Create Function
       class: org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper
+      if not exists: false
       name: temp_func1
+      or replace: false
       temporary: true
 
 PREHOOK: query: create temporary function temp_func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'

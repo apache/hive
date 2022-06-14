@@ -138,6 +138,7 @@ public class CreateFunctionOperation extends DDLOperation<CreateFunctionDesc> {
       }
       context.getTask().setException(e);
       LOG.error("Failed to add function " + desc.getName() + " to the metastore.", e);
+      return 1;
     }
     return 0;
   }

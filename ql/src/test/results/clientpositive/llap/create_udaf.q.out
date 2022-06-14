@@ -13,7 +13,9 @@ STAGE PLANS:
   Stage: Stage-0
     Create Function
       class: org.apache.hadoop.hive.ql.udf.UDAFTestMax
+      if not exists: false
       name: test_max
+      or replace: false
       temporary: true
 
 PREHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
