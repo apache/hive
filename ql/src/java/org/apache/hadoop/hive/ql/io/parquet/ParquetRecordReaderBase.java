@@ -80,7 +80,8 @@ public abstract class ParquetRecordReaderBase {
   }
 
   protected void setupMetadataAndParquetSplit(JobConf conf) throws IOException {
-    if (fileSplit.getLength() > 0) {
+    // In the case of stat tasks a dummy split is created with -1 length but real path...
+    if (fileSplit.getLength() != 0) {
       parquetMetadata = getParquetMetadata(filePath, conf);
       parquetInputSplit = getSplit(conf);
     }
@@ -98,10 +99,6 @@ public abstract class ParquetRecordReaderBase {
   protected ParquetInputSplit getSplit(
     final JobConf conf
   ) throws IOException {
-
-    if (fileSplit.getLength() == 0) {
-      return null;
-    }
 
     ParquetInputSplit split;
     final Path finalPath = fileSplit.getPath();
