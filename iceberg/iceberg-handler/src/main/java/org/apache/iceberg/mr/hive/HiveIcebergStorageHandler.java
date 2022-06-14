@@ -796,14 +796,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    *   <li>fileformat is set to avro</li>
    *   <li>querying metadata tables</li>
    *   <li>fileformat is set to ORC, and table schema has time type column</li>
+   *   <li>fileformat is set to PARQUET, and table schema has a list type column, that has a complex type element</li>
    * </ul>
    * @param tableProps table properties, must be not null
    */
   private void fallbackToNonVectorizedModeBasedOnProperties(Properties tableProps) {
+    Schema tableSchema = SchemaParser.fromJson(tableProps.getProperty(InputFormatConfig.TABLE_SCHEMA));
     if ("2".equals(tableProps.get(TableProperties.FORMAT_VERSION)) ||
         FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
         (tableProps.containsKey("metaTable") && isValidMetadataTable(tableProps.getProperty("metaTable"))) ||
-        hasOrcTimeInSchema(tableProps)) {
+        hasOrcTimeInSchema(tableProps, tableSchema) ||
+        !hasParquetListColumnSupport(tableProps, tableSchema)) {
       conf.setBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname, false);
     }
   }
@@ -811,12 +814,31 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   // Iceberg Time type columns are written as longs into ORC files. There is no Time type in Hive, so it is represented
   // as String instead. For ORC there's no automatic conversion from long to string during vectorized reading such as
   // for example in Parquet (in Parquet files Time type is an int64 with 'time' logical annotation).
-  private static boolean hasOrcTimeInSchema(Properties tableProps) {
+  private static boolean hasOrcTimeInSchema(Properties tableProps, Schema tableSchema) {
     if (!FileFormat.ORC.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
       return false;
     }
-    Schema tableSchema = SchemaParser.fromJson(tableProps.getProperty(InputFormatConfig.TABLE_SCHEMA));
     return tableSchema.columns().stream().anyMatch(f -> Types.TimeType.get().typeId() == f.type().typeId());
+  }
+
+  // Vectorized reads of parquet files from columns with list type is only supported if the element is a primitive type
+  // check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details
+  private static boolean hasParquetListColumnSupport(Properties tableProps, Schema tableSchema) {
+    if (!FileFormat.PARQUET.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
+      return true;
+    }
+
+    for (Types.NestedField field : tableSchema.columns()) {
+      if (field.type().isListType()) {
+        for (Types.NestedField nestedField : field.type().asListType().fields()) {
+          if (!nestedField.type().isPrimitiveType()) {
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
   }
 
   /**
