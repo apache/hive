@@ -655,6 +655,9 @@ CREATE TABLE COMPLETED_COMPACTIONS (
   CC_META_INFO varchar(2048) for bit data,
   CC_HADOOP_JOB_ID varchar(32),
   CC_ERROR_MESSAGE clob,
+  CC_NEXT_TXN_ID bigint,
+  CC_TXN_ID bigint,
+  CC_COMMIT_TIME bigint,
   CC_INITIATOR_ID varchar(128),
   CC_INITIATOR_VERSION varchar(128),
   CC_WORKER_VERSION varchar(128)

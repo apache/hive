@@ -1827,6 +1827,9 @@ CREATE TABLE "COMPLETED_COMPACTIONS" (
   "CC_META_INFO" bytea,
   "CC_HADOOP_JOB_ID" varchar(32),
   "CC_ERROR_MESSAGE" text,
+  "CC_NEXT_TXN_ID" bigint,
+  "CC_TXN_ID" bigint,
+  "CC_COMMIT_TIME" bigint,
   "CC_INITIATOR_ID" varchar(128),
   "CC_INITIATOR_VERSION" varchar(128),
   "CC_WORKER_VERSION" varchar(128)
