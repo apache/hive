@@ -271,6 +271,81 @@ America	Canada	2	bb
 America	USA	2	aa
 Europe	Hungary	1	aa
 Europe	Austria	3	cc
+PREHOOK: query: create external table tbl_ice_parquet_complex (
+    a int,
+    arrayofprimitives array<string>,
+    arrayofarrays array<array<string>>,
+    arrayofmaps array<map<string, string>>,
+    arrayofstructs array<struct<something:string, someone:string, somewhere:string>>,
+    mapofprimitives map<string, string>,
+    mapofarrays map<string, array<string>>,
+    mapofmaps map<string, map<string, string>>,
+    mapofstructs map<string, struct<something:string, someone:string, somewhere:string>>,
+    structofprimitives struct<something:string, somewhere:string>,
+    structofarrays struct<names:array<string>, birthdays:array<string>>,
+    structofmaps struct<map1:map<string, string>, map2:map<string, string>>
+    ) stored by iceberg stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_ice_parquet_complex
+POSTHOOK: query: create external table tbl_ice_parquet_complex (
+    a int,
+    arrayofprimitives array<string>,
+    arrayofarrays array<array<string>>,
+    arrayofmaps array<map<string, string>>,
+    arrayofstructs array<struct<something:string, someone:string, somewhere:string>>,
+    mapofprimitives map<string, string>,
+    mapofarrays map<string, array<string>>,
+    mapofmaps map<string, map<string, string>>,
+    mapofstructs map<string, struct<something:string, someone:string, somewhere:string>>,
+    structofprimitives struct<something:string, somewhere:string>,
+    structofarrays struct<names:array<string>, birthdays:array<string>>,
+    structofmaps struct<map1:map<string, string>, map2:map<string, string>>
+    ) stored by iceberg stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_ice_parquet_complex
+PREHOOK: query: insert into tbl_ice_parquet_complex values (
+    1,
+    array('a','b','c'),
+    array(array('a'), array('b', 'c')),
+    array(map('a','b'), map('e','f')),
+    array(named_struct('something', 'a', 'someone', 'b', 'somewhere', 'c'), named_struct('something', 'e', 'someone', 'f', 'somewhere', 'g')),
+    map('a', 'b'),
+    map('a', array('b','c')),
+    map('a', map('b','c')),
+    map('a', named_struct('something', 'b', 'someone', 'c', 'somewhere', 'd')),
+    named_struct('something', 'a', 'somewhere', 'b'),
+    named_struct('names', array('a', 'b'), 'birthdays', array('c', 'd', 'e')),
+    named_struct('map1', map('a', 'b'), 'map2', map('c', 'd')))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_ice_parquet_complex
+POSTHOOK: query: insert into tbl_ice_parquet_complex values (
+    1,
+    array('a','b','c'),
+    array(array('a'), array('b', 'c')),
+    array(map('a','b'), map('e','f')),
+    array(named_struct('something', 'a', 'someone', 'b', 'somewhere', 'c'), named_struct('something', 'e', 'someone', 'f', 'somewhere', 'g')),
+    map('a', 'b'),
+    map('a', array('b','c')),
+    map('a', map('b','c')),
+    map('a', named_struct('something', 'b', 'someone', 'c', 'somewhere', 'd')),
+    named_struct('something', 'a', 'somewhere', 'b'),
+    named_struct('names', array('a', 'b'), 'birthdays', array('c', 'd', 'e')),
+    named_struct('map1', map('a', 'b'), 'map2', map('c', 'd')))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_ice_parquet_complex
+PREHOOK: query: select * from tbl_ice_parquet_complex order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_parquet_complex
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_ice_parquet_complex order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_parquet_complex
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	["a","b","c"]	[["a"],["b","c"]]	[{"a":"b"},{"e":"f"}]	[{"something":"a","someone":"b","somewhere":"c"},{"something":"e","someone":"f","somewhere":"g"}]	{"a":"b"}	{"a":["b","c"]}	{"a":{"b":"c"}}	{"a":{"something":"b","someone":"c","somewhere":"d"}}	{"something":"a","somewhere":"b"}	{"names":["a","b"],"birthdays":["c","d","e"]}	{"map1":{"a":"b"},"map2":{"c":"d"}}
 PREHOOK: query: drop table tbl_ice_parquet
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_ice_parquet
@@ -295,3 +370,11 @@ POSTHOOK: query: drop table tbl_ice_parquet_parted
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_ice_parquet_parted
 POSTHOOK: Output: default@tbl_ice_parquet_parted
+PREHOOK: query: drop table tbl_ice_parquet_complex
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_ice_parquet_complex
+PREHOOK: Output: default@tbl_ice_parquet_complex
+POSTHOOK: query: drop table tbl_ice_parquet_complex
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_ice_parquet_complex
+POSTHOOK: Output: default@tbl_ice_parquet_complex
