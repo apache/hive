@@ -1,0 +1,13 @@
+PREHOOK: query: CREATE EXTERNAL TABLE country_test3 (id int, name varchar(20))
+    STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+    TBLPROPERTIES (
+        "hive.sql.database.type" = "MYSQL",
+        "hive.sql.jdbc.driver" = "org.mariadb.jdbc.Driver",
+        "hive.sql.jdbc.url" = "jdbc:mariadb://localhost_no_exists:3309/bob",
+        "hive.sql.dbcp.username" = "root",
+        "hive.sql.dbcp.password" = "qtestpassword",
+        "hive.sql.table" = "country")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country_test3
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.SerDeException org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException: Error while trying to get column names: Cannot create PoolableConnectionFactory (Could not connect to address=(host=localhost_no_exists)(port=3309)(type=master) : Socket fail to connect to host:localhost_no_exists, port:3309. localhost_no_exists))
