@@ -2048,16 +2048,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     RawStore ms = getMS();
     try {
-      ms.openTransaction();
       connector = getMS().getDataConnector(dcName);
-
-      if (connector == null) {
-        if (!ifNotExists) {
-          throw new NoSuchObjectException("DataConnector " + dcName + " doesn't exist");
-        } else {
-          return;
-        }
+    } catch (NoSuchObjectException e) {
+      if (!ifNotExists) {
+        throw new NoSuchObjectException("DataConnector " + dcName + " doesn't exist");
+      } else {
+        return;
       }
+    }
+    try {
+      ms.openTransaction();
       // TODO find DBs with references to this connector
       // if any existing references and checkReferences=true, do not drop
 
