@@ -129,15 +129,17 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .executeWith(tableExecutor)
           .run(output -> {
             Table table = HiveIcebergStorageHandler.table(context.getJobConf(), output);
-            if (table != null && writers.get(output) != null) {
+            if (table != null) {
               Collection<DataFile> dataFiles = Lists.newArrayList();
               Collection<DeleteFile> deleteFiles = Lists.newArrayList();
               String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
                       attemptID.getJobID(), attemptID.getTaskID().getId());
-              for (HiveIcebergWriter writer : writers.get(output)) {
-                if (writer != null) {
-                  dataFiles.addAll(writer.files().dataFiles());
-                  deleteFiles.addAll(writer.files().deleteFiles());
+              if (writers.get(output) != null) {
+                for (HiveIcebergWriter writer : writers.get(output)) {
+                  if (writer != null) {
+                    dataFiles.addAll(writer.files().dataFiles());
+                    deleteFiles.addAll(writer.files().deleteFiles());
+                  }
                 }
               }
               if (dataFiles.isEmpty() && deleteFiles.isEmpty()) {
