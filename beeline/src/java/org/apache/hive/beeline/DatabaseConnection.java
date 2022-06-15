@@ -220,7 +220,7 @@ class DatabaseConnection {
   }
 
 
-  public void close() {
+  public void close() throws SQLException {
     try {
       try {
         if (connection != null && !connection.isClosed()) {
@@ -253,8 +253,11 @@ class DatabaseConnection {
     return schema;
   }
 
-  void setConnection(Connection connection) {
+  void setConnection(Connection connection) throws SQLException {
     this.connection = connection;
+    if(connection!=null) {
+      beeLine.dburl = connection.getMetaData().getURL();
+    }
   }
 
   DatabaseMetaData getDatabaseMetaData() {
