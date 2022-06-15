@@ -140,7 +140,7 @@ public class BeeLine implements Closeable {
   private final Runnable shutdownHook;
   private static final String separator = System.getProperty("line.separator");
   private boolean exit = false;
-  public String dburl;
+  public String dbUrl;
   private final DatabaseConnections connections = new DatabaseConnections();
   public static final String COMMAND_PREFIX = "!";
   private Collection<Driver> drivers = null;
@@ -1865,7 +1865,7 @@ public class BeeLine implements Closeable {
         return getPromptForBeeline(getDatabaseConnections().getIndex()
                 + ": " + getDatabaseConnection().getUrl()) + printClosed + getFormattedDb() + "> ";
       }else {
-        return getPromptForBeeline(getDatabaseConnections().getIndex()+": "+dburl)+printClosed+getFormattedDb()+"> ";
+        return getPromptForBeeline(getDatabaseConnections().getIndex()+": "+dbUrl)+printClosed+getFormattedDb()+"> ";
       }
     }
   }
@@ -1913,7 +1913,7 @@ public class BeeLine implements Closeable {
   }
 
   String getDburl(){
-    return dburl;
+    return dbUrl;
   }
 
   ResultSet getColumns(String table) throws SQLException {
