@@ -95,7 +95,7 @@
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.build-helper.plugin.version>1.12</maven.build-helper.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
-    <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
+    <maven.surefire.plugin.version>3.0.0-M7</maven.surefire.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.10.1</accumulo.version>
     <ant.version>1.10.12</ant.version>
