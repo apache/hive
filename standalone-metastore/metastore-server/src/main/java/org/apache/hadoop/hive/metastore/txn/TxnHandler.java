@@ -379,16 +379,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if (connPool == null) {
         connPool = setupJdbcConnectionPool(conf, maxPoolSize);
       }
-
       if (connPoolMutex == null) {
-        /*the mutex pools should ideally be somewhat larger since some operations require 1
-           connection from each pool and we want to avoid taking a connection from primary pool
-           and then blocking because mutex pool is empty.  There is only 1 thread in any HMS trying
-           to mutex on each MUTEX_KEY except MUTEX_KEY.CheckLock.  The CheckLock operation gets a
-           connection from connPool first, then connPoolMutex.  All others, go in the opposite
-           order (not very elegant...).  So number of connection requests for connPoolMutex cannot
-           exceed (size of connPool + MUTEX_KEY.values().length - 1).*/
-        connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize + MUTEX_KEY.values().length);
+        connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize);
       }
 
       if (dbProduct == null) {
