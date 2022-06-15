@@ -480,6 +480,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       dbParams.remove(CURR_STATE_ID_TARGET.toString());
       dbParams.remove(CURR_STATE_ID_SOURCE.toString());
       dbParams.remove(REPL_TARGET_DB_PROPERTY);
+      dbParams.remove(ReplConst.REPL_ENABLE_BACKGROUND_THREAD);
 
       database.setParameters(dbParams);
       LOG.info("Removing {} property from the database {} after successful optimised bootstrap dump", String.join(",",
