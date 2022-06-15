@@ -21,6 +21,7 @@ ANull
 anullint
 anullstring
 aoig
+api
 arecord
 args
 arraycopy
@@ -124,6 +125,7 @@ eoi
 EQVR
 Escapables
 ESCAPECHAR
+esri
 ETX
 etype
 facebook
@@ -434,6 +436,7 @@ vlong
 voi
 vtype
 wiki
+wkid
 workaround
 writables
 www
