@@ -9878,11 +9878,11 @@ void swap(LockComponent &a, LockComponent &b);
 std::ostream& operator<<(std::ostream& out, const LockComponent& obj);
 
 typedef struct _LockRequest__isset {
-  _LockRequest__isset() : txnid(false), agentInfo(true), zeroWaitReadEnabled(true), checkForConcurrentCtas(true) {}
+  _LockRequest__isset() : txnid(false), agentInfo(true), zeroWaitReadEnabled(true), ExclusiveCTAS(true) {}
   bool txnid :1;
   bool agentInfo :1;
   bool zeroWaitReadEnabled :1;
-  bool checkForConcurrentCtas :1;
+  bool ExclusiveCTAS :1;
 } _LockRequest__isset;
 
 class LockRequest : public virtual ::apache::thrift::TBase {
@@ -9895,7 +9895,7 @@ class LockRequest : public virtual ::apache::thrift::TBase {
                   hostname(),
                   agentInfo("Unknown"),
                   zeroWaitReadEnabled(false),
-                  checkForConcurrentCtas(false) {
+                  ExclusiveCTAS(false) {
   }
 
   virtual ~LockRequest() noexcept;
@@ -9905,7 +9905,7 @@ class LockRequest : public virtual ::apache::thrift::TBase {
   std::string hostname;
   std::string agentInfo;
   bool zeroWaitReadEnabled;
-  bool checkForConcurrentCtas;
+  bool ExclusiveCTAS;
 
   _LockRequest__isset __isset;
 
@@ -9921,7 +9921,7 @@ class LockRequest : public virtual ::apache::thrift::TBase {
 
   void __set_zeroWaitReadEnabled(const bool val);
 
-  void __set_checkForConcurrentCtas(const bool val);
+  void __set_ExclusiveCTAS(const bool val);
 
   bool operator == (const LockRequest & rhs) const
   {
@@ -9943,9 +9943,9 @@ class LockRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.zeroWaitReadEnabled && !(zeroWaitReadEnabled == rhs.zeroWaitReadEnabled))
       return false;
-    if (__isset.checkForConcurrentCtas != rhs.__isset.checkForConcurrentCtas)
+    if (__isset.ExclusiveCTAS != rhs.__isset.ExclusiveCTAS)
       return false;
-    else if (__isset.checkForConcurrentCtas && !(checkForConcurrentCtas == rhs.checkForConcurrentCtas))
+    else if (__isset.ExclusiveCTAS && !(ExclusiveCTAS == rhs.ExclusiveCTAS))
       return false;
     return true;
   }

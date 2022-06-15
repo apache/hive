@@ -79,7 +79,6 @@ import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.TxnType;
-import org.apache.hadoop.hive.metastore.txn.OperationType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -3088,7 +3087,7 @@ public class AcidUtils {
         break;
 
       case CTAS:
-        if (AcidUtils.isNoRenameCtasEnabled(conf) && AcidUtils.isTransactionalTable(t)) {
+        if (AcidUtils.isExclusiveCTASEnabled(conf) && AcidUtils.isTransactionalTable(t)) {
           compBuilder.setExclWrite();
           compBuilder.setOperationType(DataOperationType.CTAS);
           break;
@@ -3112,15 +3111,11 @@ public class AcidUtils {
     return lockComponents;
   }
 
-  public static boolean isCTASOperation(List<LockComponent> lockComponents, HiveConf conf) {
-    boolean isCtas = false;
-    for (LockComponent lock : lockComponents) {
-      if (lock.getOperationType().name().equals(OperationType.CTAS.name()) &&
-              conf.getBoolVar(ConfVars.HIVE_ACID_CHECK_FOR_CONCURRENT_CTAS_ENABLED))
-        isCtas = true;
-    }
-    return isCtas;
+  public static boolean isExclusiveCTAS(List<LockComponent> lockComponents, HiveConf conf) {
+    return lockComponents.stream().anyMatch(lc -> DataOperationType.CTAS == lc.getOperationType()
+            && isExclusiveCTASEnabled(conf));
   }
+
   private static Set<Table> getFullTableLock(List<ReadEntity> readEntities, HiveConf conf) {
     int partLocksThreshold = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD);
 
@@ -3242,9 +3237,10 @@ public class AcidUtils {
     return (SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId));
   }
 
-  public static boolean isNoRenameCtasEnabled(Configuration conf) {
-    return HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CHECK_FOR_CONCURRENT_CTAS_ENABLED);
+  public static boolean isExclusiveCTASEnabled(Configuration conf) {
+    return HiveConf.getBoolVar(conf, ConfVars.TXN_CTAS_X_LOCK);
   }
+
   @VisibleForTesting
   public static void initDirCache(int durationInMts) {
     if (dirCacheInited.get()) {

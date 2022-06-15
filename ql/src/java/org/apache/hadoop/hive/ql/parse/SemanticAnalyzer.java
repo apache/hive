@@ -13997,7 +13997,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     if (tblProps != null &&
             Boolean.parseBoolean(tblProps.get(TABLE_IS_CTAS)) &&
-            AcidUtils.isNoRenameCtasEnabled(conf)) {
+            AcidUtils.isExclusiveCTASEnabled(conf)) {
       outputs.add(new WriteEntity(t, WriteType.CTAS));
     } else {
       outputs.add(new WriteEntity(t, WriteEntity.WriteType.DDL_NO_LOCK));

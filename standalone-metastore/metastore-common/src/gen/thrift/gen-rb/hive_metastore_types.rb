@@ -4198,7 +4198,7 @@ class LockRequest
   HOSTNAME = 4
   AGENTINFO = 5
   ZEROWAITREADENABLED = 6
-  CHECKFORCONCURRENTCTAS = 7
+  EXCLUSIVECTAS = 7
 
   FIELDS = {
     COMPONENT => {:type => ::Thrift::Types::LIST, :name => 'component', :element => {:type => ::Thrift::Types::STRUCT, :class => ::LockComponent}},
@@ -4207,7 +4207,7 @@ class LockRequest
     HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'},
     AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true},
     ZEROWAITREADENABLED => {:type => ::Thrift::Types::BOOL, :name => 'zeroWaitReadEnabled', :default => false, :optional => true},
-    CHECKFORCONCURRENTCTAS => {:type => ::Thrift::Types::BOOL, :name => 'checkForConcurrentCtas', :default => false, :optional => true}
+    EXCLUSIVECTAS => {:type => ::Thrift::Types::BOOL, :name => 'ExclusiveCTAS', :default => false, :optional => true}
   }
 
   def struct_fields; FIELDS; end

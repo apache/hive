@@ -16,10 +16,10 @@ CREATE TABLE test_update_bucketed(id int, value string) CLUSTERED BY(id) INTO 10
 
 INSERT INTO test_update_bucketed values ('1','one'),('2','two'),('3','three'),('4','four'),('5','five'),('6','six'),('7','seven'),('8','eight'),('9','nine'),('10','ten'),('11','eleven'),('12','twelve'),('13','thirteen'),('14','fourteen'),('15','fifteen'),('16','sixteen'),('17','seventeen'),('18','eighteen'),('19','nineteen'),('20','twenty');
 
-set hive.acid.check.for.concurrent.ctas.enabled=false;
+set hive.txn.xlock.ctas=false;
 explain locks CREATE TABLE IF NOT EXISTS test_update_orc_ctas_locks STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2);
 
-set hive.acid.check.for.concurrent.ctas.enabled=true;
+set hive.txn.xlock.ctas=true;
 explain locks CREATE TABLE IF NOT EXISTS test_update_orc_ctas_rename STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2);
 
 CREATE TABLE IF NOT EXISTS test_update_orc_ctas STORED AS ORC TBLPROPERTIES('transactional'='true') AS (SELECT * FROM test_update_bucketed WHERE id = 1 UNION SELECT * FROM test_update_bucketed WHERE id = 2);

@@ -4681,6 +4681,9 @@ public class HiveConf extends Configuration {
     HIVE_ACID_CHECK_FOR_CONCURRENT_CTAS_ENABLED("hive.acid.check.for.concurrent.ctas.enabled", false,
             "Check for concurrent CTAS operations"
                     + "This optimization only applies on CTAS operations on ACID tables."),
+    TXN_CTAS_X_LOCK("hive.txn.xlock.ctas", false,
+            "Enables exclusive locking during CTAS operations." +
+            "This optimization only applies to CTAS operations on ACID tables."),
     // role names are case-insensitive
     USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +

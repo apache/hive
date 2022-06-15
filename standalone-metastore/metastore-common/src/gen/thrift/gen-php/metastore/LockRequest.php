@@ -57,7 +57,7 @@ class LockRequest
             'type' => TType::BOOL,
         ),
         7 => array(
-            'var' => 'checkForConcurrentCtas',
+            'var' => 'ExclusiveCTAS',
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
@@ -90,7 +90,7 @@ class LockRequest
     /**
      * @var bool
      */
-    public $checkForConcurrentCtas = false;
+    public $ExclusiveCTAS = false;
 
     public function __construct($vals = null)
     {
@@ -113,8 +113,8 @@ class LockRequest
             if (isset($vals['zeroWaitReadEnabled'])) {
                 $this->zeroWaitReadEnabled = $vals['zeroWaitReadEnabled'];
             }
-            if (isset($vals['checkForConcurrentCtas'])) {
-                $this->checkForConcurrentCtas = $vals['checkForConcurrentCtas'];
+            if (isset($vals['ExclusiveCTAS'])) {
+                $this->ExclusiveCTAS = $vals['ExclusiveCTAS'];
             }
         }
     }
@@ -192,7 +192,7 @@ class LockRequest
                     break;
                 case 7:
                     if ($ftype == TType::BOOL) {
-                        $xfer += $input->readBool($this->checkForConcurrentCtas);
+                        $xfer += $input->readBool($this->ExclusiveCTAS);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -248,9 +248,9 @@ class LockRequest
             $xfer += $output->writeBool($this->zeroWaitReadEnabled);
             $xfer += $output->writeFieldEnd();
         }
-        if ($this->checkForConcurrentCtas !== null) {
-            $xfer += $output->writeFieldBegin('checkForConcurrentCtas', TType::BOOL, 7);
-            $xfer += $output->writeBool($this->checkForConcurrentCtas);
+        if ($this->ExclusiveCTAS !== null) {
+            $xfer += $output->writeFieldBegin('ExclusiveCTAS', TType::BOOL, 7);
+            $xfer += $output->writeBool($this->ExclusiveCTAS);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

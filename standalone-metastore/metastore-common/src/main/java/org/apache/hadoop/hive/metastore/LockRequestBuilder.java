@@ -91,8 +91,8 @@ public class LockRequestBuilder {
     return this;
   }
 
-  public LockRequestBuilder setCheckForConcurrentCtas(boolean ConcurrentCtas) {
-    req.setCheckForConcurrentCtas(ConcurrentCtas);
+  public LockRequestBuilder setExclusiveCTAS(boolean exclusiveCTAS) {
+    req.setExclusiveCTAS(exclusiveCTAS);
     return this;
   }
 

@@ -24886,9 +24886,9 @@ void LockRequest::__set_zeroWaitReadEnabled(const bool val) {
 __isset.zeroWaitReadEnabled = true;
 }
 
-void LockRequest::__set_checkForConcurrentCtas(const bool val) {
-  this->checkForConcurrentCtas = val;
-__isset.checkForConcurrentCtas = true;
+void LockRequest::__set_ExclusiveCTAS(const bool val) {
+  this->ExclusiveCTAS = val;
+__isset.ExclusiveCTAS = true;
 }
 std::ostream& operator<<(std::ostream& out, const LockRequest& obj)
 {
@@ -24983,8 +24983,8 @@ uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 7:
         if (ftype == ::apache::thrift::protocol::T_BOOL) {
-          xfer += iprot->readBool(this->checkForConcurrentCtas);
-          this->__isset.checkForConcurrentCtas = true;
+          xfer += iprot->readBool(this->ExclusiveCTAS);
+          this->__isset.ExclusiveCTAS = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -25047,9 +25047,9 @@ uint32_t LockRequest::write(::apache::thrift::protocol::TProtocol* oprot) const 
     xfer += oprot->writeBool(this->zeroWaitReadEnabled);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.checkForConcurrentCtas) {
-    xfer += oprot->writeFieldBegin("checkForConcurrentCtas", ::apache::thrift::protocol::T_BOOL, 7);
-    xfer += oprot->writeBool(this->checkForConcurrentCtas);
+  if (this->__isset.ExclusiveCTAS) {
+    xfer += oprot->writeFieldBegin("ExclusiveCTAS", ::apache::thrift::protocol::T_BOOL, 7);
+    xfer += oprot->writeBool(this->ExclusiveCTAS);
     xfer += oprot->writeFieldEnd();
   }
   xfer += oprot->writeFieldStop();
@@ -25065,7 +25065,7 @@ void swap(LockRequest &a, LockRequest &b) {
   swap(a.hostname, b.hostname);
   swap(a.agentInfo, b.agentInfo);
   swap(a.zeroWaitReadEnabled, b.zeroWaitReadEnabled);
-  swap(a.checkForConcurrentCtas, b.checkForConcurrentCtas);
+  swap(a.ExclusiveCTAS, b.ExclusiveCTAS);
   swap(a.__isset, b.__isset);
 }
 
@@ -25076,7 +25076,7 @@ LockRequest::LockRequest(const LockRequest& other926) {
   hostname = other926.hostname;
   agentInfo = other926.agentInfo;
   zeroWaitReadEnabled = other926.zeroWaitReadEnabled;
-  checkForConcurrentCtas = other926.checkForConcurrentCtas;
+  ExclusiveCTAS = other926.ExclusiveCTAS;
   __isset = other926.__isset;
 }
 LockRequest& LockRequest::operator=(const LockRequest& other927) {
@@ -25086,7 +25086,7 @@ LockRequest& LockRequest::operator=(const LockRequest& other927) {
   hostname = other927.hostname;
   agentInfo = other927.agentInfo;
   zeroWaitReadEnabled = other927.zeroWaitReadEnabled;
-  checkForConcurrentCtas = other927.checkForConcurrentCtas;
+  ExclusiveCTAS = other927.ExclusiveCTAS;
   __isset = other927.__isset;
   return *this;
 }
@@ -25099,7 +25099,7 @@ void LockRequest::printTo(std::ostream& out) const {
   out << ", " << "hostname=" << to_string(hostname);
   out << ", " << "agentInfo="; (__isset.agentInfo ? (out << to_string(agentInfo)) : (out << "<null>"));
   out << ", " << "zeroWaitReadEnabled="; (__isset.zeroWaitReadEnabled ? (out << to_string(zeroWaitReadEnabled)) : (out << "<null>"));
-  out << ", " << "checkForConcurrentCtas="; (__isset.checkForConcurrentCtas ? (out << to_string(checkForConcurrentCtas)) : (out << "<null>"));
+  out << ", " << "ExclusiveCTAS="; (__isset.ExclusiveCTAS ? (out << to_string(ExclusiveCTAS)) : (out << "<null>"));
   out << ")";
 }
 

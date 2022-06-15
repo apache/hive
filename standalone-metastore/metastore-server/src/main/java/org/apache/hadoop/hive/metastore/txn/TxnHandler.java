@@ -2923,7 +2923,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     ConnectionLockIdPair connAndLockId = enqueueLockWithRetry(rqst);
     try {
       return checkLockWithRetry(connAndLockId.dbConn, connAndLockId.extLockId, rqst.getTxnid(),
-          rqst.isZeroWaitReadEnabled(), rqst.isCheckForConcurrentCtas());
+          rqst.isZeroWaitReadEnabled(), rqst.isExclusiveCTAS());
     }
     catch(NoSuchLockException e) {
       // This should never happen, as we just added the lock id
@@ -5137,7 +5137,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @RetrySemantics.SafeToRetry("See @SafeToRetry")
   private LockResponse checkLock(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled,
-                                 boolean checkForConcurrentCtas)
+                                 boolean isExclusiveCTAS)
       throws NoSuchLockException, TxnAbortedException, MetaException, SQLException {
     Statement stmt = null;
     ResultSet rs = null;
@@ -5278,41 +5278,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Failure to acquire lock({} intLockId:{} {}), blocked by ({})", JavaUtils.lockIdToString(extLockId),
             intLockId, JavaUtils.txnIdToString(txnId), blockedBy);
 
-        if (zeroWaitReadEnabled && isValidTxn(txnId)) {
+        if ((zeroWaitReadEnabled || isExclusiveCTAS) && isValidTxn(txnId)) {
           LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
-              .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
+                  .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
 
-          if (lockType == LockType.SHARED_READ) {
-            String cleanupQuery = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
-
+          if (lockType == LockType.SHARED_READ || isExclusiveCTAS) {
+            String cleanupQuery = cleanupQuery(isExclusiveCTAS, extLockId, txnId);
             LOG.debug("Going to execute query: <" + cleanupQuery + ">");
             stmt.executeUpdate(cleanupQuery);
             dbConn.commit();
 
-            response.setErrorMessage(String.format(
-                "Unable to acquire read lock due to an exclusive lock {%s}", blockedBy));
+            response.setErrorMessage(errorMsg(isExclusiveCTAS, blockedBy));
             response.setState(LockState.NOT_ACQUIRED);
-            return response;
-          }
-        }
-
-        if (checkForConcurrentCtas && isValidTxn(txnId)) {
-          LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
-                  .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
-
-          if (lockType == LockType.EXCL_WRITE && blockedBy.state == LockState.ACQUIRED) {
-
-            String deleteBlockedByTxnComp = "DELETE  FROM \"TXN_COMPONENTS\" WHERE" + " \"TC_TXNID\"=" + txnId;
-            LOG.debug("Going to execute query <" + deleteBlockedByTxnComp + ">");
-            stmt.executeUpdate(deleteBlockedByTxnComp);
-            dbConn.commit();
-            String err = String.format(
-                    "Could not create a tableName: %s ,because table already exists in databaseName: %s or " +
-                            " a concurrent ctas operation is creating a table with same table name.", blockedBy.table,
-                    blockedBy.db);
-            response.setErrorMessage(err);
-            response.setState(LockState.NOT_ACQUIRED);
-            LOG.error(err);
             return response;
           }
         }
@@ -5347,6 +5324,25 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     return response;
   }
+
+  private String cleanupQuery(boolean isExclusiveCTAS, long extLockId, long txnId) {
+    String deleteFromHiveLocks = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
+    String deleteFromTxnComp = "DELETE  FROM \"TXN_COMPONENTS\" WHERE" + " \"TC_TXNID\"=" + txnId;
+
+    return isExclusiveCTAS ? deleteFromTxnComp : deleteFromHiveLocks;
+  }
+
+  private String errorMsg(boolean isExclusiveCTAS, LockInfo blockedBy) {
+    String exCtasErrMsg = String.format(
+            "Could not create a tableName: %s ,because table already exists in databaseName: %s or " +
+                    " a concurrent ctas operation is creating a table with same table name.", blockedBy.table,
+            blockedBy.db);
+    String zeroReadErrMsg = String.format(
+            "Unable to acquire read lock due to an exclusive lock {%s}", blockedBy);
+
+    return isExclusiveCTAS ? exCtasErrMsg : zeroReadErrMsg;
+  }
+
 
   private void acquire(Connection dbConn, Statement stmt, List<LockInfo> locksBeingChecked)
     throws SQLException, NoSuchLockException, MetaException {

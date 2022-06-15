@@ -2396,7 +2396,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
   private void testLocksWithConcurrentCtas(boolean ctasLocking) throws Exception {
     dropTable(new String[]{"target", "source"});
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_ACID_CHECK_FOR_CONCURRENT_CTAS_ENABLED, ctasLocking);
+    conf.setBoolVar(HiveConf.ConfVars.TXN_CTAS_X_LOCK, ctasLocking);
 
     driver.run("create table source (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into source values (1,2), (3,4)");

@@ -17,7 +17,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField AGENT_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("agentInfo", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField ZERO_WAIT_READ_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("zeroWaitReadEnabled", org.apache.thrift.protocol.TType.BOOL, (short)6);
-  private static final org.apache.thrift.protocol.TField CHECK_FOR_CONCURRENT_CTAS_FIELD_DESC = new org.apache.thrift.protocol.TField("checkForConcurrentCtas", org.apache.thrift.protocol.TType.BOOL, (short)7);
+  private static final org.apache.thrift.protocol.TField EXCLUSIVE_CTAS_FIELD_DESC = new org.apache.thrift.protocol.TField("ExclusiveCTAS", org.apache.thrift.protocol.TType.BOOL, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new LockRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new LockRequestTupleSchemeFactory();
@@ -28,7 +28,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String hostname; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String agentInfo; // optional
   private boolean zeroWaitReadEnabled; // optional
-  private boolean checkForConcurrentCtas; // optional
+  private boolean ExclusiveCTAS; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -38,7 +38,7 @@ package org.apache.hadoop.hive.metastore.api;
     HOSTNAME((short)4, "hostname"),
     AGENT_INFO((short)5, "agentInfo"),
     ZERO_WAIT_READ_ENABLED((short)6, "zeroWaitReadEnabled"),
-    CHECK_FOR_CONCURRENT_CTAS((short)7, "checkForConcurrentCtas");
+    EXCLUSIVE_CTAS((short)7, "ExclusiveCTAS");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -66,8 +66,8 @@ package org.apache.hadoop.hive.metastore.api;
           return AGENT_INFO;
         case 6: // ZERO_WAIT_READ_ENABLED
           return ZERO_WAIT_READ_ENABLED;
-        case 7: // CHECK_FOR_CONCURRENT_CTAS
-          return CHECK_FOR_CONCURRENT_CTAS;
+        case 7: // EXCLUSIVE_CTAS
+          return EXCLUSIVE_CTAS;
         default:
           return null;
       }
@@ -111,9 +111,9 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __TXNID_ISSET_ID = 0;
   private static final int __ZEROWAITREADENABLED_ISSET_ID = 1;
-  private static final int __CHECKFORCONCURRENTCTAS_ISSET_ID = 2;
+  private static final int __EXCLUSIVECTAS_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TXNID,_Fields.AGENT_INFO,_Fields.ZERO_WAIT_READ_ENABLED,_Fields.CHECK_FOR_CONCURRENT_CTAS};
+  private static final _Fields optionals[] = {_Fields.TXNID,_Fields.AGENT_INFO,_Fields.ZERO_WAIT_READ_ENABLED,_Fields.EXCLUSIVE_CTAS};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -130,7 +130,7 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ZERO_WAIT_READ_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("zeroWaitReadEnabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.CHECK_FOR_CONCURRENT_CTAS, new org.apache.thrift.meta_data.FieldMetaData("checkForConcurrentCtas", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.EXCLUSIVE_CTAS, new org.apache.thrift.meta_data.FieldMetaData("ExclusiveCTAS", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LockRequest.class, metaDataMap);
@@ -141,7 +141,7 @@ package org.apache.hadoop.hive.metastore.api;
 
     this.zeroWaitReadEnabled = false;
 
-    this.checkForConcurrentCtas = false;
+    this.ExclusiveCTAS = false;
 
   }
 
@@ -179,7 +179,7 @@ package org.apache.hadoop.hive.metastore.api;
       this.agentInfo = other.agentInfo;
     }
     this.zeroWaitReadEnabled = other.zeroWaitReadEnabled;
-    this.checkForConcurrentCtas = other.checkForConcurrentCtas;
+    this.ExclusiveCTAS = other.ExclusiveCTAS;
   }
 
   public LockRequest deepCopy() {
@@ -197,7 +197,7 @@ package org.apache.hadoop.hive.metastore.api;
 
     this.zeroWaitReadEnabled = false;
 
-    this.checkForConcurrentCtas = false;
+    this.ExclusiveCTAS = false;
 
   }
 
@@ -357,26 +357,26 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ZEROWAITREADENABLED_ISSET_ID, value);
   }
 
-  public boolean isCheckForConcurrentCtas() {
-    return this.checkForConcurrentCtas;
+  public boolean isExclusiveCTAS() {
+    return this.ExclusiveCTAS;
   }
 
-  public void setCheckForConcurrentCtas(boolean checkForConcurrentCtas) {
-    this.checkForConcurrentCtas = checkForConcurrentCtas;
-    setCheckForConcurrentCtasIsSet(true);
+  public void setExclusiveCTAS(boolean ExclusiveCTAS) {
+    this.ExclusiveCTAS = ExclusiveCTAS;
+    setExclusiveCTASIsSet(true);
   }
 
-  public void unsetCheckForConcurrentCtas() {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __CHECKFORCONCURRENTCTAS_ISSET_ID);
+  public void unsetExclusiveCTAS() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __EXCLUSIVECTAS_ISSET_ID);
   }
 
-  /** Returns true if field checkForConcurrentCtas is set (has been assigned a value) and false otherwise */
-  public boolean isSetCheckForConcurrentCtas() {
-    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __CHECKFORCONCURRENTCTAS_ISSET_ID);
+  /** Returns true if field ExclusiveCTAS is set (has been assigned a value) and false otherwise */
+  public boolean isSetExclusiveCTAS() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __EXCLUSIVECTAS_ISSET_ID);
   }
 
-  public void setCheckForConcurrentCtasIsSet(boolean value) {
-    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CHECKFORCONCURRENTCTAS_ISSET_ID, value);
+  public void setExclusiveCTASIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __EXCLUSIVECTAS_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
@@ -429,11 +429,11 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
-    case CHECK_FOR_CONCURRENT_CTAS:
+    case EXCLUSIVE_CTAS:
       if (value == null) {
-        unsetCheckForConcurrentCtas();
+        unsetExclusiveCTAS();
       } else {
-        setCheckForConcurrentCtas((java.lang.Boolean)value);
+        setExclusiveCTAS((java.lang.Boolean)value);
       }
       break;
 
@@ -461,8 +461,8 @@ package org.apache.hadoop.hive.metastore.api;
     case ZERO_WAIT_READ_ENABLED:
       return isZeroWaitReadEnabled();
 
-    case CHECK_FOR_CONCURRENT_CTAS:
-      return isCheckForConcurrentCtas();
+    case EXCLUSIVE_CTAS:
+      return isExclusiveCTAS();
 
     }
     throw new java.lang.IllegalStateException();
@@ -487,8 +487,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetAgentInfo();
     case ZERO_WAIT_READ_ENABLED:
       return isSetZeroWaitReadEnabled();
-    case CHECK_FOR_CONCURRENT_CTAS:
-      return isSetCheckForConcurrentCtas();
+    case EXCLUSIVE_CTAS:
+      return isSetExclusiveCTAS();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -560,12 +560,12 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
-    boolean this_present_checkForConcurrentCtas = true && this.isSetCheckForConcurrentCtas();
-    boolean that_present_checkForConcurrentCtas = true && that.isSetCheckForConcurrentCtas();
-    if (this_present_checkForConcurrentCtas || that_present_checkForConcurrentCtas) {
-      if (!(this_present_checkForConcurrentCtas && that_present_checkForConcurrentCtas))
+    boolean this_present_ExclusiveCTAS = true && this.isSetExclusiveCTAS();
+    boolean that_present_ExclusiveCTAS = true && that.isSetExclusiveCTAS();
+    if (this_present_ExclusiveCTAS || that_present_ExclusiveCTAS) {
+      if (!(this_present_ExclusiveCTAS && that_present_ExclusiveCTAS))
         return false;
-      if (this.checkForConcurrentCtas != that.checkForConcurrentCtas)
+      if (this.ExclusiveCTAS != that.ExclusiveCTAS)
         return false;
     }
 
@@ -600,9 +600,9 @@ package org.apache.hadoop.hive.metastore.api;
     if (isSetZeroWaitReadEnabled())
       hashCode = hashCode * 8191 + ((zeroWaitReadEnabled) ? 131071 : 524287);
 
-    hashCode = hashCode * 8191 + ((isSetCheckForConcurrentCtas()) ? 131071 : 524287);
-    if (isSetCheckForConcurrentCtas())
-      hashCode = hashCode * 8191 + ((checkForConcurrentCtas) ? 131071 : 524287);
+    hashCode = hashCode * 8191 + ((isSetExclusiveCTAS()) ? 131071 : 524287);
+    if (isSetExclusiveCTAS())
+      hashCode = hashCode * 8191 + ((ExclusiveCTAS) ? 131071 : 524287);
 
     return hashCode;
   }
@@ -675,12 +675,12 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.compare(isSetCheckForConcurrentCtas(), other.isSetCheckForConcurrentCtas());
+    lastComparison = java.lang.Boolean.compare(isSetExclusiveCTAS(), other.isSetExclusiveCTAS());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetCheckForConcurrentCtas()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.checkForConcurrentCtas, other.checkForConcurrentCtas);
+    if (isSetExclusiveCTAS()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ExclusiveCTAS, other.ExclusiveCTAS);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -751,10 +751,10 @@ package org.apache.hadoop.hive.metastore.api;
       sb.append(this.zeroWaitReadEnabled);
       first = false;
     }
-    if (isSetCheckForConcurrentCtas()) {
+    if (isSetExclusiveCTAS()) {
       if (!first) sb.append(", ");
-      sb.append("checkForConcurrentCtas:");
-      sb.append(this.checkForConcurrentCtas);
+      sb.append("ExclusiveCTAS:");
+      sb.append(this.ExclusiveCTAS);
       first = false;
     }
     sb.append(")");
@@ -873,10 +873,10 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // CHECK_FOR_CONCURRENT_CTAS
+          case 7: // EXCLUSIVE_CTAS
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.checkForConcurrentCtas = iprot.readBool();
-              struct.setCheckForConcurrentCtasIsSet(true);
+              struct.ExclusiveCTAS = iprot.readBool();
+              struct.setExclusiveCTASIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -933,9 +933,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeBool(struct.zeroWaitReadEnabled);
         oprot.writeFieldEnd();
       }
-      if (struct.isSetCheckForConcurrentCtas()) {
-        oprot.writeFieldBegin(CHECK_FOR_CONCURRENT_CTAS_FIELD_DESC);
-        oprot.writeBool(struct.checkForConcurrentCtas);
+      if (struct.isSetExclusiveCTAS()) {
+        oprot.writeFieldBegin(EXCLUSIVE_CTAS_FIELD_DESC);
+        oprot.writeBool(struct.ExclusiveCTAS);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -974,7 +974,7 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetZeroWaitReadEnabled()) {
         optionals.set(2);
       }
-      if (struct.isSetCheckForConcurrentCtas()) {
+      if (struct.isSetExclusiveCTAS()) {
         optionals.set(3);
       }
       oprot.writeBitSet(optionals, 4);
@@ -987,8 +987,8 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetZeroWaitReadEnabled()) {
         oprot.writeBool(struct.zeroWaitReadEnabled);
       }
-      if (struct.isSetCheckForConcurrentCtas()) {
-        oprot.writeBool(struct.checkForConcurrentCtas);
+      if (struct.isSetExclusiveCTAS()) {
+        oprot.writeBool(struct.ExclusiveCTAS);
       }
     }
 
@@ -1025,8 +1025,8 @@ package org.apache.hadoop.hive.metastore.api;
         struct.setZeroWaitReadEnabledIsSet(true);
       }
       if (incoming.get(3)) {
-        struct.checkForConcurrentCtas = iprot.readBool();
-        struct.setCheckForConcurrentCtasIsSet(true);
+        struct.ExclusiveCTAS = iprot.readBool();
+        struct.setExclusiveCTASIsSet(true);
       }
     }
   }
