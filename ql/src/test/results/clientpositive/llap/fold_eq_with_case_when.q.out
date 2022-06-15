@@ -50,10 +50,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lineitem
-                  filterExpr: ((l_shipmode = 'RAIL') and (to_date(CAST( l_shipdate AS TIMESTAMP)) = DATE'1996-03-30')) (type: boolean)
+                  filterExpr: ((l_shipmode = 'RAIL') and (DATE'1996-03-30' = to_date(CAST( l_shipdate AS TIMESTAMP)))) (type: boolean)
                   Statistics: Num rows: 100 Data size: 19000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((l_shipmode = 'RAIL') and (to_date(CAST( l_shipdate AS TIMESTAMP)) = DATE'1996-03-30')) (type: boolean)
+                    predicate: ((l_shipmode = 'RAIL') and (DATE'1996-03-30' = to_date(CAST( l_shipdate AS TIMESTAMP)))) (type: boolean)
                     Statistics: Num rows: 7 Data size: 1330 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l_orderkey (type: int), (UDFToDouble(l_partkey) / 1000000.0D) (type: double)
