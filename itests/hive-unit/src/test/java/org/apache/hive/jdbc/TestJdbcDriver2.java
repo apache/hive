@@ -41,6 +41,7 @@ import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;
 import org.apache.hive.service.cli.operation.HiveTableTypeMapping;
 import org.apache.hive.service.cli.operation.TableTypeMappingFactory.TableTypeMappings;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -301,6 +302,14 @@ public class TestJdbcDriver2 {
     Path cmRootPath = new Path("cmroot");
     Path cmQualPath = FileUtils.makeQualified(cmRootPath, conf);
     cmQualPath.getFileSystem(conf).delete(cmQualPath, true);
+  }
+
+  @After
+  public void clearTemporaryUDF() throws Exception {
+    Statement stmt = con.createStatement();
+    // drop temporary function if exists
+    stmt.execute("drop temporary function if exists sleepMsUDF");
+    stmt.close();
   }
 
   @Test
