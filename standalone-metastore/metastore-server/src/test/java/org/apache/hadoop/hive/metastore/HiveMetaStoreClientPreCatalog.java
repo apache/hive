@@ -1586,17 +1586,6 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   /** {@inheritDoc} */
-  @Override
-  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
-      throws MetaException, InvalidOperationException, UnknownDBException, TException {
-    return client.get_materialization_invalidation_info(cm, null);
-  }
-
-  @Deprecated
-  /**
-   * Use {@link HiveMetaStoreClientPreCatalog#getMaterializationInvalidationInfo(CreationMetadata)} instead.
-   */
-  @Override
   public Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
     return client.get_materialization_invalidation_info(cm, validTxnList);
@@ -1605,7 +1594,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   /** {@inheritDoc} */
   @Override
   public void updateCreationMetadata(String dbName, String tableName, CreationMetadata cm)
-      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+      throws MetaException, InvalidOperationException, UnknownDBException, NoSuchObjectException, TException {
     client.update_creation_metadata(null, dbName, tableName, cm);
   }
 

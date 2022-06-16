@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
@@ -84,6 +85,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -1920,8 +1922,128 @@ public class TestTxnHandler {
     creationMetadata.setSourceTables(Collections.singletonList(sourceTable));
     creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
 
-    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(creationMetadata);
+    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
+        creationMetadata, new ValidReadTxnList().toString());
     assertFalse(materialization.isSourceTablesUpdateDeleteModified());
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWhenASourceTableStatsAreValid() throws MetaException {
+    SourceTable t1 = sourceTable("t1", true);
+    SourceTable t2 = sourceTable("t2", true);
+    CreationMetadata creationMetadata = creationMetadata(Arrays.asList(t1, t2));
+
+    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
+        creationMetadata, new ValidReadTxnList().toString());
+    assertFalse(materialization.isSourceTablesCompacted());
+    assertFalse(materialization.isSourceTablesUpdateDeleteModified());
+  }
+
+  private CreationMetadata creationMetadata(List<SourceTable> sourceTableList) {
+    ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(5L);
+    ValidReaderWriteIdList[] tableWriteIdList = new ValidReaderWriteIdList[1];
+    tableWriteIdList[0] = new ValidReaderWriteIdList(
+            TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1);
+    for (ValidReaderWriteIdList tableWriteId : tableWriteIdList) {
+      validTxnWriteIdList.addTableValidWriteIdList(tableWriteId);
+    }
+
+    CreationMetadata creationMetadata = creationMetadata(sourceTableList, validTxnWriteIdList);
+    return creationMetadata;
+  }
+
+  private CreationMetadata creationMetadata(
+          List<SourceTable> sourceTableList, ValidTxnWriteIdList validTxnWriteIdList) {
+    CreationMetadata creationMetadata = new CreationMetadata();
+    creationMetadata.setDbName("default");
+    creationMetadata.setTblName("mat1");
+    creationMetadata.setSourceTables(sourceTableList);
+    creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
+    return creationMetadata;
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWhenASourceTableStatsAreValidAndUpdateOpPresents() throws MetaException {
+    SourceTable t1 = updatedSourceTable("t1", true);
+    SourceTable t2 = sourceTable("t2", true);
+    CreationMetadata creationMetadata = creationMetadata(Arrays.asList(t1, t2));
+
+    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
+            creationMetadata, new ValidReadTxnList().toString());
+    assertFalse(materialization.isSourceTablesCompacted());
+    assertTrue(materialization.isSourceTablesUpdateDeleteModified());
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWhenASourceTableHasInvalidStats() throws MetaException {
+    SourceTable t1 = sourceTable("t1", false);
+    SourceTable t2 = sourceTable("t2", true);
+    CreationMetadata creationMetadata = creationMetadata(Arrays.asList(t1, t2));
+
+    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
+        creationMetadata, new ValidReadTxnList().toString());
+    assertFalse(materialization.isSourceTablesCompacted());
+    assertFalse(materialization.isSourceTablesUpdateDeleteModified());
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWhenASourceTableHasInvalidStatsAndUpdateOpPresents()
+          throws MetaException, SQLException {
+    SourceTable t1 = updatedSourceTable("t1", false);
+    SourceTable t2 = sourceTable("t2", true);
+    CreationMetadata creationMetadata = creationMetadata(Arrays.asList(t1, t2));
+
+    final TxnHandler tHndlr = (TxnHandler)txnHandler;
+    try (Connection conn = tHndlr.getDbConn(Connection.TRANSACTION_SERIALIZABLE)) {
+      try (Statement stmt = conn.createStatement()) {
+
+      stmt.executeUpdate("INSERT INTO COMPLETED_TXN_COMPONENTS" +
+              "(CTC_TXNID, CTC_DATABASE, CTC_TABLE, CTC_WRITEID, CTC_UPDATE_DELETE) " +
+              "VALUES (1, 'default', 't1', 6, 'Y')");
+      }
+      conn.commit();
+    }
+
+    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
+        creationMetadata, new ValidReadTxnList().toString());
+    assertFalse(materialization.isSourceTablesCompacted());
+    assertTrue(materialization.isSourceTablesUpdateDeleteModified());
+  }
+
+  @Test
+  public void testGetMaterializationInvalidationInfoWhenSourceTablesAreNotAvailable()
+          throws MetaException {
+
+    CreationMetadata creationMetadata = new CreationMetadata();
+    creationMetadata.setDbName("default");
+    creationMetadata.setTblName("mat1");
+    creationMetadata.setTablesUsed(new HashSet<String>() {{ add("default.t1"); }});
+
+    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
+        creationMetadata, new ValidReadTxnList().toString());
+    assertNull(materialization);
+  }
+
+  private SourceTable sourceTable(String tableName, boolean statsValid) {
+    Table table = new Table();
+    table.setDbName("default");
+    table.setTableName(tableName);
+    HashMap<String, String> tableParameters = new HashMap<>();
+    tableParameters.put(TABLE_IS_TRANSACTIONAL, "true");
+    if (statsValid) {
+      StatsSetupConst.setTransactionalStatsState(tableParameters, StatsSetupConst.TRUE);
+    }
+    table.setParameters(tableParameters);
+    SourceTable sourceTable = new SourceTable();
+    sourceTable.setTable(table);
+    sourceTable.setInsertedCount(1);
+    return sourceTable;
+  }
+
+  private SourceTable updatedSourceTable(String tableName, boolean statsValid) {
+    SourceTable sourceTable = sourceTable(tableName, statsValid);
+    sourceTable.setUpdatedCount(1);
+    return sourceTable;
   }
 
   @Test
@@ -1955,11 +2077,8 @@ public class TestTxnHandler {
       validTxnWriteIdList.addTableValidWriteIdList(tableWriteId);
     }
 
-    CreationMetadata creationMetadata = new CreationMetadata();
-    creationMetadata.setDbName("default");
-    creationMetadata.setTblName("mat1");
-    creationMetadata.setTablesUsed(new HashSet<String>() {{ add("default.t1"); }});
-    creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
+    SourceTable t1 = updatedSourceTable("t1", false);
+    CreationMetadata creationMetadata = creationMetadata(Collections.singletonList(t1));
 
     Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
             creationMetadata, currentValidTxnList.toString());

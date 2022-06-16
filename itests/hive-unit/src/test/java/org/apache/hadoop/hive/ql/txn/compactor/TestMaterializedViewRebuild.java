@@ -22,9 +22,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.DriverFactory;
+import org.apache.hadoop.hive.ql.IDriver;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -59,7 +62,6 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
       "3\tthree\t3.3",
       "NULL\tNULL\tNULL"
   );
-
 
   @Override
   public void setup() throws Exception {
@@ -102,6 +104,37 @@ public class TestMaterializedViewRebuild extends CompactorOnTezTest {
 
     result = execSelectAndDumpData("select * from " + MV1 , driver, "");
     assertResult(EXPECTED_RESULT, result);
+
+    result = execSelectAndDumpData("explain cbo select a,b,c from " + TABLE1 + " where a > 0 or a is null", driver, "");
+    Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);
+  }
+
+  private static final List<String> EXPECTED_RESULT_AFTER_UPDATE = Arrays.asList(
+      "1\tChanged\t1.1",
+      "2\ttwo\t2.2",
+      "NULL\tNULL\tNULL"
+  );
+
+  @Test
+  public void testWhenMajorCompactionAndStatsAutoGatherOffThenIncrementalMVRebuildIsNotAvailable() throws Exception {
+    createTestSchema("");
+
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    IDriver driver = DriverFactory.newDriver(conf);
+    executeStatementOnDriver("update " + TABLE1 + " set b = 'Changed' where a = 1", driver);
+
+    CompactorTestUtil.runCompaction(conf, "default",  TABLE1 , CompactionType.MAJOR, true);
+    CompactorTestUtil.runCleaner(conf);
+    verifySuccessfulCompaction(1);
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    txnHandler.cleanTxnToWriteIdTable();
+
+    List<String> result = execSelectAndDumpData("explain cbo alter materialized view " + MV1 + " rebuild", driver, "");
+    Assert.assertEquals(FULL_REBUILD_PLAN, result);
+    executeStatementOnDriver("alter materialized view " + MV1 + " rebuild", driver);
+
+    result = execSelectAndDumpData("select * from " + MV1 , driver, "");
+    assertResult(EXPECTED_RESULT_AFTER_UPDATE, result);
 
     result = execSelectAndDumpData("explain cbo select a,b,c from " + TABLE1 + " where a > 0 or a is null", driver, "");
     Assert.assertEquals(Arrays.asList("CBO PLAN:", "HiveTableScan(table=[[default, " + MV1 + "]], table:alias=[default." + MV1 + "])", ""), result);

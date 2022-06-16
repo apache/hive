@@ -165,6 +165,8 @@ public class StatsSetupConst {
 
   public static final String BASIC_STATS = "BASIC_STATS";
 
+  public static final String TRANSACTIONAL_STATS = "TRANSACTIONAL_STATS";
+
   public static final String CASCADE = "CASCADE";
 
   public static final String TRUE = "true";
@@ -211,6 +213,12 @@ public class StatsSetupConst {
     @JsonProperty(BASIC_STATS)
     boolean basicStats;
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    @JsonSerialize(using = BooleanSerializer.class)
+    @JsonDeserialize(using = BooleanDeserializer.class)
+    @JsonProperty(TRANSACTIONAL_STATS)
+    boolean transactionalStats;
+
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @JsonProperty(COLUMN_STATS)
     @JsonSerialize(contentUsing = BooleanSerializer.class)
@@ -225,6 +233,14 @@ public class StatsSetupConst {
     }
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
     return stats.basicStats;
+  }
+
+  public static boolean areTransactionalStatsUptoDate(Map<String, String> params) {
+    if (params == null) {
+      return false;
+    }
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+    return stats.transactionalStats;
   }
 
   public static boolean areColumnStatsUptoDate(Map<String, String> params, String colName) {
@@ -250,6 +266,19 @@ public class StatsSetupConst {
     }
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
     stats.basicStats = true;
+    putColumnStatsAccurate(params, stats);
+  }
+
+  public static void setTransactionalStatsState(Map<String, String> params, String setting) {
+    if (params == null) {
+      throw new RuntimeException("params are null...can not set transactional stats state!");
+    }
+    ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
+    stats.transactionalStats = TRUE.equals(setting);
+    putColumnStatsAccurate(params, stats);
+  }
+
+  private static void putColumnStatsAccurate(Map<String, String> params, ColumnStatsAccurate stats) {
     try {
       params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
     } catch (JsonProcessingException e) {
