@@ -5283,9 +5283,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
 
           if (lockType == LockType.SHARED_READ || isExclusiveCTAS) {
-            String cleanupQuery = cleanupQuery(isExclusiveCTAS, extLockId, txnId);
-            LOG.debug("Going to execute query: <" + cleanupQuery + ">");
-            stmt.executeUpdate(cleanupQuery);
+            if (!isExclusiveCTAS) {
+              String cleanupQuery = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
+              LOG.debug("Going to execute query: <" + cleanupQuery + ">");
+              stmt.executeUpdate(cleanupQuery);
+            }
             dbConn.commit();
 
             response.setErrorMessage(errorMsg(isExclusiveCTAS, blockedBy));
@@ -5325,13 +5327,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return response;
   }
 
-  private String cleanupQuery(boolean isExclusiveCTAS, long extLockId, long txnId) {
-    String deleteFromHiveLocks = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
-    String deleteFromTxnComp = "DELETE  FROM \"TXN_COMPONENTS\" WHERE" + " \"TC_TXNID\"=" + txnId;
-
-    return isExclusiveCTAS ? deleteFromTxnComp : deleteFromHiveLocks;
-  }
-
   private String errorMsg(boolean isExclusiveCTAS, LockInfo blockedBy) {
     String exCtasErrMsg = String.format(
             "Could not create a tableName: %s ,because table already exists in databaseName: %s or " +
@@ -5342,7 +5337,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     return isExclusiveCTAS ? exCtasErrMsg : zeroReadErrMsg;
   }
-
 
   private void acquire(Connection dbConn, Statement stmt, List<LockInfo> locksBeingChecked)
     throws SQLException, NoSuchLockException, MetaException {
