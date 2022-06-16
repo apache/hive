@@ -78,7 +78,6 @@ import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobStatus;
-import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
@@ -416,23 +415,23 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       return;
     }
 
-    for (JobContext jobContext : jobContextList.get()) {
-      OutputCommitter committer = new HiveIcebergOutputCommitter();
+    HiveIcebergOutputCommitter committer = new HiveIcebergOutputCommitter();
+    try {
+      committer.commitJobs(jobContextList.get());
+    } catch (Throwable e) {
+      String ids = jobContextList.get()
+          .stream().map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(", "));
+      // Aborting the job if the commit has failed
+      LOG.error("Error while trying to commit job: {}, starting rollback changes for table: {}",
+          ids, tableName, e);
       try {
-        committer.commitJob(jobContext);
-      } catch (Throwable e) {
-        // Aborting the job if the commit has failed
-        LOG.error("Error while trying to commit job: {}, starting rollback changes for table: {}",
-            jobContext.getJobID(), tableName, e);
-        try {
-          committer.abortJob(jobContext, JobStatus.State.FAILED);
-        } catch (IOException ioe) {
-          LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", ioe);
-          // no throwing here because the original exception should be propagated
-        }
-        throw new HiveException(
-            "Error committing job: " + jobContext.getJobID() + " for table: " + tableName, e);
+        committer.abortJobs(jobContextList.get(), JobStatus.State.FAILED);
+      } catch (IOException ioe) {
+        LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", ioe);
+        // no throwing here because the original exception should be propagated
       }
+      throw new HiveException(
+          "Error committing job: " + ids + " for table: " + tableName, e);
     }
   }
 
