@@ -65,7 +65,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReentrantLock;
@@ -172,7 +171,8 @@ public class HiveConnection implements java.sql.Connection {
   private SQLWarning warningChain = null;
   private TSessionHandle sessHandle = null;
   private final List<TProtocolVersion> supportedProtocols = new LinkedList<TProtocolVersion>();
-  private int loginTimeout = 0;
+  private int connectTimeout = 0;
+  private int socketTimeout = 0;
   private TProtocolVersion protocol;
   private final int initFetchSize;
   private int defaultFetchSize;
@@ -304,7 +304,7 @@ public class HiveConnection implements java.sql.Connection {
     // hive_conf_list -> hiveConfMap
     // hive_var_list -> hiveVarMap
     sessConfMap = connParams.getSessionVars();
-    setupLoginTimeout();
+    setupTimeout();
     if (isKerberosAuthMode()) {
       host = Utils.getCanonicalHostName(connParams.getHost());
     } else if (isBrowserAuthMode() && !isHttpTransportMode()) {
@@ -507,6 +507,14 @@ public class HiveConnection implements java.sql.Connection {
       transport.open();
     }
     logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
+  }
+
+  public int getConnectTimeout() {
+    return connectTimeout;
+  }
+
+  public int getSocketTimeout() {
+    return socketTimeout;
   }
 
   public String getConnectedUrl() {
@@ -759,9 +767,9 @@ public class HiveConnection implements java.sql.Connection {
 
     // set the specified timeout (socketTimeout jdbc param) for http connection as well
     RequestConfig config = RequestConfig.custom()
-            .setConnectTimeout(loginTimeout * 1000)
-            .setConnectionRequestTimeout(loginTimeout * 1000)
-            .setSocketTimeout(loginTimeout * 1000).build();
+            .setConnectTimeout(connectTimeout)
+            .setConnectionRequestTimeout(connectTimeout)
+            .setSocketTimeout(socketTimeout).build();
     httpClientBuilder.setDefaultRequestConfig(config);
 
     // Configure http client for SSL
@@ -864,7 +872,7 @@ public class HiveConnection implements java.sql.Connection {
         JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
 
       if (sslTrustStore == null || sslTrustStore.isEmpty()) {
-        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout);
+        transport = HiveAuthUtils.getSSLSocket(host, port, connectTimeout, socketTimeout);
       } else {
         String trustStoreType =
                 sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
@@ -876,12 +884,12 @@ public class HiveConnection implements java.sql.Connection {
         if (trustStoreAlgorithm == null) {
           trustStoreAlgorithm = "";
         }
-        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout,
+        transport = HiveAuthUtils.getSSLSocket(host, port, connectTimeout, socketTimeout,
             sslTrustStore, sslTrustStorePassword, trustStoreType, trustStoreAlgorithm);
       }
     } else {
       // get non-SSL socket transport
-      transport = HiveAuthUtils.getSocketTransport(host, port, loginTimeout);
+      transport = HiveAuthUtils.getSocketTransport(host, port, connectTimeout, socketTimeout);
     }
     return transport;
   }
@@ -1302,10 +1310,7 @@ public class HiveConnection implements java.sql.Connection {
 
   private boolean isHttpTransportMode() {
     String transportMode = sessConfMap.get(JdbcConnectionParams.TRANSPORT_MODE);
-    if(transportMode != null && (transportMode.equalsIgnoreCase("http"))) {
-      return true;
-    }
-    return false;
+    return "http".equalsIgnoreCase(transportMode);
   }
 
   private void logZkDiscoveryMessage(String message) {
@@ -1329,21 +1334,27 @@ public class HiveConnection implements java.sql.Connection {
     return varValue;
   }
 
-  // use socketTimeout from jdbc connection url. Thrift timeout needs to be in millis
-  private void setupLoginTimeout() {
-    String socketTimeoutStr = sessConfMap.getOrDefault(JdbcConnectionParams.SOCKET_TIMEOUT, "0");
-    long timeOut = 0;
-    try {
-      timeOut = Long.parseLong(socketTimeoutStr);
-    } catch (NumberFormatException e) {
-      LOG.info("Failed to parse socketTimeout of value " + socketTimeoutStr);
+  private void setupTimeout() {
+    if (sessConfMap.containsKey(JdbcConnectionParams.CONNECT_TIMEOUT)) {
+      long connectTimeoutMs = 0;
+
+      String loginTimeoutStr = sessConfMap.getOrDefault(JdbcConnectionParams.CONNECT_TIMEOUT, "0");
+      try {
+        connectTimeoutMs = Long.parseLong(loginTimeoutStr);
+      } catch (NumberFormatException e) {
+        LOG.info("Failed to parse connectTimeout of value " + loginTimeoutStr);
+      }
+      connectTimeout = (int) Math.max(0, Math.min(connectTimeoutMs, Integer.MAX_VALUE));
     }
-    if (timeOut > Integer.MAX_VALUE) {
-      loginTimeout = Integer.MAX_VALUE;
-    } else if (timeOut < 0) {
-      loginTimeout = 0;
-    } else {
-      loginTimeout = (int) timeOut;
+    if (sessConfMap.containsKey(JdbcConnectionParams.SOCKET_TIMEOUT)) {
+      long socketTimeoutMs = 0;
+      String socketTimeoutStr = sessConfMap.get(JdbcConnectionParams.SOCKET_TIMEOUT);
+      try {
+        socketTimeoutMs = Long.parseLong(socketTimeoutStr);
+      } catch (NumberFormatException e) {
+        LOG.info("Failed to parse socketTimeout of value " + socketTimeoutStr);
+      }
+      socketTimeout = (int) Math.max(0, Math.min(socketTimeoutMs, Integer.MAX_VALUE));
     }
   }
 

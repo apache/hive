@@ -50,18 +50,20 @@ import org.slf4j.LoggerFactory;
 public class HiveAuthUtils {
   private static final Logger LOG = LoggerFactory.getLogger(HiveAuthUtils.class);
 
-  public static TTransport getSocketTransport(String host, int port, int loginTimeout) throws TTransportException {
-    return new TSocket(new TConfiguration(),host, port, loginTimeout);
+  public static TTransport getSocketTransport(String host, int port, int connectTimeout, int socketTimeout)
+          throws TTransportException {
+    return new TSocket(new TConfiguration(),host, port, socketTimeout, connectTimeout);
   }
 
-  public static TTransport getSSLSocket(String host, int port, int loginTimeout)
+  public static TTransport getSSLSocket(String host, int port, int connectTimeout, int socketTimeout)
     throws TTransportException {
     // The underlying SSLSocket object is bound to host:port with the given SO_TIMEOUT
-    TSocket tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, loginTimeout);
+    TSocket tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, socketTimeout);
+    tSSLSocket.setConnectTimeout(connectTimeout);
     return getSSLSocketWithHttps(tSSLSocket);
   }
 
-  public static TTransport getSSLSocket(String host, int port, int loginTimeout,
+  public static TTransport getSSLSocket(String host, int port, int connectTimeout, int socketTimeout,
       String trustStorePath, String trustStorePassWord, String trustStoreType,
       String trustStoreAlgorithm) throws TTransportException {
     TSSLTransportFactory.TSSLTransportParameters params =
@@ -73,7 +75,8 @@ public class HiveAuthUtils {
     params.requireClientAuth(true);
     // The underlying SSLSocket object is bound to host:port with the given SO_TIMEOUT and
     // SSLContext created with the given params
-    TSocket tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, loginTimeout, params);
+    TSocket tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, socketTimeout, params);
+    tSSLSocket.setConnectTimeout(connectTimeout);
     return getSSLSocketWithHttps(tSSLSocket);
   }
 

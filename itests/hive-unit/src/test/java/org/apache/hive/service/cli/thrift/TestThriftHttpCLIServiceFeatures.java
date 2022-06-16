@@ -221,7 +221,7 @@ public class TestThriftHttpCLIServiceFeatures  {
   }
 
   private TTransport getRawBinaryTransport() throws Exception {
-    return HiveAuthUtils.getSocketTransport(ThriftCLIServiceTest.host, ThriftCLIServiceTest.port, 0);
+    return HiveAuthUtils.getSocketTransport(ThriftCLIServiceTest.host, ThriftCLIServiceTest.port, 0, 0);
   }
 
   private static TTransport getHttpTransport() throws Exception {
