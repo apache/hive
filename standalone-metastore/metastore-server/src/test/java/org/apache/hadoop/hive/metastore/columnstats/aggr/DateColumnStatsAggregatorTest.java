@@ -237,7 +237,7 @@ public class DateColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
-    List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
+    List<String> partitionNames = Arrays.asList("part1", "part2", "part3", "part4");
 
     long[] values1 = { DATE_1.getDaysSinceEpoch(), DATE_2.getDaysSinceEpoch(), DATE_3.getDaysSinceEpoch() };
     ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(3)
@@ -248,13 +248,18 @@ public class DateColumnStatsAggregatorTest {
         .hll(DATE_7.getDaysSinceEpoch()).buildDateStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
+    long[] values4 = { DATE_3.getDaysSinceEpoch(), DATE_4.getDaysSinceEpoch(), DATE_5.getDaysSinceEpoch() };
+    ColumnStatisticsData data4 = new ColStatsBuilder().numNulls(2).numDVs(3)
+        .lowValueDate(DATE_3).highValueDate(DATE_5).hll(values4).buildDateStats();
+    ColumnStatistics stats4 = StatisticsTestUtils.createColStats(data4, TABLE, COL, partitionNames.get(3));
+
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
-        TABLE, partitionNames, Arrays.asList(stats1, null, stats3), Arrays.asList(0, 2));
+        TABLE, partitionNames, Arrays.asList(stats1, null, stats3, stats4), Arrays.asList(0, 2, 3));
 
     DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
-    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numDVs(3)
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(8).numDVs(4)
         .lowValueDate(DATE_1).highValueDate(DATE_9).buildDateStats();
 
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());

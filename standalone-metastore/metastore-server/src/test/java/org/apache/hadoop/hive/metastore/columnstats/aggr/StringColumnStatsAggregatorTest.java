@@ -151,7 +151,7 @@ public class StringColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
-    List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
+    List<String> partitionNames = Arrays.asList("part1", "part2", "part3", "part4");
 
     ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(3).avgColLen(20.0 / 3).maxColLen(13)
         .hll(S_1, S_2, S_3).buildStringStats();
@@ -161,15 +161,19 @@ public class StringColumnStatsAggregatorTest {
         .hll(S_6, S_7).buildStringStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
+    ColumnStatisticsData data4 = new ColStatsBuilder().numNulls(2).numDVs(3).avgColLen(14).maxColLen(18)
+        .hll(S_3, S_4, S_5).buildStringStats();
+    ColumnStatistics stats4 = StatisticsTestUtils.createColStats(data4, TABLE, COL, partitionNames.get(3));
+
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
-        TABLE, partitionNames, Arrays.asList(stats1, null, stats3), Arrays.asList(0, 2));
+        TABLE, partitionNames, Arrays.asList(stats1, null, stats3, stats4), Arrays.asList(0, 2, 3));
 
     StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
 
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
-    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numDVs(3)
-        .avgColLen(22.916666666666668).maxColLen(22).buildStringStats();
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(8).numDVs(6)
+        .avgColLen(24).maxColLen(24).buildStringStats();
 
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }

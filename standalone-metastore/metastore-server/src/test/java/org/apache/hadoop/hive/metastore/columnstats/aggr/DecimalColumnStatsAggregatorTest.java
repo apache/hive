@@ -55,7 +55,6 @@ public class DecimalColumnStatsAggregatorTest {
   private static final Decimal SIX = DecimalUtils.createThriftDecimal("6.0");
   private static final Decimal SEVEN = DecimalUtils.createThriftDecimal("7.0");
   private static final Decimal EIGHT = DecimalUtils.createThriftDecimal("8.0");
-  private static final Decimal NINE = DecimalUtils.createThriftDecimal("9.0");
 
   @Test
   public void testAggregateSingleStat() throws MetaException {
@@ -231,7 +230,7 @@ public class DecimalColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
-    List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
+    List<String> partitionNames = Arrays.asList("part1", "part2", "part3", "part4");
 
     ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(3)
         .lowValueDecimal(ONE).highValueDecimal(THREE).hll(1, 2, 3).buildDecimalStats();
@@ -241,14 +240,18 @@ public class DecimalColumnStatsAggregatorTest {
         .lowValueDecimal(SEVEN).highValueDecimal(SEVEN).hll(7).buildDecimalStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
+    ColumnStatisticsData data4 = new ColStatsBuilder().numNulls(2).numDVs(3)
+        .lowValueDecimal(THREE).highValueDecimal(FIVE).hll(3, 4, 5).buildDecimalStats();
+    ColumnStatistics stats4 = StatisticsTestUtils.createColStats(data4, TABLE, COL, partitionNames.get(3));
+
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
-        TABLE, partitionNames, Arrays.asList(stats1, null, stats3), Arrays.asList(0, 2));
+        TABLE, partitionNames, Arrays.asList(stats1, null, stats3, stats4), Arrays.asList(0, 2, 3));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
-    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numDVs(3)
-        .lowValueDecimal(ONE).highValueDecimal(NINE).buildDecimalStats();
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(8).numDVs(4)
+        .lowValueDecimal(ONE).highValueDecimal(DecimalUtils.createThriftDecimal("9.4")).buildDecimalStats();
 
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }

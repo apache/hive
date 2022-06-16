@@ -237,7 +237,7 @@ public class TimestampColumnStatsAggregatorTest {
 
   @Test
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
-    List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
+    List<String> partitionNames = Arrays.asList("part1", "part2", "part3", "part4");
 
     long[] values1 = { TS_1.getSecondsSinceEpoch(), TS_2.getSecondsSinceEpoch(), TS_3.getSecondsSinceEpoch() };
     ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numDVs(3)
@@ -248,13 +248,18 @@ public class TimestampColumnStatsAggregatorTest {
         .lowValueTimestamp(TS_7).highValueTimestamp(TS_7).hll(TS_7.getSecondsSinceEpoch()).buildTimestampStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
+    long[] values4 = { TS_3.getSecondsSinceEpoch(), TS_4.getSecondsSinceEpoch(), TS_5.getSecondsSinceEpoch() };
+    ColumnStatisticsData data4 = new ColStatsBuilder().numNulls(2).numDVs(3).lowValueTimestamp(TS_3).highValueTimestamp(TS_5)
+        .hll(values4).buildTimestampStats();
+    ColumnStatistics stats4 = StatisticsTestUtils.createColStats(data4, TABLE, COL, partitionNames.get(3));
+
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
-        TABLE, partitionNames, Arrays.asList(stats1, null, stats3), Arrays.asList(0, 2));
+        TABLE, partitionNames, Arrays.asList(stats1, null, stats3, stats4), Arrays.asList(0, 2, 3));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
-    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numDVs(3).lowValueTimestamp(TS_1)
+    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(8).numDVs(4).lowValueTimestamp(TS_1)
         .highValueTimestamp(TS_9).buildTimestampStats();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
