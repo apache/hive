@@ -256,7 +256,7 @@ class DatabaseConnection {
   void setConnection(Connection connection) throws SQLException {
     this.connection = connection;
     if(connection!=null) {
-      beeLine.dbUrl = connection.getMetaData().getURL();
+      beeLine.connectedUrl = connection.getMetaData().getURL();
     }
   }
 
