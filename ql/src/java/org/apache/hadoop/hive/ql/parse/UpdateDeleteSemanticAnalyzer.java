@@ -352,7 +352,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     List<String> sortKeys;
     if (nonNativeAcid) {
-      sortKeys = mTable.getStorageHandler().acidSortColumns(mTable, operation).stream()
+      sortKeys = mTable.getStorageHandler().acidSortColumns(mTable, Context.Operation.DELETE).stream()
               .map(fieldSchema -> String.format(
                       "%s.%s",
                       SUB_QUERY_ALIAS,
