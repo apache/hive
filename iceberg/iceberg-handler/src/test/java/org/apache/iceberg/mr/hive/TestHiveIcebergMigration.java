@@ -51,6 +51,45 @@ import org.mockito.Mockito;
 public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngineBase {
 
   @Test
+  public void testMigrateHiveTableWithComplexTypeColumnsToIceberg() throws TException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "tbl_complex");
+    shell.executeStatement(String.format("CREATE EXTERNAL TABLE %s (" +
+        "a int, " +
+        "arrayofprimitives array<string>, " +
+        "arrayofarrays array<array<string>>, " +
+        "arrayofmaps array<map<string, string>>, " +
+        "arrayofstructs array<struct<something:string, someone:string, somewhere:string>>, " +
+        "mapofprimitives map<string, string>, " +
+        "mapofarrays map<string, array<string>>, " +
+        "mapofmaps map<string, map<string, string>>, " +
+        "mapofstructs map<string, struct<something:string, someone:string, somewhere:string>>, " +
+        "structofprimitives struct<something:string, somewhere:string>, " +
+        "structofarrays struct<names:array<string>, birthdays:array<string>>, " +
+        "structofmaps struct<map1:map<string, string>, map2:map<string, string>>" +
+        ") STORED AS %s %s %s", identifier.name(), fileFormat.name(),
+        testTables.locationForCreateTableSQL(identifier),
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
+
+    shell.executeStatement(String.format("INSERT INTO %s VALUES (" +
+        "1, " +
+        "array('a','b','c'), " +
+        "array(array('a'), array('b', 'c')), " +
+        "array(map('a','b'), map('e','f')), " +
+        "array(named_struct('something', 'a', 'someone', 'b', 'somewhere', 'c'), " +
+        "named_struct('something', 'e', 'someone', 'f', 'somewhere', 'g')), " +
+        "map('a', 'b'), " +
+        "map('a', array('b','c')), " +
+        "map('a', map('b','c')), " +
+        "map('a', named_struct('something', 'b', 'someone', 'c', 'somewhere', 'd')), " +
+        "named_struct('something', 'a', 'somewhere', 'b'), " +
+        "named_struct('names', array('a', 'b'), 'birthdays', array('c', 'd', 'e')), " +
+        "named_struct('map1', map('a', 'b'), 'map2', map('c', 'd')) " +
+        ")", identifier.name()));
+
+    validateMigration(identifier.name());
+  }
+
+  @Test
   public void testMigrateHiveTableToIceberg() throws TException, InterruptedException {
     String tableName = "tbl";
     String createQuery = "CREATE EXTERNAL TABLE " +  tableName + " (a int) STORED AS " + fileFormat.name() + " " +
