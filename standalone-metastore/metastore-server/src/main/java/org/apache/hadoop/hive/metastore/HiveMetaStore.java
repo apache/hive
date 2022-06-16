@@ -63,10 +63,14 @@ import org.apache.thrift.transport.TTransportFactory;
 
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+
+
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.security.Constraint;
@@ -399,19 +403,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Start with minWorkerThreads, expand till maxWorkerThreads and reject
     // subsequent requests
     final String threadPoolNamePrefix = "HiveMetastore-HttpHandler-Pool";
-    ExecutorService executorService = new ThreadPoolExecutor(
-        minWorkerThreads, maxWorkerThreads, 60, TimeUnit.SECONDS,
-        new SynchronousQueue<>(), new ThreadFactory() {
-      @Override
-      public Thread newThread(@NotNull Runnable r) {
-        Thread newThread = new Thread(r);
-        newThread.setName(threadPoolNamePrefix + ": Thread-" + newThread.getId());
-        return newThread;
-      }
-    });
-    ExecutorThreadPool threadPool = new ExecutorThreadPool((ThreadPoolExecutor) executorService);
+    ExecutorThreadPool executorThreadPool = new ExecutorThreadPool(maxWorkerThreads, minWorkerThreads,
+        new SynchronousQueue<>());
+    executorThreadPool.setName(threadPoolNamePrefix);
+    // to set keepAlive time of worker threads, call executorThreadPool.setIdleTImeout()
+
     // HTTP Server
-    org.eclipse.jetty.server.Server server = new Server(threadPool);
+    org.eclipse.jetty.server.Server server = new Server(executorThreadPool);
     server.setStopAtShutdown(true);
 
     ServerConnector connector;
@@ -461,6 +459,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // TODO: AcceptQueueSize needs to be higher for HMS
     connector.setAcceptQueueSize(maxWorkerThreads);
     // TODO: Connection keepalive configuration?
+    connector.addBean(new HttpChannel.Listener() {
+      @Override
+      public void onComplete(Request request) {
+        LOG.debug("Request " + request + " is completed. HttpChannel was: " + request.getHttpChannel()
+            + ", HttpTransport: " + request.getHttpChannel().getHttpTransport());
+        HMSHandler.cleanupHandlerContext();
+      }
+    });
 
     server.addConnector(connector);
     TProcessor processor;
