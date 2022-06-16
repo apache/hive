@@ -423,7 +423,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       } catch (Throwable e) {
         // Aborting the job if the commit has failed
         LOG.error("Error while trying to commit job: {}, starting rollback changes for table: {}",
-                jobContext.getJobID(), tableName, e);
+            jobContext.getJobID(), tableName, e);
         try {
           committer.abortJob(jobContext, JobStatus.State.FAILED);
         } catch (IOException ioe) {
@@ -431,7 +431,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           // no throwing here because the original exception should be propagated
         }
         throw new HiveException(
-                "Error committing job: " + jobContext.getJobID() + " for table: " + tableName, e);
+            "Error committing job: " + jobContext.getJobID() + " for table: " + tableName, e);
       }
     }
   }
