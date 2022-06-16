@@ -30,6 +30,7 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -438,7 +439,13 @@ public class HiveServer2 extends CompositeService {
     }
 
     // Add a shutdown hook for catching SIGTERM & SIGINT
-    ShutdownHookManager.addShutdownHook(() -> hiveServer2.stop());
+    ShutdownHookManager.addShutdownHook(() -> {
+      try {
+        decommission();
+      } finally {
+        stop();
+      }
+    });
   }
 
   private void logCompactionParameters(HiveConf hiveConf) {
@@ -895,6 +902,38 @@ public class HiveServer2 extends CompositeService {
     }
   }
 
+  public synchronized void decommission() {
+    LOG.info("Decommissioning HiveServer2");
+    // Remove this server instance from ZooKeeper if dynamic service discovery is set
+    if (serviceDiscovery && !activePassiveHA && zooKeeperHelper != null) {
+      try {
+        zooKeeperHelper.removeServerInstanceFromZooKeeper();
+      } catch (Exception e) {
+        LOG.error("Error removing znode for this HiveServer2 instance from ZooKeeper.", e);
+      }
+    }
+    super.decommission();
+    long maxTimeForWait = HiveConf.getTimeVar(getHiveConf(),
+            HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS);
+    if (maxTimeForWait > 0) {
+      ExecutorService service = Executors.newSingleThreadExecutor();
+      Future future = service.submit(() -> {
+        while (getCliService() != null && getCliService().getSessionManager()
+                .getOperations().size() != 0) {
+          continue;
+        }
+      });
+      try {
+        future.get(maxTimeForWait, TimeUnit.MILLISECONDS);
+      } catch (Exception e) {
+        future.cancel(true);
+        LOG.warn("Error gracefully stopping HiveServer2", e);
+      } finally {
+        service.shutdownNow();
+      }
+    }
+  }
+
   @Override
   public synchronized void stop() {
     LOG.info("Shutting down HiveServer2");
@@ -1220,6 +1259,15 @@ public class HiveServer2 extends CompositeService {
         .withArgName("workerIdentity")
         .withLongOpt("failover")
         .withDescription("Manually failover Active HS2 instance to passive standby mode")
+        .create());
+      // --graceful_stop
+      options.addOption(OptionBuilder
+        .withValueSeparator(' ')
+        .hasArgs(2)
+        .withArgName("pid> <timeout")
+        .withLongOpt("graceful_stop")
+        .withDescription("Gracefully stopping HS2 instance of" +
+            " 'pid'(default: $HIVE_CONF_DIR/hiveserver2.pid) in 'timeout'(default:1800) seconds.")
         .create());
       options.addOption(new Option("H", "help", false, "Print help information"));
     }

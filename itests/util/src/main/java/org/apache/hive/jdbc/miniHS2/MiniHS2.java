@@ -438,6 +438,15 @@ public class MiniHS2 extends AbstractHiveService {
         .equals(HiveConf.getVar(getHiveConf(), ConfVars.HIVE_SERVER2_SAML_CALLBACK_URL));
   }
 
+  public void graceful_stop() {
+    verifyStarted();
+    try {
+      hiveServer2.decommission();
+    } finally {
+      hiveServer2.stop();
+    }
+  }
+
   public void stop() {
     verifyStarted();
     // Currently there is no way to stop the MetaStore service. It will be stopped when the

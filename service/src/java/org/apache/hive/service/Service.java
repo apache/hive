@@ -39,6 +39,11 @@ public interface Service {
     /** started and not stopped */
     STARTED,
 
+    /**
+     * decommissioned but not stopped
+     */
+    DECOMMISSIONED,
+
     /** stopped. No further state transitions are permitted */
     STOPPED
   }
@@ -62,6 +67,15 @@ public interface Service {
    * operation failed and an exception was raised.
    */
   void start();
+
+  /**
+   * Shut down the service properly before stopping
+   *
+   * The transition should be from {@link STATE#STARTED} to {@link STATE#DECOMMISSIONED}
+   */
+  default void decommission() {
+    // no op
+  }
 
   /**
    * Stop the service.
