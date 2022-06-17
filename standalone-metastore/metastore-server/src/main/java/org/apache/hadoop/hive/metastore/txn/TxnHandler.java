@@ -310,6 +310,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           "INNER JOIN \"TXNS\" ON \"TC_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
       " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" HAVING COUNT(\"TXN_ID\") > ?";
 
+  private static final String EX_CTAS_ERR_MSG =
+          "Could not create table ,because table already exists : %s or " +
+                  " a concurrent ctas operation is creating a table with same table name.";
+  private static final String ZERO_WAIT_READ_ERR_MSG = "Unable to acquire read lock due to an exclusive lock {%s}";
+
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
 
@@ -3244,7 +3249,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                                           long extLockId,
                                           long txnId,
                                           boolean zeroWaitReadEnabled,
-                                          boolean checkForConcurrentCtas)
+                                          boolean isExclusiveCTAS)
           throws NoSuchLockException, TxnAbortedException, MetaException {
     try {
       try {
@@ -3253,7 +3258,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           //should only get here if retrying this op
           dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         }
-        return checkLock(dbConn, extLockId, txnId, zeroWaitReadEnabled, checkForConcurrentCtas);
+        return checkLock(dbConn, extLockId, txnId, zeroWaitReadEnabled, isExclusiveCTAS);
       } catch (SQLException e) {
         LOG.error("checkLock failed for extLockId={}/txnId={}. Exception msg: {}", extLockId, txnId, getMessage(e));
         rollbackDBConn(dbConn);
@@ -3268,7 +3273,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     catch(RetryException e) {
       LOG.debug("Going to retry checkLock for extLockId={}/txnId={} after catching RetryException with message: {}",
               extLockId, txnId, e.getMessage());
-      return checkLockWithRetry(dbConn, extLockId, txnId, zeroWaitReadEnabled, checkForConcurrentCtas);
+      return checkLockWithRetry(dbConn, extLockId, txnId, zeroWaitReadEnabled, isExclusiveCTAS);
     }
   }
   /**
@@ -5290,7 +5295,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             }
             dbConn.commit();
 
-            response.setErrorMessage(errorMsg(isExclusiveCTAS, blockedBy));
+            response.setErrorMessage(String.format(isExclusiveCTAS ? EX_CTAS_ERR_MSG : ZERO_WAIT_READ_ERR_MSG, blockedBy));
             response.setState(LockState.NOT_ACQUIRED);
             return response;
           }
@@ -5325,17 +5330,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       close(rs, stmt, null);
     }
     return response;
-  }
-
-  private String errorMsg(boolean isExclusiveCTAS, LockInfo blockedBy) {
-    String exCtasErrMsg = String.format(
-            "Could not create a tableName: %s ,because table already exists in databaseName: %s or " +
-                    " a concurrent ctas operation is creating a table with same table name.", blockedBy.table,
-            blockedBy.db);
-    String zeroReadErrMsg = String.format(
-            "Unable to acquire read lock due to an exclusive lock {%s}", blockedBy);
-
-    return isExclusiveCTAS ? exCtasErrMsg : zeroReadErrMsg;
   }
 
   private void acquire(Connection dbConn, Statement stmt, List<LockInfo> locksBeingChecked)
