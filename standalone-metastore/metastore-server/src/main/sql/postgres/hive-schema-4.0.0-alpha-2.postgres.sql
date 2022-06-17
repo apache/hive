@@ -847,6 +847,14 @@ ALTER TABLE ONLY "INDEX_PARAMS"
 
 
 --
+-- Name: ONE_ROW_CONSTRAINT; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+ALTER TABLE "NOTIFICATION_SEQUENCE"
+    ADD CONSTRAINT "ONE_ROW_CONSTRAINT" CHECK ("NNI_ID" = 1);
+
+
+--
 -- Name: NUCLEUS_TABLES_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
 --
 
