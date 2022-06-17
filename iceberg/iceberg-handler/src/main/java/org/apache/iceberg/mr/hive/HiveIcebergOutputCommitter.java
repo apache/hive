@@ -264,13 +264,9 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .run(output -> {
             JobConf jobConf = output.jobContext.getJobConf();
             Table table = output.table;
-            if (table != null) {
-              String catalogName = HiveIcebergStorageHandler.catalogName(jobConf, output.tableName);
-              jobLocations.add(generateJobLocation(table.location(), jobConf, output.jobContext.getJobID()));
-              commitTable(table.io(), fileExecutor, output, table.location(), catalogName);
-            } else {
-              LOG.info("CommitJob found no table object in QueryState or conf for: {}. Skipping job commit.", output);
-            }
+            String catalogName = HiveIcebergStorageHandler.catalogName(jobConf, output.tableName);
+            jobLocations.add(generateJobLocation(table.location(), jobConf, output.jobContext.getJobID()));
+            commitTable(table.io(), fileExecutor, output, table.location(), catalogName);
           });
     } finally {
       fileExecutor.shutdown();
@@ -295,8 +291,17 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             .filter(o -> o instanceof Table).map(o -> (Table) o)
             // fall back to getting the serialized table from the config
             .orElseGet(() -> HiveIcebergStorageHandler.table(jobContext.getJobConf(), output));
-        SessionStateUtil.CommitInfo commitInfo = SessionStateUtil.getCommitInfo(jobContext.getJobConf(), output).get()
-            .stream().filter(ci -> ci.getJobIdStr().equals(jobContext.getJobID().toString())).findFirst().orElse(null);
+        if (table == null) {
+          LOG.info("CommitJob found no table object in QueryState or conf for: {}. Skipping job commit.", output);
+          continue;
+        }
+
+        SessionStateUtil.CommitInfo commitInfo = null;
+        if (SessionStateUtil.getCommitInfo(jobContext.getJobConf(), output).isPresent()) {
+          commitInfo = SessionStateUtil.getCommitInfo(jobContext.getJobConf(), output).get()
+              .stream().filter(ci -> ci.getJobIdStr().equals(jobContext.getJobID().toString())).findFirst()
+              .orElse(null);
+        }
         outputs.add(new OutputTable(output, table, jobContext, commitInfo));
       }
     }
