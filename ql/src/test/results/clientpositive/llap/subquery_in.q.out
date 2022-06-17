@@ -2374,10 +2374,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  filterExpr: (p_type is not null and p_brand is not null) (type: boolean)
+                  filterExpr: (p_brand is not null and p_type is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 8242 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (p_type is not null and p_brand is not null) (type: boolean)
+                    predicate: (p_brand is not null and p_type is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 8242 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_name (type: string), p_type (type: string), p_brand (type: string)
@@ -2502,10 +2502,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  filterExpr: (p_type is not null and p_size is not null) (type: boolean)
+                  filterExpr: (p_size is not null and p_type is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5954 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (p_type is not null and p_size is not null) (type: boolean)
+                    predicate: (p_size is not null and p_type is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 5954 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_name (type: string), p_type (type: string), (p_size + 1) (type: int)
