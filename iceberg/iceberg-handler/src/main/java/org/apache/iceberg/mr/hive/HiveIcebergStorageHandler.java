@@ -868,8 +868,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * @param overwrite If we have to overwrite the existing table or just add the new data
    * @return The generated JobContext
    */
-  private Optional<List<JobContext>> generateJobContext(
-          Configuration configuration, String tableName, boolean overwrite) {
+  private Optional<List<JobContext>> generateJobContext(Configuration configuration, String tableName,
+      boolean overwrite) {
     JobConf jobConf = new JobConf(configuration);
     Optional<List<SessionStateUtil.CommitInfo>> commitInfoList = SessionStateUtil.getCommitInfo(jobConf, tableName);
     if (commitInfoList.isPresent()) {
