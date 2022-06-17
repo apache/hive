@@ -246,21 +246,9 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         .collect(Collectors.toList());
     String ids = jobContextList.stream()
         .map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(","));
-
-    Set<OutputTable> outputs = Sets.newHashSet();
-    for (JobContext jobContext : jobContextList) {
-      Set<String> outputNames = Sets.newHashSet(HiveIcebergStorageHandler.outputTables(jobContext.getJobConf()));
-      for (String output : outputNames) {
-        Table table = SessionStateUtil.getResource(jobContext.getJobConf(), output)
-            .filter(o -> o instanceof Table).map(o -> (Table) o)
-            // fall back to getting the serialized table from the config
-            .orElseGet(() -> HiveIcebergStorageHandler.table(jobContext.getJobConf(), output));
-        SessionStateUtil.CommitInfo commitInfo = SessionStateUtil.getCommitInfo(jobContext.getJobConf(), output).get()
-            .stream().filter(ci -> ci.getJobIdStr().equals(jobContext.getJobID().toString())).findFirst().orElse(null);
-        outputs.add(new OutputTable(output, table, jobContext, commitInfo));
-      }
-    }
+    Set<OutputTable> outputs = collectOutputs(jobContextList);
     long startTime = System.currentTimeMillis();
+
     LOG.info("Committing job(s) {} has started", ids);
 
     Collection<String> jobLocations = new ConcurrentLinkedQueue<>();
@@ -298,6 +286,23 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     }
   }
 
+  private Set<OutputTable> collectOutputs(List<JobContext> jobContextList) {
+    Set<OutputTable> outputs = Sets.newHashSet();
+    for (JobContext jobContext : jobContextList) {
+      Set<String> outputNames = Sets.newHashSet(HiveIcebergStorageHandler.outputTables(jobContext.getJobConf()));
+      for (String output : outputNames) {
+        Table table = SessionStateUtil.getResource(jobContext.getJobConf(), output)
+            .filter(o -> o instanceof Table).map(o -> (Table) o)
+            // fall back to getting the serialized table from the config
+            .orElseGet(() -> HiveIcebergStorageHandler.table(jobContext.getJobConf(), output));
+        SessionStateUtil.CommitInfo commitInfo = SessionStateUtil.getCommitInfo(jobContext.getJobConf(), output).get()
+            .stream().filter(ci -> ci.getJobIdStr().equals(jobContext.getJobID().toString())).findFirst().orElse(null);
+        outputs.add(new OutputTable(output, table, jobContext, commitInfo));
+      }
+    }
+    return outputs;
+  }
+
   /**
    * Removes the generated data files if there is a commit file already generated for them.
    * The cleanup at the end removes the temporary directories as well.
@@ -329,17 +334,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         .collect(Collectors.toList());
     String ids = jobContextList.stream()
         .map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(","));
-
-    Set<OutputTable> outputs = Sets.newHashSet();
-    for (JobContext jobContext : jobContextList) {
-      Set<String> outputNames = Sets.newHashSet(HiveIcebergStorageHandler.outputTables(jobContext.getJobConf()));
-      for (String output : outputNames) {
-        Table table = HiveIcebergStorageHandler.table(jobContext.getJobConf(), output);
-        SessionStateUtil.CommitInfo commitInfo = SessionStateUtil.getCommitInfo(jobContext.getJobConf(), output).get()
-            .stream().filter(ci -> ci.getJobIdStr().equals(jobContext.getJobID().toString())).findFirst().orElse(null);
-        outputs.add(new OutputTable(output, table, jobContext, commitInfo));
-      }
-    }
+    Set<OutputTable> outputs = collectOutputs(jobContextList);
 
     LOG.info("Job(s) {} are aborted. Data file cleaning started", ids);
     Collection<String> jobLocations = new ConcurrentLinkedQueue<>();
