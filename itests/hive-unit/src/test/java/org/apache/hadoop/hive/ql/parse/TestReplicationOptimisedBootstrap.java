@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.QuotaUsage;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -580,6 +582,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     assertFalse(sourceParams.containsKey(CURR_STATE_ID_SOURCE.toString()));
     assertFalse(sourceParams.containsKey(REPL_TARGET_DB_PROPERTY));
     assertTrue(sourceParams.containsKey(SOURCE_OF_REPLICATION));
+    assertFalse(sourceParams.containsKey(ReplConst.REPL_ENABLE_BACKGROUND_THREAD));
 
     // Proceed with normal incremental flow, post optimised bootstrap is over.
     replica.run("use " + replicatedDbName)
@@ -962,7 +965,11 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
         .run("insert into table t2 partition(country='india') values ('delhi')").run("insert into table t3 values (11)")
         .run("insert into table t4 partition(country='india') values ('lucknow')")
         .run("create table t5 (place string) partitioned by (country string)")
-        .run("insert into table t5 partition(country='china') values ('beejing')");
+        .run("insert into table t5 partition(country='china') values ('beejing')")
+        .run("alter database "+ replicatedDbName + " set DBPROPERTIES ('" +
+                ReplConst.REPL_ENABLE_BACKGROUND_THREAD + "'='true')");
+
+    assertTrue (MetaStoreUtils.isBackgroundThreadsEnabledForRepl(replica.getDatabase(replicatedDbName)));
 
     // Prepare for reverse replication.
     DistributedFileSystem replicaFs = replica.miniDFSCluster.getFileSystem();
