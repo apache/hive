@@ -119,8 +119,7 @@ public class CreateFunctionOperation extends DDLOperation<CreateFunctionDesc> {
       return 1;
     }
 
-    // TODO: should this use getUserFromAuthenticator instead of SessionState.get().getUserName()?
-    Function function = new Function(functionName, dbName, desc.getClassName(), SessionState.get().getUserName(),
+    Function function = new Function(functionName, dbName, desc.getClassName(), SessionState.getUserFromAuthenticator(),
         PrincipalType.USER, (int) (System.currentTimeMillis() / 1000), FunctionType.JAVA, desc.getResources());
     boolean functionExists = context.getDb().functionExists(dbName, functionName);
     try {

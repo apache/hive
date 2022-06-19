@@ -21,14 +21,17 @@ package org.apache.hadoop.hive.ql.ddl.function;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Abstract ancestor of function related ddl analyzer classes.
@@ -51,25 +54,35 @@ public abstract class AbstractFunctionAnalyzer extends BaseSemanticAnalyzer {
 
     // Add the relevant database 'namespace' as a WriteEntity
     Database database = null;
+    Function function = null;
 
+    String databaseName = null;
     // temporary functions don't have any database 'namespace' associated with it
     if (!isTemporary) {
       try {
         String[] qualifiedNameParts = FunctionUtils.getQualifiedFunctionNameParts(functionName);
-        String databaseName = qualifiedNameParts[0];
+        databaseName = qualifiedNameParts[0];
         functionName = qualifiedNameParts[1];
         database = getDatabase(databaseName);
+        function = getFunction(databaseName, functionName);
       } catch (HiveException e) {
-        LOG.error("Failed to get database ", e);
+        LOG.error("Failed to get database or function.", e);
         throw new SemanticException(e);
       }
     }
     if (database != null) {
       outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
     }
+    if (function == null) {
+      // There are two cases where function is null:
+      // 1) we are creating a new permanent function.
+      // 2) current function is a temporary function.
+      function = new Function(functionName, databaseName, className, SessionState.getUserFromAuthenticator(),
+          PrincipalType.USER, (int) (System.currentTimeMillis() / 1000), FunctionType.JAVA, resources);
+    }
 
-    // Add the function name as a WriteEntity
-    outputs.add(new WriteEntity(database, functionName, className, Type.FUNCTION, WriteEntity.WriteType.DDL_NO_LOCK));
+    // Add the function as a WriteEntity
+    outputs.add(new WriteEntity(function, WriteEntity.WriteType.DDL_NO_LOCK));
 
     if (resources != null) {
       for (ResourceUri resource : resources) {

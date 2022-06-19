@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -49,6 +50,11 @@ public class Entity implements Serializable {
    * The database if this is a database.
    */
   private Database database;
+
+  /**
+   * The function if this is a function.
+   */
+  private Function function;
 
   /**
    * The dataconnector if this is a dataconnector.
@@ -77,14 +83,9 @@ public class Entity implements Serializable {
 
   /**
    * An object that is represented as a String
-   * Currently used for functions and service name
+   * Currently used for service name
    */
   private String stringObject;
-
-  /**
-   * The class name for a function
-   */
-  private String className;
 
   /**
    * This is derived from t and p, but we need to serialize this field to make
@@ -116,6 +117,14 @@ public class Entity implements Serializable {
 
   public void setDatabase(Database database) {
     this.database = database;
+  }
+
+  public Function getFunction() {
+    return function;
+  }
+
+  public void setFunction(Function function) {
+    this.function = function;
   }
 
   public DataConnector getDataConnector() {
@@ -158,29 +167,6 @@ public class Entity implements Serializable {
     this.d = d;
   }
 
-  public String getClassName() {
-    return this.className;
-  }
-
-  public void setClassName(String className) {
-    this.className = className;
-  }
-
-  public String getFunctionName() {
-    if (typ == Type.FUNCTION) {
-      return stringObject;
-    }
-    return null;
-  }
-
-  public void setFunctionName(String funcName) {
-    if (typ != Type.FUNCTION) {
-      throw new IllegalArgumentException(
-          "Set function can't be called on entity if the entity type is not " + Type.FUNCTION);
-    }
-    this.stringObject = funcName;
-  }
-
   public String getServiceName() {
     if (typ == Type.SERVICE_NAME) {
       return stringObject;
@@ -206,6 +192,21 @@ public class Entity implements Serializable {
   public Entity(Database database, boolean complete) {
     this.database = database;
     this.typ = Type.DATABASE;
+    this.name = computeName();
+    this.complete = complete;
+  }
+
+  /**
+   * Constructor for a function.
+   *
+   * @param function
+   *          Function that is read or written to.
+   * @param complete
+   *          Means the function is target
+   */
+  public Entity(Function function, boolean complete) {
+    this.function = function;
+    this.typ = Type.FUNCTION;
     this.name = computeName();
     this.complete = complete;
   }
@@ -290,26 +291,6 @@ public class Entity implements Serializable {
     }
     name = computeName();
     this.complete = complete;
-  }
-
-  /**
-   * Create an entity representing a object with given name, database namespace and type
-   * @param database - database namespace
-   * @param strObj - object name as string
-   * @param className - function class name
-   * @param type - the entity type. this constructor only supports FUNCTION type currently
-   */
-  public Entity(Database database, String strObj, String className, Type type) {
-    if (type != Type.FUNCTION) {
-      throw new IllegalArgumentException("This constructor is supported only for type:"
-          + Type.FUNCTION);
-    }
-    this.database = database;
-    this.stringObject = strObj;
-    this.className = className;
-    this.typ = type;
-    this.complete = true;
-    name = computeName();
   }
 
   /**
@@ -407,10 +388,8 @@ public class Entity implements Serializable {
     case DUMMYPARTITION:
       return p.getName();
     case FUNCTION:
-      if (database != null) {
-        return database.getName() + "." + stringObject;
-      }
-      return stringObject;
+      return function.getDbName() == null ? function.getFunctionName()
+          : function.getDbName() + "." + function.getFunctionName();
     case SERVICE_NAME:
       return stringObject;
     case DATACONNECTOR:

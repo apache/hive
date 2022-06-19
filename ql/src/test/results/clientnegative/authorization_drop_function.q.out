@@ -1,0 +1,9 @@
+PREHOOK: query: create function or replace test_fun as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:default
+PREHOOK: Output: default.test_fun
+POSTHOOK: query: create function or replace test_fun as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default.test_fun
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation DROPFUNCTION [[OBJECT OWNERSHIP] on Object [type=FUNCTION, name=default.test_fun]]
