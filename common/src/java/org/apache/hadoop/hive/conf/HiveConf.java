@@ -4678,9 +4678,6 @@ public class HiveConf extends Configuration {
     HIVE_ACID_DIRECT_INSERT_ENABLED("hive.acid.direct.insert.enabled", true,
         "Enable writing the data files directly to the table's final destination instead of the staging directory."
         + "This optimization only applies on INSERT operations on ACID tables."),
-    HIVE_ACID_CHECK_FOR_CONCURRENT_CTAS_ENABLED("hive.acid.check.for.concurrent.ctas.enabled", false,
-            "Check for concurrent CTAS operations"
-                    + "This optimization only applies on CTAS operations on ACID tables."),
     TXN_CTAS_X_LOCK("hive.txn.xlock.ctas", false,
             "Enables exclusive locking during CTAS operations." +
             "This optimization only applies to CTAS operations on ACID tables."),

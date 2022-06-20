@@ -189,7 +189,6 @@ class DataOperationType(object):
     DELETE = 4
     UNSET = 5
     NO_TXN = 6
-    CTAS = 7
 
     _VALUES_TO_NAMES = {
         1: "SELECT",
@@ -198,7 +197,6 @@ class DataOperationType(object):
         4: "DELETE",
         5: "UNSET",
         6: "NO_TXN",
-        7: "CTAS",
     }
 
     _NAMES_TO_VALUES = {
@@ -208,7 +206,6 @@ class DataOperationType(object):
         "DELETE": 4,
         "UNSET": 5,
         "NO_TXN": 6,
-        "CTAS": 7,
     }
 
 

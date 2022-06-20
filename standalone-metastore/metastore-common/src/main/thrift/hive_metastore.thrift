@@ -213,7 +213,6 @@ enum DataOperationType {
     DELETE = 4,
     UNSET = 5,//this is the default to distinguish from NULL from old clients
     NO_TXN = 6,//drop table, insert overwrite, etc - something non-transactional
-    CTAS = 7,
 }
 
 // Types of events the client can request that the metastore fire.  For now just support DML operations, as the metastore knows

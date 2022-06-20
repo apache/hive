@@ -34,8 +34,7 @@ public enum OperationType {
   INSERT('i', DataOperationType.INSERT),
   UPDATE('u', DataOperationType.UPDATE),
   DELETE('d', DataOperationType.DELETE),
-  COMPACT('c', null),
-  CTAS('t', DataOperationType.CTAS);
+  COMPACT('c', null);
 
   private final char sqlConst;
   private final DataOperationType dataOperationType;

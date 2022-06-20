@@ -14,8 +14,7 @@ public enum DataOperationType implements org.apache.thrift.TEnum {
   UPDATE(3),
   DELETE(4),
   UNSET(5),
-  NO_TXN(6),
-  CTAS(7);
+  NO_TXN(6);
 
   private final int value;
 
@@ -49,8 +48,6 @@ public enum DataOperationType implements org.apache.thrift.TEnum {
         return UNSET;
       case 6:
         return NO_TXN;
-      case 7:
-        return CTAS;
       default:
         return null;
     }

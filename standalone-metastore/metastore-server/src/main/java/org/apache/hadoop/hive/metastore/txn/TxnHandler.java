@@ -310,9 +310,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           "INNER JOIN \"TXNS\" ON \"TC_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
       " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" HAVING COUNT(\"TXN_ID\") > ?";
 
-  private static final String EX_CTAS_ERR_MSG =
-          "Could not create table ,because table already exists : %s or " +
-                  " a concurrent ctas operation is creating a table with same table name.";
+  private static final String  EXCL_CTAS_ERR_MSG =
+          "Could not create table because table already exists . LockInfo : %s or " +
+                  " a concurrent ctas operation is using the same table name.";
   private static final String ZERO_WAIT_READ_ERR_MSG = "Unable to acquire read lock due to an exclusive lock {%s}";
 
 
@@ -3160,7 +3160,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         case INSERT:
         case UPDATE:
         case DELETE:
-        case CTAS:
           return true;
         case SELECT:
           return false;
@@ -5288,14 +5287,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
 
           if (lockType == LockType.SHARED_READ || isExclusiveCTAS) {
-            if (!isExclusiveCTAS) {
-              String cleanupQuery = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
-              LOG.debug("Going to execute query: <" + cleanupQuery + ">");
-              stmt.executeUpdate(cleanupQuery);
-            }
+            String cleanupQuery = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
+            LOG.debug("Going to execute query: <" + cleanupQuery + ">");
+            stmt.executeUpdate(cleanupQuery);
             dbConn.commit();
 
-            response.setErrorMessage(String.format(isExclusiveCTAS ? EX_CTAS_ERR_MSG : ZERO_WAIT_READ_ERR_MSG, blockedBy));
+            response.setErrorMessage(String.format(isExclusiveCTAS ? EXCL_CTAS_ERR_MSG : ZERO_WAIT_READ_ERR_MSG, blockedBy));
             response.setState(LockState.NOT_ACQUIRED);
             return response;
           }

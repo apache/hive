@@ -88,9 +88,8 @@ module DataOperationType
   DELETE = 4
   UNSET = 5
   NO_TXN = 6
-  CTAS = 7
-  VALUE_MAP = {1 => "SELECT", 2 => "INSERT", 3 => "UPDATE", 4 => "DELETE", 5 => "UNSET", 6 => "NO_TXN", 7 => "CTAS"}
-  VALID_VALUES = Set.new([SELECT, INSERT, UPDATE, DELETE, UNSET, NO_TXN, CTAS]).freeze
+  VALUE_MAP = {1 => "SELECT", 2 => "INSERT", 3 => "UPDATE", 4 => "DELETE", 5 => "UNSET", 6 => "NO_TXN"}
+  VALID_VALUES = Set.new([SELECT, INSERT, UPDATE, DELETE, UNSET, NO_TXN]).freeze
 end
 
 module EventRequestType

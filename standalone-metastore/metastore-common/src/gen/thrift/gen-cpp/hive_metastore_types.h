@@ -156,8 +156,7 @@ struct DataOperationType {
     UPDATE = 3,
     DELETE = 4,
     UNSET = 5,
-    NO_TXN = 6,
-    CTAS = 7
+    NO_TXN = 6
   };
 };
 
