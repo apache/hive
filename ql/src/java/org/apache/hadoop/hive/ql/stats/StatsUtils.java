@@ -914,6 +914,7 @@ public class StatsUtils {
       Long highVal = (csd.getTimestampStats().getHighValue() != null) ? csd.getTimestampStats().getHighValue()
           .getSecondsSinceEpoch() : null;
       cs.setRange(lowVal, highVal);
+      cs.setHistogram(csd.getTimestampStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
     } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
@@ -944,6 +945,7 @@ public class StatsUtils {
           .getDaysSinceEpoch() : null;
       cs.setRange(lowVal, highVal);
       cs.setBitVectors(csd.getDateStats().getBitVectors());
+      cs.setHistogram(csd.getDateStats().getHistogram());
     } else {
       // Columns statistics for complex datatypes are not supported yet
       return null;

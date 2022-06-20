@@ -532,7 +532,8 @@ struct DateColumnStatsData {
 2: optional Date highValue,
 3: required i64 numNulls,
 4: required i64 numDVs,
-5: optional binary bitVectors
+5: optional binary bitVectors,
+6: optional binary histogram
 }
 
 struct Timestamp {
@@ -544,7 +545,8 @@ struct TimestampColumnStatsData {
 2: optional Timestamp highValue,
 3: required i64 numNulls,
 4: required i64 numDVs,
-5: optional binary bitVectors
+5: optional binary bitVectors,
+6: optional binary histogram
 }
 
 union ColumnStatisticsData {

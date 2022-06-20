@@ -212,18 +212,20 @@ public class MTableColumnStatistics {
     this.avgColLen = avgColLen;
   }
 
-  public void setDateStats(Long numNulls, Long numNDVs, byte[] bitVector, Long lowValue, Long highValue) {
+  public void setDateStats(Long numNulls, Long numNDVs, byte[] bitVector, byte [] histogram, Long lowValue, Long highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
     setBitVector(bitVector);
+    setHistogram(histogram);
     this.longLowValue = lowValue;
     this.longHighValue = highValue;
   }
 
-  public void setTimestampStats(Long numNulls, Long numNDVs, byte[] bitVector, Long lowValue, Long highValue) {
+  public void setTimestampStats(Long numNulls, Long numNDVs, byte[] bitVector, byte [] histogram, Long lowValue, Long highValue) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
     setBitVector(bitVector);
+    setHistogram(histogram);
     this.longLowValue = lowValue;
     this.longHighValue = highValue;
   }

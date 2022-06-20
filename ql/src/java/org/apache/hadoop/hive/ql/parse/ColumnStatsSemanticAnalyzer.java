@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
 
 import com.google.common.base.Preconditions;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -352,7 +351,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       appendBitVector(rewrittenQueryBuilder, conf, columnName, pos);
       break;
     case KLL_SKETCH:
-      appendKllSketch(rewrittenQueryBuilder, conf, columnName, pos);
+      appendKllSketch(rewrittenQueryBuilder, conf, columnName, columnStatsType, pos);
       break;
     case MAX_LENGTH:
       appendMaxLength(rewrittenQueryBuilder, conf, columnName, pos);
@@ -459,8 +458,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   }
 
   private static void appendKllSketch(StringBuilder rewrittenQueryBuilder, HiveConf conf,
-      String columnName, int pos) throws SemanticException {
-    appendKllSketch(rewrittenQueryBuilder, conf, columnName);
+      String columnName, ColumnStatsType columnStatsType, int pos) throws SemanticException {
+    appendKllSketch(rewrittenQueryBuilder, conf, columnName, columnStatsType);
     rewrittenQueryBuilder.append(" AS ")
         .append(unparseIdentifier(ColumnStatsField.KLL_SKETCH.getFieldName() + pos, conf));
   }
@@ -490,18 +489,29 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
 
-  private static void appendKllSketch(StringBuilder rewrittenQueryBuilder, HiveConf conf,
-      String columnName) throws SemanticException {
+  private static void appendKllSketch(StringBuilder rewrittenQueryBuilder, HiveConf conf, String columnName,
+      ColumnStatsType columnStatsType) throws SemanticException {
     int k;
     try {
       k = HiveStatsUtils.getKParamForKllSketch(conf);
     } catch (Exception e) {
       throw new SemanticException(e.getMessage());
     }
-    // add cast($columnName as float) to make sure it works for other numeric types
-    rewrittenQueryBuilder.append("ds_kll_sketch(cast(")
-        .append(columnName)
-        .append(" as float), ")
+
+    boolean isDateFamily = columnStatsType.equals(ColumnStatsType.DATE) ||
+        columnStatsType.equals(ColumnStatsType.TIMESTAMP);
+
+    if (isDateFamily) {
+      rewrittenQueryBuilder.append("ds_kll_sketch(cast(unix_timestamp(")
+          .append(columnName)
+          .append(") as float)");
+    } else {
+      // add cast to float to make sure it works for other numeric types
+      rewrittenQueryBuilder.append("ds_kll_sketch(cast(")
+          .append(columnName)
+          .append(" as float)");
+    }
+    rewrittenQueryBuilder.append(", ")
         .append(k)
         .append(")");
   }
