@@ -60,7 +60,7 @@ hiveserver2() {
   fi
 }
 
-# Function to kill and wait for a process end. Take the pid as parameter
+# Function to kill and wait for a process end. Take the pid and timeout as parameters
 killAndWait() {
   pidToKill=$1
   timeout=$2

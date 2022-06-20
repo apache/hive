@@ -927,7 +927,7 @@ public class HiveServer2 extends CompositeService {
         future.get(maxTimeForWait, TimeUnit.MILLISECONDS);
       } catch (Exception e) {
         future.cancel(true);
-        LOG.warn("Error gracefully stopping HiveServer2", e);
+        LOG.warn("Error decommissioning HiveServer2", e);
       } finally {
         service.shutdownNow();
       }

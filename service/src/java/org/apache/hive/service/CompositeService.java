@@ -101,7 +101,7 @@ public class CompositeService extends AbstractService {
       try {
         service.decommission();
       } catch (Throwable t) {
-        LOG.info("Error gracefully decommissioning " + service.getName(), t);
+        LOG.info("Error decommissioning " + service.getName(), t);
       }
     }
     super.decommission();

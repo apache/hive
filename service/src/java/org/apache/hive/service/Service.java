@@ -40,7 +40,8 @@ public interface Service {
     STARTED,
 
     /**
-     * decommissioned but not stopped
+     *  Telling the service not to run new operations from front users,
+     *  but existing queries can still be finished normally
      */
     DECOMMISSIONED,
 
@@ -69,8 +70,14 @@ public interface Service {
   void start();
 
   /**
-   * Shut down the service properly before stopping
-   *
+   * Imply the service not to run new requests from client. The service acts accordingly upon
+   * receiving such command. For example:
+   * - HiveServer2: If service discovery is enabled, deregister itself from Zookeeper and
+   *     issue decommission() to all its child services
+   * - SessionManager: Set inner field `allowSessions` to false and
+   *     issue decommission() to all its child services.
+   * - OperationManager: Stop executing new statement.
+   * 
    * The transition should be from {@link STATE#STARTED} to {@link STATE#DECOMMISSIONED}
    */
   default void decommission() {
