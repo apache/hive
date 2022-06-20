@@ -4,7 +4,10 @@ URL 'jdbc:mysql://localhost:3306/qtestDB'
 COMMENT 'test connector'
 WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="root",
-"hive.sql.dbcp.password"="qtestpassword")
+"hive.sql.dbcp.password"="qtestpassword",
+"hive.sql.mysql.auto.reconnect"="true",
+"hive.sql.mysql.max.reconnects"="3",
+"hive.sql.mysql.connect.timeout"="10000")
 PREHOOK: type: CREATEDATACONNECTOR
 PREHOOK: Output: connector:mysql_qtest
 POSTHOOK: query: CREATE CONNECTOR mysql_qtest
@@ -13,7 +16,10 @@ URL 'jdbc:mysql://localhost:3306/qtestDB'
 COMMENT 'test connector'
 WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="root",
-"hive.sql.dbcp.password"="qtestpassword")
+"hive.sql.dbcp.password"="qtestpassword",
+"hive.sql.mysql.auto.reconnect"="true",
+"hive.sql.mysql.max.reconnects"="3",
+"hive.sql.mysql.connect.timeout"="10000")
 POSTHOOK: type: CREATEDATACONNECTOR
 POSTHOOK: Output: connector:mysql_qtest
 PREHOOK: query: SHOW CONNECTORS
