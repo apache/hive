@@ -18,10 +18,13 @@
 package org.apache.hadoop.hive.metastore.dbinstall;
 
 import org.apache.hadoop.hive.metastore.HiveMetaException;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(MetastoreCheckinTest.class)
 public abstract class DbInstallBase {
   private static final String FIRST_VERSION = "1.2.0";
 
