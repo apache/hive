@@ -2020,7 +2020,7 @@ class HiveObjectRef : public virtual ::apache::thrift::TBase {
 
   virtual ~HiveObjectRef() noexcept;
   /**
-   *
+   * 
    * @see HiveObjectType
    */
   HiveObjectType::type objectType;
@@ -2105,7 +2105,7 @@ class PrivilegeGrantInfo : public virtual ::apache::thrift::TBase {
   int32_t createTime;
   std::string grantor;
   /**
-   *
+   * 
    * @see PrincipalType
    */
   PrincipalType::type grantorType;
@@ -2177,7 +2177,7 @@ class HiveObjectPrivilege : public virtual ::apache::thrift::TBase {
   HiveObjectRef hiveObject;
   std::string principalName;
   /**
-   *
+   * 
    * @see PrincipalType
    */
   PrincipalType::type principalType;
@@ -2341,7 +2341,7 @@ class GrantRevokePrivilegeRequest : public virtual ::apache::thrift::TBase {
 
   virtual ~GrantRevokePrivilegeRequest() noexcept;
   /**
-   *
+   * 
    * @see GrantRevokeType
    */
   GrantRevokeType::type requestType;
@@ -2629,7 +2629,7 @@ class RolePrincipalGrant : public virtual ::apache::thrift::TBase {
   std::string roleName;
   std::string principalName;
   /**
-   *
+   * 
    * @see PrincipalType
    */
   PrincipalType::type principalType;
@@ -2637,7 +2637,7 @@ class RolePrincipalGrant : public virtual ::apache::thrift::TBase {
   int32_t grantTime;
   std::string grantorName;
   /**
-   *
+   * 
    * @see PrincipalType
    */
   PrincipalType::type grantorPrincipalType;
@@ -2706,7 +2706,7 @@ class GetRoleGrantsForPrincipalRequest : public virtual ::apache::thrift::TBase 
   virtual ~GetRoleGrantsForPrincipalRequest() noexcept;
   std::string principal_name;
   /**
-   *
+   * 
    * @see PrincipalType
    */
   PrincipalType::type principal_type;
@@ -2876,20 +2876,20 @@ class GrantRevokeRoleRequest : public virtual ::apache::thrift::TBase {
 
   virtual ~GrantRevokeRoleRequest() noexcept;
   /**
-   *
+   * 
    * @see GrantRevokeType
    */
   GrantRevokeType::type requestType;
   std::string roleName;
   std::string principalName;
   /**
-   *
+   * 
    * @see PrincipalType
    */
   PrincipalType::type principalType;
   std::string grantor;
   /**
-   *
+   * 
    * @see PrincipalType
    */
   PrincipalType::type grantorType;
@@ -3369,7 +3369,7 @@ class Database : public virtual ::apache::thrift::TBase {
   PrincipalPrivilegeSet privileges;
   std::string ownerName;
   /**
-   *
+   * 
    * @see PrincipalType
    */
   PrincipalType::type ownerType;
@@ -3377,7 +3377,7 @@ class Database : public virtual ::apache::thrift::TBase {
   int32_t createTime;
   std::string managedLocationUri;
   /**
-   *
+   * 
    * @see DatabaseType
    */
   DatabaseType::type type;
@@ -3509,7 +3509,7 @@ class SerDeInfo : public virtual ::apache::thrift::TBase {
   std::string serializerClass;
   std::string deserializerClass;
   /**
-   *
+   * 
    * @see SerdeType
    */
   SerdeType::type serdeType;
@@ -4298,14 +4298,11 @@ class DecimalColumnStatsData : public virtual ::apache::thrift::TBase {
 
   DecimalColumnStatsData(const DecimalColumnStatsData&);
   DecimalColumnStatsData& operator=(const DecimalColumnStatsData&);
-<<<<<<< HEAD
   DecimalColumnStatsData() noexcept
                          : numNulls(0),
                            numDVs(0),
-                           bitVectors() {
-=======
-  DecimalColumnStatsData() : numNulls(0), numDVs(0), bitVectors(), histogram() {
->>>>>>> 4aa98d3340 ([BASE] added histograms to thrift files for long and decimal)
+                           bitVectors(),
+                           histogram() {
   }
 
   virtual ~DecimalColumnStatsData() noexcept;
@@ -4408,10 +4405,11 @@ void swap(Date &a, Date &b);
 std::ostream& operator<<(std::ostream& out, const Date& obj);
 
 typedef struct _DateColumnStatsData__isset {
-  _DateColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false) {}
+  _DateColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false), histogram(false) {}
   bool lowValue :1;
   bool highValue :1;
   bool bitVectors :1;
+  bool histogram :1;
 } _DateColumnStatsData__isset;
 
 class DateColumnStatsData : public virtual ::apache::thrift::TBase {
@@ -4422,7 +4420,8 @@ class DateColumnStatsData : public virtual ::apache::thrift::TBase {
   DateColumnStatsData() noexcept
                       : numNulls(0),
                         numDVs(0),
-                        bitVectors() {
+                        bitVectors(),
+                        histogram() {
   }
 
   virtual ~DateColumnStatsData() noexcept;
@@ -4431,6 +4430,7 @@ class DateColumnStatsData : public virtual ::apache::thrift::TBase {
   int64_t numNulls;
   int64_t numDVs;
   std::string bitVectors;
+  std::string histogram;
 
   _DateColumnStatsData__isset __isset;
 
@@ -4443,6 +4443,8 @@ class DateColumnStatsData : public virtual ::apache::thrift::TBase {
   void __set_numDVs(const int64_t val);
 
   void __set_bitVectors(const std::string& val);
+
+  void __set_histogram(const std::string& val);
 
   bool operator == (const DateColumnStatsData & rhs) const
   {
@@ -4461,6 +4463,10 @@ class DateColumnStatsData : public virtual ::apache::thrift::TBase {
     if (__isset.bitVectors != rhs.__isset.bitVectors)
       return false;
     else if (__isset.bitVectors && !(bitVectors == rhs.bitVectors))
+      return false;
+    if (__isset.histogram != rhs.__isset.histogram)
+      return false;
+    else if (__isset.histogram && !(histogram == rhs.histogram))
       return false;
     return true;
   }
@@ -4518,10 +4524,11 @@ void swap(Timestamp &a, Timestamp &b);
 std::ostream& operator<<(std::ostream& out, const Timestamp& obj);
 
 typedef struct _TimestampColumnStatsData__isset {
-  _TimestampColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false) {}
+  _TimestampColumnStatsData__isset() : lowValue(false), highValue(false), bitVectors(false), histogram(false) {}
   bool lowValue :1;
   bool highValue :1;
   bool bitVectors :1;
+  bool histogram :1;
 } _TimestampColumnStatsData__isset;
 
 class TimestampColumnStatsData : public virtual ::apache::thrift::TBase {
@@ -4532,7 +4539,8 @@ class TimestampColumnStatsData : public virtual ::apache::thrift::TBase {
   TimestampColumnStatsData() noexcept
                            : numNulls(0),
                              numDVs(0),
-                             bitVectors() {
+                             bitVectors(),
+                             histogram() {
   }
 
   virtual ~TimestampColumnStatsData() noexcept;
@@ -4541,6 +4549,7 @@ class TimestampColumnStatsData : public virtual ::apache::thrift::TBase {
   int64_t numNulls;
   int64_t numDVs;
   std::string bitVectors;
+  std::string histogram;
 
   _TimestampColumnStatsData__isset __isset;
 
@@ -4553,6 +4562,8 @@ class TimestampColumnStatsData : public virtual ::apache::thrift::TBase {
   void __set_numDVs(const int64_t val);
 
   void __set_bitVectors(const std::string& val);
+
+  void __set_histogram(const std::string& val);
 
   bool operator == (const TimestampColumnStatsData & rhs) const
   {
@@ -4571,6 +4582,10 @@ class TimestampColumnStatsData : public virtual ::apache::thrift::TBase {
     if (__isset.bitVectors != rhs.__isset.bitVectors)
       return false;
     else if (__isset.bitVectors && !(bitVectors == rhs.bitVectors))
+      return false;
+    if (__isset.histogram != rhs.__isset.histogram)
+      return false;
+    else if (__isset.histogram && !(histogram == rhs.histogram))
       return false;
     return true;
   }
@@ -5054,7 +5069,7 @@ class Table : public virtual ::apache::thrift::TBase {
   CreationMetadata creationMetadata;
   std::string catName;
   /**
-   *
+   * 
    * @see PrincipalType
    */
   PrincipalType::type ownerType;
@@ -8202,7 +8217,7 @@ class DataConnector : public virtual ::apache::thrift::TBase {
   std::map<std::string, std::string>  parameters;
   std::string ownerName;
   /**
-   *
+   * 
    * @see PrincipalType
    */
   PrincipalType::type ownerType;
@@ -8290,7 +8305,7 @@ class ResourceUri : public virtual ::apache::thrift::TBase {
 
   virtual ~ResourceUri() noexcept;
   /**
-   *
+   * 
    * @see ResourceType
    */
   ResourceType::type resourceType;
@@ -8361,13 +8376,13 @@ class Function : public virtual ::apache::thrift::TBase {
   std::string className;
   std::string ownerName;
   /**
-   *
+   * 
    * @see PrincipalType
    */
   PrincipalType::type ownerType;
   int32_t createTime;
   /**
-   *
+   * 
    * @see FunctionType
    */
   FunctionType::type functionType;
@@ -8462,7 +8477,7 @@ class TxnInfo : public virtual ::apache::thrift::TBase {
   virtual ~TxnInfo() noexcept;
   int64_t id;
   /**
-   *
+   * 
    * @see TxnState
    */
   TxnState::type state;
@@ -8677,7 +8692,7 @@ class OpenTxnRequest : public virtual ::apache::thrift::TBase {
   std::string replPolicy;
   std::vector<int64_t>  replSrcTxnIds;
   /**
-   *
+   * 
    * @see TxnType
    */
   TxnType::type txn_type;
@@ -8797,7 +8812,7 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
   int64_t txnid;
   std::string replPolicy;
   /**
-   *
+   * 
    * @see TxnType
    */
   TxnType::type txn_type;
@@ -9171,7 +9186,7 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
   CommitTxnKeyValue keyValue;
   bool exclWriteEnabled;
   /**
-   *
+   * 
    * @see TxnType
    */
   TxnType::type txn_type;
@@ -9831,12 +9846,12 @@ class LockComponent : public virtual ::apache::thrift::TBase {
 
   virtual ~LockComponent() noexcept;
   /**
-   *
+   * 
    * @see LockType
    */
   LockType::type type;
   /**
-   *
+   * 
    * @see LockLevel
    */
   LockLevel::type level;
@@ -9844,7 +9859,7 @@ class LockComponent : public virtual ::apache::thrift::TBase {
   std::string tablename;
   std::string partitionname;
   /**
-   *
+   * 
    * @see DataOperationType
    */
   DataOperationType::type operationType;
@@ -10022,7 +10037,7 @@ class LockResponse : public virtual ::apache::thrift::TBase {
   virtual ~LockResponse() noexcept;
   int64_t lockid;
   /**
-   *
+   * 
    * @see LockState
    */
   LockState::type state;
@@ -10285,12 +10300,12 @@ class ShowLocksResponseElement : public virtual ::apache::thrift::TBase {
   std::string tablename;
   std::string partname;
   /**
-   *
+   * 
    * @see LockState
    */
   LockState::type state;
   /**
-   *
+   * 
    * @see LockType
    */
   LockType::type type;
@@ -10620,7 +10635,7 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   std::string tablename;
   std::string partitionname;
   /**
-   *
+   * 
    * @see CompactionType
    */
   CompactionType::type type;
@@ -10748,7 +10763,7 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   std::string tablename;
   std::string partitionname;
   /**
-   *
+   * 
    * @see CompactionType
    */
   CompactionType::type type;
@@ -10950,7 +10965,7 @@ class CompactionMetricsDataStruct : public virtual ::apache::thrift::TBase {
   std::string tblname;
   std::string partitionname;
   /**
-   *
+   * 
    * @see CompactionMetricsMetricType
    */
   CompactionMetricsMetricType::type type;
@@ -11076,7 +11091,7 @@ class CompactionMetricsDataRequest : public virtual ::apache::thrift::TBase {
   std::string tblName;
   std::string partitionName;
   /**
-   *
+   * 
    * @see CompactionMetricsMetricType
    */
   CompactionMetricsMetricType::type type;
@@ -11365,7 +11380,7 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   std::string tablename;
   std::string partitionname;
   /**
-   *
+   * 
    * @see CompactionType
    */
   CompactionType::type type;
@@ -11775,7 +11790,7 @@ class AddDynamicPartitions : public virtual ::apache::thrift::TBase {
   std::string tablename;
   std::vector<std::string>  partitionnames;
   /**
-   *
+   * 
    * @see DataOperationType
    */
   DataOperationType::type operationType;
@@ -12812,7 +12827,7 @@ class GetFileMetadataByExprRequest : public virtual ::apache::thrift::TBase {
   std::string expr;
   bool doGetFooters;
   /**
-   *
+   * 
    * @see FileMetadataExprType
    */
   FileMetadataExprType::type type;
@@ -12986,7 +13001,7 @@ class PutFileMetadataRequest : public virtual ::apache::thrift::TBase {
   std::vector<int64_t>  fileIds;
   std::vector<std::string>  metadata;
   /**
-   *
+   * 
    * @see FileMetadataExprType
    */
   FileMetadataExprType::type type;
@@ -14171,7 +14186,7 @@ class WMResourcePlan : public virtual ::apache::thrift::TBase {
   virtual ~WMResourcePlan() noexcept;
   std::string name;
   /**
-   *
+   * 
    * @see WMResourcePlanStatus
    */
   WMResourcePlanStatus::type status;
@@ -14258,7 +14273,7 @@ class WMNullableResourcePlan : public virtual ::apache::thrift::TBase {
   virtual ~WMNullableResourcePlan() noexcept;
   std::string name;
   /**
-   *
+   * 
    * @see WMResourcePlanStatus
    */
   WMResourcePlanStatus::type status;
@@ -16383,7 +16398,7 @@ class ISchema : public virtual ::apache::thrift::TBase {
 
   virtual ~ISchema() noexcept;
   /**
-   *
+   * 
    * @see SchemaType
    */
   SchemaType::type schemaType;
@@ -16391,12 +16406,12 @@ class ISchema : public virtual ::apache::thrift::TBase {
   std::string catName;
   std::string dbName;
   /**
-   *
+   * 
    * @see SchemaCompatibility
    */
   SchemaCompatibility::type compatibility;
   /**
-   *
+   * 
    * @see SchemaValidation
    */
   SchemaValidation::type validationLevel;
@@ -16606,7 +16621,7 @@ class SchemaVersion : public virtual ::apache::thrift::TBase {
   int64_t createdAt;
   std::vector<FieldSchema>  cols;
   /**
-   *
+   * 
    * @see SchemaVersionState
    */
   SchemaVersionState::type state;
@@ -16911,7 +16926,7 @@ class SetSchemaVersionStateRequest : public virtual ::apache::thrift::TBase {
   virtual ~SetSchemaVersionStateRequest() noexcept;
   SchemaVersionDescriptor schemaVersion;
   /**
-   *
+   * 
    * @see SchemaVersionState
    */
   SchemaVersionState::type state;
@@ -17244,7 +17259,7 @@ class CreateDatabaseRequest : public virtual ::apache::thrift::TBase {
   PrincipalPrivilegeSet privileges;
   std::string ownerName;
   /**
-   *
+   * 
    * @see PrincipalType
    */
   PrincipalType::type ownerType;
@@ -17674,7 +17689,7 @@ class ScheduledQueryMaintenanceRequest : public virtual ::apache::thrift::TBase 
 
   virtual ~ScheduledQueryMaintenanceRequest() noexcept;
   /**
-   *
+   * 
    * @see ScheduledQueryMaintenanceRequestType
    */
   ScheduledQueryMaintenanceRequestType::type type;
@@ -17728,7 +17743,7 @@ class ScheduledQueryProgressInfo : public virtual ::apache::thrift::TBase {
   virtual ~ScheduledQueryProgressInfo() noexcept;
   int64_t scheduledExecutionId;
   /**
-   *
+   * 
    * @see QueryState
    */
   QueryState::type state;
@@ -18172,7 +18187,7 @@ class GetPartitionsFilterSpec : public virtual ::apache::thrift::TBase {
 
   virtual ~GetPartitionsFilterSpec() noexcept;
   /**
-   *
+   * 
    * @see PartitionFilterMode
    */
   PartitionFilterMode::type filterMode;

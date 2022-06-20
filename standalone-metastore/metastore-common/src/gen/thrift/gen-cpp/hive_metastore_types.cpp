@@ -9720,6 +9720,11 @@ void DateColumnStatsData::__set_bitVectors(const std::string& val) {
   this->bitVectors = val;
 __isset.bitVectors = true;
 }
+
+void DateColumnStatsData::__set_histogram(const std::string& val) {
+  this->histogram = val;
+__isset.histogram = true;
+}
 std::ostream& operator<<(std::ostream& out, const DateColumnStatsData& obj)
 {
   obj.printTo(out);
@@ -9790,6 +9795,14 @@ uint32_t DateColumnStatsData::read(::apache::thrift::protocol::TProtocol* iprot)
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->histogram);
+          this->__isset.histogram = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -9834,6 +9847,11 @@ uint32_t DateColumnStatsData::write(::apache::thrift::protocol::TProtocol* oprot
     xfer += oprot->writeBinary(this->bitVectors);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.histogram) {
+    xfer += oprot->writeFieldBegin("histogram", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeBinary(this->histogram);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -9846,6 +9864,7 @@ void swap(DateColumnStatsData &a, DateColumnStatsData &b) {
   swap(a.numNulls, b.numNulls);
   swap(a.numDVs, b.numDVs);
   swap(a.bitVectors, b.bitVectors);
+  swap(a.histogram, b.histogram);
   swap(a.__isset, b.__isset);
 }
 
@@ -9855,6 +9874,7 @@ DateColumnStatsData::DateColumnStatsData(const DateColumnStatsData& other326) {
   numNulls = other326.numNulls;
   numDVs = other326.numDVs;
   bitVectors = other326.bitVectors;
+  histogram = other326.histogram;
   __isset = other326.__isset;
 }
 DateColumnStatsData& DateColumnStatsData::operator=(const DateColumnStatsData& other327) {
@@ -9863,6 +9883,7 @@ DateColumnStatsData& DateColumnStatsData::operator=(const DateColumnStatsData& o
   numNulls = other327.numNulls;
   numDVs = other327.numDVs;
   bitVectors = other327.bitVectors;
+  histogram = other327.histogram;
   __isset = other327.__isset;
   return *this;
 }
@@ -9874,6 +9895,7 @@ void DateColumnStatsData::printTo(std::ostream& out) const {
   out << ", " << "numNulls=" << to_string(numNulls);
   out << ", " << "numDVs=" << to_string(numDVs);
   out << ", " << "bitVectors="; (__isset.bitVectors ? (out << to_string(bitVectors)) : (out << "<null>"));
+  out << ", " << "histogram="; (__isset.histogram ? (out << to_string(histogram)) : (out << "<null>"));
   out << ")";
 }
 
@@ -9996,6 +10018,11 @@ void TimestampColumnStatsData::__set_bitVectors(const std::string& val) {
   this->bitVectors = val;
 __isset.bitVectors = true;
 }
+
+void TimestampColumnStatsData::__set_histogram(const std::string& val) {
+  this->histogram = val;
+__isset.histogram = true;
+}
 std::ostream& operator<<(std::ostream& out, const TimestampColumnStatsData& obj)
 {
   obj.printTo(out);
@@ -10066,6 +10093,14 @@ uint32_t TimestampColumnStatsData::read(::apache::thrift::protocol::TProtocol* i
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->histogram);
+          this->__isset.histogram = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -10110,6 +10145,11 @@ uint32_t TimestampColumnStatsData::write(::apache::thrift::protocol::TProtocol* 
     xfer += oprot->writeBinary(this->bitVectors);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.histogram) {
+    xfer += oprot->writeFieldBegin("histogram", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeBinary(this->histogram);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -10122,6 +10162,7 @@ void swap(TimestampColumnStatsData &a, TimestampColumnStatsData &b) {
   swap(a.numNulls, b.numNulls);
   swap(a.numDVs, b.numDVs);
   swap(a.bitVectors, b.bitVectors);
+  swap(a.histogram, b.histogram);
   swap(a.__isset, b.__isset);
 }
 
@@ -10131,6 +10172,7 @@ TimestampColumnStatsData::TimestampColumnStatsData(const TimestampColumnStatsDat
   numNulls = other330.numNulls;
   numDVs = other330.numDVs;
   bitVectors = other330.bitVectors;
+  histogram = other330.histogram;
   __isset = other330.__isset;
 }
 TimestampColumnStatsData& TimestampColumnStatsData::operator=(const TimestampColumnStatsData& other331) {
@@ -10139,6 +10181,7 @@ TimestampColumnStatsData& TimestampColumnStatsData::operator=(const TimestampCol
   numNulls = other331.numNulls;
   numDVs = other331.numDVs;
   bitVectors = other331.bitVectors;
+  histogram = other331.histogram;
   __isset = other331.__isset;
   return *this;
 }
@@ -10150,6 +10193,7 @@ void TimestampColumnStatsData::printTo(std::ostream& out) const {
   out << ", " << "numNulls=" << to_string(numNulls);
   out << ", " << "numDVs=" << to_string(numDVs);
   out << ", " << "bitVectors="; (__isset.bitVectors ? (out << to_string(bitVectors)) : (out << "<null>"));
+  out << ", " << "histogram="; (__isset.histogram ? (out << to_string(histogram)) : (out << "<null>"));
   out << ")";
 }
 

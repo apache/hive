@@ -2069,13 +2069,15 @@ class DateColumnStatsData
   NUMNULLS = 3
   NUMDVS = 4
   BITVECTORS = 5
+  HISTOGRAM = 6
 
   FIELDS = {
     LOWVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'lowValue', :class => ::Date, :optional => true},
     HIGHVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'highValue', :class => ::Date, :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
     NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
-    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true}
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true},
+    HISTOGRAM => {:type => ::Thrift::Types::STRING, :name => 'histogram', :binary => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2112,13 +2114,15 @@ class TimestampColumnStatsData
   NUMNULLS = 3
   NUMDVS = 4
   BITVECTORS = 5
+  HISTOGRAM = 6
 
   FIELDS = {
     LOWVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'lowValue', :class => ::Timestamp, :optional => true},
     HIGHVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'highValue', :class => ::Timestamp, :optional => true},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
     NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
-    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true}
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true},
+    HISTOGRAM => {:type => ::Thrift::Types::STRING, :name => 'histogram', :binary => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end
