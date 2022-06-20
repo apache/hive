@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -60,7 +59,7 @@ import org.apache.hive.common.HiveCompat.CompatLevel;
  * GenericUDF Base Class for operations.
  */
 @Description(name = "op", value = "a op b - Returns the result of operation")
-public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary implements SettableUDF {
+public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary {
 
   protected transient PrimitiveObjectInspector leftOI;
   protected transient PrimitiveObjectInspector rightOI;
@@ -79,12 +78,6 @@ public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary impleme
 
   protected boolean confLookupNeeded = true;
   protected boolean ansiSqlArithmetic = false;
-
-  // A typeinfo that has already been defined. On the first pass when we create the class
-  // from the ASTNode objects, the typeInfo is unknown. However, once CBO is run, CBO
-  // defines the type that should be used. We don't want to recalculate the typeInfo when
-  // we convert it back to ASTNodes, so the typeInfo is "predefined" in this case.
-  private TypeInfo predefinedTypeInfo;
 
   public GenericUDFBaseNumeric() {
   }
@@ -215,9 +208,6 @@ public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary impleme
    * @throws UDFArgumentException
    */
   private PrimitiveTypeInfo deriveResultTypeInfo() throws UDFArgumentException {
-    if (predefinedTypeInfo instanceof PrimitiveTypeInfo && predefinedTypeInfo != null) {
-      return (PrimitiveTypeInfo) predefinedTypeInfo;
-    }
     PrimitiveTypeInfo left = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromObjectInspector(leftOI);
     PrimitiveTypeInfo right = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromObjectInspector(rightOI);
     if (!FunctionRegistry.isNumericType(left) || !FunctionRegistry.isNumericType(right)) {
@@ -348,15 +338,5 @@ public abstract class GenericUDFBaseNumeric extends GenericUDFBaseBinary impleme
 
   public void setAnsiSqlArithmetic(boolean ansiSqlArithmetic) {
     this.ansiSqlArithmetic = ansiSqlArithmetic;
-  }
-
-  @Override
-  public void setTypeInfo(TypeInfo typeInfo) {
-    this.predefinedTypeInfo = typeInfo;
-  }
-
-  @Override
-  public TypeInfo getTypeInfo() {
-    return this.predefinedTypeInfo;
   }
 }

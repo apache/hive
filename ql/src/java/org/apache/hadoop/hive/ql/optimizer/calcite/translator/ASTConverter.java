@@ -803,7 +803,7 @@ public class ASTConverter {
           astNodeLst.add(operand.accept(this));
         }
         return SqlFunctionConverter.buildAST(SqlStdOperatorTable.NOT,
-          Collections.singletonList(SqlFunctionConverter.buildAST(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, astNodeLst, call.getType())), call.getType());
+          Collections.singletonList(SqlFunctionConverter.buildAST(SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, astNodeLst)));
       case CAST:
         assert(call.getOperands().size() == 1);
         if (call.getType().isStruct() ||
@@ -850,7 +850,7 @@ public class ASTConverter {
       if (isFlat(call)) {
         return SqlFunctionConverter.buildAST(op, astNodeLst, 0);
       } else {
-        return SqlFunctionConverter.buildAST(op, astNodeLst, call.getType());
+        return SqlFunctionConverter.buildAST(op, astNodeLst);
       }
     }
 
