@@ -252,7 +252,13 @@ fi
             find . -name '*.java'|grep /Test|grep -v src/test/java|grep org/apache|while read f;do t="`echo $f|sed 's|.*org/apache|happy/src/test/java/org/apache|'`";mkdir -p  "${t%/*}";touch "$t";done
         '''
         splits = splitTests parallelism: count(Integer.parseInt(params.SPLIT)), generateInclusions: true, estimateTestsFromFiles: true
-        echo splits
+        for (int i = 0; i < splits.size(); i++) {
+          def num = i
+          def split = splits[num]
+          def splitName=String.format("split-%02d",num+1)
+          echo splitName
+          echo split.list.join("\n")
+        }
       }
     }
   }
