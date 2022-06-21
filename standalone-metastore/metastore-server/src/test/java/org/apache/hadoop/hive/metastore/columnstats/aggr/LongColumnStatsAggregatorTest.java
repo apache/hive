@@ -50,7 +50,7 @@ public class LongColumnStatsAggregatorTest {
     List<String> partitionNames = Collections.singletonList("part1");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2)
-        .low(1L).high(4L).hll(1, 3).buildLongStats();
+        .low(1L).high(4L).hll(1, 3).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -66,7 +66,7 @@ public class LongColumnStatsAggregatorTest {
   public void testAggregateSingleStatWhenNullValues() throws MetaException {
     List<String> partitionNames = Collections.singletonList("part1");
 
-    ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2).buildLongStats();
+    ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -75,7 +75,7 @@ public class LongColumnStatsAggregatorTest {
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
 
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
-    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2).buildLongStats();
+    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
@@ -94,10 +94,10 @@ public class LongColumnStatsAggregatorTest {
     List<String> partitionNames = Arrays.asList("part1", "part2");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2)
-        .low(1L).high(2L).hll(1, 2).buildLongStats();
+        .low(1L).high(2L).hll(1, 2).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    ColumnStatisticsData data2 = new ColStatsBuilder<>(long.class).numNulls(2).numDVs(3).buildLongStats();
+    ColumnStatisticsData data2 = new ColStatsBuilder<>(long.class).numNulls(2).numDVs(3).build();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(0));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -107,20 +107,20 @@ public class LongColumnStatsAggregatorTest {
 
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(3)
-        .low(1L).high(2L).hll(1, 2).buildLongStats();
+        .low(1L).high(2L).hll(1, 2).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(4)
-        .low(1L).high(2L).hll(1, 2).buildLongStats();
+        .low(1L).high(2L).hll(1, 2).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     aggregator.ndvTuner = 1;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(5)
-        .low(1L).high(2L).hll(1, 2).buildLongStats();
+        .low(1L).high(2L).hll(1, 2).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 
@@ -129,15 +129,15 @@ public class LongColumnStatsAggregatorTest {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(3)
-        .low(1L).high(3L).hll(1, 2, 3).buildLongStats();
+        .low(1L).high(3L).hll(1, 2, 3).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     ColumnStatisticsData data2 = new ColStatsBuilder<>(long.class).numNulls(2).numDVs(3)
-        .low(3L).high(5L).hll(3, 4, 5).buildLongStats();
+        .low(3L).high(5L).hll(3, 4, 5).build();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(1));
 
     ColumnStatisticsData data3 = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(2)
-        .low(6L).high(7L).hll(6, 7).buildLongStats();
+        .low(6L).high(7L).hll(6, 7).build();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -148,7 +148,7 @@ public class LongColumnStatsAggregatorTest {
 
     // the aggregation does not update hll, only numNDVs is, it keeps the first hll
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(6).numDVs(7)
-        .low(1L).high(7L).hll(1, 2, 3).buildLongStats();
+        .low(1L).high(7L).hll(1, 2, 3).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 
@@ -157,15 +157,15 @@ public class LongColumnStatsAggregatorTest {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(3)
-        .low(1L).high(3L).fmSketch(1, 2, 3).buildLongStats();
+        .low(1L).high(3L).fmSketch(1, 2, 3).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     ColumnStatisticsData data2 = new ColStatsBuilder<>(long.class).numNulls(2).numDVs(3)
-        .low(3L).high(5L).hll(3, 4, 5).buildLongStats();
+        .low(3L).high(5L).hll(3, 4, 5).build();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(1));
 
     ColumnStatisticsData data3 = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(4)
-        .low(1L).high(8L).hll(1, 2, 6, 8).buildLongStats();
+        .low(1L).high(8L).hll(1, 2, 6, 8).build();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -177,14 +177,14 @@ public class LongColumnStatsAggregatorTest {
     // the aggregation does not update the bitvector, only numDVs is, it keeps the first bitvector;
     // numDVs is set to the maximum among all stats when non-mergeable bitvectors are detected
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(6).numDVs(4)
-        .low(1L).high(8L).fmSketch(1, 2, 3).buildLongStats();
+        .low(1L).high(8L).fmSketch(1, 2, 3).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     // the use of the density function leads to a different estimation for numNDV
     expectedStats = new ColStatsBuilder<>(long.class).numNulls(6).numDVs(6)
-        .low(1L).high(8L).fmSketch(1, 2, 3).buildLongStats();
+        .low(1L).high(8L).fmSketch(1, 2, 3).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     // here the ndv lower bound is 4 (the highest individual numDVs), the higher bound is 10 (3 + 3 + 4, that is the
@@ -195,25 +195,25 @@ public class LongColumnStatsAggregatorTest {
     aggregator.ndvTuner = 0;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     expectedStats = new ColStatsBuilder<>(long.class).numNulls(6).numDVs(4)
-        .low(1L).high(8L).fmSketch(1, 2, 3).buildLongStats();
+        .low(1L).high(8L).fmSketch(1, 2, 3).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.ndvTuner = 0.5;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     expectedStats = new ColStatsBuilder<>(long.class).numNulls(6).numDVs(7)
-        .low(1L).high(8L).fmSketch(1, 2, 3).buildLongStats();
+        .low(1L).high(8L).fmSketch(1, 2, 3).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.ndvTuner = 0.75;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     expectedStats = new ColStatsBuilder<>(long.class).numNulls(6).numDVs(8)
-        .low(1L).high(8L).fmSketch(1, 2, 3).buildLongStats();
+        .low(1L).high(8L).fmSketch(1, 2, 3).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.ndvTuner = 1;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     expectedStats = new ColStatsBuilder<>(long.class).numNulls(6).numDVs(10)
-        .low(1L).high(8L).fmSketch(1, 2, 3).buildLongStats();
+        .low(1L).high(8L).fmSketch(1, 2, 3).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 
@@ -222,15 +222,15 @@ public class LongColumnStatsAggregatorTest {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3", "part4");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(3)
-        .low(1L).high(3L).hll(1, 2, 3).buildLongStats();
+        .low(1L).high(3L).hll(1, 2, 3).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     ColumnStatisticsData data3 = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(1)
-        .low(7L).high(7L).hll(7).buildLongStats();
+        .low(7L).high(7L).hll(7).build();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     ColumnStatisticsData data4 = new ColStatsBuilder<>(long.class).numNulls(2).numDVs(3)
-        .low(3L).high(5L).hll(3, 4, 5).buildLongStats();
+        .low(3L).high(5L).hll(3, 4, 5).build();
     ColumnStatistics stats4 = StatisticsTestUtils.createColStats(data4, TABLE, COL, partitionNames.get(3));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -241,7 +241,7 @@ public class LongColumnStatsAggregatorTest {
 
     // hll in case of missing stats is left as null, only numDVs is updated
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(8).numDVs(4)
-        .low(1L).high(9L).buildLongStats();
+        .low(1L).high(9L).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 
@@ -250,11 +250,11 @@ public class LongColumnStatsAggregatorTest {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(3)
-        .low(1L).high(6L).fmSketch(1, 2, 6).buildLongStats();
+        .low(1L).high(6L).fmSketch(1, 2, 6).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     ColumnStatisticsData data3 = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(1)
-        .low(7L).high(7L).hll(7).buildLongStats();
+        .low(7L).high(7L).hll(7).build();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -265,14 +265,14 @@ public class LongColumnStatsAggregatorTest {
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(6).numDVs(3)
-        .low(1L).high(7L).buildLongStats();
+        .low(1L).high(7L).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // the use of the density function leads to a different estimation for numNDV
     expectedStats = new ColStatsBuilder<>(long.class).numNulls(6).numDVs(4)
-        .low(1L).high(7L).buildLongStats();
+        .low(1L).high(7L).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 }

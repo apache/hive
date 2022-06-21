@@ -58,7 +58,7 @@ public class StringColumnStatsAggregatorTest {
     List<String> partitionNames = Collections.singletonList("part1");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(String.class).numNulls(1).numDVs(2).avgColLen(8.5).maxColLen(13)
-        .hll(S_1, S_3).buildStringStats();
+        .hll(S_1, S_3).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -75,15 +75,15 @@ public class StringColumnStatsAggregatorTest {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(String.class).numNulls(1).numDVs(3).avgColLen(20.0 / 3).maxColLen(13)
-        .hll(S_1, S_2, S_3).buildStringStats();
+        .hll(S_1, S_2, S_3).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     ColumnStatisticsData data2 = new ColStatsBuilder<>(String.class).numNulls(2).numDVs(3).avgColLen(14).maxColLen(18)
-        .hll(S_3, S_4, S_5).buildStringStats();
+        .hll(S_3, S_4, S_5).build();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(1));
 
     ColumnStatisticsData data3 = new ColStatsBuilder<>(String.class).numNulls(3).numDVs(2).avgColLen(17.5).maxColLen(18)
-        .hll(S_6, S_7).buildStringStats();
+        .hll(S_6, S_7).build();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -93,7 +93,7 @@ public class StringColumnStatsAggregatorTest {
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     // the aggregation does not update hll, only numNDVs is, it keeps the first hll
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(String.class).numNulls(6).numDVs(7).avgColLen(17.5).maxColLen(18)
-        .hll(S_1, S_2, S_3).buildStringStats();
+        .hll(S_1, S_2, S_3).build();
 
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
@@ -103,15 +103,15 @@ public class StringColumnStatsAggregatorTest {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(String.class).numNulls(1).numDVs(3).avgColLen(20.0 / 3).maxColLen(13)
-        .fmSketch(S_1, S_2, S_3).buildStringStats();
+        .fmSketch(S_1, S_2, S_3).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     ColumnStatisticsData data2 = new ColStatsBuilder<>(String.class).numNulls(2).numDVs(3).avgColLen(14).maxColLen(18)
-        .hll(S_3, S_4, S_5).buildStringStats();
+        .hll(S_3, S_4, S_5).build();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(1));
 
     ColumnStatisticsData data3 = new ColStatsBuilder<>(String.class).numNulls(3).numDVs(2).avgColLen(17.5).maxColLen(18)
-        .hll(S_6, S_7).buildStringStats();
+        .hll(S_6, S_7).build();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -123,7 +123,7 @@ public class StringColumnStatsAggregatorTest {
     // the aggregation does not update the bitvector, only numDVs is, it keeps the first bitvector;
     // numDVs is set to the maximum among all stats when non-mergeable bitvectors are detected
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(String.class).numNulls(6).numDVs(3).avgColLen(17.5).maxColLen(18)
-        .fmSketch(S_1, S_2, S_3).buildStringStats();
+        .fmSketch(S_1, S_2, S_3).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     // both useDensityFunctionForNDVEstimation and ndvTuner are ignored by StringColumnStatsAggregator
@@ -154,15 +154,15 @@ public class StringColumnStatsAggregatorTest {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3", "part4");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(String.class).numNulls(1).numDVs(3).avgColLen(20.0 / 3).maxColLen(13)
-        .hll(S_1, S_2, S_3).buildStringStats();
+        .hll(S_1, S_2, S_3).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     ColumnStatisticsData data3 = new ColStatsBuilder<>(String.class).numNulls(3).numDVs(2).avgColLen(17.5).maxColLen(18)
-        .hll(S_6, S_7).buildStringStats();
+        .hll(S_6, S_7).build();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     ColumnStatisticsData data4 = new ColStatsBuilder<>(String.class).numNulls(2).numDVs(3).avgColLen(14).maxColLen(18)
-        .hll(S_3, S_4, S_5).buildStringStats();
+        .hll(S_3, S_4, S_5).build();
     ColumnStatistics stats4 = StatisticsTestUtils.createColStats(data4, TABLE, COL, partitionNames.get(3));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -173,7 +173,7 @@ public class StringColumnStatsAggregatorTest {
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(String.class).numNulls(8).numDVs(6)
-        .avgColLen(24).maxColLen(24).buildStringStats();
+        .avgColLen(24).maxColLen(24).build();
 
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
@@ -183,11 +183,11 @@ public class StringColumnStatsAggregatorTest {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(String.class).numNulls(1).numDVs(3).avgColLen(20.0 / 3).maxColLen(13)
-        .fmSketch(S_1, S_2, S_3).buildStringStats();
+        .fmSketch(S_1, S_2, S_3).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     ColumnStatisticsData data3 = new ColStatsBuilder<>(String.class).numNulls(3).numDVs(2).avgColLen(17.5).maxColLen(18)
-        .hll(S_6, S_7).buildStringStats();
+        .hll(S_6, S_7).build();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -198,7 +198,7 @@ public class StringColumnStatsAggregatorTest {
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(String.class).numNulls(6).numDVs(3)
-        .avgColLen(22.916666666666668).maxColLen(22).buildStringStats();
+        .avgColLen(22.916666666666668).maxColLen(22).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     // both useDensityFunctionForNDVEstimation and ndvTuner are ignored by StringColumnStatsAggregator

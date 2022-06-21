@@ -22,12 +22,9 @@ import org.apache.hadoop.hive.metastore.StatisticsTestUtils;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
-import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.Date;
+import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.Timestamp;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
@@ -118,59 +115,27 @@ public class ColStatsBuilder<T> {
     return this;
   }
 
-  public ColumnStatisticsData buildBinaryStats() {
+  public ColumnStatisticsData build() {
     ColumnStatisticsData data = new ColumnStatisticsData();
-    BinaryColumnStatsData stats = newColData(BinaryColumnStatsData.class);
-    data.setBinaryStats(stats);
-    return data;
-  }
-
-  public ColumnStatisticsData buildBooleanStats() {
-    ColumnStatisticsData data = new ColumnStatisticsData();
-    BooleanColumnStatsData stats = newColData(BooleanColumnStatsData.class);
-    data.setBooleanStats(stats);
-    return data;
-  }
-
-  public ColumnStatisticsData buildDateStats() {
-    ColumnStatisticsData data = new ColumnStatisticsData();
-    DateColumnStatsData stats = newColData(DateColumnStatsDataInspector.class);
-    data.setDateStats(stats);
-    return data;
-  }
-
-  public ColumnStatisticsData buildDecimalStats() {
-    ColumnStatisticsData data = new ColumnStatisticsData();
-    DecimalColumnStatsData stats = newColData(DecimalColumnStatsDataInspector.class);
-    data.setDecimalStats(stats);
-    return data;
-  }
-
-  public ColumnStatisticsData buildDoubleStats() {
-    ColumnStatisticsData data = new ColumnStatisticsData();
-    DoubleColumnStatsData stats = newColData(DoubleColumnStatsDataInspector.class);
-    data.setDoubleStats(stats);
-    return data;
-  }
-
-  public ColumnStatisticsData buildLongStats() {
-    ColumnStatisticsData data = new ColumnStatisticsData();
-    LongColumnStatsData stats = newColData(LongColumnStatsDataInspector.class);
-    data.setLongStats(stats);
-    return data;
-  }
-
-  public ColumnStatisticsData buildStringStats() {
-    ColumnStatisticsData data = new ColumnStatisticsData();
-    StringColumnStatsData stats = newColData(StringColumnStatsDataInspector.class);
-    data.setStringStats(stats);
-    return data;
-  }
-
-  public ColumnStatisticsData buildTimestampStats() {
-    ColumnStatisticsData data = new ColumnStatisticsData();
-    TimestampColumnStatsData stats = newColData(TimestampColumnStatsDataInspector.class);
-    data.setTimestampStats(stats);
+    if (type == byte[].class) {
+      data.setBinaryStats(newColData(BinaryColumnStatsData.class));
+    } else if (type == Boolean.class) {
+      data.setBooleanStats(newColData(BooleanColumnStatsData.class));
+    } else if (type == Date.class) {
+      data.setDateStats(newColData(DateColumnStatsDataInspector.class));
+    } else if (type == Decimal.class) {
+      data.setDecimalStats(newColData(DecimalColumnStatsDataInspector.class));
+    } else if (type == double.class) {
+      data.setDoubleStats(newColData(DoubleColumnStatsDataInspector.class));
+    } else if (type == long.class) {
+      data.setLongStats(newColData(LongColumnStatsDataInspector.class));
+    } else if (type == String.class) {
+      data.setStringStats(newColData(StringColumnStatsDataInspector.class));
+    } else if (type == Timestamp.class) {
+      data.setTimestampStats(newColData(TimestampColumnStatsDataInspector.class));
+    } else {
+      throw new IllegalStateException(type.getSimpleName() + " is not supported");
+    }
     return data;
   }
 

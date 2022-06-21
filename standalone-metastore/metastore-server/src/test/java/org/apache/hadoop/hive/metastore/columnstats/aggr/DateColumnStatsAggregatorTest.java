@@ -61,7 +61,7 @@ public class DateColumnStatsAggregatorTest {
     List<String> partitionNames = Collections.singletonList("part1");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(Date.class).numNulls(1).numDVs(2).low(DATE_1).high(DATE_4)
-        .hll(DATE_1.getDaysSinceEpoch(), DATE_4.getDaysSinceEpoch()).buildDateStats();
+        .hll(DATE_1.getDaysSinceEpoch(), DATE_4.getDaysSinceEpoch()).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -77,7 +77,7 @@ public class DateColumnStatsAggregatorTest {
   public void testAggregateSingleStatWhenNullValues() throws MetaException {
     List<String> partitionNames = Collections.singletonList("part1");
 
-    ColumnStatisticsData data1 = new ColStatsBuilder<>(Date.class).numNulls(1).numDVs(2).buildDateStats();
+    ColumnStatisticsData data1 = new ColStatsBuilder<>(Date.class).numNulls(1).numDVs(2).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -104,10 +104,10 @@ public class DateColumnStatsAggregatorTest {
 
     long[] values1 = { DATE_1.getDaysSinceEpoch(), DATE_2.getDaysSinceEpoch() };
     ColumnStatisticsData data1 = new ColStatsBuilder<>(Date.class).numNulls(1).numDVs(2)
-        .low(DATE_1).high(DATE_2).hll(values1).buildDateStats();
+        .low(DATE_1).high(DATE_2).hll(values1).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    ColumnStatisticsData data2 = new ColStatsBuilder<>(Date.class).numNulls(2).numDVs(3).buildDateStats();
+    ColumnStatisticsData data2 = new ColStatsBuilder<>(Date.class).numNulls(2).numDVs(3).build();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(0));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -117,20 +117,20 @@ public class DateColumnStatsAggregatorTest {
 
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Date.class).numNulls(3).numDVs(3)
-        .low(DATE_1).high(DATE_2).hll(values1).buildDateStats();
+        .low(DATE_1).high(DATE_2).hll(values1).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     expectedStats = new ColStatsBuilder<>(Date.class).numNulls(3).numDVs(4)
-        .low(DATE_1).high(DATE_2).hll(values1).buildDateStats();
+        .low(DATE_1).high(DATE_2).hll(values1).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     aggregator.ndvTuner = 1;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     expectedStats = new ColStatsBuilder<>(Date.class).numNulls(3).numDVs(5)
-        .low(DATE_1).high(DATE_2).hll(values1).buildDateStats();
+        .low(DATE_1).high(DATE_2).hll(values1).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 
@@ -140,17 +140,17 @@ public class DateColumnStatsAggregatorTest {
 
     long[] values1 = { DATE_1.getDaysSinceEpoch(), DATE_2.getDaysSinceEpoch(), DATE_3.getDaysSinceEpoch() };
     ColumnStatisticsData data1 = new ColStatsBuilder<>(Date.class).numNulls(1).numDVs(3)
-        .low(DATE_1).high(DATE_3).hll(values1).buildDateStats();
+        .low(DATE_1).high(DATE_3).hll(values1).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     long[] values2 = { DATE_3.getDaysSinceEpoch(), DATE_4.getDaysSinceEpoch(), DATE_5.getDaysSinceEpoch() };
     ColumnStatisticsData data2 = new ColStatsBuilder<>(Date.class).numNulls(2).numDVs(3)
-        .low(DATE_3).high(DATE_5).hll(values2).buildDateStats();
+        .low(DATE_3).high(DATE_5).hll(values2).build();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(1));
 
     long[] values3 = { DATE_6.getDaysSinceEpoch(), DATE_7.getDaysSinceEpoch() };
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Date.class).numNulls(3).numDVs(2)
-        .low(DATE_6).high(DATE_7).hll(values3).buildDateStats();
+        .low(DATE_6).high(DATE_7).hll(values3).build();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -161,7 +161,7 @@ public class DateColumnStatsAggregatorTest {
 
     // the aggregation does not update hll, only numNDVs is, it keeps the first hll
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(7)
-        .low(DATE_1).high(DATE_7).hll(values1).buildDateStats();
+        .low(DATE_1).high(DATE_7).hll(values1).build();
 
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
@@ -172,18 +172,18 @@ public class DateColumnStatsAggregatorTest {
 
     long[] values1 = { DATE_1.getDaysSinceEpoch(), DATE_2.getDaysSinceEpoch(), DATE_3.getDaysSinceEpoch() };
     ColumnStatisticsData data1 = new ColStatsBuilder<>(Date.class).numNulls(1).numDVs(3)
-        .low(DATE_1).high(DATE_3).fmSketch(values1).buildDateStats();
+        .low(DATE_1).high(DATE_3).fmSketch(values1).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     long[] values2 = { DATE_3.getDaysSinceEpoch(), DATE_4.getDaysSinceEpoch(), DATE_5.getDaysSinceEpoch() };
     ColumnStatisticsData data2 = new ColStatsBuilder<>(Date.class).numNulls(2).numDVs(3)
-        .low(DATE_3).high(DATE_5).hll(values2).buildDateStats();
+        .low(DATE_3).high(DATE_5).hll(values2).build();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(1));
 
     long[] values3 = { DATE_1.getDaysSinceEpoch(), DATE_2.getDaysSinceEpoch(), DATE_6.getDaysSinceEpoch(),
         DATE_8.getDaysSinceEpoch() };
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Date.class).numNulls(3).numDVs(4)
-        .low(DATE_1).high(DATE_8).hll(values3).buildDateStats();
+        .low(DATE_1).high(DATE_8).hll(values3).build();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -195,14 +195,14 @@ public class DateColumnStatsAggregatorTest {
     // the aggregation does not update the bitvector, only numDVs is, it keeps the first bitvector;
     // numDVs is set to the maximum among all stats when non-mergeable bitvectors are detected
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(4)
-        .low(DATE_1).high(DATE_8).fmSketch(values1).buildDateStats();
+        .low(DATE_1).high(DATE_8).fmSketch(values1).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     // the use of the density function leads to a different estimation for numNDV
     expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(6)
-        .low(DATE_1).high(DATE_8).fmSketch(values1).buildDateStats();
+        .low(DATE_1).high(DATE_8).fmSketch(values1).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     // here the ndv lower bound is 4 (the highest individual numDVs), the higher bound is 10 (3 + 3 + 4, that is the
@@ -213,25 +213,25 @@ public class DateColumnStatsAggregatorTest {
     aggregator.ndvTuner = 0;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(4)
-        .low(DATE_1).high(DATE_8).fmSketch(values1).buildDateStats();
+        .low(DATE_1).high(DATE_8).fmSketch(values1).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.ndvTuner = 0.5;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(7)
-        .low(DATE_1).high(DATE_8).fmSketch(values1).buildDateStats();
+        .low(DATE_1).high(DATE_8).fmSketch(values1).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.ndvTuner = 0.75;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(8)
-        .low(DATE_1).high(DATE_8).fmSketch(values1).buildDateStats();
+        .low(DATE_1).high(DATE_8).fmSketch(values1).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.ndvTuner = 1;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
     expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(10)
-        .low(DATE_1).high(DATE_8).fmSketch(values1).buildDateStats();
+        .low(DATE_1).high(DATE_8).fmSketch(values1).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 
@@ -241,16 +241,16 @@ public class DateColumnStatsAggregatorTest {
 
     long[] values1 = { DATE_1.getDaysSinceEpoch(), DATE_2.getDaysSinceEpoch(), DATE_3.getDaysSinceEpoch() };
     ColumnStatisticsData data1 = new ColStatsBuilder<>(Date.class).numNulls(1).numDVs(3)
-        .low(DATE_1).high(DATE_3).hll(values1).buildDateStats();
+        .low(DATE_1).high(DATE_3).hll(values1).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Date.class).numNulls(3).numDVs(1).low(DATE_7).high(DATE_7)
-        .hll(DATE_7.getDaysSinceEpoch()).buildDateStats();
+        .hll(DATE_7.getDaysSinceEpoch()).build();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     long[] values4 = { DATE_3.getDaysSinceEpoch(), DATE_4.getDaysSinceEpoch(), DATE_5.getDaysSinceEpoch() };
     ColumnStatisticsData data4 = new ColStatsBuilder<>(Date.class).numNulls(2).numDVs(3)
-        .low(DATE_3).high(DATE_5).hll(values4).buildDateStats();
+        .low(DATE_3).high(DATE_5).hll(values4).build();
     ColumnStatistics stats4 = StatisticsTestUtils.createColStats(data4, TABLE, COL, partitionNames.get(3));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -260,7 +260,7 @@ public class DateColumnStatsAggregatorTest {
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Date.class).numNulls(8).numDVs(4)
-        .low(DATE_1).high(DATE_9).buildDateStats();
+        .low(DATE_1).high(DATE_9).build();
 
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
@@ -271,11 +271,11 @@ public class DateColumnStatsAggregatorTest {
 
     long[] values1 = { DATE_1.getDaysSinceEpoch(), DATE_2.getDaysSinceEpoch(), DATE_6.getDaysSinceEpoch() };
     ColumnStatisticsData data1 = new ColStatsBuilder<>(Date.class).numNulls(1).numDVs(3)
-        .low(DATE_1).high(DATE_6).fmSketch(values1).buildDateStats();
+        .low(DATE_1).high(DATE_6).fmSketch(values1).build();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Date.class).numNulls(3).numDVs(1)
-        .low(DATE_7).high(DATE_7).hll(DATE_7.getDaysSinceEpoch()).buildDateStats();
+        .low(DATE_7).high(DATE_7).hll(DATE_7.getDaysSinceEpoch()).build();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -286,14 +286,14 @@ public class DateColumnStatsAggregatorTest {
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // hll in case of missing stats is left as null, only numDVs is updated
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(3)
-        .low(DATE_1).high(DATE_7).buildDateStats();
+        .low(DATE_1).high(DATE_7).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
     // the use of the density function leads to a different estimation for numNDV
     expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(4)
-        .low(DATE_1).high(DATE_7).buildDateStats();
+        .low(DATE_1).high(DATE_7).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
 }
