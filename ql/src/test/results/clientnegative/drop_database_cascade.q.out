@@ -20,12 +20,12 @@ POSTHOOK: Output: TEST_database@test_table
 POSTHOOK: Output: database:test_database
 PREHOOK: query: CREATE FUNCTION test_func as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
 PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: TEST_database.test_func
 PREHOOK: Output: database:test_database
-PREHOOK: Output: test_database.test_func
 POSTHOOK: query: CREATE FUNCTION test_func as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
 POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: TEST_database.test_func
 POSTHOOK: Output: database:test_database
-POSTHOOK: Output: test_database.test_func
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
