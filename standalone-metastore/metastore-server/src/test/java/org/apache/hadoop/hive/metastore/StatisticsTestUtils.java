@@ -62,6 +62,18 @@ public class StatisticsTestUtils {
     return colStats;
   }
 
+  public static ColStatsObjWithSourceInfo createStatsWithInfo(ColumnStatisticsData data, Table tbl,
+      FieldSchema column, String partName) {
+    ColumnStatisticsObj statObj = new ColumnStatisticsObj(column.getName(), column.getType(), data);
+    ColumnStatistics colStats = new ColumnStatistics();
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, tbl.getDbName(), tbl.getTableName());
+    statsDesc.setPartName(partName);
+    colStats.setStatsDesc(statsDesc);
+    colStats.setStatsObj(Collections.singletonList(statObj));
+    colStats.setEngine(HIVE_ENGINE);
+    return new ColStatsObjWithSourceInfo(statObj, tbl.getCatName(), tbl.getDbName(), column.getName(), partName);
+  }
+
   /**
    * Creates a list of {@link ColStatsObjWithSourceInfo} for a given table, its partitions and using the given stats.
    * @param table the table the statistics information relates to
