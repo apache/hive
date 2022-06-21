@@ -13942,11 +13942,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(
             "Partition columns can only declared using their names in CTAS statements");
       }
-      tblProps.put(TABLE_IS_CTAS, "true");
+
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
           isTransactional, isManaged, new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()}, isDefaultTableTypeChanged);
 
+      tblProps.put(TABLE_IS_CTAS, "true");
       isExt = isExternalTableChanged(tblProps, isTransactional, isExt, isDefaultTableTypeChanged);
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
