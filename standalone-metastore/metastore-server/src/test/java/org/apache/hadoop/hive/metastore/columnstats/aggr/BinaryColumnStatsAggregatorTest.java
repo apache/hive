@@ -49,7 +49,7 @@ public class BinaryColumnStatsAggregatorTest {
   public void testAggregateSingleStat() throws MetaException {
     List<String> partitionNames = Collections.singletonList("part1");
     
-    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).avgColLen(8.5).maxColLen(13).buildBinaryStats();
+    ColumnStatisticsData data1 = new ColStatsBuilder<>(byte[].class).numNulls(1).avgColLen(8.5).maxColLen(13).buildBinaryStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -65,13 +65,13 @@ public class BinaryColumnStatsAggregatorTest {
   public void testAggregateMultiStatsWhenAllAvailable() throws MetaException {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
-    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).avgColLen(20.0 / 3).maxColLen(13).buildBinaryStats();
+    ColumnStatisticsData data1 = new ColStatsBuilder<>(byte[].class).numNulls(1).avgColLen(20.0 / 3).maxColLen(13).buildBinaryStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    ColumnStatisticsData data2 = new ColStatsBuilder().numNulls(2).avgColLen(14).maxColLen(18).buildBinaryStats();
+    ColumnStatisticsData data2 = new ColStatsBuilder<>(byte[].class).numNulls(2).avgColLen(14).maxColLen(18).buildBinaryStats();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(1));
 
-    ColumnStatisticsData data3 = new ColStatsBuilder().numNulls(3).avgColLen(17.5).maxColLen(18).buildBinaryStats();
+    ColumnStatisticsData data3 = new ColStatsBuilder<>(byte[].class).numNulls(3).avgColLen(17.5).maxColLen(18).buildBinaryStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -79,7 +79,7 @@ public class BinaryColumnStatsAggregatorTest {
 
     BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
-    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).avgColLen(17.5).maxColLen(18).buildBinaryStats();
+    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(byte[].class).numNulls(6).avgColLen(17.5).maxColLen(18).buildBinaryStats();
 
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
@@ -88,13 +88,13 @@ public class BinaryColumnStatsAggregatorTest {
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3", "part4");
 
-    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).avgColLen(20.0 / 3).maxColLen(13).buildBinaryStats();
+    ColumnStatisticsData data1 = new ColStatsBuilder<>(byte[].class).numNulls(1).avgColLen(20.0 / 3).maxColLen(13).buildBinaryStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    ColumnStatisticsData data3 = new ColStatsBuilder().numNulls(3).avgColLen(17.5).maxColLen(18).buildBinaryStats();
+    ColumnStatisticsData data3 = new ColStatsBuilder<>(byte[].class).numNulls(3).avgColLen(17.5).maxColLen(18).buildBinaryStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    ColumnStatisticsData data4 = new ColStatsBuilder().numNulls(2).avgColLen(14).maxColLen(18).buildBinaryStats();
+    ColumnStatisticsData data4 = new ColStatsBuilder<>(byte[].class).numNulls(2).avgColLen(14).maxColLen(18).buildBinaryStats();
     ColumnStatistics stats4 = StatisticsTestUtils.createColStats(data4, TABLE, COL, partitionNames.get(3));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -102,7 +102,7 @@ public class BinaryColumnStatsAggregatorTest {
 
     BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
-    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).avgColLen(17.5).maxColLen(18).buildBinaryStats();
+    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(byte[].class).numNulls(6).avgColLen(17.5).maxColLen(18).buildBinaryStats();
 
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }

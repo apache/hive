@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDa
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
-public class ColStatsBuilder {
+public class ColStatsBuilder<T> {
 
   private final static Map<Class<?>, Class<?>> STATS_OBJ_TO_TYPE = ImmutableMap.<Class<?>, Class<?>>builder()
       .put(LongColumnStatsDataInspector.class, long.class)
@@ -54,8 +54,9 @@ public class ColStatsBuilder {
       .put(BinaryColumnStatsData.class, byte[].class)
       .build();
 
-  private Object lowValue;
-  private Object highValue;
+  private final Class<T> clazz;
+  private T lowValue;
+  private T highValue;
   private Double avgColLen;
   private Long maxColLen;
   private Long numTrues;
@@ -64,109 +65,69 @@ public class ColStatsBuilder {
   private Long numDVs;
   private byte[] bitVector;
 
-  public ColStatsBuilder() {
-    // empty constructor
+  public ColStatsBuilder(Class<T> type) {
+    this.clazz = type;
   }
 
-  public ColStatsBuilder numNulls(long num) {
+  public ColStatsBuilder<T> numNulls(long num) {
     this.numNulls = num;
     return this;
   }
 
-  public ColStatsBuilder numDVs(long num) {
+  public ColStatsBuilder<T> numDVs(long num) {
     this.numDVs = num;
     return this;
   }
 
-  public ColStatsBuilder numFalses(long num) {
+  public ColStatsBuilder<T> numFalses(long num) {
     this.numFalses = num;
     return this;
   }
 
-  public ColStatsBuilder numTrues(long num) {
+  public ColStatsBuilder<T> numTrues(long num) {
     this.numTrues = num;
     return this;
   }
 
-  public ColStatsBuilder avgColLen(double val) {
+  public ColStatsBuilder<T> avgColLen(double val) {
     this.avgColLen = val;
     return this;
   }
 
-  public ColStatsBuilder maxColLen(long val) {
+  public ColStatsBuilder<T> maxColLen(long val) {
     this.maxColLen = val;
     return this;
   }
 
-  public ColStatsBuilder lowValueDate(Date val) {
+  public ColStatsBuilder<T> low(T val) {
     this.lowValue = val;
     return this;
   }
 
-  public ColStatsBuilder lowValueDecimal(Decimal val) {
-    this.lowValue = val;
-    return this;
-  }
-
-  public ColStatsBuilder lowValueDouble(double val) {
-    this.lowValue = val;
-    return this;
-  }
-
-  public ColStatsBuilder lowValueLong(long val) {
-    this.lowValue = val;
-    return this;
-  }
-
-  public ColStatsBuilder lowValueTimestamp(Timestamp val) {
-    this.lowValue = val;
-    return this;
-  }
-
-  public ColStatsBuilder highValueDate(Date val) {
+  public ColStatsBuilder<T> high(T val) {
     this.highValue = val;
     return this;
   }
 
-  public ColStatsBuilder highValueDecimal(Decimal val) {
-    this.highValue = val;
-    return this;
-  }
-
-  public ColStatsBuilder highValueDouble(double val) {
-    this.highValue = val;
-    return this;
-  }
-
-  public ColStatsBuilder highValueLong(long val) {
-    this.highValue = val;
-    return this;
-  }
-
-  public ColStatsBuilder highValueTimestamp(Timestamp val) {
-    this.highValue = val;
-    return this;
-  }
-
-  public ColStatsBuilder hll(long... values) {
+  public ColStatsBuilder<T> hll(long... values) {
     HyperLogLog hll = StatisticsTestUtils.createHll(values);
     this.bitVector = hll.serialize();
     return this;
   }
 
-  public ColStatsBuilder hll(String... values) {
+  public ColStatsBuilder<T> hll(String... values) {
     HyperLogLog hll = StatisticsTestUtils.createHll(values);
     this.bitVector = hll.serialize();
     return this;
   }
 
-  public ColStatsBuilder fmSketch(long... values) {
+  public ColStatsBuilder<T> fmSketch(long... values) {
     FMSketch fm = StatisticsTestUtils.createFMSketch(values);
     this.bitVector = fm.serialize();
     return this;
   }
 
-  public ColStatsBuilder fmSketch(String... values) {
+  public ColStatsBuilder<T> fmSketch(String... values) {
     FMSketch fm = StatisticsTestUtils.createFMSketch(values);
     this.bitVector = fm.serialize();
     return this;
@@ -228,9 +189,9 @@ public class ColStatsBuilder {
     return data;
   }
 
-  private <T> T newColData(Class<T> clazz) {
+  private <X> X newColData(Class<X> clazz) {
     try {
-      T data = clazz.getDeclaredConstructor().newInstance();
+      X data = clazz.getDeclaredConstructor().newInstance();
       if (numNulls != null) {
         clazz.getMethod("setNumNulls", long.class).invoke(data, numNulls);
       }

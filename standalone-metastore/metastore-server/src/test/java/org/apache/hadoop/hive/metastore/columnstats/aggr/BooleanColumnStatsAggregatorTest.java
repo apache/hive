@@ -49,7 +49,7 @@ public class BooleanColumnStatsAggregatorTest {
   public void testAggregateSingleStat() throws MetaException {
     List<String> partitionNames = Collections.singletonList("part1");
 
-    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numFalses(2).numTrues(13).buildBooleanStats();
+    ColumnStatisticsData data1 = new ColStatsBuilder<>(Boolean.class).numNulls(1).numFalses(2).numTrues(13).buildBooleanStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -65,13 +65,13 @@ public class BooleanColumnStatsAggregatorTest {
   public void testAggregateMultiStatsWhenAllAvailable() throws MetaException {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3");
 
-    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numFalses(3).numTrues(13).buildBooleanStats();
+    ColumnStatisticsData data1 = new ColStatsBuilder<>(Boolean.class).numNulls(1).numFalses(3).numTrues(13).buildBooleanStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    ColumnStatisticsData data2 = new ColStatsBuilder().numNulls(2).numFalses(6).numTrues(18).buildBooleanStats();
+    ColumnStatisticsData data2 = new ColStatsBuilder<>(Boolean.class).numNulls(2).numFalses(6).numTrues(18).buildBooleanStats();
     ColumnStatistics stats2 = StatisticsTestUtils.createColStats(data2, TABLE, COL, partitionNames.get(1));
 
-    ColumnStatisticsData data3 = new ColStatsBuilder().numNulls(3).numFalses(2).numTrues(18).buildBooleanStats();
+    ColumnStatisticsData data3 = new ColStatsBuilder<>(Boolean.class).numNulls(3).numFalses(2).numTrues(18).buildBooleanStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -79,7 +79,7 @@ public class BooleanColumnStatsAggregatorTest {
 
     BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, true);
-    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numFalses(11).numTrues(49).buildBooleanStats();
+    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Boolean.class).numNulls(6).numFalses(11).numTrues(49).buildBooleanStats();
 
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
@@ -88,13 +88,13 @@ public class BooleanColumnStatsAggregatorTest {
   public void testAggregateMultiStatsWhenOnlySomeAvailable() throws MetaException {
     List<String> partitionNames = Arrays.asList("part1", "part2", "part3", "part4");
 
-    ColumnStatisticsData data1 = new ColStatsBuilder().numNulls(1).numFalses(3).numTrues(13).buildBooleanStats();
+    ColumnStatisticsData data1 = new ColStatsBuilder<>(Boolean.class).numNulls(1).numFalses(3).numTrues(13).buildBooleanStats();
     ColumnStatistics stats1 = StatisticsTestUtils.createColStats(data1, TABLE, COL, partitionNames.get(0));
 
-    ColumnStatisticsData data3 = new ColStatsBuilder().numNulls(3).numFalses(2).numTrues(18).buildBooleanStats();
+    ColumnStatisticsData data3 = new ColStatsBuilder<>(Boolean.class).numNulls(3).numFalses(2).numTrues(18).buildBooleanStats();
     ColumnStatistics stats3 = StatisticsTestUtils.createColStats(data3, TABLE, COL, partitionNames.get(2));
 
-    ColumnStatisticsData data4 = new ColStatsBuilder().numNulls(2).numFalses(6).numTrues(18).buildBooleanStats();
+    ColumnStatisticsData data4 = new ColStatsBuilder<>(Boolean.class).numNulls(2).numFalses(6).numTrues(18).buildBooleanStats();
     ColumnStatistics stats4 = StatisticsTestUtils.createColStats(data4, TABLE, COL, partitionNames.get(3));
 
     List<ColStatsObjWithSourceInfo> statsList = StatisticsTestUtils.createColStatsObjWithSourceInfoList(
@@ -102,7 +102,7 @@ public class BooleanColumnStatsAggregatorTest {
 
     BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitionNames, false);
-    ColumnStatisticsData expectedStats = new ColStatsBuilder().numNulls(6).numFalses(11).numTrues(49).buildBooleanStats();
+    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Boolean.class).numNulls(6).numFalses(11).numTrues(49).buildBooleanStats();
 
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
   }
