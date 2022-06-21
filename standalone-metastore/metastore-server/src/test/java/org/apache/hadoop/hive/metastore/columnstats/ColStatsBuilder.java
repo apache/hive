@@ -16,21 +16,17 @@
  */
 package org.apache.hadoop.hive.metastore.columnstats;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.hive.common.ndv.fm.FMSketch;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.metastore.StatisticsTestUtils;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
-import org.apache.hadoop.hive.metastore.api.Date;
 import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.Timestamp;
 import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DateColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
@@ -40,21 +36,10 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataI
 import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
 
 public class ColStatsBuilder<T> {
 
-  private final static Map<Class<?>, Class<?>> STATS_OBJ_TO_TYPE = ImmutableMap.<Class<?>, Class<?>>builder()
-      .put(LongColumnStatsDataInspector.class, long.class)
-      .put(DoubleColumnStatsDataInspector.class, double.class)
-      .put(DecimalColumnStatsDataInspector.class, Decimal.class)
-      .put(TimestampColumnStatsDataInspector.class, Timestamp.class)
-      .put(DateColumnStatsDataInspector.class, Date.class)
-      .put(StringColumnStatsDataInspector.class, String.class)
-      .put(BinaryColumnStatsData.class, byte[].class)
-      .build();
-
-  private final Class<T> clazz;
+  private final Class<T> type;
   private T lowValue;
   private T highValue;
   private Double avgColLen;
@@ -66,7 +51,7 @@ public class ColStatsBuilder<T> {
   private byte[] bitVector;
 
   public ColStatsBuilder(Class<T> type) {
-    this.clazz = type;
+    this.type = type;
   }
 
   public ColStatsBuilder<T> numNulls(long num) {
@@ -213,19 +198,19 @@ public class ColStatsBuilder<T> {
       if (numTrues != null) {
         clazz.getMethod("setNumTrues", long.class).invoke(data, numTrues);
       }
-      Class<?> rawClazz = STATS_OBJ_TO_TYPE.get(clazz);
+
       if (lowValue != null) {
-        if (rawClazz.isPrimitive()) {
-          clazz.getMethod("setLowValue", rawClazz).invoke(data, lowValue);
+        if (type.isPrimitive()) {
+          clazz.getMethod("setLowValue", type).invoke(data, lowValue);
         } else {
-          clazz.getMethod("setLowValue", rawClazz).invoke(data, rawClazz.cast(lowValue));
+          clazz.getMethod("setLowValue", type).invoke(data, type.cast(lowValue));
         }
       }
       if (highValue != null) {
-        if (rawClazz.isPrimitive()) {
-          clazz.getMethod("setHighValue", rawClazz).invoke(data, highValue);
+        if (type.isPrimitive()) {
+          clazz.getMethod("setHighValue", type).invoke(data, highValue);
         } else {
-          clazz.getMethod("setHighValue", rawClazz).invoke(data, rawClazz.cast(highValue));
+          clazz.getMethod("setHighValue", type).invoke(data, type.cast(highValue));
         }
       }
       clazz.getMethod("validate").invoke(data);
