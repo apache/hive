@@ -170,7 +170,7 @@
     <log4j2.version>2.17.1</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
-    <mysql.version>8.0.27</mysql.version>
+    <mysql.version>8.0.28</mysql.version>
     <postgres.version>42.2.14</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
     <opencsv.version>2.3</opencsv.version>
