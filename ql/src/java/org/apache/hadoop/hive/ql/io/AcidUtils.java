@@ -3087,7 +3087,7 @@ public class AcidUtils {
         break;
 
       case CTAS:
-        if (AcidUtils.isExclusiveCTASEnabled(conf) && AcidUtils.isTransactionalTable(t)) {
+        if (AcidUtils.isExclusiveCTASEnabled(t, conf)) {
           compBuilder.setExclWrite();
           compBuilder.setOperationType(DataOperationType.NO_TXN);
           break;
@@ -3238,7 +3238,11 @@ public class AcidUtils {
   }
 
   public static boolean isExclusiveCTASEnabled(Configuration conf) {
-    return HiveConf.getBoolVar(conf, ConfVars.TXN_CTAS_X_LOCK);
+    return  HiveConf.getBoolVar(conf, ConfVars.TXN_CTAS_X_LOCK);
+  }
+
+  public static boolean isExclusiveCTASEnabled(Table t, Configuration conf) {
+    return HiveConf.getBoolVar(conf, ConfVars.TXN_CTAS_X_LOCK) && isTransactionalTable(t);
   }
 
   @VisibleForTesting

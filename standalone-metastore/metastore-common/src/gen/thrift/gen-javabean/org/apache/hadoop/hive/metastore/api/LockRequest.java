@@ -17,7 +17,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField AGENT_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("agentInfo", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField ZERO_WAIT_READ_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("zeroWaitReadEnabled", org.apache.thrift.protocol.TType.BOOL, (short)6);
-  private static final org.apache.thrift.protocol.TField EXCLUSIVE_CTAS_FIELD_DESC = new org.apache.thrift.protocol.TField("ExclusiveCTAS", org.apache.thrift.protocol.TType.BOOL, (short)7);
+  private static final org.apache.thrift.protocol.TField EXCLUSIVE_CTAS_FIELD_DESC = new org.apache.thrift.protocol.TField("exclusiveCTAS", org.apache.thrift.protocol.TType.BOOL, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new LockRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new LockRequestTupleSchemeFactory();
@@ -28,7 +28,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String hostname; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String agentInfo; // optional
   private boolean zeroWaitReadEnabled; // optional
-  private boolean ExclusiveCTAS; // optional
+  private boolean exclusiveCTAS; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -38,7 +38,7 @@ package org.apache.hadoop.hive.metastore.api;
     HOSTNAME((short)4, "hostname"),
     AGENT_INFO((short)5, "agentInfo"),
     ZERO_WAIT_READ_ENABLED((short)6, "zeroWaitReadEnabled"),
-    EXCLUSIVE_CTAS((short)7, "ExclusiveCTAS");
+    EXCLUSIVE_CTAS((short)7, "exclusiveCTAS");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -130,7 +130,7 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ZERO_WAIT_READ_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("zeroWaitReadEnabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.EXCLUSIVE_CTAS, new org.apache.thrift.meta_data.FieldMetaData("ExclusiveCTAS", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.EXCLUSIVE_CTAS, new org.apache.thrift.meta_data.FieldMetaData("exclusiveCTAS", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LockRequest.class, metaDataMap);
@@ -141,7 +141,7 @@ package org.apache.hadoop.hive.metastore.api;
 
     this.zeroWaitReadEnabled = false;
 
-    this.ExclusiveCTAS = false;
+    this.exclusiveCTAS = false;
 
   }
 
@@ -179,7 +179,7 @@ package org.apache.hadoop.hive.metastore.api;
       this.agentInfo = other.agentInfo;
     }
     this.zeroWaitReadEnabled = other.zeroWaitReadEnabled;
-    this.ExclusiveCTAS = other.ExclusiveCTAS;
+    this.exclusiveCTAS = other.exclusiveCTAS;
   }
 
   public LockRequest deepCopy() {
@@ -197,7 +197,7 @@ package org.apache.hadoop.hive.metastore.api;
 
     this.zeroWaitReadEnabled = false;
 
-    this.ExclusiveCTAS = false;
+    this.exclusiveCTAS = false;
 
   }
 
@@ -358,11 +358,11 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public boolean isExclusiveCTAS() {
-    return this.ExclusiveCTAS;
+    return this.exclusiveCTAS;
   }
 
-  public void setExclusiveCTAS(boolean ExclusiveCTAS) {
-    this.ExclusiveCTAS = ExclusiveCTAS;
+  public void setExclusiveCTAS(boolean exclusiveCTAS) {
+    this.exclusiveCTAS = exclusiveCTAS;
     setExclusiveCTASIsSet(true);
   }
 
@@ -370,7 +370,7 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __EXCLUSIVECTAS_ISSET_ID);
   }
 
-  /** Returns true if field ExclusiveCTAS is set (has been assigned a value) and false otherwise */
+  /** Returns true if field exclusiveCTAS is set (has been assigned a value) and false otherwise */
   public boolean isSetExclusiveCTAS() {
     return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __EXCLUSIVECTAS_ISSET_ID);
   }
@@ -560,12 +560,12 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
-    boolean this_present_ExclusiveCTAS = true && this.isSetExclusiveCTAS();
-    boolean that_present_ExclusiveCTAS = true && that.isSetExclusiveCTAS();
-    if (this_present_ExclusiveCTAS || that_present_ExclusiveCTAS) {
-      if (!(this_present_ExclusiveCTAS && that_present_ExclusiveCTAS))
+    boolean this_present_exclusiveCTAS = true && this.isSetExclusiveCTAS();
+    boolean that_present_exclusiveCTAS = true && that.isSetExclusiveCTAS();
+    if (this_present_exclusiveCTAS || that_present_exclusiveCTAS) {
+      if (!(this_present_exclusiveCTAS && that_present_exclusiveCTAS))
         return false;
-      if (this.ExclusiveCTAS != that.ExclusiveCTAS)
+      if (this.exclusiveCTAS != that.exclusiveCTAS)
         return false;
     }
 
@@ -602,7 +602,7 @@ package org.apache.hadoop.hive.metastore.api;
 
     hashCode = hashCode * 8191 + ((isSetExclusiveCTAS()) ? 131071 : 524287);
     if (isSetExclusiveCTAS())
-      hashCode = hashCode * 8191 + ((ExclusiveCTAS) ? 131071 : 524287);
+      hashCode = hashCode * 8191 + ((exclusiveCTAS) ? 131071 : 524287);
 
     return hashCode;
   }
@@ -680,7 +680,7 @@ package org.apache.hadoop.hive.metastore.api;
       return lastComparison;
     }
     if (isSetExclusiveCTAS()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ExclusiveCTAS, other.ExclusiveCTAS);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.exclusiveCTAS, other.exclusiveCTAS);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -753,8 +753,8 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetExclusiveCTAS()) {
       if (!first) sb.append(", ");
-      sb.append("ExclusiveCTAS:");
-      sb.append(this.ExclusiveCTAS);
+      sb.append("exclusiveCTAS:");
+      sb.append(this.exclusiveCTAS);
       first = false;
     }
     sb.append(")");
@@ -875,7 +875,7 @@ package org.apache.hadoop.hive.metastore.api;
             break;
           case 7: // EXCLUSIVE_CTAS
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.ExclusiveCTAS = iprot.readBool();
+              struct.exclusiveCTAS = iprot.readBool();
               struct.setExclusiveCTASIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -935,7 +935,7 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (struct.isSetExclusiveCTAS()) {
         oprot.writeFieldBegin(EXCLUSIVE_CTAS_FIELD_DESC);
-        oprot.writeBool(struct.ExclusiveCTAS);
+        oprot.writeBool(struct.exclusiveCTAS);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -988,7 +988,7 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeBool(struct.zeroWaitReadEnabled);
       }
       if (struct.isSetExclusiveCTAS()) {
-        oprot.writeBool(struct.ExclusiveCTAS);
+        oprot.writeBool(struct.exclusiveCTAS);
       }
     }
 
@@ -1025,7 +1025,7 @@ package org.apache.hadoop.hive.metastore.api;
         struct.setZeroWaitReadEnabledIsSet(true);
       }
       if (incoming.get(3)) {
-        struct.ExclusiveCTAS = iprot.readBool();
+        struct.exclusiveCTAS = iprot.readBool();
         struct.setExclusiveCTASIsSet(true);
       }
     }
