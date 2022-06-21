@@ -52,6 +52,8 @@ class hive_metastoreConstants {
   std::string NO_CLEANUP;
   std::string CTAS_LEGACY_CONFIG;
   std::string DEFAULT_TABLE_TYPE;
+  std::string TXN_ID;
+  std::string WRITE_ID;
 };
 
 extern const hive_metastoreConstants g_hive_metastore_constants;
