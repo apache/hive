@@ -214,7 +214,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       if (e instanceof OutOfMemoryError) {
         throw e;
       }
-      throw new HiveSQLException("Error running query", e);
+      throw new HiveSQLException("Error running query: " + e.toString(), e);
     }
   }
 
@@ -249,7 +249,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       } else if (e instanceof OutOfMemoryError) {
         throw (OutOfMemoryError) e;
       } else {
-        throw new HiveSQLException("Error running query", e);
+        throw new HiveSQLException("Error running query: " + e.toString(), e);
       }
     }
     setState(OperationState.FINISHED);
