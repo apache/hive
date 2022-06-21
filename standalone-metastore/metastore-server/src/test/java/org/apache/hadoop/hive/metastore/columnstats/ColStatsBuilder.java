@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataI
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
-import org.apache.thrift.TException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -177,11 +176,6 @@ public class ColStatsBuilder {
     ColumnStatisticsData data = new ColumnStatisticsData();
     BinaryColumnStatsData stats = newColData(BinaryColumnStatsData.class);
     data.setBinaryStats(stats);
-    try {
-      stats.validate();
-    } catch (TException e) {
-      throw new RuntimeException(e);
-    }
     return data;
   }
 
@@ -189,11 +183,6 @@ public class ColStatsBuilder {
     ColumnStatisticsData data = new ColumnStatisticsData();
     BooleanColumnStatsData stats = newColData(BooleanColumnStatsData.class);
     data.setBooleanStats(stats);
-    try {
-      stats.validate();
-    } catch (TException e) {
-      throw new RuntimeException(e);
-    }
     return data;
   }
 
@@ -201,11 +190,6 @@ public class ColStatsBuilder {
     ColumnStatisticsData data = new ColumnStatisticsData();
     DateColumnStatsData stats = newColData(DateColumnStatsDataInspector.class);
     data.setDateStats(stats);
-    try {
-      stats.validate();
-    } catch (TException e) {
-      throw new RuntimeException(e);
-    }
     return data;
   }
 
@@ -213,11 +197,6 @@ public class ColStatsBuilder {
     ColumnStatisticsData data = new ColumnStatisticsData();
     DecimalColumnStatsData stats = newColData(DecimalColumnStatsDataInspector.class);
     data.setDecimalStats(stats);
-    try {
-      stats.validate();
-    } catch (TException e) {
-      throw new RuntimeException(e);
-    }
     return data;
   }
 
@@ -225,11 +204,6 @@ public class ColStatsBuilder {
     ColumnStatisticsData data = new ColumnStatisticsData();
     DoubleColumnStatsData stats = newColData(DoubleColumnStatsDataInspector.class);
     data.setDoubleStats(stats);
-    try {
-      stats.validate();
-    } catch (TException e) {
-      throw new RuntimeException(e);
-    }
     return data;
   }
 
@@ -237,11 +211,6 @@ public class ColStatsBuilder {
     ColumnStatisticsData data = new ColumnStatisticsData();
     LongColumnStatsData stats = newColData(LongColumnStatsDataInspector.class);
     data.setLongStats(stats);
-    try {
-      stats.validate();
-    } catch (TException e) {
-      throw new RuntimeException(e);
-    }
     return data;
   }
 
@@ -249,11 +218,6 @@ public class ColStatsBuilder {
     ColumnStatisticsData data = new ColumnStatisticsData();
     StringColumnStatsData stats = newColData(StringColumnStatsDataInspector.class);
     data.setStringStats(stats);
-    try {
-      stats.validate();
-    } catch (TException e) {
-      throw new RuntimeException(e);
-    }
     return data;
   }
 
@@ -261,11 +225,6 @@ public class ColStatsBuilder {
     ColumnStatisticsData data = new ColumnStatisticsData();
     TimestampColumnStatsData stats = newColData(TimestampColumnStatsDataInspector.class);
     data.setTimestampStats(stats);
-    try {
-      stats.validate();
-    } catch (TException e) {
-      throw new RuntimeException(e);
-    }
     return data;
   }
 
@@ -308,6 +267,7 @@ public class ColStatsBuilder {
           clazz.getMethod("setHighValue", rawClazz).invoke(data, rawClazz.cast(highValue));
         }
       }
+      clazz.getMethod("validate").invoke(data);
       return data;
     } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException("Reflection error", e);
