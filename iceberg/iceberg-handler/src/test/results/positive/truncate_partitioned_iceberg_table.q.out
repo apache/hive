@@ -121,8 +121,6 @@ SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	0                   	 
-Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: select * from test_truncate
 PREHOOK: type: QUERY
@@ -215,8 +213,6 @@ SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	0                   	 
-Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: drop table if exists test_truncate
 PREHOOK: type: DROPTABLE
