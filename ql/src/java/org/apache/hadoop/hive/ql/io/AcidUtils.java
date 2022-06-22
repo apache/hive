@@ -3005,10 +3005,13 @@ public class AcidUtils {
         compBuilder.setExclusive();
         compBuilder.setOperationType(DataOperationType.NO_TXN);
         break;
+
       case DDL_EXCL_WRITE:
+      case CTAS:
         compBuilder.setExclWrite();
         compBuilder.setOperationType(DataOperationType.NO_TXN);
         break;
+
       case INSERT_OVERWRITE:
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
@@ -3085,13 +3088,6 @@ public class AcidUtils {
         compBuilder.setOperationType(DataOperationType.valueOf(
             output.getWriteType().name()));
         break;
-
-      case CTAS:
-        if (AcidUtils.isExclusiveCTASEnabled(t, conf)) {
-          compBuilder.setExclWrite();
-          compBuilder.setOperationType(DataOperationType.NO_TXN);
-          break;
-        }
 
       case DDL_NO_LOCK:
         continue; // No lock required here
@@ -3238,11 +3234,7 @@ public class AcidUtils {
   }
 
   public static boolean isExclusiveCTASEnabled(Configuration conf) {
-    return  HiveConf.getBoolVar(conf, ConfVars.TXN_CTAS_X_LOCK);
-  }
-
-  public static boolean isExclusiveCTASEnabled(Table t, Configuration conf) {
-    return HiveConf.getBoolVar(conf, ConfVars.TXN_CTAS_X_LOCK) && isTransactionalTable(t);
+    return HiveConf.getBoolVar(conf, ConfVars.TXN_CTAS_X_LOCK);
   }
 
   @VisibleForTesting
