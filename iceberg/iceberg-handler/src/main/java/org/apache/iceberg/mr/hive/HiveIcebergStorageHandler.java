@@ -454,10 +454,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public void executeOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable, AlterTableExecuteSpec executeSpec) {
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     switch (executeSpec.getOperationType()) {
       case ROLLBACK:
-        TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
-        Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
         LOG.info("Executing rollback operation on iceberg table. If you would like to revert rollback you could " +
               "try altering the metadata location to the current metadata location by executing the following query:" +
               "ALTER TABLE {}.{} SET TBLPROPERTIES('metadata_location'='{}'). This operation is supported for Hive " +
@@ -466,6 +466,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         AlterTableExecuteSpec.RollbackSpec rollbackSpec =
             (AlterTableExecuteSpec.RollbackSpec) executeSpec.getOperationParams();
         IcebergTableUtil.rollback(icebergTable, rollbackSpec.getRollbackType(), rollbackSpec.getParam());
+        break;
+      case EXPIRE_SNAPSHOT:
+        LOG.info("Executing expire snapshots operation on iceberg table {}.{}", hmsTable.getDbName(),
+            hmsTable.getTableName());
+        AlterTableExecuteSpec.ExpireSnapshotsSpec expireSnapshotsSpec =
+            (AlterTableExecuteSpec.ExpireSnapshotsSpec) executeSpec.getOperationParams();
+        icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis()).commit();
         break;
       default:
         throw new UnsupportedOperationException(

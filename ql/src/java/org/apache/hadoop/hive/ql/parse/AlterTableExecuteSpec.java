@@ -25,13 +25,15 @@ import com.google.common.base.MoreObjects;
  * The following operation are supported
  * <ul>
  *   <li>Rollback</li>
+ *   <li>EXPIRE_SNAPSHOT</li>
  * </ul>
  * @param <T> Value object class to store the operation specific parameters
  */
 public class AlterTableExecuteSpec<T> {
 
   public enum ExecuteOperationType {
-    ROLLBACK
+    ROLLBACK,
+    EXPIRE_SNAPSHOT
   }
 
   private final ExecuteOperationType operationType;
@@ -89,6 +91,29 @@ public class AlterTableExecuteSpec<T> {
     public String toString() {
       return MoreObjects.toStringHelper(this).add("rollbackType", rollbackType.name())
           .add("param", param).toString();
+    }
+  }
+
+  /**
+   * Value object class, that stores the expire snapshot operation specific parameters
+   * <ul>
+   *   <li>Expire snapshot value: it should be a timestamp in milliseconds</li>
+   * </ul>
+   */
+  public static class ExpireSnapshotsSpec {
+    private final long timestampMillis;
+
+    public ExpireSnapshotsSpec(long timestampMillis) {
+      this.timestampMillis = timestampMillis;
+    }
+
+    public Long getTimestampMillis() {
+      return timestampMillis;
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("timestampMillis", timestampMillis).toString();
     }
   }
 }
