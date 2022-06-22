@@ -57,22 +57,11 @@ public class ParquetRecordReaderWrapper extends ParquetRecordReaderBase
       final JobConf oldJobConf,
       final Reporter reporter)
           throws IOException, InterruptedException {
-    this(newInputFormat, oldSplit, oldJobConf, reporter, new ProjectionPusher());
-  }
+    super(oldJobConf, oldSplit);
 
-  public ParquetRecordReaderWrapper(
-      final ParquetInputFormat<ArrayWritable> newInputFormat,
-      final InputSplit oldSplit,
-      final JobConf oldJobConf,
-      final Reporter reporter,
-      final ProjectionPusher pusher)
-          throws IOException, InterruptedException {
+    setupMetadataAndParquetSplit(oldJobConf);
+
     this.splitLen = oldSplit.getLength();
-    this.projectionPusher = pusher;
-    this.serDeStats = new SerDeStats();
-
-    jobConf = oldJobConf;
-    final ParquetInputSplit split = getSplit(oldSplit, jobConf);
 
     TaskAttemptID taskAttemptID = TaskAttemptID.forName(jobConf.get(IOConstants.MAPRED_TASK_ID));
     if (taskAttemptID == null) {
@@ -89,10 +78,10 @@ public class ParquetRecordReaderWrapper extends ParquetRecordReaderBase
     }
 
     final TaskAttemptContext taskContext = ContextUtil.newTaskAttemptContext(conf, taskAttemptID);
-    if (split != null) {
+    if (parquetInputSplit != null) {
       try {
-        realReader = newInputFormat.createRecordReader(split, taskContext);
-        realReader.initialize(split, taskContext);
+        realReader = newInputFormat.createRecordReader(parquetInputSplit, taskContext);
+        realReader.initialize(parquetInputSplit, taskContext);
 
         // read once to gain access to key and value objects
         if (realReader.nextKeyValue()) {
