@@ -24,7 +24,7 @@ import org.junit.Rule;
 /**
  * Mssql-specific DbInstallBase child test class.
  */
-public class ITestDerby extends DbInstallBase {
+public class TestDerby extends DbInstallBase {
 
   @Rule
   public final DatabaseRule databaseRule = new Derby(true);
