@@ -81,3 +81,7 @@ CTAS_LEGACY_CONFIG = %q"create_table_as_external"
 
 DEFAULT_TABLE_TYPE = %q"defaultTableType"
 
+TXN_ID = %q"txnId"
+
+WRITE_ID = %q"writeId"
+

@@ -35,6 +35,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -42,9 +43,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
@@ -116,11 +119,28 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, false);
+    
+    MetastoreConf.setClass(hiveConf, MetastoreConf.ConfVars.FILTER_HOOK,
+      DummyMetaStoreFilterHookImpl.class, MetaStoreFilterHook.class);
 
     HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL, 
       new Path(getWarehouseDir(), "ext").toUri().getPath());
   }
 
+  public static class DummyMetaStoreFilterHookImpl extends DefaultMetaStoreFilterHookImpl {
+    private static boolean blockResults = false;
+    
+    public DummyMetaStoreFilterHookImpl(Configuration conf) {
+      super(conf);
+    }
+    @Override
+    public List<String> filterTableNames(String catName, String dbName, List<String> tableList) {
+      if (blockResults) {
+        return new ArrayList<>();
+      }
+      return tableList;
+    }
+  }
 
   /**
    * tests that a failing Insert Overwrite (which creates a new base_x) is properly marked as
@@ -1713,9 +1733,15 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     MetastoreConf.setLongVar(hiveConf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX, 1);
     dropDatabaseCascadeNonBlocking();
   }
-  
+
   @Test
   public void testDropDatabaseCascadePerDbNonBlocking() throws Exception {
+    dropDatabaseCascadeNonBlocking();
+  }
+  
+  @Test
+  public void testDropDatabaseCascadePerDbNonBlockingFilterTableNames() throws Exception {
+    DummyMetaStoreFilterHookImpl.blockResults = true;
     dropDatabaseCascadeNonBlocking();
   }
   

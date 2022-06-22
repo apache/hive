@@ -85,6 +85,10 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   DEFAULT_TABLE_TYPE = "defaultTableType";
 
+  TXN_ID = "txnId";
+
+  WRITE_ID = "writeId";
+
 }
 
 }}} // namespace

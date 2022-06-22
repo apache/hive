@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -239,7 +240,7 @@ public class AcidEventListener extends TransactionalMetaStoreEventListener {
   private long getTxnId(EnvironmentContext context) {
     return Optional.ofNullable(context)
       .map(EnvironmentContext::getProperties)
-      .map(prop -> prop.get("txnId"))
+      .map(prop -> prop.get(hive_metastoreConstants.TXN_ID))
       .map(Long::parseLong)
       .orElse(0L);
   }
