@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import org.apache.calcite.rel.metadata.RelMdUtil;
 import org.apache.datasketches.SketchesArgumentException;
@@ -42,6 +43,7 @@ import org.apache.datasketches.memory.Memory;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -69,6 +71,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
@@ -135,6 +138,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.greaterThanOrEqualSelectivity;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.greaterThanSelectivity;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.lessThanOrEqualSelectivity;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.lessThanSelectivity;
 
 public class StatsRulesProcFactory {
 
@@ -836,6 +844,36 @@ public class StatsRulesProcFactory {
         return currNumRows;
       }
 
+      try {
+        if (comparisonExpression instanceof ExprNodeColumnDesc) {
+          final ExprNodeColumnDesc columnDesc = (ExprNodeColumnDesc) comparisonExpression;
+          ColStatistics cs = stats.getColumnStatisticsFromColName(columnDesc.getColumn());
+          if (FilterSelectivityEstimator.isHistogramAvailable(cs)) {
+            final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(cs.getHistogram()));
+            final String colTypeLowerCase = columnDesc.getTypeString().toLowerCase();
+            final String leftValueString = leftExpression instanceof ExprNodeConstantDesc
+                ? ((ExprNodeConstantDesc) leftExpression).getValue().toString() : leftExpression.getExprString();
+            final String rightValueString = rightExpression instanceof ExprNodeConstantDesc
+                ? ((ExprNodeConstantDesc) rightExpression).getValue().toString() : rightExpression.getExprString();
+            final float leftValue = extractFloatFromLiteralValue(colTypeLowerCase, leftValueString);
+            final float rightValue = extractFloatFromLiteralValue(colTypeLowerCase, rightValueString);
+            if (invert) {
+              // column < leftValue OR column > rightValue
+              if (rightValue < leftValue) {
+                return kll.getN();
+              }
+              return Math.round(kll.getN() * (lessThanSelectivity(kll, leftValue) + greaterThanSelectivity(kll, rightValue)));
+            }
+            // if they are equal we can't handle it here, it becomes an equality predicate
+            if (Float.compare(leftValue, rightValue) != 0) {
+              return Math.round(kll.getN() * FilterSelectivityEstimator.betweenSelectivity(kll, leftValue, rightValue));
+            }
+          }
+        }
+      } catch(IllegalArgumentException e) {
+        // we failed to parse the boundary value, use default computation
+      }
+
       ExprNodeDesc newExpression = rewriteBetweenToIn(comparisonExpression, leftExpression, rightExpression, invert);
 
       return evaluateExpression(stats, newExpression, aspCtx, neededCols, op, currNumRows);
@@ -1011,7 +1049,7 @@ public class StatsRulesProcFactory {
       ColStatistics cs = stats.getColumnStatisticsFromColName(columnDesc.getColumn());
       String colTypeLowerCase = columnDesc.getTypeString().toLowerCase();
 
-      if (cs != null && cs.getHistogram() != null && cs.getHistogram().length > 0) {
+      if (FilterSelectivityEstimator.isHistogramAvailable(cs)) {
         try {
           return evaluateComparatorWithHistogram(
               cs, currNumRows, colTypeLowerCase, boundValue, upperBound, closedBound);
@@ -1267,79 +1305,47 @@ public class StatsRulesProcFactory {
       }
 
       try {
-        float value;
-        if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)) {
-          value = Byte.parseByte(boundValue);
-        } else if (colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
-          value = Short.parseShort(boundValue);
-        } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
-          value = Integer.parseInt(boundValue);
-        } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
-          value = Long.parseLong(boundValue);
-        } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
-          value = Float.parseFloat(boundValue);
-        } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
-          value = (float) Double.parseDouble(boundValue);
-        } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
-          value = new BigDecimal(boundValue).floatValue();
-        } else {
-          throw new IllegalStateException(
-              "Unsupported type for comparator selectivity evaluation using histogram: " + colTypeLowerCase);
-        }
+        final float value = extractFloatFromLiteralValue(colTypeLowerCase, boundValue);
+
         // kll ignores null values (i.e., kll.getN() + numNulls = currNumRows), we therefore need to use kll.getN()
         // instead of currNumRows since the CDF is expressed as a fraction of kll.getN(), not currNumRows
         if (upperBound) {
-          if (value < kll.getMinValue()) {
-            return 0;
-          }
           return Math.round(kll.getN() * (closedBound ?
               lessThanOrEqualSelectivity(kll, value) : lessThanSelectivity(kll, value)));
         } else {
-          if (value > kll.getMaxValue()) {
-            return 0;
-          }
           return Math.round(kll.getN() * (closedBound ?
               greaterThanOrEqualSelectivity(kll, value) : greaterThanSelectivity(kll, value)));
         }
-      } catch (NumberFormatException nfe) {
+      } catch (IllegalArgumentException e) {
+        // we failed to parse the boundary value, use default computation
         return currNumRows / 3;
       }
     }
 
-    private double rangedSelectivity(KllFloatsSketch kll, float val1, float val2) {
-      float[] splitPoints;
-      if(val1 <= val2) {
-        splitPoints = new float[] { val1, val2 };
+    @VisibleForTesting
+    protected static float extractFloatFromLiteralValue(String colTypeLowerCase, String value) {
+      if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)) {
+        return Byte.parseByte(value);
+      } else if (colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
+        return Short.parseShort(value);
+      } else if (colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
+        return Integer.parseInt(value);
+      } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
+        return Long.parseLong(value);
+      } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
+        return Float.parseFloat(value);
+      } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
+        return (float) Double.parseDouble(value);
+      } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
+        return new BigDecimal(value).floatValue();
+      } else if (colTypeLowerCase.startsWith(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+        return Timestamp.valueOf(value).toEpochSecond();
+      } else if (colTypeLowerCase.startsWith(serdeConstants.DATE_TYPE_NAME)) {
+        return Date.valueOf(value).toEpochSecond();
       } else {
-        splitPoints = new float[] { val2, val1 };
+        throw new IllegalStateException(
+            "Unsupported type for comparator selectivity evaluation using histogram: " + colTypeLowerCase);
       }
-      double[] boundaries = kll.getCDF(splitPoints);
-      return boundaries[1] - boundaries[0];
-    }
-
-    private double greaterThanSelectivity(KllFloatsSketch kll, float value) {
-      float max = kll.getMaxValue();
-      float nextValue = Math.nextUp(value);
-      if (Double.compare(value, max) == 0 || Double.compare(nextValue, max) == 0) {
-        return 0;
-      }
-      return rangedSelectivity(kll, nextValue, Math.nextUp(max));
-    }
-
-    private double greaterThanOrEqualSelectivity(KllFloatsSketch kll, float value) {
-      return rangedSelectivity(kll, value, Math.nextUp(kll.getMaxValue()));
-    }
-
-    private double lessThanOrEqualSelectivity(KllFloatsSketch kll, float value) {
-      return kll.getCDF(new float[] { Math.nextUp(value) })[0];
-    }
-
-    private double lessThanSelectivity(KllFloatsSketch kll, float value) {
-      float min = kll.getMinValue();
-      if (Double.compare(value, min) == 0 || Double.compare(Math.nextUp(value), min) == 0) {
-        return 0;
-      }
-      return kll.getCDF(new float[] { value })[0];
     }
 
     private boolean isClosedBound(GenericUDF udf) {
