@@ -204,6 +204,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     super.initializeOp(hconf);
     numRowsInput = 0;
     numRowsHashTbl = 0;
+    currentKeys = null;
 
     heartbeatInterval = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVESENDHEARTBEAT);
