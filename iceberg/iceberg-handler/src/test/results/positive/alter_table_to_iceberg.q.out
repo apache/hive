@@ -84,8 +84,8 @@ POSTHOOK: query: describe formatted tbl_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_orc
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -99,7 +99,6 @@ Table Parameters:
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
-	external.table.purge	TRUE                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	1                   
@@ -117,6 +116,7 @@ Table Parameters:
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                 
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	orc                 
 	 	 
 # Storage Information	 	 
@@ -234,8 +234,8 @@ POSTHOOK: query: describe formatted tbl_parquet
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -249,7 +249,6 @@ Table Parameters:
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
-	external.table.purge	TRUE                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	1                   
@@ -267,6 +266,7 @@ Table Parameters:
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                 
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	parquet             
 	 	 
 # Storage Information	 	 
@@ -384,8 +384,8 @@ POSTHOOK: query: describe formatted tbl_avro
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_avro
 # col_name            	data_type           	comment             
-a                   	int                 	from deserializer   
-b                   	string              	from deserializer   
+a                   	int                 	                    
+b                   	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -399,7 +399,6 @@ Table Parameters:
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
-	external.table.purge	TRUE                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	1                   
@@ -417,6 +416,7 @@ Table Parameters:
 	table_type          	ICEBERG             
 	totalSize           	#Masked#                 
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	avro                
 	 	 
 # Storage Information	 	 

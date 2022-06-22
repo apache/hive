@@ -12,30 +12,24 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>hive-standalone-metastore</artifactId>
     <groupId>org.apache.hive</groupId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0-alpha-2-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
-
   <artifactId>hive-standalone-metastore-server</artifactId>
   <name>Hive Metastore Server</name>
-
   <properties>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
   </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-common</artifactId>
-      <version>4.0.0-SNAPSHOT</version>
+      <version>4.0.0-alpha-2-SNAPSHOT</version>
     </dependency>
-
     <dependency>
       <groupId>org.apache.orc</groupId>
       <artifactId>orc-core</artifactId>
@@ -107,11 +101,11 @@
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
-         <exclusion>
+        <exclusion>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils</artifactId>
         </exclusion>
-       <exclusion>
+        <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
@@ -179,7 +173,7 @@
       <groupId>commons-beanutils</groupId>
       <artifactId>commons-beanutils</artifactId>
       <version>${beanutils.version}</version>
-       <exclusions>
+      <exclusions>
         <exclusion>
           <groupId>commons-collections</groupId>
           <artifactId>commons-collections-testframework</artifactId>
@@ -193,7 +187,7 @@
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
-   </dependency>
+    </dependency>
     <!-- This is our one and only Hive dependency.-->
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -209,9 +203,9 @@
       <artifactId>log4j-1.2-api</artifactId>
     </dependency>
     <dependency>
-       <groupId>org.apache.logging.log4j</groupId>
-       <artifactId>log4j-core</artifactId>
-       <version>${log4j2.version}</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j2.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.thrift</groupId>
@@ -301,7 +295,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-
     <dependency>
       <groupId>org.apache.directory.server</groupId>
       <artifactId>apacheds-test-framework</artifactId>
@@ -318,8 +311,23 @@
       <artifactId>curator-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.nimbusds</groupId>
+      <artifactId>nimbus-jose-jwt</artifactId>
+      <version>${nimbus-jose-jwt.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.pac4j</groupId>
+      <artifactId>pac4j-core</artifactId>
+      <version>${pac4j-core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.tomakehurst</groupId>
+      <artifactId>wiremock-jre8-standalone</artifactId>
+      <version>2.32.0</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
-
   <profiles>
     <profile>
       <id>thriftif</id>
@@ -419,7 +427,6 @@
   </profile>
   -->
   </profiles>
-
   <build>
     <resources>
       <resource>
@@ -429,14 +436,8 @@
         </includes>
       </resource>
     </resources>
-
     <pluginManagement>
       <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${maven.surefire.plugin.version}</version>
-        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-antrun-plugin</artifactId>
@@ -476,30 +477,13 @@
             <configuration>
               <target>
                 <delete dir="${test.tmp.dir}"/>
-                <delete dir="${test.warehouse.external.dir}" />
+                <delete dir="${test.warehouse.external.dir}"/>
                 <delete dir="${test.warehouse.dir}"/>
                 <mkdir dir="${test.tmp.dir}"/>
                 <mkdir dir="${test.warehouse.dir}"/>
-                <mkdir dir="${test.warehouse.external.dir}" />
+                <mkdir dir="${test.warehouse.external.dir}"/>
               </target>
             </configuration>
-          </execution>
-          <execution>
-            <id>generate-version-annotation</id>
-            <phase>generate-sources</phase>
-            <configuration>
-              <target>
-                <exec executable="bash" failonerror="true">
-                  <arg value="${basedir}/src/main/resources/saveVersion.sh"/>
-                  <arg value="${project.version}"/>
-                  <arg value="${hive.version.shortname}"/>
-                  <arg value="${basedir}/src"/>
-                </exec>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
           </execution>
           <execution>
             <id>setup-metastore-scripts</id>
@@ -583,11 +567,14 @@
             <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
             <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
             <hive.in.test>true</hive.in.test>
+            <derby.version>${derby.version}</derby.version>
+            <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
           </systemPropertyVariables>
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
           </additionalClasspathElements>
-          <skipITs>${skipITests}</skipITs> <!-- set this to false to run these tests -->
+          <skipITs>${skipITests}</skipITs>
+          <!-- set this to false to run these tests -->
         </configuration>
       </plugin>
       <plugin>

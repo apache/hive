@@ -50,6 +50,7 @@ public abstract class ReplicationMetricCollector {
   private MetricCollector metricCollector;
   private boolean isEnabled;
   private static boolean enableForTests;
+  private static long scheduledExecutionIdForTests = 0L;
   private HiveConf conf;
 
   public void setMetricsMBean(ObjectName metricsMBean) {
@@ -149,11 +150,13 @@ public abstract class ReplicationMetricCollector {
       }
       stage.setStatus(status);
       stage.setEndTime(getCurrentTimeInMillis());
-      stage.setErrorLogPath(errorLogPath);
+      if (errorLogPath != null) {
+        stage.setErrorLogPath(errorLogPath);
+      }
       progress.addStage(stage);
       replicationMetric.setProgress(progress);
       metricCollector.addMetric(replicationMetric);
-      if (Status.FAILED == status || Status.FAILED_ADMIN == status) {
+      if (Status.FAILED == status || Status.FAILED_ADMIN == status || Status.SKIPPED == status) {
         reportEnd(status);
       }
     }
@@ -214,7 +217,7 @@ public abstract class ReplicationMetricCollector {
   private void checkEnabledForTests(HiveConf conf) {
     if (enableForTests) {
       conf.set(Constants.SCHEDULED_QUERY_SCHEDULENAME, "pol");
-      conf.setLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 1L);
+      conf.setLong(Constants.SCHEDULED_QUERY_EXECUTIONID, ++scheduledExecutionIdForTests);
     }
   }
 

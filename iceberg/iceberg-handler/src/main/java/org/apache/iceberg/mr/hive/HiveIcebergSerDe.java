@@ -28,8 +28,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -70,6 +73,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
   private ObjectInspector inspector;
   private Schema tableSchema;
+  private Schema projectedSchema;
   private Collection<String> partitionColumns;
   private Map<ObjectInspector, Deserializer> deserializers = Maps.newHashMapWithExpectedSize(1);
   private Container<Record> row = new Container<>();
@@ -90,7 +94,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     // the resulting properties are serialized and distributed to the executors
 
     if (serDeProperties.get(InputFormatConfig.TABLE_SCHEMA) != null) {
-      this.tableSchema = SchemaParser.fromJson((String) serDeProperties.get(InputFormatConfig.TABLE_SCHEMA));
+      this.tableSchema = SchemaParser.fromJson(serDeProperties.getProperty(InputFormatConfig.TABLE_SCHEMA));
       if (serDeProperties.get(InputFormatConfig.PARTITION_SPEC) != null) {
         PartitionSpec spec =
             PartitionSpecParser.fromJson(tableSchema, serDeProperties.getProperty(InputFormatConfig.PARTITION_SPEC));
@@ -126,25 +130,13 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       }
     }
 
-    Schema projectedSchema;
-    if (serDeProperties.get(HiveIcebergStorageHandler.WRITE_KEY) != null) {
-      // when writing out data, we should not do projection pushdown
-      projectedSchema = tableSchema;
-    } else {
-      configuration.setBoolean(InputFormatConfig.CASE_SENSITIVE, false);
-      String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(configuration);
-      // When same table is joined multiple times, it is possible some selected columns are duplicated,
-      // in this case wrong recordStructField position leads wrong value or ArrayIndexOutOfBoundException
-      String[] distinctSelectedColumns = Arrays.stream(selectedColumns).distinct().toArray(String[]::new);
-      projectedSchema = distinctSelectedColumns.length > 0 ?
-              tableSchema.caseInsensitiveSelect(distinctSelectedColumns) : tableSchema;
-      // the input split mapper handles does not belong to this table
-      // it is necessary to ensure projectedSchema equals to tableSchema,
-      // or we cannot find selectOperator's column from inspector
-      if (projectedSchema.columns().size() != distinctSelectedColumns.length) {
-        projectedSchema = tableSchema;
-      }
-    }
+    this.projectedSchema = projectedSchema(configuration, serDeProperties.getProperty(Catalogs.NAME), tableSchema);
+
+    // Currently ClusteredWriter is used which requires that records are ordered by partition keys.
+    // Here we ensure that SortedDynPartitionOptimizer will kick in and do the sorting.
+    // TODO: remove once we have both Fanout and ClusteredWriter available: HIVE-25948
+    HiveConf.setIntVar(configuration, HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD, 1);
+    HiveConf.setVar(configuration, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
 
     try {
       this.inspector = IcebergObjectInspector.create(projectedSchema);
@@ -153,17 +145,53 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     }
   }
 
+  private static Schema projectedSchema(Configuration configuration, String tableName, Schema tableSchema) {
+    Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(configuration, tableName);
+    if (operation != null) {
+      switch (operation) {
+        case DELETE:
+          return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
+        case UPDATE:
+          return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
+        case OTHER:
+          return tableSchema;
+        default:
+          throw new IllegalArgumentException("Unsupported operation " + operation);
+      }
+    } else {
+      configuration.setBoolean(InputFormatConfig.CASE_SENSITIVE, false);
+      String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(configuration);
+      // When same table is joined multiple times, it is possible some selected columns are duplicated,
+      // in this case wrong recordStructField position leads wrong value or ArrayIndexOutOfBoundException
+      String[] distinctSelectedColumns = Arrays.stream(selectedColumns).distinct().toArray(String[]::new);
+      Schema projectedSchema = distinctSelectedColumns.length > 0 ?
+          tableSchema.caseInsensitiveSelect(distinctSelectedColumns) : tableSchema;
+      // the input split mapper handles does not belong to this table
+      // it is necessary to ensure projectedSchema equals to tableSchema,
+      // or we cannot find selectOperator's column from inspector
+      if (projectedSchema.columns().size() != distinctSelectedColumns.length) {
+        return tableSchema;
+      } else {
+        return projectedSchema;
+      }
+    }
+  }
+
   private void createTableForCTAS(Configuration configuration, Properties serDeProperties) {
-    serDeProperties.setProperty(TableProperties.ENGINE_HIVE_ENABLED, "true");
     serDeProperties.setProperty(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(tableSchema));
 
-    // build partition spec, if any
-    if (!getPartitionColumnNames().isEmpty()) {
+    // Spec for the PARTITIONED BY SPEC queries (partition stored in the SessionState)
+    PartitionSpec spec = IcebergTableUtil.spec(configuration, tableSchema);
+    if (spec == null && !getPartitionColumnNames().isEmpty()) {
+      // Spec for the PARTITIONED BY queries (partitioned columns created by the compiler)
       List<FieldSchema> partitionFields = IntStream.range(0, getPartitionColumnNames().size())
           .mapToObj(i ->
                new FieldSchema(getPartitionColumnNames().get(i), getPartitionColumnTypes().get(i).getTypeName(), null))
           .collect(Collectors.toList());
-      PartitionSpec spec = HiveSchemaUtil.spec(tableSchema, partitionFields);
+      spec = HiveSchemaUtil.spec(tableSchema, partitionFields);
+    }
+
+    if (spec != null) {
       serDeProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
     }
 
@@ -182,6 +210,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
   private Properties getCTASTableCreationProperties(Properties serDeProperties) {
     Properties tblProps = (Properties) serDeProperties.clone();
+
+    // remove the serialization-only related props
     tblProps.remove(serdeConstants.LIST_PARTITION_COLUMNS);
     tblProps.remove(serdeConstants.LIST_PARTITION_COLUMN_TYPES);
     tblProps.remove(serdeConstants.LIST_PARTITION_COLUMN_COMMENTS);
@@ -193,6 +223,11 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     tblProps.remove(serdeConstants.COLUMN_NAME_DELIMITER);
     tblProps.remove(serdeConstants.SERIALIZATION_LIB);
     tblProps.remove(hive_metastoreConstants.TABLE_IS_CTAS);
+
+    // add the commonly-needed table properties
+    HiveIcebergMetaHook.COMMON_HMS_PROPERTIES.forEach(tblProps::putIfAbsent);
+    tblProps.setProperty(TableProperties.ENGINE_HIVE_ENABLED, "true");
+
     return tblProps;
   }
 
@@ -206,7 +241,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     Deserializer deserializer = deserializers.get(objectInspector);
     if (deserializer == null) {
       deserializer = new Deserializer.Builder()
-          .schema(tableSchema)
+          .schema(projectedSchema)
           .sourceInspector((StructObjectInspector) objectInspector)
           .writerInspector((StructObjectInspector) inspector)
           .build();

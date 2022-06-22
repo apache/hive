@@ -15,8 +15,4 @@ SELECT * FROM t1 WHERE col0 = 'FOO';
 explain cbo
 SELECT * FROM t1 WHERE col0 = 'foo';
 
--- query sql text based lookup is case sensitive now -> no rewrite
-explain cbo
-select * from t1 where col0 = 'foo';
-
 drop materialized view mat1;

@@ -21,7 +21,6 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -33,6 +32,7 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
 import org.junit.Assert;
@@ -58,7 +58,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     Assert.assertEquals(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA.columns().size(), rows.size());
     for (int i = 0; i < HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA.columns().size(); i++) {
       Types.NestedField field = HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA.columns().get(i);
-      String comment = field.doc() == null ? "from deserializer" : field.doc();
+      String comment = field.doc() == null ? "" : field.doc();
       Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
           comment}, rows.get(i));
     }
@@ -222,17 +222,15 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
 
     // Drop columns via REPLACE COLUMNS
     shell.executeStatement("ALTER TABLE orders REPLACE COLUMNS (" +
-        "customer_last_name string COMMENT 'from deserializer', order_id int COMMENT 'from deserializer'," +
-        " quantity int, nick string COMMENT 'from deserializer'," +
-        " fruit string COMMENT 'from deserializer')");
+        "customer_last_name string, order_id int, quantity int, nick string, fruit string)");
 
     result = shell.executeStatement("DESCRIBE orders");
     assertQueryResult(result, 5,
-        "customer_last_name", "string", "from deserializer",
-        "order_id", "int", "from deserializer",
-        "quantity", "int", "from deserializer",
-        "nick", "string", "from deserializer",
-        "fruit", "string", "from deserializer");
+        "customer_last_name", "string", "",
+        "order_id", "int", "",
+        "quantity", "int", "",
+        "nick", "string", "",
+        "fruit", "string", "");
     result = shell.executeStatement("SELECT * FROM orders ORDER BY order_id");
     assertQueryResult(result, 7,
         "Strange", 1, 100, null, "apple",
@@ -378,7 +376,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     icebergTable = testTables.loadTable(TableIdentifier.of("default", "people"));
     testTables.appendIcebergTable(shell.getHiveConf(), icebergTable, fileFormat, null, newPeople);
 
-    List<Record> sortedExpected = new ArrayList<>(people);
+    List<Record> sortedExpected = Lists.newArrayList(people);
     sortedExpected.addAll(newPeople);
     sortedExpected.sort(Comparator.comparingLong(record -> (Long) record.get(0)));
     List<Object[]> rows = shell

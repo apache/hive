@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.cli.LlapSliderUtils;
@@ -73,6 +74,9 @@ public class LlapServiceDriver {
 
     SessionState ss = SessionState.get();
     this.conf = (ss != null) ? ss.getConf() : new HiveConf(SessionState.class);
+
+    HiveConfUtil.copyFromProperties(cl.getConfig(), this.conf);
+
     if (conf == null) {
       throw new Exception("Cannot load any configuration to run command");
     }

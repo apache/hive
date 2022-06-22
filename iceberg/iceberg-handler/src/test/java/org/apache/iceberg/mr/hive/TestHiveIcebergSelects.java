@@ -63,7 +63,6 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
   @Test
   public void testCBOWithSelectedColumnsNonOverlapJoin() throws IOException {
     shell.setHiveSessionValue("hive.cbo.enable", true);
-
     testTables.createTable(shell, "products", PRODUCT_SCHEMA, fileFormat, PRODUCT_RECORDS);
     testTables.createTable(shell, "orders", ORDER_SCHEMA, fileFormat, ORDER_RECORDS);
 
@@ -118,8 +117,8 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
   public void testJoinTablesSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
-      if ((type == Types.TimestampType.withZone() || type == Types.TimeType.get()) && isVectorized) {
-        // ORC/TIMESTAMP_INSTANT and time are not supported vectorized types for Hive
+      if ((type == Types.TimestampType.withZone()) && isVectorized && fileFormat == FileFormat.ORC) {
+        // ORC/TIMESTAMP_INSTANT is not supported vectorized types for Hive
         continue;
       }
       // TODO: remove this filter when issue #1881 is resolved
@@ -145,8 +144,9 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
   public void testSelectDistinctFromTable() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
-      if ((type == Types.TimestampType.withZone() || type == Types.TimeType.get()) && isVectorized) {
-        // ORC/TIMESTAMP_INSTANT and time are not supported vectorized types for Hive
+      if ((type == Types.TimestampType.withZone()) &&
+          isVectorized && fileFormat == FileFormat.ORC) {
+        // ORC/TIMESTAMP_INSTANT is not supported vectorized types for Hive
         continue;
       }
       // TODO: remove this filter when issue #1881 is resolved
@@ -188,6 +188,7 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
 
   @Test
   public void testScanTableCaseInsensitive() throws IOException {
+    shell.setHiveSessionValue(InputFormatConfig.CASE_SENSITIVE, false);
     testTables.createTable(shell, "customers",
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA_WITH_UPPERCASE, fileFormat,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);

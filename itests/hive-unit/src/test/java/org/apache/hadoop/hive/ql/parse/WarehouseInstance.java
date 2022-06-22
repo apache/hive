@@ -432,8 +432,8 @@ public class WarehouseInstance implements Closeable {
   }
 
   private void verifyIfCkptSet(Map<String, String> props, String dumpDir) {
-    assertTrue(props.containsKey(ReplUtils.REPL_CHECKPOINT_KEY));
-    assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equals(dumpDir));
+    assertTrue(props.containsKey(ReplConst.REPL_TARGET_DB_PROPERTY));
+    assertTrue(props.get(ReplConst.REPL_TARGET_DB_PROPERTY).equals(dumpDir));
   }
 
   public void verifyIfCkptSet(String dbName, String dumpDir) throws Exception {
@@ -611,6 +611,9 @@ public class WarehouseInstance implements Closeable {
   public void close() throws IOException {
     if (miniDFSCluster != null && miniDFSCluster.isClusterUp()) {
       miniDFSCluster.shutdown();
+    }
+    if (client != null) {
+      client.close();
     }
   }
 

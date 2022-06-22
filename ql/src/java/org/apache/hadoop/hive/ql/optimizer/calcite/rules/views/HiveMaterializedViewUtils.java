@@ -191,7 +191,8 @@ public class HiveMaterializedViewUtils {
     augmentMaterializationPlanner.setRoot(materialization.queryRel);
     final RelNode modifiedQueryRel = augmentMaterializationPlanner.findBestExp();
     return new HiveRelOptMaterialization(materialization.tableRel, modifiedQueryRel,
-        null, materialization.qualifiedTableName, materialization.getScope(), materialization.getRebuildMode());
+        null, materialization.qualifiedTableName, materialization.getScope(), materialization.getRebuildMode(),
+            materialization.getAst());
   }
 
   /**
@@ -313,7 +314,8 @@ public class HiveMaterializedViewUtils {
       materializationList.add(
           new HiveRelOptMaterialization(newTableRel, newQueryRel, null,
               ImmutableList.of(scanTable.getDbName(), scanTable.getTableName(),
-                  "#" + materializationList.size()), materialization.getScope(), materialization.getRebuildMode()));
+                  "#" + materializationList.size()), materialization.getScope(), materialization.getRebuildMode(),
+                  materialization.getAst()));
     }
     return materializationList;
   }

@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.history;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,9 +67,7 @@ public interface HiveHistory {
     TASK_COUNTERS,
     TASK_NUM_MAPPERS,
     TASK_NUM_REDUCERS,
-    ROWS_INSERTED,
-    SPARK_JOB_HANDLE_ID,
-    SPARK_JOB_ID
+    ROWS_INSERTED
   };
 
   /**

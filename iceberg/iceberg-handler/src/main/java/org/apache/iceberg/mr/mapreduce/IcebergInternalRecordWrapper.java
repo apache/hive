@@ -21,13 +21,13 @@ package org.apache.iceberg.mr.mapreduce;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.StructType;
@@ -66,7 +66,7 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
 
   @Override
   public <T> T get(int pos, Class<T> javaClass) {
-    if (transforms[pos] != null) {
+    if (transforms[pos] != null && values[pos] != null) {
       return javaClass.cast(transforms[pos].apply(values[pos]));
     }
     return javaClass.cast(values[pos]);
@@ -131,7 +131,7 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
   }
 
   private Map<String, Integer> buildFieldPositionMap(StructType schema) {
-    Map<String, Integer> nameToPosition = new HashMap<>();
+    Map<String, Integer> nameToPosition = Maps.newHashMap();
     List<Types.NestedField> fields = schema.fields();
     for (int i = 0; i < fields.size(); i += 1) {
       nameToPosition.put(fields.get(i).name(), i);
@@ -143,6 +143,8 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
     switch (type.typeId()) {
       case TIMESTAMP:
         return timestamp -> DateTimeUtil.timestamptzFromMicros((Long) timestamp);
+      case DATE:
+        return date -> DateTimeUtil.dateFromDays((Integer) date);
       case STRUCT:
         IcebergInternalRecordWrapper wrapper =
             new IcebergInternalRecordWrapper(type.asStructType(), type.asStructType());

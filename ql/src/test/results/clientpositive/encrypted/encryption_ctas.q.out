@@ -28,6 +28,8 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:testct
 POSTHOOK: Output: testCT@encrypted_tablectas
+POSTHOOK: Lineage: encrypted_tablectas.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: encrypted_tablectas.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select * from testCT.encrypted_tablectas
 PREHOOK: type: QUERY
 PREHOOK: Input: testct@encrypted_tablectas

@@ -187,7 +187,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     // Overridden and used in ProcessingModeReduceMergePartial mode.
     @Override
     public void setNextVectorBatchGroupStatus(boolean isLastGroupBatch) throws HiveException {
-      // Some Spark plans cause Hash and other modes to get this.  So, ignore it.
+      // Ignore it.
     }
 
     protected abstract void doProcessBatch(VectorizedRowBatch batch, boolean isFirstGroupingSet,

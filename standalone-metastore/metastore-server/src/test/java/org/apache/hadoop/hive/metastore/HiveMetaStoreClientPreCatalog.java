@@ -950,13 +950,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb)
-      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+      throws TException {
     dropDatabase(name, deleteData, ignoreUnknownDb, false);
   }
 
   @Override
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
-      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+      throws TException {
     try {
       getDatabase(name);
     } catch (NoSuchObjectException e) {
@@ -1512,34 +1512,15 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
                                               List<String> part_names)
       throws NoSuchObjectException, MetaException, TException {
-    return getPartitionsByNames(db_name, tbl_name, part_names, false, null);
+    GetPartitionsByNamesRequest gpbnr = new GetPartitionsByNamesRequest(db_name, tbl_name);
+    gpbnr.setNames(part_names);
+    List<Partition> parts = client.get_partitions_by_names_req(gpbnr).getPartitions();
+    return fastpath ? parts : deepCopyPartitions(filterHook.filterPartitions(parts));
   }
 
   @Override public PartitionsResponse getPartitionsRequest(PartitionsRequest req)
       throws NoSuchObjectException, MetaException, TException {
     return client.get_partitions_req(req);
-  }
-
-  @Override
-  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
-          List<String> part_names, boolean get_col_stats, String engine)
-          throws NoSuchObjectException, MetaException, TException {
-    GetPartitionsByNamesRequest gpbnr = new GetPartitionsByNamesRequest(db_name, tbl_name);
-    gpbnr.setNames(part_names);
-    gpbnr.setGet_col_stats(get_col_stats);
-    if (get_col_stats) {
-      gpbnr.setEngine(engine);
-    }
-    List<Partition> parts = client.get_partitions_by_names_req(gpbnr).getPartitions();
-    return fastpath ? parts : deepCopyPartitions(filterHook.filterPartitions(parts));
-  }
-
-  @Override
-  public List<String> listPartitionNames(String catName, String dbName, String tblName,
-      String defaultPartName, byte[] exprBytes, String order,
-      short maxParts) throws MetaException, TException, NoSuchObjectException {
-
-    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -3533,37 +3514,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine, String validWriteIdList, Long tableId)
-          throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-      List<String> part_names, String validWriteIdList, Long tableId) throws TException {
-    throw new UnsupportedOperationException();
-  }
-
   @Override public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) throws TException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override public List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
-      boolean getColStats, String engine, String validWriteIdList, Long tableId)
-      throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override public List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
-      String validWriteIdList, Long tableId) throws NoSuchObjectException, MetaException, TException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-          List<String> part_names, boolean getColStats, String engine)
-          throws NoSuchObjectException, MetaException, TException {
     throw new UnsupportedOperationException();
   }
 
@@ -3601,9 +3552,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public void dropDatabase(String catName, String dbName, boolean deleteData,
-                           boolean ignoreUnknownDb, boolean cascade) throws NoSuchObjectException,
-      InvalidOperationException, MetaException, TException {
+  public void dropDatabase(DropDatabaseRequest req) throws TException {
     throw new UnsupportedOperationException();
   }
 
@@ -3660,8 +3609,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public void renamePartition(String catName, String dbname, String tableName,
-      List<String> part_vals, Partition newPart, String validWriteIds)
-          throws InvalidOperationException, MetaException, TException {
+      List<String> part_vals, Partition newPart, String validWriteIds, long txnId, boolean makeCopy)
+          throws TException {
     throw new UnsupportedOperationException();
   }
 
@@ -3955,6 +3904,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public void markFailed(CompactionInfoStruct cr) throws MetaException, TException {
     client.mark_failed(cr);
+  }
+
+  @Override
+  public void markRefused(CompactionInfoStruct cr) throws MetaException, TException {
+    client.mark_refused(cr);
   }
 
   @Override

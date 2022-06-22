@@ -29,23 +29,23 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 /**
  * This test measures the performance for vectorization.
- * <p/>
+ * <p>
  * This test uses JMH framework for benchmarking.
  * You may execute this benchmark tool using JMH command line in different ways:
- * <p/>
+ * <p>
  * To use the settings shown in the main() function, use:
  * $ java -cp target/benchmarks.jar org.apache.hive.benchmark.vectorization.VectorizedLikeBench
- * <p/>
+ * <p>
  * To use the default settings used by JMH, use:
  * $ java -jar target/benchmarks.jar org.apache.hive.benchmark.vectorization.VectorizedLikeBench
- * <p/>
+ * <p>
  * To specify different parameters, use:
  * - This command will use 10 warm-up iterations, 5 test iterations, and 2 forks. And it will
  * display the Average Time (avgt) in Microseconds (us)
  * - Benchmark mode. Available modes are:
  * [Throughput/thrpt, AverageTime/avgt, SampleTime/sample, SingleShotTime/ss, All/all]
  * - Output time unit. Available time units are: [m, s, ms, us, ns].
- * <p/>
+ * <p>
  * $ java -jar target/benchmarks.jar org.apache.hive.benchmark.vectorization.VectorizedLikeBench
  * -wi 10 -i 5 -f 2 -bm avgt -tu us
  */

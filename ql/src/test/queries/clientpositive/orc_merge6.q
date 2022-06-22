@@ -20,7 +20,6 @@ set hive.merge.mapredfiles=false;
 set hive.compute.splits.in.am=true;
 set tez.grouping.min-size=1000;
 set tez.grouping.max-size=50000;
-set hive.merge.sparkfiles=false;
 
 -- 3 mappers
 explain insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13;
@@ -39,7 +38,6 @@ set hive.merge.orcfile.stripe.level=true;
 set hive.merge.tezfiles=true;
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
-set hive.merge.sparkfiles=true;
 
 -- 3 mappers
 explain insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13;
@@ -76,7 +74,6 @@ set hive.merge.orcfile.stripe.level=false;
 set hive.merge.tezfiles=false;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
-set hive.merge.sparkfiles=false;
 
 insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13;
 insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13;

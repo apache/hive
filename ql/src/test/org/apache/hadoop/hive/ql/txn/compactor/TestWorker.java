@@ -362,11 +362,11 @@ public class TestWorker extends CompactorTest {
 
     startWorker();
 
-    // since compaction was not run, state should not be "ready for cleaning" but "succeeded"
+    // since compaction was not run, state should not be "ready for cleaning" but "refused"
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(1, compacts.size());
-    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(0).getState());
+    Assert.assertEquals(TxnStore.REFUSED_RESPONSE, compacts.get(0).getState());
 
     // There should still be 4 directories in the location
     FileSystem fs = FileSystem.get(conf);
@@ -988,14 +988,13 @@ public class TestWorker extends CompactorTest {
     burnThroughTransactions("default", "mtwb", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MINOR);
-    String initiatorVersion = "4.0.0";
+    String initiatorVersion = "INITIATOR_VERSION";
     rqst.setInitiatorVersion(initiatorVersion);
     txnHandler.compact(rqst);
 
     Worker worker = Mockito.spy(new Worker());
-    worker.setThreadId((int) t.getId());
     worker.setConf(conf);
-    String workerVersion = "4.0.0-SNAPSHOT";
+    String workerVersion = "WORKER_VERSION";
     doReturn(workerVersion).when(worker).getRuntimeVersion();
     worker.init(new AtomicBoolean(true));
     worker.run();
@@ -1124,7 +1123,7 @@ public class TestWorker extends CompactorTest {
     List<ShowCompactResponseElement> compacts =
         txnHandler.showCompact(new ShowCompactRequest()).getCompacts();
     Assert.assertEquals(compactionNum + 1, compacts.size());
-    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, compacts.get(compactionNum).getState());
+    Assert.assertEquals(TxnStore.REFUSED_RESPONSE, compacts.get(compactionNum).getState());
 
     // assert transaction with txnId=1 is still aborted after cleaner is run
     startCleaner();
@@ -1168,7 +1167,6 @@ public class TestWorker extends CompactorTest {
   private TimeoutWorker getTimeoutWorker(HiveConf conf, ExecutorService executor, boolean runForever,
       boolean swallowInterrupt, CountDownLatch looped) throws Exception {
     TimeoutWorker timeoutWorker = new TimeoutWorker(runForever, swallowInterrupt, looped);
-    timeoutWorker.setThreadId((int)timeoutWorker.getId());
     timeoutWorker.setConf(conf);
     timeoutWorker.init(new AtomicBoolean(false));
     executor.submit(timeoutWorker);

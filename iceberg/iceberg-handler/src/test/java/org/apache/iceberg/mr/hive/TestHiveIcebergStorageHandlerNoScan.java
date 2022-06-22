@@ -22,21 +22,25 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.BaseMetastoreTableOperations;
@@ -64,6 +68,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
@@ -78,6 +83,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import static org.apache.iceberg.TableProperties.GC_ENABLED;
 import static org.apache.iceberg.types.Types.NestedField.optional;
@@ -123,11 +130,10 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
   @Parameters(name = "catalog={0}")
   public static Collection<Object[]> parameters() {
-    Collection<Object[]> testParams = new ArrayList<>();
+    Collection<Object[]> testParams = Lists.newArrayList();
     for (TestTables.TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
       testParams.add(new Object[] {testTableType});
     }
-
     return testParams;
   }
 
@@ -147,15 +153,14 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @AfterClass
-  public static void afterClass() {
+  public static void afterClass() throws Exception {
     shell.stop();
   }
 
   @Before
   public void before() throws IOException {
     testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
-    // Uses spark as an engine so we can detect if we unintentionally try to use any execution engines
-    HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, "spark");
+    HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, "mr");
   }
 
   @After
@@ -286,6 +291,117 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
+  public void testSetPartitionTransformSameField() {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "truncate_field", Types.StringType.get()),
+        optional(3, "bucket_field", Types.StringType.get())
+    );
+
+    TableIdentifier identifier = TableIdentifier.of("default", "part_test");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
+        " PARTITIONED BY SPEC (truncate(2, truncate_field), bucket(2, bucket_field))" +
+        " STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
+        SchemaParser.toJson(schema) + "', " +
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
+
+    PartitionSpec spec = PartitionSpec.builderFor(schema)
+        .truncate("truncate_field", 2)
+        .bucket("bucket_field", 2)
+        .build();
+
+    Table table = testTables.loadTable(identifier);
+    Assert.assertEquals(spec, table.spec());
+
+    // Change one, keep one
+    shell.executeStatement("ALTER TABLE default.part_test " +
+        "SET PARTITION SPEC (truncate(3, truncate_field), bucket(2, bucket_field) )");
+
+    spec = PartitionSpec.builderFor(schema)
+        .withSpecId(1)
+        .alwaysNull("truncate_field", "truncate_field_trunc")
+        .bucket("bucket_field", 2)
+        .truncate("truncate_field", 3, "truncate_field_trunc_3")
+        .build();
+
+    table.refresh();
+    Assert.assertEquals(spec, table.spec());
+
+    // Change one again, keep the other one
+    shell.executeStatement("ALTER TABLE default.part_test " +
+        "SET PARTITION SPEC (truncate(4, truncate_field), bucket(2, bucket_field) )");
+
+    spec = PartitionSpec.builderFor(schema)
+        .withSpecId(2)
+        .alwaysNull("truncate_field", "truncate_field_trunc")
+        .bucket("bucket_field", 2)
+        .alwaysNull("truncate_field", "truncate_field_trunc_3")
+        .truncate("truncate_field", 4, "truncate_field_trunc_4")
+        .build();
+
+    table.refresh();
+    Assert.assertEquals(spec, table.spec());
+
+    // Keep the already changed, change the other one (change the order of clauses in the spec)
+    shell.executeStatement("ALTER TABLE default.part_test " +
+        "SET PARTITION SPEC (bucket(3, bucket_field), truncate(4, truncate_field))");
+
+    spec = PartitionSpec.builderFor(schema)
+        .withSpecId(3)
+        .alwaysNull("truncate_field", "truncate_field_trunc")
+        .alwaysNull("bucket_field", "bucket_field_bucket")
+        .alwaysNull("truncate_field", "truncate_field_trunc_3")
+        .truncate("truncate_field", 4, "truncate_field_trunc_4")
+        .bucket("bucket_field", 3, "bucket_field_bucket_3")
+        .build();
+
+    table.refresh();
+    Assert.assertEquals(spec, table.spec());
+  }
+
+  @Test
+  public void testSetPartitionTransformCaseSensitive() {
+    Schema schema = new Schema(
+        optional(1, "id", Types.LongType.get()),
+        optional(2, "truncate_field", Types.StringType.get()),
+        optional(3, "bucket_field", Types.StringType.get())
+    );
+
+    TableIdentifier identifier = TableIdentifier.of("default", "part_test");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
+        " PARTITIONED BY SPEC (truncate(2, truncate_field), bucket(2, bucket_field))" +
+        " STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        "TBLPROPERTIES ('" + InputFormatConfig.TABLE_SCHEMA + "'='" +
+        SchemaParser.toJson(schema) + "', " +
+        "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
+
+    PartitionSpec spec = PartitionSpec.builderFor(schema)
+        .truncate("truncate_field", 2)
+        .bucket("bucket_field", 2)
+        .build();
+
+    Table table = testTables.loadTable(identifier);
+    Assert.assertEquals(spec, table.spec());
+
+    shell.executeStatement("ALTER TABLE default.part_test " +
+        "SET PARTITION SPEC (truncaTe(3, truncate_Field), buCket(3, bUckeT_field))");
+
+    spec = PartitionSpec.builderFor(schema)
+        .withSpecId(1)
+        .alwaysNull("truncate_field", "truncate_field_trunc")
+        .alwaysNull("bucket_field", "bucket_field_bucket")
+        .truncate("truncate_field", 3, "truncate_field_trunc_3")
+        .bucket("bucket_field", 3, "bucket_field_bucket_3")
+        .build();
+
+    table.refresh();
+    Assert.assertEquals(spec, table.spec());
+  }
+
+  @Test
   public void testCreateDropTable() throws TException, IOException, InterruptedException {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
@@ -297,6 +413,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         "'" + InputFormatConfig.PARTITION_SPEC + "'='" +
         PartitionSpecParser.toJson(PartitionSpec.unpartitioned()) + "', " +
         "'dummy'='test', " +
+        "'" + InputFormatConfig.EXTERNAL_TABLE_PURGE + "'='TRUE', " +
         "'" + InputFormatConfig.CATALOG_NAME + "'='" + testTables.catalogName() + "')");
 
     // Check the Iceberg table data
@@ -354,7 +471,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         " last_name STRING COMMENT 'This is last name')" +
         " STORED BY ICEBERG " +
         testTables.locationForCreateTableSQL(identifier) +
-        testTables.propertiesForCreateTableSQL(ImmutableMap.of());
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of(InputFormatConfig.EXTERNAL_TABLE_PURGE, "TRUE"));
     shell.executeStatement(createSql);
 
     Table icebergTable = testTables.loadTable(identifier);
@@ -673,7 +790,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
       shell.executeStatement("CREATE EXTERNAL TABLE not_supported_types (not_supported " + notSupportedType + ") " +
               "STORED BY ICEBERG " +
               testTables.locationForCreateTableSQL(identifier) +
-              testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
+              testTables.propertiesForCreateTableSQL(
+                  ImmutableMap.of(InputFormatConfig.EXTERNAL_TABLE_PURGE, "TRUE")));
 
       org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
       Assert.assertEquals(notSupportedTypes.get(notSupportedType), icebergTable.schema().columns().get(0).type());
@@ -682,7 +800,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testCreateTableWithColumnComments() {
+  public void testCreateTableWithColumnComments() throws InterruptedException, TException {
     TableIdentifier identifier = TableIdentifier.of("default", "comment_table");
     shell.executeStatement("CREATE EXTERNAL TABLE comment_table (" +
         "t_int INT COMMENT 'int column',  " +
@@ -698,8 +816,12 @@ public class TestHiveIcebergStorageHandlerNoScan {
     for (int i = 0; i < icebergTable.schema().columns().size(); i++) {
       Types.NestedField field = icebergTable.schema().columns().get(i);
       Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
-          field.doc() != null ? field.doc() : "from deserializer"}, rows.get(i));
+          field.doc() != null ? field.doc() : ""}, rows.get(i));
     }
+
+    // Check the columns directly
+    List<FieldSchema> cols = shell.metastore().getTable(identifier).getSd().getCols();
+    Assert.assertEquals(icebergTable.schema().asStruct(), HiveSchemaUtil.convert(cols).asStruct());
   }
 
   @Test
@@ -718,8 +840,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
     for (int i = 0; i < icebergTable.schema().columns().size(); i++) {
       Types.NestedField field = icebergTable.schema().columns().get(i);
       Assert.assertNull(field.doc());
-      Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
-          "from deserializer"}, rows.get(i));
+      Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(), ""},
+          rows.get(i));
     }
   }
 
@@ -744,7 +866,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     for (int i = 0; i < columns.size(); i++) {
       Types.NestedField field = columns.get(i);
       Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
-          field.doc() != null ? field.doc() : "from deserializer"}, rows.get(i));
+          field.doc() != null ? field.doc() : ""}, rows.get(i));
       Assert.assertEquals(expectedDoc[i], field.doc());
     }
   }
@@ -797,7 +919,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     // Check the Iceberg table parameters
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
 
-    Map<String, String> expectedIcebergProperties = new HashMap<>();
+    Map<String, String> expectedIcebergProperties = Maps.newHashMap();
     expectedIcebergProperties.put("custom_property", "initial_val");
     expectedIcebergProperties.put("EXTERNAL", "TRUE");
     expectedIcebergProperties.put("storage_handler", HiveIcebergStorageHandler.class.getName());
@@ -823,7 +945,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
     if (Catalogs.hiveCatalog(shell.getHiveConf(), tableProperties)) {
       Assert.assertEquals(10, hmsParams.size());
       Assert.assertEquals("initial_val", hmsParams.get("custom_property"));
-      Assert.assertEquals("TRUE", hmsParams.get(InputFormatConfig.EXTERNAL_TABLE_PURGE));
       Assert.assertEquals("TRUE", hmsParams.get("EXTERNAL"));
       Assert.assertEquals("true", hmsParams.get(TableProperties.ENGINE_HIVE_ENABLED));
       Assert.assertEquals(HiveIcebergStorageHandler.class.getName(),
@@ -836,7 +957,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
       Assert.assertNotNull(hmsParams.get(hive_metastoreConstants.DDL_TIME));
       Assert.assertNotNull(hmsParams.get(serdeConstants.SERIALIZATION_FORMAT));
     } else {
-      Assert.assertEquals(7, hmsParams.size());
+      Assert.assertEquals(6, hmsParams.size());
       Assert.assertNull(hmsParams.get(TableProperties.ENGINE_HIVE_ENABLED));
     }
 
@@ -869,7 +990,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
       Assert.assertEquals(hmsParams.get(BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP), prevSnapshot);
       Assert.assertEquals(hmsParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP), newSnapshot);
     } else {
-      Assert.assertEquals(7, hmsParams.size());
+      Assert.assertEquals(6, hmsParams.size());
     }
 
     // Remove some Iceberg props and see if they're removed from HMS table props as well
@@ -939,6 +1060,69 @@ public class TestHiveIcebergStorageHandlerNoScan {
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
     shell.executeStatement("DROP TABLE customers");
+  }
+
+  @Test
+  public void testDropTableWithPurgeFalse() throws IOException, TException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.executeStatement("CREATE EXTERNAL TABLE customers (t_int INT, t_string STRING) STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE")));
+
+    String purge = shell.metastore().getTable(identifier).getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE);
+    Assert.assertEquals("FALSE", purge);
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    Path tableLocation = new Path(icebergTable.location());
+    shell.executeStatement("DROP TABLE customers");
+
+    // Check if the files are kept
+    FileSystem fs = Util.getFs(tableLocation, shell.getHiveConf());
+    Assert.assertEquals(1, fs.listStatus(tableLocation).length);
+    Assert.assertTrue(fs.listStatus(new Path(tableLocation, "metadata")).length > 0);
+  }
+
+  @Test
+  public void testDropTableWithPurgeTrue() throws IOException, TException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.executeStatement("CREATE EXTERNAL TABLE customers (t_int INT, t_string STRING) STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of(InputFormatConfig.EXTERNAL_TABLE_PURGE, "TRUE")));
+
+    String purge = shell.metastore().getTable(identifier).getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE);
+    Assert.assertEquals("TRUE", purge);
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    Path tableLocation = new Path(icebergTable.location());
+    shell.executeStatement("DROP TABLE customers");
+
+    // Check if the files are kept
+    FileSystem fs = Util.getFs(tableLocation, shell.getHiveConf());
+    Assert.assertFalse(fs.exists(tableLocation));
+  }
+
+  @Test
+  public void testDropTableWithoutPurge() throws IOException, TException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.executeStatement("CREATE EXTERNAL TABLE customers (t_int INT, t_string STRING) STORED BY ICEBERG " +
+        testTables.locationForCreateTableSQL(identifier) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
+
+    String purge = shell.metastore().getTable(identifier).getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE);
+    Assert.assertNull(purge);
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    Path tableLocation = new Path(icebergTable.location());
+    shell.executeStatement("DROP TABLE customers");
+
+    FileSystem fs = Util.getFs(tableLocation, shell.getHiveConf());
+    // This comes from the default Hive behavior based on hive.external.table.purge.default
+    if (HiveConf.getBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_EXTERNALTABLE_PURGE_DEFAULT)) {
+      Assert.assertFalse(fs.exists(tableLocation));
+    } else {
+      Assert.assertEquals(1, fs.listStatus(tableLocation).length);
+      Assert.assertTrue(fs.listStatus(new Path(tableLocation, "metadata")).length > 0);
+    }
   }
 
   @Test
@@ -1061,8 +1245,12 @@ public class TestHiveIcebergStorageHandlerNoScan {
     );
     testTables.createTable(shell, identifier.name(), schema, SPEC, FileFormat.PARQUET, ImmutableList.of());
 
+    // Run some alter commands. Before the fix the alter changed the column comment, and we would like to check
+    // that this is fixed now.
+    shell.executeStatement("ALTER TABLE default.customers CHANGE COLUMN customer_id customer_id bigint");
+
     shell.executeStatement("ALTER TABLE default.customers REPLACE COLUMNS " +
-        "(customer_id int, last_name string COMMENT 'This is last name', " +
+        "(customer_id bigint, last_name string COMMENT 'This is last name', " +
         "address struct<city:string,street:string>)");
 
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
@@ -1072,7 +1260,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     List<FieldSchema> hmsSchema = hmsTable.getSd().getCols();
 
     List<FieldSchema> expectedSchema = Lists.newArrayList(
-        new FieldSchema("customer_id", "int", null),
+        new FieldSchema("customer_id", "bigint", null),
         // first_name column is dropped
         new FieldSchema("last_name", "string", "This is last name"),
         new FieldSchema("address", "struct<city:string,street:string>", null));
@@ -1154,9 +1342,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
         new FieldSchema("family_name", "string", "This is family name"));
 
     Assert.assertEquals(expectedSchema, icebergSchema);
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
-      expectedSchema.stream().filter(fs -> fs.getComment() == null).forEach(fs -> fs.setComment("from deserializer"));
-    }
     Assert.assertEquals(expectedSchema, hmsSchema);
   }
 
@@ -1184,9 +1369,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
         new FieldSchema("last_name", "string", "This is last name"));
 
     Assert.assertEquals(expectedSchema, icebergSchema);
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
-      expectedSchema.stream().filter(fs -> fs.getComment() == null).forEach(fs -> fs.setComment("from deserializer"));
-    }
     Assert.assertEquals(expectedSchema, hmsSchema);
   }
 
@@ -1204,10 +1386,10 @@ public class TestHiveIcebergStorageHandlerNoScan {
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "customers");
 
     HiveIcebergMetaHook metaHook = new HiveIcebergMetaHook(shell.getHiveConf());
-    EnvironmentContext environmentContext = new EnvironmentContext(new HashMap<>());
+    EnvironmentContext environmentContext = new EnvironmentContext(Maps.newHashMap());
 
     metaHook.preAlterTable(hmsTable, environmentContext);
-    metaHook.commitAlterTable(hmsTable, environmentContext, null);
+    metaHook.commitAlterTable(hmsTable, environmentContext);
   }
 
   @Test
@@ -1243,7 +1425,155 @@ public class TestHiveIcebergStorageHandlerNoScan {
     storageHandler.setConf(shell.getHiveConf());
     URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
 
-    Assert.assertEquals("iceberg://" + table.location(), uriForAuth.toString());
+    Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
+        URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath(),
+        HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(uriForAuth.toString()));
+
+  }
+
+  @Test
+  public void testAuthzURIWithAuthEnabledAndMockCommandAuthorizer() throws HiveException {
+    shell.setHiveSessionValue("hive.security.authorization.enabled", true);
+    shell.setHiveSessionValue("hive.security.authorization.manager",
+        "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());
+    HiveAuthorizer authorizer = CustomTestHiveAuthorizerFactory.getAuthorizer();
+    ArgumentCaptor<List<HivePrivilegeObject>> outputHObjsCaptor = ArgumentCaptor.forClass(List.class);
+    Mockito.verify(authorizer).checkPrivileges(Mockito.any(), Mockito.any(), outputHObjsCaptor.capture(),
+        Mockito.any());
+    Optional<HivePrivilegeObject> hivePrivObject = outputHObjsCaptor.getValue().stream()
+        .filter(hpo -> hpo.getType().equals(HivePrivilegeObject.HivePrivilegeObjectType.STORAGEHANDLER_URI)).findAny();
+    if (hivePrivObject.isPresent()) {
+      Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
+              new Path(((BaseTable) table).operations().current().metadataFileLocation()).getParent().toUri()
+                  .getPath() +
+              "/dummy.metadata.json",
+          HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(hivePrivObject.get().getObjectName()));
+    } else {
+      Assert.fail("StorageHandler auth URI is not found");
+    }
+  }
+
+  @Test
+  public void testAuthzURIWithAuthEnabled() throws TException, InterruptedException, URISyntaxException {
+    shell.setHiveSessionValue("hive.security.authorization.enabled", true);
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(target);
+
+    HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
+    storageHandler.setConf(shell.getHiveConf());
+    URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
+    Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
+        URI.create(((BaseTable) table).operations().current()
+        .metadataFileLocation()).getPath(),
+        HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(uriForAuth.toString()));
+  }
+
+  @Test
+  public void testCreateTableWithMetadataLocation() throws IOException {
+    Assume.assumeTrue("Create with metadata location is only supported for Hive Catalog tables",
+        testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    TableIdentifier sourceIdentifier = TableIdentifier.of("default", "source");
+    Table sourceTable =
+        testTables.createTable(shell, sourceIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1,
+            ImmutableMap.<String, String>builder().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE").build());
+    testTables.appendIcebergTable(shell.getHiveConf(), sourceTable, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    String metadataLocation = ((BaseTable) sourceTable).operations().current().metadataFileLocation();
+    shell.executeStatement("DROP TABLE " + sourceIdentifier.name());
+    TableIdentifier targetIdentifier = TableIdentifier.of("default", "target");
+    Table targetTable =
+        testTables.createTable(shell, targetIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1,
+            ImmutableMap.<String, String>builder().put("metadata_location", metadataLocation).build()
+        );
+    Assert.assertEquals(metadataLocation, ((BaseTable) targetTable).operations().current().metadataFileLocation());
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + targetIdentifier.name());
+    List<Record> records = HiveIcebergTestUtils.valueForRow(targetTable.schema(), rows);
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, records, 0);
+    // append a second set of data to the target table
+    testTables.appendIcebergTable(shell.getHiveConf(), targetTable, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    rows = shell.executeStatement("SELECT * FROM " + targetIdentifier.name());
+    records = HiveIcebergTestUtils.valueForRow(targetTable.schema(), rows);
+    HiveIcebergTestUtils.validateData(
+        Stream.concat(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.stream(),
+            HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.stream()).collect(Collectors.toList()), records, 0);
+  }
+
+  @Test
+  public void testAlterTableWithMetadataLocation() throws IOException {
+    Assume.assumeTrue("Alter table with metadata location is only supported for Hive Catalog tables",
+        testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    TableIdentifier tableIdentifier = TableIdentifier.of("default", "source");
+    // create a test table with some dummy data
+    Table table =
+        testTables.createTable(shell, tableIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1, Collections.emptyMap());
+    testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    String firstMetadataLocation = ((BaseTable) table).operations().current().metadataFileLocation();
+    testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    table.refresh();
+    String secondMetadataLocation = ((BaseTable) table).operations().current().metadataFileLocation();
+    Assert.assertNotEquals(firstMetadataLocation, secondMetadataLocation);
+    shell.executeStatement("ALTER TABLE " + tableIdentifier.name() + " SET TBLPROPERTIES('metadata_location'='" +
+        firstMetadataLocation + "')");
+    // during alter operation a new metadata file is created but reflecting the old metadata state
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + tableIdentifier.name());
+    List<Record> records = HiveIcebergTestUtils.valueForRow(table.schema(), rows);
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, records, 0);
+    // add another batch of data to the table to make sure data manipulation is working
+    testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    rows = shell.executeStatement("SELECT * FROM " + tableIdentifier.name());
+    records = HiveIcebergTestUtils.valueForRow(table.schema(), rows);
+    HiveIcebergTestUtils.validateData(
+        Stream.concat(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.stream(),
+            HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.stream()).collect(Collectors.toList()), records, 0);
+  }
+
+  @Test
+  public void testAlterTableWithMetadataLocationFromAnotherTable() throws IOException {
+    TableIdentifier sourceIdentifier = TableIdentifier.of("default", "source");
+    Table sourceTable =
+        testTables.createTable(shell, sourceIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1,
+            ImmutableMap.<String, String>builder().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE").build());
+    testTables.appendIcebergTable(shell.getHiveConf(), sourceTable, FileFormat.PARQUET, null,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    String metadataLocation = ((BaseTable) sourceTable).operations().current().metadataFileLocation();
+    shell.executeStatement("DROP TABLE " + sourceIdentifier.name());
+    TableIdentifier targetIdentifier = TableIdentifier.of("default", "target");
+    testTables.createTable(shell, targetIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1, Collections.emptyMap());
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "Cannot change iceberg table",
+        () -> {
+          shell.executeStatement("ALTER TABLE " + targetIdentifier.name() + " SET TBLPROPERTIES('metadata_location'='" +
+              metadataLocation + "')");
+        });
+  }
+
+  @Test
+  public void testAlterTableToIcebergAndMetadataLocation() throws IOException {
+    String tableName = "tbl";
+    String createQuery = "CREATE EXTERNAL TABLE " +  tableName + " (a int) STORED AS PARQUET " +
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)) +
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of());
+    shell.executeStatement(createQuery);
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "Cannot perform table migration to Iceberg and setting the snapshot location in one step.",
+        () -> {
+          shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES(" +
+              "'storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler','metadata_location'='asdf')");
+        });
   }
 
   /**
@@ -1267,11 +1597,6 @@ public class TestHiveIcebergStorageHandlerNoScan {
         new FieldSchema("newstringcol", "string", "Column with description"));
 
     Assert.assertEquals(expectedSchema, icebergSchema);
-
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
-      expectedSchema.get(0).setComment("from deserializer");
-    }
-
     Assert.assertEquals(expectedSchema, hmsSchema);
   }
 

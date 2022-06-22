@@ -252,9 +252,7 @@ public interface IMetaStoreClient {
    * @param dbName Name of the database to fetch tables from.
    * @param tablePattern pattern to match the tables names.
    * @param requestedFields An int bitmask to indicate the depth of the returned objects
-   * @param processorCapabilities A list of "capabilities" possessed by the caller, to be matched with table's params
-   * @param processorId Any string id to identify the caller/client, for logging purposes only.
-   * @param limit Maximum size of the result set. <=0 indicates no limit
+   * @param limit Maximum size of the result set. &lt;=0 indicates no limit
    * @return List of ExtendedTableInfo that match the input arguments.
    * @throws MetaException Thrown if there is error on fetching from DBMS.
    * @throws TException Thrown if there is a thrift transport exception.
@@ -1294,24 +1292,6 @@ public interface IMetaStoreClient {
 
   /**
    * Get a list of partition names matching the specified filter and return in order if specified.
-   * @param dbName database name.
-   * @param tblName table name.
-   * @param defaultPartName default partition name.
-   * @param exprBytes expression, serialized from ExprNodeDesc.
-   * @param order ordered the resulting list.
-   * @param maxParts maximum number of partition names to return, or -1 to return all that are
-   *                  found.
-   * @return list of matching partition names.
-   * @throws MetaException error accessing the RDBMS.
-   * @throws TException thrift transport error.
-   * @throws NoSuchObjectException no such table.
-   */
-  List<String> listPartitionNames(String catName, String dbName, String tblName,
-      String defaultPartName, byte[] exprBytes, String order, short maxParts)
-      throws MetaException, TException, NoSuchObjectException;
-
-  /**
-   * Get a list of partition names matching the specified filter and return in order if specified.
    * @param request request
    * @return list of matching partition names.
    * @throws MetaException error accessing the RDBMS.
@@ -1530,9 +1510,28 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException No such partitions
    * @throws MetaException error accessing the RDBMS.
    * @throws TException thrift transport error
+   * @deprecated Use {@link #getPartitionsByNames(GetPartitionsByNamesRequest)} instead
    */
+  @Deprecated
   List<Partition> getPartitionsByNames(String db_name, String tbl_name,
       List<String> part_names) throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Get partitions by a list of partition names.
+   * @param catName catalog name
+   * @param db_name database name
+   * @param tbl_name table name
+   * @param part_names list of partition names
+   * @return list of Partition objects
+   * @throws NoSuchObjectException No such partitions
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error
+   * @deprecated Use {@link #getPartitionsByNames(GetPartitionsByNamesRequest)} instead
+   */
+  @Deprecated
+  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+                                       List<String> part_names)
+      throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get partitions by a list of partition names.
@@ -1544,115 +1543,6 @@ public interface IMetaStoreClient {
    */
   PartitionsResponse getPartitionsRequest(PartitionsRequest req)
           throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * Get partitions by a list of partition names.
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @param getColStats if true include statistics in the Partition object
-   * @param engine engine sending the request
-   * @return list of Partition objects
-   * @throws NoSuchObjectException No such partitionscatName
-   * @throws MetaException error accessing the RDBMS.
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
-      boolean getColStats, String engine) throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * Get partitions by a list of partition names.
-   * @param catName catalog name
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @return list of Partition objects
-   * @throws NoSuchObjectException No such partitions
-   * @throws MetaException error accessing the RDBMS.
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                       List<String> part_names)
-      throws NoSuchObjectException, MetaException, TException;
-
-    /**
-     * Get partitions by a list of partition names.
-     * @param catName catalog name
-     * @param db_name database name
-     * @param tbl_name table name
-     * @param part_names list of partition names
-     * @param getColStats if true, column statistics is added to the Partition objects
-     * @param engine engine sending the request
-     * @return list of Partition objects
-     * @throws NoSuchObjectException No such partitions
-     * @throws MetaException error accessing the RDBMS.
-     * @throws TException thrift transport error
-     */
-    List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-            List<String> part_names, boolean getColStats, String engine)
-            throws NoSuchObjectException, MetaException, TException;
-
-   /**
-   * Get partitions by a list of partition names.
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @param getColStats if true include statistics in the Partition object
-   * @param engine engine sending the request
-   * @return list of Partition objects
-   * @param validWriteIdList valid write Ids
-   * @param tableId table id
-   * @throws NoSuchObjectException No such partitionscatName
-   * @throws MetaException error accessing the RDBMS.
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names, boolean getColStats,
-      String engine, String validWriteIdList, Long tableId) throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * Get partitions by a list of partition names.
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @param validWriteIdList valid write Ids
-   * @param tableId table id
-   * @return list of Partition objects
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
-      String validWriteIdList, Long tableId) throws TException;
-
-   /**
-     * Get partitions by a list of partition names.
-     * @param catName catalog name
-     * @param db_name database name
-     * @param tbl_name table name
-     * @param part_names list of partition names
-     * @param getColStats if true, column statistics is added to the Partition objects
-     * @param engine engine sending the request
-     * @param validWriteIdList valid write Ids
-     * @param tableId table id
-     * @return list of Partition objects
-     * @throws TException thrift transport error
-     */
-    List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name, List<String> part_names,
-        boolean getColStats, String engine, String validWriteIdList, Long tableId)
-        throws TException;
-
-  /**
-   * Get partitions by a list of partition names.
-   * @param catName catalog name
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @param validWriteIdList valid write Ids
-   * @param tableId table id
-   * @return list of Partition objects
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                       List<String> part_names, String validWriteIdList, Long tableId)
-      throws TException;
 
     /**
    * Get partitions by a list of partition names.
@@ -1797,9 +1687,7 @@ public interface IMetaStoreClient {
    * @throws MetaException
    * @throws NoSuchObjectException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_table(org.apache.hadoop.hive.metastore.api.CreateTableRequest)
    */
-
   void createTable(Table tbl) throws AlreadyExistsException,
       InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
@@ -1811,7 +1699,6 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    * @throws TException
    */
-
   void createTable(CreateTableRequest request) throws AlreadyExistsException,
           InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
@@ -1964,10 +1851,21 @@ public interface IMetaStoreClient {
    * @throws MetaException something went wrong, usually either in the RDBMS or storage.
    * @throws TException general thrift error.
    */
-  void dropDatabase(String catName, String dbName, boolean deleteData, boolean ignoreUnknownDb,
-                    boolean cascade)
-      throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
+  @Deprecated
+  default void dropDatabase(String catName, String dbName, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+    DropDatabaseRequest req = new DropDatabaseRequest();
+    req.setName(dbName);
+    req.setCatalogName(catName);
+    req.setIgnoreUnknownDb(ignoreUnknownDb);
+    req.setDeleteData(deleteData);
+    req.setCascade(cascade);
 
+    dropDatabase(req);
+  }
+
+  void dropDatabase(DropDatabaseRequest req) throws TException;
+  
   /**
    * Drop a database.  Equivalent to
    * {@link #dropDatabase(String, String, boolean, boolean, boolean)} with cascade = false.
@@ -1982,8 +1880,8 @@ public interface IMetaStoreClient {
    * @throws MetaException something went wrong, usually either in the RDBMS or storage.
    * @throws TException general thrift error.
    */
-  default void dropDatabase(String catName, String dbName, boolean deleteData,
-                            boolean ignoreUnknownDb)
+  @Deprecated
+  default void dropDatabase(String catName, String dbName, boolean deleteData, boolean ignoreUnknownDb)
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
     dropDatabase(catName, dbName, deleteData, ignoreUnknownDb, false);
   }
@@ -2533,9 +2431,15 @@ public interface IMetaStoreClient {
    * @throws TException
    *          if error in communicating with metastore server
    */
+  default void renamePartition(String catName, String dbname, String tableName, List<String> part_vals, 
+                               Partition newPart, String validWriteIds) 
+        throws TException {
+    renamePartition(catName, dbname, tableName, part_vals, newPart, validWriteIds, 0, false);
+  }
+
   void renamePartition(String catName, String dbname, String tableName, List<String> part_vals,
-                       Partition newPart, String validWriteIds)
-      throws InvalidOperationException, MetaException, TException;
+                       Partition newPart, String validWriteIds, long txnId, boolean makeCopy)
+    throws TException;
 
   /**
    * Get schema for a table, excluding the partition columns.
@@ -2685,7 +2589,7 @@ public interface IMetaStoreClient {
   /**
    * Get the column statistics for a set of columns in a table.  This should only be used for
    * non-partitioned tables.  For partitioned tables use
-   * {@link #getPartitionColumnStatistics(String, String, List, List)}.
+   * {@link #getPartitionColumnStatistics(String, String, List, List, String)}.
    * @param dbName database name
    * @param tableName table name
    * @param colNames list of column names
@@ -2705,7 +2609,7 @@ public interface IMetaStoreClient {
   /**
    * Get the column statistics for a set of columns in a table.  This should only be used for
    * non-partitioned tables.  For partitioned tables use
-   * {@link #getPartitionColumnStatistics(String, String, String, List, List)}.
+   * {@link #getPartitionColumnStatistics(String, String, String, List, List, String)}.
    * @param catName catalog name
    * @param dbName database name
    * @param tableName table name
@@ -4309,8 +4213,25 @@ public interface IMetaStoreClient {
   void markFailed(CompactionInfoStruct cr) throws MetaException, TException;
 
   /**
-   * Update or create one record in the compaction metrics cache. This operation uses an optimistic locking mechanism.
-   * If update fails, due to version mismatch, the operation won't be retried.
+   * Mark a compaction as refused (to run).
+   * @param cr compaction job.
+   * @throws MetaException
+   * @throws TException
+   */
+  void markRefused(CompactionInfoStruct cr) throws MetaException, TException;
+
+  /**
+   * Create, update or delete one record in the compaction metrics cache.
+   * <p>
+   * If the metric is not found in the metrics cache, it will be created.
+   * </p>
+   * <p>
+   * If the metric is found, it will be updated. This operation uses an optimistic locking mechanism, meaning if another
+   * operation changed the value of this metric, the update will abort and won't be retried.
+   * </p>
+   * <p>
+   * If the new metric value is below {@link CompactionMetricsDataStruct#getThreshold()}, it will be deleted.
+   * </p>
    * @param struct the object that is used for the update, always non-null
    * @return true, if update finished successfully
    * @throws MetaException

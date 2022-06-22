@@ -457,13 +457,6 @@ struct StorageDescriptor {
   12: optional bool   storedAsSubDirectories       // stored as subdirectories or not
 }
 
-struct SourceTable {
-    1: required Table table,
-    2: required i64 insertedCount,
-    3: required i64 updatedCount,
-    4: required i64 deletedCount
-}
-
 struct CreationMetadata {
     1: required string catName,
     2: required string dbName,
@@ -471,7 +464,7 @@ struct CreationMetadata {
     4: required set<string> tablesUsed,
     5: optional string validTxnList,
     6: optional i64 materializationTime,
-    7: optional set<SourceTable> sourceTables
+    7: optional list<SourceTable> sourceTables
 }
 
 // column statistics
@@ -641,6 +634,13 @@ struct Table {
 					  // for certain execution engines
   27: optional ObjectDictionary dictionary,
   28: optional i64 txnId,              // txnId associated with the table creation
+}
+
+struct SourceTable {
+  1: required Table table,
+  2: required i64 insertedCount,
+  3: required i64 updatedCount,
+  4: required i64 deletedCount
 }
 
 struct Partition {
@@ -1297,6 +1297,7 @@ struct CompactionInfoStruct {
     13: optional string errorMessage
     14: optional bool hasoldabort
     15: optional i64 enqueueTime
+    16: optional i64 retryRetention
 }
 
 struct OptionalCompactionInfoStruct {
@@ -1316,6 +1317,7 @@ struct CompactionMetricsDataStruct {
     4: required CompactionMetricsMetricType type
     5: required i32 metricvalue
     6: required i32 version
+    7: required i32 threshold
 }
 
 struct CompactionMetricsDataResponse {
@@ -1325,14 +1327,15 @@ struct CompactionMetricsDataResponse {
 struct CompactionMetricsDataRequest {
     1: required string dbName,
     2: required string tblName,
-    3: required string partitionName
+    3: optional string partitionName
     4: required CompactionMetricsMetricType type
 }
 
 struct CompactionResponse {
     1: required i64 id,
     2: required string state,
-    3: required bool accepted
+    3: required bool accepted,
+    4: optional string errormessage
 }
 
 struct ShowCompactRequest {
@@ -1668,6 +1671,17 @@ struct GetDatabaseRequest {
  4: optional string processorIdentifier
 }
 
+struct DropDatabaseRequest {
+  1: required string name,
+  2: optional string catalogName,
+  3: required bool ignoreUnknownDb,
+  4: required bool deleteData,
+  5: required bool cascade,
+  6: optional bool softDelete=false,
+  7: optional i64 txnId=0,
+  8: optional bool deleteManagedDir=true
+}
+  
 // Request type for cm_recycle
 struct CmRecycleRequest {
   1: required string dataPath,
@@ -2107,7 +2121,9 @@ struct RenamePartitionRequest {
   3: required string tableName,
   4: required list<string> partVals,
   5: required Partition newPart,
-  6: optional string validWriteIdList
+  6: optional string validWriteIdList,
+  7: optional i64 txnId,              // txnId associated with the rename operation
+  8: optional bool clonePart          // non-blocking rename
 }
 
 struct RenamePartitionResponse {
@@ -2404,6 +2420,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   Database get_database_req(1:GetDatabaseRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_database(1:string name, 2:bool deleteData, 3:bool cascade) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+  void drop_database_req(1:DropDatabaseRequest req) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   list<string> get_databases(1:string pattern) throws(1:MetaException o1)
   list<string> get_all_databases() throws(1:MetaException o1)
   void alter_database(1:string dbname, 2:Database db) throws(1:MetaException o1, 2:NoSuchObjectException o2)
@@ -2954,6 +2971,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void mark_cleaned(1:CompactionInfoStruct cr) throws(1:MetaException o1)
   void mark_compacted(1: CompactionInfoStruct cr) throws(1:MetaException o1)
   void mark_failed(1: CompactionInfoStruct cr) throws(1:MetaException o1)
+  void mark_refused(1: CompactionInfoStruct cr) throws(1:MetaException o1)
   bool update_compaction_metrics_data(1: CompactionMetricsDataStruct data) throws(1:MetaException o1)
   void remove_compaction_metrics_data(1: CompactionMetricsDataRequest request) throws(1:MetaException o1)
   void set_hadoop_jobid(1: string jobId, 2: i64 cq_id)
@@ -3133,6 +3151,12 @@ const string TABLE_BUCKETING_VERSION = "bucketing_version",
 const string DRUID_CONFIG_PREFIX = "druid.",
 const string JDBC_CONFIG_PREFIX = "hive.sql.",
 const string TABLE_IS_CTAS = "created_with_ctas",
+const string TABLE_IS_CTLT = "created_with_ctlt",
 const string PARTITION_TRANSFORM_SPEC = "partition_transform_spec",
 const string NO_CLEANUP = "no_cleanup",
 const string CTAS_LEGACY_CONFIG = "create_table_as_external",
+const string DEFAULT_TABLE_TYPE = "defaultTableType",
+  
+// ACID
+const string TXN_ID = "txnId",
+const string WRITE_ID = "writeId",

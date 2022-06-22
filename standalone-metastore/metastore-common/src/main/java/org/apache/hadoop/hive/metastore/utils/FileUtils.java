@@ -353,7 +353,6 @@ public class FileUtils {
    * @param fs
    *          the file system
    * @return array of FileStatus
-   * @throws IOException
    */
   public static List<FileStatus> getFileStatusRecurse(Path base, FileSystem fs) {
     try {
@@ -404,11 +403,25 @@ public class FileUtils {
     RemoteIterator<LocatedFileStatus> remoteIterator = fs.listFiles(base, true);
     while (remoteIterator.hasNext()) {
       LocatedFileStatus each = remoteIterator.next();
-      Path relativePath = new Path(each.getPath().toString().replace(base.toString(), ""));
+      Path relativePath = makeRelative(base, each.getPath());
       if (RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER.accept(relativePath)) {
         results.add(each);
       }
     }
+  }
+
+  /**
+   * Returns a relative path wrt the parent path.
+   * @param parentPath the parent path.
+   * @param childPath the child path.
+   * @return childPath relative to parent path.
+   */
+  public static Path makeRelative(Path parentPath, Path childPath) {
+    String parentString =
+        parentPath.toString().endsWith(Path.SEPARATOR) ? parentPath.toString() : parentPath.toString() + Path.SEPARATOR;
+    String childString =
+        childPath.toString().endsWith(Path.SEPARATOR) ? childPath.toString() : childPath.toString() + Path.SEPARATOR;
+    return new Path(childString.replaceFirst(parentString, ""));
   }
 
   public static boolean isS3a(FileSystem fs) {

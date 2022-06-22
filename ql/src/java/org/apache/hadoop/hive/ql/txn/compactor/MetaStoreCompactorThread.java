@@ -19,11 +19,13 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
+import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -39,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_USE_CUSTOM_POOL;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
@@ -48,13 +51,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 public class MetaStoreCompactorThread extends CompactorThread implements MetaStoreThread {
 
   protected TxnStore txnHandler;
-  protected int threadId;
   protected ScheduledExecutorService cycleUpdaterExecutorService;
-
-  @Override
-  public void setThreadId(int threadId) {
-    this.threadId = threadId;
-  }
 
   @Override
   public void init(AtomicBoolean stop) throws Exception {
@@ -62,6 +59,10 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
 
     // Get our own instance of the transaction handler
     txnHandler = TxnUtils.getTxnStore(conf);
+    // Initialize the RawStore, with the flag marked as true. Since its stored as a ThreadLocal variable in the
+    // HMSHandlerContext, it will use the compactor related pool.
+    MetastoreConf.setBoolVar(conf, COMPACTOR_USE_CUSTOM_POOL, true);
+    getMSForConf(conf);
   }
 
   @Override Table resolveTable(CompactionInfo ci) throws MetaException {
@@ -128,7 +129,7 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
       long elapsed = System.currentTimeMillis() - startedAt;
       LOG.debug("Updating {} metric to {}", metric, elapsed);
       Metrics.getOrCreateGauge(metric)
-          .set((int)elapsed);
+          .set((int) elapsed);
       return elapsed;
     }
     return 0;

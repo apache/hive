@@ -51,6 +51,8 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
@@ -76,6 +78,7 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -349,6 +352,12 @@ public class TestObjectStore {
     objectStore.dropDatabase(db1.getCatalogName(), DB1);
   }
 
+  @Test (expected = NoSuchObjectException.class)
+  public void testTableOpsWhenTableDoesNotExist() throws NoSuchObjectException, MetaException {
+    List<String> colNames = Arrays.asList("c0", "c1");
+    objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, "not_existed_table", colNames, ENGINE, "");
+  }
+
   private StorageDescriptor createFakeSd(String location) {
     return new StorageDescriptor(null, location, null, null, false, 0,
         new SerDeInfo("SerDeName", "serializationLib", null), null, null, null);
@@ -408,8 +417,20 @@ public class TestObjectStore {
     }
     Assert.assertEquals(partitions.size(), numPartitions);
 
+    List<String> partVal = Collections.singletonList("");
+    try (AutoCloseable c = deadline()) {
+      numPartitions = objectStore.getNumPartitionsByPs(DEFAULT_CATALOG_NAME, DB1, TABLE1, partVal);
+    }
+    Assert.assertEquals(partitions.size(), numPartitions);
+
     try (AutoCloseable c = deadline()) {
       numPartitions = objectStore.getNumPartitionsByFilter(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country = \"US\"");
+    }
+    Assert.assertEquals(2, numPartitions);
+
+    partVal = Collections.singletonList("US");
+    try (AutoCloseable c = deadline()) {
+      numPartitions = objectStore.getNumPartitionsByPs(DEFAULT_CATALOG_NAME, DB1, TABLE1, partVal);
     }
     Assert.assertEquals(2, numPartitions);
 
@@ -424,6 +445,52 @@ public class TestObjectStore {
       objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, value2);
       objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
       objectStore.dropDatabase(db1.getCatalogName(), DB1);
+    }
+  }
+
+  @Test
+  public void testPartitionOpsWhenTableDoesNotExist() throws InvalidObjectException, MetaException {
+    List<String> value1 = Arrays.asList("US", "CA");
+    StorageDescriptor sd1 = createFakeSd("location1");
+    HashMap<String, String> partitionParams = new HashMap<>();
+    partitionParams.put("PARTITION_LEVEL_PRIVILEGE", "true");
+    Partition part1 = new Partition(value1, DB1, "not_existed_table", 111, 111, sd1, partitionParams);
+    try {
+      objectStore.addPartition(part1);
+    } catch (InvalidObjectException e) {
+      // expected
+    }
+    try {
+      objectStore.getPartition(DEFAULT_CATALOG_NAME, DB1, "not_existed_table", value1);
+    } catch (NoSuchObjectException e) {
+      // expected
+    }
+
+    List<String> value2 = Arrays.asList("US", "MA");
+    StorageDescriptor sd2 = createFakeSd("location2");
+    Partition part2 = new Partition(value2, DB1, "not_existed_table", 222, 222, sd2, partitionParams);
+    List<Partition> parts = Arrays.asList(part1, part2);
+    try {
+      objectStore.addPartitions(DEFAULT_CATALOG_NAME, DB1, "not_existed_table", parts);
+    } catch (InvalidObjectException e) {
+      // expected
+    }
+
+    PartitionSpec partitionSpec1 = new PartitionSpec(DB1, "not_existed_table", "location1");
+    partitionSpec1.setPartitionList(new PartitionListComposingSpec(parts));
+    PartitionSpecProxy partitionSpecProxy = PartitionSpecProxy.Factory.get(Arrays.asList(partitionSpec1));
+    try {
+      objectStore.addPartitions(DEFAULT_CATALOG_NAME, DB1, "not_existed_table", partitionSpecProxy, true);
+    } catch (InvalidObjectException e) {
+      // expected
+    }
+
+    List<List<String>> part_vals = Arrays.asList(Arrays.asList("US", "GA"), Arrays.asList("US", "WA"));
+    try {
+      objectStore.alterPartitions(DEFAULT_CATALOG_NAME, DB1, "not_existed_table", part_vals, parts, 0, "");
+    } catch (MetaException e) {
+      // expected
+      Assert.assertTrue(e.getCause() instanceof NoSuchObjectException);
     }
   }
 
@@ -1346,13 +1413,13 @@ public class TestObjectStore {
     creationMetadata.setDbName(matView1.getDbName());
     creationMetadata.setTblName(matView1.getTableName());
     creationMetadata.setTablesUsed(Collections.singleton(tbl1.getDbName() + "." + tbl1.getTableName()));
-    creationMetadata.setSourceTables(Collections.singleton(createSourceTable(tbl1)));
+    creationMetadata.setSourceTables(Collections.singletonList(createSourceTable(tbl1)));
     matView1.setCreationMetadata(creationMetadata);
     objectStore.createTable(matView1);
 
     CreationMetadata newCreationMetadata = new CreationMetadata(matView1.getCatName(), matView1.getDbName(),
             matView1.getTableName(), ImmutableSet.copyOf(creationMetadata.getTablesUsed()));
-    newCreationMetadata.setSourceTables(Collections.unmodifiableSet(creationMetadata.getSourceTables()));
+    newCreationMetadata.setSourceTables(Collections.unmodifiableList(creationMetadata.getSourceTables()));
     objectStore.updateCreationMetadata(matView1.getCatName(), matView1.getDbName(), matView1.getTableName(), newCreationMetadata);
 
     assertThat(creationMetadata.getMaterializationTime(), is(not(0)));

@@ -82,8 +82,8 @@ public class TestInitiator extends CompactorTest {
     rqst = new CompactionRequest("default", "rflw2", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    txnHandler.findNextToCompact(aFindNextCompactRequest(ServerUtils.hostname() + "-193892", "4.0.0"));
-    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", "4.0.0"));
+    txnHandler.findNextToCompact(aFindNextCompactRequest(ServerUtils.hostname() + "-193892", WORKER_VERSION));
+    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", WORKER_VERSION));
 
     startInitiator();
 
@@ -109,7 +109,7 @@ public class TestInitiator extends CompactorTest {
     CompactionRequest rqst = new CompactionRequest("default", "rfrw1", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", "4.0.0"));
+    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", WORKER_VERSION));
 
     conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, 1L, TimeUnit.MILLISECONDS);
 
@@ -982,7 +982,6 @@ public class TestInitiator extends CompactorTest {
 
     // run and fail initiator
     Initiator initiator = Mockito.spy(new Initiator());
-    initiator.setThreadId((int) t.getId());
     initiator.setConf(conf);
     initiator.init(new AtomicBoolean(true));
     doThrow(new RuntimeException("This was thrown on purpose by testInitiatorFailure"))
@@ -1051,9 +1050,8 @@ public class TestInitiator extends CompactorTest {
 
     // need to mock the runtime version, because the manifest file won't be there in the mvn test setup
     Initiator initiator = Mockito.spy(new Initiator());
-    initiator.setThreadId((int) t.getId());
     initiator.setConf(conf);
-    String runtimeVersion = "4.0.0-SNAPSHOT";
+    String runtimeVersion = WORKER_VERSION;
     doReturn(runtimeVersion).when(initiator).getRuntimeVersion();
     initiator.init(new AtomicBoolean(true));
     initiator.run();
@@ -1104,7 +1102,6 @@ public class TestInitiator extends CompactorTest {
 
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE, 3);
     Initiator initiator = Mockito.spy(new Initiator());
-    initiator.setThreadId((int) t.getId());
     initiator.setConf(conf);
     initiator.init(new AtomicBoolean(true));
     initiator.run();

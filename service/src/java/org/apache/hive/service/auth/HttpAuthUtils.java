@@ -48,6 +48,7 @@ public final class HttpAuthUtils {
   public static final String WWW_AUTHENTICATE = "WWW-Authenticate";
   public static final String AUTHORIZATION = "Authorization";
   public static final String BASIC = "Basic";
+  public static final String BEARER = "Bearer";
   public static final String NEGOTIATE = "Negotiate";
   private static final Logger LOG = LoggerFactory.getLogger(HttpAuthUtils.class);
   private static final String COOKIE_ATTR_SEPARATOR = "&";

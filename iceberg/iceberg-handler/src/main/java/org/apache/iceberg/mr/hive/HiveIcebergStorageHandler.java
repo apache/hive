@@ -23,23 +23,28 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
@@ -47,8 +52,11 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -63,6 +71,7 @@ import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
@@ -71,6 +80,9 @@ import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
@@ -85,7 +97,10 @@ import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTest
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,8 +111,32 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private static final String ICEBERG_URI_PREFIX = "iceberg://";
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String TABLE_NAME_SEPARATOR = "..";
+  /**
+   * Function template for producing a custom sort expression function:
+   * Takes the source column index and the bucket count to creat a function where Iceberg bucket UDF is used to build
+   * the sort expression, e.g. iceberg_bucket(_col2, 5)
+   */
+  private static final transient BiFunction<Integer, Integer, Function<List<ExprNodeDesc>, ExprNodeDesc>>
+      BUCKET_SORT_EXPR =
+          (idx, bucket) -> cols -> {
+            try {
+              ExprNodeDesc icebergBucketSourceCol = cols.get(idx);
+              return ExprNodeGenericFuncDesc.newInstance(new GenericUDFIcebergBucket(), "iceberg_bucket",
+                  Lists.newArrayList(
+                      icebergBucketSourceCol,
+                      new ExprNodeConstantDesc(TypeInfoFactory.intTypeInfo, bucket)
+                  ));
+            } catch (UDFArgumentException e) {
+              throw new RuntimeException(e);
+            }
+          };
 
-  static final String WRITE_KEY = "HiveIcebergStorageHandler_write";
+  private static final List<VirtualColumn> ACID_VIRTUAL_COLS = ImmutableList.of(VirtualColumn.PARTITION_SPEC_ID,
+      VirtualColumn.PARTITION_HASH, VirtualColumn.FILE_PATH, VirtualColumn.ROW_POSITION);
+  private static final List<FieldSchema> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA = ACID_VIRTUAL_COLS.stream()
+      .map(v -> new FieldSchema(v.getName(), v.getTypeInfo().getTypeName(), ""))
+      .collect(Collectors.toList());
+
 
   private Configuration conf;
 
@@ -131,25 +170,30 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> map) {
     overlayTableProperties(conf, tableDesc, map);
+    // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
+    fallbackToNonVectorizedModeBasedOnProperties(tableDesc.getProperties());
   }
 
   @Override
   public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> map) {
     overlayTableProperties(conf, tableDesc, map);
+    // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
+    fallbackToNonVectorizedModeBasedOnProperties(tableDesc.getProperties());
     // For Tez, setting the committer here is enough to make sure it'll be part of the jobConf
     map.put("mapred.output.committer.class", HiveIcebergNoJobCommitter.class.getName());
     // For MR, the jobConf is set only in configureJobConf, so we're setting the write key here to detect it over there
-    map.put(WRITE_KEY, "true");
+    String opType = getOperationType();
+    map.put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
     // Putting the key into the table props as well, so that projection pushdown can be determined on a
     // table-level and skipped only for output tables in HiveIcebergSerde. Properties from the map will be present in
     // the serde config for all tables in the query, not just the output tables, so we can't rely on that in the serde.
-    tableDesc.getProperties().put(WRITE_KEY, "true");
+    tableDesc.getProperties().put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
   }
 
   /**
    * Committer with no-op job commit. We can pass this into the Tez AM to take care of task commits/aborts, as well
    * as aborting jobs reliably if an execution error occurred. However, we want to execute job commits on the
-   * HS2-side using the HiveIcebergMetaHook, so we will use the full-featured HiveIcebergOutputCommitter there.
+   * HS2-side during the MoveTask, so we will use the full-featured HiveIcebergOutputCommitter there.
    */
   static class HiveIcebergNoJobCommitter extends HiveIcebergOutputCommitter {
     @Override
@@ -173,8 +217,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     setCommonJobConf(jobConf);
     if (tableDesc != null && tableDesc.getProperties() != null &&
-        tableDesc.getProperties().get(WRITE_KEY) != null) {
+        tableDesc.getProperties().get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName()) != null) {
       String tableName = tableDesc.getTableName();
+      String opKey = InputFormatConfig.OPERATION_TYPE_PREFIX + tableName;
+      // set operation type into job conf too
+      jobConf.set(opKey, tableDesc.getProperties().getProperty(opKey));
       Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
           "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
       String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
@@ -246,7 +293,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = partish.getTable();
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = Catalogs.loadTable(conf, tableDesc.getProperties());
-    Map<String, String> stats = new HashMap<>();
+    Map<String, String> stats = Maps.newHashMap();
     if (table.currentSnapshot() != null) {
       Map<String, String> summary = table.currentSnapshot().summary();
       if (summary != null) {
@@ -284,7 +331,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public List<PartitionTransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    List<PartitionTransformSpec> result = new ArrayList<>();
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     return table.spec().fields().stream().map(f -> {
@@ -305,6 +351,50 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
       return spec;
     }).collect(Collectors.toList());
+  }
+
+  @Override
+  public DynamicPartitionCtx createDPContext(
+          HiveConf hiveConf, org.apache.hadoop.hive.ql.metadata.Table hmsTable, Operation writeOperation)
+      throws SemanticException {
+    // delete records are already clustered by partition spec id and the hash of the partition struct
+    // there is no need to do any additional sorting based on partition columns
+    if (writeOperation == Operation.DELETE) {
+      return null;
+    }
+
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    if (table.spec().isUnpartitioned()) {
+      return null;
+    }
+
+    // Iceberg currently doesn't have publicly accessible partition transform information, hence use above string parse
+    List<PartitionTransformSpec> partitionTransformSpecs = getPartitionTransformSpec(hmsTable);
+
+    DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(Maps.newLinkedHashMap(),
+        hiveConf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
+        hiveConf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
+    List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExprs = Lists.newLinkedList();
+    dpCtx.setCustomSortExpressions(customSortExprs);
+
+    Map<String, Integer> fieldOrderMap = Maps.newHashMap();
+    List<Types.NestedField> fields = table.schema().columns();
+    for (int i = 0; i < fields.size(); ++i) {
+      fieldOrderMap.put(fields.get(i).name(), i);
+    }
+
+    int offset = acidSelectColumns(hmsTable, writeOperation).size();
+    for (PartitionTransformSpec spec : partitionTransformSpecs) {
+      int order = fieldOrderMap.get(spec.getColumnName());
+      if (PartitionTransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {
+        customSortExprs.add(BUCKET_SORT_EXPR.apply(order + offset, spec.getTransformParam().get()));
+      } else {
+        customSortExprs.add(cols -> cols.get(order + offset).clone());
+      }
+    }
+
+    return dpCtx;
   }
 
   @Override
@@ -363,15 +453,52 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
+  public void executeOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable, AlterTableExecuteSpec executeSpec) {
+    switch (executeSpec.getOperationType()) {
+      case ROLLBACK:
+        TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+        Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+        LOG.info("Executing rollback operation on iceberg table. If you would like to revert rollback you could " +
+              "try altering the metadata location to the current metadata location by executing the following query:" +
+              "ALTER TABLE {}.{} SET TBLPROPERTIES('metadata_location'='{}'). This operation is supported for Hive " +
+              "Catalog tables.", hmsTable.getDbName(), hmsTable.getTableName(),
+            ((BaseTable) icebergTable).operations().current().metadataFileLocation());
+        AlterTableExecuteSpec.RollbackSpec rollbackSpec =
+            (AlterTableExecuteSpec.RollbackSpec) executeSpec.getOperationParams();
+        IcebergTableUtil.rollback(icebergTable, rollbackSpec.getRollbackType(), rollbackSpec.getParam());
+        break;
+      default:
+        throw new UnsupportedOperationException(
+            String.format("Operation type %s is not supported", executeSpec.getOperationType().name()));
+    }
+  }
+
+  @Override
   public boolean isValidMetadataTable(String metaTableName) {
     return IcebergMetadataTables.isValidMetaTable(metaTableName);
   }
 
   @Override
   public URI getURIForAuth(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws URISyntaxException {
-    Table table = IcebergTableUtil.getTable(conf, hmsTable);
-    return new URI(ICEBERG_URI_PREFIX + table.location());
+    String dbName = hmsTable.getDbName();
+    String tableName = hmsTable.getTableName();
+    StringBuilder authURI = new StringBuilder(ICEBERG_URI_PREFIX).append(dbName).append("/").append(tableName)
+        .append("?snapshot=");
+    Optional<String> locationProperty = SessionStateUtil.getProperty(conf, hive_metastoreConstants.META_TABLE_LOCATION);
+    if (locationProperty.isPresent()) {
+      Preconditions.checkArgument(locationProperty.get() != null,
+          "Table location is not set in SessionState. Authorization URI cannot be supplied.");
+      // this property is set during the create operation before the hive table was created
+      // we are returning a dummy iceberg metadata file
+      authURI.append(URI.create(locationProperty.get()).getPath()).append("/metadata/dummy.metadata.json");
+    } else {
+      Table table = IcebergTableUtil.getTable(conf, hmsTable);
+      authURI.append(URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath());
+    }
+    LOG.debug("Iceberg storage handler authorization URI {}", authURI);
+    return new URI(HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.encode(authURI.toString()));
   }
+
 
   @Override
   public void validateSinkDesc(FileSinkDesc sinkDesc) throws SemanticException {
@@ -381,6 +508,52 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       if (IcebergTableUtil.isBucketed(table)) {
         throw new SemanticException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
       }
+      if (table.currentSnapshot() != null) {
+        if (table.currentSnapshot().allManifests().parallelStream().map(ManifestFile::partitionSpecId)
+            .anyMatch(id -> id < table.spec().specId())) {
+          throw new SemanticException(
+              "Cannot perform insert overwrite query on Iceberg table where partition evolution happened. In order " +
+              "to succesfully carry out any insert overwrite operation on this table, the data has to be rewritten " +
+              "conforming to the latest spec. ");
+        }
+      }
+    }
+  }
+
+  @Override
+  public AcidSupportType supportsAcidOperations() {
+    return AcidSupportType.WITHOUT_TRANSACTIONS;
+  }
+
+  @Override
+  public List<VirtualColumn> acidVirtualColumns() {
+    return ACID_VIRTUAL_COLS;
+  }
+
+  @Override
+  public List<FieldSchema> acidSelectColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
+    switch (operation) {
+      case DELETE:
+      case UPDATE:
+        // TODO: make it configurable whether we want to include the table columns in the select query.
+        // It might make delete writes faster if we don't have to write out the row object
+        return Stream.of(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols())
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
+      default:
+        return ImmutableList.of();
+    }
+  }
+
+  @Override
+  public List<FieldSchema> acidSortColumns(org.apache.hadoop.hive.ql.metadata.Table table, Operation operation) {
+    switch (operation) {
+      case DELETE:
+        return ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
+      default:
+        // For update operations we use the same sort order defined by
+        // {@link #createDPContext(HiveConf, org.apache.hadoop.hive.ql.metadata.Table)}
+        return ImmutableList.of();
     }
   }
 
@@ -617,6 +790,68 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   /**
+   * If any of the following checks is true we fall back to non vectorized mode:
+   * <ul>
+   *   <li>iceberg format-version is "2"</li>
+   *   <li>fileformat is set to avro</li>
+   *   <li>querying metadata tables</li>
+   *   <li>fileformat is set to ORC, and table schema has time type column</li>
+   *   <li>fileformat is set to PARQUET, and table schema has a list type column, that has a complex type element</li>
+   * </ul>
+   * @param tableProps table properties, must be not null
+   */
+  private void fallbackToNonVectorizedModeBasedOnProperties(Properties tableProps) {
+    Schema tableSchema = SchemaParser.fromJson(tableProps.getProperty(InputFormatConfig.TABLE_SCHEMA));
+    if ("2".equals(tableProps.get(TableProperties.FORMAT_VERSION)) ||
+        FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
+        (tableProps.containsKey("metaTable") && isValidMetadataTable(tableProps.getProperty("metaTable"))) ||
+        hasOrcTimeInSchema(tableProps, tableSchema) ||
+        !hasParquetListColumnSupport(tableProps, tableSchema)) {
+      conf.setBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname, false);
+    }
+  }
+
+  /**
+   * Iceberg Time type columns are written as longs into ORC files. There is no Time type in Hive, so it is represented
+   * as String instead. For ORC there's no automatic conversion from long to string during vectorized reading such as
+   * for example in Parquet (in Parquet files Time type is an int64 with 'time' logical annotation).
+   * @param tableProps iceberg table properties
+   * @param tableSchema iceberg table schema
+   * @return
+   */
+  private static boolean hasOrcTimeInSchema(Properties tableProps, Schema tableSchema) {
+    if (!FileFormat.ORC.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
+      return false;
+    }
+    return tableSchema.columns().stream().anyMatch(f -> Types.TimeType.get().typeId() == f.type().typeId());
+  }
+
+  /**
+   * Vectorized reads of parquet files from columns with list type is only supported if the element is a primitive type
+   * check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details
+   * @param tableProps iceberg table properties
+   * @param tableSchema iceberg table schema
+   * @return
+   */
+  private static boolean hasParquetListColumnSupport(Properties tableProps, Schema tableSchema) {
+    if (!FileFormat.PARQUET.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
+      return true;
+    }
+
+    for (Types.NestedField field : tableSchema.columns()) {
+      if (field.type().isListType()) {
+        for (Types.NestedField nestedField : field.type().asListType().fields()) {
+          if (!nestedField.type().isPrimitiveType()) {
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
+  /**
    * Generates a JobContext for the OutputCommitter for the specific table.
    * @param configuration The configuration used for as a base of the JobConf
    * @param tableName The name of the table we are planning to commit
@@ -641,6 +876,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       LOG.debug("Unable to find commit information in query state for table: {}", tableName);
       return Optional.empty();
     }
+  }
+
+  private String getOperationType() {
+    return SessionStateUtil.getProperty(conf, Operation.class.getSimpleName())
+        .orElse(Operation.OTHER.name());
   }
 
   private static class NonSerializingConfig implements Serializable {

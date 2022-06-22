@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
 
 @InterfaceAudience.Public
@@ -29,9 +30,12 @@ public class PreCreateTableEvent extends PreEventContext {
 
   private final Table table;
 
-  public PreCreateTableEvent(Table table, IHMSHandler handler) {
+  private final Database db;
+
+  public PreCreateTableEvent(Table table, Database db, IHMSHandler handler) {
     super(PreEventType.CREATE_TABLE, handler);
     this.table = table;
+    this.db = db;
   }
 
   /**
@@ -40,4 +44,9 @@ public class PreCreateTableEvent extends PreEventContext {
   public Table getTable() {
     return table;
   }
+
+  /**
+   * @return the database
+   */
+  public Database getDatabase() { return db; }
 }

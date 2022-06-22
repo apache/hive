@@ -86,8 +86,7 @@ public class LogDivertAppender {
     private static final Pattern executionIncludeNamePattern = Pattern.compile(Joiner.on("|").
         join(new String[]{"org.apache.hadoop.mapreduce.JobSubmitter",
           "org.apache.hadoop.mapreduce.Job", "SessionState", "ReplState", Task.class.getName(),
-          TezTask.class.getName(), Driver.class.getName(), BasicStatsTask.class.getName(),
-          "org.apache.hadoop.hive.ql.exec.spark.status.SparkJobMonitor"}));
+          TezTask.class.getName(), Driver.class.getName(), BasicStatsTask.class.getName()}));
 
     /* Patterns that are included in performance logging level.
      * In performance mode, show execution and performance logger messages.

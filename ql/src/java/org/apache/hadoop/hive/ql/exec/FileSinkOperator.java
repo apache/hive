@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
+import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperation;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -51,7 +52,6 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities.MissingBucketsContext;
-import org.apache.hadoop.hive.ql.exec.spark.SparkMetricUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -617,6 +617,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       initializeSpecPath();
       fs = specPath.getFileSystem(hconf);
 
+      setWriteOperation(hconf, getConf().getTableInfo().getTableName(), getConf().getWriteOperation());
       if (hconf instanceof JobConf) {
         jc = (JobConf) hconf;
       } else {
@@ -1144,7 +1145,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           cntr = 0;
           numRows = 1;
         }
-        LOG.info(toString() + ": records written - " + numRows);
+        LOG.info("{}: {} written - {}",
+                this, conf.isDeleteOfSplitUpdate() ? "delete delta records" : "records", numRows);
       }
 
       int writerOffset;
@@ -1443,12 +1445,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   @Override
   public void closeOp(boolean abort) throws HiveException {
 
-    row_count.set(numRows);
-    LOG.info(toString() + ": records written - " + numRows);
+    row_count.set(conf.isDeleteOfSplitUpdate() ? 0 : numRows);
 
-    if ("spark".equalsIgnoreCase(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
-      SparkMetricUtils.updateSparkRecordsWrittenMetrics(runTimeNumRows);
-    }
+    LOG.info("{}: {} written - {}",
+            this, conf.isDeleteOfSplitUpdate() ? "delete delta records" : "records", numRows);
 
     if (!bDynParts && !filesCreated) {
       boolean isTez = "tez".equalsIgnoreCase(
@@ -1528,9 +1528,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
         if (isNativeTable()) {
           fsp.commit(fs, commitPaths, deleteDeltas);
-        }
-        if ("spark".equals(HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE))) {
-          SparkMetricUtils.updateSparkBytesWrittenMetrics(LOG, fs, fsp.finalPaths);
         }
       }
       if (conf.isMmTable() || conf.isDirectInsert()) {

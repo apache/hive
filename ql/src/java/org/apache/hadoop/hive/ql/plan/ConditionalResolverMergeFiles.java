@@ -146,8 +146,6 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
           work = ((MapredWork) mrTask.getWork()).getMapWork();
         } else if (mrTask.getWork() instanceof TezWork){
           work = (MapWork) ((TezWork) mrTask.getWork()).getAllWork().get(0);
-        } else if (mrTask.getWork() instanceof SparkWork) {
-          work = (MapWork) ((SparkWork) mrTask.getWork()).getAllWork().get(0);
         } else {
           work = (MapWork) mrTask.getWork();
         }
@@ -310,7 +308,15 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
         List<Path> targetDirs = new ArrayList<Path>(toMove.size());
 
         for (int i = 0; i < toMove.size(); i++) {
-          String[] moveStrSplits = toMove.get(i).toUri().toString().split(Path.SEPARATOR);
+          // Here directly the path name is used, instead of the uri because the uri contains the
+          // serialized version of the path. For dynamic partition, we need the non serialized
+          // version of the path as this value is used directly as partition name to create the partition.
+          // For example, if the dp name is "part=2022-01-16 04:35:56.732" then the uri
+          // will contain "part=2022-01-162022-01-16%2004%253A35%253A56.732". When we convert it to
+          // partition name, it will come as "part=2022-01-16 04%3A35%3A56.732". But the path will have
+          // value "part=2022-01-16 04%3A35%3A56.732", which will get converted to proper name by
+          // function escapePathName.
+          String[] moveStrSplits = toMove.get(i).toString().split(Path.SEPARATOR);
           int dpIndex = moveStrSplits.length - dpLbLevel;
           Path target = targetDir;
           while (dpIndex < moveStrSplits.length) {

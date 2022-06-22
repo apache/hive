@@ -56,7 +56,7 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
   private int createTime, lastAccessTime, retention;
   private Map<String, String> tableParams;
   private boolean rewriteEnabled, temporary;
-  private Set<SourceTable> mvReferencedTables;
+  private List<SourceTable> mvReferencedTables;
   private PrincipalType ownerType;
 
   public TableBuilder() {
@@ -67,7 +67,7 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
     retention = 0;
     partCols = new ArrayList<>();
     type = TableType.MANAGED_TABLE.name();
-    mvReferencedTables = new HashSet<>();
+    mvReferencedTables = new ArrayList<>();
     temporary = false;
     super.setChild(this);
   }

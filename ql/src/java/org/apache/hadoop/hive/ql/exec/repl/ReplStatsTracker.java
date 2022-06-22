@@ -107,7 +107,7 @@ public class ReplStatsTracker {
 
   /**
    * Get the DescriptiveStatistics for each event type.
-   * @return A HashMap, with key as event type & value as the DescriptiveAnalytics of the entire run.
+   * @return A HashMap, with key as event type &amp; value as the DescriptiveAnalytics of the entire run.
    */
   public ConcurrentHashMap<String, DescriptiveStatistics> getDescMap() {
     return descMap;

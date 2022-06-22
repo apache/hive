@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -29,7 +30,6 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.ql.ddl.table.create.show.ShowCreateTableOperation;
 import org.apache.hadoop.hive.ql.exec.DDLPlanUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -347,8 +347,13 @@ class CompactionQueryBuilder {
 
       query.append(" where ");
       for (int i = 0; i < keys.size(); ++i) {
-        query.append(i == 0 ? "`" : " and `").append(keys.get(i).getName()).append("`='")
-            .append(vals.get(i)).append("'");
+        FieldSchema keySchema = keys.get(i);
+        query.append(i == 0 ? "`" : " and `").append(keySchema.getName()).append("`=");
+        if (!keySchema.getType().equalsIgnoreCase(ColumnType.BOOLEAN_TYPE_NAME)) {
+          query.append("'").append(vals.get(i)).append("'");
+        } else {
+          query.append(vals.get(i));
+        }
       }
     }
 

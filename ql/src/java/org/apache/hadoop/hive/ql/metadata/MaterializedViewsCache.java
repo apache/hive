@@ -19,12 +19,14 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiFunction;
@@ -49,16 +51,16 @@ public class MaterializedViewsCache {
   private final ConcurrentMap<String, ConcurrentMap<String, HiveRelOptMaterialization>> materializedViews =
           new ConcurrentHashMap<>();
   // Map for looking up materialization by view query text
-  private final Map<String, List<HiveRelOptMaterialization>> sqlToMaterializedView = new ConcurrentHashMap<>();
+  private final Map<ASTKey, List<HiveRelOptMaterialization>> sqlToMaterializedView = new ConcurrentHashMap<>();
 
 
   public void putIfAbsent(Table materializedViewTable, HiveRelOptMaterialization materialization) {
     ConcurrentMap<String, HiveRelOptMaterialization> dbMap = ensureDbMap(materializedViewTable);
 
     // You store the materialized view
-    dbMap.compute(materializedViewTable.getTableName(), (mvTableName, aMaterialization) -> {
+    dbMap.computeIfAbsent(materializedViewTable.getTableName(), (mvTableName) -> {
       List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.computeIfAbsent(
-              materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
+              new ASTKey(materialization.getAst()), s -> new ArrayList<>());
       materializationList.add(materialization);
       return materialization;
     });
@@ -86,7 +88,7 @@ public class MaterializedViewsCache {
 
     dbMap.compute(materializedViewTable.getTableName(), (mvTableName, existingMaterialization) -> {
       List<HiveRelOptMaterialization> optMaterializationList = sqlToMaterializedView.computeIfAbsent(
-          materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
+          new ASTKey(newMaterialization.getAst()), s -> new ArrayList<>());
 
       if (existingMaterialization == null) {
         // If it was not existing, we just create it
@@ -124,29 +126,51 @@ public class MaterializedViewsCache {
       // Delete only if the create time for the input materialized view table and the table
       // in the map match. Otherwise, keep the one in the map.
       dbMap.computeIfPresent(materializedViewTable.getTableName(), (mvTableName, oldMaterialization) -> {
-        if (HiveMaterializedViewUtils.extractTable(oldMaterialization).equals(materializedViewTable)) {
-          List<HiveRelOptMaterialization> materializationList =
-                  sqlToMaterializedView.get(materializedViewTable.getViewExpandedText());
-          materializationList.remove(oldMaterialization);
+        Table oldTable = HiveMaterializedViewUtils.extractTable(oldMaterialization);
+        if (materializedViewTable.equals(oldTable)) {
+          remove(oldMaterialization, oldTable);
           return null;
         }
         return oldMaterialization;
       });
+
+      if (dbMap.isEmpty()) {
+        materializedViews.remove(materializedViewTable.getDbName());
+      }
     }
 
     LOG.debug("Materialized view {}.{} removed from registry",
             materializedViewTable.getDbName(), materializedViewTable.getTableName());
   }
 
+  private void remove(HiveRelOptMaterialization materialization, Table mvTable) {
+    if (mvTable == null) {
+      return;
+    }
+
+    ASTKey ASTKey = new ASTKey(materialization.getAst());
+    List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.get(ASTKey);
+    if (materializationList == null) {
+      return;
+    }
+
+    materializationList.remove(materialization);
+    if (materializationList.isEmpty()) {
+      sqlToMaterializedView.remove(ASTKey);
+    }
+  }
+
   public void remove(String dbName, String tableName) {
     ConcurrentMap<String, HiveRelOptMaterialization> dbMap = materializedViews.get(dbName);
     if (dbMap != null) {
       dbMap.computeIfPresent(tableName, (mvTableName, materialization) -> {
-        String queryText = HiveMaterializedViewUtils.extractTable(materialization).getViewExpandedText();
-        List<HiveRelOptMaterialization> materializationList = sqlToMaterializedView.get(queryText);
-        materializationList.remove(materialization);
+        remove(materialization, HiveMaterializedViewUtils.extractTable(materialization));
         return null;
       });
+
+      if (dbMap.isEmpty()) {
+        materializedViews.remove(dbName);
+      }
 
       LOG.debug("Materialized view {}.{} removed from registry", dbName, tableName);
     }
@@ -167,17 +191,73 @@ public class MaterializedViewsCache {
     return null;
   }
 
-  public List<HiveRelOptMaterialization> get(String querySql) {
-    List<HiveRelOptMaterialization> relOptMaterializationList = sqlToMaterializedView.get(querySql);
+  public List<HiveRelOptMaterialization> get(ASTNode astNode) {
+    List<HiveRelOptMaterialization> relOptMaterializationList = sqlToMaterializedView.get(new ASTKey(astNode));
     if (relOptMaterializationList == null) {
-      LOG.trace("No materialized view with query text '{}' found in registry.", querySql);
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("No materialized view with query text '{}' found in registry.", astNode.dump());
+      }
       LOG.debug("No materialized view with similar query text found in registry.");
       return emptyList();
     }
-    LOG.trace("{} materialized view(s) found with query text '{}' in registry",
-            relOptMaterializationList.size(), querySql);
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("{} materialized view(s) found with query text '{}' in registry",
+              relOptMaterializationList.size(), astNode.dump());
+    }
     LOG.debug("{} materialized view(s) found with similar query text found in registry",
             relOptMaterializationList.size());
     return unmodifiableList(relOptMaterializationList);
+  }
+
+  public boolean isEmpty() {
+    return materializedViews.isEmpty();
+  }
+
+
+  private static class ASTKey {
+    private final ASTNode root;
+
+    public ASTKey(ASTNode root) {
+      this.root = root;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      ASTKey that = (ASTKey) o;
+      return equals(root, that.root);
+    }
+
+    private boolean equals(ASTNode astNode1, ASTNode astNode2) {
+      if (!(astNode1.getType() == astNode2.getType() &&
+              astNode1.getText().equals(astNode2.getText()) &&
+              astNode1.getChildCount() == astNode2.getChildCount())) {
+        return false;
+      }
+
+      for (int i = 0; i < astNode1.getChildCount(); ++i) {
+        if (!equals((ASTNode) astNode1.getChild(i), (ASTNode) astNode2.getChild(i))) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return hashcode(root);
+    }
+
+    private int hashcode(ASTNode node) {
+      int result = Objects.hash(node.getType(), node.getText());
+
+      for (int i = 0; i < node.getChildCount(); ++i) {
+        result = 31 * result + hashcode((ASTNode) node.getChild(i));
+      }
+
+      return result;
+    }
   }
 }

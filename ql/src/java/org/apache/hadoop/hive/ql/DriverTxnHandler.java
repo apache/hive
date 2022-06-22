@@ -304,7 +304,8 @@ class DriverTxnHandler {
   private void allocateWriteIdForAcidAnalyzeTable() throws LockException {
     if (driverContext.getPlan().getAcidAnalyzeTable() != null) {
       Table table = driverContext.getPlan().getAcidAnalyzeTable().getTable();
-      driverContext.getTxnManager().getTableWriteId(table.getDbName(), table.getTableName());
+      driverContext.getTxnManager().setTableWriteId(
+          table.getDbName(), table.getTableName(), driverContext.getAnalyzeTableWriteId());
     }
   }
 
@@ -570,7 +571,10 @@ class DriverTxnHandler {
     txnRollbackRunner = null;
   }
 
-  void endTransactionAndCleanup(boolean commit, HiveTxnManager txnManager) throws LockException {
+  // When Hive query is being interrupted via cancel request, both the background pool thread (HiveServer2-Background), 
+  // executing the query, and the HttpHandler thread (HiveServer2-Handler), running the HiveSession.cancelOperation logic, 
+  // might call the below method concurrently. To prevent a race condition, marking it as synchronized.
+  synchronized void endTransactionAndCleanup(boolean commit, HiveTxnManager txnManager) throws LockException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
 
@@ -611,6 +615,8 @@ class DriverTxnHandler {
     if (context != null && context.getHiveLocks() != null) {
       hiveLocks.addAll(context.getHiveLocks());
     }
-    txnManager.releaseLocks(hiveLocks);
+    if (!hiveLocks.isEmpty()) {
+      txnManager.releaseLocks(hiveLocks);
+    }
   }
 }

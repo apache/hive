@@ -23,7 +23,6 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
@@ -144,9 +143,8 @@ public interface HiveMetaHook {
    * Called after a table is altered in the metastore during ALTER TABLE.
    * @param table new table definition
    * @param context environment context, containing information about the alter operation type
-   * @param partitionSpecProxy list of partitions wrapped in {@link PartitionSpecProxy}
    */
-  default void commitAlterTable(Table table, EnvironmentContext context, PartitionSpecProxy partitionSpecProxy) throws MetaException {
+  default void commitAlterTable(Table table, EnvironmentContext context) throws MetaException {
     // Do nothing
   }
 
@@ -168,5 +166,13 @@ public interface HiveMetaHook {
    */
   public default void preTruncateTable(Table table, EnvironmentContext context) throws MetaException {
     // Do nothing
+  }
+
+  /**
+   * Returns true if the HMS table should be created by the implementing class.
+   * @return
+   */
+  default boolean createHMSTableInHook() {
+    return false;
   }
 }

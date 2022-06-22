@@ -37,7 +37,6 @@ public class StreamUtils {
    * @param streamName - stream name
    * @param streamBuffer - stream buffer
    * @return - SettableUncompressedStream
-   * @throws IOException
    */
   public static SettableUncompressedStream createSettableUncompressedStream(String streamName,
       ColumnStreamData streamBuffer) {

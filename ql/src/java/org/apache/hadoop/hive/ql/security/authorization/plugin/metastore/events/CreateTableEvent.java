@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
@@ -56,7 +57,17 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     return ret;
   }
 
-  private List<HivePrivilegeObject> getInputHObjs() { return Collections.emptyList(); }
+  private List<HivePrivilegeObject> getInputHObjs() {
+    List<HivePrivilegeObject> ret   = new ArrayList<>();
+    PreCreateTableEvent       event = (PreCreateTableEvent) preEventContext;
+    Table                     table = event.getTable();
+    String                    uri   = getSdLocation(table.getSd());
+
+    if (StringUtils.isNotEmpty(uri)) {
+      ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
+    }
+    return ret;
+  }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
     LOG.debug("==> CreateTableEvent.getOutputHObjs()");
@@ -64,8 +75,10 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreCreateTableEvent       event = (PreCreateTableEvent) preEventContext;
     Table                     table = event.getTable();
+    Database                  database = event.getDatabase();
     String                    uri   = getSdLocation(table.getSd());
 
+    ret.add(getHivePrivilegeObject(database));
     ret.add(getHivePrivilegeObject(table));
 
     if (StringUtils.isNotEmpty(uri)) {

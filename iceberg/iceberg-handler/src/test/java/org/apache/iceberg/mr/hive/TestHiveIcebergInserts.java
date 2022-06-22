@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
@@ -71,14 +70,17 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
   public void testInsertSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
+
       // TODO: remove this filter when issue #1881 is resolved
       if (type == Types.UUIDType.get() && fileFormat == FileFormat.PARQUET) {
         continue;
       }
+
       // TODO: remove this filter when we figure out how we could test binary types
-      if (type.equals(Types.BinaryType.get()) || type.equals(Types.FixedType.ofLength(5))) {
+      if (type == Types.BinaryType.get() || type.equals(Types.FixedType.ofLength(5))) {
         continue;
       }
+
       String columnName = type.typeId().toString().toLowerCase() + "_column";
 
       Schema schema = new Schema(required(1, "id", Types.LongType.get()), required(2, columnName, type));
@@ -103,7 +105,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
     shell.executeStatement("INSERT INTO customers SELECT * FROM customers");
 
     // Check that everything is duplicated as expected
-    List<Record> records = new ArrayList<>(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    List<Record> records = Lists.newArrayList(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     records.addAll(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     HiveIcebergTestUtils.validateData(table, records, 0);
   }
@@ -145,7 +147,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
         spec, fileFormat, ImmutableList.of());
 
     // IOW into empty target table -> whole source result set is inserted
-    List<Record> expected = new ArrayList<>(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    List<Record> expected = Lists.newArrayList(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     expected.add(TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .add(8L, "Sue", "Green").build().get(0)); // add one more to 'Green' so we have a partition w/ multiple records
     shell.executeStatement(testTables.getInsertQuery(expected, target, true));
@@ -160,7 +162,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
         .build();
     shell.executeStatement(testTables.getInsertQuery(newRecords, target, true));
 
-    expected = new ArrayList<>(newRecords);
+    expected = Lists.newArrayList(newRecords);
     expected.add(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.get(2)); // existing, untouched partition ('Pink')
     HiveIcebergTestUtils.validateData(table, expected, 0);
 
@@ -184,6 +186,24 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
             testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, target, true)));
   }
 
+  @Test
+  public void testInsertOverwriteWithPartitionEvolutionThrowsError() throws IOException {
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    shell.executeStatement("ALTER TABLE target SET PARTITION SPEC(TRUNCATE(2, last_name))");
+    List<Record> newRecords = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(0L, "Mike", "Taylor")
+        .add(1L, "Christy", "Hubert")
+        .build();
+    AssertHelpers.assertThrows("IOW should not work on tables with partition evolution",
+        IllegalArgumentException.class,
+        "Cannot perform insert overwrite query on Iceberg table where partition evolution happened.",
+        () -> shell.executeStatement(testTables.getInsertQuery(newRecords, target, true)));
+    // TODO: we should add additional test cases after merge + compaction is supported in hive that allows us to
+    // rewrite the data
+  }
+
   /**
    * Testing map-reduce inserts.
    * @throws IOException If there is an underlying IOException
@@ -197,7 +217,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
     shell.executeStatement("INSERT INTO customers SELECT * FROM customers ORDER BY customer_id");
 
     // Check that everything is duplicated as expected
-    List<Record> records = new ArrayList<>(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+    List<Record> records = Lists.newArrayList(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     records.addAll(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     HiveIcebergTestUtils.validateData(table, records, 0);
   }

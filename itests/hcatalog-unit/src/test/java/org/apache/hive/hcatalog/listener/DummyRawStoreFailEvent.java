@@ -522,6 +522,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partVals)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.getNumPartitionsByPs(catName, dbName, tblName, partVals);
+  }
+
+  @Override
   public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
       List<String> partNames)
           throws MetaException, NoSuchObjectException {

@@ -67,7 +67,15 @@ LOAD DATA LOCAL INPATH "../../data/files/t4_multi_delimit.csv" INTO TABLE t4_mul
 
 SELECT * FROM t4_multi_delimit;
 
+create table test_multidelim(col string)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+with serdeproperties('field.delim'='!^') STORED AS TEXTFILE;
 
+insert into test_multidelim values('aa'),('bb'),('cc'),('dd');
+
+select * from test_multidelim;
+
+DROP TABLE test_multidelim;
 DROP TABLE t1_multi_delimit;
 DROP TABLE t11_csv_serde;
 DROP TABLE t2_multi_delimit;

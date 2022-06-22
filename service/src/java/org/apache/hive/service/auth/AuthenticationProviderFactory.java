@@ -52,7 +52,7 @@ public final class AuthenticationProviderFactory {
     public static AuthMethods getValidAuthMethod(String authMethodStr)
       throws AuthenticationException {
       for (AuthMethods auth : AuthMethods.values()) {
-        if (authMethodStr.equals(auth.getAuthMethod())) {
+        if (authMethodStr.toLowerCase().contains(auth.getAuthMethod().toLowerCase())) {
           return auth;
         }
       }

@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -31,7 +33,7 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -64,8 +66,13 @@ public  class AlterTableRenamePartitionAnalyzer extends AbstractAlterTableAnalyz
     List<Map<String, String>> allPartitionSpecs = new ArrayList<>();
     allPartitionSpecs.add(partitionSpec);
     allPartitionSpecs.add(newPartitionSpec);
+
+    boolean clonePart = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY)
+      || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED)
+      && AcidUtils.isTransactionalTable(table);
+    
     PartitionUtils.addTablePartsOutputs(db, outputs, table, allPartitionSpecs, false,
-        WriteEntity.WriteType.DDL_EXCLUSIVE);
+      clonePart ? WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE);
 
     AlterTableRenamePartitionDesc desc = new AlterTableRenamePartitionDesc(tableName, partitionSpec, newPartitionSpec,
         null, table);

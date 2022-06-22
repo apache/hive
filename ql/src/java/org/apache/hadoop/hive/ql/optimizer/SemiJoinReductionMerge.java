@@ -86,21 +86,19 @@ import static org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils.and;
  *   <li>Filter creation from the source relation and broadcast: SOURCE - SEL - GB1 - RS1 - GB2 - RS2</li>
  *   <li>Filter application on the target relation: TS - FIL[in_bloom(col)]</li>
  * </ul>
- * </p>
  * <p>
  * An example of the transformation on three single column semi join reducers is shown below. The plan is simplified for
  * presentation purposes.
  * <h3>BEFORE:</h3>
  * <pre>
  *        / SEL[fname] - GB1 - RS1 - GB2 - RS2  \
- * SOURCE - SEL[lname] - GB1 - RS1 - GB2 - RS2  -> TS[Author] - FIL[in_bloom(fname) ^ in_bloom(lname) ^ in_bloom(age)]
+ * SOURCE - SEL[lname] - GB1 - RS1 - GB2 - RS2  -&gt; TS[Author] - FIL[in_bloom(fname) ^ in_bloom(lname) ^ in_bloom(age)]
  *        \ SEL[age]   - GB1 - RS1 - GB2 - RS2  /
  * </pre>
  * <h3>AFTER:</h3>
  * <pre>
- * SOURCE - SEL[fname, lname, age] - GB1 - RS1 - GB2 - RS2 -> TS[Author] - FIL[in_bloom(hash(fname,lname,age)]
+ * SOURCE - SEL[fname, lname, age] - GB1 - RS1 - GB2 - RS2 -&gt; TS[Author] - FIL[in_bloom(hash(fname,lname,age)]
  * </pre>
- * </p>
  */
 public class SemiJoinReductionMerge extends Transform {
 

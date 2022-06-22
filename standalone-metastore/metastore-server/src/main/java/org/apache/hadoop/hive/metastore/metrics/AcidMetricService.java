@@ -18,31 +18,43 @@
 package org.apache.hadoop.hive.metastore.metrics;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.AcidConstants;
+import org.apache.hadoop.hive.common.metrics.MetricsMBeanImpl;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.api.CompactionMetricsDataRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionMetricsDataStruct;
+import org.apache.hadoop.hive.metastore.api.CompactionMetricsMetricType;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.CompactionMetricsData;
 import org.apache.hadoop.hive.metastore.txn.MetricsInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.MANUALLY_INITIATED_COMPACTION;
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_DELTAS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_INITIATORS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_INITIATOR_VERSIONS;
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_OBSOLETE_DELTAS;
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_SMALL_DELTAS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_WORKERS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_NUM_WORKER_VERSIONS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_OLDEST_CLEANING_AGE;
@@ -64,20 +76,31 @@ import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.OLDEST_O
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.OLDEST_OPEN_REPL_TXN_ID;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.OLDEST_READY_FOR_CLEANING_AGE;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.TABLES_WITH_X_ABORTED_TXNS;
+import static org.apache.hadoop.hive.metastore.txn.CompactionMetricsData.MetricType.NUM_DELTAS;
+import static org.apache.hadoop.hive.metastore.txn.CompactionMetricsData.MetricType.NUM_OBSOLETE_DELTAS;
+import static org.apache.hadoop.hive.metastore.txn.CompactionMetricsData.MetricType.NUM_SMALL_DELTAS;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.NO_VAL;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getHostFromId;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getThreadIdFromId;
 
 /**
  * Collect and publish ACID and compaction related metrics.
+ * Everything should be behind 2 feature flags: {@link MetastoreConf.ConfVars#METRICS_ENABLED} and
+ * {@link MetastoreConf.ConfVars#METASTORE_ACIDMETRICS_THREAD_ON}.
+ *
  */
 public class AcidMetricService implements MetastoreTaskThread {
 
   private static final Logger LOG = LoggerFactory.getLogger(AcidMetricService.class);
+  public static final String OBJECT_NAME_PREFIX = "metrics:type=compaction,name=";
+
+  private static boolean metricsEnabled;
+
+  private MetricsMBeanImpl deltaObject, smallDeltaObject, obsoleteDeltaObject;
 
   private Configuration conf;
   private TxnStore txnHandler;
-  private long lastSuccessfulLoggingTime = 0;
+  private int maxCacheSize;
 
   @Override
   public long runFrequency(TimeUnit unit) {
@@ -88,18 +111,13 @@ public class AcidMetricService implements MetastoreTaskThread {
   public void run() {
     LOG.debug("Starting AcidMetricService thread");
     try {
-        long startedAt = System.currentTimeMillis();
-
-        boolean metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
-            MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_THREAD_ON);
-        if (!metricsEnabled) {
-          return;
-        }
-
+      if (!metricsEnabled) {
+        return;
+      }
+      long startedAt = System.currentTimeMillis();
         try {
-          ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
-          detectMultipleWorkerVersions(currentCompactions);
-          updateMetrics(currentCompactions);
+          updateMetrics();
+          updateDeltaMetrics();
         } catch (Exception ex) {
          LOG.error("Caught exception in AcidMetricService loop", ex);
         }
@@ -112,42 +130,177 @@ public class AcidMetricService implements MetastoreTaskThread {
     }
   }
 
-  private void detectMultipleWorkerVersions(ShowCompactResponse currentCompactions) {
-    long workerVersionThresholdInMillis = MetastoreConf.getTimeVar(conf,
-        MetastoreConf.ConfVars.COMPACTOR_WORKER_DETECT_MULTIPLE_VERSION_THRESHOLD, TimeUnit.MILLISECONDS);
-    long since = System.currentTimeMillis() - workerVersionThresholdInMillis;
+  public static void updateMetricsFromInitiator(String dbName, String tableName,
+      String partitionName, Configuration conf, TxnStore txnHandler, long baseSize,
+      Map<Path, Long> activeDeltaSizes, List<Path> obsoleteDeltaPaths) {
+    if (!metricsEnabled) {
+      LOG.debug("Acid metric collection is not enabled. To turn it on, \"metastore.acidmetrics.thread.on\" and " +
+          "\"metastore.metrics.enabled\" must be set to true and HMS restarted.");
+      return;
+    }
+    LOG.debug("Updating delta file metrics from initiator");
+    double deltaPctThreshold =
+        MetastoreConf.getDoubleVar(conf, MetastoreConf.ConfVars.METASTORE_DELTAMETRICS_DELTA_PCT_THRESHOLD);
+    int deltasThreshold =
+        MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METASTORE_DELTAMETRICS_DELTA_NUM_THRESHOLD);
+    int obsoleteDeltasThreshold =
+        MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METASTORE_DELTAMETRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
+    try {
+      // We have an AcidDir from the initiator, therefore we can use that to calculate active,small, obsolete delta
+      // count
 
-    List<String> versions = collectWorkerVersions(currentCompactions.getCompacts(), since);
-    if (versions.size() > 1) {
-      LOG.warn("Multiple Compaction Worker versions detected: {}", versions);
+      int numDeltas = activeDeltaSizes.size();
+      int numSmallDeltas = 0;
+
+      for (long deltaSize : activeDeltaSizes.values()) {
+        if (baseSize != 0 && deltaSize / (float) baseSize < deltaPctThreshold) {
+          numSmallDeltas++;
+        }
+      }
+
+      int numObsoleteDeltas = filterOutBaseAndOriginalFiles(obsoleteDeltaPaths).size();
+
+      updateDeltaMetrics(dbName, tableName, partitionName, NUM_DELTAS, numDeltas, deltasThreshold, txnHandler);
+      updateDeltaMetrics(dbName, tableName, partitionName, NUM_SMALL_DELTAS, numSmallDeltas, deltasThreshold,
+          txnHandler);
+      updateDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsData.MetricType.NUM_OBSOLETE_DELTAS,
+          numObsoleteDeltas, obsoleteDeltasThreshold, txnHandler);
+
+      LOG.debug("Finished updating delta file metrics from initiator.\n deltaPctThreshold = {}, deltasThreshold = {}, "
+              + "obsoleteDeltasThreshold = {}, numDeltas = {}, numSmallDeltas = {},  numObsoleteDeltas = {}",
+          deltaPctThreshold, deltasThreshold, obsoleteDeltasThreshold, numDeltas, numSmallDeltas, numObsoleteDeltas);
+
+    } catch (Throwable t) {
+      LOG.warn("Unknown throwable caught while updating delta metrics. Metrics will not be updated.", t);
     }
   }
 
-  private void updateMetrics(ShowCompactResponse currentCompactions) throws MetaException {
-    updateMetricsFromShowCompact(currentCompactions, conf);
-    updateDBMetrics();
+  public static void updateMetricsFromWorker(String dbName, String tableName,
+      String partitionName, CompactionType type, int preWorkerActiveDeltaCount, int preWorkerDeleteDeltaCount,
+      Configuration conf, IMetaStoreClient client) {
+    if (!(MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_THREAD_ON))) {
+      LOG.debug("Acid metric collection is not enabled. To turn it on, \"metastore.acidmetrics.thread.on\" and "
+          + "\"metastore.metrics.enabled\" must be set to true and HS2/HMS restarted.");
+      return;
+    }
+    LOG.debug("Updating delta file metrics from worker");
+    int deltasThreshold =
+        MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METASTORE_DELTAMETRICS_DELTA_NUM_THRESHOLD);
+    int obsoleteDeltasThreshold =
+        MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METASTORE_DELTAMETRICS_OBSOLETE_DELTA_NUM_THRESHOLD);
+    try {
+      // we have an instance of the AcidDirectory before the compaction worker was started
+      // from this we can get how many delta directories existed
+      // the previously active delta directories are now moved to obsolete
+      updateDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsMetricType.NUM_OBSOLETE_DELTAS,
+          preWorkerActiveDeltaCount, obsoleteDeltasThreshold, client);
+
+      // We don't know the size of the newly create delta directories, that would require a fresh AcidDirectory
+      // Clear the small delta num counter from the cache for this key
+      removeDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsMetricType.NUM_SMALL_DELTAS, client);
+
+      // The new number of active delta dirs are either 0, 1 or 2.
+      // If we ran MAJOR compaction, no new delta is created, just base dir
+      // If we ran MINOR compaction, we can have 1 or 2 new delta dirs, depending on whether we had deltas or
+      // delete deltas.
+      if (type == CompactionType.MAJOR) {
+        removeDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsMetricType.NUM_DELTAS, client);
+      } else {
+        int numNewDeltas = 0;
+        // check whether we had deltas
+        if (preWorkerDeleteDeltaCount > 0) {
+          numNewDeltas++;
+        }
+
+        // if the size of the current dirs is bigger than the size of delete deltas, it means we have active deltas
+        if (preWorkerActiveDeltaCount > preWorkerDeleteDeltaCount) {
+          numNewDeltas++;
+        }
+
+        // recalculate the delta count
+        updateDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsMetricType.NUM_DELTAS, numNewDeltas,
+            deltasThreshold, client);
+      }
+
+      LOG.debug("Finished updating delta file metrics from worker.\n deltasThreshold = {}, "
+              + "obsoleteDeltasThreshold = {}, numObsoleteDeltas = {}", deltasThreshold, obsoleteDeltasThreshold,
+          preWorkerActiveDeltaCount);
+
+    } catch (Throwable t) {
+      LOG.warn("Unknown throwable caught while updating delta metrics. Metrics will not be updated.", t);
+    }
   }
 
-  @VisibleForTesting
-  public static List<String> collectWorkerVersions(List<ShowCompactResponseElement> currentCompacts, long since) {
-    return Optional.ofNullable(currentCompacts)
-      .orElseGet(ImmutableList::of)
-      .stream()
-      .filter(comp -> (comp.isSetEnqueueTime() && (comp.getEnqueueTime() >= since))
-        || (comp.isSetStart() && (comp.getStart() >= since))
-        || (comp.isSetEndTime() && (comp.getEndTime() >= since)))
-      .filter(comp -> !TxnStore.DID_NOT_INITIATE_RESPONSE.equals(comp.getState()))
-      .map(ShowCompactResponseElement::getWorkerVersion)
-      .filter(Objects::nonNull)
-      .distinct()
-      .sorted()
-      .collect(Collectors.toList());
+  public static void updateMetricsFromCleaner(String dbName, String tableName, String partitionName,
+      List<Path> deletedFiles, Configuration conf, TxnStore txnHandler) {
+    if (!metricsEnabled) {
+      LOG.debug("Acid metric collection is not enabled. To turn it on, \"metastore.acidmetrics.thread.on\" and "
+          + "\"metastore.metrics.enabled\" must be set to true and HMS restarted.");
+      return;
+    }
+    LOG.debug("Updating delta file metrics from cleaner");
+    int obsoleteDeltasThreshold = MetastoreConf.getIntVar(conf,
+        MetastoreConf.ConfVars.METASTORE_DELTAMETRICS_DELTA_NUM_THRESHOLD);
+    try {
+      CompactionMetricsData prevObsoleteDelta =
+          txnHandler.getCompactionMetricsData(dbName, tableName, partitionName,
+              CompactionMetricsData.MetricType.NUM_OBSOLETE_DELTAS);
+      int numObsoleteDeltas = 0;
+      if (prevObsoleteDelta != null) {
+        numObsoleteDeltas = prevObsoleteDelta.getMetricValue() - filterOutBaseAndOriginalFiles(deletedFiles).size();
+        updateDeltaMetrics(dbName, tableName, partitionName, CompactionMetricsData.MetricType.NUM_OBSOLETE_DELTAS,
+            numObsoleteDeltas, obsoleteDeltasThreshold, txnHandler);
+      }
+
+      LOG.debug("Finished updating delta file metrics from cleaner.\n obsoleteDeltasThreshold = {}, "
+          + "numObsoleteDeltas = {}", obsoleteDeltasThreshold, numObsoleteDeltas);
+
+    } catch (Throwable t) {
+      LOG.warn("Unknown throwable caught while updating delta metrics. Metrics will not be updated.", t);
+    }
+  }
+
+  private void updateDeltaMetrics() {
+    try {
+      LOG.debug("Called reporting task.");
+      List<CompactionMetricsData> deltas = txnHandler.getTopCompactionMetricsDataPerType(maxCacheSize);
+      Map<String, Integer> deltasMap = deltas.stream().filter(d -> d.getMetricType() == NUM_DELTAS).collect(
+          Collectors.toMap(item -> getDeltaCountKey(item.getDbName(), item.getTblName(), item.getPartitionName()),
+              CompactionMetricsData::getMetricValue));
+      updateDeltaMBeanAndMetric(deltaObject, COMPACTION_NUM_DELTAS, deltasMap);
+
+      Map<String, Integer> smallDeltasMap = deltas.stream().filter(d -> d.getMetricType() == NUM_SMALL_DELTAS)
+          .collect(
+              Collectors.toMap(item -> getDeltaCountKey(item.getDbName(), item.getTblName(), item.getPartitionName()),
+                  CompactionMetricsData::getMetricValue));
+      updateDeltaMBeanAndMetric(smallDeltaObject, COMPACTION_NUM_SMALL_DELTAS, smallDeltasMap);
+
+      Map<String, Integer> obsoleteDeltasMap = deltas.stream().filter(d -> d.getMetricType() == NUM_OBSOLETE_DELTAS)
+          .collect(
+              Collectors.toMap(item -> getDeltaCountKey(item.getDbName(), item.getTblName(), item.getPartitionName()),
+                  CompactionMetricsData::getMetricValue));
+      updateDeltaMBeanAndMetric(obsoleteDeltaObject, COMPACTION_NUM_OBSOLETE_DELTAS, obsoleteDeltasMap);
+    } catch (Throwable e) {
+      LOG.warn("Caught exception while trying to fetch compaction metrics from metastore backend db.", e);
+    }
+  }
+
+  private void updateDeltaMBeanAndMetric(MetricsMBeanImpl mbean, String metricName, Map<String, Integer> update) {
+    mbean.updateAll(update);
+    Metrics.getOrCreateMapMetrics(metricName)
+        .update(update);
+  }
+
+  private void updateMetrics() throws MetaException {
+    ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
+    updateMetricsFromShowCompact(currentCompactions);
+    updateDBMetrics();
   }
 
   private void updateDBMetrics() throws MetaException {
     MetricsInfo metrics = txnHandler.getMetricsInfo();
     Metrics.getOrCreateGauge(NUM_TXN_TO_WRITEID).set(metrics.getTxnToWriteIdCount());
-    logDbMetrics(metrics);
     Metrics.getOrCreateGauge(NUM_COMPLETED_TXN_COMPONENTS).set(metrics.getCompletedTxnsCount());
     Metrics.getOrCreateGauge(NUM_OPEN_REPL_TXNS).set(metrics.getOpenReplTxnsCount());
     Metrics.getOrCreateGauge(OLDEST_OPEN_REPL_TXN_ID).set(metrics.getOldestOpenReplTxnId());
@@ -164,219 +317,67 @@ public class AcidMetricService implements MetastoreTaskThread {
     Metrics.getOrCreateGauge(OLDEST_READY_FOR_CLEANING_AGE).set(metrics.getOldestReadyForCleaningAge());
   }
 
-  private void logDbMetrics(MetricsInfo metrics) {
-    long loggingFrequency = MetastoreConf
-        .getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_ACID_METRICS_LOGGER_FREQUENCY, TimeUnit.MILLISECONDS);
-    if (loggingFrequency <= 0) {
-      return;
-    }
-    long currentTime = System.currentTimeMillis();
-    if (lastSuccessfulLoggingTime == 0 || currentTime >= lastSuccessfulLoggingTime + loggingFrequency) {
-      lastSuccessfulLoggingTime = currentTime;
-      if (metrics.getTxnToWriteIdCount() >=
-          MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_TXN_TO_WRITEID_RECORD_THRESHOLD_WARNING) &&
-          metrics.getTxnToWriteIdCount() <
-              MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_TXN_TO_WRITEID_RECORD_THRESHOLD_ERROR)) {
-        LOG.warn("An excessive amount of (" + metrics.getTxnToWriteIdCount() + ") Hive ACID metadata found in " +
-            "TXN_TO_WRITEID table, which can cause serious performance degradation.");
-      } else if (metrics.getTxnToWriteIdCount() >=
-          MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_TXN_TO_WRITEID_RECORD_THRESHOLD_ERROR)) {
-        LOG.error("An excessive amount of (" + metrics.getTxnToWriteIdCount() + ") Hive ACID metadata found in " +
-            "TXN_TO_WRITEID table, which can cause serious performance degradation.");
-      }
-
-      if (metrics.getCompletedTxnsCount() >=
-          MetastoreConf.getIntVar(conf,
-              MetastoreConf.ConfVars.COMPACTOR_COMPLETED_TXN_COMPONENTS_RECORD_THRESHOLD_WARNING) &&
-          metrics.getCompletedTxnsCount() <
-              MetastoreConf.getIntVar(conf,
-                  MetastoreConf.ConfVars.COMPACTOR_COMPLETED_TXN_COMPONENTS_RECORD_THRESHOLD_ERROR)) {
-        LOG.warn("An excessive amount of (" + metrics.getCompletedTxnsCount() + ") Hive ACID metadata found in " +
-            "COMPLETED_TXN_COMPONENTS table, which can cause serious performance degradation.");
-      } else if (metrics.getCompletedTxnsCount() >= MetastoreConf.getIntVar(conf,
-          MetastoreConf.ConfVars.COMPACTOR_COMPLETED_TXN_COMPONENTS_RECORD_THRESHOLD_ERROR)) {
-        LOG.error("An excessive amount of (" + metrics.getCompletedTxnsCount() + ") Hive ACID metadata found in " +
-            "COMPLETED_TXN_COMPONENTS table, which can cause serious performance degradation.");
-      }
-
-      if (metrics.getOldestOpenReplTxnAge() >=
-          MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_OLDEST_REPLICATION_OPENTXN_THRESHOLD_WARNING,
-              TimeUnit.SECONDS) && metrics.getOldestOpenReplTxnAge() <
-          MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_OLDEST_REPLICATION_OPENTXN_THRESHOLD_ERROR,
-              TimeUnit.SECONDS)) {
-        LOG.warn("A replication transaction with ID " + metrics.getOldestOpenReplTxnId() +
-            " has been open for " + metrics.getOldestOpenReplTxnAge() + " seconds. " +
-            "Before you abort a transaction that was created by replication, and which has been open a long time, " +
-            "make sure that the hive.repl.txn.timeout threshold has expired.");
-      } else if (metrics.getOldestOpenReplTxnAge() >=
-          MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_OLDEST_REPLICATION_OPENTXN_THRESHOLD_ERROR,
-              TimeUnit.SECONDS)) {
-        LOG.error("A replication transaction with ID " + metrics.getOldestOpenReplTxnId() +
-            " has been open for " + metrics.getOldestOpenReplTxnAge() + " seconds. " +
-            "Before you abort a transaction that was created by replication, and which has been open a long time, " +
-            "make sure that the hive.repl.txn.timeout threshold has expired.");
-      }
-
-      if (metrics.getOldestOpenNonReplTxnAge() >=
-          MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_OLDEST_OPENTXN_THRESHOLD_WARNING,
-              TimeUnit.SECONDS)
-          && metrics.getOldestOpenNonReplTxnAge() <
-          MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_OLDEST_OPENTXN_THRESHOLD_ERROR,
-              TimeUnit.SECONDS)) {
-        LOG.warn("A non-replication transaction with ID " + metrics.getOldestOpenNonReplTxnId() +
-            " has been open for " + metrics.getOldestOpenNonReplTxnAge() + " seconds.");
-      } else if (metrics.getOldestOpenNonReplTxnAge() >=
-          MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_OLDEST_OPENTXN_THRESHOLD_ERROR,
-              TimeUnit.SECONDS)) {
-        LOG.error("A non-replication transaction with ID " + metrics.getOldestOpenNonReplTxnId() +
-            " has been open for " + metrics.getOldestOpenNonReplTxnAge() + " seconds.");
-      }
-
-      if (metrics.getOldestAbortedTxnAge() >=
-          MetastoreConf.getTimeVar(conf,
-              MetastoreConf.ConfVars.COMPACTOR_OLDEST_UNCLEANED_ABORTEDTXN_TIME_THRESHOLD_WARNING,
-              TimeUnit.SECONDS) &&
-          metrics.getOldestAbortedTxnAge() <
-              MetastoreConf.getTimeVar(conf,
-                  MetastoreConf.ConfVars.COMPACTOR_OLDEST_UNCLEANED_ABORTEDTXN_TIME_THRESHOLD_ERROR,
-                  TimeUnit.SECONDS)) {
-        LOG.warn("Found an aborted transaction with an ID " + metrics.getOldestAbortedTxnId() +
-            " and age of " + metrics.getOldestAbortedTxnAge() + " seconds.");
-      } else if (metrics.getOldestAbortedTxnAge() >=
-          MetastoreConf.getTimeVar(conf,
-              MetastoreConf.ConfVars.COMPACTOR_OLDEST_UNCLEANED_ABORTEDTXN_TIME_THRESHOLD_ERROR,
-              TimeUnit.SECONDS)) {
-        LOG.warn("Found an aborted transaction with an ID " + metrics.getOldestAbortedTxnId() +
-            " and age of " + metrics.getOldestAbortedTxnAge() + " seconds.");
-      }
-
-      if (metrics.getTablesWithXAbortedTxnsCount() >
-          MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_TABLES_WITH_ABORTEDTXN_THRESHOLD)) {
-        LOG.error("Found " + metrics.getTablesWithXAbortedTxnsCount() + " tables/partitions with more than " +
-            MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_TABLES_WITH_ABORTED_TXNS_THRESHOLD) +
-            " aborts. Name of the tables/partitions are: " + metrics.getTablesWithXAbortedTxns());
-      }
-
-      if (metrics.getOldestReadyForCleaningAge() >
-          MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.COMPACTOR_OLDEST_UNCLEANED_COMPACTION_TIME_THRESHOLD,
-              TimeUnit.SECONDS)) {
-        LOG.warn("Found entry in compaction queue in ready for cleaning state with age of " +
-            metrics.getOldestReadyForCleaningAge() + " seconds.");
-      }
-    }
-  }
-
   @VisibleForTesting
-  public static void updateMetricsFromShowCompact(ShowCompactResponse showCompactResponse, Configuration conf) {
-    Map<String, ShowCompactResponseElement> lastElements = new HashMap<>();
-    long oldestEnqueueTime = Long.MAX_VALUE;
-    long oldestWorkingTime = Long.MAX_VALUE;
-    long oldestCleaningTime = Long.MAX_VALUE;
-
-    // Get the last compaction for each db/table/partition
-    for(ShowCompactResponseElement element : showCompactResponse.getCompacts()) {
-      String key = element.getDbname() + "/" + element.getTablename() +
-          (element.getPartitionname() != null ? "/" + element.getPartitionname() : "");
-
-      // If new key, add the element, if there is an existing one, change to the element if the element.id is greater than old.id
-      lastElements.compute(key, (k, old) -> (old == null) ? element : (element.getId() > old.getId() ? element : old));
-
-      // find the oldest elements with initiated and working states
-      String state = element.getState();
-      if (TxnStore.INITIATED_RESPONSE.equals(state) && (oldestEnqueueTime > element.getEnqueueTime())) {
-        oldestEnqueueTime = element.getEnqueueTime();
-      }
-
-      if (element.isSetStart()) {
-        if (TxnStore.WORKING_RESPONSE.equals(state) && (oldestWorkingTime > element.getStart())) {
-          oldestWorkingTime = element.getStart();
-        }
-      }
-
-      if (element.isSetCleanerStart()) {
-        if (TxnStore.CLEANING_RESPONSE.equals(state) && (oldestCleaningTime > element.getCleanerStart())) {
-          oldestCleaningTime = element.getCleanerStart();
-        }
-      }
-    }
+  public static void updateMetricsFromShowCompact(ShowCompactResponse showCompactResponse) {
+    CompactionMetricData metricData = CompactionMetricData.of(showCompactResponse.getCompacts());
 
     // Get the current count for each state
-    Map<String, Long> counts = lastElements.values().stream()
-        .collect(Collectors.groupingBy(ShowCompactResponseElement::getState, Collectors.counting()));
+    Map<String, Long> counts = metricData.getStateCount();
 
     // Update metrics
     for (int i = 0; i < TxnStore.COMPACTION_STATES.length; ++i) {
       String key = COMPACTION_STATUS_PREFIX + replaceWhitespace(TxnStore.COMPACTION_STATES[i]);
       Long count = counts.get(TxnStore.COMPACTION_STATES[i]);
       if (count != null) {
-        Metrics.getOrCreateGauge(key).set(count.intValue());
+        Metrics.getOrCreateGauge(key)
+            .set(count.intValue());
       } else {
-        Metrics.getOrCreateGauge(key).set(0);
+        Metrics.getOrCreateGauge(key)
+            .set(0);
       }
     }
 
-    Long numFailedComp = counts.get(TxnStore.FAILED_RESPONSE);
-    Long numNotInitiatedComp = counts.get(TxnStore.DID_NOT_INITIATE_RESPONSE);
-    Long numSucceededComp = counts.get(TxnStore.SUCCEEDED_RESPONSE);
-    if (numFailedComp != null && numNotInitiatedComp != null && numSucceededComp != null &&
-        ((numFailedComp + numNotInitiatedComp) / (numFailedComp + numNotInitiatedComp + numSucceededComp) >
-      MetastoreConf.getDoubleVar(conf, MetastoreConf.ConfVars.COMPACTOR_FAILED_COMPACTION_RATIO_THRESHOLD))) {
-      LOG.warn("Many compactions are failing. Check root cause of failed/not initiated compactions.");
-    }
+    updateOldestCompactionMetric(COMPACTION_OLDEST_ENQUEUE_AGE, metricData.getOldestEnqueueTime());
+    updateOldestCompactionMetric(COMPACTION_OLDEST_WORKING_AGE, metricData.getOldestWorkingTime());
+    updateOldestCompactionMetric(COMPACTION_OLDEST_CLEANING_AGE, metricData.getOldestCleaningTime());
 
-    updateOldestCompactionMetric(COMPACTION_OLDEST_ENQUEUE_AGE, oldestEnqueueTime, conf,
-        "Found compaction entry in compaction queue with an age of {} seconds. " +
-            "Consider increasing the number of worker threads.",
-        MetastoreConf.ConfVars.COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_WARNING,
-        MetastoreConf.ConfVars.COMPACTOR_OLDEST_INITIATED_COMPACTION_TIME_THRESHOLD_ERROR);
-    updateOldestCompactionMetric(COMPACTION_OLDEST_WORKING_AGE, oldestWorkingTime, conf);
-    updateOldestCompactionMetric(COMPACTION_OLDEST_CLEANING_AGE, oldestCleaningTime, conf);
+    Metrics.getOrCreateGauge(COMPACTION_NUM_INITIATORS)
+        .set((int) metricData.getInitiatorsCount());
+    Metrics.getOrCreateGauge(COMPACTION_NUM_WORKERS)
+        .set((int) metricData.getWorkersCount());
 
-    long initiatorsCount = lastElements.values().stream()
-        //manually initiated compactions don't count
-        .filter(e -> !MANUALLY_INITIATED_COMPACTION.equals(getThreadIdFromId(e.getInitiatorId())))
-        .map(e -> getHostFromId(e.getInitiatorId())).distinct().filter(e -> !NO_VAL.equals(e)).count();
-    Metrics.getOrCreateGauge(COMPACTION_NUM_INITIATORS).set((int) initiatorsCount);
-    long workersCount = lastElements.values().stream()
-        .map(e -> getHostFromId(e.getWorkerid())).distinct().filter(e -> !NO_VAL.equals(e)).count();
-    Metrics.getOrCreateGauge(COMPACTION_NUM_WORKERS).set((int) workersCount);
-
-    long initiatorVersionsCount = lastElements.values().stream()
-        .map(ShowCompactResponseElement::getInitiatorVersion).distinct().filter(Objects::nonNull).count();
-    Metrics.getOrCreateGauge(COMPACTION_NUM_INITIATOR_VERSIONS).set((int) initiatorVersionsCount);
-    long workerVersionsCount = lastElements.values().stream()
-        .map(ShowCompactResponseElement::getWorkerVersion).distinct().filter(Objects::nonNull).count();
-    Metrics.getOrCreateGauge(COMPACTION_NUM_WORKER_VERSIONS).set((int) workerVersionsCount);
+    Metrics.getOrCreateGauge(COMPACTION_NUM_INITIATOR_VERSIONS)
+        .set((int) metricData.getInitiatorVersionsCount());
+    Metrics.getOrCreateGauge(COMPACTION_NUM_WORKER_VERSIONS)
+        .set((int) metricData.getWorkerVersionsCount());
   }
 
-  private static void updateOldestCompactionMetric(String metricName, long oldestTime, Configuration conf) {
-    updateOldestCompactionMetric(metricName, oldestTime, conf, null, null, null);
-  }
-
-  private static void updateOldestCompactionMetric(String metricName, long oldestTime, Configuration conf,
-      String logMessage, MetastoreConf.ConfVars warningThreshold, MetastoreConf.ConfVars errorThreshold) {
-    if (oldestTime == Long.MAX_VALUE) {
+  private static void updateOldestCompactionMetric(String metricName, Long oldestTime) {
+    if (oldestTime == null) {
       Metrics.getOrCreateGauge(metricName)
           .set(0);
-      return;
-    }
-
-    int oldestAge = (int) ((System.currentTimeMillis() - oldestTime) / 1000L);
-    Metrics.getOrCreateGauge(metricName)
-        .set(oldestAge);
-    if (logMessage != null) {
-      if (oldestAge >= MetastoreConf.getTimeVar(conf, errorThreshold, TimeUnit.SECONDS)) {
-        LOG.error(logMessage, oldestAge);
-      } else if (oldestAge >= MetastoreConf.getTimeVar(conf, warningThreshold, TimeUnit.SECONDS)) {
-        LOG.warn(logMessage, oldestAge);
-      }
+    } else {
+      int oldestAge = (int) ((System.currentTimeMillis() - oldestTime) / 1000L);
+      Metrics.getOrCreateGauge(metricName)
+          .set(oldestAge);
     }
   }
 
   @Override
   public void setConf(Configuration configuration) {
-    this.conf = configuration;
+    conf = configuration;
     txnHandler = TxnUtils.getTxnStore(conf);
+    metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_THREAD_ON);
+
+    try {
+      if (metricsEnabled) {
+        maxCacheSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METASTORE_DELTAMETRICS_MAX_CACHE_SIZE);
+        initObjectsForMetrics();
+      }
+    } catch (Exception e) {
+      LOG.error("Cannot initialize delta file metrics mbean server. AcidMetricService initialization aborted.", e);
+    }
   }
 
   @Override
@@ -390,5 +391,76 @@ public class AcidMetricService implements MetastoreTaskThread {
       return input;
     }
     return input.replaceAll("\\s+", "_");
+  }
+
+  private void initObjectsForMetrics() throws Exception {
+    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+
+    obsoleteDeltaObject = new MetricsMBeanImpl();
+    mbs.registerMBean(obsoleteDeltaObject,
+        new ObjectName(OBJECT_NAME_PREFIX + COMPACTION_NUM_OBSOLETE_DELTAS));
+    deltaObject = new MetricsMBeanImpl();
+    mbs.registerMBean(deltaObject,
+        new ObjectName(OBJECT_NAME_PREFIX + COMPACTION_NUM_DELTAS));
+    smallDeltaObject = new MetricsMBeanImpl();
+    mbs.registerMBean(smallDeltaObject,
+        new ObjectName(OBJECT_NAME_PREFIX + COMPACTION_NUM_SMALL_DELTAS));
+  }
+
+  static String getDeltaCountKey(String dbName, String tableName, String partitionName) {
+    StringBuilder key = new StringBuilder();
+    if (dbName == null || dbName.isEmpty()) {
+      key.append(tableName);
+    } else {
+      key.append(dbName).append(".").append(tableName);
+    }
+
+    if (partitionName != null && !partitionName.isEmpty()) {
+      key.append(Path.SEPARATOR);
+      if (partitionName.startsWith("{") && partitionName.endsWith("}")) {
+        key.append(partitionName, 1, partitionName.length() - 1);
+      } else {
+        key.append(partitionName);
+      }
+    }
+    return key.toString();
+  }
+
+  private static List<Path> filterOutBaseAndOriginalFiles(List<Path> paths) {
+    return paths.stream().filter(p -> p.getName().startsWith(AcidConstants.DELTA_PREFIX) || p.getName()
+        .startsWith(AcidConstants.DELETE_DELTA_PREFIX)).collect(Collectors.toList());
+  }
+
+  private static void updateDeltaMetrics(String dbName, String tblName, String partitionName,
+      CompactionMetricsData.MetricType type, int numDeltas, int deltasThreshold, TxnStore txnHandler) throws MetaException {
+    CompactionMetricsData data = new CompactionMetricsData.Builder()
+        .dbName(dbName).tblName(tblName).partitionName(partitionName).metricType(type).metricValue(numDeltas).version(0)
+        .threshold(deltasThreshold).build();
+    if (!txnHandler.updateCompactionMetricsData(data)) {
+      LOG.warn("Compaction metric data cannot be updated because of version mismatch.");
+    }
+  }
+
+  private static void updateDeltaMetrics(String dbName, String tblName, String partitionName,
+      CompactionMetricsMetricType type, int numDeltas, int deltasThreshold, IMetaStoreClient client) throws TException {
+    CompactionMetricsDataStruct struct = new CompactionMetricsDataStruct();
+    struct.setDbname(dbName);
+    struct.setTblname(tblName);
+    struct.setPartitionname(partitionName);
+    struct.setType(type);
+    struct.setMetricvalue(numDeltas);
+    struct.setVersion(0);
+    struct.setThreshold(deltasThreshold);
+    if (!client.updateCompactionMetricsData(struct)) {
+      LOG.warn("Compaction metric data cannot be updated because of version mismatch.");
+    }
+  }
+
+
+  private static void removeDeltaMetrics(String dbName, String tblName, String partitionName,
+      CompactionMetricsMetricType type, IMetaStoreClient client) throws TException {
+    CompactionMetricsDataRequest request = new CompactionMetricsDataRequest(dbName, tblName, type);
+    request.setPartitionName(partitionName);
+    client.removeCompactionMetricsData(request);
   }
 }

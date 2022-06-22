@@ -183,12 +183,12 @@ public class TestMetastoreExpr {
       String dbName, String tblName, ExprNodeGenericFuncDesc expr, Table t) throws Exception {
     List<Partition> parts = new ArrayList<Partition>();
     client.listPartitionsByExpr(dbName, tblName,
-        SerializationUtilities.serializeExpressionToKryo(expr), null, (short)-1, parts);
+        SerializationUtilities.serializeObjectWithTypeInformation(expr), null, (short)-1, parts);
     assertEquals("Partition check failed: " + expr.getExprString(), numParts, parts.size());
 
     // check with partition spec as well
     PartitionsByExprRequest req = new PartitionsByExprRequest(dbName, tblName,
-            ByteBuffer.wrap(SerializationUtilities.serializeExpressionToKryo(expr)));
+        ByteBuffer.wrap(SerializationUtilities.serializeObjectWithTypeInformation(expr)));
     req.setMaxParts((short)-1);
     req.setId(t.getId());
 

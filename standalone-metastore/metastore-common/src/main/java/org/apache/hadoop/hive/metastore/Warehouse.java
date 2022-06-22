@@ -271,7 +271,7 @@ public class Warehouse {
   }
 
   /**
-   * Get the managed tables path specified by the database.  In the case of the default database the root of the
+   * Get the external tables path specified by the database.  In the case of the default database the root of the
    * warehouse is returned.
    * @param db database to get the path of
    * @return path to the database directory
@@ -367,7 +367,7 @@ public class Warehouse {
       dbPath = getDatabaseManagedPath(db);
     }
     if (!isExternal && tableName.matches("(.*)" + SOFT_DELETE_TABLE_PATTERN)) {
-      String[] groups = tableName.split(SOFT_DELETE_PATH_SUFFIX);
+      String[] groups = tableName.split("\\" + SOFT_DELETE_PATH_SUFFIX);
       tableName = String.join(SOFT_DELETE_PATH_SUFFIX, 
           MetaStoreUtils.encodeTableName(groups[0].toLowerCase()), groups[1]);
     } else {
@@ -442,6 +442,21 @@ public class Warehouse {
       FileSystem srcFs = getFs(sourcePath);
       FileSystem destFs = getFs(destPath);
       return FileUtils.rename(srcFs, destFs, sourcePath, destPath);
+    } catch (Exception ex) {
+      MetaStoreUtils.throwMetaException(ex);
+    }
+    return false;
+  }
+
+  public boolean copyDir(Path sourcePath, Path destPath, boolean needCmRecycle) throws MetaException {
+    try {
+      if (needCmRecycle) {
+        cm.recycle(sourcePath, RecycleType.COPY, true);
+      }
+      FileSystem srcFs = getFs(sourcePath);
+      FileSystem destFs = getFs(destPath);
+      // TODO: this operation can be expensive depending on the size of data. 
+      return FileUtils.copy(srcFs, sourcePath, destFs, destPath, false, false, conf);
     } catch (Exception ex) {
       MetaStoreUtils.throwMetaException(ex);
     }

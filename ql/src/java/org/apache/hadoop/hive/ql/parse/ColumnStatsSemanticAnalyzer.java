@@ -259,7 +259,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       final TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(colTypes.get(i));
       genComputeStats(rewrittenQueryBuilder, conf, i, columnName, typeInfo);
 
-      columnNamesBuilder.append(unparseIdentifier(columnName, conf));
+      columnNamesBuilder.append(columnName);
 
       columnDummyValuesBuilder.append(
           "cast(null as " + typeInfo.toString() + ")");

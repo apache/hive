@@ -86,6 +86,7 @@ TOK_CUBE_GROUPBY;
 TOK_GROUPING_SETS;
 TOK_GROUPING_SETS_EXPRESSION;
 TOK_HAVING;
+TOK_QUALIFY;
 TOK_ORDERBY;
 TOK_NULLS_FIRST;
 TOK_NULLS_LAST;
@@ -214,6 +215,7 @@ TOK_ALTERTABLE_ADDCONSTRAINT;
 TOK_ALTERTABLE_UPDATECOLUMNS;
 TOK_ALTERTABLE_OWNER;
 TOK_ALTERTABLE_SETPARTSPEC;
+TOK_ALTERTABLE_EXECUTE;
 TOK_MSCK;
 TOK_SHOWDATABASES;
 TOK_SHOWDATACONNECTORS;
@@ -863,7 +865,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
   }
   protected boolean nullsLast() {
     if(hiveConf == null){
-      return false;
+      return HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.defaultBoolVal;
     }
     return HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST);
   }
@@ -2599,8 +2601,9 @@ atomSelectStatement
    g=groupByClause?
    h=havingClause?
    win=window_clause?
+   q=qualifyClause?
    -> ^(TOK_QUERY $f? ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
-                     $s $w? $g? $h? $win?))
+                     $s $w? $g? $h? $win? $q?))
    |
    LPAREN! selectStatement RPAREN!
    |
@@ -2717,13 +2720,14 @@ body
    groupByClause?
    havingClause?
    window_clause?
+   qualifyClause?
    orderByClause?
    clusterByClause?
    distributeByClause?
    sortByClause?
    limitClause? -> ^(TOK_INSERT insertClause
                      selectClause lateralView? whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? window_clause? limitClause?)
+                     distributeByClause? sortByClause? window_clause? qualifyClause? limitClause?)
    |
    selectClause
    lateralView?
@@ -2731,13 +2735,14 @@ body
    groupByClause?
    havingClause?
    window_clause?
+   qualifyClause?
    orderByClause?
    clusterByClause?
    distributeByClause?
    sortByClause?
    limitClause? -> ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
                      selectClause lateralView? whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? window_clause? limitClause?)
+                     distributeByClause? sortByClause? window_clause? qualifyClause? limitClause?)
    ;
 
 insertClause
@@ -2777,8 +2782,15 @@ deleteStatement
 /*SET <columName> = (3 + col2)*/
 columnAssignmentClause
    :
-   tableOrColumn EQUAL^ precedencePlusExpression
+   | tableOrColumn EQUAL^ precedencePlusExpressionOrDefault
    ;
+
+precedencePlusExpressionOrDefault
+    :
+    (KW_DEFAULT (~DOT|EOF)) => defaultValue
+    | precedencePlusExpression
+    ;
+
 
 /*SET col1 = 5, col2 = (4 + col4), ...*/
 setColumnsClause

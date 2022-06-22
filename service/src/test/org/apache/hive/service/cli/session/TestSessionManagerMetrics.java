@@ -260,6 +260,7 @@ public class TestSessionManagerMetrics {
 
   }
 
+  @org.junit.Ignore("HIVE-26039")
   @Test
   public void testActiveSessionMetrics() throws Exception {
 

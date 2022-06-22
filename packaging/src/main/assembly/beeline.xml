@@ -73,6 +73,15 @@
             </includes>
             <outputDirectory>/</outputDirectory>
         </fileSet>
+
+        <fileSet>
+            <fileMode>755</fileMode>
+            <directory>${project.parent.basedir}/beeline/target</directory>
+            <outputDirectory>lib</outputDirectory>
+            <includes>
+                <include>jar-with-dependencies.jar</include>
+            </includes>
+        </fileSet>
     </fileSets>
 
 </assembly>

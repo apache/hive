@@ -24,6 +24,7 @@ import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -68,22 +69,24 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
   private final boolean sourceTablesUpdateDeleteModified;
   private final boolean sourceTablesCompacted;
   private final IncrementalRebuildMode rebuildMode;
+  private final ASTNode ast;
 
   public HiveRelOptMaterialization(RelNode tableRel, RelNode queryRel,
                                    RelOptTable starRelOptTable, List<String> qualifiedTableName,
-                                   EnumSet<RewriteAlgorithm> scope, IncrementalRebuildMode rebuildMode) {
-    this(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope, false, false, rebuildMode);
+                                   EnumSet<RewriteAlgorithm> scope, IncrementalRebuildMode rebuildMode, ASTNode ast) {
+    this(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope, false, false, rebuildMode, ast);
   }
 
   private HiveRelOptMaterialization(RelNode tableRel, RelNode queryRel,
                                     RelOptTable starRelOptTable, List<String> qualifiedTableName,
                                     EnumSet<RewriteAlgorithm> scope,
-                                    boolean sourceTablesUpdateDeleteModified, boolean sourceTablesCompacted, IncrementalRebuildMode rebuildMode) {
+                                    boolean sourceTablesUpdateDeleteModified, boolean sourceTablesCompacted, IncrementalRebuildMode rebuildMode, ASTNode ast) {
     super(tableRel, queryRel, starRelOptTable, qualifiedTableName);
     this.scope = scope;
     this.sourceTablesUpdateDeleteModified = sourceTablesUpdateDeleteModified;
     this.sourceTablesCompacted = sourceTablesCompacted;
     this.rebuildMode = rebuildMode;
+    this.ast = ast;
   }
 
   public EnumSet<RewriteAlgorithm> getScope() {
@@ -111,15 +114,19 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
     return rebuildMode;
   }
 
+  public ASTNode getAst() {
+    return ast;
+  }
+
   public HiveRelOptMaterialization updateInvalidation(Materialization materialization) {
     return new HiveRelOptMaterialization(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope,
-        materialization.isSourceTablesUpdateDeleteModified(), materialization.isSourceTablesCompacted(), rebuildMode);
+        materialization.isSourceTablesUpdateDeleteModified(), materialization.isSourceTablesCompacted(), rebuildMode, ast);
   }
 
   public HiveRelOptMaterialization copyToNewCluster(RelOptCluster optCluster) {
     final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(optCluster, tableRel);
     return new HiveRelOptMaterialization(newViewScan, queryRel, null, qualifiedTableName, scope,
-        sourceTablesUpdateDeleteModified, sourceTablesCompacted, rebuildMode);
+        sourceTablesUpdateDeleteModified, sourceTablesCompacted, rebuildMode, ast);
   }
 
 }

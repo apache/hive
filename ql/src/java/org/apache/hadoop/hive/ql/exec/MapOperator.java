@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -369,12 +370,14 @@ public class MapOperator extends AbstractMapOperator {
           Configuration clonedConf = new Configuration(hconf);
           clonedConf.unset(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
           clonedConf.unset(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+          clonedConf.unset(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR);
           clonedConf.unset(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR);
           tableNameToConf.put(tableName, clonedConf);
         }
         Configuration newConf = tableNameToConf.get(tableName);
         ColumnProjectionUtils.appendReadColumns(newConf, tableScanDesc.getNeededColumnIDs(),
-            tableScanDesc.getOutputColumnNames(), tableScanDesc.getNeededNestedColumnPaths());
+            tableScanDesc.getOutputColumnNames(), tableScanDesc.getNeededNestedColumnPaths(),
+            tableScanDesc.hasVirtualCols());
       }
     }
 
@@ -673,7 +676,31 @@ public class MapOperator extends AbstractMapOperator {
             ctx.getIoCxt().setRecordIdentifier(null);//so we don't accidentally cache the value; shouldn't
             //happen since IO layer either knows how to produce ROW__ID or not - but to be safe
           }
-	  break;
+          break;
+        case PARTITION_SPEC_ID:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
+            vcValues[i] = new IntWritable(ctx.getIoCxt().getPositionDeleteInfo().getSpecId());
+          }
+          break;
+        case PARTITION_HASH:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
+            vcValues[i] = new LongWritable(ctx.getIoCxt().getPositionDeleteInfo().getPartitionHash());
+          }
+          break;
+        case FILE_PATH:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
+            vcValues[i] = new Text(ctx.getIoCxt().getPositionDeleteInfo().getFilePath());
+          }
+          break;
+        case ROW_POSITION:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
+            vcValues[i] = new LongWritable(ctx.getIoCxt().getPositionDeleteInfo().getFilePos());
+          }
+          break;
         case ROWISDELETED:
           vcValues[i] = new BooleanWritable(ctx.getIoCxt().isDeletedRecord());
           break;

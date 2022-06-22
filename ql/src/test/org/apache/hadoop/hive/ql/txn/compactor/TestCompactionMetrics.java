@@ -31,12 +31,15 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -48,6 +51,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -240,24 +244,6 @@ public class TestCompactionMetrics  extends CompactorTest {
   }
 
   @Test
-  public void  testInitiatorFailure() throws Exception {
-    ThrowingTxnHandler.doThrow = true;
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, "org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler");
-    startInitiator();
-    Counter counter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_INITIATOR_FAILURE_COUNTER);
-    Assert.assertEquals("Count incorrect", 1, counter.getCount());
-  }
-
-  @Test
-  public void  testCleanerFailure() throws Exception {
-    ThrowingTxnHandler.doThrow = true;
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL, "org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler");
-    startCleaner();
-    Counter counter = Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER);
-    Assert.assertEquals("Count incorrect", 1, counter.getCount());
-  }
-
-  @Test
   public void  testInitiatorAuxFailure() throws Exception {
     TxnStore.MutexAPI.LockHandle handle = null;
     try {
@@ -416,6 +402,8 @@ public class TestCompactionMetrics  extends CompactorTest {
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER,
         WORKER_CYCLE_KEY + "_" + CompactionType.MINOR.toString().toLowerCase(), 1);
 
+    startCleaner();
+
     rqst = new CompactionRequest("default", "mapwb", CompactionType.MAJOR);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
@@ -424,7 +412,16 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(2, rsp.getCompactsSize());
-    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts()
+        .stream()
+        .filter(c -> c.getType().equals(CompactionType.MINOR))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("Could not found minor compaction")).getState());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts()
+        .stream()
+        .filter(c -> c.getType().equals(CompactionType.MAJOR))
+        .findFirst()
+        .orElseThrow(() -> new RuntimeException("Could not found minor compaction")).getState());
 
     json = metrics.dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.TIMER,
@@ -444,7 +441,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     elements.add(generateElement(4,"db", "tb3", "p1", CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
 
     elements.add(generateElement(6,"db1", "tb", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE,
-            System.currentTimeMillis(), true, "4.0.0", "4.0.0", 10));
+            System.currentTimeMillis(), true, WORKER_VERSION, WORKER_VERSION, 10));
     elements.add(generateElement(7,"db1", "tb2", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
     elements.add(generateElement(8,"db1", "tb3", null, CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
 
@@ -458,13 +455,13 @@ public class TestCompactionMetrics  extends CompactorTest {
     elements.add(generateElement(14,"db3", "tb4", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
             System.currentTimeMillis(), false, null, null,20));
     elements.add(generateElement(15,"db3", "tb5", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            System.currentTimeMillis(),true, "4.0.0", "4.0.0", 30));
+            System.currentTimeMillis(),true, WORKER_VERSION, WORKER_VERSION, 30));
     elements.add(generateElement(16,"db3", "tb6", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE));
     elements.add(generateElement(17,"db3", "tb7", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            System.currentTimeMillis(),true, "4.0.0", "4.0.0",40));
+            System.currentTimeMillis(),true, WORKER_VERSION, WORKER_VERSION,40));
 
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+    AcidMetricService.updateMetricsFromShowCompact(scr);
 
     Assert.assertEquals(1,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX +
@@ -501,7 +498,7 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     ShowCompactResponse scr = new ShowCompactResponse();
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+    AcidMetricService.updateMetricsFromShowCompact(scr);
 
     // Check that it is not set
     Assert.assertEquals(0, Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).intValue());
@@ -518,7 +515,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     );
 
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+    AcidMetricService.updateMetricsFromShowCompact(scr);
     long diff = (System.currentTimeMillis() - start) / 1000;
 
     // Check that we have at least 1s old compaction age, but not more than expected
@@ -534,11 +531,11 @@ public class TestCompactionMetrics  extends CompactorTest {
     long start = System.currentTimeMillis() - 1000L;
     List<ShowCompactResponseElement> elements = ImmutableList.of(
         generateElement(17, "db3", "tb7", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            System.currentTimeMillis(), true, "4.0.0", "4.0.0", start)
+            System.currentTimeMillis(), true, WORKER_VERSION, WORKER_VERSION, start)
     );
 
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+    AcidMetricService.updateMetricsFromShowCompact(scr);
     long diff = (System.currentTimeMillis() - start) / 1000;
 
     // Check that we have at least 1s old compaction age, but not more than expected
@@ -554,11 +551,11 @@ public class TestCompactionMetrics  extends CompactorTest {
     long start = System.currentTimeMillis() - 1000L;
     List<ShowCompactResponseElement> elements = ImmutableList.of(
         generateElement(19, "db3", "tb7", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
-            System.currentTimeMillis(), true, "4.0.0", "4.0.0", -1L, start)
+            System.currentTimeMillis(), true, WORKER_VERSION, WORKER_VERSION, -1L, start)
     );
 
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+    AcidMetricService.updateMetricsFromShowCompact(scr);
     long diff = (System.currentTimeMillis() - start) / 1000;
 
     // Check that we have at least 1s old compaction age, but not more than expected
@@ -580,7 +577,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     );
 
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+    AcidMetricService.updateMetricsFromShowCompact(scr);
     // Check that the age is older than 10s
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).intValue() > 10);
 
@@ -592,7 +589,7 @@ public class TestCompactionMetrics  extends CompactorTest {
             start - 1_000L)
     );
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+    AcidMetricService.updateMetricsFromShowCompact(scr);
 
     // Check that the age is older than 20s
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE).intValue() > 20);
@@ -605,25 +602,25 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     List<ShowCompactResponseElement> elements = ImmutableList.of(
         generateElement(15, "db3", "tb5", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            start, false, "4.0.0", "4.0.0", start - 1_000L),
+            start, false, WORKER_VERSION, WORKER_VERSION, start - 1_000L),
         generateElement(16, "db3", "tb6", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            start, false, "4.0.0", "4.0.0", start - 15_000L)
+            start, false, WORKER_VERSION, WORKER_VERSION, start - 15_000L)
     );
 
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+    AcidMetricService.updateMetricsFromShowCompact(scr);
     // Check that the age is older than 10s
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_WORKING_AGE).intValue() > 10);
 
     // Check the reverse order
     elements = ImmutableList.of(
         generateElement(16, "db3", "tb6", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            start, false, "4.0.0", "4.0.0", start - 25_000L),
+            start, false, WORKER_VERSION, WORKER_VERSION, start - 25_000L),
         generateElement(15, "db3", "tb5", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE,
-            start, false, "4.0.0", "4.0.0", start - 1_000L)
+            start, false, WORKER_VERSION, WORKER_VERSION, start - 1_000L)
     );
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+    AcidMetricService.updateMetricsFromShowCompact(scr);
 
     // Check that the age is older than 20s
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_WORKING_AGE).intValue() > 20);
@@ -636,25 +633,25 @@ public class TestCompactionMetrics  extends CompactorTest {
 
     List<ShowCompactResponseElement> elements = ImmutableList.of(
         generateElement(15, "db3", "tb5", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
-            start, false, "4.0.0", "4.0.0", -1L, start - 1_000L),
+            start, false, WORKER_VERSION, WORKER_VERSION, -1L, start - 1_000L),
         generateElement(16, "db3", "tb6", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
-            start, false, "4.0.0", "4.0.0", -1L, start - 15_000L)
+            start, false, WORKER_VERSION, WORKER_VERSION, -1L, start - 15_000L)
     );
 
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+    AcidMetricService.updateMetricsFromShowCompact(scr);
     // Check that the age is older than 10s
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_CLEANING_AGE).intValue() > 10);
 
     // Check the reverse order
     elements = ImmutableList.of(
         generateElement(16, "db3", "tb6", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
-            start, false, "4.0.0", "4.0.0", -1L, start - 25_000L),
+            start, false, WORKER_VERSION, WORKER_VERSION, -1L, start - 25_000L),
         generateElement(15, "db3", "tb5", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE,
-            start, false, "4.0.0", "4.0.0", -1L, start - 1_000L)
+            start, false, WORKER_VERSION, WORKER_VERSION, -1L, start - 1_000L)
     );
     scr.setCompacts(elements);
-    AcidMetricService.updateMetricsFromShowCompact(scr, conf);
+    AcidMetricService.updateMetricsFromShowCompact(scr);
 
     // Check that the age is older than 20s
     Assert.assertTrue(Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_OLDEST_CLEANING_AGE).intValue() > 20);
@@ -841,13 +838,199 @@ public class TestCompactionMetrics  extends CompactorTest {
     params.put(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT, "true");
     Table disabledTbl = newTable(dbName, "comp_disabled", false, params);
     burnThroughTransactions(disabledTbl.getDbName(), disabledTbl.getTableName(), 1, null, null);
-    burnThroughTransactions(disabledTbl.getDbName(), disabledTbl.getTableName(), 1, null, new HashSet<>(Arrays.asList(2L)));
+    burnThroughTransactions(disabledTbl.getDbName(), disabledTbl.getTableName(), 1, null, new HashSet<>(
+        Collections.singletonList(2L)));
 
     Table enabledTbl = newTable(dbName, "comp_enabled", false);
     burnThroughTransactions(enabledTbl.getDbName(), enabledTbl.getTableName(), 1, null, null);
 
     Assert.assertEquals(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE + " value incorrect",
         2, Metrics.getOrCreateGauge(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE).intValue());
+  }
+
+  @Test
+  public void testInitiatorDurationMeasuredCorrectly() throws Exception {
+    final String DEFAULT_DB = "default";
+    final String TABLE_NAME = "x_table";
+    final String PARTITION_NAME = "part";
+
+    List<LockComponent> components = new ArrayList<>();
+
+    Table table = newTable(DEFAULT_DB, TABLE_NAME, true);
+
+    for (int i = 0; i < 10; i++) {
+      String partitionName = PARTITION_NAME + i;
+      Partition p = newPartition(table, partitionName);
+
+      addBaseFile(table, p, 20L, 20);
+      addDeltaFile(table, p, 21L, 22L, 2);
+      addDeltaFile(table, p, 23L, 24L, 2);
+      addDeltaFile(table, p, 21L, 24L, 4);
+
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, DEFAULT_DB);
+      comp.setTablename(TABLE_NAME);
+      comp.setPartitionname("ds=" + partitionName);
+      comp.setOperationType(DataOperationType.UPDATE);
+      components.add(comp);
+    }
+    burnThroughTransactions(DEFAULT_DB, TABLE_NAME, 25);
+
+    long txnId = openTxn();
+
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnId);
+    LockResponse res = txnHandler.lock(req);
+    Assert.assertEquals(LockState.ACQUIRED, res.getState());
+
+    allocateWriteId(DEFAULT_DB, TABLE_NAME, txnId);
+    txnHandler.commitTxn(new CommitTxnRequest(txnId));
+
+    long initiatorStart = System.currentTimeMillis();
+    startInitiator();
+    long durationUpperLimit = System.currentTimeMillis() - initiatorStart;
+    int initiatorDurationFromMetric = Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_INITIATOR_CYCLE_DURATION)
+        .intValue();
+    Assert.assertTrue("Initiator duration must be withing the limits",
+        (0 < initiatorDurationFromMetric) && (initiatorDurationFromMetric <= durationUpperLimit));
+  }
+
+  @Test
+  public void testCleanerDurationMeasuredCorrectly() throws Exception {
+    conf.setIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA, 1);
+
+    final String DB_NAME = "default";
+    final String TABLE_NAME = "x_table";
+    final String PARTITION_NAME = "part";
+
+    Table table = newTable(DB_NAME, TABLE_NAME, true);
+    Partition partition = newPartition(table, PARTITION_NAME);
+    addBaseFile(table, partition, 20L, 20);
+    addDeltaFile(table, partition, 21L, 22L, 2);
+    addDeltaFile(table, partition, 23L, 24L, 2);
+    burnThroughTransactions(DB_NAME, TABLE_NAME, 25);
+    doCompaction(DB_NAME, TABLE_NAME, PARTITION_NAME, CompactionType.MINOR);
+
+    long cleanerStart = System.currentTimeMillis();
+    startCleaner();
+    long durationUpperLimit = System.currentTimeMillis() - cleanerStart;
+    int cleanerDurationFromMetric = Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_CLEANER_CYCLE_DURATION)
+        .intValue();
+    Assert.assertTrue("Cleaner duration must be withing the limits",
+        (0 < cleanerDurationFromMetric) && (cleanerDurationFromMetric <= durationUpperLimit));
+  }
+
+  @Test
+  public void testInitiatorFailuresCountedCorrectly() throws Exception {
+    final String DEFAULT_DB = "default";
+    final String SUCCESS_TABLE_NAME = "success_table";
+    final String FAILING_TABLE_NAME = "failing_table";
+    final String PARTITION_NAME = "part";
+    final long EXPECTED_SUCCESS_COUNT = 10;
+    final long EXPECTED_FAIL_COUNT = 6;
+
+    ControlledFailingTxHandler.failedTableName = FAILING_TABLE_NAME;
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL,
+        "org.apache.hadoop.hive.ql.txn.compactor.TestCompactionMetrics$ControlledFailingTxHandler");
+
+    Table failedTable = newTable(DEFAULT_DB, FAILING_TABLE_NAME, true);
+    Table succeededTable = newTable(DEFAULT_DB, SUCCESS_TABLE_NAME, true);
+
+    for (Table table : new Table[] { succeededTable, failedTable }) {
+      List<LockComponent> components = new ArrayList<>();
+
+      String tableName = table.getTableName();
+
+      long partitionCount = FAILING_TABLE_NAME.equals(tableName) ? EXPECTED_FAIL_COUNT : EXPECTED_SUCCESS_COUNT;
+      for (int i = 0; i < partitionCount; i++) {
+        String partitionName = PARTITION_NAME + i;
+        Partition p = newPartition(table, partitionName);
+
+        addBaseFile(table, p, 20L, 20);
+        addDeltaFile(table, p, 21L, 22L, 2);
+        addDeltaFile(table, p, 23L, 24L, 2);
+        addDeltaFile(table, p, 21L, 24L, 4);
+
+        LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, DEFAULT_DB);
+        comp.setTablename(tableName);
+        comp.setPartitionname("ds=" + partitionName);
+        comp.setOperationType(DataOperationType.UPDATE);
+        components.add(comp);
+      }
+
+      burnThroughTransactions(DEFAULT_DB, tableName, 25);
+
+      long txnid = openTxn();
+
+      LockRequest req = new LockRequest(components, "me", "localhost");
+      req.setTxnid(txnid);
+      LockResponse res = txnHandler.lock(req);
+      Assert.assertEquals(LockState.ACQUIRED, res.getState());
+
+      long writeid = allocateWriteId(DEFAULT_DB, tableName, txnid);
+      Assert.assertEquals(26, writeid);
+      txnHandler.commitTxn(new CommitTxnRequest(txnid));
+    }
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE, 5);
+    startInitiator();
+
+    // Check if all the compaction have initiated
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(EXPECTED_FAIL_COUNT + EXPECTED_SUCCESS_COUNT, rsp.getCompactsSize());
+
+    Assert.assertEquals(EXPECTED_FAIL_COUNT,
+        Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_INITIATOR_FAILURE_COUNTER)
+            .getCount());
+  }
+
+  @Test
+  public void testCleanerFailuresCountedCorrectly() throws Exception {
+    final String DEFAULT_DB = "default";
+    final String SUCCESS_TABLE_NAME = "success_table";
+    final String FAILING_TABLE_NAME = "failing_table";
+    final String PARTITION_NAME = "part";
+    final long EXPECTED_SUCCESS_COUNT = 10;
+    final long EXPECTED_FAIL_COUNT = 6;
+
+    ControlledFailingTxHandler.failedTableName = FAILING_TABLE_NAME;
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TXN_STORE_IMPL,
+        "org.apache.hadoop.hive.ql.txn.compactor.TestCompactionMetrics$ControlledFailingTxHandler");
+
+    Table failedTable = newTable(DEFAULT_DB, FAILING_TABLE_NAME, true);
+    Table succeededTable = newTable(DEFAULT_DB, SUCCESS_TABLE_NAME, true);
+
+    for (Table table : new Table[] { succeededTable, failedTable }) {
+
+      String tableName = table.getTableName();
+
+      long partitionCount = FAILING_TABLE_NAME.equals(tableName) ? EXPECTED_FAIL_COUNT : EXPECTED_SUCCESS_COUNT;
+      for (int i = 0; i < partitionCount; i++) {
+        Partition p = newPartition(table, PARTITION_NAME + i);
+
+        addBaseFile(table, p, 20L, 20);
+        addDeltaFile(table, p, 21L, 22L, 2);
+        addDeltaFile(table, p, 23L, 24L, 2);
+        addDeltaFile(table, p, 21L, 24L, 4);
+      }
+
+      burnThroughTransactions(DEFAULT_DB, tableName, 25);
+      for (int i = 0; i < partitionCount; i++) {
+        CompactionRequest rqst = new CompactionRequest(DEFAULT_DB, tableName, CompactionType.MINOR);
+        rqst.setPartitionname("ds=" + PARTITION_NAME + i);
+        compactInTxn(rqst);
+      }
+    }
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM, 5);
+    startCleaner();
+
+    // Check there are no compactions requests left.
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(EXPECTED_FAIL_COUNT + EXPECTED_SUCCESS_COUNT, rsp.getCompactsSize());
+
+    Assert.assertEquals(EXPECTED_FAIL_COUNT,
+        Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER)
+            .getCount());
   }
 
   private ShowCompactResponseElement generateElement(long id, String db, String table, String partition,
@@ -915,6 +1098,31 @@ public class TestCompactionMetrics  extends CompactorTest {
     rqst.setPartitionname("ds=" + partitionName);
     txnHandler.compact(rqst);
     startWorker();
+  }
+
+  public static class ControlledFailingTxHandler extends ThrowingTxnHandler {
+    public static volatile String failedTableName;
+
+    public ControlledFailingTxHandler() {
+    }
+
+    @Override
+    public GetValidWriteIdsResponse getValidWriteIds(GetValidWriteIdsRequest rqst) throws MetaException {
+      if (rqst.getFullTableNames()
+          .stream()
+          .anyMatch(t -> t.endsWith("." + failedTableName))) {
+        throw new RuntimeException("TxnHandler fails during getValidWriteIds");
+      }
+      return super.getValidWriteIds(rqst);
+    }
+
+    @Override
+    public void markCleanerStart(CompactionInfo info) throws MetaException {
+      if (failedTableName.equals(info.tableName)) {
+        throw new RuntimeException("TxnHandler fails during MarkCleaned");
+      }
+      super.markCleanerStart(info);
+    }
   }
 
   @Override

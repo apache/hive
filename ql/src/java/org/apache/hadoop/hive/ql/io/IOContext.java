@@ -51,6 +51,7 @@ public class IOContext {
    */
   private  RecordIdentifier ri;
   private boolean isDeletedRecord;
+  private PositionDeleteInfo pdi;
 
   public static enum Comparison {
     GREATER,
@@ -187,6 +188,14 @@ public class IOContext {
     }
   }
 
+  public void parsePositionDeleteInfo(Configuration configuration) {
+    this.pdi = PositionDeleteInfo.parseFromConf(configuration);
+  }
+
+  public PositionDeleteInfo getPositionDeleteInfo() {
+    return pdi;
+  }
+
   public boolean isDeletedRecord() {
     return isDeletedRecord;
   }
@@ -206,5 +215,4 @@ public class IOContext {
     this.comparison = null;
     this.genericUDFClassName = null;
   }
-
 }

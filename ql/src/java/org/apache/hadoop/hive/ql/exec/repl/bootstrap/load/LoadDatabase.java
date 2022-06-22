@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 public class LoadDatabase {
@@ -101,7 +100,7 @@ public class LoadDatabase {
 
   String getDbLocation(Database dbInMetadata) {
     if (context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET)
-            && Boolean.parseBoolean(dbInMetadata.getParameters().get(ReplUtils.REPL_IS_CUSTOM_DB_LOC))) {
+            && Boolean.parseBoolean(dbInMetadata.getParameters().get(ReplConst.REPL_IS_CUSTOM_DB_LOC))) {
       String locOnTarget = new Path(dbInMetadata.getLocationUri()).toUri().getPath().toString();
       LOG.info("Using the custom location {} on the target", locOnTarget);
       return locOnTarget;
@@ -111,7 +110,7 @@ public class LoadDatabase {
 
   String getDbManagedLocation(Database dbInMetadata) {
     if (context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET)
-            && Boolean.parseBoolean(dbInMetadata.getParameters().get(ReplUtils.REPL_IS_CUSTOM_DB_MANAGEDLOC))) {
+            && Boolean.parseBoolean(dbInMetadata.getParameters().get(ReplConst.REPL_IS_CUSTOM_DB_MANAGEDLOC))) {
       String locOnTarget = new Path(dbInMetadata.getManagedLocationUri()).toUri().getPath().toString();
       LOG.info("Using the custom managed location {} on the target", locOnTarget);
       return locOnTarget;
@@ -141,8 +140,8 @@ public class LoadDatabase {
   private boolean isDbAlreadyBootstrapped(Database db) {
     Map<String, String> props = db.getParameters();
     return ((props != null)
-            && props.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString())
-            && !props.get(ReplicationSpec.KEY.CURR_STATE_ID.toString()).isEmpty());
+            && props.containsKey(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString())
+            && !props.get(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString()).isEmpty());
   }
 
   private boolean isDbEmpty(String dbName) throws HiveException {
@@ -181,21 +180,23 @@ public class LoadDatabase {
     last repl id is set and we create a AlterDatabaseTask at the end of processing a database.
      */
     Map<String, String> parameters = new HashMap<>(dbObj.getParameters());
-    parameters.remove(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+    parameters.remove(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString());
 
-    parameters.remove(ReplUtils.REPL_IS_CUSTOM_DB_LOC);
+    parameters.remove(ReplicationSpec.KEY.CURR_STATE_ID_TARGET.toString());
 
-    parameters.remove(ReplUtils.REPL_IS_CUSTOM_DB_MANAGEDLOC);
+    parameters.remove(ReplConst.REPL_IS_CUSTOM_DB_LOC);
+
+    parameters.remove(ReplConst.REPL_IS_CUSTOM_DB_MANAGEDLOC);
 
     // Add the checkpoint key to the Database binding it to current dump directory.
     // So, if retry using same dump, we shall skip Database object update.
-    parameters.put(ReplUtils.REPL_CHECKPOINT_KEY, dumpDirectory);
+    parameters.put(ReplConst.REPL_TARGET_DB_PROPERTY, dumpDirectory);
 
     // This flag will be set to false after first incremental load is done. This flag is used by repl copy task to
     // check if duplicate file check is required or not. This flag is used by compaction to check if compaction can be
     // done for this database or not. If compaction is done before first incremental then duplicate check will fail as
     // compaction may change the directory structure.
-    parameters.put(ReplUtils.REPL_FIRST_INC_PENDING_FLAG, "true");
+    parameters.put(ReplConst.REPL_FIRST_INC_PENDING_FLAG, "true");
     //This flag will be set to identify its a target of replication. Repl dump won't be allowed on a database
     //which is a target of replication.
     parameters.put(ReplConst.TARGET_OF_REPLICATION, "true");

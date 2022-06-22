@@ -6,7 +6,6 @@ set hive.optimize.union.remove=true;
 
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
-set hive.merge.sparkfiles=false;
 
 CREATE TABLE T1_n8(key STRING, val STRING)
 SKEWED BY (key) ON ((2), (8)) STORED AS TEXTFILE;

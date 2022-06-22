@@ -56,9 +56,9 @@ public class AlterTableDropConstraintAnalyzer extends AbstractAlterTableAnalyzer
     WriteEntity.WriteType writeType = null;
     if (AcidUtils.isTransactionalTable(table)) {
       setAcidDdlDesc(desc);
-      writeType = WriteType.DDL_EXCLUSIVE;
+      writeType = WriteType.DDL_EXCL_WRITE;
     } else {
-      writeType = WriteEntity.determineAlterTableWriteType(AlterTableType.DROP_CONSTRAINT);
+      writeType = WriteEntity.determineAlterTableWriteType(AlterTableType.DROP_CONSTRAINT, table, conf);
     }
     inputs.add(new ReadEntity(table));
     WriteEntity alterTableOutput = new WriteEntity(table, writeType);

@@ -66,7 +66,8 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
       Table existingTable = context.getDb().getTable(tbl.getDbName(), tbl.getTableName(), false);
       if (existingTable != null) {
         Map<String, String> dbParams = context.getDb().getDatabase(existingTable.getDbName()).getParameters();
-        if (desc.getReplicationSpec().allowEventReplacementInto(dbParams)) {
+        if (desc.getReplicationSpec().allowEventReplacementInto(dbParams) || desc.getReplicationSpec()
+            .isForceOverwrite()) {
           desc.setReplaceMode(true); // we replace existing table.
           // If location of an existing managed table is changed, then need to delete the old location if exists.
           // This scenario occurs when a managed table is converted into external table at source. In this case,

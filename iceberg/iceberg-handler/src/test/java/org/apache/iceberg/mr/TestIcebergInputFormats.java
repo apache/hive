@@ -22,7 +22,6 @@ package org.apache.iceberg.mr;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -41,7 +40,6 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.iceberg.AppendFiles;
-import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DataFile;
@@ -63,6 +61,7 @@ import org.apache.iceberg.mr.mapreduce.IcebergInputFormat;
 import org.apache.iceberg.mr.mapreduce.IcebergSplit;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
@@ -187,7 +186,7 @@ public class TestIcebergInputFormats {
     writeRecords.get(1).set(1, 456L);
     writeRecords.get(1).set(2, "2020-03-20");
 
-    List<Record> expectedRecords = new ArrayList<>();
+    List<Record> expectedRecords = Lists.newArrayList();
     expectedRecords.add(writeRecords.get(0));
 
     DataFile dataFile1 = helper.writeFile(Row.of("2020-03-20", 0), writeRecords);
@@ -202,34 +201,6 @@ public class TestIcebergInputFormats {
     // skip residual filtering
     builder.skipResidualFiltering();
     testInputFormat.create(builder.conf()).validate(writeRecords);
-  }
-
-  @Test
-  public void testFailedResidualFiltering() throws Exception {
-    helper.createTable();
-
-    List<Record> expectedRecords = helper.generateRandomRecords(2, 0L);
-    expectedRecords.get(0).set(2, "2020-03-20");
-    expectedRecords.get(1).set(2, "2020-03-20");
-
-    helper.appendToTable(Row.of("2020-03-20", 0), expectedRecords);
-
-    builder.useHiveRows()
-           .filter(Expressions.and(
-                   Expressions.equal("date", "2020-03-20"),
-                   Expressions.equal("id", 0)));
-
-    AssertHelpers.assertThrows(
-        "Residuals are not evaluated today for Iceberg Generics In memory model of HIVE",
-        UnsupportedOperationException.class, "Filter expression ref(name=\"id\") == 0 is not completely satisfied.",
-        () -> testInputFormat.create(builder.conf()));
-
-    builder.usePigTuples();
-
-    AssertHelpers.assertThrows(
-        "Residuals are not evaluated today for Iceberg Generics In memory model of PIG",
-        UnsupportedOperationException.class, "Filter expression ref(name=\"id\") == 0 is not completely satisfied.",
-        () -> testInputFormat.create(builder.conf()));
   }
 
   @Test
@@ -462,8 +433,8 @@ public class TestIcebergInputFormats {
       try {
         org.apache.hadoop.mapred.InputSplit[] splits = inputFormat.getSplits(job, 1);
 
-        List<IcebergSplit> iceSplits = new ArrayList<>(splits.length);
-        List<T> records = new ArrayList<>();
+        List<IcebergSplit> iceSplits = Lists.newArrayListWithExpectedSize(splits.length);
+        List<T> records = Lists.newArrayList();
 
         for (org.apache.hadoop.mapred.InputSplit split : splits) {
           iceSplits.add((IcebergSplit) split);
@@ -499,8 +470,8 @@ public class TestIcebergInputFormats {
       IcebergInputFormat<T> inputFormat = new IcebergInputFormat<>();
       List<InputSplit> splits = inputFormat.getSplits(context);
 
-      List<IcebergSplit> iceSplits = new ArrayList<>(splits.size());
-      List<T> records = new ArrayList<>();
+      List<IcebergSplit> iceSplits = Lists.newArrayListWithExpectedSize(splits.size());
+      List<T> records = Lists.newArrayList();
 
       for (InputSplit split : splits) {
         iceSplits.add((IcebergSplit) split);

@@ -84,6 +84,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 
 class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>, Consumer<ColumnVectorBatch> {
 
@@ -135,6 +136,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
         cvp, executor, sourceInputFormat, sourceSerDe, reporter, daemonConf);
     if (!rr.checkOrcSchemaEvolution()) {
       rr.close();
+      throwIfCacheOnlyRead(HiveConf.getBoolVar(job, ConfVars.LLAP_IO_CACHE_ONLY));
       return null;
     }
     return rr;

@@ -43,7 +43,7 @@ public final class TestExecutionEngineWorkConcurrency {
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][]{{new TezDagIdProvider()}, {new SparkDagIdProvider()}});
+    return Arrays.asList(new Object[][]{{new TezDagIdProvider()}});
   }
 
   private final ExecutionEngineDagIdGenerator executionEngineDagIdGenerator;
@@ -106,14 +106,6 @@ public final class TestExecutionEngineWorkConcurrency {
     @Override
     public String getDagId() {
       return new TezWork("query-id").getDagId();
-    }
-  }
-
-  private static final class SparkDagIdProvider implements ExecutionEngineDagIdGenerator {
-
-    @Override
-    public String getDagId() {
-      return new SparkWork("query-id").getName();
     }
   }
 }

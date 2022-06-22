@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
+import org.apache.hadoop.hive.metastore.utils.StringableMap;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -57,6 +58,11 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public String properties;
   public boolean tooManyAborts = false;
   public boolean hasOldAbort = false;
+  public long retryRetention = 0;
+  public long nextTxnId = 0;
+  public long txnId = 0;
+  public long commitTime = 0;
+
   /**
    * The highest write id that the compaction job will pay attention to.
    * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL)
@@ -73,6 +79,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
 
   private String fullPartitionName = null;
   private String fullTableName = null;
+  private StringableMap propertiesMap;
 
   public CompactionInfo(String dbname, String tableName, String partName, CompactionType type) {
     this.dbname = dbname;
@@ -86,6 +93,21 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     this.state = state;
   }
   CompactionInfo() {}
+
+  public String getProperty(String key) {
+    if (propertiesMap == null) {
+      propertiesMap = new StringableMap(properties);
+    }
+    return propertiesMap.get(key);
+  }
+
+  public void setProperty(String key, String value) {
+    if (propertiesMap == null) {
+      propertiesMap = new StringableMap(properties);
+    }
+    propertiesMap.put(key, value);
+    properties = propertiesMap.toString();
+  }
 
   public String getFullPartitionName() {
     if (fullPartitionName == null) {
@@ -134,7 +156,8 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "highestWriteId:" + highestWriteId + "," +
       "errorMessage:" + errorMessage + "," +
       "workerId: " + workerId + "," +
-      "initiatorId: " + initiatorId;
+      "initiatorId: " + initiatorId + "," +
+      "retryRetention" + retryRetention;
   }
 
   @Override
@@ -181,6 +204,10 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.workerVersion = rs.getString(16);
     fullCi.initiatorId = rs.getString(17);
     fullCi.initiatorVersion = rs.getString(18);
+    fullCi.retryRetention = rs.getLong(19);
+    fullCi.nextTxnId = rs.getLong(20);
+    fullCi.txnId = rs.getLong(21);
+    fullCi.commitTime = rs.getLong(22);
     return fullCi;
   }
   static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException, MetaException {
@@ -203,6 +230,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     pStmt.setString(17, ci.workerVersion);
     pStmt.setString(18, ci.initiatorId);
     pStmt.setString(19, ci.initiatorVersion);
+    pStmt.setLong(20, ci.nextTxnId);
+    pStmt.setLong(21, ci.txnId);
+    pStmt.setLong(22, ci.commitTime);
   }
 
   public static CompactionInfo compactionStructToInfo(CompactionInfoStruct cr) {
@@ -237,6 +267,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     if (cr.isSetEnqueueTime()) {
       ci.enqueueTime = cr.getEnqueueTime();
     }
+    if (cr.isSetRetryRetention()) {
+      ci.retryRetention = cr.getRetryRetention();
+    }
     return ci;
   }
 
@@ -256,7 +289,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setHighestWriteId(ci.highestWriteId);
     cr.setErrorMessage(ci.errorMessage);
     cr.setEnqueueTime(ci.enqueueTime);
-
+    cr.setRetryRetention(ci.retryRetention);
     return cr;
   }
 

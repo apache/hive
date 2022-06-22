@@ -229,6 +229,16 @@ git merge origin/target
             ":hive-standalone-metastore-common",
             ":hive-service-rpc"
         ]
+        sh '''#!/bin/bash
+set -e
+xmlstarlet edit -L `find . -name pom.xml`
+git diff
+n=`git diff | wc -l`
+if [ $n != 0 ]; then
+  echo "!!! incorrectly formatted pom.xmls detected; see above!" >&2
+  exit 1
+fi
+'''
         buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am test-compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
       }
       stage('Compile') {
@@ -247,7 +257,7 @@ git merge origin/target
   }
 
   def branches = [:]
-  for (def d in ['derby','postgres','mysql']) {
+  for (def d in ['derby','postgres',/*'mysql',*/'oracle']) {
     def dbType=d
     def splitName = "init@$dbType"
     branches[splitName] = {
@@ -281,6 +291,27 @@ mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuc
         }
       }
     }
+  }
+  branches['nightly-check'] = {
+      executorNode {
+        stage('Prepare') {
+            loadWS();
+        }
+        stage('Build') {
+            sh '''#!/bin/bash
+set -e
+dev-support/nightly
+'''
+            buildHive("install -Dtest=noMatches -Pdist -pl packaging -am")
+        }
+        stage('Verify') {
+            sh '''#!/bin/bash
+set -e
+tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
+'''
+            buildHive("install -Dtest=noMatches -Pdist,iceberg -f apache-hive-*-nightly-*/pom.xml")
+        }
+      }
   }
   for (int i = 0; i < splits.size(); i++) {
     def num = i
@@ -316,6 +347,18 @@ mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuc
             }
           }
         }
+      }
+    }
+  }
+  branches['javadoc-check'] = {
+    executorNode {
+      stage('Prepare') {
+          loadWS();
+      }
+      stage('Generate javadoc') {
+          sh """#!/bin/bash -e
+mvn install javadoc:javadoc javadoc:aggregate -DskipTests -pl '!itests/hive-jmh,!itests/util'
+"""
       }
     }
   }

@@ -1932,8 +1932,8 @@ public class StatsRulesProcFactory {
           break;
         }
       }
-      // there could be case where join operators input are not RS e.g.
-      // map join with Spark. Since following estimation of statistics relies on join operators having it inputs as
+      // there could be case where join operators input are not RS
+      // Since following estimation of statistics relies on join operators having it inputs as
       // reduced sink it will not work for such cases. So we should not try to estimate stats
       if (allSatisfyPreCondition) {
         for (int pos = 0; pos < parents.size(); pos++) {

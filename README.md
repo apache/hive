@@ -16,8 +16,7 @@ using SQL. Built on top of Apache Hadoop (TM), it provides:
 * Access to files stored either directly in Apache HDFS (TM) or in other
   data storage systems such as Apache HBase (TM)
 
-* Query execution using Apache Hadoop MapReduce, Apache Tez
-  or Apache Spark frameworks.
+* Query execution using Apache Hadoop MapReduce or Apache Tez frameworks.
 
 Hive provides standard SQL functionality, including many of the later
 2003 and 2011 features for analytics.  These include OLAP functions,
@@ -26,18 +25,13 @@ extended with user code via user defined functions (UDFs), user defined
 aggregates (UDAFs), and user defined table functions (UDTFs).
 
 Hive users have a choice of 3 runtimes when executing SQL queries.
-Users can choose between Apache Hadoop MapReduce, Apache Tez or
-Apache Spark frameworks as their execution backend. MapReduce is a
+Users can choose between Apache Hadoop MapReduce or Apache Tez
+frameworks as their execution backend. MapReduce is a
 mature framework that is proven at large scales. However, MapReduce
 is a purely batch framework, and queries using it may experience
 higher latencies (tens of seconds), even over small datasets. Apache
 Tez is designed for interactive query, and has substantially reduced
-overheads versus MapReduce. Apache Spark is a cluster computing
-framework that's built outside of MapReduce, but on top of HDFS,
-with a notion of composable and transformable distributed collection
-of items called Resilient Distributed Dataset (RDD) which allows
-processing and analysis without traditional intermediate stages that
-MapReduce introduces.
+overheads versus MapReduce.
 
 Users are free to switch back and forth between these frameworks
 at any time. In each case, Hive is best suited for use cases
@@ -64,6 +58,9 @@ Getting Started
 
 - Installation Instructions and a quick tutorial:
   https://cwiki.apache.org/confluence/display/Hive/GettingStarted
+
+- Instructions to build Hive from source:
+  https://cwiki.apache.org/confluence/display/Hive/GettingStarted#GettingStarted-BuildingHivefromSource
 
 - A longer tutorial that covers more features of HiveQL:
   https://cwiki.apache.org/confluence/display/Hive/Tutorial

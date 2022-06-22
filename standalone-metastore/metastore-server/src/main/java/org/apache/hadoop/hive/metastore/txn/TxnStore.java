@@ -102,9 +102,10 @@ public interface TxnStore extends Configurable {
   String FAILED_RESPONSE = "failed";
   String SUCCEEDED_RESPONSE = "succeeded";
   String DID_NOT_INITIATE_RESPONSE = "did not initiate";
+  String REFUSED_RESPONSE = "refused";
 
   String[] COMPACTION_STATES = new String[] {INITIATED_RESPONSE, WORKING_RESPONSE, CLEANING_RESPONSE, FAILED_RESPONSE,
-      SUCCEEDED_RESPONSE, DID_NOT_INITIATE_RESPONSE };
+      SUCCEEDED_RESPONSE, DID_NOT_INITIATE_RESPONSE, REFUSED_RESPONSE };
 
   int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 50000;
 
@@ -403,6 +404,10 @@ public interface TxnStore extends Configurable {
       Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException;
 
   @RetrySemantics.Idempotent
+  void cleanupRecords(HiveObjectType type, Database db, Table table,
+      Iterator<Partition> partitionIterator, long txnId) throws MetaException;
+
+  @RetrySemantics.Idempotent
   void onRename(String oldCatName, String oldDbName, String oldTabName, String oldPartName,
       String newCatName, String newDbName, String newTabName, String newPartName)
       throws MetaException;
@@ -512,6 +517,23 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.CannotRetry
   void markFailed(CompactionInfo info) throws MetaException;
+
+  /**
+   * Mark a compaction as refused (to run). This can happen if a manual compaction is requested by the user,
+   * but for some reason, the table is not suitable for compation.
+   * @param info compaction job.
+   * @throws MetaException
+   */
+  void markRefused(CompactionInfo info) throws MetaException;
+
+  /**
+   * Stores the value of {@link CompactionInfo#retryRetention} and {@link CompactionInfo#errorMessage} fields
+   * of the CompactionInfo in the HMS database.
+   * @param info The {@link CompactionInfo} object holding the values.
+   * @throws MetaException
+   */
+  @RetrySemantics.CannotRetry
+  void setCleanerRetryRetentionTimeOnError(CompactionInfo info) throws MetaException;
 
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
@@ -702,12 +724,12 @@ public interface TxnStore extends Configurable {
 
   /**
    * Returns ACID metrics related info for a specific resource and metric type. If no record is found matching the
-   * filter criteria, an empty object ({@link CompactionMetricsData#isEmpty()} == true) will be returned.
+   * filter criteria, null will be returned.
    * @param dbName name of database, non-null
    * @param tblName name of the table, non-null
    * @param partitionName name of the partition, can be null
    * @param type type of the delta metric, non-null
-   * @return instance of delta metrics info, always not null.
+   * @return instance of delta metrics info, can be null
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
@@ -728,7 +750,7 @@ public interface TxnStore extends Configurable {
 
   /**
    * Returns the top ACID metrics from each type {@link CompactionMetricsData.MetricType}
-   * @oaram limit number of returned records for each type
+   * @param limit number of returned records for each type
    * @return list of metrics, always non-null
    * @throws MetaException
    */
@@ -737,9 +759,18 @@ public interface TxnStore extends Configurable {
       throws MetaException;
 
   /**
-   * Update or create one record in the compaction metrics cache. This operation uses an optimistic locking mechanism.
-   * If update fails, due to version mismatch, the operation won't be retried.
-   * @param data the object that is used for the update or create operation
+   * Create, update or delete one record in the compaction metrics cache.
+   * <p>
+   * If the metric is not found in the metrics cache, it will be created.
+   * </p>
+   * <p>
+   * If the metric is found, it will be updated. This operation uses an optimistic locking mechanism, meaning if another
+   * operation changed the value of this metric, the update will abort and won't be retried.
+   * </p>
+   * <p>
+   * If the new metric value is below {@link CompactionMetricsData#getThreshold()}, it will be deleted.
+   * </p>
+   * @param data the object that is used for the operation
    * @return true, if update finished successfully
    * @throws MetaException
    */

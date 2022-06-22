@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.ql.metadata.DefaultConstraint.DefaultConstraintCol
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
@@ -607,7 +606,6 @@ public class DDLPlanUtils {
    *
    * @param tbl
    * @return Returns the alter table .... update statistics for table
-   * @throws HiveException
    */
   public String getAlterTableStmtTableStatsBasic(Table tbl) {
     Map<String, String> parameters = tbl.getParameters();
@@ -793,7 +791,7 @@ public class DDLPlanUtils {
   }
 
 
-  public String getCreateTableCommand(Table table, boolean isRelative) throws HiveException {
+  public String getCreateTableCommand(Table table, boolean isRelative) {
     ST command = new ST(CREATE_TABLE_TEMPLATE);
 
     if (!isRelative) {
@@ -823,7 +821,7 @@ public class DDLPlanUtils {
     return table.getTableType() == TableType.EXTERNAL_TABLE ? "EXTERNAL " : "";
   }
 
-  private String getColumns(Table table) throws HiveException {
+  private String getColumns(Table table) {
     List<String> columnDescs = new ArrayList<String>();
     for (FieldSchema column : table.getCols()) {
       String columnType = formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType()));
@@ -839,7 +837,7 @@ public class DDLPlanUtils {
   /**
    * Struct fields are identifiers, need to be put between ``.
    */
-  private String formatType(TypeInfo typeInfo) throws HiveException {
+  private String formatType(TypeInfo typeInfo) {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
         return typeInfo.getTypeName();

@@ -78,6 +78,8 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_SECURITY_HBASE_URLENCODE_AUTHORIZATION_URI;
+
 /**
  * HBaseStorageHandler provides a HiveStorageHandler implementation for
  * HBase.
@@ -293,14 +295,30 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   public URI getURIForAuth(Table table) throws URISyntaxException {
     Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
     hbaseConf = getConf();
-    String hbase_host = tableProperties.containsKey(HBASE_HOST_NAME)? tableProperties.get(HBASE_HOST_NAME) : hbaseConf.get(HBASE_HOST_NAME);
-    String hbase_port = tableProperties.containsKey(HBASE_CLIENT_PORT)? tableProperties.get(HBASE_CLIENT_PORT) : hbaseConf.get(HBASE_CLIENT_PORT);
-    String table_name = tableProperties.getOrDefault(HBaseSerDe.HBASE_TABLE_NAME, null);
-    String column_family = tableProperties.getOrDefault(HBaseSerDe.HBASE_COLUMNS_MAPPING, null);
-    if (column_family != null)
-      return new URI(HBASE_PREFIX+"//"+hbase_host+":"+hbase_port+"/"+table_name+"/"+column_family);
-    else
-      return new URI(HBASE_PREFIX+"//"+hbase_host+":"+hbase_port+"/"+table_name);
+    String hbase_host = tableProperties.getOrDefault(HBASE_HOST_NAME,
+        hbaseConf.get(HBASE_HOST_NAME));
+    String hbase_port = tableProperties.getOrDefault(HBASE_CLIENT_PORT,
+        hbaseConf.get(HBASE_CLIENT_PORT));
+    String table_name = encodeString(tableProperties.getOrDefault(HBaseSerDe.HBASE_TABLE_NAME,
+        null));
+    String column_family = encodeString(tableProperties.getOrDefault(
+        HBaseSerDe.HBASE_COLUMNS_MAPPING, null));
+    String URIString = HBASE_PREFIX + "//" + hbase_host + ":" + hbase_port + "/" + table_name;
+    if (column_family != null) {
+      URIString += "/" + column_family;
+    }
+    return new URI(URIString);
+  }
+
+  private String encodeString(String rawString) {
+    if (rawString == null) {
+      return null;
+    }
+    if (HiveConf.getBoolVar(jobConf, HIVE_SECURITY_HBASE_URLENCODE_AUTHORIZATION_URI)) {
+      return HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.encode(rawString);
+    } else {
+      return rawString.replace("#", "%23");
+    }
   }
 
   /**

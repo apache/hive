@@ -21,16 +21,14 @@ package org.apache.hadoop.hive.metastore.dataconnector.jdbc;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 
 public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
-  private static Logger LOG = LoggerFactory.getLogger(MySQLConnectorProvider.class);
+  private static Logger LOG = LoggerFactory.getLogger(PostgreSQLConnectorProvider.class);
   private static final String DRIVER_CLASS = "org.postgresql.Driver".intern();
 
   public PostgreSQLConnectorProvider(String dbName, DataConnector dataConn) {
@@ -49,6 +47,14 @@ public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
   }
 
   @Override protected ResultSet fetchTableNames() throws MetaException {
+    return null;
+  }
+
+  @Override protected String getCatalogName() {
+    return scoped_db;
+  }
+
+  @Override protected String getDatabaseName() {
     return null;
   }
 

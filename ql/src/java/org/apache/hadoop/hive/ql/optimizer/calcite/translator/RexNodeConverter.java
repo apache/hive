@@ -385,7 +385,23 @@ public class RexNodeConverter {
         newChildRexNodeLst.add(childRexNodeLst.get(childRexNodeLst.size()-1));
       }
     } else {
-      newChildRexNodeLst.addAll(childRexNodeLst);
+      for (int i = 0; i < childRexNodeLst.size(); i++) {
+        RexNode child = childRexNodeLst.get(i);
+        if (RexUtil.isNull(child)) {
+          if (i % 2 == 0 && i != childRexNodeLst.size() - 1) {
+            if (SqlTypeName.NULL.equals(child.getType().getSqlTypeName())) {
+              child = rexBuilder.makeNullLiteral(rexBuilder.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN));
+            }
+          } else {
+            // this is needed to provide typed NULLs which were working before
+            // example: IF(false, array(1,2,3), NULL)
+            if (!RexUtil.isNull(childRexNodeLst.get(1))) {
+              child = rexBuilder.makeCast(childRexNodeLst.get(1).getType(), child);
+            }
+          }
+        }
+        newChildRexNodeLst.add(child);
+      }
     }
     // Calcite always needs the else clause to be defined explicitly
     if (newChildRexNodeLst.size() % 2 == 0) {
@@ -516,9 +532,9 @@ public class RexNodeConverter {
    * </pre>
    * Or:
    * <pre>
-   * (c,d) IN ( (v1,v2), (v3,v4), ...) =&gt; (c=v1 && d=v2) || (c=v3 && d=v4) || ...
+   * (c,d) IN ( (v1,v2), (v3,v4), ...) =&gt; (c=v1 &amp;&amp; d=v2) || (c=v3 &amp;&amp; d=v4) || ...
    * Input: ((c,d), (v1,v2), (v3,v4), ...)
-   * Output: (c=v1 && d=v2, c=v3 && d=v4, ...)
+   * Output: (c=v1 &amp;&amp; d=v2, c=v3 &amp;&amp; d=v4, ...)
    * </pre>
    *
    * Returns null if the transformation fails, e.g., when non-deterministic

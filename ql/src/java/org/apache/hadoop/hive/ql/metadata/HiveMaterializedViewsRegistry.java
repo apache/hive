@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewIncrementalRewritingRelVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CBOPlan;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
@@ -238,7 +239,7 @@ public final class HiveMaterializedViewsRegistry {
             null, viewScan.getTable().getQualifiedName(),
         isBlank(plan.getInvalidAutomaticRewritingMaterializationReason()) ?
             EnumSet.allOf(HiveRelOptMaterialization.RewriteAlgorithm.class) : EnumSet.of(TEXT),
-            determineIncrementalRebuildMode(plan.getPlan()));
+            determineIncrementalRebuildMode(plan.getPlan()), plan.getAst());
   }
 
   private HiveRelOptMaterialization.IncrementalRebuildMode determineIncrementalRebuildMode(RelNode definitionPlan) {
@@ -281,6 +282,19 @@ public final class HiveMaterializedViewsRegistry {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created materialized view for rewriting: " + materializedViewTable.getFullyQualifiedName());
     }
+  }
+
+  /**
+   * Update the materialized view in the registry (if materialized view exists).
+   */
+  public void refreshMaterializedView(HiveConf conf, Table materializedViewTable) {
+    RelOptMaterialization cached = materializedViewsCache.get(
+        materializedViewTable.getDbName(), materializedViewTable.getTableName());
+    if (cached == null) {
+      return;
+    }
+    Table cachedTable = HiveMaterializedViewUtils.extractTable(cached);
+    refreshMaterializedView(conf, cachedTable, materializedViewTable);
   }
 
   /**
@@ -355,9 +369,14 @@ public final class HiveMaterializedViewsRegistry {
     return materialization;
   }
 
-  public List<HiveRelOptMaterialization> getRewritingMaterializedViews(String querySql) {
-    return materializedViewsCache.get(querySql);
+  public List<HiveRelOptMaterialization> getRewritingMaterializedViews(ASTNode ast) {
+    return materializedViewsCache.get(ast);
   }
+
+  public boolean isEmpty() {
+    return materializedViewsCache.isEmpty();
+  }
+
 
   private static RelNode createMaterializedViewScan(HiveConf conf, Table viewTable) {
     // 0. Recreate cluster

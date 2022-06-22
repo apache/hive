@@ -77,10 +77,12 @@ public class InputFormatConfig {
 
   public static final String CTAS_TABLE_NAME = "iceberg.mr.ctas.table.name";
   public static final String SELECTED_COLUMNS = "iceberg.mr.selected.columns";
+  public static final String FETCH_VIRTUAL_COLUMNS = "iceberg.mr.fetch.virtual.columns";
   public static final String EXTERNAL_TABLE_PURGE = "external.table.purge";
 
   public static final String CONFIG_SERIALIZATION_DISABLED = "iceberg.mr.config.serialization.disabled";
   public static final boolean CONFIG_SERIALIZATION_DISABLED_DEFAULT = true;
+  public static final String OPERATION_TYPE_PREFIX = "iceberg.mr.operation.type.";
   public static final String OUTPUT_TABLES = "iceberg.mr.output.tables";
   public static final String COMMIT_TABLE_THREAD_POOL_SIZE = "iceberg.mr.commit.table.thread.pool.size";
   public static final int COMMIT_TABLE_THREAD_POOL_SIZE_DEFAULT = 10;
@@ -232,6 +234,10 @@ public class InputFormatConfig {
     }
 
     return readColumns.split(conf.get(serdeConstants.COLUMN_NAME_DELIMITER, String.valueOf(SerDeUtils.COMMA)));
+  }
+
+  public static boolean fetchVirtualColumns(Configuration conf) {
+    return conf.getBoolean(InputFormatConfig.FETCH_VIRTUAL_COLUMNS, false);
   }
 
   /**

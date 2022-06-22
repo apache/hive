@@ -105,6 +105,7 @@ STAGE PLANS:
       columns: key string, value string
       name: default.x
       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+#### A masked pattern was here ####
       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
       serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
       table properties:

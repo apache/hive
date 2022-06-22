@@ -19,10 +19,13 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -77,13 +80,17 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+
+import static org.apache.hadoop.hive.ql.exec.Utilities.BLOB_MANIFEST_FILE;
 
 /**
  * MoveTask implementation.
@@ -109,6 +116,26 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       console.printInfo(mesg, mesg_detail);
 
       FileSystem fs = sourcePath.getFileSystem(conf);
+
+      if (work.isCTAS() && BlobStorageUtils.isBlobStorageFileSystem(conf, fs)) {
+        if (fs.exists(new Path(sourcePath, BLOB_MANIFEST_FILE))) {
+          LOG.debug("Attempting to copy using the paths available in {}", new Path(sourcePath, BLOB_MANIFEST_FILE));
+          ArrayList<String> filesKept;
+          try (FSDataInputStream inStream = fs.open(new Path(sourcePath, BLOB_MANIFEST_FILE))) {
+            String paths = IOUtils.toString(inStream, Charset.defaultCharset());
+            filesKept = new ArrayList(Arrays.asList(paths.split(System.lineSeparator())));
+          }
+          // Remove the first entry from the list, it is the source path.
+          Path srcPath = new Path(filesKept.remove(0));
+          LOG.info("Copying files {} from {} to {}", filesKept, srcPath, targetPath);
+          // Do the move using the filesKept now directly to the target dir.
+          Utilities.moveSpecifiedFilesInParallel(conf, fs, srcPath, targetPath, new HashSet<>(filesKept));
+          perfLogger.perfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
+          return;
+        }
+        // Fallback case, in any case the _blob_files_kept isn't created, we can do the normal logic. The file won't
+        // be created in case of empty source table as well
+      }
       if (isDfsDir) {
         moveFileInDfs (sourcePath, targetPath, conf);
       } else {
@@ -422,7 +449,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           int statementId = tbd.getStmtId();
           if (tbd.isDirectInsert() || tbd.isMmTable()) {
             statementId = queryPlan.getStatementIdForAcidWriteType(work.getLoadTableWork().getWriteId(),
-                tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
+                tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath(), statementId);
             LOG.debug("The statementId used when loading the dynamic partitions is " + statementId);
           }
 
@@ -566,7 +593,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     int statementId = tbd.getStmtId();
     if (tbd.isDirectInsert() || tbd.isMmTable()) {
       statementId = queryPlan.getStatementIdForAcidWriteType(work.getLoadTableWork().getWriteId(),
-          tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
+          tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath(), statementId);
       LOG.debug("The statementId used when loading the dynamic partitions is " + statementId);
     }
     Map<String, List<Path>> dynamicPartitionSpecs = null;

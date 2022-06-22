@@ -35,6 +35,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +44,8 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 /**
  * Superclass for all threads in the compactor.
@@ -57,13 +58,8 @@ public abstract class CompactorThread extends Thread implements Configurable {
 
   protected AtomicBoolean stop;
 
-  protected int threadId;
   protected String hostName;
   protected String runtimeVersion;
-
-  public void setThreadId(int threadId) {
-    this.threadId = threadId;
-  }
 
   @Override
   public void setConf(Configuration configuration) {
@@ -110,7 +106,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * Get the partition being compacted.
    * @param ci compaction info returned from the compaction queue
    * @return metastore partition, or null if there is not partition in this compaction info
-   * @throws Exception if underlying calls throw, or if the partition name resolves to more than
+   * @throws MetaException if underlying calls throw, or if the partition name resolves to more than
    * one partition.
    */
   protected Partition resolvePartition(CompactionInfo ci) throws MetaException {
@@ -138,6 +134,23 @@ public abstract class CompactorThread extends Thread implements Configurable {
   }
 
   /**
+   * Check for that special case when minor compaction is supported or not.
+   * <ul>
+   *   <li>The table is Insert-only OR</li>
+   *   <li>Query based compaction is not enabled OR</li>
+   *   <li>The table has only acid data in it.</li>
+   * </ul>
+   * @param tblproperties The properties of the table to check
+   * @param dir The {@link AcidDirectory} instance pointing to the table's folder on the filesystem.
+   * @return Returns true if minor compaction is supported based on the given parameters, false otherwise.
+   */
+  protected boolean isMinorCompactionSupported(Map<String, String> tblproperties, AcidDirectory dir) {
+    //Query based Minor compaction is not possible for full acid tables having raw format (non-acid) data in them.
+    return AcidUtils.isInsertOnlyTable(tblproperties) || !conf.getBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)
+            || !(dir.getOriginalFiles().size() > 0 || dir.getCurrentDirectories().stream().anyMatch(AcidUtils.ParsedDelta::isRawFormat));
+  }
+
+  /**
    * Get the storage descriptor for a compaction.
    * @param t table from {@link #resolveTable(org.apache.hadoop.hive.metastore.txn.CompactionInfo)}
    * @param p table from {@link #resolvePartition(org.apache.hadoop.hive.metastore.txn.CompactionInfo)}
@@ -151,7 +164,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * Determine whether to run this job as the current user or whether we need a doAs to switch
    * users.
    * @param owner of the directory we will be working in, as determined by
-   * {@link TxnUtils#findUserToRunAs(String, org.apache.hadoop.hive.metastore.api.Table)}
+   * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#findUserToRunAs(String, Table, Configuration)}
    * @return true if the job should run as the current user, false if a doAs is needed.
    */
   protected boolean runJobAsSelf(String owner) {
@@ -162,13 +175,10 @@ public abstract class CompactorThread extends Thread implements Configurable {
     return Warehouse.getQualifiedName(t);
   }
 
-  private static AtomicInteger nextThreadId = new AtomicInteger(1000000);
-
   public static void initializeAndStartThread(CompactorThread thread,
       Configuration conf) throws Exception {
     LOG.info("Starting compactor thread of type " + thread.getClass().getName());
     thread.setConf(conf);
-    thread.setThreadId(nextThreadId.incrementAndGet());
     thread.init(new AtomicBoolean());
     thread.start();
   }

@@ -27,14 +27,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -59,6 +61,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.HistoryEntry;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -73,6 +76,7 @@ import org.apache.iceberg.encryption.EncryptedOutputFile;
 import org.apache.iceberg.hadoop.HadoopOutputFile;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileAppenderFactory;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ArrayUtil;
 import org.apache.iceberg.util.ByteBuffers;
@@ -234,7 +238,7 @@ public class HiveIcebergTestUtils {
   public static void validateData(Table table, List<Record> expected, int sortBy) throws IOException {
     // Refresh the table, so we get the new data as well
     table.refresh();
-    List<Record> records = new ArrayList<>(expected.size());
+    List<Record> records = Lists.newArrayListWithExpectedSize(expected.size());
     try (CloseableIterable<Record> iterable = IcebergGenerics.read(table).build()) {
       iterable.forEach(records::add);
     }
@@ -250,11 +254,11 @@ public class HiveIcebergTestUtils {
    * @param sortBy The column position by which we will sort
    */
   public static void validateData(List<Record> expected, List<Record> actual, int sortBy) {
-    List<Record> sortedExpected = new ArrayList<>(expected);
-    List<Record> sortedActual = new ArrayList<>(actual);
+    List<Record> sortedExpected = Lists.newArrayList(expected);
+    List<Record> sortedActual = Lists.newArrayList(actual);
     // Sort based on the specified column
-    sortedExpected.sort(Comparator.comparingLong(record -> (Long) record.get(sortBy)));
-    sortedActual.sort(Comparator.comparingLong(record -> (Long) record.get(sortBy)));
+    sortedExpected.sort(Comparator.comparingInt(record -> record.get(sortBy).hashCode()));
+    sortedActual.sort(Comparator.comparingInt(record -> record.get(sortBy).hashCode()));
 
     Assert.assertEquals(sortedExpected.size(), sortedActual.size());
     for (int i = 0; i < sortedExpected.size(); ++i) {
@@ -299,12 +303,14 @@ public class HiveIcebergTestUtils {
       Assert.assertEquals(record.size(), row.length);
       for (int j = 0; j < record.size(); ++j) {
         Object field = record.get(j);
-        if (field instanceof LocalDateTime) {
+        if (field == null) {
+          Assert.assertNull(row[j]);
+        } else if (field instanceof LocalDateTime) {
           Assert.assertEquals(((LocalDateTime) field).toInstant(ZoneOffset.UTC).toEpochMilli(),
               TimestampUtils.stringToTimestamp((String) row[j]).toEpochMilli());
         } else if (field instanceof OffsetDateTime) {
           Assert.assertEquals(((OffsetDateTime) field).toInstant().toEpochMilli(),
-              TimestampTZUtil.parse((String) row[j]).toEpochMilli());
+              TimestampTZUtil.parse((String) row[j], ZoneId.systemDefault()).toEpochMilli());
         } else {
           Assert.assertEquals(field.toString(), row[j].toString());
         }
@@ -374,6 +380,25 @@ public class HiveIcebergTestUtils {
       deletes.forEach(del -> writer.delete(del.path(), del.pos(), del.row()));
     }
     return posWriter.toDeleteFile();
+  }
+
+  /**
+   * Get the timestamp string which we can use in the queries. The timestamp will be after the given snapshot
+   * and before the next one
+   * @param table The table which we want to query
+   * @param snapshotPosition The position of the last snapshot we want to see in the query results
+   * @return The timestamp which we can use in the queries
+   */
+  public static String timestampAfterSnapshot(Table table, int snapshotPosition) {
+    List<HistoryEntry> history = table.history();
+    long snapshotTime = history.get(snapshotPosition).timestampMillis();
+    long time = snapshotTime + 100;
+    if (history.size() > snapshotPosition + 1) {
+      time = snapshotTime + ((history.get(snapshotPosition + 1).timestampMillis() - snapshotTime) / 2);
+    }
+
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS000000");
+    return simpleDateFormat.format(new Date(time));
   }
 
 }

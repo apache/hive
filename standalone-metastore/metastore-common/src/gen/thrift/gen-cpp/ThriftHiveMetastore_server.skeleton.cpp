@@ -75,6 +75,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_database\n");
   }
 
+  void drop_database_req(const DropDatabaseRequest& req) {
+    // Your implementation goes here
+    printf("drop_database_req\n");
+  }
+
   void get_databases(std::vector<std::string> & _return, const std::string& pattern) {
     // Your implementation goes here
     printf("get_databases\n");
@@ -1008,6 +1013,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void mark_failed(const CompactionInfoStruct& cr) {
     // Your implementation goes here
     printf("mark_failed\n");
+  }
+
+  void mark_refused(const CompactionInfoStruct& cr) {
+    // Your implementation goes here
+    printf("mark_refused\n");
   }
 
   bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) {

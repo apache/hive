@@ -117,7 +117,7 @@ public class CompressionUtils {
    * @throws IOException
    * @throws FileNotFoundException
    *
-   * @return The {@link List} of {@link File}s with the untared content.
+   * @return The {@link List} of {@link File}s with the untarred content.
    * @throws ArchiveException
    */
   public static List<File> unTar(final String inputFileName, final String outputDirName)
@@ -136,7 +136,7 @@ public class CompressionUtils {
    * @throws IOException
    * @throws FileNotFoundException
    *
-   * @return The {@link List} of {@link File}s with the untared content.
+   * @return The {@link List} of {@link File}s with the untarred content.
    * @throws ArchiveException
    */
   public static List<File> unTar(final String inputFileName, final String outputDirName,
@@ -145,7 +145,7 @@ public class CompressionUtils {
     File inputFile = new File(inputFileName);
     File outputDir = new File(outputDirName);
 
-    final List<File> untaredFiles = new LinkedList<File>();
+    final List<File> untarredFiles = new LinkedList<File>();
     InputStream is = null;
 
     try {
@@ -200,10 +200,10 @@ public class CompressionUtils {
           IOUtils.copy(debInputStream, outputFileStream);
           outputFileStream.close();
         }
-        untaredFiles.add(outputFile);
+        untarredFiles.add(outputFile);
       }
       debInputStream.close();
-      return untaredFiles;
+      return untarredFiles;
 
     } finally {
       if (is != null)  is.close();

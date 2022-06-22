@@ -47,6 +47,8 @@ WHERE src1.key > 10 and src1.key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+Excluded rules: HiveJoinPushTransitivePredicatesRule
+
 CBO PLAN:
 HiveProject(key=[$4], value=[$5], key0=[$2], value0=[$3], key1=[$0], value1=[$1])
   HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -79,6 +81,8 @@ WHERE src1.key > 10 and src1.key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+Excluded rules: HiveJoinPushTransitivePredicatesRule|HiveJoinAddNotNullRule
+
 CBO PLAN:
 HiveProject(key=[$4], value=[$5], key0=[$2], value0=[$3], key1=[$0], value1=[$1])
   HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -109,6 +113,8 @@ WHERE src1.key > 10 and src1.key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+Excluded rules: HiveJoin.*Rule
+
 CBO PLAN:
 HiveProject(key=[$4], value=[$5], key0=[$2], value0=[$3], key1=[$0], value1=[$1])
   HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -139,6 +145,8 @@ WHERE src1.key > 10 and src1.key < 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+Excluded rules: .*
+
 CBO PLAN:
 HiveProject(key=[$0], value=[$1], key1=[$6], value1=[$7], key2=[$12], value2=[$13])
   HiveFilter(condition=[AND(>(CAST($0):DOUBLE, CAST(10):DOUBLE), <(CAST($0):DOUBLE, CAST(20):DOUBLE))])

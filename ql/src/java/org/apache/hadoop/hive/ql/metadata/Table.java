@@ -737,9 +737,10 @@ public class Table implements Serializable {
         return tTable.getSd().getCols();
       } else if (forMs && !shouldStoreFieldsInMetastore(
           SessionState.getSessionConf(), serializationLib, tTable.getParameters())) {
-        return Hive.getFieldsFromDeserializerForMsStorage(this, getDeserializer());
+        return Hive.getFieldsFromDeserializerForMsStorage(this, getDeserializer(), SessionState.getSessionConf());
       } else {
-        return HiveMetaStoreUtils.getFieldsFromDeserializer(getTableName(), getDeserializer());
+        return HiveMetaStoreUtils.getFieldsFromDeserializer(getTableName(), getDeserializer(),
+            SessionState.getSessionConf());
       }
     } catch (Exception e) {
       LOG.error("Unable to get field from serde: " + serializationLib, e);

@@ -59,7 +59,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Map;
 
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 
 /**
  * TestReplicationScenariosAcidTablesBase - base class for replication for ACID tables tests

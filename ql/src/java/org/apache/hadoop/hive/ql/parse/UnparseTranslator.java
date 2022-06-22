@@ -137,7 +137,7 @@ public class UnparseTranslator {
   /**
    * Register a translation for an tabName.
    *
-   * @param node
+   * @param tableName
    *          source node (which must be an tabName) to be replaced
    */
   public void addTableNameTranslation(ASTNode tableName, String currentDatabaseName) {
@@ -175,7 +175,7 @@ public class UnparseTranslator {
   /**
    * Register a translation for an identifier.
    *
-   * @param node
+   * @param identifier
    *          source node (which must be an identifier) to be replaced
    */
   public void addIdentifierTranslation(ASTNode identifier) {
@@ -188,6 +188,19 @@ public class UnparseTranslator {
     replacementText = HiveUtils.unparseIdentifier(replacementText, conf);
     addTranslation(identifier, replacementText);
   }
+
+  public void addDefaultValueTranslation(ASTNode exprNode, String defaultValue) {
+    if (!(exprNode.getType() == HiveParser.TOK_TABLE_OR_COL
+            && exprNode.getChild(0).getType() == HiveParser.TOK_DEFAULT_VALUE)) {
+      return;
+    }
+
+    if (defaultValue == null) {
+      defaultValue = "NULL";
+    }
+    addTranslation(exprNode, defaultValue);
+  }
+
 
   /**
    * Register a "copy" translation in which a node will be translated into

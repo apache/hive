@@ -399,7 +399,7 @@ class MetastoreDirectSqlUtils {
     String queryText;
     queryText =
           "select " + SKEWED_COL_VALUE_LOC_MAP + ".\"SD_ID\","
-        + " " + SKEWED_STRING_LIST_VALUES + ".STRING_LIST_ID,"
+        + " " + SKEWED_STRING_LIST_VALUES + ".\"STRING_LIST_ID\","
         + " " + SKEWED_COL_VALUE_LOC_MAP + ".\"LOCATION\","
         + " " + SKEWED_STRING_LIST_VALUES + ".\"STRING_LIST_VALUE\" "
         + "from " + SKEWED_COL_VALUE_LOC_MAP + ""

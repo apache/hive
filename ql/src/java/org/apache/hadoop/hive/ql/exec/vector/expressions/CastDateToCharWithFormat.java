@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Vectorized UDF for CAST (<DATE> TO CHAR(<LENGTH>) WITH FORMAT <STRING>).
+ * Vectorized UDF for CAST (&lt;DATE&gt; TO CHAR(&lt;LENGTH&gt;) WITH FORMAT &lt;STRING&gt;).
  */
 public class CastDateToCharWithFormat extends CastDateToChar {
 

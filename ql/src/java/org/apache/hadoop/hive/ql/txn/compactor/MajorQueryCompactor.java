@@ -67,7 +67,7 @@ final class MajorQueryCompactor extends QueryCompactor {
   @Override
   protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
       ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    Util.cleanupEmptyDir(conf, tmpTableName);
+    // We don't need to delete the empty directory, as empty base is a valid scenario.
   }
 
   /**

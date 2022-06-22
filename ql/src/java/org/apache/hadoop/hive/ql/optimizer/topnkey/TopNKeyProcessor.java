@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * TopNKeyProcessor is a processor for TopNKeyOperator.
- * A TopNKeyOperator will be placed before any ReduceSinkOperator which has a topN property >= 0.
+ * A TopNKeyOperator will be placed before any ReduceSinkOperator which has a topN property &gt;= 0.
  */
 public class TopNKeyProcessor implements SemanticNodeProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(TopNKeyProcessor.class);

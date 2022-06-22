@@ -81,8 +81,8 @@ public final class ExceptionHandler {
   }
 
   /**
-   * Converts the input exception to the target instance of class {@param target},
-   * if the input exception is the instance of class {@param source}, throws the
+   * Converts the input exception to the target instance of class {@code target},
+   * if the input exception is the instance of class {@code source}, throws the
    * converted target exception.
    */
   public <S extends Exception, T extends TException> ExceptionHandler

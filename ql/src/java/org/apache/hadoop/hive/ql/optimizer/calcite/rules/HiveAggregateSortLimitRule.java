@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
  * Rule that adds sorting to GROUP BY col0 LIMIT n in presence of aggregate functions.
  * Ex.: SELECT id, count(1) FROM t_table GROUP BY id LIMIT 2
  *
- * Above query has a physical plan like Reducer 2 <- Map 1 (SIMPLE_EDGE)
+ * Above query has a physical plan like Reducer 2 &lt;- Map 1 (SIMPLE_EDGE)
  * Both mapper and reducer edges may have multiple Mapper and Reducer instances to enable parallel process of data.
  * Aggregate function results are calculated in two steps:
  * 1) first mappers calculate a partial result from the rows processed by each instance.

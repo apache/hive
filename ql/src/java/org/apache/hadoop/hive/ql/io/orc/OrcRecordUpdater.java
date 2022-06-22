@@ -136,7 +136,7 @@ public class OrcRecordUpdater implements RecordUpdater {
   private long deleteCount = 0;
   // used only for insert events, this is the number of rows held in memory before flush() is invoked
   private long bufferedRows = 0;
-  private final KeyIndexBuilder indexBuilder = new KeyIndexBuilder("insert");
+  private final KeyIndexBuilder indexBuilder = new KeyIndexBuilder();
   private KeyIndexBuilder deleteEventIndexBuilder;
   private StructField recIdField = null; // field to look for the record identifier in
   private StructField rowIdField = null; // field inside recId to look for row id in
@@ -474,7 +474,7 @@ public class OrcRecordUpdater implements RecordUpdater {
       // Initialize a deleteEventWriter if not yet done. (Lazy initialization)
       if (deleteEventWriter == null) {
         // Initialize an indexBuilder for deleteEvents. (HIVE-17284)
-        deleteEventIndexBuilder = new KeyIndexBuilder("delete");
+        deleteEventIndexBuilder = new KeyIndexBuilder();
         this.deleteEventWriter = OrcFile.createWriter(deleteEventPath,
             deleteWriterOptions.callback(deleteEventIndexBuilder));
         AcidUtils.OrcAcidVersion.setAcidVersionInDataFile(deleteEventWriter);
@@ -690,7 +690,6 @@ public class OrcRecordUpdater implements RecordUpdater {
   }
 
   static class KeyIndexBuilder implements OrcFile.WriterCallback {
-    private final String builderName;
     StringBuilder lastKey = new StringBuilder();//list of last keys for each stripe
     long lastTransaction;
     int lastBucket;
@@ -706,11 +705,8 @@ public class OrcRecordUpdater implements RecordUpdater {
      *
      *  This is used to decide if we need to make preStripeWrite() call here.
      */
-    private long numKeysCurrentStripe = 0;
+    protected long numKeysCurrentStripe = 0;
 
-    KeyIndexBuilder(String name) {
-      this.builderName = name;
-    }
     @Override
     public void preStripeWrite(OrcFile.WriterContext context
     ) throws IOException {

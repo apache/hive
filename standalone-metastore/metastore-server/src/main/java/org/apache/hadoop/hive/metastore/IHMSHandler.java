@@ -41,12 +41,6 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
   void init() throws MetaException;
 
   /**
-   * Get the id of the thread of this handler.
-   * @return thread id
-   */
-  int getThreadId();
-
-  /**
    * Get a reference to the underlying RawStore.
    * @return the RawStore instance.
    * @throws MetaException if the creation of a new RawStore object is necessary but fails.

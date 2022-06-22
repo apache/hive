@@ -150,7 +150,6 @@ class CompactorTestUtil {
     hiveConf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, isQueryBased);
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     Worker t = new Worker();
-    t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
     t.init(new AtomicBoolean(true));
     CompactionRequest cr = new CompactionRequest(dbName, tblName, compactionType);
@@ -195,7 +194,6 @@ class CompactorTestUtil {
 
     HiveConf hiveConf = new HiveConf(hConf);
     Cleaner t = new Cleaner();
-    t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
     t.init(new AtomicBoolean(true));
     t.run();

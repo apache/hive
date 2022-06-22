@@ -48,7 +48,7 @@ import com.google.common.collect.ImmutableList;
  *   HiveSortExchange
  *     ...
  *
- * =>
+ * =&gt;
  *
  * HiveSortExchange
  *   HiveProject

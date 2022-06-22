@@ -22,16 +22,29 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.function.Function;
 
 import static java.lang.String.format;
 
 public class CompactorUtil {
   public static final String COMPACTOR = "compactor";
-  static final String COMPACTOR_PREFIX = "compactor.";
-  static final String MAPRED_QUEUE_NAME = "mapred.job.queue.name";
+  /**
+   * List of accepted properties for defining the compactor's job queue.
+   *
+   * The order is important and defines which property has precedence over the other if multiple properties are defined
+   * at the same time.
+   */
+  private static final List<String> QUEUE_PROPERTIES = Arrays.asList(
+      "compactor." + HiveConf.ConfVars.COMPACTOR_JOB_QUEUE.varname,
+      "compactor.mapreduce.job.queuename",
+      "compactor.mapred.job.queue.name"
+  );
 
   public interface ThrowingRunnable<E extends Exception> {
     void run() throws E;
@@ -62,30 +75,29 @@ public class CompactorUtil {
    * @param conf global hive conf
    * @param ci compaction info object
    * @param table instance of table
-   * @return name of the queue, can be null
+   * @return name of the queue
    */
   static String getCompactorJobQueueName(HiveConf conf, CompactionInfo ci, Table table) {
     // Get queue name from the ci. This is passed through
     // ALTER TABLE table_name COMPACT 'major' WITH OVERWRITE TBLPROPERTIES('compactor.hive.compactor.job.queue'='some_queue')
+    List<Function<String, String>> propertyGetters = new ArrayList<>(2);
     if (ci.properties != null) {
       StringableMap ciProperties = new StringableMap(ci.properties);
-      String queueName = ciProperties.get(COMPACTOR_PREFIX + MAPRED_QUEUE_NAME);
-      if (queueName != null && queueName.length() > 0) {
-        return queueName;
+      propertyGetters.add(ciProperties::get);
+    }
+    if (table.getParameters() != null) {
+      propertyGetters.add(table.getParameters()::get);
+    }
+
+    for (Function<String, String> getter : propertyGetters) {
+      for (String p : QUEUE_PROPERTIES) {
+        String queueName = getter.apply(p);
+        if (queueName != null && !queueName.isEmpty()) {
+          return queueName;
+        }
       }
     }
-
-    // Get queue name from the table properties
-    String queueName = table.getParameters().get(COMPACTOR_PREFIX + MAPRED_QUEUE_NAME);
-    if (queueName != null && queueName.length() > 0) {
-      return queueName;
-    }
-
-    // Get queue name from global hive conf
-    queueName = conf.get(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE.varname);
-    if (queueName != null && queueName.length() > 0) {
-      return queueName;
-    }
-    return null;
+    return conf.getVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
   }
+
 }

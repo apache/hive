@@ -22,6 +22,11 @@ import static org.apache.hadoop.hive.ql.TestTxnCommands2.runCleaner;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runInitiator;
 import static org.apache.hadoop.hive.ql.TestTxnCommands2.runWorker;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -60,6 +65,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -85,6 +91,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+import org.mockito.internal.util.reflection.FieldSetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,6 +140,7 @@ public class TestCompactor {
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
 
     TestTxnDbUtil.setConfValues(hiveConf);
     TestTxnDbUtil.cleanDb(hiveConf);
@@ -168,6 +177,75 @@ public class TestCompactor {
     if (driver != null) {
       driver.close();
     }
+  }
+
+
+  @Test
+  public void testHeartbeatShutdownOnFailedCompaction() throws Exception {
+    String dbName = "default";
+    String tblName = "compaction_test";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+            " PARTITIONED BY(bkt INT)" +
+            " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
+            " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+
+    StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
+            .withFieldDelimiter(',')
+            .build();
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+            .withDatabase(dbName)
+            .withTable(tblName)
+            .withStaticPartitionValues(Arrays.asList("0"))
+            .withAgentInfo("UT_" + Thread.currentThread().getName())
+            .withHiveConf(conf)
+            .withRecordWriter(writer)
+            .connect();
+    connection.beginTransaction();
+    connection.write("55, 'London'".getBytes());
+    connection.commitTransaction();
+    connection.beginTransaction();
+    connection.write("56, 'Paris'".getBytes());
+    connection.commitTransaction();
+    connection.close();
+
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
+            " values(57, 'Budapest')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
+            " values(58, 'Milano')", driver);
+    execSelectAndDumpData("select * from " + tblName, driver, "Dumping data for " +
+            tblName + " after load:");
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+
+    // Commit will throw an exception
+    IMetaStoreClient mockedClient = Mockito.spy(new HiveMetaStoreClient(conf));
+    doThrow(new RuntimeException("Simulating RuntimeException from CompactionTxn.commit")).when(mockedClient).commitTxn(Mockito.anyLong());
+    doAnswer(invocation -> {
+      Object o = invocation.callRealMethod();
+      //Check if the heartbeating is running
+      Assert.assertTrue(Thread.getAllStackTraces().keySet()
+              .stream().anyMatch(k -> k.getName().contains("CompactionTxn Heartbeater")));
+      return o;
+    }).when(mockedClient).openTxn(any(), any());
+
+    //Do a major compaction
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
+    rqst.setPartitionname("bkt=0");
+    txnHandler.compact(rqst);
+
+    Worker worker = Mockito.spy(new Worker());
+    worker.setConf(conf);
+    worker.init(new AtomicBoolean(true));
+    FieldSetter.setField(worker, RemoteCompactorThread.class.getDeclaredField("msc"), mockedClient);
+
+    worker.run();
+
+    //Check if the transaction was opened
+    verify(mockedClient, times(1)).openTxn(any(), any());
+    //Check if the heartbeating is properly terminated
+    Assert.assertTrue(Thread.getAllStackTraces().keySet()
+            .stream().noneMatch(k -> k.getName().contains("CompactionTxn Heartbeater")));
   }
 
   /**
@@ -797,7 +875,7 @@ public class TestCompactor {
         Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      Assert.assertEquals("base_0000005_v0000009", name);
+      Assert.assertEquals("base_0000004_v0000009", name);
       CompactorTestUtil
           .checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, null,
               1);
@@ -842,11 +920,11 @@ public class TestCompactor {
     runMajorCompaction(dbName, tblName);
 
     List<String> matchesNotFound = new ArrayList<>(5);
-    matchesNotFound.add(AcidUtils.deleteDeltaSubdir(4, 5) + VISIBILITY_PATTERN);
-    matchesNotFound.add(AcidUtils.deltaSubdir(4, 5) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.deleteDeltaSubdir(3, 4) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.deltaSubdir(3, 4) + VISIBILITY_PATTERN);
     matchesNotFound.add(AcidUtils.deleteDeltaSubdir(5, 5, 0));
     matchesNotFound.add(AcidUtils.deltaSubdir(5, 5, 1));
-    matchesNotFound.add(AcidUtils.baseDir(6) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.baseDir(5) + VISIBILITY_PATTERN);
 
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     Table table = msClient.getTable(dbName, tblName);
@@ -1646,7 +1724,7 @@ public class TestCompactor {
     msClient.abortTxns(Lists.newArrayList(openTxnId)); // Now abort 3.
     runMajorCompaction(dbName, tblName); // Compact 4 and 5.
     verifyFooBarResult(tblName, 2);
-    verifyHasBase(table.getSd(), fs, "base_0000006_v0000017");
+    verifyHasBase(table.getSd(), fs, "base_0000005_v0000017");
     runCleaner(conf);
     // in case when we have # of accumulated entries for the same table/partition - we need to process them one-by-one in ASC order of write_id's,
     // however, to support multi-threaded processing in the Cleaner, we have to move entries from the same group to the next Cleaner cycle, 
@@ -1715,7 +1793,7 @@ public class TestCompactor {
     verifyFooBarResult(tblName, 3);
     verifyDeltaCount(p3.getSd(), fs, 1);
     verifyHasBase(p1.getSd(), fs, "base_0000006_v0000010");
-    verifyHasBase(p2.getSd(), fs, "base_0000007_v0000015");
+    verifyHasBase(p2.getSd(), fs, "base_0000006_v0000015");
 
     executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(1, 'foo', 2)", driver);
     executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(2, 'bar', 2)", driver);
@@ -1726,7 +1804,7 @@ public class TestCompactor {
     verifyFooBarResult(tblName, 4);
     verifyDeltaCount(p3.getSd(), fs, 1);
     verifyHasBase(p1.getSd(), fs, "base_0000006_v0000010");
-    verifyHasBase(p2.getSd(), fs, "base_0000007_v0000015");
+    verifyHasBase(p2.getSd(), fs, "base_0000006_v0000015");
 
   }
 
@@ -1753,7 +1831,6 @@ public class TestCompactor {
       String dbName, String tblName, String... partNames) throws Exception {
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     Worker t = new Worker();
-    t.setThreadId((int) t.getId());
     t.setConf(conf);
     t.init(new AtomicBoolean(true));
     if (partNames.length == 0) {
@@ -1980,7 +2057,6 @@ public class TestCompactor {
     //Run MajorCompaction
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     Worker t = new Worker();
-    t.setThreadId((int) t.getId());
     t.setConf(conf);
     t.init(new AtomicBoolean(true));
     CompactionRequest Cr = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
@@ -2395,7 +2471,7 @@ public class TestCompactor {
     files = fs.listStatus(new Path(table.getSd().getLocation()));
     // base dir
     assertEquals(1, files.length);
-    assertEquals("base_0000004_v0000016", files[0].getPath().getName());
+    assertEquals("base_0000003_v0000016", files[0].getPath().getName());
     files = fs.listStatus(files[0].getPath(), AcidUtils.bucketFileFilter);
     // files
     assertEquals(2, files.length);
@@ -2441,6 +2517,84 @@ public class TestCompactor {
     Assert.assertEquals(3, valuesReadFromHiveDriver.size());
     Assert.assertEquals("1\t77\t1", valuesReadFromHiveDriver.get(0));
     Assert.assertEquals("2\t55\t66", valuesReadFromHiveDriver.get(1));
+  }
+
+  @Test
+  public void testAcidDirCacheOnDropTable() throws Exception {
+    int cacheDurationInMinutes = 10;
+    AcidUtils.initDirCache(cacheDurationInMinutes);
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
+    String dbName = "default";
+    String tblName = "adc_table";
+
+    // First phase, populate the cache
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("create table " + tblName + " (a string) stored as orc " +
+            "TBLPROPERTIES ('transactional'='true', 'hive.exec.orc.split.strategy'='BI')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('a')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('b')", driver);
+    runMajorCompaction(dbName, tblName);
+    runCleaner(conf);
+
+    HiveConf.setIntVar(driver.getConf(), ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION, cacheDurationInMinutes);
+    executeStatementOnDriver("select * from " + tblName + " order by a", driver);
+
+    // Second phase, the previous data should be cleaned
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("create table " + tblName + " (a string) stored as orc " +
+            "TBLPROPERTIES ('transactional'='true', 'hive.exec.orc.split.strategy'='BI')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('c')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('d')", driver);
+    runMajorCompaction(dbName, tblName);
+    runCleaner(conf);
+
+    HiveConf.setIntVar(driver.getConf(), ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION, cacheDurationInMinutes);
+    List<String> rs = execSelectAndDumpData("select * from " + tblName + " order by a", driver, "select");
+    Assert.assertEquals(2, rs.size());
+    Assert.assertEquals("c", rs.get(0));
+    Assert.assertEquals("d", rs.get(1));
+  }
+
+  @Test
+  public void testAcidDirCacheOnDropPartitionedTable() throws Exception {
+    int cacheDurationInMinutes = 10;
+    AcidUtils.initDirCache(cacheDurationInMinutes);
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
+    String dbName = "default";
+    String tblName = "adc_part_table";
+
+    // First phase, populate the cache
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("create table " + tblName + " (a string) PARTITIONED BY (p string) stored as orc " +
+            "TBLPROPERTIES ('transactional'='true', 'hive.exec.orc.split.strategy'='BI')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('a', 'p1')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('b', 'p1')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('a', 'p2')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('b', 'p2')", driver);
+    runMajorCompaction(dbName, tblName, "p=p1", "p=p2");
+    runCleaner(conf);
+
+    HiveConf.setIntVar(driver.getConf(), ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION, cacheDurationInMinutes);
+    executeStatementOnDriver("select a from " + tblName + " order by a", driver);
+
+    // Second phase, the previous data should be cleaned
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("create table " + tblName + " (a string) PARTITIONED BY (p string) stored as orc " +
+            "TBLPROPERTIES ('transactional'='true', 'hive.exec.orc.split.strategy'='BI')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('c', 'p1')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('d', 'p1')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('c', 'p2')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values ('d', 'p2')", driver);
+    runMajorCompaction(dbName, tblName, "p=p1", "p=p2");
+    runCleaner(conf);
+
+    HiveConf.setIntVar(driver.getConf(), ConfVars.HIVE_TXN_ACID_DIR_CACHE_DURATION, cacheDurationInMinutes);
+    List<String> rs = execSelectAndDumpData("select a from " + tblName + " order by a", driver, "select");
+    Assert.assertEquals(4, rs.size());
+    Assert.assertEquals("c", rs.get(0));
+    Assert.assertEquals("c", rs.get(1));
+    Assert.assertEquals("d", rs.get(2));
+    Assert.assertEquals("d", rs.get(2));
   }
 
   private List<ShowCompactResponseElement> getCompactionList() throws Exception {
