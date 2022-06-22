@@ -13946,9 +13946,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
           isTransactional, isManaged, new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()}, isDefaultTableTypeChanged);
-
-      tblProps.put(TABLE_IS_CTAS, "true");
       isExt = isExternalTableChanged(tblProps, isTransactional, isExt, isDefaultTableTypeChanged);
+      tblProps.put(TABLE_IS_CTAS, "true");
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
       tableDesc = new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols,
@@ -13992,15 +13991,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     t.setStorageHandler(storageHandler);
-    for(Map.Entry<String,String> serdeMap : storageFormat.getSerdeProps().entrySet()){
+    for (Map.Entry<String,String> serdeMap : storageFormat.getSerdeProps().entrySet()){
       t.setSerdeParam(serdeMap.getKey(), serdeMap.getValue());
     }
-    if (tblProps != null && Boolean.parseBoolean(tblProps.get(TABLE_IS_CTAS))
-            && AcidUtils.isExclusiveCTASEnabled(conf)) {
-      outputs.add(new WriteEntity(t, WriteType.CTAS));
-    } else {
-      outputs.add(new WriteEntity(t, WriteEntity.WriteType.DDL_NO_LOCK));
-    }
+    WriteType lockType = tblProps != null && Boolean.parseBoolean(tblProps.get(TABLE_IS_CTAS))
+        && AcidUtils.isExclusiveCTASEnabled(conf) ?
+      WriteType.CTAS : WriteType.DDL_NO_LOCK;
+    
+    outputs.add(new WriteEntity(t, lockType));
   }
 
   protected ASTNode analyzeCreateView(ASTNode ast, QB qb, PlannerContext plannerCtx) throws SemanticException {

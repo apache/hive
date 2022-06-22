@@ -2391,13 +2391,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
   @Test
   public void testCtasLockingExclWrite() throws Exception {
-    testLocksWithConcurrentCtas(true);
-  }
-
-  private void testLocksWithConcurrentCtas(boolean ctasLocking) throws Exception {
     dropTable(new String[]{"target", "source"});
-    conf.setBoolVar(HiveConf.ConfVars.TXN_CTAS_X_LOCK, ctasLocking);
-
+    conf.setBoolVar(HiveConf.ConfVars.TXN_CTAS_X_LOCK, true);
+    
     driver.run("create table source (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
     driver.run("insert into source values (1,2), (3,4)");
 
@@ -2412,18 +2408,15 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       //Query should fail with Table already exists exception
       txnMgr2.acquireLocks(driver.getPlan(), driver.getContext(), "T2", false);
     } catch (LockException e) {
-      Assert.assertTrue(e.getMessage().contains("table already exists"));
-      e.printStackTrace();
+      Assert.assertTrue(e.getMessage().contains("Failed to initiate a concurrent CTAS operation"));
     }
     List<ShowLocksResponseElement> locks = getLocks();
-
     Assert.assertEquals("Unexpected lock count", 3, locks.size());
 
     checkLock(LockType.EXCL_WRITE, LockState.ACQUIRED, "default", "target", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "source", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", null, null, locks);
   }
-
 
   @Test
   public void testConcurrent2MergeUpdatesConflict() throws Exception {

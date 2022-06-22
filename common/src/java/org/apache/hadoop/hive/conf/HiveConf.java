@@ -4679,8 +4679,7 @@ public class HiveConf extends Configuration {
         "Enable writing the data files directly to the table's final destination instead of the staging directory."
         + "This optimization only applies on INSERT operations on ACID tables."),
     TXN_CTAS_X_LOCK("hive.txn.xlock.ctas", false,
-            "Enables exclusive locking during CTAS operations." +
-            "This optimization only applies to CTAS operations on ACID tables."),
+        "Enables exclusive locking for CTAS operations."),
     // role names are case-insensitive
     USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +

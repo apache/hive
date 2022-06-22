@@ -309,11 +309,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" FROM \"TXN_COMPONENTS\" " +
           "INNER JOIN \"TXNS\" ON \"TC_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
       " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" HAVING COUNT(\"TXN_ID\") > ?";
-
-  private static final String  EXCL_CTAS_ERR_MSG =
-          "Could not create table because table already exists . LockInfo : %s or " +
-                  " a concurrent ctas operation is using the same table name.";
-  private static final String ZERO_WAIT_READ_ERR_MSG = "Unable to acquire read lock due to an exclusive lock {%s}";
+  
+  private static final String  EXCL_CTAS_ERR_MSG = 
+      "Failed to initiate a concurrent CTAS operation with the same table name, lockInfo : %s";
+  private static final String ZERO_WAIT_READ_ERR_MSG = "Unable to acquire read lock due to an existing exclusive lock {%s}";
 
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
@@ -3244,12 +3243,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return FileUtils.makePartName(new ArrayList<>(map.keySet()), new ArrayList<>(map.values()));
   }
 
-  private LockResponse checkLockWithRetry(Connection dbConn,
-                                          long extLockId,
-                                          long txnId,
-                                          boolean zeroWaitReadEnabled,
-                                          boolean isExclusiveCTAS)
-          throws NoSuchLockException, TxnAbortedException, MetaException {
+  private LockResponse checkLockWithRetry(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled, 
+          boolean isExclusiveCTAS)
+      throws NoSuchLockException, TxnAbortedException, MetaException {
     try {
       try {
         lockInternal();
@@ -5140,8 +5136,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * checkLock() will in the worst case keep locks in Waiting state a little longer.
    */
   @RetrySemantics.SafeToRetry("See @SafeToRetry")
-  private LockResponse checkLock(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled,
-                                 boolean isExclusiveCTAS)
+  private LockResponse checkLock(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled, 
+          boolean isExclusiveCTAS)
       throws NoSuchLockException, TxnAbortedException, MetaException, SQLException {
     Statement stmt = null;
     ResultSet rs = null;
@@ -5278,26 +5274,24 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LockInfo blockedBy = new LockInfo(rs);
         long intLockId = rs.getLong("LOCK_INT_ID");
         char lockChar = rs.getString("LOCK_TYPE").charAt(0);
-
+        
         LOG.debug("Failure to acquire lock({} intLockId:{} {}), blocked by ({})", JavaUtils.lockIdToString(extLockId),
             intLockId, JavaUtils.txnIdToString(txnId), blockedBy);
 
-        if ((zeroWaitReadEnabled || isExclusiveCTAS) && isValidTxn(txnId)) {
-          LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
-                  .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
+        LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
+            .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
+        
+        if ((zeroWaitReadEnabled && LockType.SHARED_READ == lockType || isExclusiveCTAS) && isValidTxn(txnId)) {
+          String cleanupQuery = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
+          LOG.debug("Going to execute query: <" + cleanupQuery + ">");
+          stmt.executeUpdate(cleanupQuery);
+          dbConn.commit();
 
-          if (lockType == LockType.SHARED_READ || isExclusiveCTAS) {
-            String cleanupQuery = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
-            LOG.debug("Going to execute query: <" + cleanupQuery + ">");
-            stmt.executeUpdate(cleanupQuery);
-            dbConn.commit();
-
-            response.setErrorMessage(String.format(isExclusiveCTAS ? EXCL_CTAS_ERR_MSG : ZERO_WAIT_READ_ERR_MSG, blockedBy));
-            response.setState(LockState.NOT_ACQUIRED);
-            return response;
-          }
+          response.setErrorMessage(String.format(
+              isExclusiveCTAS ? EXCL_CTAS_ERR_MSG : ZERO_WAIT_READ_ERR_MSG, blockedBy));
+          response.setState(LockState.NOT_ACQUIRED);
+          return response;
         }
-
         String updateBlockedByQuery = "UPDATE \"HIVE_LOCKS\"" +
             " SET \"HL_BLOCKEDBY_EXT_ID\" = " + blockedBy.extLockId +
             ", \"HL_BLOCKEDBY_INT_ID\" = " + blockedBy.intLockId +
