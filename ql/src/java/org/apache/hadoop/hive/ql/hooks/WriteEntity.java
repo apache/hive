@@ -51,6 +51,7 @@ public class WriteEntity extends Entity implements Serializable {
     INSERT_OVERWRITE,
     UPDATE,
     DELETE,
+    CTAS,
     PATH_WRITE, // Write to a URI, no locking done for this
   };
 
