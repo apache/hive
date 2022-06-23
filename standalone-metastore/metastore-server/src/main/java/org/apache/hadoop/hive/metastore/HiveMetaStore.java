@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
+import javax.servlet.ServletRequest;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
@@ -69,6 +71,7 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.AsyncContextEvent;
 
 
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -95,6 +98,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.servlet.AsyncEvent;
+import javax.servlet.AsyncListener;
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
 /**
  * TODO:pc remove application logic to a separate interface.
@@ -402,14 +411,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Server thread pool
     // Start with minWorkerThreads, expand till maxWorkerThreads and reject
     // subsequent requests
-    final String threadPoolNamePrefix = "HiveMetastore-HttpHandler-Pool";
-    ExecutorThreadPool executorThreadPool = new ExecutorThreadPool(maxWorkerThreads, minWorkerThreads,
+    final String threadPoolNamePrefix = "HiveMetastore-HttpHandler-Pool-%s";
+    ExecutorService executorService = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads, 60L,
+        TimeUnit.SECONDS, new SynchronousQueue<>(),
+        new ThreadFactoryBuilder().setNameFormat(threadPoolNamePrefix).build());
+    ExecutorThreadPool threadPool = new ExecutorThreadPool(executorService);
+    /*ExecutorThreadPool executorThreadPool = new ExecutorThreadPool(maxWorkerThreads, minWorkerThreads,
         new SynchronousQueue<>());
-    executorThreadPool.setName(threadPoolNamePrefix);
+    executorThreadPool.setName(threadPoolNamePrefix);*/
     // to set keepAlive time of worker threads, call executorThreadPool.setIdleTImeout()
 
     // HTTP Server
-    org.eclipse.jetty.server.Server server = new Server(executorThreadPool);
+    org.eclipse.jetty.server.Server server = new Server(threadPool);
     server.setStopAtShutdown(true);
 
     ServerConnector connector;
@@ -459,14 +472,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // TODO: AcceptQueueSize needs to be higher for HMS
     connector.setAcceptQueueSize(maxWorkerThreads);
     // TODO: Connection keepalive configuration?
-    connector.addBean(new HttpChannel.Listener() {
-      @Override
-      public void onComplete(Request request) {
-        LOG.debug("Request " + request + " is completed. HttpChannel was: " + request.getHttpChannel()
-            + ", HttpTransport: " + request.getHttpChannel().getHttpTransport());
-        HMSHandler.cleanupHandlerContext();
-      }
-    });
 
     server.addConnector(connector);
     TProcessor processor;
@@ -501,8 +506,26 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     server.setHandler(context);
 
     context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
+    context.addEventListener(new ServletRequestListener() {
+      @Override
+      public void requestDestroyed(ServletRequestEvent servletRequestEvent) {
+        Request baseRequest = Request.getBaseRequest(servletRequestEvent.getServletRequest());
+        HttpChannel channel = baseRequest.getHttpChannel();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("request: " + baseRequest + " destroyed " + ", http channel: " + channel);
+        }
+        HMSHandler.cleanupHandlerContext();
+      }
 
-
+      @Override
+      public void requestInitialized(ServletRequestEvent servletRequestEvent) {
+        Request baseRequest = Request.getBaseRequest(servletRequestEvent.getServletRequest());
+        HttpChannel channel = baseRequest.getHttpChannel();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("request: " + baseRequest + " initialized " + ", http channel: " + channel);
+        }
+      }
+    });
     return new ThriftServer() {
       @Override
       public void start() throws Throwable {
