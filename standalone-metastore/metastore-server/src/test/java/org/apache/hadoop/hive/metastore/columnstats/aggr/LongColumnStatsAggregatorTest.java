@@ -18,7 +18,6 @@
  */
 package org.apache.hadoop.hive.metastore.columnstats.aggr;
 
-import org.apache.hadoop.hive.metastore.StatisticsTestUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -72,18 +71,17 @@ public class LongColumnStatsAggregatorTest {
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
 
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    Assert.assertEquals(data1, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    Assert.assertEquals(data1, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     aggregator.ndvTuner = 1;
     // ndv tuner does not have any effect because min numDVs and max numDVs coincide (we have a single stats)
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    Assert.assertEquals(data1, computedStatsObj.getStatsData());
   }
 
   @Test
@@ -92,13 +90,10 @@ public class LongColumnStatsAggregatorTest {
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2)
         .low(1L).high(2L).hll(1, 2).build();
-    ColStatsObjWithSourceInfo stats1 = createStatsWithInfo(data1, TABLE, COL, partitions.get(0));
-
     ColumnStatisticsData data2 = new ColStatsBuilder<>(long.class).numNulls(2).numDVs(3).build();
-    // TODO is partitions.get(0) below intentional?
-    ColStatsObjWithSourceInfo stats2 = createStatsWithInfo(data2, TABLE, COL, partitions.get(0));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(stats1, stats2);
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)));
 
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
 
@@ -127,17 +122,13 @@ public class LongColumnStatsAggregatorTest {
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(3)
         .low(1L).high(3L).hll(1, 2, 3).build();
-    ColStatsObjWithSourceInfo stats1 = createStatsWithInfo(data1, TABLE, COL, partitions.get(0));
-
     ColumnStatisticsData data2 = new ColStatsBuilder<>(long.class).numNulls(2).numDVs(3)
         .low(3L).high(5L).hll(3, 4, 5).build();
-    ColStatsObjWithSourceInfo stats2 = createStatsWithInfo(data2, TABLE, COL, partitions.get(1));
-
     ColumnStatisticsData data3 = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(2)
         .low(6L).high(7L).hll(6, 7).build();
-    ColStatsObjWithSourceInfo stats3 = createStatsWithInfo(data3, TABLE, COL, partitions.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(stats1, stats2, stats3);
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
@@ -154,21 +145,16 @@ public class LongColumnStatsAggregatorTest {
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(3)
         .low(1L).high(3L).fmSketch(1, 2, 3).build();
-    ColStatsObjWithSourceInfo stats1 = createStatsWithInfo(data1, TABLE, COL, partitions.get(0));
-
     ColumnStatisticsData data2 = new ColStatsBuilder<>(long.class).numNulls(2).numDVs(3)
         .low(3L).high(5L).hll(3, 4, 5).build();
-    ColStatsObjWithSourceInfo stats2 = createStatsWithInfo(data2, TABLE, COL, partitions.get(1));
-
     ColumnStatisticsData data3 = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(4)
         .low(1L).high(8L).hll(1, 2, 6, 8).build();
-    ColStatsObjWithSourceInfo stats3 = createStatsWithInfo(data3, TABLE, COL, partitions.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(stats1, stats2, stats3);
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-
     // the aggregation does not update the bitvector, only numDVs is, it keeps the first bitvector;
     // numDVs is set to the maximum among all stats when non-mergeable bitvectors are detected
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(6).numDVs(4)
@@ -218,17 +204,13 @@ public class LongColumnStatsAggregatorTest {
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(3)
         .low(1L).high(3L).hll(1, 2, 3).build();
-    ColStatsObjWithSourceInfo stats1 = createStatsWithInfo(data1, TABLE, COL, partitions.get(0));
-
     ColumnStatisticsData data3 = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(1)
         .low(7L).high(7L).hll(7).build();
-    ColStatsObjWithSourceInfo stats3 = createStatsWithInfo(data3, TABLE, COL, partitions.get(2));
-
     ColumnStatisticsData data4 = new ColStatsBuilder<>(long.class).numNulls(2).numDVs(3)
         .low(3L).high(5L).hll(3, 4, 5).build();
-    ColStatsObjWithSourceInfo stats4 = createStatsWithInfo(data4, TABLE, COL, partitions.get(3));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(stats1, stats3, stats4);
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)), createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
 
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, false);
@@ -245,13 +227,11 @@ public class LongColumnStatsAggregatorTest {
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(3)
         .low(1L).high(6L).fmSketch(1, 2, 6).build();
-    ColStatsObjWithSourceInfo stats1 = createStatsWithInfo(data1, TABLE, COL, partitions.get(0));
-
     ColumnStatisticsData data3 = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(1)
         .low(7L).high(7L).hll(7).build();
-    ColStatsObjWithSourceInfo stats3 = createStatsWithInfo(data3, TABLE, COL, partitions.get(2));
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(stats1, stats3);
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
 

@@ -44,78 +44,18 @@ public class StatisticsTestUtils {
   }
 
   /**
-   * Creates column statistics for a given table and partition.
-   * @param data the statistics data
-   * @param tbl the target table
-   * @param column the target column
-   * @param partName the target partition
-   * @return column statistics for a given table and partition.
+   * Creates a {@link ColStatsObjWithSourceInfo} object for a given table, partition and column information,
+   * using the given statistics data.
+   * @param data the column statistics data
+   * @param tbl the target table for stats
+   * @param column the target column for stats
+   * @param partName the target partition for stats
+   * @return column statistics objects with source info.
    */
-  public static ColumnStatistics createColStats(ColumnStatisticsData data, Table tbl, FieldSchema column, String partName) {
-    ColumnStatisticsObj statObj = new ColumnStatisticsObj(column.getName(), column.getType(), data);
-    ColumnStatistics colStats = new ColumnStatistics();
-    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, tbl.getDbName(), tbl.getTableName());
-    statsDesc.setPartName(partName);
-    colStats.setStatsDesc(statsDesc);
-    colStats.setStatsObj(Collections.singletonList(statObj));
-    colStats.setEngine(HIVE_ENGINE);
-    return colStats;
-  }
-
   public static ColStatsObjWithSourceInfo createStatsWithInfo(ColumnStatisticsData data, Table tbl,
       FieldSchema column, String partName) {
     ColumnStatisticsObj statObj = new ColumnStatisticsObj(column.getName(), column.getType(), data);
-    ColumnStatistics colStats = new ColumnStatistics();
-    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, tbl.getDbName(), tbl.getTableName());
-    statsDesc.setPartName(partName);
-    colStats.setStatsDesc(statsDesc);
-    colStats.setStatsObj(Collections.singletonList(statObj));
-    colStats.setEngine(HIVE_ENGINE);
     return new ColStatsObjWithSourceInfo(statObj, tbl.getCatName(), tbl.getDbName(), column.getName(), partName);
-  }
-
-  /**
-   * Creates a list of {@link ColStatsObjWithSourceInfo} for a given table, its partitions and using the given stats.
-   * @param table the table the statistics information relates to
-   * @param partitionNames the partition names of the given table
-   * @param stats the statistics for the table partitions
-   * @param indexes the indexes to select for which
-   * @return a list of {@link ColStatsObjWithSourceInfo} for a given table, its partitions and using the given stats.
-   */
-  public static List<ColStatsObjWithSourceInfo> createColStatsObjWithSourceInfoList(
-      Table table, List<String> partitionNames, List<ColumnStatistics> stats, List<Integer> indexes) {
-
-    if (partitionNames.size() != stats.size()) {
-      throw new IllegalArgumentException("partitionNames and stats lists must have the same length, found "
-          + partitionNames.size() + " and " + stats.size() + ", respectively");
-    }
-
-    if (indexes.size() > partitionNames.size()) {
-      throw new IllegalArgumentException("indexes list length can't be greater than the stats list length, found "
-          + indexes.size() + " and " + stats.size() + ", respectively");
-    }
-
-    return indexes.stream()
-        .map(i -> new ColStatsObjWithSourceInfo(stats.get(i).getStatsObj().get(0),
-            DEFAULT_CATALOG_NAME, table.getDbName(), table.getTableName(), partitionNames.get(i)))
-        .collect(Collectors.toList());
-  }
-
-  /**
-   * Creates a list of {@link ColStatsObjWithSourceInfo} for a given table, its partitions and using the given stats.
-   * @param table the table the statistics information relates to
-   * @param partitionNames the partition names of the given table
-   * @param stats the statistics for the table partitions
-   * @return a list of {@link ColStatsObjWithSourceInfo} for a given table, its partitions and using the given stats.
-   */
-  public static List<ColStatsObjWithSourceInfo> createColStatsObjWithSourceInfoList(
-      Table table, List<String> partitionNames, List<ColumnStatistics> stats) {
-
-    List<Integer> indexes = IntStream.range(0, stats.size())
-        .boxed()
-        .collect(Collectors.toList());
-
-    return createColStatsObjWithSourceInfoList(table, partitionNames, stats, indexes);
   }
 
   /**
