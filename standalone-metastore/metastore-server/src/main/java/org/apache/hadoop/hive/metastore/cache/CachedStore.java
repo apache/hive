@@ -2202,16 +2202,24 @@ public class CachedStore implements RawStore, Configurable {
     sharedCache.updatePartitionColStatsInCache(catName, dbName, tblName, partVals, colStats.getStatsObj());
   }
 
-  @Override public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats, List<String> partVals,
+  @Override
+  public Map<String, String> updatePartitionColumnStatistics(Table table,
+      ColumnStatistics colStats, List<String> partVals,
       String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     Map<String, String> newParams =
-        rawStore.updatePartitionColumnStatistics(colStats, partVals, validWriteIds, writeId);
+        rawStore.updatePartitionColumnStatistics(table, colStats, partVals, validWriteIds, writeId);
     // in case of event based cache update, cache is updated during commit txn
     if (newParams != null && !canUseEvents) {
       updatePartitionColumnStatisticsInCache(colStats, newParams, partVals);
     }
     return newParams;
+  }
+
+  @Override public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj, List<String> partVals,
+      String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return updatePartitionColumnStatistics(null, statsObj, partVals, validWriteIds, writeId);
   }
 
   @Override public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(

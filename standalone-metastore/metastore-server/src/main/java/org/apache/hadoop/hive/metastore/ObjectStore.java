@@ -9817,7 +9817,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats,
+  public Map<String, String> updatePartitionColumnStatistics(Table table, ColumnStatistics colStats,
       List<String> partVals, String validWriteIds, long writeId)
           throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
@@ -9827,12 +9827,21 @@ public class ObjectStore implements RawStore, Configurable {
       List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
       ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-      MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
-      Table table = convertToTable(mTable);
-      Partition partition = convertToPart(getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable), false);
-      List<String> colNames = new ArrayList<>();
+      MTable mTable = null;
+      if(table == null) {
+        mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
+        table = convertToTable(mTable);
+      } else {
+        mTable = convertToMTable(table);
+      }
 
+      MPartition mPartition = getMPartition(catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable);
+      Partition partition = convertToPart(mPartition, false);
+      if (partition == null) {
+        throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
+      }
+
+      List<String> colNames = new ArrayList<>();
       for(ColumnStatisticsObj statsObj : statsObjs) {
         colNames.add(statsObj.getColName());
       }
@@ -9840,18 +9849,13 @@ public class ObjectStore implements RawStore, Configurable {
       Map<String, MPartitionColumnStatistics> oldStats = getPartitionColStats(table, statsDesc
           .getPartName(), colNames, colStats.getEngine());
 
-      MPartition mPartition = getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable);
-      if (partition == null) {
-        throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
-      }
-
       for (ColumnStatisticsObj statsObj : statsObjs) {
         MPartitionColumnStatistics mStatsObj =
             StatObjectConverter.convertToMPartitionColumnStatistics(mPartition, statsDesc, statsObj, colStats.getEngine());
         writeMPartitionColumnStatistics(table, partition, mStatsObj,
             oldStats.get(statsObj.getColName()));
       }
+
       // TODO: (HIVE-20109) the col stats stats should be in colstats, not in the partition!
       Map<String, String> newParams = new HashMap<>(mPartition.getParameters());
       StatsSetupConst.setColumnStatsState(newParams, colNames);
@@ -9885,6 +9889,13 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+  }
+
+  @Override
+  public Map<String, String> updatePartitionColumnStatistics(ColumnStatistics colStats,
+      List<String> partVals, String validWriteIds, long writeId)
+      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    return updatePartitionColumnStatistics(null, colStats, partVals, validWriteIds, writeId);
   }
 
   @Override

@@ -360,11 +360,12 @@ public class HiveAlterHandler implements AlterHandler {
             }
           }
           Deadline.checkTimeout();
+          Table table = msdb.getTable(catName, newDbName, newTblName);
           for (Entry<Partition, ColumnStatistics> partColStats : columnStatsNeedUpdated.entries()) {
             ColumnStatistics newPartColStats = partColStats.getValue();
             newPartColStats.getStatsDesc().setDbName(newDbName);
             newPartColStats.getStatsDesc().setTableName(newTblName);
-            msdb.updatePartitionColumnStatistics(newPartColStats, partColStats.getKey().getValues(),
+            msdb.updatePartitionColumnStatistics(table, newPartColStats, partColStats.getKey().getValues(),
                 writeIdList, newt.getWriteId());
           }
         } else {
@@ -736,7 +737,7 @@ public class HiveAlterHandler implements AlterHandler {
         for (ColumnStatistics cs : multiColumnStats) {
           cs.getStatsDesc().setPartName(newPartName);
           try {
-            msdb.updatePartitionColumnStatistics(cs, new_part.getValues(),
+            msdb.updatePartitionColumnStatistics(tbl, cs, new_part.getValues(),
                 validWriteIds, new_part.getWriteId());
           } catch (InvalidInputException iie) {
             throw new InvalidOperationException("Unable to update partition stats in table rename." + iie);
