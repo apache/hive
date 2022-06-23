@@ -1,0 +1,163 @@
+PREHOOK: query: CREATE TABLE city (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@city
+POSTHOOK: query: CREATE TABLE city (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@city
+PREHOOK: query: CREATE EXTERNAL TABLE country
+(
+    id int,
+    name varchar(20)
+)
+STORED BY                                          
+'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (                                    
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "country",
+    "hive.sql.partitionColumn" = "name",
+    "hive.sql.numPartitions" = "2"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country
+POSTHOOK: query: CREATE EXTERNAL TABLE country
+(
+    id int,
+    name varchar(20)
+)
+STORED BY                                          
+'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (                                    
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "country",
+    "hive.sql.partitionColumn" = "name",
+    "hive.sql.numPartitions" = "2"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo select country.id from country cross join city
+PREHOOK: type: QUERY
+PREHOOK: Input: default@city
+PREHOOK: Input: default@country
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select country.id from country cross join city
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@city
+POSTHOOK: Input: default@country
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(id=[$0])
+  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(id=[$0])
+      HiveJdbcConverter(convention=[JDBC.POSTGRES])
+        JdbcProject(id=[$0])
+          JdbcHiveTableScan(table=[[default, country]], table:alias=[country])
+    HiveProject(DUMMY=[0])
+      HiveTableScan(table=[[default, city]], table:alias=[city])
+
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain select country.id from country cross join city
+PREHOOK: type: QUERY
+PREHOOK: Input: default@city
+PREHOOK: Input: default@country
+#### A masked pattern was here ####
+POSTHOOK: query: explain select country.id from country cross join city
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@city
+POSTHOOK: Input: default@country
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: country
+                  properties:
+                    hive.sql.query SELECT "id"
+FROM "country"
+                    hive.sql.query.fieldNames id
+                    hive.sql.query.fieldTypes int
+                    hive.sql.query.split true
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: id (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: city
+                  Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 5 Basic stats: PARTIAL Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select country.id from country cross join city
+PREHOOK: type: QUERY
+PREHOOK: Input: default@city
+PREHOOK: Input: default@country
+#### A masked pattern was here ####
+POSTHOOK: query: select country.id from country cross join city
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@city
+POSTHOOK: Input: default@country
+#### A masked pattern was here ####

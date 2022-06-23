@@ -93,7 +93,10 @@ public class JdbcInputFormat extends HiveInputFormat<LongWritable, MapWritable> 
       // We will split this query into n splits
       LOGGER.debug("Creating {} input splits", numPartitions);
 
-      if (partitionColumn != null) {
+      boolean isPartitionColumnInLogicalPlan = partitionColumn != null &&
+        job.get(serdeConstants.LIST_COLUMNS).contains(partitionColumn);
+
+      if (isPartitionColumnInLogicalPlan) {
         List<String> columnNames = dbAccessor.getColumnNames(job);
         if (!columnNames.contains(partitionColumn)) {
           throw new IOException("Cannot find partitionColumn:" + partitionColumn + " in " + columnNames);
@@ -135,6 +138,10 @@ public class JdbcInputFormat extends HiveInputFormat<LongWritable, MapWritable> 
           splits[i] = new JdbcInputSplit(partitionColumn, intervals.get(i).getLeft(), intervals.get(i).getRight(), tablePaths[0]);
         }
       } else {
+        if (partitionColumn != null && LOGGER.isDebugEnabled()) {
+          LOGGER.debug("partitionColumn \"{}\" not used in logical plan. Splitting on numRecords.",
+            partitionColumn);
+        }
         int numRecords = dbAccessor.getTotalNumberOfRecords(job);
 
         if (numRecords < numPartitions) {
