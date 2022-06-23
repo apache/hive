@@ -3036,7 +3036,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       Assert.assertTrue(zeroWaitRead);
       Assert.assertEquals("Exception msg didn't match",
         ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg() + " LockResponse(lockid:" + (extLockId + 1) +
-          ", state:NOT_ACQUIRED, errorMessage:Unable to acquire read lock due to an exclusive lock" +
+          ", state:NOT_ACQUIRED, errorMessage:Unable to acquire read lock due to an existing exclusive lock" +
           " {lockid:" + extLockId + " intLockId:1 txnid:" + txnMgr2.getCurrentTxnId() +
           " db:default table:t6 partition:null state:WAITING type:EXCLUSIVE})",
         ex.getMessage());
@@ -3100,7 +3100,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       Assert.assertTrue(zeroWaitRead);
       Assert.assertEquals("Exception msg didn't match",
         ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg() + " LockResponse(lockid:" + (extLockId + 1) +
-          ", state:NOT_ACQUIRED, errorMessage:Unable to acquire read lock due to an exclusive lock" +
+          ", state:NOT_ACQUIRED, errorMessage:Unable to acquire read lock due to an existing exclusive lock" +
           " {lockid:" + extLockId + " intLockId:1 txnid:" + txnMgr2.getCurrentTxnId() +
           " db:default table:t7 partition:p=1 state:WAITING type:EXCLUSIVE})",
         ex.getMessage());
