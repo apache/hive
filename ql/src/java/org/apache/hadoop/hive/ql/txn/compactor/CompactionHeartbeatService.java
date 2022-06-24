@@ -136,12 +136,12 @@ class CompactionHeartbeatService {
   }
 
   private CompactionHeartbeatService(HiveConf conf) {
-    heartbeatExecutor = Executors.newScheduledThreadPool(
-        MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS));
+    int numberOfWorkers = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS);
+    heartbeatExecutor = Executors.newScheduledThreadPool(numberOfWorkers);
     GenericObjectPoolConfig<IMetaStoreClient> config = new GenericObjectPoolConfig<>();
     config.setMinIdle(1);
     config.setMaxIdle(2);
-    config.setMaxTotal(5);
+    config.setMaxTotal(numberOfWorkers);
     config.setBlockWhenExhausted(true);
     config.setMaxWaitMillis(2000);
     config.setTestOnBorrow(false);
