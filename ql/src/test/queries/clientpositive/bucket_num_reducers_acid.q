@@ -17,14 +17,11 @@ insert into bucket_nr_acid values(1,1);
 -- txn X + 1 write to bucket0 + b1
 insert into bucket_nr_acid values(0,0),(3,3);
 
+-- Expect 1-1 reducers for both insert and delete branches
+set VerifyNumReducersHook.num.reducers=2;
+
 update bucket_nr_acid set b = -1;
 set hive.exec.post.hooks=;
 select * from bucket_nr_acid order by a, b;
 
 drop table bucket_nr_acid;
-
-
-
-
-
-

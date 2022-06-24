@@ -847,6 +847,14 @@ ALTER TABLE ONLY "INDEX_PARAMS"
 
 
 --
+-- Name: ONE_ROW_CONSTRAINT; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
+--
+
+ALTER TABLE "NOTIFICATION_SEQUENCE"
+    ADD CONSTRAINT "ONE_ROW_CONSTRAINT" CHECK ("NNI_ID" = 1);
+
+
+--
 -- Name: NUCLEUS_TABLES_pkey; Type: CONSTRAINT; Schema: public; Owner: hiveuser; Tablespace:
 --
 
@@ -1827,6 +1835,9 @@ CREATE TABLE "COMPLETED_COMPACTIONS" (
   "CC_META_INFO" bytea,
   "CC_HADOOP_JOB_ID" varchar(32),
   "CC_ERROR_MESSAGE" text,
+  "CC_NEXT_TXN_ID" bigint,
+  "CC_TXN_ID" bigint,
+  "CC_COMMIT_TIME" bigint,
   "CC_INITIATOR_ID" varchar(128),
   "CC_INITIATOR_VERSION" varchar(128),
   "CC_WORKER_VERSION" varchar(128)

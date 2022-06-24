@@ -372,6 +372,7 @@ st_geodesiclengthwgs84
 st_geomcollection
 st_geometryn
 st_geometryprocessing
+st_geometrytype
 st_geomfromgeojson
 st_geomfromjson
 st_geomfromshape
@@ -596,6 +597,7 @@ st_binenvelope
 st_difference
 st_distance
 st_envelope
+st_geometrytype
 st_geomfromshape
 st_issimple
 st_relate
@@ -982,6 +984,7 @@ st_geodesiclengthwgs84
 st_geomcollection
 st_geometryn
 st_geometryprocessing
+st_geometrytype
 st_geomfromgeojson
 st_geomfromjson
 st_geomfromshape

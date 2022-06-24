@@ -24,7 +24,7 @@ import org.junit.Rule;
 /**
  * Mysql-specific DbInstallBase child test class.
  */
-public class ITestMysql extends DbInstallBase {
+public class TestMysql extends DbInstallBase {
 
   @Rule
   public final DatabaseRule databaseRule = new Mysql();

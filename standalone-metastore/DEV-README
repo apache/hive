@@ -10,7 +10,7 @@ checkin tests before loading a patch.
 To run just the checkin tests:
 'mvn test -Dtest.groups=org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest'
 
-To run all of the tests (exclusive of the databases tests, see below):
+To run all the tests:
 'mvn test -Dtest.groups=""'.  At the moment this takes around 25 minutes.
 
 When adding a test, if you want it to run as part of the unit tests annotate it
@@ -23,47 +23,34 @@ quick test can be done for the unit tests and more in depth testing as part
 of the checkin tests.
 
 --------------------------------------------------------------------------------
-There are integration tests for testing installation and upgrade of the
+There are checkin tests for testing installation and upgrade of the
 metastore on Derby, MySQL (actually MariaDB is used), Oracle, Postgres, and SQLServer.
 
-Each ITest runs two tests, one that installs the latest version of the
+For each DB type we runs two tests, one that installs the latest version of the
 database and one that installs the latest version minus one and then upgrades
 the database.
 
-To run the tests you will need to explicitly turn on integration testing by
-setting skipITests variable to false. The tests rely on Docker so the latter
-needs to be installed and configured properly (e.g., memory more than 3.5GB).
-
-Run all tests:
-
-mvn verify -DskipITests=false -Dtest=nosuch
+The tests (except Derby) rely on Docker so the latter needs to be installed and configured
+properly (e.g., memory more than 3.5GB).
 
 Run a single test:
 
-mvn verify -DskipITests=false -Dit.test=ITestMysql -Dtest=nosuch
+mvn test -Dtest.groups=MetastoreCheckinTest -Dtest=TestDerby
 
 Supported databases for testing:
--Dit.test=ITestDerby
--Dit.test=ITestMysql
--Dit.test=ITestOracle
--Dit.test=ITestPostgres
--Dit.test=ITestMssql
+-Dtest=TestDerby
+-Dtest=TestMysql
+-Dtest=TestOracle
+-Dtest=TestPostgres
+-Dtest=TestMssql
 
 By adding -Dverbose.schematool the Schema Tool output becomes more detailed.
 
-Logs for tests are located under standalone-metastore/metastore-common/target/failsafe-reports
-
 If you wish to use one of these containers to run your own tests against a
 non-Derby version of the metastore, you can do that as well.  You must specify
-that only the install test be run (change -Dit.test=ITestMysql in the example
-above to -Dit.test=ITestMysql#install) and tell it to leave the docker container
+that only the install test be run (-Dtest=TestMysql#install) and tell it to leave the docker container
 running by adding -Dmetastore.itest.no.stop.container=true.  You will then need
 to stop and remove the container yourself once you have finished.  The container
 is recreated for each run of the test, so you cannot rerun the test until you
 have stopped and removed it.  You can construct the connection values to put in
-metastore-site.xml from the information in the appropriate ITest file (e.g.,
-from ITestMysql you can find that the JDBC URL is
-"jdbc:mysql://localhost:3306/hivedb", the JDBC driver is
-"org.mariadb.jdbc.Driver", and the password is "hivepassword".  The user is
-always "hiveuser".
-
+metastore-site.xml from the information in the DatabaseRule and its subclasses.

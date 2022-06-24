@@ -1205,7 +1205,8 @@ struct LockRequest {
     3: required string user,     // used in 'show locks' to help admins find who has open locks
     4: required string hostname, // used in 'show locks' to help admins find who has open locks
     5: optional string agentInfo = "Unknown",
-    6: optional bool zeroWaitReadEnabled = false
+    6: optional bool zeroWaitReadEnabled = false,
+    7: optional bool exclusiveCTAS = false
 }
 
 struct LockResponse {
@@ -3156,3 +3157,7 @@ const string PARTITION_TRANSFORM_SPEC = "partition_transform_spec",
 const string NO_CLEANUP = "no_cleanup",
 const string CTAS_LEGACY_CONFIG = "create_table_as_external",
 const string DEFAULT_TABLE_TYPE = "defaultTableType",
+  
+// ACID
+const string TXN_ID = "txnId",
+const string WRITE_ID = "writeId",

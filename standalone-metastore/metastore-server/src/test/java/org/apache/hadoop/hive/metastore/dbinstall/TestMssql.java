@@ -18,16 +18,16 @@
 package org.apache.hadoop.hive.metastore.dbinstall;
 
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
 import org.junit.Rule;
 
 /**
- * Oracle-specific DbInstallBase child test class.
+ * Mssql-specific DbInstallBase child test class.
  */
-public class ITestOracle extends DbInstallBase {
+public class TestMssql extends DbInstallBase {
 
   @Rule
-  public final DatabaseRule databaseRule = new Oracle();
+  public final DatabaseRule databaseRule = new Mssql();
 
   @Override
   protected DatabaseRule getRule() {

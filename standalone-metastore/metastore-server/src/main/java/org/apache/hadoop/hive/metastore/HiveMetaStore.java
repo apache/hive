@@ -555,6 +555,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       protocolFactory = new TBinaryProtocol.Factory();
       inputProtoFactory = new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize);
     }
+    
+    msHost = MetastoreConf.getVar(conf, ConfVars.THRIFT_BIND_HOST);
+    if (msHost != null && !msHost.trim().isEmpty()) {
+      LOG.info("Binding host " + msHost + " for metastore server");
+    }
+    
     IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
     TServerSocket serverSocket;
     if (useSasl) {
@@ -571,12 +577,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         LOG.info("Starting DB backed MetaStore Server");
       }
     }
-
-    msHost = MetastoreConf.getVar(conf, ConfVars.THRIFT_BIND_HOST);
-    if (msHost != null && !msHost.trim().isEmpty()) {
-      LOG.info("Binding host " + msHost + " for metastore server");
-    }
-
+    
     if (!useSSL) {
       serverSocket = SecurityUtils.getServerSocket(msHost, port);
     } else {
@@ -721,7 +722,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Condition startCondition = metaStoreThreadsLock.newCondition();
       AtomicBoolean startedServing = new AtomicBoolean();
       startMetaStoreThreads(conf, metaStoreThreadsLock, startCondition, startedServing,
-                isMetastoreHousekeepingLeader(conf, getServerHostName()), startedBackgroundThreads);
+          isMetaStoreHousekeepingLeader(conf), startedBackgroundThreads);
       signalOtherThreadsToStart(thriftServer, metaStoreThreadsLock, startCondition, startedServing);
     }
 
@@ -773,10 +774,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
   }
 
-  private static boolean isMetastoreHousekeepingLeader(Configuration conf, String serverHost) {
-    String leaderHost =
-            MetastoreConf.getVar(conf,
-                    MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME);
+  static boolean isMetaStoreHousekeepingLeader(Configuration conf) throws Exception {
+    String leaderHost = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME);
+    String serverHost = getServerHostName();
 
     // For the sake of backward compatibility, when the current HMS becomes the leader when no
     // leader is specified.
@@ -785,7 +785,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               "housekeeping threads.");
       return true;
     }
-
     LOG.info(ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME + " is set to " + leaderHost);
     return leaderHost.trim().equals(serverHost);
   }

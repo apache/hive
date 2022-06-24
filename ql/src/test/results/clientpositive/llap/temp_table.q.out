@@ -77,6 +77,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo
+POSTHOOK: Lineage: foo.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: foo.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: EXPLAIN CREATE TEMPORARY TABLE bar AS SELECT * FROM src WHERE key % 2 = 1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -156,6 +158,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bar
+POSTHOOK: Lineage: bar.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: bar.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE foo
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@foo
@@ -489,6 +493,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@foo
 POSTHOOK: Output: database:two
 POSTHOOK: Output: two@foo
+POSTHOOK: Lineage: foo.key SIMPLE [(foo)foo.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: foo.value SIMPLE [(foo)foo.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:two
@@ -551,6 +557,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@s_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s_n4
+POSTHOOK: Lineage: s_n4.key SIMPLE [(s_n4)s_n4.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: s_n4.value SIMPLE [(s_n4)s_n4.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select count(*) from s_n4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@s_n4

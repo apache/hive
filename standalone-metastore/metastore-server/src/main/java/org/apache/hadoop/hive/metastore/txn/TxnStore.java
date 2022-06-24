@@ -404,6 +404,10 @@ public interface TxnStore extends Configurable {
       Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException;
 
   @RetrySemantics.Idempotent
+  void cleanupRecords(HiveObjectType type, Database db, Table table,
+      Iterator<Partition> partitionIterator, long txnId) throws MetaException;
+
+  @RetrySemantics.Idempotent
   void onRename(String oldCatName, String oldDbName, String oldTabName, String oldPartName,
       String newCatName, String newDbName, String newTabName, String newPartName)
       throws MetaException;

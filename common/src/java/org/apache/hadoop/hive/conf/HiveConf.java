@@ -3381,11 +3381,22 @@ public class HiveConf extends Configuration {
     MERGE_CARDINALITY_VIOLATION_CHECK("hive.merge.cardinality.check", true,
       "Set to true to ensure that each SQL Merge statement ensures that for each row in the target\n" +
         "table there is at most 1 matching row in the source table per SQL Specification."),
+    SPLIT_UPDATE("hive.split.update", true,
+            "If true, SQL Update statement will be rewritten to a multi-insert with 2 branches:\n" +
+                    "representing delete of existing row and an insert of the new version of the row.\n" +
+                    "Similarly Merge statement will handle WHEN MATCHED UPDATE by splitting it into 2\n" +
+                    "branches of a multi-insert. Updating bucketing and partitioning columns should\n" +
+                    "only be permitted if this is true."),
+    /**
+     * @deprecated Use {@link ConfVars#SPLIT_UPDATE} instead.
+     */
+    @Deprecated
     MERGE_SPLIT_UPDATE("hive.merge.split.update", true,
         "If true, SQL Merge statement will handle WHEN MATCHED UPDATE by splitting it into 2\n" +
             "branches of a multi-insert, representing delete of existing row and an insert of\n" +
             "the new version of the row.  Updating bucketing and partitioning columns should\n" +
-            "only be permitted if this is true."),
+            "only be permitted if this is true.\n" +
+            "Deprecated, use hive.split.update instead."),
     OPTIMIZE_ACID_META_COLUMNS("hive.optimize.acid.meta.columns", true,
         "If true, don't decode Acid metadata columns from storage unless" +
         " they are needed."),
@@ -4667,6 +4678,8 @@ public class HiveConf extends Configuration {
     HIVE_ACID_DIRECT_INSERT_ENABLED("hive.acid.direct.insert.enabled", true,
         "Enable writing the data files directly to the table's final destination instead of the staging directory."
         + "This optimization only applies on INSERT operations on ACID tables."),
+    TXN_CTAS_X_LOCK("hive.txn.xlock.ctas", false,
+        "Enables exclusive locking for CTAS operations."),
     // role names are case-insensitive
     USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +
@@ -5451,6 +5464,7 @@ public class HiveConf extends Configuration {
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
+        + "," + HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD.varname
         + "," + DRUID_METADATA_DB_PASSWORD.varname
         // Adding the S3 credentials from Hadoop config to be hidden
         + ",fs.s3.awsAccessKeyId"

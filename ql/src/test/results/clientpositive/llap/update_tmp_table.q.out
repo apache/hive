@@ -38,10 +38,14 @@ PREHOOK: query: update acid_utt set a = 'fred' where b = '0ruyd6Y50JpdGRf6HqD'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_utt
 PREHOOK: Output: default@acid_utt
+PREHOOK: Output: default@acid_utt
 POSTHOOK: query: update acid_utt set a = 'fred' where b = '0ruyd6Y50JpdGRf6HqD'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_utt
 POSTHOOK: Output: default@acid_utt
+POSTHOOK: Output: default@acid_utt
+POSTHOOK: Lineage: acid_utt.a EXPRESSION []
+POSTHOOK: Lineage: acid_utt.b SIMPLE []
 PREHOOK: query: select * from acid_utt order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_utt

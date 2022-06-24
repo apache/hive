@@ -31,6 +31,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.mapred.JobConf;
@@ -44,6 +45,7 @@ import org.apache.iceberg.CombinedScanTask;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataTableScan;
 import org.apache.iceberg.DataTask;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionSpec;
@@ -80,6 +82,7 @@ import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.TypeUtil;
@@ -217,7 +220,7 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       if (MetastoreUtil.hive3PresentOnClasspath()) {
         HIVE_VECTORIZED_READER_BUILDER = DynMethods.builder("reader")
             .impl(HIVE_VECTORIZED_READER_CLASS,
-                InputFile.class,
+                Path.class,
                 FileScanTask.class,
                 Map.class,
                 TaskAttemptContext.class)
@@ -309,17 +312,33 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       currentIterator.close();
     }
 
-    private CloseableIterable<T> openTask(FileScanTask currentTask, Schema readSchema) {
-      if (currentTask.isDataTask()) {
+    private CloseableIterable<T> openVectorized(FileScanTask task, Schema readSchema) {
+      Preconditions.checkArgument(!task.file().format().equals(FileFormat.AVRO),
+          "Vectorized execution is not yet supported for Iceberg avro tables. " +
+              "Please turn off vectorization and retry the query.");
+      Preconditions.checkArgument(MetastoreUtil.hive3PresentOnClasspath(),
+          "Vectorized read is unsupported for Hive 2 integration.");
+
+      Path path = new Path(task.file().path().toString());
+      Map<Integer, ?> idToConstant = constantsMap(task, IdentityPartitionConverters::convertConstant);
+      Expression residual = HiveIcebergInputFormat.residualForTask(task, context.getConfiguration());
+
+      // TODO: We have to take care of the EncryptionManager when LLAP and vectorization is used
+      CloseableIterable<T> iterator = HIVE_VECTORIZED_READER_BUILDER.invoke(path, task, idToConstant, context);
+
+      return applyResidualFiltering(iterator, residual, readSchema);
+    }
+
+    private CloseableIterable<T> openGeneric(FileScanTask task, Schema readSchema) {
+      if (task.isDataTask()) {
         // When querying metadata tables, the currentTask is a DataTask and the data has to
         // be fetched from the task instead of reading it from files.
         IcebergInternalRecordWrapper wrapper =
             new IcebergInternalRecordWrapper(table.schema().asStruct(), readSchema.asStruct());
-        return (CloseableIterable) CloseableIterable.transform(((DataTask) currentTask).rows(),
-            row -> wrapper.wrap((StructLike) row));
+        return (CloseableIterable) CloseableIterable.transform(((DataTask) task).rows(), row -> wrapper.wrap(row));
       }
 
-      DataFile file = currentTask.file();
+      DataFile file = task.file();
       InputFile inputFile = table.encryption().decrypt(EncryptedFiles.encryptedInput(
           table.io().newInputFile(file.path().toString()),
           file.keyMetadata()));
@@ -327,13 +346,13 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       CloseableIterable<T> iterable;
       switch (file.format()) {
         case AVRO:
-          iterable = newAvroIterable(inputFile, currentTask, readSchema);
+          iterable = newAvroIterable(inputFile, task, readSchema);
           break;
         case ORC:
-          iterable = newOrcIterable(inputFile, currentTask, readSchema);
+          iterable = newOrcIterable(inputFile, task, readSchema);
           break;
         case PARQUET:
-          iterable = newParquetIterable(inputFile, currentTask, readSchema);
+          iterable = newParquetIterable(inputFile, task, readSchema);
           break;
         default:
           throw new UnsupportedOperationException(
@@ -350,11 +369,11 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
           // TODO: Support Pig and Hive object models for IcebergInputFormat
           throw new UnsupportedOperationException("Pig and Hive object models are not supported.");
         case HIVE:
-          return openTask(currentTask, readSchema);
+          return openVectorized(currentTask, readSchema);
         case GENERIC:
           DeleteFilter deletes = new GenericDeleteFilter(table.io(), currentTask, table.schema(), readSchema);
           Schema requiredSchema = deletes.requiredSchema();
-          return deletes.filter(openTask(currentTask, requiredSchema));
+          return deletes.filter(openGeneric(currentTask, requiredSchema));
         default:
           throw new UnsupportedOperationException("Unsupported memory model");
       }
@@ -381,63 +400,45 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       Avro.ReadBuilder avroReadBuilder = Avro.read(inputFile)
           .project(readSchema)
           .split(task.start(), task.length());
+
       if (reuseContainers) {
         avroReadBuilder.reuseContainers();
       }
+
       if (nameMapping != null) {
         avroReadBuilder.withNameMapping(NameMappingParser.fromJson(nameMapping));
       }
 
-      switch (inMemoryDataModel) {
-        case PIG:
-        case HIVE:
-          // TODO implement value readers for Pig and Hive
-          throw new UnsupportedOperationException("Vectorized execution is not yet supported for Iceberg avro " +
-              "tables. Please turn off vectorization and retry the query.");
-        case GENERIC:
-          avroReadBuilder.createReaderFunc(
-              (expIcebergSchema, expAvroSchema) ->
-                  DataReader.create(expIcebergSchema, expAvroSchema,
-                      constantsMap(task, IdentityPartitionConverters::convertConstant)));
-      }
+      avroReadBuilder.createReaderFunc(
+          (expIcebergSchema, expAvroSchema) ->
+              DataReader.create(expIcebergSchema, expAvroSchema,
+                  constantsMap(task, IdentityPartitionConverters::convertConstant)));
+
       return applyResidualFiltering(avroReadBuilder.build(), residual, readSchema);
     }
 
     private CloseableIterable<T> newParquetIterable(InputFile inputFile, FileScanTask task, Schema readSchema) {
-      Map<Integer, ?> idToConstant = constantsMap(task, IdentityPartitionConverters::convertConstant);
       Expression residual = HiveIcebergInputFormat.residualForTask(task, context.getConfiguration());
 
-      CloseableIterable<T> parquetIterator = null;
+      Parquet.ReadBuilder parquetReadBuilder = Parquet.read(inputFile)
+          .project(readSchema)
+          .filter(residual)
+          .caseSensitive(caseSensitive)
+          .split(task.start(), task.length());
 
-      switch (inMemoryDataModel) {
-        case PIG:
-          throw new UnsupportedOperationException("Parquet support not yet supported for Pig");
-        case HIVE:
-          if (MetastoreUtil.hive3PresentOnClasspath()) {
-            parquetIterator = HIVE_VECTORIZED_READER_BUILDER.invoke(inputFile, task, idToConstant, context);
-          } else {
-            throw new UnsupportedOperationException("Vectorized read is unsupported for Hive 2 integration.");
-          }
-          break;
-        case GENERIC:
-          Parquet.ReadBuilder parquetReadBuilder = Parquet.read(inputFile)
-              .project(readSchema)
-              .filter(residual)
-              .caseSensitive(caseSensitive)
-              .split(task.start(), task.length());
-          if (reuseContainers) {
-            parquetReadBuilder.reuseContainers();
-          }
-          if (nameMapping != null) {
-            parquetReadBuilder.withNameMapping(NameMappingParser.fromJson(nameMapping));
-          }
-          parquetReadBuilder.createReaderFunc(
-              fileSchema -> GenericParquetReaders.buildReader(
-                  readSchema, fileSchema, constantsMap(task, IdentityPartitionConverters::convertConstant)));
-
-          parquetIterator = parquetReadBuilder.build();
+      if (reuseContainers) {
+        parquetReadBuilder.reuseContainers();
       }
-      return applyResidualFiltering(parquetIterator, residual, readSchema);
+
+      if (nameMapping != null) {
+        parquetReadBuilder.withNameMapping(NameMappingParser.fromJson(nameMapping));
+      }
+
+      parquetReadBuilder.createReaderFunc(
+          fileSchema -> GenericParquetReaders.buildReader(
+              readSchema, fileSchema, constantsMap(task, IdentityPartitionConverters::convertConstant)));
+
+      return applyResidualFiltering(parquetReadBuilder.build(), residual, readSchema);
     }
 
     private CloseableIterable<T> newOrcIterable(InputFile inputFile, FileScanTask task, Schema readSchema) {
@@ -445,36 +446,21 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       Schema readSchemaWithoutConstantAndMetadataFields = schemaWithoutConstantsAndMeta(readSchema, idToConstant);
       Expression residual = HiveIcebergInputFormat.residualForTask(task, context.getConfiguration());
 
-      CloseableIterable<T> orcIterator = null;
-      // ORC does not support reuse containers yet
-      switch (inMemoryDataModel) {
-        case PIG:
-          // TODO: implement value readers for Pig
-          throw new UnsupportedOperationException("ORC support not yet supported for Pig");
-        case HIVE:
-          if (MetastoreUtil.hive3PresentOnClasspath()) {
-            orcIterator = HIVE_VECTORIZED_READER_BUILDER.invoke(inputFile, task, idToConstant, context);
-          } else {
-            throw new UnsupportedOperationException("Vectorized read is unsupported for Hive 2 integration.");
-          }
-          break;
-        case GENERIC:
-          ORC.ReadBuilder orcReadBuilder = ORC.read(inputFile)
-              .project(readSchemaWithoutConstantAndMetadataFields)
-              .filter(residual)
-              .caseSensitive(caseSensitive)
-              .split(task.start(), task.length());
-          orcReadBuilder.createReaderFunc(
-              fileSchema -> GenericOrcReader.buildReader(
-                  readSchema, fileSchema, idToConstant));
+      ORC.ReadBuilder orcReadBuilder = ORC.read(inputFile)
+          .project(readSchemaWithoutConstantAndMetadataFields)
+          .filter(residual)
+          .caseSensitive(caseSensitive)
+          .split(task.start(), task.length());
 
-          if (nameMapping != null) {
-            orcReadBuilder.withNameMapping(NameMappingParser.fromJson(nameMapping));
-          }
-          orcIterator = orcReadBuilder.build();
+      if (nameMapping != null) {
+        orcReadBuilder.withNameMapping(NameMappingParser.fromJson(nameMapping));
       }
 
-      return applyResidualFiltering(orcIterator, residual, readSchema);
+      orcReadBuilder.createReaderFunc(
+          fileSchema -> GenericOrcReader.buildReader(
+              readSchema, fileSchema, idToConstant));
+
+      return applyResidualFiltering(orcReadBuilder.build(), residual, readSchema);
     }
 
     private Map<Integer, ?> constantsMap(FileScanTask task, BiFunction<Type, Object, Object> converter) {
