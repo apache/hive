@@ -104,6 +104,7 @@ public class TestJdbcInputFormat {
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
     conf.set(serdeConstants.LIST_COLUMN_TYPES, "int");
+    conf.set(serdeConstants.LIST_COLUMNS, "a");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "3");
     conf.set("hive.sql.lowerBound", "1");
@@ -131,6 +132,7 @@ public class TestJdbcInputFormat {
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
     conf.set(serdeConstants.LIST_COLUMN_TYPES, "double");
+    conf.set(serdeConstants.LIST_COLUMNS, "a");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "3");
     conf.set("hive.sql.lowerBound", "0");
@@ -162,6 +164,7 @@ public class TestJdbcInputFormat {
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
     conf.set(serdeConstants.LIST_COLUMN_TYPES, "decimal(10,5)");
+    conf.set(serdeConstants.LIST_COLUMNS, "a");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "4");
     conf.set("hive.sql.lowerBound", "5");
@@ -194,6 +197,7 @@ public class TestJdbcInputFormat {
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
     conf.set(serdeConstants.LIST_COLUMN_TYPES, "timestamp");
+    conf.set(serdeConstants.LIST_COLUMNS, "a");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "2");
     InputSplit[] splits = f.getSplits(conf, -1);
@@ -219,6 +223,7 @@ public class TestJdbcInputFormat {
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
     conf.set(serdeConstants.LIST_COLUMN_TYPES, "date");
+    conf.set(serdeConstants.LIST_COLUMNS, "a");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "3");
     InputSplit[] splits = f.getSplits(conf, -1);
@@ -244,6 +249,7 @@ public class TestJdbcInputFormat {
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
     conf.set(serdeConstants.LIST_COLUMN_TYPES, "int");
+    conf.set(serdeConstants.LIST_COLUMNS, "a");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "5");
     conf.set("hive.sql.lowerBound", "2");
@@ -269,6 +275,7 @@ public class TestJdbcInputFormat {
     JobConf conf = new JobConf();
     conf.set("mapred.input.dir", "/temp");
     conf.set(serdeConstants.LIST_COLUMN_TYPES, "int");
+    conf.set(serdeConstants.LIST_COLUMNS, "a");
     conf.set("hive.sql.partitionColumn", "a");
     conf.set("hive.sql.numPartitions", "5");
     conf.set("hive.sql.lowerBound", "1");
