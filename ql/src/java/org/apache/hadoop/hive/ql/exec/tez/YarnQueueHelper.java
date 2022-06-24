@@ -96,14 +96,17 @@ public class YarnQueueHelper {
   public void checkQueueAccess(
       String queueName, String userName) throws IOException, InterruptedException {
     UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-    ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
-      checkQueueAccessInternal(queueName, userName);
-      return null;
-    });
     try {
-      FileSystem.closeAllForUGI(ugi);
-    } catch (IOException exception) {
-      LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
+      ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
+        checkQueueAccessInternal(queueName, userName);
+        return null;
+      });
+    } finally {
+      try {
+        FileSystem.closeAllForUGI(ugi);
+      } catch (IOException exception) {
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
+      }
     }
   }
 
