@@ -71,8 +71,6 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.AsyncContextEvent;
-
 
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -98,13 +96,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import javax.servlet.AsyncEvent;
-import javax.servlet.AsyncListener;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
 /**
  * TODO:pc remove application logic to a separate interface.
  */
@@ -411,16 +404,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Server thread pool
     // Start with minWorkerThreads, expand till maxWorkerThreads and reject
     // subsequent requests
-    final String threadPoolNamePrefix = "HiveMetastore-HttpHandler-Pool-%s";
+    final String threadPoolNameFormat = "Metastore-HTTPHandler-Pool: Thread-%s";
+    // TODO: Add a config for keepAlive time of threads ?
     ExecutorService executorService = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads, 60L,
-        TimeUnit.SECONDS, new SynchronousQueue<>(),
-        new ThreadFactoryBuilder().setNameFormat(threadPoolNamePrefix).build());
+        TimeUnit.SECONDS, new SynchronousQueue<>(), r -> {
+      Thread thread = new Thread(r);
+      thread.setDaemon(true);
+      thread.setName("Metastore-HttpHandler-Pool: Thread-" + thread.getId());
+      return thread;
+    });
     ExecutorThreadPool threadPool = new ExecutorThreadPool(executorService);
-    /*ExecutorThreadPool executorThreadPool = new ExecutorThreadPool(maxWorkerThreads, minWorkerThreads,
-        new SynchronousQueue<>());
-    executorThreadPool.setName(threadPoolNamePrefix);*/
-    // to set keepAlive time of worker threads, call executorThreadPool.setIdleTImeout()
-
     // HTTP Server
     org.eclipse.jetty.server.Server server = new Server(threadPool);
     server.setStopAtShutdown(true);
@@ -503,9 +496,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Tons of stuff skipped as compared the HS2.
     // Sesions, XSRF, Compression, path configuration, etc.
     constraintHttpMethods(context, false);
-    server.setHandler(context);
 
     context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
+    // adding a listener on servlet request so as to clean up
+    // rawStore when http request is completed
     context.addEventListener(new ServletRequestListener() {
       @Override
       public void requestDestroyed(ServletRequestEvent servletRequestEvent) {
@@ -516,7 +510,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         HMSHandler.cleanupHandlerContext();
       }
-
       @Override
       public void requestInitialized(ServletRequestEvent servletRequestEvent) {
         Request baseRequest = Request.getBaseRequest(servletRequestEvent.getServletRequest());
@@ -526,6 +519,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
     });
+    server.setHandler(context);
     return new ThriftServer() {
       @Override
       public void start() throws Throwable {
