@@ -291,9 +291,17 @@ public class MetaStoreUtils {
     return dbParameters != null && !StringUtils.isEmpty(dbParameters.get(ReplConst.TARGET_OF_REPLICATION));
   }
 
+  public static boolean isBackgroundThreadsEnabledForRepl(Database db) {
+    assert (db != null);
+    Map<String, String> dbParameters = db.getParameters();
+    return dbParameters != null && !StringUtils.isEmpty(dbParameters.get(ReplConst.REPL_ENABLE_BACKGROUND_THREAD));
+  }
+
   public static boolean checkIfDbNeedsToBeSkipped(Database db) {
     assert (db != null);
-    if (isDbBeingFailedOver(db)) {
+    if (isBackgroundThreadsEnabledForRepl(db)) {
+      return false;
+    } else if (isDbBeingFailedOver(db)) {
       LOG.info("Skipping all the tables which belong to database: {} as it is being failed over", db.getName());
       return true;
     } else if (isTargetOfReplication(db)) {
@@ -369,7 +377,13 @@ public class MetaStoreUtils {
     if (table == null || table.getParameters() == null) {
       return false;
     }
-    return (table.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE) != null);
+    return isNonNativeTable(table.getParameters());
+  }
+
+  public static boolean isNonNativeTable(Map<String, String> tblProps) {
+    return tblProps.get(
+            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE)
+            != null;
   }
 
   /**

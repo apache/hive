@@ -24,7 +24,7 @@ import org.junit.Rule;
 /**
  * Postgres-specific DbInstallBase child test class.
  */
-public class ITestPostgres extends DbInstallBase {
+public class TestPostgres extends DbInstallBase {
 
   @Rule
   public final DatabaseRule databaseRule = new Postgres();

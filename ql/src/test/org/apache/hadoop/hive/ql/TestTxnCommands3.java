@@ -85,8 +85,8 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     String[][] expected = new String[][] {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
             "s/delta_0000001_0000001_0000/bucket_00000_0"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
-            "s/delta_0000002_0000002_0000/bucket_00000_0"}};
+        {"{\"writeid\":2,\"bucketid\":536870913,\"rowid\":0}\t4\t6",
+            "s/delta_0000002_0000002_0001/bucket_00000_0"}};
     checkResult(expected, testQuery, false, "check data", LOG);
 
 
@@ -293,15 +293,15 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("update acid_uap set b = 'fred'");
 
     String[][] expected2 = new String[][]{
-        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t1\tfred\ttoday",
-            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0000/bucket_00001_0"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\tfred\ttoday",
-            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0000/bucket_00000_0"},
+        {"{\"writeid\":3,\"bucketid\":536936449,\"rowid\":0}\t1\tfred\ttoday",
+            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0001/bucket_00001_0"},
+        {"{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t2\tfred\ttoday",
+            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0001/bucket_00000_0"},
 
-        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t1\tfred\ttomorrow",
-            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0000/bucket_00001_0"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\tfred\ttomorrow",
-            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0000/bucket_00000_0"}};
+        {"{\"writeid\":3,\"bucketid\":536936449,\"rowid\":0}\t1\tfred\ttomorrow",
+            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0001/bucket_00001_0"},
+        {"{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t2\tfred\ttomorrow",
+            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0001/bucket_00000_0"}};
     checkResult(expected2, testQuery, isVectorized, "after update", LOG);
   }
   @Test
@@ -574,7 +574,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         "/t/delta_0000001_0000001_0000",
         "/t/delta_0000002_0000002_0000",
         "/t/delete_delta_0000003_0000003_0000",
-        "/t/delta_0000003_0000003_0000",
+        "/t/delta_0000003_0000003_0001",
     };
     checkExpectedFiles(actualList, expectedList, warehousePath.toString());
     //delete metadata about aborted txn from txn_components and files (if any)

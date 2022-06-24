@@ -3705,4 +3705,16 @@ public abstract class TestHiveMetaStore {
       throw e;
     }
   }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void testDropDataConnectorIfNotExistsFalse() throws Exception {
+    // No such data connector, throw NoSuchObjectException
+    client.dropDataConnector("no_such_data_connector", false, false);
+  }
+
+  @Test
+  public void testDropDataConnectorIfNotExistsTrue() throws Exception {
+    // No such data connector, ignore NoSuchObjectException
+    client.dropDataConnector("no_such_data_connector", true, false);
+  }
 }

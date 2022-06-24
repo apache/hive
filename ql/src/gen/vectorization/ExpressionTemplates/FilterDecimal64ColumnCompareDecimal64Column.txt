@@ -51,4 +51,9 @@ public class <ClassName> extends <BaseClassName> {
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
   }
+
+  @Override
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return false;
+  }
 }

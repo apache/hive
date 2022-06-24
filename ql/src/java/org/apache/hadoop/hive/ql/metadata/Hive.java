@@ -963,9 +963,6 @@ public class Hive {
       throws HiveException, NoSuchObjectException {
     try {
       getMSC().dropDataConnector(name, ifNotExists, checkReferences);
-    } catch (NoSuchObjectException e) {
-      if (!ifNotExists)
-        throw e;
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -1309,7 +1306,8 @@ public class Hive {
           boolean createTableUseSuffix = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
             || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
 
-          if (createTableUseSuffix) {
+          if (createTableUseSuffix 
+                && (tbl.getSd().getLocation() == null || tbl.getSd().getLocation().isEmpty())) {
             tbl.setProperty(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
           }
           tTbl.setTxnId(ss.getTxnMgr().getCurrentTxnId());
@@ -1375,11 +1373,7 @@ public class Hive {
   }
 
   public void dropTable(Table table, boolean ifPurge) throws HiveException {
-    boolean tableWithSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
-        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
-      && AcidUtils.isTransactionalTable(table)
-      && Boolean.parseBoolean(table.getProperty(SOFT_DELETE_TABLE));
-    
+    boolean tableWithSuffix = AcidUtils.isTableSoftDeleteEnabled(table, conf);
     long txnId = Optional.ofNullable(SessionState.get())
       .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
     table.getTTable().setTxnId(txnId);

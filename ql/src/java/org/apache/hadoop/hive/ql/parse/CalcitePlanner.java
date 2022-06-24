@@ -1757,6 +1757,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 5. Apply post-join order optimizations
       calcitePlan = applyPostJoinOrderingTransform(calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS)) {
+        calcitePlan = calcitePlan.accept(new HiveFilterSortPredicates(noColsMissingStats));
+      }
       if (LOG.isDebugEnabled()) {
         LOG.debug("Plan after post-join transformations:\n" + RelOptUtil.toString(calcitePlan));
       }
@@ -2264,11 +2267,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveWindowingFixRule.INSTANCE);
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
             HiveWindowingLastValueRewrite.INSTANCE);
-      }
-      // 6. Sort predicates in filter expressions
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS)) {
-        generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-            new HiveFilterSortPredicates(noColsMissingStats));
       }
 
       // 7. Apply Druid transformation rules

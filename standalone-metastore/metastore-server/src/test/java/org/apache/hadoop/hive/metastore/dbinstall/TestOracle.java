@@ -15,23 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.testutils.junit.extensions;
+package org.apache.hadoop.hive.metastore.dbinstall;
 
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
+import org.junit.Rule;
 
 /**
- * Indicates the Log4j2 configuration to be used for the duration of a test.
+ * Oracle-specific DbInstallBase child test class.
  */
-@Retention(RetentionPolicy.RUNTIME)
-@ExtendWith(Log4jConfigExtension.class)
-public @interface Log4jConfig {
-  /**
-   * Returns the name of the log4j2 configuration file to use.
-   *
-   * The file should be present in the resources.
-   */
-  String value();
+public class TestOracle extends DbInstallBase {
+
+  @Rule
+  public final DatabaseRule databaseRule = new Oracle();
+
+  @Override
+  protected DatabaseRule getRule() {
+    return databaseRule;
+  }
 }

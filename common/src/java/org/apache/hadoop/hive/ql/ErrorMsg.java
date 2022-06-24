@@ -579,6 +579,8 @@ public enum ErrorMsg {
 
   REPL_FILE_SYSTEM_OPERATION_RETRY(30047, "Replication file system operation retry expired. Error {0}",
     true),
+  REPL_SOURCE_DATABASE_NOT_FOUND(30048, "Cannot dump database {0} as it does not exist",
+          true),
 
   //========================== 40000 range starts here ========================//
 
