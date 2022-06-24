@@ -15,7 +15,6 @@
 package org.apache.hive.storage.jdbc.spitter;
 
 import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +22,7 @@ import java.util.List;
 public class LongIntervalSpitter implements IntervalSplitter {
 
   @Override
-  public List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions, TypeInfo
-          typeInfo) {
+  public List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions) {
     List<MutablePair<String, String>> intervals = new ArrayList<>();
     long longLower = Long.parseLong(lowerBound);
     long longUpper = Long.parseLong(upperBound);

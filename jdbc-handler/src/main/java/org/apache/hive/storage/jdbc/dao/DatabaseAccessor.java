@@ -23,11 +23,14 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
 
 import java.io.IOException;
+import java.sql.JDBCType;
 import java.util.List;
 
 public interface DatabaseAccessor {
 
   List<String> getColumnNames(Configuration conf) throws HiveJdbcDatabaseAccessException;
+
+  List<JDBCType> getColumnTypes(Configuration conf) throws HiveJdbcDatabaseAccessException;
 
   int getTotalNumberOfRecords(Configuration conf) throws HiveJdbcDatabaseAccessException;
 

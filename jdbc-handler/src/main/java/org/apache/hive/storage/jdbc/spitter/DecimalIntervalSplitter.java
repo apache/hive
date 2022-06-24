@@ -15,32 +15,24 @@
 package org.apache.hive.storage.jdbc.spitter;
 
 import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DecimalIntervalSplitter implements IntervalSplitter {
   @Override
-  public List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions, TypeInfo
-          typeInfo) {
+  public List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions) {
     List<MutablePair<String, String>> intervals = new ArrayList<>();
-    DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo)typeInfo;
-    int scale = decimalTypeInfo.getScale();
     BigDecimal decimalLower = new BigDecimal(lowerBound);
     BigDecimal decimalUpper = new BigDecimal(upperBound);
     BigDecimal decimalInterval = (decimalUpper.subtract(decimalLower)).divide(new BigDecimal(numPartitions),
             MathContext.DECIMAL64);
     BigDecimal splitDecimalLower, splitDecimalUpper;
     for (int i=0;i<numPartitions;i++) {
-      splitDecimalLower = decimalLower.add(decimalInterval.multiply(new BigDecimal(i))).setScale(scale,
-              RoundingMode.HALF_EVEN);
-      splitDecimalUpper = decimalLower.add(decimalInterval.multiply(new BigDecimal(i+1))).setScale(scale,
-              RoundingMode.HALF_EVEN);
+      splitDecimalLower = decimalLower.add(decimalInterval.multiply(new BigDecimal(i)));
+      splitDecimalUpper = decimalLower.add(decimalInterval.multiply(new BigDecimal(i+1)));
       if (splitDecimalLower.compareTo(splitDecimalUpper) < 0) {
         intervals.add(new MutablePair<String, String>(splitDecimalLower.toPlainString(), splitDecimalUpper.toPlainString()));
       }

@@ -15,7 +15,6 @@
 package org.apache.hive.storage.jdbc.spitter;
 
 import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -23,8 +22,7 @@ import java.util.List;
 
 public class DateIntervalSplitter implements IntervalSplitter {
   @Override
-  public List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions, TypeInfo
-          typeInfo) {
+  public List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions) {
     List<MutablePair<String, String>> intervals = new ArrayList<>();
     Date dateLower = Date.valueOf(lowerBound);
     Date dateUpper = Date.valueOf(upperBound);

@@ -38,6 +38,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -67,9 +68,8 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   public GenericJdbcDatabaseAccessor() {
   }
 
-
-  @Override
-  public List<String> getColumnNames(Configuration conf) throws HiveJdbcDatabaseAccessException {
+  private <T> List<T> getColumnMetadata(Configuration conf, ColumnMetadataAccessor<T> colAccessor)
+      throws HiveJdbcDatabaseAccessException {
     Connection conn = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
@@ -89,12 +89,12 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
       ResultSetMetaData metadata = rs.getMetaData();
       int numColumns = metadata.getColumnCount();
-      List<String> columnNames = new ArrayList<String>(numColumns);
+      List<T> columnMeta = new ArrayList<>(numColumns);
       for (int i = 0; i < numColumns; i++) {
-        columnNames.add(metadata.getColumnName(i + 1));
+        columnMeta.add(colAccessor.get(metadata, i + 1));
       }
 
-      return columnNames;
+      return columnMeta;
     }
     catch (Exception e) {
       LOGGER.error("Error while trying to get column names.", e);
@@ -106,6 +106,15 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
   }
 
+  @Override
+  public List<String> getColumnNames(Configuration conf) throws HiveJdbcDatabaseAccessException {
+    return getColumnMetadata(conf, ResultSetMetaData::getColumnName);
+  }
+
+  @Override
+  public List<JDBCType> getColumnTypes(Configuration conf) throws HiveJdbcDatabaseAccessException {
+    return getColumnMetadata(conf, (meta, col) -> JDBCType.valueOf(meta.getColumnType(col)));
+  }
 
   protected String getMetaDataQuery(String sql) {
     return addLimitToQuery(sql, 1);
@@ -489,5 +498,9 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
 
   private static String selectAllFromTable(String tableName) {
     return tableName == null ? null : "select * from " + tableName;
+  }
+  
+  private interface ColumnMetadataAccessor<T> {
+    T get(ResultSetMetaData metadata, Integer column) throws SQLException;
   }
 }
