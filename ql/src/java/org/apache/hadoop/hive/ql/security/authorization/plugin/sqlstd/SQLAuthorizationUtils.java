@@ -211,8 +211,15 @@ public class SQLAuthorizationUtils {
     RequiredPrivileges privs = getRequiredPrivsFromThrift(thrifPrivs);
 
     // add owner privilege if user is owner of the object
-    if (isOwner(metastoreClient, userName, curRoles, hivePrivObject)) {
-      privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
+    try {
+      if (metastoreClient.tableExists(hivePrivObject.getDbname(), hivePrivObject.getObjectName()) &&
+              isOwner(metastoreClient, userName, curRoles, hivePrivObject)) {
+        privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
+      }
+    } catch (MetaException e) {
+      throwGetPrivErr(e, hivePrivObject, userName);
+    } catch (TException e) {
+      throwGetPrivErr(e, hivePrivObject, userName);
     }
     if (isAdmin) {
       privs.addPrivilege(SQLPrivTypeGrant.ADMIN_PRIV);
@@ -271,16 +278,7 @@ public class SQLAuthorizationUtils {
         thriftTableObj = metastoreClient.getTable(hivePrivObject.getDbname(),
             hivePrivObject.getObjectName());
       } catch (Exception e) {
-        boolean isTableExists = true;
-        try {
-          if(!metastoreClient.tableExists(hivePrivObject.getDbname(), hivePrivObject.getObjectName())) {
-            // Do not throw any exception when table object is not present.
-            // return true since the current user the owner of new table.
-            return true;
-          }
-        } catch (TException ex){
-          throwGetObjErr(ex, hivePrivObject);
-        }
+        throwGetObjErr(e, hivePrivObject);
       }
       return userName.equals(thriftTableObj.getOwner());
     }

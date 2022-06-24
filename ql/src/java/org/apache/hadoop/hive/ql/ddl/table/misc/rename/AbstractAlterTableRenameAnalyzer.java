@@ -57,9 +57,9 @@ public abstract class AbstractAlterTableRenameAnalyzer extends AbstractAlterTabl
     addInputsOutputsAlterTable(tableName, null, desc, desc.getType(), false);
     String newDatabaseName = target.getDb() != null ? target.getDb() : table.getDbName(); // extract new database name from new table name, if not specified, then src dbname is used
     Database newDatabase = getDatabase(newDatabaseName);
-    outputs.add(new WriteEntity(newDatabase, WriteEntity.WriteType.DDL_NO_LOCK));
+    outputs.add(new WriteEntity(newDatabase, WriteEntity.WriteType.DDL_SHARED));
     Table newTable = new Table(target.getDb(), target.getTable());
-    outputs.add(new WriteEntity(newTable, WriteEntity.WriteType.DDL_EXCLUSIVE));
+    outputs.add(new WriteEntity(newTable, WriteEntity.WriteType.DDL_NO_LOCK));//Since table object is not created, we'll not have a lock on it.
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 
