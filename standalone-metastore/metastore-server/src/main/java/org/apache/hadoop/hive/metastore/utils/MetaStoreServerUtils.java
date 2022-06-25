@@ -506,7 +506,20 @@ public class MetaStoreServerUtils {
   }
 
   public static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
-    return ListUtils.isEqualList(oldCols, newCols);
+    if (oldCols == newCols) {
+      return true;
+    }
+    if (oldCols == null || newCols == null || oldCols.size() != newCols.size()) {
+      return false;
+    }
+    // We should ignore the case of field names, because some computing engines are case-sensitive, such as Spark.
+    List<FieldSchema> transformedOldCols = oldCols.stream()
+        .map(col -> new FieldSchema(col.getName().toLowerCase(), col.getType(), col.getComment()))
+        .collect(Collectors.toList());
+    List<FieldSchema> transformedNewCols = newCols.stream()
+        .map(col -> new FieldSchema(col.getName().toLowerCase(), col.getType(), col.getComment()))
+        .collect(Collectors.toList());
+    return ListUtils.isEqualList(transformedOldCols, transformedNewCols);
   }
 
   /**
@@ -516,10 +529,10 @@ public class MetaStoreServerUtils {
     if (p == s) {
       return true;
     }
-    if (p.size() > s.size()) {
+    if (p == null || s == null || p.size() > s.size()) {
       return false;
     }
-    return ListUtils.isEqualList(p, s.subList(0, p.size()));
+    return areSameColumns(p, s.subList(0, p.size()));
   }
 
   public static void updateBasicState(EnvironmentContext environmentContext, Map<String,String>
