@@ -657,7 +657,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
             + "}, status {" + res.getState() + "}, reason {" + res.getErrorMessage() + "}");
       }
       lockId = res.getLockid();
-      CompactionHeartbeatService.getInstance(conf).startHeartbeat(txnId, lockId, ci.tableName);
+      CompactionHeartbeatService.getInstance(conf).startHeartbeat(txnId, lockId, TxnUtils.getFullTableName(ci.dbname, ci.tableName));
     }
 
     /**
@@ -689,10 +689,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
     long getTxnId() {
       return txnId;
-    }
-
-    long getLockId() {
-      return lockId;
     }
 
     @Override public String toString() {

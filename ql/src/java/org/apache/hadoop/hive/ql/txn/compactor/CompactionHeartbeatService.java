@@ -30,9 +30,8 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.hive.common.util.HiveStringUtils.SHUTDOWN_HOOK_PRIORITY;
@@ -51,7 +50,7 @@ class CompactionHeartbeatService {
    * Return the singleton instance of this class.
    * @param conf The {@link HiveConf} used to create the service. Used only during the firsst call
    * @return Returns the singleton {@link CompactionHeartbeatService}
-   * @throws IllegalStateException Thrown when the service has already been shut down.
+   * @throws IllegalStateException Thrown when the service has already been destroyed.
    */
   static CompactionHeartbeatService getInstance(HiveConf conf) {
     if (instance == null) {
@@ -70,12 +69,12 @@ class CompactionHeartbeatService {
       }
     }
     if (instance.heartbeatExecutor.isShutdown()) {
-      throw new IllegalStateException("The CompactionHeartbeatService is already shut down!");
+      throw new IllegalStateException("The CompactionHeartbeatService is already destroyed!");
     }
     return instance;
   }
 
-  private final ScheduledExecutorService heartbeatExecutor;
+  private final ScheduledThreadPoolExecutor heartbeatExecutor;
   private final ObjectPool<IMetaStoreClient> clientPool;
   private final long initialDelay;
   private final long period;
@@ -90,7 +89,7 @@ class CompactionHeartbeatService {
    */
   void startHeartbeat(long txnId, long lockId, String tableName) {
     if (tasks.containsKey(txnId)) {
-      throw new IllegalStateException("Heartbeat already started for TXN " + txnId);
+      throw new IllegalStateException("Heartbeat was already started for TXN " + txnId);
     }
     LOG.info("Submitting heartbeat task for TXN {}", txnId);
     CompactionHeartbeater heartbeater = new CompactionHeartbeater(txnId, lockId, tableName);
@@ -137,7 +136,8 @@ class CompactionHeartbeatService {
 
   private CompactionHeartbeatService(HiveConf conf) {
     int numberOfWorkers = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS);
-    heartbeatExecutor = Executors.newScheduledThreadPool(numberOfWorkers);
+    heartbeatExecutor = new ScheduledThreadPoolExecutor(0);
+    heartbeatExecutor.setRemoveOnCancelPolicy(true);
     GenericObjectPoolConfig<IMetaStoreClient> config = new GenericObjectPoolConfig<>();
     config.setMinIdle(1);
     config.setMaxIdle(2);

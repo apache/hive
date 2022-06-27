@@ -26,6 +26,11 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 
 import java.util.Objects;
 
+/**
+ * Factory class responsible for managing (creating/wrapping/destroying) the {@link IMetaStoreClient} instances.
+ * Used by the {@link org.apache.commons.pool2.ObjectPool} in {@link CompactionHeartbeatService} to allow pooling
+ * of {@link IMetaStoreClient}s.
+ */
 final class IMetaStoreClientFactory extends BasePooledObjectFactory<IMetaStoreClient> {
 
   private final HiveConf conf;
@@ -36,20 +41,20 @@ final class IMetaStoreClientFactory extends BasePooledObjectFactory<IMetaStoreCl
   }
 
   @Override
-  public PooledObject<IMetaStoreClient> wrap(IMetaStoreClient iMetaStoreClient) {
-    return new DefaultPooledObject<>(iMetaStoreClient);
+  public PooledObject<IMetaStoreClient> wrap(IMetaStoreClient msc) {
+    return new DefaultPooledObject<>(msc);
   }
 
   @Override
-  public void destroyObject(PooledObject<IMetaStoreClient> p) {
-    p.getObject().close();
+  public void destroyObject(PooledObject<IMetaStoreClient> msc) {
+    msc.getObject().close();
   }
 
   @Override
-  public boolean validateObject(PooledObject<IMetaStoreClient> p) {
+  public boolean validateObject(PooledObject<IMetaStoreClient> msc) {
     //Not in use currently, would be good to validate the client at borrowing/returning, but this needs support from
     //MetaStoreClient side
-    return super.validateObject(p);
+    return super.validateObject(msc);
   }
 
   public IMetaStoreClientFactory(HiveConf conf) {
