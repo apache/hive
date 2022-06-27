@@ -77,8 +77,10 @@ public class IcebergTableUtil {
   static Table getTable(Configuration configuration, Properties properties) {
     String metaTable = properties.getProperty("metaTable");
     String tableName = properties.getProperty(Catalogs.NAME);
+    String location = properties.getProperty(Catalogs.LOCATION);
     if (metaTable != null) {
       properties.setProperty(Catalogs.NAME, tableName + "." + metaTable);
+      properties.setProperty(Catalogs.LOCATION, location + "#" + metaTable);
     }
 
     String tableIdentifier = properties.getProperty(Catalogs.NAME);
