@@ -37,8 +37,12 @@ public class WriterRegistry {
 
   public static void registerWriter(TaskAttemptID taskAttemptID, String tableName, HiveIcebergWriter writer) {
     writers.putIfAbsent(taskAttemptID, Maps.newConcurrentMap());
-    writers.get(taskAttemptID).putIfAbsent(tableName, Lists.newArrayList());
-    writers.get(taskAttemptID).get(tableName).add(writer);
+
+    Map<String, List<HiveIcebergWriter>> writersOfTableMap = writers.get(taskAttemptID);
+    writersOfTableMap.putIfAbsent(tableName, Lists.newArrayList());
+
+    List<HiveIcebergWriter> writerList = writersOfTableMap.get(tableName);
+    writerList.add(writer);
   }
 
   public static Map<String, List<HiveIcebergWriter>> writers(TaskAttemptID taskAttemptID) {

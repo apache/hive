@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -410,22 +411,22 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     Configuration configuration = SessionState.getSessionConf();
-    Optional<List<JobContext>> jobContextList = generateJobContext(configuration, tableName, overwrite);
-    if (!jobContextList.isPresent()) {
+    List<JobContext> jobContextList = generateJobContext(configuration, tableName, overwrite);
+    if (jobContextList.isEmpty()) {
       return;
     }
 
     HiveIcebergOutputCommitter committer = new HiveIcebergOutputCommitter();
     try {
-      committer.commitJobs(jobContextList.get());
+      committer.commitJobs(jobContextList);
     } catch (Throwable e) {
-      String ids = jobContextList.get()
+      String ids = jobContextList
           .stream().map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(", "));
       // Aborting the job if the commit has failed
       LOG.error("Error while trying to commit job: {}, starting rollback changes for table: {}",
           ids, tableName, e);
       try {
-        committer.abortJobs(jobContextList.get(), JobStatus.State.FAILED);
+        committer.abortJobs(jobContextList, JobStatus.State.FAILED);
       } catch (IOException ioe) {
         LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", ioe);
         // no throwing here because the original exception should be propagated
@@ -862,13 +863,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   /**
-   * Generates a JobContext for the OutputCommitter for the specific table.
+   * Generates {@link JobContext}s for the OutputCommitter for the specific table.
    * @param configuration The configuration used for as a base of the JobConf
    * @param tableName The name of the table we are planning to commit
    * @param overwrite If we have to overwrite the existing table or just add the new data
-   * @return The generated JobContext
+   * @return The generated Optional JobContext list or empty if not presents.
    */
-  private Optional<List<JobContext>> generateJobContext(Configuration configuration, String tableName,
+  private List<JobContext> generateJobContext(Configuration configuration, String tableName,
       boolean overwrite) {
     JobConf jobConf = new JobConf(configuration);
     Optional<Map<String, SessionStateUtil.CommitInfo>> commitInfoMap =
@@ -886,11 +887,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
         jobContextList.add(new JobContextImpl(jobConf, jobID, null));
       }
-      return Optional.of(jobContextList);
+      return jobContextList;
     } else {
       // most likely empty write scenario
       LOG.debug("Unable to find commit information in query state for table: {}", tableName);
-      return Optional.empty();
+      return Collections.emptyList();
     }
   }
 
