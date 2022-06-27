@@ -185,13 +185,20 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     commitJobs(Collections.singletonList(originalContext));
   }
 
+  /**
+   * Wrapper class for storing output {@link Table} and it's context for committing changes:
+   * JobContext, CommitInfo.
+   */
   private static class OutputTable {
+    private final String catalogName;
     private final String tableName;
     private final Table table;
     private final JobContext jobContext;
     private final SessionStateUtil.CommitInfo commitInfo;
 
-    private OutputTable(String tableName, Table table, JobContext jobContext, SessionStateUtil.CommitInfo commitInfo) {
+    private OutputTable(String catalogName, String tableName, Table table, JobContext jobContext,
+                        SessionStateUtil.CommitInfo commitInfo) {
+      this.catalogName = catalogName;
       this.tableName = tableName;
       this.table = table;
       this.jobContext = jobContext;
@@ -255,9 +262,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .run(output -> {
             JobConf jobConf = output.jobContext.getJobConf();
             Table table = output.table;
-            String catalogName = HiveIcebergStorageHandler.catalogName(jobConf, output.tableName);
             jobLocations.add(generateJobLocation(table.location(), jobConf, output.jobContext.getJobID()));
-            commitTable(table.io(), fileExecutor, output, table.location(), catalogName);
+            commitTable(table.io(), fileExecutor, output);
           });
     } finally {
       fileExecutor.shutdown();
@@ -292,7 +298,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           commitInfo = SessionStateUtil.getCommitInfo(jobContext.getJobConf(), output)
               .get().get(jobContext.getJobID().toString());
         }
-        outputs.add(new OutputTable(output, table, jobContext, commitInfo));
+        String catalogName = HiveIcebergStorageHandler.catalogName(jobContext.getJobConf(), output);
+        outputs.add(new OutputTable(catalogName, output, table, jobContext, commitInfo));
       }
     }
     return outputs;
@@ -406,25 +413,22 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param io The io to read the forCommit files
    * @param executor The executor used to read the forCommit files
    * @param outputTable The table used for loading from the catalog
-   * @param location The location of the table used for loading from the catalog
-   * @param catalogName The name of the catalog that contains the table
    */
-  private void commitTable(FileIO io, ExecutorService executor, OutputTable outputTable, String location,
-                           String catalogName) {
+  private void commitTable(FileIO io, ExecutorService executor, OutputTable outputTable) {
     String name = outputTable.tableName;
     JobContext jobContext = outputTable.jobContext;
     JobConf conf = jobContext.getJobConf();
     Properties catalogProperties = new Properties();
     catalogProperties.put(Catalogs.NAME, name);
-    catalogProperties.put(Catalogs.LOCATION, location);
-    if (catalogName != null) {
-      catalogProperties.put(InputFormatConfig.CATALOG_NAME, catalogName);
+    catalogProperties.put(Catalogs.LOCATION, outputTable.table.location());
+    if (outputTable.catalogName != null) {
+      catalogProperties.put(InputFormatConfig.CATALOG_NAME, outputTable.catalogName);
     }
     Table table = Catalogs.loadTable(conf, catalogProperties);
 
     long startTime = System.currentTimeMillis();
     LOG.info("Committing job has started for table: {}, using location: {}",
-        table, generateJobLocation(location, conf, jobContext.getJobID()));
+        table, generateJobLocation(outputTable.table.location(), conf, jobContext.getJobID()));
 
     Optional<SessionStateUtil.CommitInfo> commitInfo = outputTable.getCommitInfo();
     int numTasks = commitInfo.map(SessionStateUtil.CommitInfo::getTaskNum).orElseGet(() -> {
@@ -436,7 +440,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       return conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
     });
 
-    FilesForCommit writeResults = collectResults(numTasks, executor, location, jobContext, io, true);
+    FilesForCommit writeResults = collectResults(
+        numTasks, executor, outputTable.table.location(), jobContext, io, true);
     if (!conf.getBoolean(InputFormatConfig.IS_OVERWRITE, false)) {
       if (writeResults.isEmpty()) {
         LOG.info(
