@@ -265,7 +265,6 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
 
   }
 
-
   @Test
   public void testHistory() throws IOException, InterruptedException {
     TableIdentifier identifier = TableIdentifier.of("default", "source");

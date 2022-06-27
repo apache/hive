@@ -79,7 +79,9 @@ public class IcebergTableUtil {
     String tableName = properties.getProperty(Catalogs.NAME);
     String location = properties.getProperty(Catalogs.LOCATION);
     if (metaTable != null) {
+      // HiveCatalog, HadoopCatalog uses NAME to identify the metadata table
       properties.setProperty(Catalogs.NAME, tableName + "." + metaTable);
+      // HadoopTable uses LOCATION to identify the metadata table
       properties.setProperty(Catalogs.LOCATION, location + "#" + metaTable);
     }
 
