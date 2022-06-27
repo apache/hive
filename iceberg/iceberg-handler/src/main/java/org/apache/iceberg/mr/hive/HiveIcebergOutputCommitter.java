@@ -115,7 +115,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
     TaskAttemptID attemptID = context.getTaskAttemptID();
     JobConf jobConf = context.getJobConf();
-    Set<String> outputs = Sets.newHashSet(HiveIcebergStorageHandler.outputTables(context.getJobConf()));
+    Set<String> outputs = HiveIcebergStorageHandler.outputTables(context.getJobConf());
     Map<String, List<HiveIcebergWriter>> writers = Optional.ofNullable(WriterRegistry.writers(attemptID))
         .orElseGet(() -> {
           LOG.info("CommitTask found no writers for output tables: {}, attemptID: {}", outputs, attemptID);
@@ -285,7 +285,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   private Set<OutputTable> collectOutputs(List<JobContext> jobContextList) {
     Set<OutputTable> outputs = Sets.newHashSet();
     for (JobContext jobContext : jobContextList) {
-      Set<String> outputNames = Sets.newHashSet(HiveIcebergStorageHandler.outputTables(jobContext.getJobConf()));
+      Set<String> outputNames = HiveIcebergStorageHandler.outputTables(jobContext.getJobConf());
       for (String output : outputNames) {
         Table table = SessionStateUtil.getResource(jobContext.getJobConf(), output)
             .filter(o -> o instanceof Table).map(o -> (Table) o)
