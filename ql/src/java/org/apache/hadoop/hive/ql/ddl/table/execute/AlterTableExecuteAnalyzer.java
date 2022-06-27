@@ -81,9 +81,7 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
             Long.valueOf(child.getText())));
       }
       desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
-    }
-
-    if (HiveParser.KW_EXPIRE_SNAPSHOTS == executeCommandType.getType()) {
+    } else if (HiveParser.KW_EXPIRE_SNAPSHOTS == executeCommandType.getType()) {
       AlterTableExecuteSpec<AlterTableExecuteSpec.ExpireSnapshotsSpec> spec;
       // the second child must be the rollback parameter
       ASTNode child = (ASTNode) command.getChild(1);

@@ -22,7 +22,7 @@ import com.google.common.base.MoreObjects;
 
 /**
  * Execute operation specification. It stores the type of the operation and its parameters.
- * The following operation are supported
+ * The following operations are supported
  * <ul>
  *   <li>Rollback</li>
  *   <li>EXPIRE_SNAPSHOT</li>
