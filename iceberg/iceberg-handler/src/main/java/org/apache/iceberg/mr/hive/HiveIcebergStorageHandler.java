@@ -871,10 +871,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   private Optional<List<JobContext>> generateJobContext(Configuration configuration, String tableName,
       boolean overwrite) {
     JobConf jobConf = new JobConf(configuration);
-    Optional<List<SessionStateUtil.CommitInfo>> commitInfoList = SessionStateUtil.getCommitInfo(jobConf, tableName);
-    if (commitInfoList.isPresent()) {
+    Optional<Map<String, SessionStateUtil.CommitInfo>> commitInfoMap =
+        SessionStateUtil.getCommitInfo(jobConf, tableName);
+    if (commitInfoMap.isPresent()) {
       List<JobContext> jobContextList = Lists.newLinkedList();
-      for (SessionStateUtil.CommitInfo commitInfo : commitInfoList.get()) {
+      for (SessionStateUtil.CommitInfo commitInfo : commitInfoMap.get().values()) {
         JobID jobID = JobID.forName(commitInfo.getJobIdStr());
         commitInfo.getProps().forEach(jobConf::set);
         jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);

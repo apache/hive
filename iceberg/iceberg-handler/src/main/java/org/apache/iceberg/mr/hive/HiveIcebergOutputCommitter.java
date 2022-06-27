@@ -298,9 +298,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
         SessionStateUtil.CommitInfo commitInfo = null;
         if (SessionStateUtil.getCommitInfo(jobContext.getJobConf(), output).isPresent()) {
-          commitInfo = SessionStateUtil.getCommitInfo(jobContext.getJobConf(), output).get()
-              .stream().filter(ci -> ci.getJobIdStr().equals(jobContext.getJobID().toString())).findFirst()
-              .orElse(null);
+          commitInfo = SessionStateUtil.getCommitInfo(jobContext.getJobConf(), output)
+              .get().get(jobContext.getJobID().toString());
         }
         outputs.add(new OutputTable(output, table, jobContext, commitInfo));
       }

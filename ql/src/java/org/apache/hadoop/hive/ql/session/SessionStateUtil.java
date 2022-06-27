@@ -18,8 +18,7 @@
 
 package org.apache.hadoop.hive.ql.session;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.hadoop.conf.Configuration;
@@ -76,10 +75,10 @@ public class SessionStateUtil {
   /**
    * @param conf Configuration object used for getting the query state, should contain the query id
    * @param tableName Name of the table for which the commit info should be retrieved
-   * @return the CommitInfo, or empty Optional if not present
+   * @return the CommitInfo map. Key: jobId, Value: {@link CommitInfo}, or empty Optional if not present
    */
-  public static Optional<List<CommitInfo>> getCommitInfo(Configuration conf, String tableName) {
-    return getResource(conf, COMMIT_INFO_PREFIX + tableName).map(o -> (List<CommitInfo>)o);
+  public static Optional<Map<String, CommitInfo>> getCommitInfo(Configuration conf, String tableName) {
+    return getResource(conf, COMMIT_INFO_PREFIX + tableName).map(o -> (Map<String, CommitInfo>)o);
   }
 
   /**
@@ -98,16 +97,16 @@ public class SessionStateUtil {
             .withTaskNum(taskNum)
             .withProps(additionalProps);
 
-    Optional<List<CommitInfo>> commitInfoList = getCommitInfo(conf, tableName);
-    if (commitInfoList.isPresent()) {
-      commitInfoList.get().add(commitInfo);
+    Optional<Map<String, CommitInfo>> commitInfoMap = getCommitInfo(conf, tableName);
+    if (commitInfoMap.isPresent()) {
+      commitInfoMap.get().put(jobId, commitInfo);
       return true;
     }
 
-    List<CommitInfo> newCommitInfoList = new ArrayList<>();
-    newCommitInfoList.add(commitInfo);
+    Map<String, CommitInfo> newCommitInfoMap = new HashMap<>();
+    newCommitInfoMap.put(jobId, commitInfo);
 
-    return addResource(conf, COMMIT_INFO_PREFIX + tableName, newCommitInfoList);
+    return addResource(conf, COMMIT_INFO_PREFIX + tableName, newCommitInfoMap);
   }
 
   private static Optional<QueryState> getQueryState(Configuration conf) {
