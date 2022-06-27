@@ -131,16 +131,16 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .executeWith(tableExecutor)
           .run(output -> {
             Table table = HiveIcebergStorageHandler.table(context.getJobConf(), output);
-            if (table != null && writers.get(output) != null) {
-              for (HiveIcebergWriter writer : writers.get(output)) {
-                String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
-                        attemptID.getJobID(), attemptID.getTaskID().getId());
-                if (writer != null) {
+            if (table != null) {
+              String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
+                  attemptID.getJobID(), attemptID.getTaskID().getId());
+              if (writers.get(output) != null) {
+                for (HiveIcebergWriter writer : writers.get(output)) {
                   createFileForCommit(writer.files(), fileForCommitLocation, table.io());
-                } else {
-                  LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
-                  createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
                 }
+              } else {
+                LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
+                createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
               }
             } else {
               // When using Tez multi-table inserts, we could have more output tables in config than
