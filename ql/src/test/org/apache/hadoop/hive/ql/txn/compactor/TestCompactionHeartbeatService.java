@@ -58,13 +58,14 @@ public class TestCompactionHeartbeatService {
 
   @BeforeClass
   public static void setupClass() throws NoSuchFieldException {
-    HEARTBEAT_SINGLETON = CompactionHeartbeatService.class.getDeclaredField("INSTANCE");
+    HEARTBEAT_SINGLETON = CompactionHeartbeatService.class.getDeclaredField("instance");
     HEARTBEAT_SINGLETON.setAccessible(true);
   }
 
   @Before
   public void setup() throws Exception {
     Mockito.when(conf.get(MetastoreConf.ConfVars.TXN_TIMEOUT.getVarname())).thenReturn("100ms");
+    Mockito.when(conf.get(MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS.getVarname())).thenReturn("4");
     PowerMockito.mockStatic(HiveMetaStoreUtils.class);
     PowerMockito.when(HiveMetaStoreUtils.getHiveMetastoreClient(any())).thenReturn(client);
     HEARTBEAT_SINGLETON.set(null,null);
@@ -111,7 +112,7 @@ public class TestCompactionHeartbeatService {
   }
 
   @Test
-  public void testStopHeartbeatWaits() throws Exception {
+  public void testStopHeartbeatAbortedTheThread() throws Exception {
     CountDownLatch countDownLatch = new CountDownLatch(1);
     AtomicBoolean heartbeated = new AtomicBoolean(false);
     doAnswer((Answer<Void>) invocationOnMock -> {
@@ -125,7 +126,7 @@ public class TestCompactionHeartbeatService {
     //We try to stop heartbeating while it's in the middle of a heartbeat
     countDownLatch.await();
     CompactionHeartbeatService.getInstance(conf).stopHeartbeat(0);
-    Assert.assertTrue(heartbeated.get());
+    Assert.assertFalse(heartbeated.get());
     // Check if heartbeat was done only once despite the timing is 100ms and the first took 500ms
     verify(client, times(1)).heartbeat(0,0);
   }
