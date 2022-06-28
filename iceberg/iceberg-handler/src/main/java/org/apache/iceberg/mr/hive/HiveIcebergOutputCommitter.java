@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandler
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
-import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.TaskAttemptID;
@@ -311,15 +310,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   @Override
   public void abortJob(JobContext originalContext, int status) throws IOException {
     abortJobs(Collections.singletonList(originalContext));
-  }
-
-  public void abortJobs(List<JobContext> jobContexts, JobStatus.State runState) throws IOException {
-    int state = runState.getValue();
-    if (state != JobStatus.FAILED && state != JobStatus.KILLED) {
-      throw new IOException("Invalid job run state : " + runState.name());
-    } else {
-      this.abortJobs(jobContexts);
-    }
   }
 
   public void abortJobs(List<JobContext> originalContextList) throws IOException {

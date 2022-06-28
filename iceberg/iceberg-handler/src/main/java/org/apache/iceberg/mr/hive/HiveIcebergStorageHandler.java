@@ -79,7 +79,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
 import org.apache.hadoop.mapred.JobID;
-import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
@@ -428,7 +427,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       LOG.error("Error while trying to commit job: {}, starting rollback changes for table: {}",
           ids, tableName, e);
       try {
-        committer.abortJobs(jobContextList, JobStatus.State.FAILED);
+        committer.abortJobs(jobContextList);
       } catch (IOException ioe) {
         LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", ioe);
         // no throwing here because the original exception should be propagated
