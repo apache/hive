@@ -58,13 +58,7 @@ class CompactionHeartbeatService {
         if (instance == null) {
           LOG.debug("Initializing compaction txn heartbeater service.");
           instance = new CompactionHeartbeatService(conf);
-          ShutdownHookManager.addShutdownHook(() -> {
-            try {
-              instance.shutdown();
-            } catch (InterruptedException e) {
-              Thread.currentThread().interrupt();
-            }
-          }, SHUTDOWN_HOOK_PRIORITY);
+          ShutdownHookManager.addShutdownHook(() -> instance.shutdown(), SHUTDOWN_HOOK_PRIORITY);
         }
       }
     }
@@ -106,7 +100,7 @@ class CompactionHeartbeatService {
    * @throws IllegalStateException Thrown when there is no {@link CompactionHeartbeater} task associated with the
    * given txnId.
    */
-  void stopHeartbeat(long txnId) throws InterruptedException {
+  void stopHeartbeat(long txnId) {
     LOG.info("Stopping heartbeat task for TXN {}", txnId);
     CompactionHeartbeater heartbeater = tasks.get(txnId);
     if (heartbeater == null) {
@@ -122,9 +116,8 @@ class CompactionHeartbeatService {
   /**
    * Shuts down the service, by closing its underlying resources. Be aware that after shutdown this service is no
    * longer usable, there is no way to re-initialize it.
-   * @throws InterruptedException
    */
-  void shutdown() throws InterruptedException {
+  void shutdown() {
     shuttingDown = true;
     LOG.info("Shutting down compaction txn heartbeater service.");
     for (CompactionHeartbeater heartbeater : tasks.values()) {
@@ -141,12 +134,7 @@ class CompactionHeartbeatService {
     config.setMinIdle(1);
     config.setMaxIdle(2);
     config.setMaxTotal(numberOfWorkers);
-    config.setBlockWhenExhausted(true);
     config.setMaxWaitMillis(2000);
-    config.setTestOnBorrow(false);
-    config.setTestOnCreate(false);
-    config.setTestOnReturn(false);
-    config.setTestWhileIdle(false);
     clientPool = new GenericObjectPool<>(new IMetaStoreClientFactory(conf), config);
     long txnTimeout = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     initialDelay = txnTimeout / 4;
@@ -154,12 +142,18 @@ class CompactionHeartbeatService {
   }
 
   private final class CompactionHeartbeater {
-    final private Logger LOG = LoggerFactory.getLogger(CompactionHeartbeater.class);
+    private final Logger LOG = LoggerFactory.getLogger(CompactionHeartbeater.class);
     private final long txnId;
     private final long lockId;
     private final String tableName;
     private final ScheduledThreadPoolExecutor heartbeatExecutor;
 
+    private CompactionHeartbeater(long txnId, long lockId, String tableName) {
+      heartbeatExecutor = new ScheduledThreadPoolExecutor(1);
+      this.tableName = Objects.requireNonNull(tableName);
+      this.txnId = txnId;
+      this.lockId = lockId;
+    }
 
     void start() {
       heartbeatExecutor.scheduleAtFixedRate(() -> {
@@ -169,36 +163,51 @@ class CompactionHeartbeatService {
           // Create a metastore client for each thread since it is not thread safe
           msc = clientPool.borrowObject();
           msc.heartbeat(txnId, lockId);
-          clientPool.returnObject(msc);
         } catch (NoSuchElementException e) {
           LOG.error("Compaction transaction heartbeater pool exhausted, unable to heartbeat", e);
+          // This heartbeat attempt failed, and there is no client to return to the pool.
+          return;
         } catch (TException e) {
           LOG.error("Error while heartbeating compaction transaction id {} for table: {}", txnId, tableName, e);
+          // Heartbeat failed, but the client is not broken, we can return it to the pool.
         } catch (Exception e) {
           LOG.error("Error while heartbeating compaction transaction id {} for table: {}", txnId, tableName, e);
+          // Unknown error, invalidate the client, maybe it is broken.
           if (msc != null) {
             try {
               clientPool.invalidateObject(msc);
             } catch (Exception ex) {
               LOG.error("Error while invalidating a broken MetaStoreClient instance", e);
             }
+            msc = null;
           }
+          return;
+        }
+        try {
+          if (msc != null) {
+            clientPool.returnObject(msc);
+          }
+          msc = null;
+        } catch (Exception e) {
+          LOG.error("Error while invalidating a broken MetaStoreClient instance", e);
         }
       }, initialDelay, period, TimeUnit.MILLISECONDS);
     }
 
-    public void stop() throws InterruptedException {
+    public void stop() {
       LOG.info("Shutting down compaction txn heartbeater instance.");
       heartbeatExecutor.shutdownNow();
-      heartbeatExecutor.awaitTermination(5000, TimeUnit.MILLISECONDS);
+      try {
+        if (!heartbeatExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+          LOG.warn("Heartbeating for transaction {} did not stop in 5 seconds, do not wait any longer.", this);
+          return;
+        }
+      } catch (InterruptedException ex) {
+        //Caller thread was interrupted while waiting for heartbeater to terminate.
+        //Nothing to do, just restore the interrupted state.
+        Thread.currentThread().interrupt();
+      }
       LOG.info("Compaction txn heartbeater instance is successfully stopped.");
-    }
-
-    private CompactionHeartbeater(long txnId, long lockId, String tableName) {
-      heartbeatExecutor = new ScheduledThreadPoolExecutor(1);
-      this.tableName = Objects.requireNonNull(tableName);
-      this.txnId = txnId;
-      this.lockId = lockId;
     }
 
   }
