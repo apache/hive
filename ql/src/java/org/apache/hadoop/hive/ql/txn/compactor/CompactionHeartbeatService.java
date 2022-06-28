@@ -179,7 +179,6 @@ class CompactionHeartbeatService {
             } catch (Exception ex) {
               LOG.error("Error while invalidating a broken MetaStoreClient instance", e);
             }
-            msc = null;
           }
           return;
         }
@@ -187,7 +186,6 @@ class CompactionHeartbeatService {
           if (msc != null) {
             clientPool.returnObject(msc);
           }
-          msc = null;
         } catch (Exception e) {
           LOG.error("Error while invalidating a broken MetaStoreClient instance", e);
         }
