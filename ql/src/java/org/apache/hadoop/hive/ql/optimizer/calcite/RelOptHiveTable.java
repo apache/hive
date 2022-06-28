@@ -491,13 +491,6 @@ public class RelOptHiveTable implements RelOptTable {
     List<Integer> partColIndxsThatRqrStats = new ArrayList<Integer>();
     Set<String> colNamesFailedStats = new HashSet<String>();
 
-    // 0. Metadata tables do not have statistics
-    if (hiveTblMetadata.getMetaTable() != null) {
-      LOG.info("No Stats for " + hiveTblMetadata.getCompleteName() + "." + hiveTblMetadata.getMetaTable()
-          + ", Columns: " + getColNamesForLogging(colNamesFailedStats));
-      return;
-    }
-
     // 1. Separate required columns to Non Partition and Partition Cols
     ColumnInfo tmp;
     for (Integer pi : projIndxLst) {
