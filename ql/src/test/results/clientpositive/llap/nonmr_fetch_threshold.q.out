@@ -115,15 +115,12 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:10
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_8]
-        Select Operator [SEL_7] (rows=10 width=358)
-          Output:["_col0","_col1","_col2","_col3"]
-          Limit [LIM_6] (rows=10 width=178)
-            Number of rows:10
-            TableScan [TS_0] (rows=500 width=178)
-              default@srcpart,srcpart,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+    Select Operator [SEL_2]
+      Output:["_col0","_col1","_col2","_col3"]
+      Limit [LIM_3]
+        Number of rows:10
+        TableScan [TS_0]
+          Output:["key","value"]
 
 PREHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
 PREHOOK: type: QUERY
@@ -138,15 +135,12 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:10
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=10 width=188)
-          Output:["_col0","_col1"]
-          Limit [LIM_4] (rows=10 width=178)
-            Number of rows:10
-            TableScan [TS_0] (rows=500 width=178)
-              default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+    Select Operator [SEL_1]
+      Output:["_col0","_col1"]
+      Limit [LIM_2]
+        Number of rows:10
+        TableScan [TS_0]
+          Output:["key","value"]
 
 PREHOOK: query: explain select concat(key, value)  from src
 PREHOOK: type: QUERY
@@ -182,13 +176,10 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=500 width=178)
-          Output:["_col0","_col1"]
-          TableScan [TS_0] (rows=500 width=178)
-            default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+    Select Operator [SEL_1]
+      Output:["_col0","_col1"]
+      TableScan [TS_0]
+        Output:["key","value"]
 
 PREHOOK: query: explain select key  from src
 PREHOOK: type: QUERY
@@ -203,13 +194,10 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=500 width=87)
-          Output:["_col0"]
-          TableScan [TS_0] (rows=500 width=87)
-            default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+    Select Operator [SEL_1]
+      Output:["_col0"]
+      TableScan [TS_0]
+        Output:["key"]
 
 PREHOOK: query: explain select *    from src
 PREHOOK: type: QUERY
@@ -224,13 +212,10 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=500 width=178)
-          Output:["_col0","_col1"]
-          TableScan [TS_0] (rows=500 width=178)
-            default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+    Select Operator [SEL_1]
+      Output:["_col0","_col1"]
+      TableScan [TS_0]
+        Output:["key","value"]
 
 PREHOOK: query: explain select key,1 from src
 PREHOOK: type: QUERY
@@ -245,13 +230,10 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=500 width=91)
-          Output:["_col0","_col1"]
-          TableScan [TS_0] (rows=500 width=87)
-            default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+    Select Operator [SEL_1]
+      Output:["_col0","_col1"]
+      TableScan [TS_0]
+        Output:["key"]
 
 PREHOOK: query: explain select cast(key as char(20)),1 from src
 PREHOOK: type: QUERY
@@ -266,11 +248,8 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=500 width=108)
-          Output:["_col0","_col1"]
-          TableScan [TS_0] (rows=500 width=87)
-            default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+    Select Operator [SEL_1]
+      Output:["_col0","_col1"]
+      TableScan [TS_0]
+        Output:["key"]
 
