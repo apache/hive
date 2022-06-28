@@ -235,18 +235,14 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @throws IOException if there is a failure accessing the files
    */
   public void commitJobs(List<JobContext> originalContextList) throws IOException {
-    if (originalContextList.isEmpty()) {
-      return;
-    }
-
     List<JobContext> jobContextList = originalContextList.stream()
         .map(TezUtil::enrichContextWithVertexId)
         .collect(Collectors.toList());
-    String ids = jobContextList.stream()
-        .map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(","));
     Set<OutputTable> outputs = collectOutputs(jobContextList);
     long startTime = System.currentTimeMillis();
 
+    String ids = jobContextList.stream()
+        .map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(","));
     LOG.info("Committing job(s) {} has started", ids);
 
     Collection<String> jobLocations = new ConcurrentLinkedQueue<>();
@@ -327,18 +323,15 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   }
 
   public void abortJobs(List<JobContext> originalContextList) throws IOException {
-    if (originalContextList.isEmpty()) {
-      return;
-    }
-
     List<JobContext> jobContextList = originalContextList.stream()
         .map(TezUtil::enrichContextWithVertexId)
         .collect(Collectors.toList());
-    String ids = jobContextList.stream()
-        .map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(","));
     Set<OutputTable> outputs = collectOutputs(jobContextList);
 
+    String ids = jobContextList.stream()
+        .map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(","));
     LOG.info("Job(s) {} are aborted. Data file cleaning started", ids);
+
     Collection<String> jobLocations = new ConcurrentLinkedQueue<>();
 
     ExecutorService fileExecutor = fileExecutor(jobContextList.get(0).getJobConf());
@@ -351,7 +344,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .onFailure((output, exc) -> LOG.warn("Failed cleanup table {} on abort job", output, exc))
           .run(output -> {
             JobContext jobContext = output.jobContext;
-            JobConf jobConf = output.jobContext.getJobConf();
+            JobConf jobConf = jobContext.getJobConf();
             LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
 
             Table table = output.table;
