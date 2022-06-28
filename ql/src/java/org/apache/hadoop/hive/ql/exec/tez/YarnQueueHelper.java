@@ -23,10 +23,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -92,6 +94,23 @@ public class YarnQueueHelper {
   }
 
   public void checkQueueAccess(
+      String queueName, String userName) throws IOException, InterruptedException {
+    UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+    try {
+      ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
+        checkQueueAccessInternal(queueName, userName);
+        return null;
+      });
+    } finally {
+      try {
+        FileSystem.closeAllForUGI(ugi);
+      } catch (IOException exception) {
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
+      }
+    }
+  }
+
+  private void checkQueueAccessInternal(
       String queueName, String userName) throws IOException, HiveException {
     String urlSuffix = String.format(PERMISSION_PATH, queueName, userName);
     // TODO: if we ever use this endpoint for anything else, refactor cycling into a separate class.
