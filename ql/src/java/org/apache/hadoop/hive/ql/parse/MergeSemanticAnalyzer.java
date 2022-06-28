@@ -342,7 +342,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     String targetName = getSimpleTableName(target);
     List<String> values = new ArrayList<>(targetTable.getCols().size() + (splitUpdateEarly ? 1 : 0));
     if(!splitUpdateEarly) {
-      values.add(targetName + ".ROW__ID, ");
+      values.add(targetName + ".ROW__ID");
     }
 
     ASTNode setClause = (ASTNode)getWhenClauseOperation(whenMatchedUpdateClause).getChild(0);
