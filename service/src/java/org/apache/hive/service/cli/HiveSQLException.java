@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
 
@@ -116,6 +117,10 @@ public class HiveSQLException extends SQLException {
 
   public HiveSQLException(TStatus status) {
     super(status.getErrorMessage(), status.getSqlState(), status.getErrorCode());
+  }
+
+  public HiveSQLException(ErrorMsg message, String... msgArgs) {
+    super(message.format(msgArgs), message.getSQLState(), message.getErrorCode());
   }
 
   /**
