@@ -167,9 +167,7 @@ class CompactionHeartbeatService {
     public void run() {
       IMetaStoreClient msc = null;
       try {
-        synchronized (lock) {
-          running = true;
-        }
+        running = true;
         LOG.debug("Heartbeating compaction transaction id {} for table: {}", txnId, tableName);
         // Create a metastore client for each thread since it is not thread safe
         msc = clientPool.borrowObject();
