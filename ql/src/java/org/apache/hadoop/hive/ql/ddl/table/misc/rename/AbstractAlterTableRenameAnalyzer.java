@@ -59,6 +59,9 @@ public abstract class AbstractAlterTableRenameAnalyzer extends AbstractAlterTabl
     Database newDatabase = getDatabase(newDatabaseName);
     outputs.add(new WriteEntity(newDatabase, WriteEntity.WriteType.DDL_SHARED));
     Table newTable = new Table(target.getDb(), target.getTable());
+    newTable.setParameters(table.getParameters());
+    newTable.setTableType(table.getTableType());
+    newTable.setTemporary(table.isTemporary());
     outputs.add(new WriteEntity(newTable, WriteEntity.WriteType.DDL_NO_LOCK));//Since table object is not created, we'll not have a lock on it.
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }

@@ -212,12 +212,21 @@ public class SQLAuthorizationUtils {
 
     // add owner privilege if user is owner of the object
     try {
-      if (metastoreClient.tableExists(hivePrivObject.getDbname(), hivePrivObject.getObjectName()) &&
-              isOwner(metastoreClient, userName, curRoles, hivePrivObject)) {
-        privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
+      switch (hivePrivObject.getType()) {
+        case TABLE_OR_VIEW: {
+          if (metastoreClient.tableExists(hivePrivObject.getDbname(), hivePrivObject.getObjectName()) &&
+                  isOwner(metastoreClient, userName, curRoles, hivePrivObject)) {
+            privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
+          }
+          break;
+        }
+        default: {
+          if (isOwner(metastoreClient, userName, curRoles, hivePrivObject)) {
+            privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
+          }
+          break;
+        }
       }
-    } catch (MetaException e) {
-      throwGetPrivErr(e, hivePrivObject, userName);
     } catch (TException e) {
       throwGetPrivErr(e, hivePrivObject, userName);
     }
