@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
+import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
@@ -1207,7 +1208,6 @@ public class HiveServer2 extends CompositeService {
 
       // Logger debug message from "oproc" after log4j initialize properly
       LOG.debug(oproc.getDebugMessage().toString());
-
       // Call the executor which will execute the appropriate command based on the parsed options
       oprocResponse.getServerOptionsExecutor().execute();
     } catch (LogInitializationException e) {
@@ -1262,12 +1262,18 @@ public class HiveServer2 extends CompositeService {
         .create());
       // --graceful_stop
       options.addOption(OptionBuilder
-        .withValueSeparator(' ')
-        .hasArgs(2)
-        .withArgName("pid> <timeout")
+        .hasArgs(1)
+        .withArgName("pid")
         .withLongOpt("graceful_stop")
         .withDescription("Gracefully stopping HS2 instance of" +
             " 'pid'(default: $HIVE_CONF_DIR/hiveserver2.pid) in 'timeout'(default:1800) seconds.")
+        .create());
+      // --getHiveConf <key>
+      options.addOption(OptionBuilder
+        .hasArg(true)
+        .withArgName("key")
+        .withLongOpt("getHiveConf")
+        .withDescription("Get the value of key from HiveConf")
         .create());
       options.addOption(new Option("H", "help", false, "Print help information"));
     }
@@ -1315,6 +1321,21 @@ public class HiveServer2 extends CompositeService {
           return new ServerOptionsProcessorResponse(new FailoverHS2InstanceExecutor(
             commandLine.getOptionValue("failover")
           ));
+        }
+
+        // Process --getHiveConf
+        if (commandLine.hasOption("getHiveConf")) {
+          return new ServerOptionsProcessorResponse(() -> {
+            String key = commandLine.getOptionValue("getHiveConf");
+            HiveConf hiveConf = new HiveConf();
+            HiveConf.ConfVars confVars = HiveConf.getConfVars(key);
+            String value = hiveConf.get(key);
+            if (confVars != null && confVars.getValidator() instanceof Validator.TimeValidator) {
+              Validator.TimeValidator validator = (Validator.TimeValidator) confVars.getValidator();
+              value = HiveConf.getTimeVar(hiveConf, confVars, validator.getTimeUnit()) + "";
+            }
+            System.out.println(key + "=" + value);
+          });
         }
       } catch (ParseException e) {
         // Error out & exit - we were not able to parse the args successfully

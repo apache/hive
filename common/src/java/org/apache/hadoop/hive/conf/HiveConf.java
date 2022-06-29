@@ -4405,7 +4405,7 @@ public class HiveConf extends Configuration {
         "location of providers to be used by hadoop credential provider API. It provides HiveServer2 the ability to provide job-specific " +
         "credential providers for jobs run using Tez, MR execution engines."),
     HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT("hive.server2.graceful.stop.timeout", "1800s",
-        new TimeValidator(TimeUnit.MILLISECONDS),
+        new TimeValidator(TimeUnit.SECONDS),
         "Maximum time waiting for the current live operations being finished before shutting down HiveServer2 gracefully.\n" +
         "  With value less than or equal to 0, it does not check for the operations regardless of state to shut down HiveServer2."),
     HIVE_MOVE_FILES_THREAD_COUNT("hive.mv.files.thread", 15, new  SizeValidator(0L, true, 1024L, true), "Number of threads"

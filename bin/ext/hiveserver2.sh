@@ -34,23 +34,23 @@ before_start() {
 }
 
 hiveserver2() {
+  CLASS=org.apache.hive.service.server.HiveServer2
+  if $cygwin; then
+    HIVE_LIB=`cygpath -w "$HIVE_LIB"`
+  fi
+  JAR=${HIVE_LIB}/hive-service-[0-9].*.jar
+
   if [ "$1" = "--graceful_stop" ]; then
     pid=$2
     if [ "$pid" = "" -a -f $HIVESERVER2_PID ]; then
       pid=$(cat $HIVESERVER2_PID)
     fi
-    if [ "$pid" != "" ]; then
-      timeout=$3
-      killAndWait $pid ${timeout:-1800}
-    fi
+    TIMEOUT_KEY='hive.server2.graceful.stop.timeout'
+    timeout=$(exec $HADOOP jar $JAR $CLASS $HIVE_OPTS --getHiveConf $TIMEOUT_KEY | grep $TIMEOUT_KEY'=' | awk -F'=' '{print $2}')
+    killAndWait $pid $timeout
   else
     before_start
     echo >&2 "$(timestamp): Starting HiveServer2"
-    CLASS=org.apache.hive.service.server.HiveServer2
-    if $cygwin; then
-      HIVE_LIB=$(cygpath -w "$HIVE_LIB")
-    fi
-    JAR=${HIVE_LIB}/hive-service-[0-9].*.jar
 
     export HADOOP_CLIENT_OPTS=" -Dproc_hiveserver2 $HADOOP_CLIENT_OPTS "
     export HADOOP_OPTS="$HIVESERVER2_HADOOP_OPTS $HADOOP_OPTS"
@@ -67,7 +67,7 @@ killAndWait() {
   processedAt=$(date +%s)
   # kill -0 == see if the PID exists
   if kill -0 $pidToKill >/dev/null 2>&1; then
-    echo "$(timestamp): Stopping HiveServer2 of pid $pidToKill."
+    echo "$(timestamp): Stopping HiveServer2 of pid $pidToKill in $timeout seconds."
     kill $pidToKill >/dev/null 2>&1
     while kill -0 $pidToKill >/dev/null 2>&1; do
       echo -n "."
