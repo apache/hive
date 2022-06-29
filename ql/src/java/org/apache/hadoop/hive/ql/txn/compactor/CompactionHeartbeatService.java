@@ -100,7 +100,7 @@ class CompactionHeartbeatService {
    * @throws IllegalStateException Thrown when there is no {@link CompactionHeartbeater} task associated with the
    * given txnId.
    */
-  void stopHeartbeat(long txnId) {
+  void stopHeartbeat(long txnId) throws InterruptedException {
     LOG.info("Stopping heartbeat task for TXN {}", txnId);
     CompactionHeartbeater heartbeater = tasks.get(txnId);
     if (heartbeater == null) {
@@ -121,7 +121,11 @@ class CompactionHeartbeatService {
     shuttingDown = true;
     LOG.info("Shutting down compaction txn heartbeater service.");
     for (CompactionHeartbeater heartbeater : tasks.values()) {
-      heartbeater.stop();
+      try {
+        heartbeater.stop();
+      } catch (InterruptedException e) {
+        LOG.warn("Shutdownhook thread was interrupted during shutting down the CompactionHeartbeatService.");
+      }
     }
     tasks.clear();
     clientPool.close();
@@ -192,18 +196,12 @@ class CompactionHeartbeatService {
       }, initialDelay, period, TimeUnit.MILLISECONDS);
     }
 
-    public void stop() {
+    public void stop() throws InterruptedException {
       LOG.info("Shutting down compaction txn heartbeater instance.");
       heartbeatExecutor.shutdownNow();
-      try {
-        if (!heartbeatExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
-          LOG.warn("Heartbeating for transaction {} did not stop in 5 seconds, do not wait any longer.", txnId);
-          return;
-        }
-      } catch (InterruptedException ex) {
-        //Caller thread was interrupted while waiting for heartbeater to terminate.
-        //Nothing to do, just restore the interrupted state.
-        Thread.currentThread().interrupt();
+      if (!heartbeatExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+        LOG.warn("Heartbeating for transaction {} did not stop in 5 seconds, do not wait any longer.", txnId);
+        return;
       }
       LOG.info("Compaction txn heartbeater instance is successfully stopped.");
     }
