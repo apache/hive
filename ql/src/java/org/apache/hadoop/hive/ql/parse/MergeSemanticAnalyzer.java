@@ -706,4 +706,9 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
   protected boolean allowOutputMultipleTimes() {
     return conf.getBoolVar(HiveConf.ConfVars.SPLIT_UPDATE) || conf.getBoolVar(HiveConf.ConfVars.MERGE_SPLIT_UPDATE);
   }
+
+  @Override
+  protected boolean enableColumnStatsCollecting() {
+    return false;
+  }
 }
