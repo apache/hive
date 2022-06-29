@@ -74,9 +74,9 @@ public interface Service {
    * receiving such command. For example:
    * - HiveServer2: If service discovery is enabled, deregister itself from Zookeeper and
    *     issue decommission() to all its child services
-   * - SessionManager: Set inner field `allowSessions` to false and
+   * - SessionManager: Stop opening new sessions and
    *     issue decommission() to all its child services.
-   * - OperationManager: Stop executing new statement.
+   * - OperationManager: Stop executing new statements.
    * 
    * The transition should be from {@link STATE#STARTED} to {@link STATE#DECOMMISSIONED}
    */
