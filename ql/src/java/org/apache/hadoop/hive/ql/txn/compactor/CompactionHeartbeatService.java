@@ -197,7 +197,7 @@ class CompactionHeartbeatService {
       heartbeatExecutor.shutdownNow();
       try {
         if (!heartbeatExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
-          LOG.warn("Heartbeating for transaction {} did not stop in 5 seconds, do not wait any longer.", this);
+          LOG.warn("Heartbeating for transaction {} did not stop in 5 seconds, do not wait any longer.", txnId);
           return;
         }
       } catch (InterruptedException ex) {
