@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -30,13 +29,13 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+
+import static java.util.Collections.singletonList;
 
 /**
  * A subclass of the {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer} that just handles
@@ -79,7 +78,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     operation = Context.Operation.UPDATE;
     boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
 
-    if (HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.SPLIT_UPDATE) && !nonNativeAcid) {
+    if (HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.SPLIT_UPDATE)) {
       analyzeSplitUpdate(tree, mTable, tabNameNode);
     } else {
       reparseAndSuperAnalyze(tree, mTable, tabNameNode);
@@ -112,9 +111,6 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
    */
   private void reparseAndSuperAnalyze(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
     List<? extends Node> children = tree.getChildren();
-
-    // save the operation type into the query state
-    SessionStateUtil.addResource(conf, Context.Operation.class.getSimpleName(), operation.name());
 
     StringBuilder rewrittenQueryStr = new StringBuilder();
     rewrittenQueryStr.append("insert into table ");
@@ -257,6 +253,9 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
   }
 
+  public static final String DELETE_PREFIX = "__d__";
+  public static final String SUB_QUERY_ALIAS = "s";
+
   private void analyzeSplitUpdate(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
     operation = Context.Operation.UPDATE;
 
@@ -282,11 +281,45 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     List<FieldSchema> nonPartCols = mTable.getCols();
     Map<String, String> colNameToDefaultConstraint = getColNameToDefaultValueMap(mTable);
-    List<String> values = new ArrayList<>(mTable.getCols().size());
     StringBuilder rewrittenQueryStr = createRewrittenQueryStrBuilder();
-    rewrittenQueryStr.append("(SELECT ROW__ID");
+    rewrittenQueryStr.append("(SELECT ");
+
+    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
+    int columnOffset;
+    List<String> deleteValues;
+    if (nonNativeAcid) {
+      List<FieldSchema> acidSelectColumns = mTable.getStorageHandler().acidSelectColumns(mTable, operation);
+      deleteValues = new ArrayList<>(acidSelectColumns.size());
+      for (FieldSchema fieldSchema : acidSelectColumns) {
+        String identifier = HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
+        rewrittenQueryStr.append(identifier).append(" AS ");
+        String prefixedIdentifier = HiveUtils.unparseIdentifier(DELETE_PREFIX + fieldSchema.getName(), this.conf);
+        rewrittenQueryStr.append(prefixedIdentifier);
+        rewrittenQueryStr.append(",");
+        deleteValues.add(String.format("%s.%s", SUB_QUERY_ALIAS, prefixedIdentifier));
+      }
+
+      columnOffset = acidSelectColumns.size();
+    } else {
+      rewrittenQueryStr.append("ROW__ID,");
+      deleteValues = new ArrayList<>(1 + mTable.getPartCols().size());
+      deleteValues.add(SUB_QUERY_ALIAS + ".ROW__ID");
+      for (FieldSchema fieldSchema : mTable.getPartCols()) {
+        deleteValues.add(SUB_QUERY_ALIAS + "." + HiveUtils.unparseIdentifier(fieldSchema.getName(), conf));
+      }
+      columnOffset = 1;
+    }
+
+    List<String> insertValues = new ArrayList<>(mTable.getCols().size());
+    boolean first = true;
+
     for (int i = 0; i < nonPartCols.size(); i++) {
-      rewrittenQueryStr.append(',');
+      if (first) {
+        first = false;
+      } else {
+        rewrittenQueryStr.append(",");
+      }
+
       String name = nonPartCols.get(i).getName();
       ASTNode setCol = setCols.get(name);
       String identifier = HiveUtils.unparseIdentifier(name, this.conf);
@@ -299,7 +332,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
           rewrittenQueryStr.append(identifier);
           // This is one of the columns we're setting, record it's position so we can come back
           // later and patch it up. 0th is ROW_ID
-          setColExprs.put(i + 1, setCol);
+          setColExprs.put(i + columnOffset, setCol);
         }
       } else {
         rewrittenQueryStr.append(identifier);
@@ -307,16 +340,28 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       rewrittenQueryStr.append(" AS ");
       rewrittenQueryStr.append(identifier);
 
-      values.add("s." + identifier);
+      insertValues.add(SUB_QUERY_ALIAS + "." + identifier);
     }
     addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr);
-    addPartitionColsAsValues(mTable.getPartCols(), "s", values);
-    rewrittenQueryStr.append(" FROM ").append(getFullTableNameForSQL(tabNameNode)).append(") s\n");
+    addPartitionColsAsValues(mTable.getPartCols(), SUB_QUERY_ALIAS, insertValues);
+    rewrittenQueryStr.append(" FROM ").append(getFullTableNameForSQL(tabNameNode)).append(") ");
+    rewrittenQueryStr.append(SUB_QUERY_ALIAS).append("\n");
 
-    appendInsertBranch(rewrittenQueryStr, null, values);
-    appendDeleteBranch(rewrittenQueryStr, null, "s", Collections.singletonList("s.ROW__ID "));
+    appendInsertBranch(rewrittenQueryStr, null, insertValues);
+    appendInsertBranch(rewrittenQueryStr, null, deleteValues);
 
-    appendSortBy(rewrittenQueryStr, Collections.singletonList("s.ROW__ID "));
+    List<String> sortKeys;
+    if (nonNativeAcid) {
+      sortKeys = mTable.getStorageHandler().acidSortColumns(mTable, Context.Operation.DELETE).stream()
+              .map(fieldSchema -> String.format(
+                      "%s.%s",
+                      SUB_QUERY_ALIAS,
+                      HiveUtils.unparseIdentifier(DELETE_PREFIX + fieldSchema.getName(), this.conf)))
+              .collect(Collectors.toList());
+    } else {
+      sortKeys = singletonList(SUB_QUERY_ALIAS + ".ROW__ID ");
+    }
+    appendSortBy(rewrittenQueryStr, sortKeys);
 
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
@@ -335,14 +380,9 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     patchProjectionForUpdate(rewrittenInsert, setColExprs);
 
-    try {
-      useSuper = true;
-      // Note: this will overwrite this.ctx with rewrittenCtx
-      rewrittenCtx.setEnableUnparse(false);
-      super.analyze(rewrittenTree, rewrittenCtx);
-    } finally {
-      useSuper = false;
-    }
+    // Note: this will overwrite this.ctx with rewrittenCtx
+    rewrittenCtx.setEnableUnparse(false);
+    analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
 
     updateOutputs(mTable);
 

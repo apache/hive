@@ -555,6 +555,9 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   }
 
   protected void appendSortBy(StringBuilder rewrittenQueryStr, List<String> keys) {
+    if (keys.isEmpty()) {
+      return;
+    }
     rewrittenQueryStr.append(INDENT).append("SORT BY ");
     rewrittenQueryStr.append(StringUtils.join(keys, ","));
     rewrittenQueryStr.append("\n");
