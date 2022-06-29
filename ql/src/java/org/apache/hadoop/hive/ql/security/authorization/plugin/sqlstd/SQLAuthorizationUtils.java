@@ -181,11 +181,13 @@ public class SQLAuthorizationUtils {
    *          current active roles for user
    * @param isAdmin
    *          if user can run as admin user
+   * @param ignoreUnknown
+   *          boolean flag to ignore unknown table
    * @return
    * @throws HiveAuthzPluginException
    */
   static RequiredPrivileges getPrivilegesFromMetaStore(IMetaStoreClient metastoreClient,
-      String userName, HivePrivilegeObject hivePrivObject, List<String> curRoles, boolean isAdmin)
+      String userName, HivePrivilegeObject hivePrivObject, List<String> curRoles, boolean isAdmin, boolean ignoreUnknown)
           throws HiveAuthzPluginException {
 
     // get privileges for this user and its role on this object
@@ -214,7 +216,7 @@ public class SQLAuthorizationUtils {
     try {
       switch (hivePrivObject.getType()) {
         case TABLE_OR_VIEW: {
-          if (metastoreClient.tableExists(hivePrivObject.getDbname(), hivePrivObject.getObjectName()) &&
+          if ((ignoreUnknown && !metastoreClient.tableExists(hivePrivObject.getDbname(), hivePrivObject.getObjectName())) ||
                   isOwner(metastoreClient, userName, curRoles, hivePrivObject)) {
             privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
           }
