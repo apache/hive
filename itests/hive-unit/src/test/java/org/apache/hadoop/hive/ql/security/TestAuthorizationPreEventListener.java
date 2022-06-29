@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -88,6 +89,11 @@ public class TestAuthorizationPreEventListener {
   private void validateCreateDb(Database expectedDb, Database actualDb) {
     assertEquals(expectedDb.getName(), actualDb.getName());
     assertEquals(expectedDb.getLocationUri(), actualDb.getLocationUri());
+  }
+
+  private void validateFunction(Function expectedFunc, Function actualFunc) {
+    assertEquals(expectedFunc.getFunctionName(), actualFunc.getFunctionName());
+    assertEquals(expectedFunc.getClassName(), actualFunc.getClassName());
   }
 
   private void validateTable(Table expectedTable, Table actualTable) {
@@ -168,6 +174,7 @@ public class TestAuthorizationPreEventListener {
   @Test
   public void testListener() throws Exception {
     String dbName = "hive3705";
+    String funcName = "test_func";
     String tblName = "tmptbl";
     String renamed = "tmptbl2";
     int listSize = 0;
@@ -183,6 +190,23 @@ public class TestAuthorizationPreEventListener {
     validateCreateDb(db,dbFromEvent);
 
     driver.run("use " + dbName);
+
+    // Test for Function
+    driver.run(String.format("create function %s as '%s'",
+        funcName, "org.apache.hadoop.hive.ql.udf.generic.GenericUDFPrintf"));
+    listSize = authCalls.size();
+    Function funcFromEvent = (Function) assertAndExtractSingleObjectFromEvent(listSize, authCalls,
+        DummyHiveMetastoreAuthorizationProvider.AuthCallContextType.FUNCTION);
+    Function func = msc.getFunction(dbName, funcName);
+    validateFunction(func, funcFromEvent);
+
+    driver.run("drop function " + funcName);
+    listSize = authCalls.size();
+    Function funcFromDropFunctionEvent = (Function) assertAndExtractSingleObjectFromEvent(listSize,
+        authCalls, DummyHiveMetastoreAuthorizationProvider.AuthCallContextType.FUNCTION);
+    validateFunction(func, funcFromDropFunctionEvent);
+
+    // Test for Table
     driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName));
     listSize = authCalls.size();
 

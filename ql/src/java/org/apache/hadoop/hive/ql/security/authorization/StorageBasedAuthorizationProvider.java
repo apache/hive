@@ -24,11 +24,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -174,6 +177,39 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     }
 
     authorize(path, readRequiredPriv, writeRequiredPriv);
+  }
+
+  @Override
+  public void authorize(Function function, Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
+      throws HiveException, AuthorizationException {
+    try {
+      initWh();
+    } catch (MetaException ex) {
+      throw hiveException(ex);
+    }
+
+    // extract any drop privileges out of required privileges
+    DropPrivilegeExtractor privExtractor = new DropPrivilegeExtractor(readRequiredPriv,
+        writeRequiredPriv);
+    readRequiredPriv = privExtractor.getReadReqPriv();
+    writeRequiredPriv = privExtractor.getWriteReqPriv();
+
+    List<ResourceUri> resourceUris = function.getResourceUris();
+    if (resourceUris != null && !resourceUris.isEmpty()) {
+      List<Path> paths = resourceUris.stream()
+          .map(ResourceUri::getUri)
+          .map(Path::new)
+          .collect(Collectors.toList());
+
+      for (Path path : paths) {
+        // authorize drops if there was a drop privilege requirement
+        if (privExtractor.hasDropPrivilege()) {
+          checkDeletePermission(path, getConf(), authenticator.getUserName());
+        }
+
+        authorize(path, readRequiredPriv, writeRequiredPriv);
+      }
+    }
   }
 
   private static boolean userHasProxyPrivilege(String user, Configuration conf) {

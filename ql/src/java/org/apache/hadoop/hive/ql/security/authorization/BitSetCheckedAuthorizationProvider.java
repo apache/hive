@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
@@ -76,7 +77,7 @@ public abstract class BitSetCheckedAuthorizationProvider extends
     authorizeUserPriv(inputRequiredPriv, inputCheck, outputRequiredPriv,
         outputCheck);
     checkAndThrowAuthorizationException(inputRequiredPriv, outputRequiredPriv,
-        inputCheck, outputCheck, null, null, null, null);
+        inputCheck, outputCheck, null, null, null, null, null);
   }
 
   @Override
@@ -92,7 +93,22 @@ public abstract class BitSetCheckedAuthorizationProvider extends
         inputCheck, outputCheck);
 
     checkAndThrowAuthorizationException(inputRequiredPriv, outputRequiredPriv,
-        inputCheck, outputCheck, db.getName(), null, null, null);
+        inputCheck, outputCheck, db.getName(), null, null, null, null);
+  }
+
+
+  @Override
+  public void authorize(Function function, Privilege[] inputRequiredPriv,
+      Privilege[] outputRequiredPriv) throws HiveException, AuthorizationException {
+    BitSetChecker checker = BitSetChecker.getBitSetChecker(inputRequiredPriv,
+        outputRequiredPriv);
+    boolean[] inputCheck = checker.inputCheck;
+    boolean[] outputCheck = checker.outputCheck;
+
+    authorizeUserDBAndFunction(function, inputRequiredPriv,
+        outputRequiredPriv, inputCheck, outputCheck);
+    checkAndThrowAuthorizationException(inputRequiredPriv, outputRequiredPriv, inputCheck,
+        outputCheck, function.getDbName(), null, null, null, function.getFunctionName());
   }
 
   @Override
@@ -107,8 +123,7 @@ public abstract class BitSetCheckedAuthorizationProvider extends
     authorizeUserDBAndTable(table, inputRequiredPriv,
         outputRequiredPriv, inputCheck, outputCheck);
     checkAndThrowAuthorizationException(inputRequiredPriv, outputRequiredPriv,
-        inputCheck, outputCheck, table.getDbName(), table.getTableName(),
-        null, null);
+        inputCheck, outputCheck, table.getDbName(), table.getTableName(), null, null, null);
   }
 
   @Override
@@ -136,7 +151,7 @@ public abstract class BitSetCheckedAuthorizationProvider extends
 
     checkAndThrowAuthorizationException(inputRequiredPriv, outputRequiredPriv,
         inputCheck, outputCheck, part.getTable().getDbName(), part
-            .getTable().getTableName(), part.getName(), null);
+            .getTable().getTableName(), part.getName(), null, null);
   }
 
   @Override
@@ -195,7 +210,7 @@ public abstract class BitSetCheckedAuthorizationProvider extends
 
       checkAndThrowAuthorizationException(inputRequiredPriv,
           outputRequiredPriv, inputCheck2, outputCheck2, table.getDbName(),
-          table.getTableName(), partName, col);
+          table.getTableName(), partName, col, null);
     }
   }
 
@@ -275,6 +290,30 @@ public abstract class BitSetCheckedAuthorizationProvider extends
       return true;
     }
 
+    return false;
+  }
+
+  /**
+   * Check privileges on User, DB and function objects.
+   *
+   * @param function
+   * @param inputRequiredPriv
+   * @param outputRequiredPriv
+   * @param inputCheck
+   * @param outputCheck
+   * @return true if the check passed
+   * @throws HiveException
+   */
+  private boolean authorizeUserDBAndFunction(Function function,
+      Privilege[] inputRequiredPriv, Privilege[] outputRequiredPriv,
+      boolean[] inputCheck, boolean[] outputCheck) throws HiveException {
+    if (authorizeUserAndDBPriv(hive_db.getDatabase(function.getCatName(), function.getDbName()),
+        inputRequiredPriv, outputRequiredPriv, inputCheck, outputCheck)) {
+      return true;
+    }
+
+    // TODO Function does not support privilege yet,
+    // we can do authorizePrivileges for functionPrivileges when it is supported.
     return false;
   }
 
@@ -454,7 +493,7 @@ public abstract class BitSetCheckedAuthorizationProvider extends
   private void checkAndThrowAuthorizationException(
       Privilege[] inputRequiredPriv, Privilege[] outputRequiredPriv,
       boolean[] inputCheck, boolean[] outputCheck,String dbName,
-      String tableName, String partitionName, String columnName) {
+      String tableName, String partitionName, String columnName, String functionName) {
 
     String hiveObject = "{ ";
     if (dbName != null) {
@@ -468,6 +507,9 @@ public abstract class BitSetCheckedAuthorizationProvider extends
     }
     if (columnName != null) {
       hiveObject = hiveObject + ", columnName:" + columnName;
+    }
+    if (functionName != null) {
+      hiveObject = hiveObject + ", functionName:" + functionName;
     }
     hiveObject = hiveObject + "}";
 

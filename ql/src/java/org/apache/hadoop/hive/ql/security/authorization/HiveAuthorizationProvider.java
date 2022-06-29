@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
@@ -77,6 +78,21 @@ public interface HiveAuthorizationProvider extends Configurable{
   public void authorize(Database db, Privilege[] readRequiredPriv,
       Privilege[] writeRequiredPriv) throws HiveException,
       AuthorizationException;
+
+  /**
+   * Authorization privileges against a function object.
+   *
+   * @param function
+   *          Function
+   * @param readRequiredPriv
+   *          a list of privileges needed for inputs.
+   * @param writeRequiredPriv
+   *          a list of privileges needed for outputs.
+   * @throws HiveException
+   * @throws AuthorizationException
+   */
+  public void authorize(Function function, Privilege[] readRequiredPriv,
+      Privilege[] writeRequiredPriv) throws HiveException, AuthorizationException;
 
   /**
    * Authorization privileges against a hive table object.

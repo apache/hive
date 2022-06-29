@@ -21,9 +21,8 @@ package org.apache.hadoop.hive.ql.security.authorization;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -33,6 +32,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStorePreEventListener;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -42,13 +42,16 @@ import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreCreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.PreDropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreReadDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -61,7 +64,7 @@ import org.apache.hadoop.hive.ql.security.HiveMetastoreAuthenticationProvider;
  *
  * Note that this can only perform authorization checks on defined
  * metastore PreEventContexts, such as the adding/dropping and altering
- * of databases, tables and partitions.
+ * of databases, tables, partitions and functions.
  */
 @Private
 public class AuthorizationPreEventListener extends MetaStorePreEventListener {
@@ -175,6 +178,13 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
       break;
     case AUTHORIZATION_API_CALL:
       authorizeAuthorizationAPICall();
+      break;
+    case CREATE_FUNCTION:
+      authorizeCreateFunction((PreCreateFunctionEvent) context);
+      break;
+    case DROP_FUNCTION:
+      authorizeDropFunction((PreDropFunctionEvent) context);
+      break;
     default:
       break;
     }
@@ -276,6 +286,36 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
     }
   }
 
+  private void authorizeCreateFunction(PreCreateFunctionEvent context)
+      throws InvalidOperationException, MetaException {
+    try {
+      for (HiveMetastoreAuthorizationProvider authorizer : tAuthorizers.get()) {
+        authorizer.authorize(new Function(context.getFunction()),
+            HiveOperation.CREATEFUNCTION.getInputRequiredPrivileges(),
+            HiveOperation.CREATEFUNCTION.getOutputRequiredPrivileges());
+      }
+    } catch (AuthorizationException e) {
+      throw invalidOperationException(e);
+    } catch (HiveException e) {
+      throw metaException(e);
+    }
+  }
+
+  private void authorizeDropFunction(PreDropFunctionEvent context)
+      throws InvalidOperationException, MetaException {
+    try {
+      for (HiveMetastoreAuthorizationProvider authorizer : tAuthorizers.get()) {
+        authorizer.authorize(new Function(context.getFunction()),
+            HiveOperation.DROPFUNCTION.getInputRequiredPrivileges(),
+            HiveOperation.DROPFUNCTION.getOutputRequiredPrivileges());
+      }
+    } catch (AuthorizationException e) {
+      throw invalidOperationException(e);
+    } catch (HiveException e) {
+      throw metaException(e);
+    }
+  }
+
   private void authorizeCreateTable(PreCreateTableEvent context)
       throws InvalidOperationException, MetaException {
     try {
@@ -351,15 +391,12 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
 
     final TableWrapper table = new TableWrapper(context.getTable());
     final Iterator<org.apache.hadoop.hive.ql.metadata.Partition> qlPartitionIterator =
-        Iterators.transform(partitionIterator, new Function<Partition, org.apache.hadoop.hive.ql.metadata.Partition>() {
-          @Override
-          public org.apache.hadoop.hive.ql.metadata.Partition apply(Partition partition) {
-            try {
-              return new PartitionWrapper(table, partition);
-            } catch (Exception exception) {
-              LOG.error("Could not construct partition-object for: " + partition, exception);
-              throw new RuntimeException(exception);
-            }
+        Iterators.transform(partitionIterator, partition -> {
+          try {
+            return new PartitionWrapper(table, partition);
+          } catch (Exception exception) {
+            LOG.error("Could not construct partition-object for: " + partition, exception);
+            throw new RuntimeException(exception);
           }
         });
 

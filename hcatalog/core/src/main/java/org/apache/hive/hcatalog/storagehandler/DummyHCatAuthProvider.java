@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
@@ -98,6 +99,20 @@ class DummyHCatAuthProvider implements HiveAuthorizationProvider {
   public void authorize(Database db, Privilege[] readRequiredPriv,
               Privilege[] writeRequiredPriv) throws HiveException,
     AuthorizationException {
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see
+   * org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider
+   * #authorize(org.apache.hadoop.hive.ql.metadata.api.Function,
+   * org.apache.hadoop.hive.ql.security.authorization.Privilege[],
+   * org.apache.hadoop.hive.ql.security.authorization.Privilege[])
+   */
+  @Override
+  public void authorize(Function function, Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
+      throws HiveException, AuthorizationException {
   }
 
   /*

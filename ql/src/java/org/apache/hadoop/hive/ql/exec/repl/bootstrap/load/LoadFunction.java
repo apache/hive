@@ -120,9 +120,6 @@ public class LoadFunction {
       String dbName = StringUtils.isBlank(dbNameToLoadIn) ? metadata.function.getDbName() : dbNameToLoadIn;
       function = context.hiveDb.getFunction(dbName, metadata.function.getFunctionName());
     } catch (HiveException e) {
-      if (e.getCause() instanceof NoSuchObjectException) {
-        return false;
-      }
       throw e;
     }
     return (function != null);

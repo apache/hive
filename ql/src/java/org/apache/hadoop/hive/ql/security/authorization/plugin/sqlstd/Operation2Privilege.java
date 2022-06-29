@@ -309,8 +309,6 @@ public class Operation2Privilege {
     adminPrivOps.add(HiveOperationType.CREATE_MAPPING);
     adminPrivOps.add(HiveOperationType.ALTER_MAPPING);
     adminPrivOps.add(HiveOperationType.DROP_MAPPING);
-    adminPrivOps.add(HiveOperationType.CREATEFUNCTION);
-    adminPrivOps.add(HiveOperationType.DROPFUNCTION);
     adminPrivOps.add(HiveOperationType.CREATE_SCHEDULED_QUERY);
     adminPrivOps.add(HiveOperationType.ALTER_SCHEDULED_QUERY);
     adminPrivOps.add(HiveOperationType.DROP_SCHEDULED_QUERY);
@@ -362,8 +360,8 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.EXECUTE, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.SHOWFUNCTIONS, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.SHOWLOCKS, PrivRequirement.newIOPrivRequirement(null, null));
-    op2Priv.put(HiveOperationType.CREATEFUNCTION, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
-    op2Priv.put(HiveOperationType.DROPFUNCTION, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.CREATEFUNCTION, PrivRequirement.newIOPrivRequirement(null, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.DROPFUNCTION, PrivRequirement.newIOPrivRequirement(null, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.RELOADFUNCTION, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.CREATEMACRO, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.DROPMACRO, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));

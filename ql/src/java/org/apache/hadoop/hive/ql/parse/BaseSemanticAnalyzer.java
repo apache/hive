@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
@@ -1812,6 +1813,16 @@ public abstract class BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName));
     }
     return database;
+  }
+
+  protected Function getFunction(String dbName, String functionName) throws SemanticException {
+    Function function;
+    try {
+      function = db.getFunction(dbName, functionName);
+    } catch (Exception e) {
+      throw new SemanticException(e.getMessage(), e);
+    }
+    return function;
   }
 
   protected DataConnector getDataConnector(String dbName) throws SemanticException {

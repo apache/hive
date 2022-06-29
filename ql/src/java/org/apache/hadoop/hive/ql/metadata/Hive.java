@@ -5896,6 +5896,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public Function getFunction(String dbName, String funcName) throws HiveException {
     try {
       return getMSC().getFunction(dbName, funcName);
+    } catch (NoSuchObjectException e) {
+      return null;
     } catch (TException te) {
       throw new HiveException(te);
     }

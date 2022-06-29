@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -50,6 +51,7 @@ public class DummyHiveMetastoreAuthorizationProvider implements HiveMetastoreAut
   public enum AuthCallContextType {
     USER,
     DB,
+    FUNCTION,
     TABLE,
     PARTITION,
     TABLE_AND_PARTITION,
@@ -140,6 +142,18 @@ public class DummyHiveMetastoreAuthorizationProvider implements HiveMetastoreAut
         );
     authCalls.add(new AuthCallContext(AuthCallContextType.DB,
         db, readRequiredPriv, writeRequiredPriv));
+  }
+
+  @Override
+  public void authorize(Function function, Privilege[] readRequiredPriv,
+      Privilege[] writeRequiredPriv) throws HiveException, AuthorizationException {
+    debugLog("DHMAP.authorizeFunction " +
+        "function:" + function.getFunctionName() +
+        " , read:" + debugPrivPrint(readRequiredPriv) +
+        " , write:" + debugPrivPrint(writeRequiredPriv)
+    );
+    authCalls.add(new AuthCallContext(AuthCallContextType.FUNCTION,
+        function, readRequiredPriv, writeRequiredPriv));
   }
 
   @Override

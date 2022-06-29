@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
@@ -69,6 +70,17 @@ public class WriteEntity extends Entity implements Serializable {
     setWriteTypeInternal(type);
   }
 
+  /**
+   * Constructor for a function.
+   *
+   * @param function
+   *          Function that is written to.
+   */
+  public WriteEntity(Function function, WriteType type) {
+    super(function, true);
+    setWriteType(type);
+  }
+
   public WriteEntity(DataConnector connector, WriteType type) {
     super(connector, true);
     setWriteTypeInternal(type);
@@ -88,20 +100,6 @@ public class WriteEntity extends Entity implements Serializable {
   public WriteEntity(Table t, WriteType type, boolean complete) {
     super(t, complete);
     setWriteTypeInternal(type);
-  }
-
-  /**
-   * Constructor for objects represented as String.
-   * Currently applicable only for function names.
-   * @param db
-   * @param objName
-   * @param className
-   * @param type
-   * @param writeType
-   */
-  public WriteEntity(Database db, String objName, String className, Type type, WriteType writeType) {
-    super(db, objName, className, type);
-    this.writeType = writeType;
   }
 
   /**

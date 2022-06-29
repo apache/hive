@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
@@ -34,7 +33,6 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorization
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext.CLIENT_TYPE;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveMetastoreClientFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
@@ -137,10 +135,13 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
         }
         break;
       case FUNCTION:
-        // create/drop functions are marked as ADMIN functions
+        // create/drop functions are marked as OWNER functions
         // Usage of available functions in query are not restricted by sql
         // standard authorization.
-        continue;
+        if (userName != null && userName.equalsIgnoreCase(hiveObj.getOwnerName())) {
+          availPrivs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
+        }
+        break;
       default:
         availPrivs = SQLAuthorizationUtils.getPrivilegesFromMetaStore(metastoreClient, userName,
             hiveObj, privController.getCurrentRoleNames(), privController.isUserAdmin());
