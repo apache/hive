@@ -64,7 +64,7 @@ class CompactionHeartbeatService {
       }
     }
     if (instance.shuttingDown) {
-      throw new IllegalStateException("The CompactionHeartbeatService is already destroyed!");
+      throw new IllegalStateException("CompactionHeartbeatService is already destroyed!");
     }
     return instance;
   }
@@ -84,7 +84,7 @@ class CompactionHeartbeatService {
    */
   void startHeartbeat(long txnId, long lockId, String tableName) {
     if (shuttingDown) {
-      throw new IllegalStateException("Service is shutting down, starting new heartbeats are not possible!");
+      throw new IllegalStateException("Service is shutting down, starting new heartbeats is not possible!");
     }
     if (tasks.containsKey(txnId)) {
       throw new IllegalStateException("Heartbeat was already started for TXN " + txnId);
@@ -197,7 +197,7 @@ class CompactionHeartbeatService {
             clientPool.returnObject(msc);
           }
         } catch (Exception e) {
-          LOG.error("Error while invalidating a broken MetaStoreClient instance", e);
+          LOG.error("Error while returning back to the pool a MetaStoreClient instance", e);
         }
       }, initialDelay, period, TimeUnit.MILLISECONDS);
     }
