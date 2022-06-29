@@ -49,13 +49,22 @@ hiveserver2() {
     timeout=$(exec $HADOOP jar $JAR $CLASS $HIVE_OPTS --getHiveConf $TIMEOUT_KEY | grep $TIMEOUT_KEY'=' | awk -F'=' '{print $2}')
     killAndWait $pid $timeout
   else
-    before_start
-    echo >&2 "$(timestamp): Starting HiveServer2"
-
     export HADOOP_CLIENT_OPTS=" -Dproc_hiveserver2 $HADOOP_CLIENT_OPTS "
     export HADOOP_OPTS="$HIVESERVER2_HADOOP_OPTS $HADOOP_OPTS"
-    hiveserver2_pid="$$"
-    echo $hiveserver2_pid > ${HIVESERVER2_PID}
+    commands=$(exec $HADOOP jar $JAR $CLASS -H | grep -v '-hiveconf' | awk '{print $1}')
+    start_hiveserver2='Y'
+    for i in "$@"; do
+      if [ $(echo "${commands[@]}" | grep -we "$i") != "" ]; then
+        start_hiveserver2='N'
+        break
+      fi
+    done
+    if [ "$start_hiveserver2" == "Y" ]; then
+      before_start
+      echo >&2 "$(timestamp): Starting HiveServer2"
+      hiveserver2_pid="$$"
+      echo $hiveserver2_pid > ${HIVESERVER2_PID}
+    fi
     exec $HADOOP jar $JAR $CLASS $HIVE_OPTS "$@"
   fi
 }
