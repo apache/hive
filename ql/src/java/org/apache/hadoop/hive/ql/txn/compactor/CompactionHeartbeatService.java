@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -154,6 +155,11 @@ class CompactionHeartbeatService {
 
     private CompactionHeartbeater(long txnId, long lockId, String tableName) {
       heartbeatExecutor = new ScheduledThreadPoolExecutor(1);
+      heartbeatExecutor.setThreadFactory(new ThreadFactoryBuilder()
+          .setPriority(Thread.MIN_PRIORITY)
+          .setDaemon(true)
+          .setNameFormat("CompactionTxnHeartbeater-" + txnId)
+          .build());
       this.tableName = Objects.requireNonNull(tableName);
       this.txnId = txnId;
       this.lockId = lockId;
