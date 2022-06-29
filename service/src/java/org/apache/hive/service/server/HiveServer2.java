@@ -440,13 +440,7 @@ public class HiveServer2 extends CompositeService {
     }
 
     // Add a shutdown hook for catching SIGTERM & SIGINT
-    ShutdownHookManager.addShutdownHook(() -> {
-      try {
-        decommission();
-      } finally {
-        stop();
-      }
-    });
+    ShutdownHookManager.addShutdownHook(() -> graceful_stop());
   }
 
   private void logCompactionParameters(HiveConf hiveConf) {
@@ -914,6 +908,10 @@ public class HiveServer2 extends CompositeService {
       }
     }
     super.decommission();
+  }
+
+  public synchronized void graceful_stop() {
+    this.decommission();
     long maxTimeForWait = HiveConf.getTimeVar(getHiveConf(),
             HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS);
     if (maxTimeForWait > 0) {
@@ -931,6 +929,7 @@ public class HiveServer2 extends CompositeService {
         LOG.warn("Error decommissioning HiveServer2", e);
       } finally {
         service.shutdownNow();
+        this.stop();
       }
     }
   }

@@ -467,5 +467,4 @@ public class OperationManager extends AbstractService {
         .map(cache -> cache.getAllQueryIds())
         .orElse(Collections.emptySet());
   }
-
 }

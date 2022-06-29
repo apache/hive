@@ -440,11 +440,7 @@ public class MiniHS2 extends AbstractHiveService {
 
   public void graceful_stop() {
     verifyStarted();
-    try {
-      hiveServer2.decommission();
-    } finally {
-      hiveServer2.stop();
-    }
+    hiveServer2.graceful_stop();
   }
 
   public void stop() {
