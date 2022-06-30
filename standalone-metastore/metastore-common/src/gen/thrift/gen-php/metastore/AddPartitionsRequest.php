@@ -61,6 +61,11 @@ class AddPartitionsRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        8 => array(
+            'var' => 'skipFSWrites',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -91,6 +96,10 @@ class AddPartitionsRequest
      * @var string
      */
     public $validWriteIdList = null;
+    /**
+     * @var bool
+     */
+    public $skipFSWrites = false;
 
     public function __construct($vals = null)
     {
@@ -115,6 +124,9 @@ class AddPartitionsRequest
             }
             if (isset($vals['validWriteIdList'])) {
                 $this->validWriteIdList = $vals['validWriteIdList'];
+            }
+            if (isset($vals['skipFSWrites'])) {
+                $this->skipFSWrites = $vals['skipFSWrites'];
             }
         }
     }
@@ -197,6 +209,13 @@ class AddPartitionsRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 8:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->skipFSWrites);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -251,6 +270,11 @@ class AddPartitionsRequest
         if ($this->validWriteIdList !== null) {
             $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 7);
             $xfer += $output->writeString($this->validWriteIdList);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->skipFSWrites !== null) {
+            $xfer += $output->writeFieldBegin('skipFSWrites', TType::BOOL, 8);
+            $xfer += $output->writeBool($this->skipFSWrites);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

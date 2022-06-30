@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField CHECK_CONSTRAINTS_FIELD_DESC = new org.apache.thrift.protocol.TField("checkConstraints", org.apache.thrift.protocol.TType.LIST, (short)8);
   private static final org.apache.thrift.protocol.TField PROCESSOR_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("processorCapabilities", org.apache.thrift.protocol.TType.LIST, (short)9);
   private static final org.apache.thrift.protocol.TField PROCESSOR_IDENTIFIER_FIELD_DESC = new org.apache.thrift.protocol.TField("processorIdentifier", org.apache.thrift.protocol.TType.STRING, (short)10);
+  private static final org.apache.thrift.protocol.TField SKIP_FSWRITES_FIELD_DESC = new org.apache.thrift.protocol.TField("skipFSWrites", org.apache.thrift.protocol.TType.BOOL, (short)11);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CreateTableRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CreateTableRequestTupleSchemeFactory();
@@ -35,6 +36,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.util.List<SQLCheckConstraint> checkConstraints; // optional
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> processorCapabilities; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String processorIdentifier; // optional
+  private boolean skipFSWrites; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -47,7 +49,8 @@ package org.apache.hadoop.hive.metastore.api;
     DEFAULT_CONSTRAINTS((short)7, "defaultConstraints"),
     CHECK_CONSTRAINTS((short)8, "checkConstraints"),
     PROCESSOR_CAPABILITIES((short)9, "processorCapabilities"),
-    PROCESSOR_IDENTIFIER((short)10, "processorIdentifier");
+    PROCESSOR_IDENTIFIER((short)10, "processorIdentifier"),
+    SKIP_FSWRITES((short)11, "skipFSWrites");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -83,6 +86,8 @@ package org.apache.hadoop.hive.metastore.api;
           return PROCESSOR_CAPABILITIES;
         case 10: // PROCESSOR_IDENTIFIER
           return PROCESSOR_IDENTIFIER;
+        case 11: // SKIP_FSWRITES
+          return SKIP_FSWRITES;
         default:
           return null;
       }
@@ -124,7 +129,9 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.ENV_CONTEXT,_Fields.PRIMARY_KEYS,_Fields.FOREIGN_KEYS,_Fields.UNIQUE_CONSTRAINTS,_Fields.NOT_NULL_CONSTRAINTS,_Fields.DEFAULT_CONSTRAINTS,_Fields.CHECK_CONSTRAINTS,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER};
+  private static final int __SKIPFSWRITES_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.ENV_CONTEXT,_Fields.PRIMARY_KEYS,_Fields.FOREIGN_KEYS,_Fields.UNIQUE_CONSTRAINTS,_Fields.NOT_NULL_CONSTRAINTS,_Fields.DEFAULT_CONSTRAINTS,_Fields.CHECK_CONSTRAINTS,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER,_Fields.SKIP_FSWRITES};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -155,11 +162,15 @@ package org.apache.hadoop.hive.metastore.api;
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.PROCESSOR_IDENTIFIER, new org.apache.thrift.meta_data.FieldMetaData("processorIdentifier", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.SKIP_FSWRITES, new org.apache.thrift.meta_data.FieldMetaData("skipFSWrites", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CreateTableRequest.class, metaDataMap);
   }
 
   public CreateTableRequest() {
+    this.skipFSWrites = false;
+
   }
 
   public CreateTableRequest(
@@ -173,6 +184,7 @@ package org.apache.hadoop.hive.metastore.api;
    * Performs a deep copy on <i>other</i>.
    */
   public CreateTableRequest(CreateTableRequest other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetTable()) {
       this.table = new Table(other.table);
     }
@@ -228,6 +240,7 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetProcessorIdentifier()) {
       this.processorIdentifier = other.processorIdentifier;
     }
+    this.skipFSWrites = other.skipFSWrites;
   }
 
   public CreateTableRequest deepCopy() {
@@ -246,6 +259,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.checkConstraints = null;
     this.processorCapabilities = null;
     this.processorIdentifier = null;
+    this.skipFSWrites = false;
+
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -600,6 +615,28 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public boolean isSkipFSWrites() {
+    return this.skipFSWrites;
+  }
+
+  public void setSkipFSWrites(boolean skipFSWrites) {
+    this.skipFSWrites = skipFSWrites;
+    setSkipFSWritesIsSet(true);
+  }
+
+  public void unsetSkipFSWrites() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __SKIPFSWRITES_ISSET_ID);
+  }
+
+  /** Returns true if field skipFSWrites is set (has been assigned a value) and false otherwise */
+  public boolean isSetSkipFSWrites() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __SKIPFSWRITES_ISSET_ID);
+  }
+
+  public void setSkipFSWritesIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __SKIPFSWRITES_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case TABLE:
@@ -682,6 +719,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case SKIP_FSWRITES:
+      if (value == null) {
+        unsetSkipFSWrites();
+      } else {
+        setSkipFSWrites((java.lang.Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -718,6 +763,9 @@ package org.apache.hadoop.hive.metastore.api;
     case PROCESSOR_IDENTIFIER:
       return getProcessorIdentifier();
 
+    case SKIP_FSWRITES:
+      return isSkipFSWrites();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -749,6 +797,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetProcessorCapabilities();
     case PROCESSOR_IDENTIFIER:
       return isSetProcessorIdentifier();
+    case SKIP_FSWRITES:
+      return isSetSkipFSWrites();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -856,6 +906,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_skipFSWrites = true && this.isSetSkipFSWrites();
+    boolean that_present_skipFSWrites = true && that.isSetSkipFSWrites();
+    if (this_present_skipFSWrites || that_present_skipFSWrites) {
+      if (!(this_present_skipFSWrites && that_present_skipFSWrites))
+        return false;
+      if (this.skipFSWrites != that.skipFSWrites)
+        return false;
+    }
+
     return true;
   }
 
@@ -902,6 +961,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetProcessorIdentifier()) ? 131071 : 524287);
     if (isSetProcessorIdentifier())
       hashCode = hashCode * 8191 + processorIdentifier.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetSkipFSWrites()) ? 131071 : 524287);
+    if (isSetSkipFSWrites())
+      hashCode = hashCode * 8191 + ((skipFSWrites) ? 131071 : 524287);
 
     return hashCode;
   }
@@ -1010,6 +1073,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetProcessorIdentifier()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.processorIdentifier, other.processorIdentifier);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetSkipFSWrites(), other.isSetSkipFSWrites());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSkipFSWrites()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.skipFSWrites, other.skipFSWrites);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1132,6 +1205,12 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
+    if (isSetSkipFSWrites()) {
+      if (!first) sb.append(", ");
+      sb.append("skipFSWrites:");
+      sb.append(this.skipFSWrites);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -1161,6 +1240,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -1343,6 +1424,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 11: // SKIP_FSWRITES
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.skipFSWrites = iprot.readBool();
+              struct.setSkipFSWritesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1473,6 +1562,11 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetSkipFSWrites()) {
+        oprot.writeFieldBegin(SKIP_FSWRITES_FIELD_DESC);
+        oprot.writeBool(struct.skipFSWrites);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1519,7 +1613,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetProcessorIdentifier()) {
         optionals.set(8);
       }
-      oprot.writeBitSet(optionals, 9);
+      if (struct.isSetSkipFSWrites()) {
+        optionals.set(9);
+      }
+      oprot.writeBitSet(optionals, 10);
       if (struct.isSetEnvContext()) {
         struct.envContext.write(oprot);
       }
@@ -1589,6 +1686,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetProcessorIdentifier()) {
         oprot.writeString(struct.processorIdentifier);
       }
+      if (struct.isSetSkipFSWrites()) {
+        oprot.writeBool(struct.skipFSWrites);
+      }
     }
 
     @Override
@@ -1597,7 +1697,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.table = new Table();
       struct.table.read(iprot);
       struct.setTableIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(9);
+      java.util.BitSet incoming = iprot.readBitSet(10);
       if (incoming.get(0)) {
         struct.envContext = new EnvironmentContext();
         struct.envContext.read(iprot);
@@ -1703,6 +1803,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(8)) {
         struct.processorIdentifier = iprot.readString();
         struct.setProcessorIdentifierIsSet(true);
+      }
+      if (incoming.get(9)) {
+        struct.skipFSWrites = iprot.readBool();
+        struct.setSkipFSWritesIsSet(true);
       }
     }
   }

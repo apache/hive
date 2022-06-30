@@ -74,6 +74,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function create_database(\metastore\Database $database);
     /**
+     * @param \metastore\CreateDatabaseRequest $req
+     * @throws \metastore\AlreadyExistsException
+     * @throws \metastore\InvalidObjectException
+     * @throws \metastore\MetaException
+     */
+    public function create_database_req(\metastore\CreateDatabaseRequest $req);
+    /**
      * @param string $name
      * @return \metastore\Database
      * @throws \metastore\NoSuchObjectException
