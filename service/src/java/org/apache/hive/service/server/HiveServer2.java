@@ -911,26 +911,29 @@ public class HiveServer2 extends CompositeService {
   }
 
   public synchronized void graceful_stop() {
-    this.decommission();
-    long maxTimeForWait = HiveConf.getTimeVar(getHiveConf(),
-            HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS);
-    if (maxTimeForWait > 0) {
-      ExecutorService service = Executors.newSingleThreadExecutor();
-      Future future = service.submit(() -> {
-        while (getCliService() != null && getCliService().getSessionManager()
-                .getOperations().size() != 0) {
-          continue;
+    try {
+      decommission();
+      long maxTimeForWait = HiveConf.getTimeVar(getHiveConf(),
+              HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS);
+      if (maxTimeForWait > 0) {
+        ExecutorService service = Executors.newSingleThreadExecutor();
+        Future future = service.submit(() -> {
+          while (getCliService() != null && getCliService().getSessionManager()
+                  .getOperations().size() != 0) {
+            continue;
+          }
+        });
+        try {
+          future.get(maxTimeForWait, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+          future.cancel(true);
+          LOG.warn("Error decommissioning HiveServer2", e);
+        } finally {
+          service.shutdownNow();
         }
-      });
-      try {
-        future.get(maxTimeForWait, TimeUnit.MILLISECONDS);
-      } catch (Exception e) {
-        future.cancel(true);
-        LOG.warn("Error decommissioning HiveServer2", e);
-      } finally {
-        service.shutdownNow();
-        this.stop();
       }
+    } finally {
+      stop();
     }
   }
 
