@@ -409,4 +409,9 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
   protected boolean allowOutputMultipleTimes() {
     return conf.getBoolVar(HiveConf.ConfVars.SPLIT_UPDATE);
   }
+
+  @Override
+  protected boolean enableColumnStatsCollecting() {
+    return false;
+  }
 }
