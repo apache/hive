@@ -151,6 +151,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private IMetaStoreMetadataTransformer transformer;
   private static DataConnectorProviderFactory dataconnectorFactory = null;
 
+  // Used for testing to simulate method timeout.
+  @VisibleForTesting
+  static boolean TEST_TIMEOUT_ENABLED = false;
+  @VisibleForTesting
+  static long TEST_TIMEOUT_VALUE = -1;
+
   // Variables for metrics
   // Package visible so that HMSMetricsListener can see them.
   static AtomicInteger databaseCount, tableCount, partCount;
