@@ -505,6 +505,16 @@ public class MetaStoreServerUtils {
     params.remove(StatsSetupConst.NUM_ERASURE_CODED_FILES);
   }
 
+  /**
+   * Compare the names, types and comments of two lists of {@link FieldSchema}.
+   * <p>
+   * The name of {@link FieldSchema} is compared in the case-insensitive mode
+   * because all names in Hive are case-insensitive.
+   *
+   * @param oldCols old columns
+   * @param newCols new columns
+   * @return true if the two columns are the same, false otherwise
+   */
   public static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     if (oldCols == newCols) {
       return true;
@@ -524,6 +534,8 @@ public class MetaStoreServerUtils {
 
   /**
    * Returns true if p is a prefix of s.
+   * <p>
+   * The compare of {@link FieldSchema} is the same as {@link #areSameColumns(List, List)}.
    */
   public static boolean arePrefixColumns(List<FieldSchema> p, List<FieldSchema> s) {
     if (p == s) {
