@@ -959,7 +959,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             "Default database for catalog " + catalog.getName(), catalog.getLocationUri(),
             Collections.emptyMap());
         db.setCatalogName(catalog.getName());
-        create_database_core(ms, db);
+        create_database_core(ms, db, false);
 
         if (!transactionalListeners.isEmpty()) {
           transactionalListenersResponses =
@@ -1582,7 +1582,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
         Deadline.checkTimeout();
       }
-      create_database_core(getMS(), db);
+      create_database_core(getMS(), db, false);
       success = true;
     } catch (Exception e) {
       ex = e;
@@ -4298,7 +4298,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Partition ret = null;
     Exception ex = null;
     try {
-      ret = append_partition_common(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, part_vals, envContext);
+      ret = append_partition_common(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, part_vals, false, envContext);
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
@@ -6836,7 +6836,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       RawStore ms = getMS();
       List<String> partVals = getPartValsFromName(ms, parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, part_name);
-      ret = append_partition_common(ms, parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, partVals, env_context);
+      ret = append_partition_common(ms, parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, partVals, false, env_context);
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
