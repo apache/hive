@@ -1602,7 +1602,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean success = false;
     Exception ex = null;
     if (!db.isSetCatalogName()) {
-      db.setCatalogName(getDefaultCatalog(conf))
+      db.setCatalogName(getDefaultCatalog(conf));
     }
     try {
       try {
