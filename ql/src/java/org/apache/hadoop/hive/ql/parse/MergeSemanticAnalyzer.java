@@ -49,6 +49,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * they are actually inserts) and then doing some patch up to make them work as merges instead.
  */
 public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
+  private int numWhenMatchedUpdateClauses;
+  private int numWhenMatchedDeleteClauses;
+
   MergeSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
@@ -163,8 +166,9 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
      * Update and Delete may be in any order.  (Insert is always last)
      */
     String extraPredicate = null;
-    int numWhenMatchedUpdateClauses = 0, numWhenMatchedDeleteClauses = 0;
     int numInsertClauses = 0;
+    numWhenMatchedUpdateClauses = 0;
+    numWhenMatchedDeleteClauses = 0;
     boolean hintProcessed = false;
     for (ASTNode whenClause : whenClauses) {
       switch (getWhenClauseOperation(whenClause).getType()) {
@@ -709,6 +713,6 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
   @Override
   protected boolean enableColumnStatsCollecting() {
-    return false;
+    return numWhenMatchedUpdateClauses == 0 && numWhenMatchedDeleteClauses == 0;
   }
 }
