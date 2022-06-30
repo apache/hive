@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -214,23 +215,15 @@ public class SQLAuthorizationUtils {
 
     // add owner privilege if user is owner of the object
     try {
-      switch (hivePrivObject.getType()) {
-        case TABLE_OR_VIEW: {
-          if ((ignoreUnknown && !metastoreClient.tableExists(hivePrivObject.getDbname(), hivePrivObject.getObjectName())) ||
-                  isOwner(metastoreClient, userName, curRoles, hivePrivObject)) {
-            privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
-          }
-          break;
-        }
-        default: {
-          if (isOwner(metastoreClient, userName, curRoles, hivePrivObject)) {
-            privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
-          }
-          break;
-        }
+      if (isOwner(metastoreClient, userName, curRoles, hivePrivObject)) {
+        privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
       }
-    } catch (TException e) {
-      throwGetPrivErr(e, hivePrivObject, userName);
+    } catch (HiveAuthzPluginException ex) {
+      if (ex.getCause() instanceof NoSuchObjectException && ignoreUnknown) {
+        privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
+      } else {
+        throw ex;
+      }
     }
     if (isAdmin) {
       privs.addPrivilege(SQLPrivTypeGrant.ADMIN_PRIV);
