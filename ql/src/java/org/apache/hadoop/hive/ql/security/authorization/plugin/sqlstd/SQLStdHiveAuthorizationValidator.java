@@ -81,7 +81,7 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
     // check privileges on input and output objects
     List<String> deniedMessages = new ArrayList<String>();
     checkPrivileges(hiveOpType, inputHObjs, metastoreClient, userName, IOType.INPUT, deniedMessages, false);
-    checkPrivileges(hiveOpType, outputHObjs, metastoreClient, userName, IOType.OUTPUT, deniedMessages, hiveOpType == HiveOperationType.ALTERTABLE_RENAME ? true: false);
+    checkPrivileges(hiveOpType, outputHObjs, metastoreClient, userName, IOType.OUTPUT, deniedMessages, hiveOpType == HiveOperationType.ALTERTABLE_RENAME);
 
     SQLAuthorizationUtils.assertNoDeniedPermissions(new HivePrincipal(userName,
         HivePrincipalType.USER), hiveOpType, deniedMessages);

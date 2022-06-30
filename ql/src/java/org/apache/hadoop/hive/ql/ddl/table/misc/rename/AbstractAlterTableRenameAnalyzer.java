@@ -58,7 +58,7 @@ public abstract class AbstractAlterTableRenameAnalyzer extends AbstractAlterTabl
     String newDatabaseName = target.getDb() != null ? target.getDb() : table.getDbName(); // extract new database name from new table name, if not specified, then src dbname is used
     Database newDatabase = getDatabase(newDatabaseName);
     outputs.add(new WriteEntity(newDatabase, WriteEntity.WriteType.DDL_SHARED));
-    Table newTable = new Table(target.getDb(), target.getTable());
+    Table newTable = new Table(newDatabaseName, target.getTable());
     newTable.setParameters(table.getParameters());
     newTable.setTableType(table.getTableType());
     newTable.setTemporary(table.isTemporary());
