@@ -19,7 +19,9 @@
 package org.apache.hive.service.server;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
+import org.apache.hive.service.Service;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.junit.AfterClass;
@@ -81,8 +83,8 @@ public class TestGracefulStopHS2 {
     Statement stmt = conn.createStatement();
     assertTrue(stmt.execute("select 1"));
     ExecutorService executors = Executors.newCachedThreadPool();
-    Request req1 = new Request("select reflect(\"java.lang.Thread\", \"sleep\", bigint(20000))");
-    Request req2 = new Request("select reflect(\"java.lang.Thread\", \"sleep\", bigint(600000))");
+    Request req1 = new Request("select 'test', reflect(\"java.lang.Thread\", \"sleep\", bigint(20000))");
+    Request req2 = new Request("select 'test', reflect(\"java.lang.Thread\", \"sleep\", bigint(600000))");
     Future future1 = executors.submit(req1), future2 = executors.submit(req2);
     Thread.sleep(1000);
     // Now decommission hs2
@@ -96,8 +98,8 @@ public class TestGracefulStopHS2 {
       fail();
     } catch (Exception e) {
       assertTrue(e instanceof HiveSQLException);
-      String message = "Unable to run new queries as HiveServer2 is decommissioning or inactive";
-      assertTrue(e.getMessage().contains(message));
+      assertTrue(e.getMessage().contains(ErrorMsg.HIVE_SERVER2_INACTIVE
+              .format(Service.STATE.DECOMMISSIONED.name())));
     }
     // Close existing connections with no errors
     stmt.close();
