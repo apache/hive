@@ -484,7 +484,7 @@ public class DynamicPartitionPruner {
             info.values.add(value);
             partitionCount++;
           }
-          LOG.info("Received {} partitions (source: {})", partitionCount, sourceName);
+          LOG.info("Received {} partitions (source: {}, column: {})", partitionCount, sourceName, columnName);
         }
       }
     } finally {
