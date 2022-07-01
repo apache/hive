@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -56,13 +57,8 @@ public abstract class AbstractAlterTableRenameAnalyzer extends AbstractAlterTabl
     }
     addInputsOutputsAlterTable(tableName, null, desc, desc.getType(), false);
     String newDatabaseName = target.getDb() != null ? target.getDb() : table.getDbName(); // extract new database name from new table name, if not specified, then src dbname is used
-    Database newDatabase = getDatabase(newDatabaseName);
-    outputs.add(new WriteEntity(newDatabase, WriteEntity.WriteType.DDL_SHARED));
-    Table newTable = new Table(newDatabaseName, target.getTable());
-    newTable.setParameters(table.getParameters());
-    newTable.setTableType(table.getTableType());
-    newTable.setTemporary(table.isTemporary());
-    outputs.add(new WriteEntity(newTable, WriteEntity.WriteType.DDL_NO_LOCK));//Since table object is not created, we'll not have a lock on it.
+    DDLUtils.addDbAndTableToOutputs(getDatabase(newDatabaseName), target,
+            table.getTableType(), table.isTemporary(), table.getParameters(), outputs);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 
