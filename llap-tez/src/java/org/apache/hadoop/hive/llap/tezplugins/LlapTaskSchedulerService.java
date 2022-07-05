@@ -1170,7 +1170,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             task, priority, capability);
     if (!dagRunning) {
       if (metrics != null && id != null) {
-        metrics.setDagId(id.getTaskID().getVertexID().getDAGId().toString());
+        metrics.setDagId(id.getDAGID().toString());
       }
       dagRunning = true;
     }
@@ -1191,7 +1191,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         task, priority, capability, containerId);
     if (!dagRunning) {
       if (metrics != null && id != null) {
-        metrics.setDagId(id.getTaskID().getVertexID().getDAGId().toString());
+        metrics.setDagId(id.getDAGID().toString());
       }
       dagRunning = true;
     }
@@ -1204,7 +1204,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   protected TezTaskAttemptID getTaskAttemptId(Object task) {
     // TODO: why does Tez API use "Object" for this?
     if (task instanceof TaskAttempt) {
-      return ((TaskAttempt)task).getID();
+      return ((TaskAttempt)task).getTaskAttemptID();
     }
     throw new AssertionError("LLAP plugin can only schedule task attempts");
   }
@@ -2108,7 +2108,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           if (preemptHosts != null && !preemptHosts.contains(taskInfo.getAssignedNode().getHost())) {
             continue; // Not the right host.
           }
-          Map<Integer, Set<Integer>> depInfo = getDependencyInfo(taskInfo.getAttemptId().getTaskID().getVertexID().getDAGId());
+          Map<Integer, Set<Integer>> depInfo = getDependencyInfo(taskInfo.getAttemptId().getDAGID());
           Set<Integer> vertexDepInfo = null;
           if (depInfo != null) {
             vertexDepInfo = depInfo.get(vertexNum(forTask));

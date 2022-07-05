@@ -430,7 +430,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     UpdateFragmentRequestProto request = UpdateFragmentRequestProto.newBuilder()
         .setIsGuaranteed(newState).setFragmentIdentifierString(attemptId.toString())
         .setQueryIdentifier(constructQueryIdentifierProto(
-            attemptId.getTaskID().getVertexID().getDAGId().getId())).build();
+            attemptId.getDAGID().getId())).build();
 
     communicator.sendUpdateFragment(request, nodeId.getHostname(), nodeId.getPort(),
         new LlapProtocolClientProxy.ExecuteRequestCallback<UpdateFragmentResponseProto>() {
@@ -457,7 +457,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
                                          int priority)  {
     super.registerRunningTaskAttempt(containerId, taskSpec, additionalResources, credentials,
         credentialsChanged, priority);
-    int dagId = taskSpec.getTaskAttemptID().getTaskID().getVertexID().getDAGId().getId();
+    int dagId = taskSpec.getDAGID().getId();
     if (currentQueryIdentifierProto == null || (dagId != currentQueryIdentifierProto.getDagIndex())) {
       String hiveQueryId = extractQueryIdFromContext();
       try {
@@ -611,7 +611,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       TerminateFragmentRequestProto request =
           TerminateFragmentRequestProto.newBuilder().setQueryIdentifier(
               constructQueryIdentifierProto(
-                  taskAttemptId.getTaskID().getVertexID().getDAGId().getId()))
+                  taskAttemptId.getDAGID().getId()))
               .setFragmentIdentifierString(taskAttemptId.toString()).build();
       communicator.sendTerminateFragment(request, nodeId.getHostname(), nodeId.getPort(),
           new LlapProtocolClientProxy.ExecuteRequestCallback<TerminateFragmentResponseProto>() {
@@ -755,7 +755,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   private String constructLlapLogUrl(final TezTaskAttemptID attemptID, final String containerIdString,
     final boolean isDone, final String nmAddress) {
-    String dagId = attemptID.getTaskID().getVertexID().getDAGId().toString();
+    String dagId = attemptID.getDAGID().toString();
     String filename = JOINER.join(currentHiveQueryId, "-", dagId, ".log", (isDone ? ".done" : ""),
       "?nm.id=", nmAddress);
     String url = PATH_JOINER.join(timelineServerUri, "ws", "v1", "applicationhistory", "containers",
@@ -904,7 +904,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     builder.setAmPort(getAddress().getPort());
 
     Preconditions.checkState(currentQueryIdentifierProto.getDagIndex() ==
-        taskSpec.getTaskAttemptID().getTaskID().getVertexID().getDAGId().getId());
+        taskSpec.getDAGID().getId());
 
 
     builder.setCredentialsBinary(
