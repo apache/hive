@@ -18,8 +18,18 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Arrays;
+
+import org.apache.avro.Schema;
+import org.apache.avro.file.DataFileWriter;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.generic.GenericRecord;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -29,6 +39,7 @@ import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.MiniHBaseCluster;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
@@ -107,6 +118,7 @@ public class HBaseTestSetup extends QTestSetup {
       if (meta != null) meta.close();
     }
     createHBaseTable();
+    createAvroTable();
   }
 
   private void createHBaseTable() throws IOException {
@@ -155,6 +167,41 @@ public class HBaseTestSetup extends QTestSetup {
     } finally {
       if (htable != null) htable.close();
       if (hbaseAdmin != null) hbaseAdmin.close();
+    }
+  }
+
+  private byte[] createAvroRecordWithNestedTimestamp() throws IOException {
+    String dataDir = System.getProperty("test.data.dir");
+    Schema schema = new Schema.Parser().parse(new File(dataDir+"/nested_ts.avsc"));
+    GenericData.Record rootRecord = new GenericData.Record(schema);
+    rootRecord.put("id", "X338092");
+    GenericData.Record dateRecord = new GenericData.Record(schema.getField("dischargedate").schema());
+    dateRecord.put("value", LocalDate.of(2022,7,5).atStartOfDay().toEpochSecond(ZoneOffset.UTC));
+    rootRecord.put("dischargedate", dateRecord);
+
+    try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+      try (DataFileWriter<GenericRecord> dataFileWriter
+             = new DataFileWriter<GenericRecord>(new GenericDatumWriter<>(schema))) {
+        dataFileWriter.create(schema, out);
+        dataFileWriter.append(rootRecord);
+      }
+      return out.toByteArray();
+    }
+  }
+
+  private void createAvroTable() throws IOException {
+    final String HBASE_TABLE_NAME = "HiveAvroTable";
+    HTableDescriptor htableDesc = new HTableDescriptor(TableName.valueOf(HBASE_TABLE_NAME));
+    htableDesc.addFamily(new HColumnDescriptor("data".getBytes()));
+
+    try (Admin hbaseAdmin = hbaseConn.getAdmin()) {
+      hbaseAdmin.createTable(htableDesc);
+      try (Table table = hbaseConn.getTable(TableName.valueOf(HBASE_TABLE_NAME))) {
+        Put p = new Put("1".getBytes());
+        p.add(new KeyValue("1".getBytes(), "data".getBytes(), "frV4".getBytes(),
+          createAvroRecordWithNestedTimestamp()));
+        table.put(p);
+      }
     }
   }
 

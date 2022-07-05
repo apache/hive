@@ -1,0 +1,45 @@
+PREHOOK: query: CREATE EXTERNAL TABLE tbl(
+`key` string COMMENT '',
+`data_frv4` struct<`id`:string, `dischargedate`:struct<`value`:timestamp>>)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.hbase.HBaseSerDe'
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+'serialization.format'='1',
+'hbase.columns.mapping' = ':key,data:frV4',
+'data.frV4.serialization.type'='avro',
+#### A masked pattern was here ####
+)
+TBLPROPERTIES (
+'hbase.table.name' = 'HiveAvroTable',
+'hbase.struct.autogenerate'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl
+POSTHOOK: query: CREATE EXTERNAL TABLE tbl(
+`key` string COMMENT '',
+`data_frv4` struct<`id`:string, `dischargedate`:struct<`value`:timestamp>>)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.hbase.HBaseSerDe'
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (
+'serialization.format'='1',
+'hbase.columns.mapping' = ':key,data:frV4',
+'data.frV4.serialization.type'='avro',
+#### A masked pattern was here ####
+)
+TBLPROPERTIES (
+'hbase.table.name' = 'HiveAvroTable',
+'hbase.struct.autogenerate'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl
+PREHOOK: query: select data_frV4.dischargedate.value from tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select data_frV4.dischargedate.value from tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl
+#### A masked pattern was here ####
+1970-01-19 20:16:19.2
