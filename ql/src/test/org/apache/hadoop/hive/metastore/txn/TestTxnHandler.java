@@ -1906,21 +1906,9 @@ public class TestTxnHandler {
       validTxnWriteIdList.addTableValidWriteIdList(tableWriteId);
     }
 
-    Table table = new Table();
-    table.setDbName("default");
-    table.setTableName("t1");
-    HashMap<String, String> tableParameters = new HashMap<String, String>() {{
-      put(TABLE_IS_TRANSACTIONAL, "true");
-      put(TABLE_TRANSACTIONAL_PROPERTIES, "insert_only");
-    }};
-    table.setParameters(tableParameters);
-    SourceTable sourceTable = new SourceTable();
-    sourceTable.setTable(table);
-    CreationMetadata creationMetadata = new CreationMetadata();
-    creationMetadata.setDbName("default");
-    creationMetadata.setTblName("mat1");
-    creationMetadata.setSourceTables(Collections.singletonList(sourceTable));
-    creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
+    SourceTable sourceTable = sourceTable("t1", false);
+    sourceTable.getTable().getParameters().put(TABLE_TRANSACTIONAL_PROPERTIES, "insert_only");
+    CreationMetadata creationMetadata = creationMetadata(Collections.singletonList(sourceTable), validTxnWriteIdList);
 
     Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
         creationMetadata, new ValidReadTxnList().toString());
@@ -1941,11 +1929,11 @@ public class TestTxnHandler {
 
   private CreationMetadata creationMetadata(List<SourceTable> sourceTableList) {
     ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(5L);
-    ValidReaderWriteIdList[] tableWriteIdList = new ValidReaderWriteIdList[1];
-    tableWriteIdList[0] = new ValidReaderWriteIdList(
-            TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1);
-    for (ValidReaderWriteIdList tableWriteId : tableWriteIdList) {
-      validTxnWriteIdList.addTableValidWriteIdList(tableWriteId);
+    for (SourceTable sourceTable : sourceTableList) {
+      ValidReaderWriteIdList tableWriteIdList = new ValidReaderWriteIdList(
+              TableName.getDbTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName()),
+              new long[] { 2 }, new BitSet(), 1);
+      validTxnWriteIdList.addTableValidWriteIdList(tableWriteIdList);
     }
 
     CreationMetadata creationMetadata = creationMetadata(sourceTableList, validTxnWriteIdList);
@@ -1959,6 +1947,10 @@ public class TestTxnHandler {
     creationMetadata.setTblName("mat1");
     creationMetadata.setSourceTables(sourceTableList);
     creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
+    creationMetadata.setTablesUsed(sourceTableList.stream()
+            .map(sourceTable -> TableName.getDbTable(
+                    sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName()))
+            .collect(Collectors.toSet()));
     return creationMetadata;
   }
 

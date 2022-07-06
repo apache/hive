@@ -2550,7 +2550,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       CreationMetadata creationMetadata, String currentValidTxnListStr) throws MetaException {
     // Old clients do not set the source table field.
     if (!creationMetadata.isSetSourceTables()) {
-      return null;
+      return getMaterializationInvalidationInfoByTxn(creationMetadata, currentValidTxnListStr);
     }
 
     if (creationMetadata.getSourceTables().isEmpty()) {
@@ -2560,26 +2560,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
 
     // First search for updated tables by checking transactional statistics.
-    Boolean sourceTablesUpdateDeleteModified = false;
+    boolean sourceTablesUpdateDeleteModified = false;
     boolean hasInvalidStats = false;
-    Set<String> checkCompact = new HashSet<>();
-    Set<String> checkUpdates = new HashSet<>();
     for (SourceTable sourceTable : creationMetadata.getSourceTables()) {
       Table table = sourceTable.getTable();
       String transactionalProp = table.getParameters().get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
       if ("insert_only".equalsIgnoreCase(transactionalProp)) {
         hasInvalidStats = true;
-        checkCompact.add(
-            TableName.getDbTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName()));
-        continue;
+        break;
       }
       if (!StatsSetupConst.areTransactionalStatsUptoDate(sourceTable.getTable().getParameters())) {
         hasInvalidStats = true;
-        String tableName =
-            TableName.getDbTable(sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName());
-        checkCompact.add(tableName);
-        checkUpdates.add(tableName);
-        continue;
+        break;
       }
       if (sourceTable.getDeletedCount() > 0 || sourceTable.getUpdatedCount() > 0) {
         sourceTablesUpdateDeleteModified = true;
@@ -2593,13 +2585,24 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return new Materialization(sourceTablesUpdateDeleteModified, false);
     }
 
-    // Fall back: check the completed transaction log for updates.
-    Boolean sourceTablesCompacted = wasCompacted(checkCompact, creationMetadata.getValidTxnList());
+    return getMaterializationInvalidationInfoByTxn(creationMetadata, currentValidTxnListStr);
+  }
+
+  private Materialization getMaterializationInvalidationInfoByTxn(
+      CreationMetadata creationMetadata, String currentValidTxnListStr) throws MetaException {
+
+    if (creationMetadata.getTablesUsed().isEmpty()) {
+      // Bail out
+      LOG.warn("Materialization creation metadata does not contain any table");
+      return null;
+    }
+
+    Boolean sourceTablesCompacted = wasCompacted(creationMetadata.getTablesUsed(), creationMetadata.getValidTxnList());
     if (sourceTablesCompacted == null) {
       return null;
     }
-    sourceTablesUpdateDeleteModified =
-            wasUpdatedDeleteModified(checkUpdates, creationMetadata.getValidTxnList(), currentValidTxnListStr);
+    Boolean sourceTablesUpdateDeleteModified = wasUpdatedDeleteModified(
+            creationMetadata.getTablesUsed(), creationMetadata.getValidTxnList(), currentValidTxnListStr);
     if (sourceTablesUpdateDeleteModified == null) {
       return null;
     }
