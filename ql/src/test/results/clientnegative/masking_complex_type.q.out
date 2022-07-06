@@ -1,0 +1,13 @@
+PREHOOK: query: create table masking_test_n8 as select cast(key as int) as key, map('F1','2022','F2','2222') as value from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_n8
+POSTHOOK: query: create table masking_test_n8 as select cast(key as int) as key, map('F1','2022','F2','2222') as value from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_n8
+POSTHOOK: Lineage: masking_test_n8.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test_n8.value EXPRESSION []
+FAILED: SemanticException [Error 10289]: Masking complex types is not supported, found a masking expression reverse(value) over column value:map<string,string>
