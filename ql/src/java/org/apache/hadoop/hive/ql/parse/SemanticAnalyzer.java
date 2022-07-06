@@ -12402,6 +12402,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(ErrorMsg.MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES,
                 privObj.getDbname(), privObj.getObjectName());
           } else {
+            privObj = TableMask.sanitizeCellValueTransformers(privObj, info);
             String replacementText = tableMask.create(privObj, info);
             // We don't support masking/filtering against ACID query at the moment
             if (ctx.getIsUpdateDeleteMerge()) {

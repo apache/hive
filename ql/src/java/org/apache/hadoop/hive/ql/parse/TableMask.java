@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -39,7 +40,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TableMask {
 
-  protected final Logger LOG = LoggerFactory.getLogger(TableMask.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(TableMask.class);
   HiveAuthorizer authorizer;
   private UnparseTranslator translator;
   private boolean enable;
@@ -181,4 +182,29 @@ public class TableMask {
     this.needsRewrite = needsRewrite;
   }
 
+  protected static HivePrivilegeObject sanitizeCellValueTransformers(
+      HivePrivilegeObject hivePrivilegeObject, MaskAndFilterInfo info) {
+    if (info == null) {
+      return hivePrivilegeObject;
+    }
+    List<String> exprs = hivePrivilegeObject.getCellValueTransformers();
+    List<String> retainedExprs = new ArrayList<>();
+    if (exprs == null || exprs.isEmpty()) {
+      return hivePrivilegeObject;
+    }
+    for (int index = 0; index < exprs.size(); index++) {
+      String expr = exprs.get(index);
+      String colName = hivePrivilegeObject.getColumns().get(index);
+      String colType = info.colTypes.get(index);
+      boolean isComplexType = colType.contains("<");
+      if (LOG.isInfoEnabled() && !expr.equals(colName) && isComplexType) {
+        LOG.info("Masking complex types is not supported yet, ignoring the masking expression {} since "
+            + "column {} is of complex type {}", expr, colName, colType);
+      } else {
+        retainedExprs.add(expr);
+      }
+    }
+    hivePrivilegeObject.setCellValueTransformers(retainedExprs);
+    return hivePrivilegeObject;
+  }
 }
