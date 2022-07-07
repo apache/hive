@@ -2939,15 +2939,16 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:string, VALUE._col0:string, VALUE._col1:string, VALUE._col2:string
+                    dataColumnCount: 1
+                    dataColumns: KEY.reducesinkkey0:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [string, string, string, string]
             Reduce Operator Tree:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [0, 1, 2, 3]
+                    projectedOutputColumnNums: [1, 2, 3, 4]
+                    selectExpressions: ConstantVectorExpression(val this) -> 1:string, ConstantVectorExpression(val should) -> 2:string, ConstantVectorExpression(val not) -> 3:string, ConstantVectorExpression(val be there) -> 4:string
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false

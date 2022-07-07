@@ -218,16 +218,15 @@ STAGE PLANS:
                     predicate: (_col3 = _col0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col3 (type: int), 99 (type: int)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: _col3 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: _col3 is null (type: boolean)
                     Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
@@ -283,7 +282,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int), 99 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -778,30 +777,30 @@ STAGE PLANS:
                     predicate: (_col4 = _col0) (type: boolean)
                     Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col4 (type: int), 99 (type: int), _col3 (type: int)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: _col4 (type: int), _col3 (type: int)
+                      outputColumnNames: _col0, _col2
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int), _col2 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: int)
                   Filter Operator
                     predicate: _col4 is null (type: boolean)
                     Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col0 (type: int), _col1 (type: int), 1 (type: int)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: _col0 (type: int), _col1 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int), _col2 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
                   Filter Operator
                     predicate: (_col4 = _col0) (type: boolean)
                     Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
@@ -843,7 +842,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int), 99 (type: int), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -859,7 +858,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), 1 (type: int)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -1097,30 +1096,30 @@ STAGE PLANS:
                     predicate: (_col4 = _col0) (type: boolean)
                     Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col4 (type: int), 98 (type: int), _col3 (type: int)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: _col4 (type: int), _col3 (type: int)
+                      outputColumnNames: _col0, _col2
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int), _col2 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: int)
                   Filter Operator
                     predicate: _col4 is null (type: boolean)
                     Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col0 (type: int), _col1 (type: int), 1 (type: int)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: _col0 (type: int), _col1 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int), _col2 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
                   Filter Operator
                     predicate: (_col4 = _col0) (type: boolean)
                     Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1162,7 +1161,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int), 98 (type: int), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -1178,7 +1177,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), 1 (type: int)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -1416,30 +1415,30 @@ STAGE PLANS:
                     predicate: (_col4 = _col0) (type: boolean)
                     Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col4 (type: int), 97 (type: int), _col3 (type: int)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: _col4 (type: int), _col3 (type: int)
+                      outputColumnNames: _col0, _col2
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int), _col2 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: int)
                   Filter Operator
                     predicate: _col4 is null (type: boolean)
                     Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col0 (type: int), _col1 (type: int), 1 (type: int)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: _col0 (type: int), _col1 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int), _col2 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
                   Filter Operator
                     predicate: (_col4 = _col0) (type: boolean)
                     Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1481,7 +1480,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int), 97 (type: int), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -1497,7 +1496,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), 1 (type: int)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -1735,30 +1734,30 @@ STAGE PLANS:
                     predicate: (_col4 = _col0) (type: boolean)
                     Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col4 (type: int), 96 (type: int), _col3 (type: int)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: _col4 (type: int), _col3 (type: int)
+                      outputColumnNames: _col0, _col2
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int), _col2 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: int)
                   Filter Operator
                     predicate: _col4 is null (type: boolean)
                     Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col0 (type: int), _col1 (type: int), 1 (type: int)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: _col0 (type: int), _col1 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int), _col2 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
                   Filter Operator
                     predicate: (_col4 = _col0) (type: boolean)
                     Statistics: Num rows: 2 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1800,7 +1799,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int), 96 (type: int), VALUE._col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -1816,7 +1815,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), VALUE._col1 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int), 1 (type: int)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -2103,16 +2102,15 @@ STAGE PLANS:
                     predicate: _col3 is null (type: boolean)
                     Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col1 (type: int), 1 (type: int)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: _col1 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (_col3 = _col0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2154,7 +2152,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int), 1 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -2419,30 +2417,28 @@ STAGE PLANS:
                     predicate: (_col3 = _col0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col3 (type: int), 1 (type: int)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: _col3 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: _col3 is null (type: boolean)
                     Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col1 (type: int), 1 (type: int)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: _col1 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (_col3 = _col0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2484,7 +2480,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int), 1 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -2500,7 +2496,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                expressions: KEY.reducesinkkey0 (type: int), 1 (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator

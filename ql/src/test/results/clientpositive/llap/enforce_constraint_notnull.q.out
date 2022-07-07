@@ -4637,8 +4637,8 @@ STAGE PLANS:
                     predicate: ((_col5 = _col1) and (_col1 < 3) and (_col1 >= 5)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: _col5 (type: int), '1' (type: string), _col2 (type: string)
-                      outputColumnNames: _col0, _col1, _col2
+                      expressions: _col5 (type: int), _col2 (type: string)
+                      outputColumnNames: _col0, _col2
                       Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: enforce_constraint(_col0 is not null) (type: boolean)
@@ -4649,7 +4649,7 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: int), _col1 (type: string)
+                          value expressions: _col0 (type: int)
                   Filter Operator
                     predicate: _col5 is null (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
@@ -4703,7 +4703,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string)
+                expressions: VALUE._col0 (type: int), '1' (type: string), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -4923,8 +4923,8 @@ STAGE PLANS:
                     predicate: ((_col5 = _col1) and (_col1 < 3) and (_col1 >= 5)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: _col5 (type: int), '1' (type: string), _col2 (type: string)
-                      outputColumnNames: _col0, _col1, _col2
+                      expressions: _col5 (type: int), _col2 (type: string)
+                      outputColumnNames: _col0, _col2
                       Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: enforce_constraint(_col0 is not null) (type: boolean)
@@ -4935,7 +4935,7 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: int), _col1 (type: string)
+                          value expressions: _col0 (type: int)
                   Filter Operator
                     predicate: _col5 is null (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
@@ -5010,7 +5010,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string)
+                expressions: VALUE._col0 (type: int), '1' (type: string), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -5495,8 +5495,8 @@ STAGE PLANS:
                     predicate: ((_col5 = _col1) and (_col1 < 3)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: _col5 (type: int), '1' (type: string), _col2 (type: string)
-                      outputColumnNames: _col0, _col1, _col2
+                      expressions: _col5 (type: int), _col2 (type: string)
+                      outputColumnNames: _col0, _col2
                       Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: enforce_constraint(_col0 is not null) (type: boolean)
@@ -5507,7 +5507,7 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col2 (type: string)
                           Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: int), _col1 (type: string)
+                          value expressions: _col0 (type: int)
                   Filter Operator
                     predicate: _col5 is null (type: boolean)
                     Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
@@ -5566,7 +5566,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string)
+                expressions: VALUE._col0 (type: int), '1' (type: string), KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
