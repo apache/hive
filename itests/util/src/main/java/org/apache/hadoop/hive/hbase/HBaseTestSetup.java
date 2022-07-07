@@ -170,13 +170,13 @@ public class HBaseTestSetup extends QTestSetup {
     }
   }
 
-  private byte[] createAvroRecordWithNestedTimestamp() throws IOException {
+  private static byte[] createAvroRecordWithNestedTimestamp() throws IOException {
     String dataDir = System.getProperty("test.data.dir");
-    Schema schema = new Schema.Parser().parse(new File(dataDir+"/nested_ts.avsc"));
+    Schema schema = new Schema.Parser().parse(new File(dataDir + File.separator + "nested_ts.avsc"));
     GenericData.Record rootRecord = new GenericData.Record(schema);
     rootRecord.put("id", "X338092");
     GenericData.Record dateRecord = new GenericData.Record(schema.getField("dischargedate").schema());
-    dateRecord.put("value", LocalDate.of(2022,7,5).atStartOfDay().toEpochSecond(ZoneOffset.UTC));
+    dateRecord.put("value", LocalDate.of(2022,7,5).atStartOfDay().atZone(ZoneOffset.UTC).toInstant().toEpochMilli());
     rootRecord.put("dischargedate", dateRecord);
 
     try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -190,13 +190,13 @@ public class HBaseTestSetup extends QTestSetup {
   }
 
   private void createAvroTable() throws IOException {
-    final String HBASE_TABLE_NAME = "HiveAvroTable";
-    HTableDescriptor htableDesc = new HTableDescriptor(TableName.valueOf(HBASE_TABLE_NAME));
+    final TableName hbaseTable = TableName.valueOf("HiveAvroTable");
+    HTableDescriptor htableDesc = new HTableDescriptor(hbaseTable);
     htableDesc.addFamily(new HColumnDescriptor("data".getBytes()));
 
     try (Admin hbaseAdmin = hbaseConn.getAdmin()) {
       hbaseAdmin.createTable(htableDesc);
-      try (Table table = hbaseConn.getTable(TableName.valueOf(HBASE_TABLE_NAME))) {
+      try (Table table = hbaseConn.getTable(hbaseTable)) {
         Put p = new Put("1".getBytes());
         p.add(new KeyValue("1".getBytes(), "data".getBytes(), "frV4".getBytes(),
           createAvroRecordWithNestedTimestamp()));

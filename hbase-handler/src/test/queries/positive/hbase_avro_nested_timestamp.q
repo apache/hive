@@ -1,5 +1,7 @@
 dfs -cp ${system:hive.root}data/files/nested_ts.avsc ${system:test.tmp.dir}/nested_ts.avsc;
 
+set hive.avro.timestamp.skip.conversion=true;
+
 CREATE EXTERNAL TABLE tbl(
 `key` string COMMENT '',
 `data_frv4` struct<`id`:string, `dischargedate`:struct<`value`:timestamp>>)
@@ -18,4 +20,5 @@ TBLPROPERTIES (
 
 set hive.vectorized.execution.enabled=false;
 set hive.fetch.task.conversion=none;
+
 select data_frV4.dischargedate.value from tbl;
