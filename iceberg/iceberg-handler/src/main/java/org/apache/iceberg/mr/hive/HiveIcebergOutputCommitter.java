@@ -70,6 +70,7 @@ import org.apache.iceberg.mr.hive.writer.WriterRegistry;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.iceberg.util.Tasks;
@@ -134,9 +135,14 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
               String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
                   attemptID.getJobID(), attemptID.getTaskID().getId());
               if (writers.get(output) != null) {
+                Collection<DataFile> dataFiles = Lists.newArrayList();
+                Collection<DeleteFile> deleteFiles = Lists.newArrayList();
                 for (HiveIcebergWriter writer : writers.get(output)) {
-                  createFileForCommit(writer.files(), fileForCommitLocation, table.io());
+                  FilesForCommit files = writer.files();
+                  dataFiles.addAll(files.dataFiles());
+                  deleteFiles.addAll(files.deleteFiles());
                 }
+                createFileForCommit(new FilesForCommit(dataFiles, deleteFiles), fileForCommitLocation, table.io());
               } else {
                 LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
                 createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());

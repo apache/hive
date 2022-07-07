@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive.writer;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.apache.hadoop.hive.ql.Context.Operation;
@@ -95,7 +96,9 @@ public class WriterBuilder {
     int currentSpecId = table.spec().specId();
     int partitionId = attemptID.getTaskID().getId();
     int taskId = attemptID.getId();
-    String operationId = queryId + "-" + attemptID.getJobID();
+    Map<String, List<HiveIcebergWriter>> writers = WriterRegistry.writers(attemptID);
+    int writerCount = writers == null ? 0 : writers.size();
+    String operationId = queryId + "-" + attemptID.getJobID() + "-" + writerCount;
     OutputFileFactory outputFileFactory = OutputFileFactory.builderFor(table, partitionId, taskId)
         .format(dataFileFormat)
         .operationId("data-" + operationId)
