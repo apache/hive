@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.hbase;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -172,8 +173,8 @@ public class HBaseTestSetup extends QTestSetup {
   }
 
   private static byte[] createAvroRecordWithNestedTimestamp() throws IOException {
-    String dataDir = System.getProperty("test.data.dir");
-    Schema schema = new Schema.Parser().parse(new File(dataDir + File.separator + "nested_ts.avsc"));
+    File schemaFile = Paths.get(System.getProperty("test.data.dir"), "nested_ts.avsc").toFile();
+    Schema schema = new Schema.Parser().parse(schemaFile);
     GenericData.Record rootRecord = new GenericData.Record(schema);
     rootRecord.put("id", "X338092");
     GenericData.Record dateRecord = new GenericData.Record(schema.getField("dischargedate").schema());
