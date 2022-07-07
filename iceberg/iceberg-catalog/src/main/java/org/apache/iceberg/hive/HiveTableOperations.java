@@ -454,6 +454,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
     return storageDescriptor;
   }
 
+  @SuppressWarnings("ReverseDnsLookup")
   @VisibleForTesting
   HiveCommitLock createLock() throws UnknownHostException, TException, InterruptedException {
     return new HiveCommitLock(conf, metaClients, catalogName, database, tableName);
