@@ -42,4 +42,4 @@ POSTHOOK: query: select data_frV4.dischargedate.value from tbl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl
 #### A masked pattern was here ####
-2022-07-04 17:00:00
+2022-07-05 00:00:00

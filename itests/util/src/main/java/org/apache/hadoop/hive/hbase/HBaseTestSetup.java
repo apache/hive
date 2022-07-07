@@ -22,7 +22,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 
 import org.apache.avro.Schema;
@@ -176,7 +177,9 @@ public class HBaseTestSetup extends QTestSetup {
     GenericData.Record rootRecord = new GenericData.Record(schema);
     rootRecord.put("id", "X338092");
     GenericData.Record dateRecord = new GenericData.Record(schema.getField("dischargedate").schema());
-    dateRecord.put("value", LocalDate.of(2022,7,5).atStartOfDay().atZone(ZoneOffset.UTC).toInstant().toEpochMilli());
+    final LocalDateTime _2022_07_05 = LocalDate.of(2022, 7, 5).atStartOfDay();
+    // Store in UTC as required per Avro specification and as done by Hive in other parts of the system
+    dateRecord.put("value", _2022_07_05.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
     rootRecord.put("dischargedate", dateRecord);
 
     try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
