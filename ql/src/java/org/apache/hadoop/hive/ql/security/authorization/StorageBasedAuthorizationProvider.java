@@ -407,24 +407,25 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       return;
     }
 
-    final FileSystem fs = path.getFileSystem(conf);
+    try(FileSystem fs = path.getFileSystem(conf)) {
 
-    FileStatus pathStatus = FileUtils.getFileStatusOrNull(fs, path);
-    if (pathStatus != null) {
-      checkPermissions(fs, pathStatus, actions, authenticator.getUserName());
-    } else if (path.getParent() != null) {
-      // find the ancestor which exists to check its permissions
-      Path par = path.getParent();
-      FileStatus parStatus = null;
-      while (par != null) {
-        parStatus = FileUtils.getFileStatusOrNull(fs, par);
-        if (parStatus != null) {
-          break;
+      FileStatus pathStatus = FileUtils.getFileStatusOrNull(fs, path);
+      if (pathStatus != null) {
+        checkPermissions(fs, pathStatus, actions, authenticator.getUserName());
+      } else if (path.getParent() != null) {
+        // find the ancestor which exists to check its permissions
+        Path par = path.getParent();
+        FileStatus parStatus = null;
+        while (par != null) {
+          parStatus = FileUtils.getFileStatusOrNull(fs, par);
+          if (parStatus != null) {
+            break;
+          }
+          par = par.getParent();
         }
-        par = par.getParent();
-      }
 
-      checkPermissions(fs, parStatus, actions, authenticator.getUserName());
+        checkPermissions(fs, parStatus, actions, authenticator.getUserName());
+      }
     }
   }
 
