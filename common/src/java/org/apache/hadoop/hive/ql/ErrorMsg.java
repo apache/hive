@@ -384,6 +384,8 @@ public enum ErrorMsg {
   MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES(10288,
       "Querying directly materialized view contents is not supported since we detected {0}.{1} " +
           "used by materialized view has row masking/column filtering enabled", true),
+  MASKING_COMPLEX_TYPE_NOT_SUPPORTED(10289,
+      "Masking complex types is not supported, found a masking expression {0} over column {1}:{2}", true),
 
   UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten merge/update or " +
       "delete query"),
