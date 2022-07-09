@@ -504,7 +504,7 @@ public class MetaStoreUtils {
 
   /**
    * Returns currently known class paths as best effort. For system class loader, this may return
-   * In such cases we will anyway create new child class loader in {@link #addToClassPath(ClassLo
+   * In such cases we will anyway create new child class loader in {@link #addToClassPath(ClassLoader cloader, String[] newPaths)
    * so all new class paths will be added and next time we will have a URLClassLoader to work wit
    */
   private static List<URL> getCurrentClassPaths(ClassLoader parentLoader) {
