@@ -674,7 +674,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     @Override public void close() throws Exception {
       try {
         //the transaction is about to close, we can stop heartbeating regardless of it's state
-        CompactionHeartbeatService.getInstance(conf).stopHeartbeat(txnId);
+        if (txnId > 0) {
+          CompactionHeartbeatService.getInstance(conf).stopHeartbeat(txnId);
+        }
       } finally {
         if (status != TxnStatus.UNKNOWN) {
           if (succeessfulCompaction) {
