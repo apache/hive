@@ -270,7 +270,8 @@ public abstract class TaskCompiler {
     } else if (!isCStats) {
       for (LoadTableDesc ltd : loadTableWork) {
         Task<MoveWork> tsk = TaskFactory
-            .get(new MoveWork(null, null, ltd, null, false));
+            .get(new MoveWork(pCtx.getQueryProperties().isCTAS() && pCtx.getCreateTable().isExternal(),
+                    null, null, ltd, null, false));
         mvTask.add(tsk);
       }
 
