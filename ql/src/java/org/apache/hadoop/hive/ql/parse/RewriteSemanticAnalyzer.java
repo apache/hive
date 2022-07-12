@@ -617,7 +617,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   public static final String SUB_QUERY_ALIAS = "s";
 
   protected interface ColumnAppender {
-    void append(StringBuilder stringBuilder, Context.Operation operation);
+    void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation);
     List<String> getDeleteValues(Context.Operation operation);
     List<String> getSortKeys();
   }
@@ -635,7 +635,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     }
 
     @Override
-    public void append(StringBuilder stringBuilder, Context.Operation operation) {
+    public void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation) {
       stringBuilder.append("ROW__ID,");
       for (FieldSchema fieldSchema : table.getPartCols()) {
         String identifier = HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
@@ -673,7 +673,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     }
 
     @Override
-    public void append(StringBuilder stringBuilder, Context.Operation operation) {
+    public void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation) {
       List<FieldSchema> acidSelectColumns = table.getStorageHandler().acidSelectColumns(table, operation);
       for (FieldSchema fieldSchema : acidSelectColumns) {
         String identifier = HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
