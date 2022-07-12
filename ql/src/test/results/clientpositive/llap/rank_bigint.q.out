@@ -1,0 +1,26 @@
+PREHOOK: query: create table int_temp (c1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@int_temp
+POSTHOOK: query: create table int_temp (c1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@int_temp
+PREHOOK: query: create table bigint_table as select rank() over() c1_rank  from int_temp
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@int_temp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bigint_table
+POSTHOOK: query: create table bigint_table as select rank() over() c1_rank  from int_temp
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@int_temp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bigint_table
+POSTHOOK: Lineage: bigint_table.c1_rank SCRIPT [(int_temp)int_temp.FieldSchema(name:c1, type:int, comment:null), ]
+PREHOOK: query: describe bigint_table
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@bigint_table
+POSTHOOK: query: describe bigint_table
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@bigint_table
+c1_rank             	bigint              	                    

@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantIntObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantLongObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.LongWritable;
@@ -176,7 +177,7 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver {
           ObjectInspectorCopyOption.JAVA);
       }
       return ObjectInspectorFactory.getStandardListObjectInspector(
-        PrimitiveObjectInspectorFactory.writableIntObjectInspector);
+        PrimitiveObjectInspectorFactory.writableLongObjectInspector);
     }
 
     @Override
