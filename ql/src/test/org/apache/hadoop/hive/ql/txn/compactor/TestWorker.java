@@ -25,23 +25,17 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
-import org.apache.hadoop.hive.metastore.api.CompactionRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TxnInfo;
-import org.apache.hadoop.hive.metastore.api.TxnState;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +61,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests for the worker thread and its MR jobs.
@@ -1006,6 +1001,22 @@ public class TestWorker extends CompactorTest {
     Assert.assertEquals(initiatorVersion, compacts.get(0).getInitiatorVersion());
     Assert.assertEquals(workerVersion, compacts.get(0).getWorkerVersion());
 
+  }
+
+  @Test
+  public void testFindNextCompactThrowsTException() throws Exception {
+    LOG.debug("Starting minorTableWithBase");
+
+    Worker worker = Mockito.spy(new Worker());
+
+    IMetaStoreClient msc = Mockito.mock(IMetaStoreClient.class);
+    Mockito.when(msc.findNextCompact(Mockito.any(FindNextCompactRequest.class))).thenThrow(MetaException.class);
+
+    worker.msc = msc;
+
+    worker.findNextCompactionAndExecute(true, true);
+
+    verify(msc, times(0)).markFailed(any());
   }
 
   @Test

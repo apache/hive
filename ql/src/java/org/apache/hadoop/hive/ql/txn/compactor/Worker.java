@@ -308,7 +308,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
       findNextCompactRequest.setWorkerId(workerName);
       findNextCompactRequest.setWorkerVersion(runtimeVersion);
-      ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(findNextCompactRequest));
+
+      try {
+        ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(findNextCompactRequest));
+      }
+      catch (TException e){
+        LOG.error("Failed to get next compaction", e);
+      }
+
       LOG.info("Processing compaction request {}", ci);
 
       if (ci == null) {
@@ -513,6 +520,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         perfLogger.perfLogEnd(CLASS_NAME, workerMetric);
       }
     }
+
     if (computeStats) {
       StatsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : t1.getOwner(),
               CompactorUtil.getCompactorJobQueueName(conf, ci, t1));
