@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.ExceptionHandler.newMetaException;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_USE_CUSTOM_POOL;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
@@ -65,7 +66,6 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
-import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.Striped;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -987,7 +987,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.deletePersistent(db);
       success = commitTransaction();
     } catch (Exception e) {
-      throw new MetaException(e.getMessage() + " " + org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+      throw newMetaException(e);
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -1195,7 +1195,7 @@ public class ObjectStore implements RawStore, Configurable {
       pm.deletePersistent(mdb);
       success = commitTransaction();
     } catch (Exception e) {
-      throw new MetaException(e.getMessage() + " " + org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+      throw newMetaException(e);
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -3249,7 +3249,7 @@ public class ObjectStore implements RawStore, Configurable {
       success =  commitTransaction();
       return parts;
     } catch (Exception e) {
-      throw new MetaException(e.getMessage());
+      throw newMetaException(e);
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -3509,7 +3509,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
     } catch (Exception t) {
       LOG.error("Exception in ORM", t);
-      throw new MetaException("Error retrieving partition values: " + t);
+      throw MetaStoreUtils.newMetaException("Error retrieving partition values.",  t);
     }
   }
 
@@ -3856,7 +3856,7 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (InvalidObjectException | NoSuchObjectException | MetaException e) {
       throw e;
     } catch (Exception e) {
-      throw new MetaException(e.getMessage());
+      throw newMetaException(e);
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -3879,7 +3879,7 @@ public class ObjectStore implements RawStore, Configurable {
     } catch (NoSuchObjectException | MetaException e) {
       throw e;
     } catch (Exception e) {
-      throw new MetaException(e.getMessage());
+      throw newMetaException(e);
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -4351,7 +4351,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw ex;
       } catch (Exception ex) {
         LOG.error("", ex);
-        throw new MetaException(ex.getMessage());
+        throw newMetaException(ex);
       } finally {
         close();
       }
@@ -6373,7 +6373,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       success = commitTransaction();
     } catch (Exception e) {
-      throw new MetaException(e.getMessage());
+      throw newMetaException(e);
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -7517,14 +7517,14 @@ public class ObjectStore implements RawStore, Configurable {
         try {
           grants = this.listDBGrantsAll(catName, objToRefresh.getDbName(), authorizer);
         } catch (Exception e) {
-          throw new MetaException(e.getMessage());
+          throw newMetaException(e);
         }
         break;
       case DATACONNECTOR:
         try {
           grants = this.listDCGrantsAll(objToRefresh.getObjectName(), authorizer);
         } catch (Exception e) {
-          throw new MetaException(e.getMessage());
+          throw newMetaException(e);
         }
         break;
       case TABLE:
@@ -9953,10 +9953,7 @@ public class ObjectStore implements RawStore, Configurable {
       return result;
     } catch (Exception ex) {
       LOG.error("Error retrieving statistics via jdo", ex);
-      if (ex instanceof MetaException) {
-        throw (MetaException) ex;
-      }
-      throw new MetaException(ex.getMessage());
+      throw newMetaException(ex);
     } finally {
       if (!committed) {
         rollbackTransaction();
@@ -10376,7 +10373,7 @@ public class ObjectStore implements RawStore, Configurable {
         result = new ArrayList<>(result);
       } catch (Exception ex) {
         LOG.error("Error retrieving statistics via jdo", ex);
-        throw new MetaException(ex.getMessage());
+        throw newMetaException(ex);
       }
       committed = commitTransaction();
       return result;
@@ -11651,7 +11648,7 @@ public class ObjectStore implements RawStore, Configurable {
                     + "increase the maximum number of retries on the"
                     + " hive.notification.sequence.lock.max.retries configuration";
             LOG.error(message, e);
-            throw new MetaException(message + " :: " + e.getMessage());
+            throw MetaStoreUtils.newMetaException(message, e);
           }
           currentRetries++;
           try {

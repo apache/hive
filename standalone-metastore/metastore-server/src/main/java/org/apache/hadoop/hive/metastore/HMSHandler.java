@@ -1956,7 +1956,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       connector = getMS().getDataConnector(name);
     } catch (Exception e) {
       throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
-          .defaultRuntimeException();
+          .defaultMetaException();
     }
     return connector;
   }
@@ -2024,7 +2024,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
               transactionalListenersResponses, ms);
         }
  */
-      endFunction("alter_database", success, ex);
+      endFunction("alter_dataconnector", success, ex);
     }
   }
 
@@ -7791,7 +7791,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ret = getMS().listRoleNames();
       return ret;
     } catch (Exception e) {
-      throw handleException(e).throwIfInstance(MetaException.class).defaultRuntimeException();
+      throw handleException(e).throwIfInstance(MetaException.class).defaultTException();
     }
   }
 
@@ -7906,7 +7906,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       boolean result = getMS().refreshPrivileges(objToRefresh, authorizer, grantRequest.getPrivileges());
       response.setSuccess(result);
     } catch (Exception e) {
-      throw handleException(e).throwIfInstance(MetaException.class).defaultRuntimeException();
+      throw handleException(e).throwIfInstance(MetaException.class).defaultTException();
     }
     return response;
   }
