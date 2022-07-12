@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
@@ -63,6 +64,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     Path toPath = null;
 
     try {
+      initializeFromDeferredContext();
+
       // Note: CopyWork supports copying multiple files, but ReplCopyWork doesn't.
       //       Not clear of ReplCopyWork should inherit from CopyWork.
       if (work.getFromPaths().length > 1 || work.getToPaths().length > 1) {
@@ -162,6 +165,12 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       setException(e);
       return ReplUtils.handleException(true, e, work.getDumpDirectory(), work.getMetricCollector(),
               getName(), conf);
+    }
+  }
+
+  private void initializeFromDeferredContext() throws HiveException {
+    if (null != getDeferredWorkContext()) {
+      work.initializeFromDeferredContext(getDeferredWorkContext());
     }
   }
 
