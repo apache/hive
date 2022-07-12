@@ -18,11 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import javax.servlet.ServletRequest;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
@@ -71,7 +68,6 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.security.Constraint;
@@ -404,7 +400,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Server thread pool
     // Start with minWorkerThreads, expand till maxWorkerThreads and reject
     // subsequent requests
-    final String threadPoolNameFormat = "Metastore-HTTPHandler-Pool: Thread-%s";
     // TODO: Add a config for keepAlive time of threads ?
     ExecutorService executorService = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads, 60L,
         TimeUnit.SECONDS, new SynchronousQueue<>(), r -> {
