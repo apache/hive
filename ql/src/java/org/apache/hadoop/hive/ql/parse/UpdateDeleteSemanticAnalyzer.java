@@ -318,7 +318,6 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
       insertValues.add(SUB_QUERY_ALIAS + "." + identifier);
     }
-    addColsToSelect(mTable.getPartCols(), rewrittenQueryStr);
     addPartitionColsAsValues(mTable.getPartCols(), SUB_QUERY_ALIAS, insertValues);
     rewrittenQueryStr.append(" FROM ").append(getFullTableNameForSQL(tabNameNode)).append(") ");
     rewrittenQueryStr.append(SUB_QUERY_ALIAS).append("\n");

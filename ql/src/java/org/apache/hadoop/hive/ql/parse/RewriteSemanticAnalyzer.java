@@ -637,6 +637,11 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     @Override
     public void append(StringBuilder stringBuilder, Context.Operation operation) {
       stringBuilder.append("ROW__ID,");
+      for (FieldSchema fieldSchema : table.getPartCols()) {
+        String identifier = HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf);
+        stringBuilder.append(identifier);
+        stringBuilder.append(",");
+      }
     }
 
     @Override
