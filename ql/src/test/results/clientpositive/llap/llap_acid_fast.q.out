@@ -279,7 +279,7 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [5, 2, 3, 4]
+                          projectedOutputColumnNums: [5, 4, 2, 3]
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
