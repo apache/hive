@@ -53,7 +53,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 
 @Description(
         name = "rank",
@@ -119,7 +119,7 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver {
 
   static class RankBuffer implements AggregationBuffer {
 
-    ArrayList<IntWritable> rowNums;
+    ArrayList<LongWritable> rowNums;
     int currentRowNum;
     Object[] currVal;
     int currentRank;
@@ -133,7 +133,7 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver {
     }
 
     void init() {
-      rowNums = new ArrayList<IntWritable>();
+      rowNums = new ArrayList<LongWritable>();
       currentRowNum = 0;
       currentRank = 0;
       currVal = new Object[numParams];
@@ -147,9 +147,9 @@ public class GenericUDAFRank extends AbstractGenericUDAFResolver {
 
     void addRank() {
       if (supportsStreaming) {
-        rowNums.set(0, new IntWritable(currentRank));
+        rowNums.set(0, new LongWritable(currentRank));
       } else {
-        rowNums.add(new IntWritable(currentRank));
+        rowNums.add(new LongWritable(currentRank));
       }
     }
   }

@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 
 @Description(
         name = "percent_rank",
@@ -68,14 +68,14 @@ public class GenericUDAFPercentRank extends GenericUDAFRank {
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
-      ArrayList<IntWritable> ranks = ((RankBuffer) agg).rowNums;
+      ArrayList<LongWritable> ranks = ((RankBuffer) agg).rowNums;
       double sz = ranks.size();
       if (sz > 1) {
         sz = sz - 1;
       }
       ArrayList<DoubleWritable> pranks = new ArrayList<DoubleWritable>(ranks.size());
 
-      for (IntWritable i : ranks) {
+      for (LongWritable i : ranks) {
         double pr = ((double) i.get() - 1) / sz;
         pranks.add(new DoubleWritable(pr));
       }

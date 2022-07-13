@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 
 @Description(
         name = "cume_dist",
@@ -66,14 +66,14 @@ public class GenericUDAFCumeDist extends GenericUDAFRank {
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
-      List<IntWritable> ranks = ((RankBuffer) agg).rowNums;
+      List<LongWritable> ranks = ((RankBuffer) agg).rowNums;
       int ranksSize = ranks.size();
       double ranksSizeDouble = ranksSize;
       List<DoubleWritable> distances = new ArrayList<DoubleWritable>(ranksSize);
-      int last = -1;
-      int current = -1;
+      long last = -1;
+      long current = -1;
       // tracks the number of elements with the same rank at the current time
-      int elementsAtRank = 1;
+      long elementsAtRank = 1;
       for (int index = 0; index < ranksSize; index++) {
         current = ranks.get(index).get();
         if (index == 0) {
