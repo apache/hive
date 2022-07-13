@@ -22,7 +22,6 @@ import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.common.type.Date;
@@ -55,6 +54,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 import com.google.common.base.Preconditions;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Fixed bucket pruning optimizer goes through all the table scans and annotates them
@@ -70,7 +70,7 @@ public class FixedBucketPruningOptimizer extends Transform {
 
   public class NoopWalker implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       // do nothing
       return null;

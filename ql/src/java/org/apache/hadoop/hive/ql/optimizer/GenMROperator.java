@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -28,6 +27,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Processor for the rule - no specific rule fired.
@@ -45,7 +45,7 @@ public class GenMROperator implements SemanticNodeProcessor {
    * @param procCtx
    *          context
    */
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+  public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
       Object... nodeOutputs) throws SemanticException {
     GenMRProcContext ctx = (GenMRProcContext) procCtx;
 

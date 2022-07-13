@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.Context;
@@ -58,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * An implementation of PhysicalPlanResolver. It iterator each MapRedTask to see whether the task
@@ -225,7 +225,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
     }
 
     @Override
-    public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
+    public Object dispatch(Node nd, ArrayStack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
       Task<?> currTask = (Task<?>) nd;
       // not map reduce task or not conditional task, just skip

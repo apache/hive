@@ -28,8 +28,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.ContentSummary;
@@ -572,7 +572,7 @@ public class CorrelationOptimizer extends Transform {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       CorrelationNodeProcCtx corrCtx = (CorrelationNodeProcCtx) ctx;
       ReduceSinkOperator op = (ReduceSinkOperator) nd;
@@ -634,7 +634,7 @@ public class CorrelationOptimizer extends Transform {
   private SemanticNodeProcessor getDefaultProc() {
     return new SemanticNodeProcessor() {
       @Override
-      public Object process(Node nd, Stack<Node> stack,
+      public Object process(Node nd, ArrayStack<Node> stack,
                             NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
         Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
         LOG.info("Walk to operator " + op.getIdentifier() + " "

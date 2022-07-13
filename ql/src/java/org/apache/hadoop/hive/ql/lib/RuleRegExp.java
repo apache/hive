@@ -23,11 +23,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Rule interface for Nodes Used in Node dispatching to dispatch process/visitor
@@ -128,7 +128,7 @@ public class RuleRegExp implements SemanticRule {
    * @return cost of the function
    * @throws SemanticException
    */
-  private int costPatternWithoutWildCardChar(Stack<Node> stack) throws SemanticException {
+  private int costPatternWithoutWildCardChar(ArrayStack<Node> stack) throws SemanticException {
     int numElems = (stack != null ? stack.size() : 0);
 
     // No elements
@@ -160,7 +160,7 @@ public class RuleRegExp implements SemanticRule {
    * @return cost of the function
    * @throws SemanticException
    */
-  private int costPatternWithORWildCardChar(Stack<Node> stack) throws SemanticException {
+  private int costPatternWithORWildCardChar(ArrayStack<Node> stack) throws SemanticException {
     int numElems = (stack != null ? stack.size() : 0);
 
     // No elements
@@ -225,7 +225,7 @@ public class RuleRegExp implements SemanticRule {
    * @return cost of the function
    * @throws SemanticException
    */
-  private int costPatternWithWildCardChar(Stack<Node> stack) throws SemanticException {
+  private int costPatternWithWildCardChar(ArrayStack<Node> stack) throws SemanticException {
     int numElems = (stack != null ? stack.size() : 0);
     StringBuilder name = new StringBuilder();
     Matcher m = patternWithWildCardChar.matcher("");
@@ -271,7 +271,7 @@ public class RuleRegExp implements SemanticRule {
    * @throws SemanticException
    */
   @Override
-  public int cost(Stack<Node> stack) throws SemanticException {
+  public int cost(ArrayStack<Node> stack) throws SemanticException {
     if (rulePatternIsValidWithoutWildCardChar()) {
       return costPatternWithoutWildCardChar(stack);
     }

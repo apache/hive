@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -26,6 +25,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.ArrayStack;
 
 public class SortedMergeJoinProc extends AbstractSMBJoinProc implements SemanticNodeProcessor {
 
@@ -37,7 +37,7 @@ public class SortedMergeJoinProc extends AbstractSMBJoinProc implements Semantic
   }
 
   @Override
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+  public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
       Object... nodeOutputs) throws SemanticException {
 
     JoinOperator joinOp = (JoinOperator) nd;

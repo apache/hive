@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -38,6 +37,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Operator factory for MapJoin processing.
@@ -45,7 +45,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 public final class MapJoinFactory {
 
   public static int getPositionParent(AbstractMapJoinOperator<? extends MapJoinDesc> op,
-      Stack<Node> stack) {
+      ArrayStack<Node> stack) {
     int pos = 0;
     int size = stack.size();
     assert size >= 2 && stack.get(size - 1) == op;
@@ -187,7 +187,7 @@ public final class MapJoinFactory {
      * the map join operator is enhanced to contain the bucketing info. when it is encountered.
      */
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       AbstractMapJoinOperator<MapJoinDesc> mapJoin = (AbstractMapJoinOperator<MapJoinDesc>) nd;
       GenMRProcContext ctx = (GenMRProcContext) procCtx;

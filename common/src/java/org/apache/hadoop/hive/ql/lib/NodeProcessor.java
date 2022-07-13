@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.lib;
 
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Base class for processing operators which is no-op. The specific processors
@@ -39,6 +39,6 @@ public interface NodeProcessor {
    * @return Object to be returned by the process call
    * @throws HiveException
    */
-  Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+  Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
                  Object... nodeOutputs) throws HiveException;
 }

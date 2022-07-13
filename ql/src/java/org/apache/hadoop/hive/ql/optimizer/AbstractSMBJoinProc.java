@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -57,6 +56,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.common.util.ArrayStack;
 
 //try to replace a bucket map join with a sorted merge map join
 abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc implements SemanticNodeProcessor {
@@ -70,7 +70,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
   }
 
   @Override
-  abstract public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+  abstract public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
          Object... nodeOutputs) throws SemanticException;
 
   /*
@@ -81,7 +81,7 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
    *    of the sort columns.
    */
   protected boolean canConvertBucketMapJoinToSMBJoin(MapJoinOperator mapJoinOp,
-    Stack<Node> stack,
+    ArrayStack<Node> stack,
     SortBucketJoinProcCtx smbJoinContext,
     Object... nodeOutputs) throws SemanticException {
 

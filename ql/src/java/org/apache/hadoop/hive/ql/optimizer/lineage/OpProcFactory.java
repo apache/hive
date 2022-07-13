@@ -24,7 +24,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -64,6 +63,7 @@ import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Operator factory for the rule processors for lineage.
@@ -78,7 +78,7 @@ public class OpProcFactory {
    * @return Operator The parent operator in the current path.
    */
   @SuppressWarnings("unchecked")
-  protected static Operator<? extends OperatorDesc> getParent(Stack<Node> stack) {
+  protected static Operator<? extends OperatorDesc> getParent(ArrayStack<Node> stack) {
     return (Operator<? extends OperatorDesc>)Utils.getNthAncestor(stack, 1);
   }
 
@@ -88,7 +88,7 @@ public class OpProcFactory {
   public static class TransformLineage extends DefaultLineage implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       // LineageCTx
@@ -147,7 +147,7 @@ public class OpProcFactory {
   public static class TableScanLineage extends DefaultLineage implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       // LineageCtx
@@ -206,7 +206,7 @@ public class OpProcFactory {
     private final HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       // Assert that there is at least one item in the stack. This should never
@@ -307,7 +307,7 @@ public class OpProcFactory {
    */
   public static class LateralViewJoinLineage extends DefaultLineage implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       // Assert that there is at least one item in the stack. This should never
@@ -355,7 +355,7 @@ public class OpProcFactory {
     private final HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       LineageCtx lctx = (LineageCtx)procCtx;
@@ -411,7 +411,7 @@ public class OpProcFactory {
     private final HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       LineageCtx lctx = (LineageCtx)procCtx;
@@ -535,7 +535,7 @@ public class OpProcFactory {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       // Assert that there is at least one item in the stack. This should never
       // be called for leafs.
@@ -573,7 +573,7 @@ public class OpProcFactory {
     private final HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       // Assert that there is at least one item in the stack. This should never
       // be called for leafs.
@@ -642,7 +642,7 @@ public class OpProcFactory {
   public static class FilterLineage implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       // Assert that there is at least one item in the stack. This should never
       // be called for leafs.
@@ -684,7 +684,7 @@ public class OpProcFactory {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       // Assert that there is at least one item in the stack. This should never
       // be called for leafs.

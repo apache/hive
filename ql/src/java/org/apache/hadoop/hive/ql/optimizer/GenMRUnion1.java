@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.Context;
@@ -42,6 +41,7 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Processor for the rule - TableScan followed by Union.
@@ -57,7 +57,7 @@ public class GenMRUnion1 implements SemanticNodeProcessor {
    * @return
    * @throws SemanticException
    */
-  private Object processMapOnlyUnion(UnionOperator union, Stack<Node> stack,
+  private Object processMapOnlyUnion(UnionOperator union, ArrayStack<Node> stack,
       GenMRProcContext ctx, UnionProcContext uCtx) throws SemanticException {
 
     // merge currTask from multiple topOps
@@ -163,7 +163,7 @@ public class GenMRUnion1 implements SemanticNodeProcessor {
    * @throws SemanticException
    */
   private void processSubQueryUnionMerge(GenMRProcContext ctx,
-      GenMRUnionCtx uCtxTask, UnionOperator union, Stack<Node> stack)
+      GenMRUnionCtx uCtxTask, UnionOperator union, ArrayStack<Node> stack)
       throws SemanticException {
     // The current plan can be thrown away after being merged with the union
     // plan
@@ -189,7 +189,7 @@ public class GenMRUnion1 implements SemanticNodeProcessor {
    *          context
    */
   @Override
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx,
+  public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx opProcCtx,
       Object... nodeOutputs) throws SemanticException {
     UnionOperator union = (UnionOperator) nd;
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;

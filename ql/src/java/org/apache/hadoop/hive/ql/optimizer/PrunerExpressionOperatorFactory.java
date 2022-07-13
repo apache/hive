@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -30,6 +29,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Expression processor factory for pruning. Each processor tries to
@@ -47,7 +47,7 @@ public abstract class PrunerExpressionOperatorFactory {
   public static class GenericFuncExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       ExprNodeDesc newfd = null;
@@ -111,7 +111,7 @@ public abstract class PrunerExpressionOperatorFactory {
   public static class FieldExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       ExprNodeFieldDesc fnd = (ExprNodeFieldDesc) nd;
@@ -148,7 +148,7 @@ public abstract class PrunerExpressionOperatorFactory {
   public static abstract class ColumnExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       ExprNodeDesc newcd = null;
@@ -177,7 +177,7 @@ public abstract class PrunerExpressionOperatorFactory {
   public static class DefaultExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       if (nd instanceof ExprNodeConstantDesc) {
         return ((ExprNodeConstantDesc) nd).clone();

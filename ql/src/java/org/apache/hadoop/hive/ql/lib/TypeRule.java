@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Rule that matches a particular type of node.
@@ -34,7 +34,7 @@ public class TypeRule implements SemanticRule {
   }
 
   @Override
-  public int cost(Stack<Node> stack) throws SemanticException {
+  public int cost(ArrayStack<Node> stack) throws SemanticException {
     if (stack == null) {
       return -1;
     }

@@ -23,9 +23,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.util.NullOrdering;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -114,7 +114,7 @@ public class CountDistinctRewriteProc extends Transform {
   private SemanticNodeProcessor getDefaultProc() {
     return new SemanticNodeProcessor() {
       @Override
-      public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+      public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
           Object... nodeOutputs) throws SemanticException {
         return null;
       }
@@ -481,7 +481,7 @@ public class CountDistinctRewriteProc extends Transform {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       GroupByOperator mGby = (GroupByOperator) stack.get(stack.size() - 3);
       ReduceSinkOperator rs = (ReduceSinkOperator) stack.get(stack.size() - 2);

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.lib;
 import static org.junit.Assert.*;
 
 import java.util.List;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -28,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.ArrayStack;
 import org.junit.Test;
 
 public class TestRuleRegExp {
@@ -60,7 +60,7 @@ public class TestRuleRegExp {
     assertEquals(rule1.rulePatternIsValidWithoutWildCardChar(), true);
     assertEquals(rule1.rulePatternIsValidWithWildCardChar(), false);
     // positive test
-    Stack<Node> ns1 = new Stack<Node>();
+    ArrayStack<Node> ns1 = new ArrayStack<Node>();
     ns1.push(new TestNode(ReduceSinkOperator.getOperatorName()));
     ns1.push(new TestNode(SelectOperator.getOperatorName()));
     ns1.push(new TestNode(FileSinkOperator.getOperatorName()));
@@ -70,7 +70,7 @@ public class TestRuleRegExp {
       fail(e.getMessage());
 	}
     // negative test
-    Stack<Node> ns2 = new Stack<Node>();
+    ArrayStack<Node> ns2 = new ArrayStack<Node>();
     ns2.push(new TestNode(ReduceSinkOperator.getOperatorName()));
     ns1.push(new TestNode(TableScanOperator.getOperatorName()));
     ns1.push(new TestNode(FileSinkOperator.getOperatorName()));
@@ -91,10 +91,10 @@ public class TestRuleRegExp {
     assertEquals(rule1.rulePatternIsValidWithoutWildCardChar(), false);
     assertEquals(rule1.rulePatternIsValidWithWildCardChar(), true);
     // positive test
-    Stack<Node> ns1 = new Stack<Node>();
+    ArrayStack<Node> ns1 = new ArrayStack<Node>();
     ns1.push(new TestNode(TableScanOperator.getOperatorName()));
     ns1.push(new TestNode(FilterOperator.getOperatorName()));
-    Stack<Node> ns2 = new Stack<Node>();
+    ArrayStack<Node> ns2 = new ArrayStack<Node>();
     ns2.push(new TestNode(TableScanOperator.getOperatorName()));
     ns2.push(new TestNode(FileSinkOperator.getOperatorName()));
     try {
@@ -104,7 +104,7 @@ public class TestRuleRegExp {
       fail(e.getMessage());
 	}
     // negative test
-    Stack<Node> ns3 = new Stack<Node>();
+    ArrayStack<Node> ns3 = new ArrayStack<Node>();
     ns3.push(new TestNode(ReduceSinkOperator.getOperatorName()));
     ns3.push(new TestNode(ReduceSinkOperator.getOperatorName()));
     ns3.push(new TestNode(FileSinkOperator.getOperatorName()));

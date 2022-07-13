@@ -27,9 +27,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,7 +102,7 @@ public final class ColumnPrunerProcFactory {
    */
   public static class ColumnPrunerFilterProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       FilterOperator op = (FilterOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
@@ -133,7 +133,7 @@ public final class ColumnPrunerProcFactory {
    */
   public static class ColumnPrunerGroupByProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       GroupByOperator gbOp = (GroupByOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
@@ -225,7 +225,7 @@ public final class ColumnPrunerProcFactory {
   public static class ColumnPrunerScriptProc implements SemanticNodeProcessor {
     @Override
     @SuppressWarnings("unchecked")
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
 
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
@@ -280,7 +280,7 @@ public final class ColumnPrunerProcFactory {
   public static class ColumnPrunerLimitProc extends ColumnPrunerDefaultProc {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       super.process(nd, stack, ctx, nodeOutputs);
       List<FieldNode> cols = ((ColumnPrunerProcCtx) ctx).getPrunedColLists().get(nd);
@@ -309,7 +309,7 @@ public final class ColumnPrunerProcFactory {
    */
   public static class ColumnPrunerPTFProc extends ColumnPrunerScriptProc {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
 
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
@@ -457,7 +457,7 @@ public final class ColumnPrunerProcFactory {
    */
   public static class ColumnPrunerDefaultProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
       cppCtx.getPrunedColLists().put((Operator<? extends OperatorDesc>) nd,
@@ -482,7 +482,7 @@ public final class ColumnPrunerProcFactory {
    */
   public static class ColumnPrunerTableScanProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       TableScanOperator scanOp = (TableScanOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
@@ -570,7 +570,7 @@ public final class ColumnPrunerProcFactory {
    */
   public static class ColumnPrunerReduceSinkProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator op = (ReduceSinkOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
@@ -650,7 +650,7 @@ public final class ColumnPrunerProcFactory {
    */
   public static class ColumnPrunerLateralViewJoinProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       LateralViewJoinOperator op = (LateralViewJoinOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
@@ -702,7 +702,7 @@ public final class ColumnPrunerProcFactory {
    */
   public static class ColumnPrunerLateralViewForwardProc extends ColumnPrunerDefaultProc {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       super.process(nd, stack, ctx, nodeOutputs);
       LateralViewForwardOperator op = (LateralViewForwardOperator) nd;
@@ -746,7 +746,7 @@ public final class ColumnPrunerProcFactory {
    */
   public static class ColumnPrunerSelectProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       SelectOperator op = (SelectOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
@@ -974,7 +974,7 @@ public final class ColumnPrunerProcFactory {
    */
   public static class ColumnPrunerJoinProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       JoinOperator op = (JoinOperator) nd;
       pruneJoinOperator(ctx, op, op.getConf(), op.getColumnExprMap(), null,
@@ -997,7 +997,7 @@ public final class ColumnPrunerProcFactory {
    */
   public static class ColumnPrunerMapJoinProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx,
         Object... nodeOutputs) throws SemanticException {
       AbstractMapJoinOperator<MapJoinDesc> op = (AbstractMapJoinOperator<MapJoinDesc>) nd;
       pruneJoinOperator(ctx, op, op.getConf(), op.getColumnExprMap(), op
@@ -1020,7 +1020,7 @@ public final class ColumnPrunerProcFactory {
    */
   public static class ColumnPrunerUnionProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
       UnionOperator op = (UnionOperator) nd;

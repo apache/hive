@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Dispatcher interface for Operators Used in operator graph walking to dispatch
@@ -42,7 +42,7 @@ public interface SemanticDispatcher extends Dispatcher {
    * @throws SemanticException
    */
   @Override
-  Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
+  Object dispatch(Node nd, ArrayStack<Node> stack, Object... nodeOutputs)
       throws SemanticException;
 
 }

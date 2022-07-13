@@ -25,9 +25,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -131,7 +131,7 @@ public class SamplePruner extends Transform {
   public static class FilterPPR implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       FilterOperator filOp = (FilterOperator) nd;
       FilterDesc filOpDesc = filOp.getConf();
@@ -161,7 +161,7 @@ public class SamplePruner extends Transform {
   public static class DefaultPPR implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       // Nothing needs to be done.
       return null;

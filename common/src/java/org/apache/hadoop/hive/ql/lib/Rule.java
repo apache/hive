@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Rule interface for Operators Used in operator dispatching to dispatch
@@ -33,7 +33,7 @@ public interface Rule {
    *         matches
    * @throws HiveException
    */
-  int cost(Stack<Node> stack) throws HiveException;
+  int cost(ArrayStack<Node> stack) throws HiveException;
 
   /**
    * @return the name of the rule - may be useful for debugging

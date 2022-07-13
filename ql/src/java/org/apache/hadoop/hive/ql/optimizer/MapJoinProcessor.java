@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
@@ -80,6 +79,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -947,7 +947,7 @@ public class MapJoinProcessor extends Transform {
      * Store the current mapjoin in the context.
      */
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       MapJoinWalkerCtx ctx = (MapJoinWalkerCtx) procCtx;
@@ -1057,7 +1057,7 @@ public class MapJoinProcessor extends Transform {
      * Store the current mapjoin in a list of mapjoins followed by a filesink.
      */
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       MapJoinWalkerCtx ctx = (MapJoinWalkerCtx) procCtx;
@@ -1084,7 +1084,7 @@ public class MapJoinProcessor extends Transform {
      * Store the mapjoin in a rejected list.
      */
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       MapJoinWalkerCtx ctx = (MapJoinWalkerCtx) procCtx;
       AbstractMapJoinOperator<? extends MapJoinDesc> mapJoin = ctx.getCurrMapJoinOp();
@@ -1103,7 +1103,7 @@ public class MapJoinProcessor extends Transform {
      * Nothing to do.
      */
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       return null;
     }

@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUtcTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToVarchar;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hive.common.util.ArrayStack;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,7 +55,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 /**
  * IndexPredicateAnalyzer decomposes predicates, separating the parts
@@ -145,7 +145,7 @@ public class IndexPredicateAnalyzer {
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     SemanticNodeProcessor nodeProcessor = new SemanticNodeProcessor() {
       @Override
-      public Object process(Node nd, Stack<Node> stack,
+      public Object process(Node nd, ArrayStack<Node> stack,
                             NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
 

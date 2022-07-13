@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Stack;
 
 import javolution.util.FastBitSet;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -79,6 +78,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,7 +164,7 @@ public final class OpProcFactory {
   public static class ScriptPPD extends DefaultPPD implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       LOG.debug("Processing for {}", nd.toString());
       // script operator is a black-box to hive so no optimization here
@@ -197,7 +197,7 @@ public final class OpProcFactory {
      * @see org.apache.hadoop.hive.ql.ppd.OpProcFactory.ScriptPPD#process(org.apache.hadoop.hive.ql.lib.Node, java.util.Stack, org.apache.hadoop.hive.ql.lib.NodeProcessorCtx, java.lang.Object[])
      */
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       LOG.debug("Processing for {}", nd.toString());
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
@@ -369,7 +369,7 @@ public final class OpProcFactory {
 
   public static class UDTFPPD extends DefaultPPD implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       super.process(nd, stack, procCtx, nodeOutputs);
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
@@ -388,7 +388,7 @@ public final class OpProcFactory {
   public static class LateralViewForwardPPD extends DefaultPPD implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       LOG.debug("Processing for {}", nd.toString());
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
@@ -414,7 +414,7 @@ public final class OpProcFactory {
   public static class TableScanPPD extends DefaultPPD implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       LOG.debug("Processing for {}", nd.toString());
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
@@ -441,12 +441,12 @@ public final class OpProcFactory {
   public static class FilterPPD extends DefaultPPD implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       return process(nd, stack, procCtx, false, nodeOutputs);
     }
 
-    Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
             boolean onlySyntheticJoinPredicate, Object... nodeOutputs) throws SemanticException {
       LOG.debug("Processing for {}", nd.toString());
 
@@ -498,7 +498,7 @@ public final class OpProcFactory {
 
   public static class SimpleFilterPPD extends FilterPPD implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       FilterOperator filterOp = (FilterOperator) nd;
       // We try to push the full Filter predicate iff:
@@ -534,7 +534,7 @@ public final class OpProcFactory {
    */
   public static class JoinerPPD extends DefaultPPD implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       LOG.debug("Processing for {}", nd.toString());
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
@@ -653,7 +653,7 @@ public final class OpProcFactory {
 
   public static class ReduceSinkPPD extends DefaultPPD implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       super.process(nd, stack, procCtx, nodeOutputs);
       Operator<?> operator = (Operator<?>) nd;
@@ -967,7 +967,7 @@ public final class OpProcFactory {
   public static class GroupByPPD extends DefaultPPD implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       super.process(nd, stack, procCtx, nodeOutputs);
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
@@ -1063,7 +1063,7 @@ public final class OpProcFactory {
   public static class DefaultPPD implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       LOG.debug("Processing for {}", nd.toString());
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;

@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -30,6 +29,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 public class BucketMapjoinProc extends AbstractBucketJoinProc implements SemanticNodeProcessor {
   public BucketMapjoinProc(ParseContext pGraphContext) {
@@ -37,7 +37,7 @@ public class BucketMapjoinProc extends AbstractBucketJoinProc implements Semanti
   }
 
   @Override
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+  public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
       Object... nodeOutputs) throws SemanticException {
     BucketJoinProcCtx context = (BucketJoinProcCtx) procCtx;
     MapJoinOperator mapJoinOperator = (MapJoinOperator) nd;

@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
@@ -40,7 +40,7 @@ public class AppMasterEventProcessor implements SemanticNodeProcessor {
   static final private Logger LOG = LoggerFactory.getLogger(AppMasterEventProcessor.class.getName());
 
   @Override
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+  public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
       throws SemanticException {
     GenTezProcContext context = (GenTezProcContext) procCtx;
     AppMasterEventOperator event = (AppMasterEventOperator) nd;

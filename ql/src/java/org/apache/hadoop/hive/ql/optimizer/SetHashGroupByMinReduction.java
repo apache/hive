@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -33,6 +32,7 @@ import org.apache.hadoop.hive.ql.plan.GroupByDesc.Mode;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,7 @@ public class SetHashGroupByMinReduction implements SemanticNodeProcessor {
 
   @SuppressWarnings("unchecked")
   @Override
-  public Object process(Node nd, Stack<Node> stack,
+  public Object process(Node nd, ArrayStack<Node> stack,
                         NodeProcessorCtx procContext, Object... nodeOutputs)
       throws SemanticException {
 

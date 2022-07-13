@@ -26,8 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -119,7 +119,7 @@ public class GroupByOptimizer extends Transform {
   private SemanticNodeProcessor getDefaultProc() {
     return new SemanticNodeProcessor() {
       @Override
-      public Object process(Node nd, Stack<Node> stack,
+      public Object process(Node nd, ArrayStack<Node> stack,
                             NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
         return null;
       }
@@ -169,7 +169,7 @@ public class GroupByOptimizer extends Transform {
     }
 
     protected void processGroupBy(GroupByOptimizerContext ctx,
-        Stack<Node> stack,
+        ArrayStack<Node> stack,
         GroupByOperator groupByOp,
         int depth) throws SemanticException {
       HiveConf hiveConf = ctx.getConf();
@@ -253,7 +253,7 @@ public class GroupByOptimizer extends Transform {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       // GBY,RS,GBY... (top to bottom)
       GroupByOperator groupByOp = (GroupByOperator) stack.get(stack.size() - 3);
@@ -268,7 +268,7 @@ public class GroupByOptimizer extends Transform {
 
     // Should this group by be converted to a map-side group by, because the grouping keys for
     // the base table for the group by matches the skewed keys
-    protected GroupByOptimizerSortMatch checkSortGroupBy(Stack<Node> stack,
+    protected GroupByOptimizerSortMatch checkSortGroupBy(ArrayStack<Node> stack,
         GroupByOperator groupByOp)
         throws SemanticException {
 
@@ -586,7 +586,7 @@ public class GroupByOptimizer extends Transform {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       // GBY,RS,GBY,RS,GBY... (top to bottom)
       GroupByOperator groupByOp = (GroupByOperator) stack.get(stack.size() - 5);

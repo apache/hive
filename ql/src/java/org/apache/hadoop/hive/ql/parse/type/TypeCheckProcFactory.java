@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -74,6 +73,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -250,7 +250,7 @@ public class TypeCheckProcFactory<T> {
   public class NullExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
       if (ctx.getError() != null) {
@@ -273,7 +273,7 @@ public class TypeCheckProcFactory<T> {
   public class DynamicParameterProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
       if (ctx.getError() != null) {
@@ -311,7 +311,7 @@ public class TypeCheckProcFactory<T> {
   public class NumExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
       if (ctx.getError() != null) {
@@ -381,7 +381,7 @@ public class TypeCheckProcFactory<T> {
   public class StrExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
       if (ctx.getError() != null) {
@@ -438,7 +438,7 @@ public class TypeCheckProcFactory<T> {
   public class BoolExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
       if (ctx.getError() != null) {
@@ -483,7 +483,7 @@ public class TypeCheckProcFactory<T> {
   public class DateTimeExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
       if (ctx.getError() != null) {
@@ -538,7 +538,7 @@ public class TypeCheckProcFactory<T> {
   public class IntervalExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
       if (ctx.getError() != null) {
@@ -597,7 +597,7 @@ public class TypeCheckProcFactory<T> {
   public class ColumnExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
       if (ctx.getError() != null) {
@@ -667,9 +667,9 @@ public class TypeCheckProcFactory<T> {
           // It's not a column or a table alias.
           if (input.getIsExprResolver()) {
             ASTNode exprNode = expr;
-            if (!stack.empty()) {
+            if (!stack.isEmpty()) {
               ASTNode tmp = (ASTNode) stack.pop();
-              if (!stack.empty()) {
+              if (!stack.isEmpty()) {
                 exprNode = (ASTNode) stack.peek();
               }
               stack.push(tmp);
@@ -1295,7 +1295,7 @@ public class TypeCheckProcFactory<T> {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
 
       TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
@@ -1504,7 +1504,7 @@ public class TypeCheckProcFactory<T> {
   public class SubQueryExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
 
       TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
@@ -1674,7 +1674,7 @@ public class TypeCheckProcFactory<T> {
   public static class ValueAliasProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
       ASTNode astNode = (ASTNode) nd;
       ((TypeCheckCtx) procCtx).addColumnAlias(astNode.getChild(0).getText());
       return ALIAS_PLACEHOLDER;

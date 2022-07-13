@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
@@ -39,6 +38,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Operator factory for union processing.
@@ -49,7 +49,7 @@ public final class UnionProcFactory {
     // prevent instantiation
   }
 
-  public static int getPositionParent(UnionOperator union, Stack<Node> stack) {
+  public static int getPositionParent(UnionOperator union, ArrayStack<Node> stack) {
     int pos = 0;
     int size = stack.size();
     assert size >= 2 && stack.get(size - 1) == union;
@@ -68,7 +68,7 @@ public final class UnionProcFactory {
   public static class MapRedUnion implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       UnionOperator union = (UnionOperator) nd;
       UnionProcContext ctx = (UnionProcContext) procCtx;
@@ -93,7 +93,7 @@ public final class UnionProcFactory {
   public static class MapUnion implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       UnionOperator union = (UnionOperator) nd;
       UnionProcContext ctx = (UnionProcContext) procCtx;
@@ -118,7 +118,7 @@ public final class UnionProcFactory {
   public static class UnknownUnion implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       UnionOperator union = (UnionOperator) nd;
       UnionProcContext ctx = (UnionProcContext) procCtx;
@@ -176,7 +176,7 @@ public final class UnionProcFactory {
   public static class UnionNoProcessFile implements SemanticNodeProcessor {
 
     private void pushOperatorsAboveUnion(UnionOperator union,
-      Stack<Node> stack, int pos) throws SemanticException {
+      ArrayStack<Node> stack, int pos) throws SemanticException {
       // Clone all the operators between union and filescan, and push them above
       // the union. Remove the union (the tree below union gets delinked after that)
       try {
@@ -247,7 +247,7 @@ public final class UnionProcFactory {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       FileSinkOperator fileSinkOp   = (FileSinkOperator)nd;
 
@@ -313,7 +313,7 @@ public final class UnionProcFactory {
   public static class NoUnion implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       return null;
     }

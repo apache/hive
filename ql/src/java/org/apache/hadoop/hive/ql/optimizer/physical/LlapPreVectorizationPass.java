@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider.LlapMode.
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -42,6 +41,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +77,7 @@ public class LlapPreVectorizationPass implements PhysicalPlanResolver {
     }
 
     @Override
-    public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
+    public Object dispatch(Node nd, ArrayStack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
       @SuppressWarnings("unchecked")
       Task<?> currTask = (Task<?>) nd;
@@ -102,7 +102,7 @@ public class LlapPreVectorizationPass implements PhysicalPlanResolver {
         opRules.put(new RuleRegExp("Disable grace hash join if LLAP mode and not dynamic partition hash join",
             MapJoinOperator.getOperatorName() + "%"), new SemanticNodeProcessor() {
               @Override
-              public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+              public Object process(Node n, ArrayStack<Node> s, NodeProcessorCtx c, Object... os) {
                 MapJoinOperator mapJoinOp = (MapJoinOperator) n;
                 if (mapJoinOp.getConf().isHybridHashJoin() && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())) {
                   mapJoinOp.getConf().setHybridHashJoin(false);

@@ -64,7 +64,7 @@ public class ForwardWalker extends DefaultGraphWalker {
    */
   @Override
   protected void walk(Node nd) throws SemanticException {
-    if (opStack.empty() || nd != opStack.peek()) {
+    if (opStack.isEmpty() || nd != opStack.peek()) {
       opStack.push(nd);
     }
     if (allParentsDispatched(nd)) {

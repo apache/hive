@@ -19,9 +19,9 @@
 package org.apache.hadoop.hive.ql.lib;
 
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Dispatches calls to relevant method in processor. The user registers various
@@ -61,7 +61,7 @@ public class DefaultRuleDispatcher implements SemanticDispatcher {
    * @throws SemanticException
    */
   @Override
-  public Object dispatch(Node nd, Stack<Node> ndStack, Object... nodeOutputs)
+  public Object dispatch(Node nd, ArrayStack<Node> ndStack, Object... nodeOutputs)
       throws SemanticException {
 
     // find the firing rule

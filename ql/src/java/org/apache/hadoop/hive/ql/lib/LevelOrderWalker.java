@@ -24,12 +24,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * This is a level-wise walker implementation which dispatches the node in the order
@@ -139,7 +139,7 @@ public class LevelOrderWalker extends DefaultGraphWalker {
    * @throws SemanticException
    */
   @SuppressWarnings("unchecked")
-  private void walk(Node nd, int level, Stack<Node> stack)
+  private void walk(Node nd, int level, ArrayStack<Node> stack)
       throws SemanticException {
     List<Operator<? extends OperatorDesc>> parents =
         ((Operator<? extends OperatorDesc>) nd).getParentOperators();
@@ -150,9 +150,9 @@ public class LevelOrderWalker extends DefaultGraphWalker {
     }
 
     for (Node parent : parents) {
-      stack.add(0, parent);
+      stack.push(parent);
       walk(parent, level + 1, stack);
-      stack.remove(0);
+      stack.pop();
     }
   }
 }

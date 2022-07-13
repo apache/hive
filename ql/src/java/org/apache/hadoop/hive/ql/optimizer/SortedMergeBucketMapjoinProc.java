@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -29,6 +28,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.ArrayStack;
 
 public class SortedMergeBucketMapjoinProc extends AbstractSMBJoinProc implements SemanticNodeProcessor {
   public SortedMergeBucketMapjoinProc(ParseContext pctx) {
@@ -39,7 +39,7 @@ public class SortedMergeBucketMapjoinProc extends AbstractSMBJoinProc implements
   }
 
   @Override
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+  public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
       Object... nodeOutputs) throws SemanticException {
     if (nd instanceof SMBMapJoinOperator) {
       return null;

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -49,6 +48,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 // execute final aggregation stage for simple fetch query on fetch task
 public class SimpleFetchAggregation extends Transform {
@@ -86,7 +86,7 @@ public class SimpleFetchAggregation extends Transform {
       this.pctx = pctx;
     }
 
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       FileSinkOperator FS = (FileSinkOperator) nd;
       int shift = stack.get(stack.size() - 2) instanceof SelectOperator ? 0 : 1;

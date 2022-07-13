@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -61,7 +61,7 @@ public class ProcessAnalyzeTable implements SemanticNodeProcessor {
 
   @SuppressWarnings("unchecked")
   @Override
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procContext,
+  public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procContext,
       Object... nodeOutputs) throws SemanticException {
 
     GenTezProcContext context = (GenTezProcContext) procContext;

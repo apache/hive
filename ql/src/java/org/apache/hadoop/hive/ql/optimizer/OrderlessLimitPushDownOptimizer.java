@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
@@ -47,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +69,7 @@ public class OrderlessLimitPushDownOptimizer extends Transform {
 
   private static class LimitPushDown implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator reduceSink = findReduceSink(stack);
       if (reduceSink == null || !reduceSink.getConf().hasOrderBy()) { // LIMIT + ORDER BY handled by TopNKey push down
         pushDown((LimitOperator) nd);
@@ -77,7 +77,7 @@ public class OrderlessLimitPushDownOptimizer extends Transform {
       return null;
     }
 
-    private ReduceSinkOperator findReduceSink(Stack<Node> stack) {
+    private ReduceSinkOperator findReduceSink(ArrayStack<Node> stack) {
       for (int i = stack.size() - 2 ; i >= 0; i--) {
         Operator<?> operator = (Operator<?>) stack.get(i);
         if (operator instanceof ReduceSinkOperator) {

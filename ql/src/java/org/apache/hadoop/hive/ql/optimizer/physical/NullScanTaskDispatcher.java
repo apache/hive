@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Stack;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -64,6 +63,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -234,7 +234,7 @@ public class NullScanTaskDispatcher implements SemanticDispatcher {
   }
 
   @Override
-  public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
+  public Object dispatch(Node nd, ArrayStack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
     Task<?> task = (Task<?>) nd;
 

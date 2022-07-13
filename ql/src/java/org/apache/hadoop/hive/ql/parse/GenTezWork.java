@@ -23,7 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
@@ -49,6 +48,7 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.plan.UnionWork;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +69,7 @@ public class GenTezWork implements SemanticNodeProcessor {
   }
 
   @Override
-  public Object process(Node nd, Stack<Node> stack,
+  public Object process(Node nd, ArrayStack<Node> stack,
                         NodeProcessorCtx procContext, Object... nodeOutputs)
       throws SemanticException {
 
@@ -500,9 +500,19 @@ public class GenTezWork implements SemanticNodeProcessor {
 
   @SuppressWarnings("unchecked")
   private Operator<? extends OperatorDesc> getParentFromStack(Node currentMergeJoinOperator,
-      Stack<Node> stack) {
-    int pos = stack.indexOf(currentMergeJoinOperator);
+      ArrayStack<Node> stack) {
+    int pos = indexOf(stack, currentMergeJoinOperator);
     return (Operator<? extends OperatorDesc>) stack.get(pos - 1);
+  }
+
+  private static int indexOf(ArrayStack<Node> stack, Node node) {
+    final int size = stack.size();
+    for (int i = 0; i < size; i++) {
+      if (stack.get(i) == node) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   private void connectUnionWorkWithWork(UnionWork unionWork, BaseWork work, TezWork tezWork,

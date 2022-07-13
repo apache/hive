@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.lib;
 
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * CompositeProcessor. Holds a list of node processors to be fired by the same
@@ -35,7 +35,7 @@ public class CompositeProcessor implements SemanticNodeProcessor {
   }
 
   @Override
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+  public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
       throws SemanticException {
     for (SemanticNodeProcessor proc: procs) {
       proc.process(nd, stack, procCtx, nodeOutputs);

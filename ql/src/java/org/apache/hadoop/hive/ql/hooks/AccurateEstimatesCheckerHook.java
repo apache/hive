@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.hooks;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
@@ -47,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
 import com.google.common.collect.Lists;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Adds an extra check for Explain Analyze queries.
@@ -61,7 +61,7 @@ public class AccurateEstimatesCheckerHook extends AbstractSemanticAnalyzerHook {
     Map<String, Operator<?>> opMap = new HashMap<>();
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
       Operator op = (Operator) nd;
       Statistics stats = op.getStatistics();

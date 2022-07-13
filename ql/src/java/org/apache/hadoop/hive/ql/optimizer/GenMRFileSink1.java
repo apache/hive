@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -63,7 +63,7 @@ public class GenMRFileSink1 implements SemanticNodeProcessor {
    *          context
    */
   @Override
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx,
+  public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx opProcCtx,
       Object... nodeOutputs) throws SemanticException {
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;
     ParseContext parseCtx = ctx.getParseCtx();
@@ -171,7 +171,7 @@ public class GenMRFileSink1 implements SemanticNodeProcessor {
    * @return the final file name to which the FileSinkOperator should store.
    * @throws SemanticException
    */
-  private Path processFS(FileSinkOperator fsOp, Stack<Node> stack,
+  private Path processFS(FileSinkOperator fsOp, ArrayStack<Node> stack,
                          NodeProcessorCtx opProcCtx, boolean chDir) throws SemanticException {
 
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;

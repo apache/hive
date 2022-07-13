@@ -25,11 +25,11 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.TreeMap;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hive.common.util.ArrayStack;
 import org.apache.tez.runtime.library.cartesianproduct.CartesianProductVertexManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,7 +111,7 @@ public class CrossProductHandler implements PhysicalPlanResolver, SemanticDispat
   }
 
   @Override
-  public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
+  public Object dispatch(Node nd, ArrayStack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
     @SuppressWarnings("unchecked")
     Task<?> currTask = (Task<?>) nd;
@@ -290,7 +290,7 @@ public class CrossProductHandler implements PhysicalPlanResolver, SemanticDispat
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       @SuppressWarnings("unchecked")
       AbstractMapJoinOperator<? extends MapJoinDesc> mjOp = (AbstractMapJoinOperator<? extends MapJoinDesc>) nd;
@@ -366,7 +366,7 @@ public class CrossProductHandler implements PhysicalPlanResolver, SemanticDispat
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator rsOp = (ReduceSinkOperator) nd;
       ReduceSinkDesc rsDesc = rsOp.getConf();
@@ -387,7 +387,7 @@ public class CrossProductHandler implements PhysicalPlanResolver, SemanticDispat
 
   static class NoopProcessor implements SemanticNodeProcessor {
     @Override
-    public final Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public final Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
      return nd;
     }

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.plan.mapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -34,6 +33,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * This signature is used to establish related parts to connect pre/post PPD optimizations.
@@ -69,7 +69,7 @@ public final class AuxOpTreeSignature {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
       Operator<?> op = (Operator<?>) nd;
       AuxOpTreeSignature treeSig = pm.getAuxSignatureOf(op);

@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.ql.Context;
@@ -38,6 +37,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hive.common.util.ArrayStack;
 
 public class QBSubQuery implements ISubQueryJoinInfo {
 
@@ -259,7 +259,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     boolean forHavingClause;
     String parentQueryNewAlias;
     SemanticNodeProcessor defaultExprProcessor;
-    Stack<Node> stack;
+    ArrayStack<Node> stack;
 
     ConjunctAnalyzer(RowResolver parentQueryRR,
         boolean forHavingClause,
@@ -268,7 +268,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       defaultExprProcessor = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor();
       this.forHavingClause = forHavingClause;
       this.parentQueryNewAlias = parentQueryNewAlias;
-      stack = new Stack<Node>();
+      stack = new ArrayStack<Node>();
     }
 
     /*

@@ -26,7 +26,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.Stack;
 import java.util.TreeSet;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -51,6 +50,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +81,7 @@ public class MemoryDecider implements PhysicalPlanResolver {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
+    public Object dispatch(Node nd, ArrayStack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
       Task<?> currTask = (Task<?>) nd;
       if (currTask instanceof StatsTask) {
@@ -132,7 +132,7 @@ public class MemoryDecider implements PhysicalPlanResolver {
       rules.put(new RuleRegExp("Map join memory estimator",
               MapJoinOperator.getOperatorName() + "%"), new SemanticNodeProcessor() {
           @Override
-          public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+          public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
               Object... nodeOutputs) {
             mapJoins.add((MapJoinOperator) nd);
             return null;
@@ -262,7 +262,7 @@ public class MemoryDecider implements PhysicalPlanResolver {
     public class DefaultRule implements SemanticNodeProcessor {
 
       @Override
-      public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+      public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
           Object... nodeOutputs) throws SemanticException {
         return null;
       }
