@@ -1,8 +1,8 @@
-PREHOOK: query: create external table target_ice(a int, b string, c int) partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: query: create external table target_ice(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@target_ice
-POSTHOOK: query: create external table target_ice(a int, b string, c int) partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: query: create external table target_ice(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='2')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@target_ice
@@ -68,12 +68,10 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -92,9 +90,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 6 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col2 (type: int)
-            Execution mode: llap
-            LLAP IO: all inputs
-        Map 8 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: target_ice
@@ -114,10 +110,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col7 (type: int)
                         Statistics: Num rows: 4 Data size: 1212 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: string), _col3 (type: bigint), _col5 (type: string), _col6 (type: int), _col8 (type: int)
-            Execution mode: llap
-            LLAP IO: no inputs
         Reducer 2 
-            Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
@@ -164,13 +157,14 @@ STAGE PLANS:
                       expressions: _col11 (type: int), 'Merged' (type: string), (_col10 + 10) (type: int)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: iceberg_bucket(_col0, 16) (type: int), _col1 (type: string)
-                        null sort order: aa
-                        sort order: ++
-                        Map-reduce partition columns: iceberg_bucket(_col0, 16) (type: int), _col1 (type: string)
+                      File Output Operator
+                        compressed: false
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int)
+                        table:
+                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                            name: default.target_ice
                   Filter Operator
                     predicate: _col11 is null (type: boolean)
                     Statistics: Num rows: 5 Data size: 1389 Basic stats: COMPLETE Column stats: COMPLETE
@@ -178,13 +172,14 @@ STAGE PLANS:
                       expressions: _col6 (type: int), _col4 (type: string), _col7 (type: int)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 5 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: iceberg_bucket(_col0, 16) (type: int), _col1 (type: string)
-                        null sort order: aa
-                        sort order: ++
-                        Map-reduce partition columns: iceberg_bucket(_col0, 16) (type: int), _col1 (type: string)
+                      File Output Operator
+                        compressed: false
                         Statistics: Num rows: 5 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int)
+                        table:
+                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                            name: default.target_ice
                   Filter Operator
                     predicate: (_col11 = _col6) (type: boolean)
                     Statistics: Num rows: 5 Data size: 1389 Basic stats: COMPLETE Column stats: COMPLETE
@@ -207,7 +202,6 @@ STAGE PLANS:
                           Statistics: Num rows: 4 Data size: 644 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col4 (type: bigint)
         Reducer 3 
-            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: bigint), VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: int)
@@ -222,7 +216,6 @@ STAGE PLANS:
                       serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                       name: default.target_ice
         Reducer 4 
-            Execution mode: llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: bigint), VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: int)
@@ -237,37 +230,6 @@ STAGE PLANS:
                       serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                       name: default.target_ice
         Reducer 5 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: int), KEY.iceberg_bucket(_col0, 16) (type: int), KEY._col1 (type: string)
-                outputColumnNames: _col0, _col1, _col2, iceberg_bucket(_col0, 16), _col1
-                File Output Operator
-                  compressed: false
-                  Dp Sort State: PARTITION_SORTED
-                  Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
-                      output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
-                      serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
-                      name: default.target_ice
-        Reducer 6 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: int), KEY.iceberg_bucket(_col0, 16) (type: int), KEY._col1 (type: string)
-                outputColumnNames: _col0, _col1, _col2, iceberg_bucket(_col0, 16), _col1
-                File Output Operator
-                  compressed: false
-                  Dp Sort State: PARTITION_SORTED
-                  Statistics: Num rows: 5 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
-                      output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
-                      serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
-                      name: default.target_ice
-        Reducer 7 
-            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -346,11 +308,11 @@ POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(target_ice)target_ice.null, 
 PREHOOK: query: select * from target_ice
 PREHOOK: type: QUERY
 PREHOOK: Input: default@target_ice
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from target_ice
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@target_ice
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	Merged	60
 2	Merged	61
 3	three	52

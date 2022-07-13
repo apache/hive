@@ -1,4 +1,5 @@
 -- SORT_QUERY_RESULTS
+set hive.explain.user=false;
 
 create external table target_ice(a int, b string, c int) partitioned by spec (bucket(16, a), truncate(3, b)) stored by iceberg stored as orc tblproperties ('format-version'='2');
 create table source(a int, b string, c int);
