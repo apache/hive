@@ -24,13 +24,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -139,7 +139,7 @@ public class SyntheticJoinPredicate extends Transform {
 
   private static class JoinSynthetic implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       SyntheticContext sCtx = (SyntheticContext) procCtx;

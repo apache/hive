@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -43,6 +42,7 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.stats.BasicStatsNoJobTask;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Processor for the rule - table scan.
@@ -59,7 +59,7 @@ public class GenMRTableScan1 implements SemanticNodeProcessor {
    *          context
    */
   @Override
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx,
+  public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx opProcCtx,
       Object... nodeOutputs) throws SemanticException {
     TableScanOperator op = (TableScanOperator) nd;
     GenMRProcContext ctx = (GenMRProcContext) opProcCtx;

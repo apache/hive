@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -54,6 +53,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -209,7 +209,7 @@ public final class PcrExprProcFactory {
   public static class ColumnExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       ExprNodeColumnDesc cd = (ExprNodeColumnDesc) nd;
       PcrExprProcCtx epc = (PcrExprProcCtx) procCtx;
@@ -252,7 +252,7 @@ public final class PcrExprProcFactory {
    */
   public static class GenericFuncExprProcessor implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       PcrExprProcCtx ctx = (PcrExprProcCtx) procCtx;
       ExprNodeGenericFuncDesc fd = (ExprNodeGenericFuncDesc) nd;
@@ -500,7 +500,7 @@ public final class PcrExprProcFactory {
   public static class FieldExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       ExprNodeFieldDesc fnd = (ExprNodeFieldDesc) nd;
       boolean unknown = false;
@@ -528,7 +528,7 @@ public final class PcrExprProcFactory {
   public static class DefaultExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       if (nd instanceof ExprNodeConstantDesc) {
         return new NodeInfoWrapper(WalkState.CONSTANT, null,

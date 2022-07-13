@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -31,6 +30,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Operator factory for pruning processing of operator graph We find
@@ -51,7 +51,7 @@ public abstract class PrunerOperatorFactory {
   public static abstract class FilterPruner implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       FilterOperator fop = (FilterOperator) nd;
       FilterOperator fop2 = null;
@@ -175,7 +175,7 @@ public abstract class PrunerOperatorFactory {
   public static class DefaultPruner implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       // Nothing needs to be done.
       return null;

@@ -22,8 +22,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -110,7 +110,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       TableScanOperator tsOp = (TableScanOperator) nd;
       WalkerCtx walkerCtx = (WalkerCtx) procCtx;
@@ -129,7 +129,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
 
   static private class FileSinkProcessor implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       WalkerCtx walkerCtx = (WalkerCtx) procCtx;
       // There can be atmost one element eligible to be converted to

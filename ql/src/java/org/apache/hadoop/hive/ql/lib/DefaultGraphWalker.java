@@ -26,9 +26,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * base class for operator graph walker this class takes list of starting ops
@@ -42,7 +42,7 @@ public class DefaultGraphWalker implements SemanticGraphWalker {
    * opStack keeps the nodes that have been visited, but have not been
    * dispatched yet
    */
-  protected final Stack<Node> opStack;
+  protected final ArrayStack<Node> opStack;
   /**
    * opQueue keeps the nodes in the order that the were dispatched.
    * Then it is used to go through the processed nodes and store
@@ -65,7 +65,7 @@ public class DefaultGraphWalker implements SemanticGraphWalker {
    */
   public DefaultGraphWalker(SemanticDispatcher disp) {
     dispatcher = disp;
-    opStack = new Stack<Node>();
+    opStack = new ArrayStack<Node>();
     opQueue = new LinkedList<Node>();
   }
 
@@ -85,14 +85,14 @@ public class DefaultGraphWalker implements SemanticGraphWalker {
    *          stack of nodes encountered
    * @throws SemanticException
    */
-  public void dispatch(Node nd, Stack<Node> ndStack) throws SemanticException {
+  public void dispatch(Node nd, ArrayStack<Node> ndStack) throws SemanticException {
     dispatchAndReturn(nd, ndStack);
   }
 
   /**
    * Returns dispatch result
    */
-  public <T> T dispatchAndReturn(Node nd, Stack<Node> ndStack) throws SemanticException {
+  public <T> T dispatchAndReturn(Node nd, ArrayStack<Node> ndStack) throws SemanticException {
     Object[] nodeOutputs = null;
     if (nd.getChildren() != null) {
       nodeOutputs = new Object[nd.getChildren().size()];
@@ -148,7 +148,7 @@ public class DefaultGraphWalker implements SemanticGraphWalker {
     opStack.push(nd);
 
     // While there are still nodes to dispatch...
-    while (!opStack.empty()) {
+    while (!opStack.isEmpty()) {
       Node node = opStack.peek();
 
       if (node.getChildren() == null ||

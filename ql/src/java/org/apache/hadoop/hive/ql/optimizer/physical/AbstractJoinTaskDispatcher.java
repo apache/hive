@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.Path;
@@ -33,6 +32,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker.TaskGraphWalkerContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Common iteration methods for converting joins and sort-merge joins.
@@ -151,7 +151,7 @@ public abstract class AbstractJoinTaskDispatcher implements SemanticDispatcher {
   }
 
   @Override
-  public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
+  public Object dispatch(Node nd, ArrayStack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
     if (nodeOutputs == null || nodeOutputs.length == 0) {
       throw new SemanticException("No Dispatch Context");

@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -55,6 +54,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * this transformation does bucket map join optimization.
@@ -71,7 +71,7 @@ abstract public class AbstractBucketJoinProc implements SemanticNodeProcessor {
   }
 
   @Override
-  abstract public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+  abstract public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
       Object... nodeOutputs) throws SemanticException;
 
   public static List<String> getBucketFilePathsOfPartition(

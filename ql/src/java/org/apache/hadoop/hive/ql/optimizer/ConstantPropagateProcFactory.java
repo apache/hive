@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -97,6 +96,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1032,7 +1032,7 @@ public final class ConstantPropagateProcFactory {
    */
   public static class ConstantPropagateFilterProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       FilterOperator op = (FilterOperator) nd;
       ConstantPropagateProcCtx cppCtx = (ConstantPropagateProcCtx) ctx;
@@ -1083,7 +1083,7 @@ public final class ConstantPropagateProcFactory {
    */
   public static class ConstantPropagateGroupByProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       GroupByOperator op = (GroupByOperator) nd;
       ConstantPropagateProcCtx cppCtx = (ConstantPropagateProcCtx) ctx;
@@ -1133,7 +1133,7 @@ public final class ConstantPropagateProcFactory {
   public static class ConstantPropagateDefaultProc implements SemanticNodeProcessor {
     @Override
     @SuppressWarnings("unchecked")
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       ConstantPropagateProcCtx cppCtx = (ConstantPropagateProcCtx) ctx;
       Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
@@ -1172,7 +1172,7 @@ public final class ConstantPropagateProcFactory {
    */
   public static class ConstantPropagateSelectProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       SelectOperator op = (SelectOperator) nd;
       ConstantPropagateProcCtx cppCtx = (ConstantPropagateProcCtx) ctx;
@@ -1243,7 +1243,7 @@ public final class ConstantPropagateProcFactory {
    */
   public static class ConstantPropagateFileSinkProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       FileSinkOperator op = (FileSinkOperator) nd;
       ConstantPropagateProcCtx cppCtx = (ConstantPropagateProcCtx) ctx;
@@ -1297,7 +1297,7 @@ public final class ConstantPropagateProcFactory {
    */
   public static class ConstantPropagateStopProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       Operator<?> op = (Operator<?>) nd;
       ConstantPropagateProcCtx cppCtx = (ConstantPropagateProcCtx) ctx;
@@ -1320,7 +1320,7 @@ public final class ConstantPropagateProcFactory {
    */
   public static class ConstantPropagateReduceSinkProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       ReduceSinkOperator op = (ReduceSinkOperator) nd;
       ReduceSinkDesc rsDesc = op.getConf();
@@ -1420,7 +1420,7 @@ public final class ConstantPropagateProcFactory {
    */
   public static class ConstantPropagateJoinProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       JoinOperator op = (JoinOperator) nd;
       JoinDesc conf = op.getConf();
@@ -1488,7 +1488,7 @@ public final class ConstantPropagateProcFactory {
    */
   public static class ConstantPropagateTableScanProc implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       TableScanOperator op = (TableScanOperator) nd;
       TableScanDesc conf = op.getConf();

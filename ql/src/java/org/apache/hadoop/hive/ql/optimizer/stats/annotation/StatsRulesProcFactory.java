@@ -32,7 +32,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Stack;
 
 import com.google.common.base.Preconditions;
 import org.apache.calcite.rel.metadata.RelMdUtil;
@@ -40,7 +39,6 @@ import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -127,6 +125,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,7 +149,7 @@ public class StatsRulesProcFactory {
   public static class TableScanStatsRule extends DefaultStatsRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       TableScanOperator tsop = (TableScanOperator) nd;
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
@@ -196,7 +195,7 @@ public class StatsRulesProcFactory {
   public static class SelectStatsRule extends DefaultStatsRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       SelectOperator sop = (SelectOperator) nd;
@@ -275,7 +274,7 @@ public class StatsRulesProcFactory {
   public static class FilterStatsRule extends DefaultStatsRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       FilterOperator fop = (FilterOperator) nd;
@@ -1410,7 +1409,7 @@ public class StatsRulesProcFactory {
   public static class GroupByStatsRule extends DefaultStatsRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       GroupByOperator gop = (GroupByOperator) nd;
@@ -1912,7 +1911,7 @@ public class StatsRulesProcFactory {
   public static class JoinStatsRule extends FilterStatsRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       long newNumRows = 0;
       CommonJoinOperator<? extends JoinDesc> jop = (CommonJoinOperator<? extends JoinDesc>) nd;
@@ -2838,7 +2837,7 @@ public class StatsRulesProcFactory {
   public static class LimitStatsRule extends DefaultStatsRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       LimitOperator lop = (LimitOperator) nd;
@@ -2893,7 +2892,7 @@ public class StatsRulesProcFactory {
   public static class ReduceSinkStatsRule extends DefaultStatsRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
       ReduceSinkOperator rop = (ReduceSinkOperator) nd;
       Operator<? extends OperatorDesc> parent = rop.getParentOperators().get(0);
@@ -2950,7 +2949,7 @@ public class StatsRulesProcFactory {
    */
   public static class UDTFStatsRule extends DefaultStatsRule implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       UDTFOperator uop = (UDTFOperator) nd;
@@ -3009,7 +3008,7 @@ public class StatsRulesProcFactory {
    */
   public static class LateralViewJoinStatsRule extends DefaultStatsRule implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       final LateralViewJoinOperator lop = (LateralViewJoinOperator) nd;
       final AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
@@ -3068,7 +3067,7 @@ public class StatsRulesProcFactory {
   public static class DefaultStatsRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
       OperatorDesc conf = op.getConf();

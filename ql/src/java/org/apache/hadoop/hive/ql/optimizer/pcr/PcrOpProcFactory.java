@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.optimizer.pcr;
 
 import java.util.ArrayList;
-import java.util.Stack;
 
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -59,7 +59,7 @@ public final class PcrOpProcFactory {
   public static class FilterPCR implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       PcrOpWalkerCtx owc = (PcrOpWalkerCtx) procCtx;
       FilterOperator fop = (FilterOperator) nd;
@@ -161,7 +161,7 @@ public final class PcrOpProcFactory {
   public static class DefaultPCR implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       // Nothing needs to be done.
       return null;

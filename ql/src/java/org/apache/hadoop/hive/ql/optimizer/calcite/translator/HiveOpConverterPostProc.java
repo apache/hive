@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -43,6 +42,7 @@ import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 public class HiveOpConverterPostProc extends Transform {
 
@@ -81,7 +81,7 @@ public class HiveOpConverterPostProc extends Transform {
   private class JoinAnnotate implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       JoinOperator joinOp = (JoinOperator) nd;
 
@@ -129,7 +129,7 @@ public class HiveOpConverterPostProc extends Transform {
   private class TableScanAnnotate implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       TableScanOperator tableScanOp = (TableScanOperator) nd;
 

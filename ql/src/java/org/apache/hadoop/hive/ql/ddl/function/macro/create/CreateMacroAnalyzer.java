@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -50,6 +49,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Analyzer for macro creation commands.
@@ -93,7 +93,7 @@ public class CreateMacroAnalyzer extends BaseSemanticAnalyzer {
       Node expression = (Node) root.getChild(2);
       PreOrderWalker walker = new PreOrderWalker(new SemanticDispatcher() {
         @Override
-        public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs) throws SemanticException {
+        public Object dispatch(Node nd, ArrayStack<Node> stack, Object... nodeOutputs) throws SemanticException {
           if (nd instanceof ASTNode) {
             ASTNode node = (ASTNode)nd;
             if (node.getType() == HiveParser.TOK_TABLE_OR_COL) {

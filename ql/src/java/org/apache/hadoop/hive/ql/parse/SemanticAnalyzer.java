@@ -313,6 +313,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Implementation of the semantic analyzer. It generates the query plan.
@@ -2709,7 +2710,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       SemanticDispatcher nodeOriginDispatcher = new SemanticDispatcher() {
         @Override
-        public Object dispatch(Node nd, java.util.Stack<Node> stack,
+        public Object dispatch(Node nd, ArrayStack<Node> stack,
                                Object... nodeOutputs) {
           ((ASTNode) nd).setOrigin(viewOrigin);
           return null;

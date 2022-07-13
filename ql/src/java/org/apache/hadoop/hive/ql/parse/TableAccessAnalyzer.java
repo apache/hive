@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -95,7 +95,7 @@ public class TableAccessAnalyzer {
   private SemanticNodeProcessor getDefaultProc() {
     return new SemanticNodeProcessor() {
       @Override
-      public Object process(Node nd, Stack<Node> stack,
+      public Object process(Node nd, ArrayStack<Node> stack,
                             NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
         return null;
       }
@@ -113,7 +113,7 @@ public class TableAccessAnalyzer {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) {
       GroupByOperator op = (GroupByOperator)nd;
       TableAccessCtx tableAccessCtx = (TableAccessCtx)procCtx;
@@ -160,7 +160,7 @@ public class TableAccessAnalyzer {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) {
       JoinOperator op = (JoinOperator)nd;
       TableAccessCtx tableAccessCtx = (TableAccessCtx)procCtx;

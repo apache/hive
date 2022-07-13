@@ -35,14 +35,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.ConvertDecimal64ToDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorCoalesce;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColDivideDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinAntiJoinLongOperator;
@@ -52,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.vector.reducesink.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -988,7 +987,7 @@ public class Vectorizer implements PhysicalPlanResolver {
   class VectorizationDispatcher implements SemanticDispatcher {
 
     @Override
-    public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
+    public Object dispatch(Node nd, ArrayStack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
       Task<?> currTask = (Task<?>) nd;
       if (currTask instanceof MapRedTask) {

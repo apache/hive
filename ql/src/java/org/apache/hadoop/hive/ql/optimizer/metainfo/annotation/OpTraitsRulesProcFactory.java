@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionDef;
+import org.apache.hive.common.util.ArrayStack;
 
 /*
  * This class populates the following operator traits for the entire operator tree:
@@ -72,7 +73,7 @@ public class OpTraitsRulesProcFactory {
   public static class DefaultRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       @SuppressWarnings("unchecked")
       Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>)nd;
@@ -89,7 +90,7 @@ public class OpTraitsRulesProcFactory {
   public static class ReduceSinkRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       ReduceSinkOperator rs = (ReduceSinkOperator)nd;
@@ -212,7 +213,7 @@ public class OpTraitsRulesProcFactory {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       TableScanOperator ts = (TableScanOperator)nd;
       AnnotateOpTraitsProcCtx opTraitsCtx = (AnnotateOpTraitsProcCtx)procCtx;
@@ -252,7 +253,7 @@ public class OpTraitsRulesProcFactory {
   public static class GroupByRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       GroupByOperator gbyOp = (GroupByOperator)nd;
       List<String> gbyKeys = new ArrayList<>();
@@ -285,7 +286,7 @@ public class OpTraitsRulesProcFactory {
   public static class PTFRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       PTFOperator ptfOp = (PTFOperator) nd;
       List<String> partitionKeys = new ArrayList<>();
@@ -364,7 +365,7 @@ public class OpTraitsRulesProcFactory {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       SelectOperator selOp = (SelectOperator) nd;
       List<List<String>> parentBucketColNames =
@@ -404,7 +405,7 @@ public class OpTraitsRulesProcFactory {
   public static class JoinRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       JoinOperator joinOp = (JoinOperator) nd;
       List<List<String>> bucketColsList = new ArrayList<List<String>>();
@@ -481,7 +482,7 @@ public class OpTraitsRulesProcFactory {
   public static class MultiParentRule implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       @SuppressWarnings("unchecked")
       Operator<? extends OperatorDesc> operator = (Operator<? extends OperatorDesc>) nd;

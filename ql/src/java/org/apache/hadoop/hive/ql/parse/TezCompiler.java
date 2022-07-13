@@ -145,6 +145,7 @@ import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -840,7 +841,7 @@ public class TezCompiler extends TaskCompiler {
   private static class SMBJoinOpProc implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       SMBJoinOpProcContext ctx = (SMBJoinOpProcContext) procCtx;
       ctx.JoinOpToTsOpMap.put((CommonMergeJoinOperator) nd,
@@ -978,7 +979,7 @@ public class TezCompiler extends TaskCompiler {
     private PlanMapper planMapper;
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
       ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
       planMapper = pCtx.getContext().getPlanMapper();
@@ -1008,7 +1009,7 @@ public class TezCompiler extends TaskCompiler {
     private PlanMapper planMapper;
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
       ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
       planMapper = pCtx.getContext().getPlanMapper();
@@ -1091,7 +1092,7 @@ public class TezCompiler extends TaskCompiler {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator rs = (ReduceSinkOperator) nd;
       SemiJoinRemovalContext rCtx = (SemiJoinRemovalContext) procCtx;
@@ -1207,7 +1208,7 @@ public class TezCompiler extends TaskCompiler {
   private static class DynamicPruningRemovalRedundantProc implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       AppMasterEventOperator event = (AppMasterEventOperator) nd;
       if (!(event.getConf() instanceof DynamicPruningEventDesc)) {

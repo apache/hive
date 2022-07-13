@@ -24,11 +24,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * base class for operator graph walker this class takes list of starting ops
@@ -52,7 +52,7 @@ public class TaskGraphWalker implements SemanticGraphWalker {
     }
   }
 
-  protected Stack<Node> opStack;
+  protected ArrayStack<Node> opStack;
   private final List<Node> toWalk = new ArrayList<Node>();
   private final HashMap<Node, Object> retMap = new HashMap<Node, Object>();
   private final SemanticDispatcher dispatcher;
@@ -66,7 +66,7 @@ public class TaskGraphWalker implements SemanticGraphWalker {
    */
   public TaskGraphWalker(SemanticDispatcher disp) {
     dispatcher = disp;
-    opStack = new Stack<Node>();
+    opStack = new ArrayStack<Node>();
     walkerCtx = new TaskGraphWalkerContext(retMap);
   }
 
@@ -93,7 +93,7 @@ public class TaskGraphWalker implements SemanticGraphWalker {
    *          stack of nodes encountered
    * @throws SemanticException
    */
-  public void dispatch(Node nd, Stack<Node> ndStack,TaskGraphWalkerContext walkerCtx) throws SemanticException {
+  public void dispatch(Node nd, ArrayStack<Node> ndStack,TaskGraphWalkerContext walkerCtx) throws SemanticException {
     Object[] nodeOutputs = null;
     if (nd.getChildren() != null) {
       nodeOutputs = new Object[nd.getChildren().size()+1];
@@ -143,7 +143,7 @@ public class TaskGraphWalker implements SemanticGraphWalker {
       if (getDispatchedList().contains(nd)) {
         return;
       }
-      if (opStack.empty() || nd != opStack.peek()) {
+      if (opStack.isEmpty() || nd != opStack.peek()) {
         opStack.push(nd);
       }
 

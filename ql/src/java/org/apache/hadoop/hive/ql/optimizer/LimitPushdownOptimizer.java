@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -43,6 +42,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Make RS calculate top-K selection for limit clause.
@@ -115,7 +115,7 @@ public class LimitPushdownOptimizer extends Transform {
   private static class TopNReducer implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack,
+    public Object process(Node nd, ArrayStack<Node> stack,
                           NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator rs = null;
       for (int i = stack.size() - 2 ; i >= 0; i--) {
@@ -160,7 +160,7 @@ public class LimitPushdownOptimizer extends Transform {
   private static class TopNPropagator implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack,
+    public Object process(Node nd, ArrayStack<Node> stack,
                           NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator cRS = (ReduceSinkOperator) nd;
       if (cRS.getConf().getTopN() == -1) {

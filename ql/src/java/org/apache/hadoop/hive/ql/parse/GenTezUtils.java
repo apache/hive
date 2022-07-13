@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -834,7 +835,7 @@ public class GenTezUtils {
   private static class DynamicValuePredicateProc implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
       DynamicValuePredicateContext ctx = (DynamicValuePredicateContext) procCtx;
       ExprNodeDesc parent = (ExprNodeDesc) stack.get(stack.size() - 2);
@@ -913,7 +914,7 @@ public class GenTezUtils {
      * found
      */
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       ExprNodeDynamicListDesc desc = (ExprNodeDynamicListDesc) nd;
       DynamicPartitionPrunerContext context = (DynamicPartitionPrunerContext) procCtx;

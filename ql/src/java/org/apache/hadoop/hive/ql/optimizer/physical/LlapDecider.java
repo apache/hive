@@ -33,7 +33,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -72,6 +71,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,7 +134,7 @@ public class LlapDecider implements PhysicalPlanResolver {
     }
 
     @Override
-    public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
+    public Object dispatch(Node nd, ArrayStack<Node> stack, Object... nodeOutputs)
       throws SemanticException {
       @SuppressWarnings("unchecked")
       Task<?> currTask = (Task<?>) nd;
@@ -380,7 +380,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       opRules.put(new RuleRegExp("No scripts", ScriptOperator.getOperatorName() + "%"),
           new SemanticNodeProcessor() {
           @Override
-          public Object process(Node n, Stack<Node> s, NodeProcessorCtx c,
+          public Object process(Node n, ArrayStack<Node> s, NodeProcessorCtx c,
               Object... os) {
             LOG.debug("Cannot run operator [" + n + "] in llap mode.");
               return Boolean.FALSE;
@@ -388,7 +388,7 @@ public class LlapDecider implements PhysicalPlanResolver {
         });
       opRules.put(new RuleRegExp("No user code in fil", FilterOperator.getOperatorName() + "%"), new SemanticNodeProcessor() {
         @Override
-        public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+        public Object process(Node n, ArrayStack<Node> s, NodeProcessorCtx c, Object... os) {
           ExprNodeDesc expr = ((FilterOperator) n).getConf().getPredicate();
           boolean retval = checkExpression(expr);
           if (!retval) {
@@ -399,7 +399,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       });
       opRules.put(new RuleRegExp("No user code in gby", GroupByOperator.getOperatorName() + "%"), new SemanticNodeProcessor() {
         @Override
-        public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+        public Object process(Node n, ArrayStack<Node> s, NodeProcessorCtx c, Object... os) {
           @SuppressWarnings("unchecked")
           List<AggregationDesc> aggs = ((Operator<GroupByDesc>) n).getConf().getAggregators();
           boolean retval = checkAggregators(aggs);
@@ -412,7 +412,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       opRules.put(new RuleRegExp("No user code in select", SelectOperator.getOperatorName() + "%"),
           new SemanticNodeProcessor() {
             @Override
-            public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+            public Object process(Node n, ArrayStack<Node> s, NodeProcessorCtx c, Object... os) {
               @SuppressWarnings({"unchecked"})
               List<ExprNodeDesc> exprs = ((Operator<SelectDesc>) n).getConf().getColList();
               boolean retval = checkExpressions(exprs);
@@ -427,7 +427,7 @@ public class LlapDecider implements PhysicalPlanResolver {
         opRules.put(new RuleRegExp("Disable grace hash join if LLAP mode and not dynamic partition hash join",
             MapJoinOperator.getOperatorName() + "%"), new SemanticNodeProcessor() {
               @Override
-              public Object process(Node n, Stack<Node> s, NodeProcessorCtx c, Object... os) {
+              public Object process(Node n, ArrayStack<Node> s, NodeProcessorCtx c, Object... os) {
                 MapJoinOperator mapJoinOp = (MapJoinOperator) n;
                 if (mapJoinOp.getConf().isHybridHashJoin() && !(mapJoinOp.getConf().isDynamicPartitionHashJoin())) {
                   mapJoinOpList.add((MapJoinOperator) n);

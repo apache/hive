@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -44,6 +43,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer.Walker
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,7 +112,7 @@ public class NullScanOptimizer implements PhysicalPlanResolver {
   private static class WhereFalseProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       FilterOperator filter = (FilterOperator) nd;
@@ -142,7 +142,7 @@ public class NullScanOptimizer implements PhysicalPlanResolver {
   private static class Limit0Processor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       LimitOperator limitOp = (LimitOperator)nd;
@@ -168,7 +168,7 @@ public class NullScanOptimizer implements PhysicalPlanResolver {
   private static class TSMarker implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       ((WalkerCtx)procCtx).setMayBeMetadataOnly((TableScanOperator)nd);
       return null;

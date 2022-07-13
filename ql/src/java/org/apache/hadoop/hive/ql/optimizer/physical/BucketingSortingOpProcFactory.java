@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -49,6 +48,7 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +61,7 @@ public class BucketingSortingOpProcFactory {
   public static class DefaultInferrer implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       return null;
@@ -115,7 +115,7 @@ public class BucketingSortingOpProcFactory {
    * @return Operator The parent operator in the current path.
    */
   @SuppressWarnings("unchecked")
-  protected static Operator<? extends OperatorDesc> getParent(Stack<Node> stack) {
+  protected static Operator<? extends OperatorDesc> getParent(ArrayStack<Node> stack) {
     return (Operator<? extends OperatorDesc>)Utils.getNthAncestor(stack, 1);
   }
 
@@ -132,7 +132,7 @@ public class BucketingSortingOpProcFactory {
    */
   public static class JoinInferrer extends DefaultInferrer implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       BucketingSortingCtx bctx = (BucketingSortingCtx)procCtx;
@@ -328,7 +328,7 @@ public class BucketingSortingOpProcFactory {
    */
   public static class SelectInferrer extends DefaultInferrer implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       BucketingSortingCtx bctx = (BucketingSortingCtx)procCtx;
@@ -458,7 +458,7 @@ public class BucketingSortingOpProcFactory {
    */
   public static class FileSinkInferrer extends DefaultInferrer implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       BucketingSortingCtx bctx = (BucketingSortingCtx)procCtx;
@@ -580,7 +580,7 @@ public class BucketingSortingOpProcFactory {
 
   public static class MultiGroupByInferrer extends GroupByInferrer implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       BucketingSortingCtx bctx = (BucketingSortingCtx)procCtx;
       GroupByOperator gop = (GroupByOperator)nd;
@@ -622,7 +622,7 @@ public class BucketingSortingOpProcFactory {
    */
   public static class GroupByInferrer extends DefaultInferrer implements SemanticNodeProcessor {
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       BucketingSortingCtx bctx = (BucketingSortingCtx)procCtx;
@@ -719,7 +719,7 @@ public class BucketingSortingOpProcFactory {
   public static class ForwardingInferrer extends DefaultInferrer implements SemanticNodeProcessor {
     @SuppressWarnings("unchecked")
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       processForward((Operator<? extends OperatorDesc>)nd, (BucketingSortingCtx)procCtx,

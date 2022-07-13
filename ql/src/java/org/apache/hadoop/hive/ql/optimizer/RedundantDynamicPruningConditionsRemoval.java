@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -50,6 +49,7 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,7 +95,7 @@ public class RedundantDynamicPruningConditionsRemoval extends Transform {
   private class FilterTransformer implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
       FilterOperator filter = (FilterOperator) nd;
       FilterDesc desc = filter.getConf();

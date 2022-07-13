@@ -16,36 +16,47 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.lib;
+package org.apache.hive.common.util;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hive.common.util.ArrayStack;
+import java.util.Stack;
 
-/**
- * Rule that matches a particular type of node.
- */
-public class TypeRule implements SemanticRule {
+public class ArrayStackTest {
+  final Stack<Integer> stack = new Stack<>();
+  final ArrayStack<Integer> arrayStack = new ArrayStack<>();
 
-  private Class<?> nodeClass;
-
-  public TypeRule(Class<?> nodeClass) {
-    this.nodeClass = nodeClass;
+  @Before
+  public void setUp() {
+    stack.clear();
+    arrayStack.clear();
   }
 
-  @Override
-  public int cost(ArrayStack<Node> stack) throws SemanticException {
-    if (stack == null) {
-      return -1;
-    }
-    if (nodeClass.isInstance(stack.peek())) {
-      return 1;
-    }
-    return -1;
+  @Test
+  public void test() {
+    push(1);
+    peekAndCheck();
+    push(2);
+    peekAndCheck();
+    push(3);
+    peekAndCheck();
+    popAndCheck();
+    popAndCheck();
+    popAndCheck();
   }
 
-  @Override
-  public String getName() {
-    return nodeClass.getName();
+  private void popAndCheck() {
+    Assert.assertEquals(stack.pop(), arrayStack.pop());
+  }
+
+  private void peekAndCheck() {
+    Assert.assertEquals(stack.peek(), arrayStack.peek());
+  }
+
+  private void push(int i) {
+    stack.push(i);
+    arrayStack.push(i);
   }
 }

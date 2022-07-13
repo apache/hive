@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -59,6 +58,7 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +78,7 @@ public class ReduceSinkMapJoinProc implements SemanticNodeProcessor {
    * or reduce work.
    */
   @Override
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procContext, Object... nodeOutputs)
+  public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procContext, Object... nodeOutputs)
       throws SemanticException {
     GenTezProcContext context = (GenTezProcContext) procContext;
     MapJoinOperator mapJoinOp = (MapJoinOperator)nd;

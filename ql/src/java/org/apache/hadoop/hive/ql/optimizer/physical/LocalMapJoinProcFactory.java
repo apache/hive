@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -75,7 +75,7 @@ public final class LocalMapJoinProcFactory {
   public static SemanticNodeProcessor getDefaultProc() {
     return new SemanticNodeProcessor() {
       @Override
-      public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+      public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
           Object... nodeOutputs) throws SemanticException {
         return null;
       }
@@ -87,7 +87,7 @@ public final class LocalMapJoinProcFactory {
    *
    */
   public static class MapJoinFollowedByGroupByProcessor implements SemanticNodeProcessor {
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       LocalMapJoinProcCtx context = (LocalMapJoinProcCtx) ctx;
       if (!nd.getName().equals("GBY")) {
@@ -107,7 +107,7 @@ public final class LocalMapJoinProcFactory {
    *
    */
   public static class LocalMapJoinProcessor implements SemanticNodeProcessor {
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       LocalMapJoinProcCtx context = (LocalMapJoinProcCtx) ctx;
       if (!nd.getName().equals("MAPJOIN")) {

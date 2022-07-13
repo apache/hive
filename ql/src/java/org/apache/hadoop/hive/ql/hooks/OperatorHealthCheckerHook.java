@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Stack;
 
 import com.google.common.collect.Lists;
 
@@ -58,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Checks some operator quality rules.
@@ -73,7 +73,7 @@ public class OperatorHealthCheckerHook implements ExecuteWithHookContext {
     Map<String, Operator<?>> opMap = new HashMap<>();
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
         throws SemanticException {
 
       Operator<?> op = (Operator<?>) nd;

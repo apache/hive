@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
@@ -34,11 +33,12 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.VertexType;
+import org.apache.hive.common.util.ArrayStack;
 
 public class MergeJoinProc implements SemanticNodeProcessor {
   @Override
   public Object
-      process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+      process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
           throws SemanticException {
     GenTezProcContext context = (GenTezProcContext) procCtx;
     CommonMergeJoinOperator mergeJoinOp = (CommonMergeJoinOperator) nd;

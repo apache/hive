@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Stack;
 
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -122,7 +122,7 @@ public class SortedMergeBucketMapJoinOptimizer extends Transform {
   private SemanticNodeProcessor getDefaultProc() {
     return new SemanticNodeProcessor() {
       @Override
-      public Object process(Node nd, Stack<Node> stack,
+      public Object process(Node nd, ArrayStack<Node> stack,
                             NodeProcessorCtx procCtx, Object... nodeOutputs)
           throws SemanticException {
         return null;
@@ -135,7 +135,7 @@ public class SortedMergeBucketMapJoinOptimizer extends Transform {
   private SemanticNodeProcessor getCheckCandidateJoin() {
     return new SemanticNodeProcessor() {
       @Override
-      public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+      public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
         SortBucketJoinProcCtx smbJoinContext = (SortBucketJoinProcCtx)procCtx;
         JoinOperator joinOperator = (JoinOperator)nd;

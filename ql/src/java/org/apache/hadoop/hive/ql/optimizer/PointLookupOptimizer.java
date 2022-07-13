@@ -23,9 +23,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.calcite.util.Pair;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -100,7 +100,7 @@ public class PointLookupOptimizer extends Transform {
   private class FilterTransformer implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       FilterOperator filterOp = (FilterOperator) nd;
       ExprNodeDesc predicate = filterOp.getConf().getPredicate();
@@ -137,7 +137,7 @@ public class PointLookupOptimizer extends Transform {
   private class OrExprProcessor implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       ExprNodeGenericFuncDesc fd = (ExprNodeGenericFuncDesc) nd;
 

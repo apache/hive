@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import java.util.Stack;
 
 import com.google.common.collect.SetMultimap;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Dispatches calls to relevant method in processor. The user registers various
@@ -55,7 +55,7 @@ public class CostLessRuleDispatcher implements SemanticDispatcher {
    * @param ndStack the operators encountered so far
    * @throws SemanticException
    */
-  @Override public Object dispatch(Node nd, Stack<Node> ndStack, Object... nodeOutputs)
+  @Override public Object dispatch(Node nd, ArrayStack<Node> ndStack, Object... nodeOutputs)
       throws SemanticException {
 
     int nodeType = ((ASTNode) nd).getType();

@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyProcessor.copyD
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -42,6 +41,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +52,7 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(TopNKeyPushdownProcessor.class);
 
   @Override
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+  public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
                         Object... nodeOutputs) throws SemanticException {
     pushdown((TopNKeyOperator) nd);
     return null;

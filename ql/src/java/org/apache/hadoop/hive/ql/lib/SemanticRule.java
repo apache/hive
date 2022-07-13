@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Rule interface for Operators Used in operator dispatching to dispatch
@@ -34,7 +34,7 @@ public interface SemanticRule extends Rule {
    * @throws SemanticException
    */
   @Override
-  int cost(Stack<Node> stack) throws SemanticException;
+  int cost(ArrayStack<Node> stack) throws SemanticException;
 
   /**
    * @return the name of the rule - may be useful for debugging

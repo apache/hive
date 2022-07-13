@@ -19,9 +19,7 @@ package org.apache.hadoop.hive.ql.parse.type;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -32,6 +30,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hive.common.util.ArrayStack;
 
 
 /**
@@ -61,7 +60,7 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
   public class JoinCondColumnExprProcessor extends ColumnExprProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       JoinTypeCheckCtx ctx = (JoinTypeCheckCtx) procCtx;

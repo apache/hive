@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * Dispatcher interface for Operators Used in operator graph walking to dispatch
@@ -41,7 +41,7 @@ public interface Dispatcher {
    * @return Object The return object from the processing call.
    * @throws HiveException
    */
-  Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
+  Object dispatch(Node nd, ArrayStack<Node> stack, Object... nodeOutputs)
       throws HiveException;
 
 }

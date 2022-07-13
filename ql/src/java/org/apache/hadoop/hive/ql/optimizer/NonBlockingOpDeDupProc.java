@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -51,6 +50,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hive.common.util.ArrayStack;
 
 /**
  * merges SEL-SEL or FIL-FIL into single operator
@@ -88,7 +88,7 @@ public class NonBlockingOpDeDupProc extends Transform {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       SelectOperator cSEL = (SelectOperator) nd;
       SelectOperator pSEL = (SelectOperator) stack.get(stack.size() - 2);
@@ -222,7 +222,7 @@ public class NonBlockingOpDeDupProc extends Transform {
   private class FilterDedup implements SemanticNodeProcessor {
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       FilterOperator cFIL = (FilterOperator) nd;
       FilterOperator pFIL = (FilterOperator) stack.get(stack.size() - 2);

@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.optimizer.topnkey;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -34,6 +33,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +59,7 @@ public class TopNKeyProcessor implements SemanticNodeProcessor {
   }
 
   @Override
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+  public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
                         Object... nodeOutputs) throws SemanticException {
 
     // Get ReduceSinkOperator

@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -56,6 +55,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +104,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
   private SemanticNodeProcessor getDefaultProc() {
     return new SemanticNodeProcessor() {
       @Override
-      public Object process(Node nd, Stack<Node> stack,
+      public Object process(Node nd, ArrayStack<Node> stack,
                             NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
         return null;
       }
@@ -379,7 +379,7 @@ public class BucketingSortingReduceSinkOptimizer extends Transform {
     }
 
     @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+    public Object process(Node nd, ArrayStack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       // We should not use this optimization if sorted dynamic partition optimizer is used,

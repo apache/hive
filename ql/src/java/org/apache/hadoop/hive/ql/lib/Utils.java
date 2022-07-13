@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import java.util.Stack;
+import org.apache.hive.common.util.ArrayStack;
+
 
 /**
  * Contains common utility functions to manipulate nodes, walkers etc.
@@ -34,10 +35,10 @@ public class Utils {
    * 
    * @return Node The Nth ancestor in the path with respect to the current node.
    */
-  public static Node getNthAncestor(Stack<Node> st, int n) {
+  public static Node getNthAncestor(ArrayStack<Node> st, int n) {
     assert(st.size() - 1 >= n);
     
-    Stack<Node> tmpStack = new Stack<Node>();
+    ArrayStack<Node> tmpStack = new ArrayStack<Node>();
     for(int i=0; i<=n; i++)
       tmpStack.push(st.pop());
    
@@ -56,7 +57,7 @@ public class Utils {
    * Returns null if not found.
    */
   @SuppressWarnings("unchecked")
-  public static <T> T findNode(Stack<Node> stack, Class<T> target) {
+  public static <T> T findNode(ArrayStack<Node> stack, Class<T> target) {
     for (int i = stack.size() - 2; i >= 0; i--) {
       if (target.isInstance(stack.get(i))) {
         return (T) stack.get(i);

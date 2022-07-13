@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -40,6 +39,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hive.common.util.ArrayStack;
 import org.slf4j.Logger;
 
 /**
@@ -73,7 +73,7 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
     }
 
     @Override
-    public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
+    public Object dispatch(Node nd, ArrayStack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
       Task<?> task = (Task<?>) nd;
 
