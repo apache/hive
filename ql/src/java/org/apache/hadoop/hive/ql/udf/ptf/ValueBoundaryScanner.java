@@ -1233,7 +1233,7 @@ class BooleanPrimitiveValueBoundaryScanner extends SinglePrimitiveValueBoundaryS
 
   @Override
   public boolean isDistanceGreaterPrimitive(Long s1, Long s2, int amt) {
-    return (s1 != null || s2 != null) && !(s1 != null && s2 != null); // Return true only if one value is null
+    return s1 != null && s2 != null && s1.compareTo(s2) > 0;
   }
 
   @Override
@@ -1308,7 +1308,7 @@ class BooleanValueBoundaryScanner extends SingleValueBoundaryScanner {
 
       return Boolean.compare(b1, b2) > 0;
     }
-    return v1 != null || v2 != null; // True if only one value is null
+    return false;
   }
 
   @Override

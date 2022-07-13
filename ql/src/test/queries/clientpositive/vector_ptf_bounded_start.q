@@ -747,7 +747,7 @@ EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_dat
                                     sum(p_retailprice) over(partition by p_mfgr order by p_boolean range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc;
 
-select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char, p_boolean,
+select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_char, p_boolean,
        count(*) over(partition by p_mfgr order by p_boolean range between 3 preceding and current row) as cs,
        sum(p_retailprice) over(partition by p_mfgr order by p_boolean range between 3 preceding and current row) as s
 from vector_ptf_part_simple_orc;
