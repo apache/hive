@@ -57,7 +57,7 @@ Manufacturer#4	almond aquamarine yellow dodger mint	1970-01-01	1844.92	D	FD	fals
 Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-02	1753.76	D	DA	true	12
 Manufacturer#2	almond antique violet turquoise frosted	NULL	1800.7	B	AC	false	13
 Manufacturer#3	almond antique forest lavender goldenrod	1970-01-04	NULL	C	BB	false	14
-Manufacturer#2	almond antique violet chocolate turquoise	1970-01-05	1690.68	D	LM	false	15
+Manufacturer#2	almond antique violet chocolate turquoise	1970-01-05	1690.68	D	LM	NULL	15
 Manufacturer#4	almond antique violet mint lemon	1970-01-01	1375.42	B	OP	true	16
 Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-02	1632.66	D	RS	true	17
 Manufacturer#5	almond azure blanched chiffon midnight	1970-01-03	1464.48	C	AB	true	18
@@ -74,12 +74,12 @@ Manufacturer#3	almond antique olive coral navajo	1970-01-03	1337.29	A	AC	false	2
 Manufacturer#5	almond antique medium spring khaki	1970-01-04	1611.66	B	AA	false	29
 Manufacturer#1	almond antique salmon chartreuse burlywood	1970-01-05	1602.59	C	BB	true	30
 Manufacturer#3	almond antique misty red olive	1970-01-01	1922.98	D	BC	false	31
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	NULL	1000.6	A	BD	true	32
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	NULL	1000.6	A	BD	NULL	32
 Manufacturer#3	almond antique forest lavender goldenrod	1970-01-03	1190.27	B	CA	false	33
 Manufacturer#2	almond aquamarine midnight light salmon	1970-01-04	2031.98	C	CB	true	34
 Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05	NULL	A	CC	false	35
 Manufacturer#5	almond aquamarine dodger light gainsboro	1970-01-01	1018.1	B	CD	true	36
-Manufacturer#4	almond azure aquamarine papaya violet	1970-01-02	1290.35	C	DA	false	37
+Manufacturer#4	almond azure aquamarine papaya violet	1970-01-02	1290.35	C	DA	NULL	37
 Manufacturer#3	almond antique metallic orange dim	NULL	55.39	D	DB	true	38
 Manufacturer#1	almond antique burnished rose metallic	1970-01-04	1173.15	D	DC	false	39
 Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05	1206.26	C	DD	true	40
@@ -146,7 +146,7 @@ Manufacturer#4	almond aquamarine yellow dodger mint	1970-01-01	1970-01-01 00:00:
 Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-02	1970-01-02 00:00:00	115200	1753.76	1753.7600	D	DA	true	12
 Manufacturer#2	almond antique violet turquoise frosted	NULL	NULL	NULL	1800.7	1800.7000	B	AC	false	13
 Manufacturer#3	almond antique forest lavender goldenrod	1970-01-04	1970-01-04 00:00:00	288000	NULL	NULL	C	BB	false	14
-Manufacturer#2	almond antique violet chocolate turquoise	1970-01-05	1970-01-05 00:00:00	374400	1690.68	1690.6800	D	LM	false	15
+Manufacturer#2	almond antique violet chocolate turquoise	1970-01-05	1970-01-05 00:00:00	374400	1690.68	1690.6800	D	LM	NULL	15
 Manufacturer#4	almond antique violet mint lemon	1970-01-01	1970-01-01 00:00:00	28800	1375.42	1375.4200	B	OP	true	16
 Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-02	1970-01-02 00:00:00	115200	1632.66	1632.6600	D	RS	true	17
 Manufacturer#5	almond azure blanched chiffon midnight	1970-01-03	1970-01-03 00:00:00	201600	1464.48	1464.4800	C	AB	true	18
@@ -163,12 +163,12 @@ Manufacturer#3	almond antique olive coral navajo	1970-01-03	1970-01-03 00:00:00	
 Manufacturer#5	almond antique medium spring khaki	1970-01-04	1970-01-04 00:00:00	288000	1611.66	1611.6600	B	AA	false	29
 Manufacturer#1	almond antique salmon chartreuse burlywood	1970-01-05	1970-01-05 00:00:00	374400	1602.59	1602.5900	C	BB	true	30
 Manufacturer#3	almond antique misty red olive	1970-01-01	1970-01-01 00:00:00	28800	1922.98	1922.9800	D	BC	false	31
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	NULL	NULL	NULL	1000.6	1000.6000	A	BD	true	32
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	NULL	NULL	NULL	1000.6	1000.6000	A	BD	NULL	32
 Manufacturer#3	almond antique forest lavender goldenrod	1970-01-03	1970-01-03 00:00:00	201600	1190.27	1190.2700	B	CA	false	33
 Manufacturer#2	almond aquamarine midnight light salmon	1970-01-04	1970-01-04 00:00:00	288000	2031.98	2031.9800	C	CB	true	34
 Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05	1970-01-05 00:00:00	374400	NULL	NULL	A	CC	false	35
 Manufacturer#5	almond aquamarine dodger light gainsboro	1970-01-01	1970-01-01 00:00:00	28800	1018.1	1018.1000	B	CD	true	36
-Manufacturer#4	almond azure aquamarine papaya violet	1970-01-02	1970-01-02 00:00:00	115200	1290.35	1290.3500	C	DA	false	37
+Manufacturer#4	almond azure aquamarine papaya violet	1970-01-02	1970-01-02 00:00:00	115200	1290.35	1290.3500	C	DA	NULL	37
 Manufacturer#3	almond antique metallic orange dim	NULL	NULL	NULL	55.39	55.3900	D	DB	true	38
 Manufacturer#1	almond antique burnished rose metallic	1970-01-04	1970-01-04 00:00:00	288000	1173.15	1173.1500	D	DC	false	39
 Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05	1970-01-05 00:00:00	374400	1206.26	1206.2600	C	DD	true	40
@@ -7243,41 +7243,41 @@ Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-05 00:00:00	5	1
 Manufacturer#1	almond antique burnished rose metallic	1970-01-04 00:00:00	39	1970-01-04	1173.15	D	false	5	7486.48
 Manufacturer#1	almond antique burnished rose metallic	1970-01-03 00:00:00	8	1970-01-03	1173.15	A	false	5	7486.48
 Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-04 00:00:00	9	1970-01-04	1632.66	B	false	5	7486.48
+Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-02 00:00:00	12	1970-01-02	1753.76	D	true	7	9789.85
 Manufacturer#1	almond antique salmon chartreuse burlywood	1970-01-05 00:00:00	30	1970-01-05	1602.59	C	true	7	9789.85
 Manufacturer#1	almond antique chartreuse lavender yellow	NULL	26	NULL	1753.76	C	true	7	9789.85
-Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-03 00:00:00	23	1970-01-03	1632.66	D	true	7	9789.85
 Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-02 00:00:00	17	1970-01-02	1632.66	D	true	7	9789.85
 Manufacturer#1	almond aquamarine burnished black steel	1970-01-02 00:00:00	2	1970-01-02	1414.42	B	true	7	9789.85
 Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-04 00:00:00	4	1970-01-04	NULL	A	true	7	9789.85
-Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-02 00:00:00	12	1970-01-02	1753.76	D	true	7	9789.85
-Manufacturer#2	almond antique violet turquoise frosted	NULL	13	NULL	1800.7	B	false	3	5292.08
-Manufacturer#2	almond antique violet turquoise frosted	1970-01-01 00:00:00	21	1970-01-01	1800.7	B	false	3	5292.08
-Manufacturer#2	almond antique violet chocolate turquoise	1970-01-05 00:00:00	15	1970-01-05	1690.68	D	false	3	5292.08
-Manufacturer#2	almond aquamarine rose maroon antique	NULL	1	NULL	900.66	A	true	5	7432.6
-Manufacturer#2	almond aquamarine rose maroon antique	1970-01-03 00:00:00	3	1970-01-03	1698.66	C	true	5	7432.6
-Manufacturer#2	almond antique violet turquoise frosted	1970-01-02 00:00:00	27	1970-01-02	1800.7	D	true	5	7432.6
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	NULL	32	NULL	1000.6	A	true	5	7432.6
-Manufacturer#2	almond aquamarine midnight light salmon	1970-01-04 00:00:00	34	1970-01-04	2031.98	C	true	5	7432.6
-Manufacturer#3	almond antique forest lavender goldenrod	1970-01-04 00:00:00	14	1970-01-04	NULL	C	false	5	4550.219999999999
-Manufacturer#3	almond antique chartreuse khaki white	1970-01-04 00:00:00	24	1970-01-04	99.68	C	false	5	4550.219999999999
+Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-03 00:00:00	23	1970-01-03	1632.66	D	true	7	9789.85
+Manufacturer#2	almond antique violet turquoise frosted	NULL	13	NULL	1800.7	B	false	2	3601.4
+Manufacturer#2	almond antique violet turquoise frosted	1970-01-01 00:00:00	21	1970-01-01	1800.7	B	false	2	3601.4
+Manufacturer#2	almond aquamarine rose maroon antique	NULL	1	NULL	900.66	A	true	4	6432.0
+Manufacturer#2	almond aquamarine rose maroon antique	1970-01-03 00:00:00	3	1970-01-03	1698.66	C	true	4	6432.0
+Manufacturer#2	almond antique violet turquoise frosted	1970-01-02 00:00:00	27	1970-01-02	1800.7	D	true	4	6432.0
+Manufacturer#2	almond aquamarine midnight light salmon	1970-01-04 00:00:00	34	1970-01-04	2031.98	C	true	4	6432.0
+Manufacturer#2	almond antique violet chocolate turquoise	1970-01-05 00:00:00	15	1970-01-05	1690.68	D	NULL	2	2691.28
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	NULL	32	NULL	1000.6	A	NULL	2	2691.28
 Manufacturer#3	almond antique olive coral navajo	1970-01-03 00:00:00	28	1970-01-03	1337.29	A	false	5	4550.219999999999
-Manufacturer#3	almond antique misty red olive	1970-01-01 00:00:00	31	1970-01-01	1922.98	D	false	5	4550.219999999999
+Manufacturer#3	almond antique forest lavender goldenrod	1970-01-04 00:00:00	14	1970-01-04	NULL	C	false	5	4550.219999999999
 Manufacturer#3	almond antique forest lavender goldenrod	1970-01-03 00:00:00	33	1970-01-03	1190.27	B	false	5	4550.219999999999
-Manufacturer#3	almond antique forest lavender goldenrod	NULL	19	NULL	590.27	D	true	3	1835.9299999999998
-Manufacturer#3	almond antique metallic orange dim	NULL	38	NULL	55.39	D	true	3	1835.9299999999998
-Manufacturer#3	almond antique forest lavender goldenrod	1970-01-05 00:00:00	10	1970-01-05	1190.27	C	true	3	1835.9299999999998
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	25	NULL	NULL	A	false	4	3135.27
-Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05 00:00:00	35	1970-01-05	NULL	A	false	4	3135.27
-Manufacturer#4	almond aquamarine yellow dodger mint	1970-01-01 00:00:00	11	1970-01-01	1844.92	D	false	4	3135.27
-Manufacturer#4	almond azure aquamarine papaya violet	1970-01-02 00:00:00	37	1970-01-02	1290.35	C	false	4	3135.27
+Manufacturer#3	almond antique chartreuse khaki white	1970-01-04 00:00:00	24	1970-01-04	99.68	C	false	5	4550.219999999999
+Manufacturer#3	almond antique misty red olive	1970-01-01 00:00:00	31	1970-01-01	1922.98	D	false	5	4550.219999999999
+Manufacturer#3	almond antique metallic orange dim	NULL	38	NULL	55.39	D	true	3	1835.93
+Manufacturer#3	almond antique forest lavender goldenrod	1970-01-05 00:00:00	10	1970-01-05	1190.27	C	true	3	1835.93
+Manufacturer#3	almond antique forest lavender goldenrod	NULL	19	NULL	590.27	D	true	3	1835.93
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	25	NULL	NULL	A	false	3	1844.92
+Manufacturer#4	almond aquamarine yellow dodger mint	1970-01-01 00:00:00	11	1970-01-01	1844.92	D	false	3	1844.92
+Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05 00:00:00	35	1970-01-05	NULL	A	false	3	1844.92
 Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05 00:00:00	40	1970-01-05	1206.26	C	true	2	2581.6800000000003
 Manufacturer#4	almond antique violet mint lemon	1970-01-01 00:00:00	16	1970-01-01	1375.42	B	true	2	2581.6800000000003
-Manufacturer#5	almond antique sky peru orange	1970-01-02 00:00:00	22	1970-01-02	1788.73	A	false	3	5012.05
+Manufacturer#4	almond azure aquamarine papaya violet	1970-01-02 00:00:00	37	1970-01-02	1290.35	C	NULL	1	1290.35
 Manufacturer#5	almond antique medium spring khaki	1970-01-04 00:00:00	29	1970-01-04	1611.66	B	false	3	5012.05
+Manufacturer#5	almond antique sky peru orange	1970-01-02 00:00:00	22	1970-01-02	1788.73	A	false	3	5012.05
 Manufacturer#5	almond antique medium spring khaki	1970-01-01 00:00:00	6	1970-01-01	1611.66	C	false	3	5012.05
-Manufacturer#5	almond azure blanched chiffon midnight	1970-01-03 00:00:00	18	1970-01-03	1464.48	C	true	3	4272.27
-Manufacturer#5	almond aquamarine dodger light gainsboro	1970-01-01 00:00:00	36	1970-01-01	1018.1	B	true	3	4272.27
 Manufacturer#5	almond antique blue firebrick mint	NULL	7	NULL	1789.69	D	true	3	4272.27
+Manufacturer#5	almond aquamarine dodger light gainsboro	1970-01-01 00:00:00	36	1970-01-01	1018.1	B	true	3	4272.27
+Manufacturer#5	almond azure blanched chiffon midnight	1970-01-03 00:00:00	18	1970-01-03	1464.48	C	true	3	4272.27
 PREHOOK: query: select "************ BOOLEAN WINDOW RANGE TYPE (VECTORIZED) ************"
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -7325,7 +7325,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_ptf_part_simple_orc
-                  Statistics: Num rows: 40 Data size: 15984 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 15976 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:p_boolean:boolean, 10:rowindex:int, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
@@ -7341,7 +7341,7 @@ STAGE PLANS:
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 0:string
                         valueColumns: 1:string, 2:date, 3:timestamp, 5:double, 7:char(1), 10:int
-                    Statistics: Num rows: 40 Data size: 15984 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 15976 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_date (type: date), p_timestamp (type: timestamp), p_retailprice (type: double), p_char (type: char(1)), rowindex (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -7383,7 +7383,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 2, 3, 4, 5, 6, 1, 7]
-                Statistics: Num rows: 40 Data size: 15984 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 15976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -7423,7 +7423,7 @@ STAGE PLANS:
                       outputTypes: [bigint, double, string, string, date, timestamp, double, char(1), boolean, int]
                       partitionExpressions: [col 0:string]
                       streamingColumns: []
-                  Statistics: Num rows: 40 Data size: 15984 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 15976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col10 (type: int), _col2 (type: date), _col5 (type: double), _col7 (type: char(1)), _col9 (type: boolean), count_window_0 (type: bigint), sum_window_1 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -7431,13 +7431,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 2, 4, 7, 3, 5, 6, 1, 8, 9]
-                    Statistics: Num rows: 40 Data size: 15824 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 15804 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 15824 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 15804 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -7469,41 +7469,41 @@ Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-05 00:00:00	5	1
 Manufacturer#1	almond antique burnished rose metallic	1970-01-04 00:00:00	39	1970-01-04	1173.15	D	false	5	7486.48
 Manufacturer#1	almond antique burnished rose metallic	1970-01-03 00:00:00	8	1970-01-03	1173.15	A	false	5	7486.48
 Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-04 00:00:00	9	1970-01-04	1632.66	B	false	5	7486.48
+Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-02 00:00:00	12	1970-01-02	1753.76	D	true	7	9789.85
 Manufacturer#1	almond antique salmon chartreuse burlywood	1970-01-05 00:00:00	30	1970-01-05	1602.59	C	true	7	9789.85
 Manufacturer#1	almond antique chartreuse lavender yellow	NULL	26	NULL	1753.76	C	true	7	9789.85
-Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-03 00:00:00	23	1970-01-03	1632.66	D	true	7	9789.85
 Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-02 00:00:00	17	1970-01-02	1632.66	D	true	7	9789.85
 Manufacturer#1	almond aquamarine burnished black steel	1970-01-02 00:00:00	2	1970-01-02	1414.42	B	true	7	9789.85
 Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-04 00:00:00	4	1970-01-04	NULL	A	true	7	9789.85
-Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-02 00:00:00	12	1970-01-02	1753.76	D	true	7	9789.85
-Manufacturer#2	almond antique violet turquoise frosted	NULL	13	NULL	1800.7	B	false	3	5292.08
-Manufacturer#2	almond antique violet turquoise frosted	1970-01-01 00:00:00	21	1970-01-01	1800.7	B	false	3	5292.08
-Manufacturer#2	almond antique violet chocolate turquoise	1970-01-05 00:00:00	15	1970-01-05	1690.68	D	false	3	5292.08
-Manufacturer#2	almond aquamarine rose maroon antique	NULL	1	NULL	900.66	A	true	5	7432.6
-Manufacturer#2	almond aquamarine rose maroon antique	1970-01-03 00:00:00	3	1970-01-03	1698.66	C	true	5	7432.6
-Manufacturer#2	almond antique violet turquoise frosted	1970-01-02 00:00:00	27	1970-01-02	1800.7	D	true	5	7432.6
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	NULL	32	NULL	1000.6	A	true	5	7432.6
-Manufacturer#2	almond aquamarine midnight light salmon	1970-01-04 00:00:00	34	1970-01-04	2031.98	C	true	5	7432.6
-Manufacturer#3	almond antique forest lavender goldenrod	1970-01-04 00:00:00	14	1970-01-04	NULL	C	false	5	4550.219999999999
-Manufacturer#3	almond antique chartreuse khaki white	1970-01-04 00:00:00	24	1970-01-04	99.68	C	false	5	4550.219999999999
+Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-03 00:00:00	23	1970-01-03	1632.66	D	true	7	9789.85
+Manufacturer#2	almond antique violet turquoise frosted	NULL	13	NULL	1800.7	B	false	2	3601.4
+Manufacturer#2	almond antique violet turquoise frosted	1970-01-01 00:00:00	21	1970-01-01	1800.7	B	false	2	3601.4
+Manufacturer#2	almond aquamarine rose maroon antique	NULL	1	NULL	900.66	A	true	4	6432.0
+Manufacturer#2	almond aquamarine rose maroon antique	1970-01-03 00:00:00	3	1970-01-03	1698.66	C	true	4	6432.0
+Manufacturer#2	almond antique violet turquoise frosted	1970-01-02 00:00:00	27	1970-01-02	1800.7	D	true	4	6432.0
+Manufacturer#2	almond aquamarine midnight light salmon	1970-01-04 00:00:00	34	1970-01-04	2031.98	C	true	4	6432.0
+Manufacturer#2	almond antique violet chocolate turquoise	1970-01-05 00:00:00	15	1970-01-05	1690.68	D	NULL	2	2691.28
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	NULL	32	NULL	1000.6	A	NULL	2	2691.28
 Manufacturer#3	almond antique olive coral navajo	1970-01-03 00:00:00	28	1970-01-03	1337.29	A	false	5	4550.219999999999
-Manufacturer#3	almond antique misty red olive	1970-01-01 00:00:00	31	1970-01-01	1922.98	D	false	5	4550.219999999999
+Manufacturer#3	almond antique forest lavender goldenrod	1970-01-04 00:00:00	14	1970-01-04	NULL	C	false	5	4550.219999999999
 Manufacturer#3	almond antique forest lavender goldenrod	1970-01-03 00:00:00	33	1970-01-03	1190.27	B	false	5	4550.219999999999
-Manufacturer#3	almond antique forest lavender goldenrod	NULL	19	NULL	590.27	D	true	3	1835.9299999999998
-Manufacturer#3	almond antique metallic orange dim	NULL	38	NULL	55.39	D	true	3	1835.9299999999998
-Manufacturer#3	almond antique forest lavender goldenrod	1970-01-05 00:00:00	10	1970-01-05	1190.27	C	true	3	1835.9299999999998
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	25	NULL	NULL	A	false	4	3135.27
-Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05 00:00:00	35	1970-01-05	NULL	A	false	4	3135.27
-Manufacturer#4	almond aquamarine yellow dodger mint	1970-01-01 00:00:00	11	1970-01-01	1844.92	D	false	4	3135.27
-Manufacturer#4	almond azure aquamarine papaya violet	1970-01-02 00:00:00	37	1970-01-02	1290.35	C	false	4	3135.27
+Manufacturer#3	almond antique chartreuse khaki white	1970-01-04 00:00:00	24	1970-01-04	99.68	C	false	5	4550.219999999999
+Manufacturer#3	almond antique misty red olive	1970-01-01 00:00:00	31	1970-01-01	1922.98	D	false	5	4550.219999999999
+Manufacturer#3	almond antique metallic orange dim	NULL	38	NULL	55.39	D	true	3	1835.93
+Manufacturer#3	almond antique forest lavender goldenrod	1970-01-05 00:00:00	10	1970-01-05	1190.27	C	true	3	1835.93
+Manufacturer#3	almond antique forest lavender goldenrod	NULL	19	NULL	590.27	D	true	3	1835.93
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	25	NULL	NULL	A	false	3	1844.92
+Manufacturer#4	almond aquamarine yellow dodger mint	1970-01-01 00:00:00	11	1970-01-01	1844.92	D	false	3	1844.92
+Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05 00:00:00	35	1970-01-05	NULL	A	false	3	1844.92
 Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05 00:00:00	40	1970-01-05	1206.26	C	true	2	2581.6800000000003
 Manufacturer#4	almond antique violet mint lemon	1970-01-01 00:00:00	16	1970-01-01	1375.42	B	true	2	2581.6800000000003
-Manufacturer#5	almond antique sky peru orange	1970-01-02 00:00:00	22	1970-01-02	1788.73	A	false	3	5012.05
+Manufacturer#4	almond azure aquamarine papaya violet	1970-01-02 00:00:00	37	1970-01-02	1290.35	C	NULL	1	1290.35
 Manufacturer#5	almond antique medium spring khaki	1970-01-04 00:00:00	29	1970-01-04	1611.66	B	false	3	5012.05
+Manufacturer#5	almond antique sky peru orange	1970-01-02 00:00:00	22	1970-01-02	1788.73	A	false	3	5012.05
 Manufacturer#5	almond antique medium spring khaki	1970-01-01 00:00:00	6	1970-01-01	1611.66	C	false	3	5012.05
-Manufacturer#5	almond azure blanched chiffon midnight	1970-01-03 00:00:00	18	1970-01-03	1464.48	C	true	3	4272.27
-Manufacturer#5	almond aquamarine dodger light gainsboro	1970-01-01 00:00:00	36	1970-01-01	1018.1	B	true	3	4272.27
 Manufacturer#5	almond antique blue firebrick mint	NULL	7	NULL	1789.69	D	true	3	4272.27
+Manufacturer#5	almond aquamarine dodger light gainsboro	1970-01-01 00:00:00	36	1970-01-01	1018.1	B	true	3	4272.27
+Manufacturer#5	almond azure blanched chiffon midnight	1970-01-03 00:00:00	18	1970-01-03	1464.48	C	true	3	4272.27
 PREHOOK: query: select "************ BOOLEAN PARTITION ************"
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -7549,7 +7549,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_ptf_part_simple_orc
-                  Statistics: Num rows: 40 Data size: 15984 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 15976 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:p_boolean:boolean, 10:rowindex:int, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
@@ -7564,7 +7564,7 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         valueColumns: 0:string, 1:string, 2:date, 3:timestamp, 5:double, 7:char(1), 10:int
-                    Statistics: Num rows: 40 Data size: 15984 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 15976 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_mfgr (type: string), p_name (type: string), p_date (type: date), p_timestamp (type: timestamp), p_retailprice (type: double), p_char (type: char(1)), rowindex (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -7606,7 +7606,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 2, 3, 4, 5, 6, 0, 7]
-                Statistics: Num rows: 40 Data size: 15984 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 40 Data size: 15976 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -7646,7 +7646,7 @@ STAGE PLANS:
                       outputTypes: [bigint, double, string, string, date, timestamp, double, char(1), boolean, int]
                       partitionExpressions: [col 0:boolean]
                       streamingColumns: []
-                  Statistics: Num rows: 40 Data size: 15984 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 15976 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col10 (type: int), _col2 (type: date), _col5 (type: double), _col7 (type: char(1)), _col9 (type: boolean), count_window_0 (type: bigint), sum_window_1 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -7654,13 +7654,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [1, 2, 4, 7, 3, 5, 6, 0, 8, 9]
-                    Statistics: Num rows: 40 Data size: 15824 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 40 Data size: 15804 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 40 Data size: 15824 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 40 Data size: 15804 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -7687,46 +7687,46 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_name	p_timestamp	rowindex	p_date	p_retailprice	p_char	p_boolean	cs	s
-Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05 00:00:00	40	1970-01-05	1206.26	C	true	20	25912.330000000005
-Manufacturer#1	almond aquamarine burnished black steel	1970-01-02 00:00:00	2	1970-01-02	1414.42	B	true	20	25912.330000000005
-Manufacturer#2	almond aquamarine rose maroon antique	1970-01-03 00:00:00	3	1970-01-03	1698.66	C	true	20	25912.330000000005
-Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-04 00:00:00	4	1970-01-04	NULL	A	true	20	25912.330000000005
-Manufacturer#5	almond antique blue firebrick mint	NULL	7	NULL	1789.69	D	true	20	25912.330000000005
-Manufacturer#3	almond antique forest lavender goldenrod	1970-01-05 00:00:00	10	1970-01-05	1190.27	C	true	20	25912.330000000005
-Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-02 00:00:00	12	1970-01-02	1753.76	D	true	20	25912.330000000005
-Manufacturer#4	almond antique violet mint lemon	1970-01-01 00:00:00	16	1970-01-01	1375.42	B	true	20	25912.330000000005
-Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-02 00:00:00	17	1970-01-02	1632.66	D	true	20	25912.330000000005
-Manufacturer#5	almond azure blanched chiffon midnight	1970-01-03 00:00:00	18	1970-01-03	1464.48	C	true	20	25912.330000000005
-Manufacturer#3	almond antique forest lavender goldenrod	NULL	19	NULL	590.27	D	true	20	25912.330000000005
-Manufacturer#2	almond aquamarine rose maroon antique	NULL	1	NULL	900.66	A	true	20	25912.330000000005
-Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-03 00:00:00	23	1970-01-03	1632.66	D	true	20	25912.330000000005
-Manufacturer#1	almond antique chartreuse lavender yellow	NULL	26	NULL	1753.76	C	true	20	25912.330000000005
-Manufacturer#2	almond antique violet turquoise frosted	1970-01-02 00:00:00	27	1970-01-02	1800.7	D	true	20	25912.330000000005
-Manufacturer#1	almond antique salmon chartreuse burlywood	1970-01-05 00:00:00	30	1970-01-05	1602.59	C	true	20	25912.330000000005
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	NULL	32	NULL	1000.6	A	true	20	25912.330000000005
-Manufacturer#2	almond aquamarine midnight light salmon	1970-01-04 00:00:00	34	1970-01-04	2031.98	C	true	20	25912.330000000005
-Manufacturer#5	almond aquamarine dodger light gainsboro	1970-01-01 00:00:00	36	1970-01-01	1018.1	B	true	20	25912.330000000005
-Manufacturer#3	almond antique metallic orange dim	NULL	38	NULL	55.39	D	true	20	25912.330000000005
-Manufacturer#4	almond azure aquamarine papaya violet	1970-01-02 00:00:00	37	1970-01-02	1290.35	C	false	20	25476.100000000006
-Manufacturer#5	almond antique sky peru orange	1970-01-02 00:00:00	22	1970-01-02	1788.73	A	false	20	25476.100000000006
-Manufacturer#3	almond antique forest lavender goldenrod	1970-01-03 00:00:00	33	1970-01-03	1190.27	B	false	20	25476.100000000006
-Manufacturer#3	almond antique chartreuse khaki white	1970-01-04 00:00:00	24	1970-01-04	99.68	C	false	20	25476.100000000006
-Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-05 00:00:00	5	1970-01-05	1753.76	B	false	20	25476.100000000006
-Manufacturer#5	almond antique medium spring khaki	1970-01-01 00:00:00	6	1970-01-01	1611.66	C	false	20	25476.100000000006
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	25	NULL	NULL	A	false	20	25476.100000000006
-Manufacturer#1	almond antique burnished rose metallic	1970-01-03 00:00:00	8	1970-01-03	1173.15	A	false	20	25476.100000000006
-Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-04 00:00:00	9	1970-01-04	1632.66	B	false	20	25476.100000000006
-Manufacturer#2	almond antique violet turquoise frosted	1970-01-01 00:00:00	21	1970-01-01	1800.7	B	false	20	25476.100000000006
-Manufacturer#4	almond aquamarine yellow dodger mint	1970-01-01 00:00:00	11	1970-01-01	1844.92	D	false	20	25476.100000000006
-Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05 00:00:00	35	1970-01-05	NULL	A	false	20	25476.100000000006
-Manufacturer#2	almond antique violet turquoise frosted	NULL	13	NULL	1800.7	B	false	20	25476.100000000006
-Manufacturer#3	almond antique forest lavender goldenrod	1970-01-04 00:00:00	14	1970-01-04	NULL	C	false	20	25476.100000000006
-Manufacturer#2	almond antique violet chocolate turquoise	1970-01-05 00:00:00	15	1970-01-05	1690.68	D	false	20	25476.100000000006
-Manufacturer#3	almond antique olive coral navajo	1970-01-03 00:00:00	28	1970-01-03	1337.29	A	false	20	25476.100000000006
-Manufacturer#5	almond antique medium spring khaki	1970-01-04 00:00:00	29	1970-01-04	1611.66	B	false	20	25476.100000000006
-Manufacturer#1	almond antique burnished rose metallic	1970-01-04 00:00:00	39	1970-01-04	1173.15	D	false	20	25476.100000000006
-Manufacturer#3	almond antique misty red olive	1970-01-01 00:00:00	31	1970-01-01	1922.98	D	false	20	25476.100000000006
-Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-05 00:00:00	20	1970-01-05	1753.76	A	false	20	25476.100000000006
+Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05 00:00:00	40	1970-01-05	1206.26	C	true	19	24911.730000000003
+Manufacturer#1	almond aquamarine burnished black steel	1970-01-02 00:00:00	2	1970-01-02	1414.42	B	true	19	24911.730000000003
+Manufacturer#2	almond aquamarine rose maroon antique	1970-01-03 00:00:00	3	1970-01-03	1698.66	C	true	19	24911.730000000003
+Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-04 00:00:00	4	1970-01-04	NULL	A	true	19	24911.730000000003
+Manufacturer#5	almond antique blue firebrick mint	NULL	7	NULL	1789.69	D	true	19	24911.730000000003
+Manufacturer#3	almond antique forest lavender goldenrod	1970-01-05 00:00:00	10	1970-01-05	1190.27	C	true	19	24911.730000000003
+Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-02 00:00:00	12	1970-01-02	1753.76	D	true	19	24911.730000000003
+Manufacturer#4	almond antique violet mint lemon	1970-01-01 00:00:00	16	1970-01-01	1375.42	B	true	19	24911.730000000003
+Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-02 00:00:00	17	1970-01-02	1632.66	D	true	19	24911.730000000003
+Manufacturer#5	almond azure blanched chiffon midnight	1970-01-03 00:00:00	18	1970-01-03	1464.48	C	true	19	24911.730000000003
+Manufacturer#3	almond antique forest lavender goldenrod	NULL	19	NULL	590.27	D	true	19	24911.730000000003
+Manufacturer#2	almond aquamarine rose maroon antique	NULL	1	NULL	900.66	A	true	19	24911.730000000003
+Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-03 00:00:00	23	1970-01-03	1632.66	D	true	19	24911.730000000003
+Manufacturer#1	almond antique chartreuse lavender yellow	NULL	26	NULL	1753.76	C	true	19	24911.730000000003
+Manufacturer#2	almond antique violet turquoise frosted	1970-01-02 00:00:00	27	1970-01-02	1800.7	D	true	19	24911.730000000003
+Manufacturer#1	almond antique salmon chartreuse burlywood	1970-01-05 00:00:00	30	1970-01-05	1602.59	C	true	19	24911.730000000003
+Manufacturer#2	almond aquamarine midnight light salmon	1970-01-04 00:00:00	34	1970-01-04	2031.98	C	true	19	24911.730000000003
+Manufacturer#5	almond aquamarine dodger light gainsboro	1970-01-01 00:00:00	36	1970-01-01	1018.1	B	true	19	24911.730000000003
+Manufacturer#3	almond antique metallic orange dim	NULL	38	NULL	55.39	D	true	19	24911.730000000003
+Manufacturer#4	almond azure aquamarine papaya violet	1970-01-02 00:00:00	37	1970-01-02	1290.35	C	NULL	3	3981.6299999999997
+Manufacturer#2	almond antique violet chocolate turquoise	1970-01-05 00:00:00	15	1970-01-05	1690.68	D	NULL	3	3981.6299999999997
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	NULL	32	NULL	1000.6	A	NULL	3	3981.6299999999997
+Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-05 00:00:00	20	1970-01-05	1753.76	A	false	18	22495.07
+Manufacturer#3	almond antique forest lavender goldenrod	1970-01-03 00:00:00	33	1970-01-03	1190.27	B	false	18	22495.07
+Manufacturer#5	almond antique sky peru orange	1970-01-02 00:00:00	22	1970-01-02	1788.73	A	false	18	22495.07
+Manufacturer#2	almond antique violet turquoise frosted	1970-01-01 00:00:00	21	1970-01-01	1800.7	B	false	18	22495.07
+Manufacturer#3	almond antique chartreuse khaki white	1970-01-04 00:00:00	24	1970-01-04	99.68	C	false	18	22495.07
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	25	NULL	NULL	A	false	18	22495.07
+Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-05 00:00:00	5	1970-01-05	1753.76	B	false	18	22495.07
+Manufacturer#5	almond antique medium spring khaki	1970-01-01 00:00:00	6	1970-01-01	1611.66	C	false	18	22495.07
+Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05 00:00:00	35	1970-01-05	NULL	A	false	18	22495.07
+Manufacturer#1	almond antique burnished rose metallic	1970-01-03 00:00:00	8	1970-01-03	1173.15	A	false	18	22495.07
+Manufacturer#1	almond antique burnished rose metallic	1970-01-04 00:00:00	39	1970-01-04	1173.15	D	false	18	22495.07
+Manufacturer#4	almond aquamarine yellow dodger mint	1970-01-01 00:00:00	11	1970-01-01	1844.92	D	false	18	22495.07
+Manufacturer#3	almond antique olive coral navajo	1970-01-03 00:00:00	28	1970-01-03	1337.29	A	false	18	22495.07
+Manufacturer#2	almond antique violet turquoise frosted	NULL	13	NULL	1800.7	B	false	18	22495.07
+Manufacturer#3	almond antique forest lavender goldenrod	1970-01-04 00:00:00	14	1970-01-04	NULL	C	false	18	22495.07
+Manufacturer#5	almond antique medium spring khaki	1970-01-04 00:00:00	29	1970-01-04	1611.66	B	false	18	22495.07
+Manufacturer#3	almond antique misty red olive	1970-01-01 00:00:00	31	1970-01-01	1922.98	D	false	18	22495.07
+Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-04 00:00:00	9	1970-01-04	1632.66	B	false	18	22495.07
 PREHOOK: query: select "************ BOOLEAN PARTITION WITH CONSTANT PARTITION EXPRESSION ************"
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -7774,7 +7774,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: vector_ptf_part_simple_orc
-                  Statistics: Num rows: 40 Data size: 15984 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 40 Data size: 15976 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_date:date, 3:p_timestamp:timestamp, 4:p_int:int, 5:p_retailprice:double, 6:p_decimal:decimal(10,4)/DECIMAL_64, 7:p_char:char(1), 8:p_varchar:varchar(5), 9:p_boolean:boolean, 10:rowindex:int, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
@@ -7784,7 +7784,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: SelectColumnIsTrue(col 9:boolean)
                     predicate: p_boolean (type: boolean)
-                    Statistics: Num rows: 20 Data size: 8044 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 19 Data size: 7627 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: p_boolean (type: boolean)
                       null sort order: a
@@ -7796,7 +7796,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:string, 1:string, 2:date, 3:timestamp, 5:double, 7:char(1), 10:int
-                      Statistics: Num rows: 20 Data size: 8044 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 19 Data size: 7627 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: p_mfgr (type: string), p_name (type: string), p_date (type: date), p_timestamp (type: timestamp), p_retailprice (type: double), p_char (type: char(1)), rowindex (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -7838,7 +7838,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [1, 2, 3, 4, 5, 6, 0, 7]
-                Statistics: Num rows: 20 Data size: 8044 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 19 Data size: 7627 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
@@ -7878,7 +7878,7 @@ STAGE PLANS:
                       outputTypes: [bigint, double, string, string, date, timestamp, double, char(1), boolean, int]
                       partitionExpressions: [col 0:boolean]
                       streamingColumns: []
-                  Statistics: Num rows: 20 Data size: 8044 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 19 Data size: 7627 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col10 (type: int), _col2 (type: date), _col5 (type: double), _col7 (type: char(1)), _col9 (type: boolean), count_window_0 (type: bigint), sum_window_1 (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
@@ -7886,13 +7886,13 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [1, 2, 4, 7, 3, 5, 6, 0, 8, 9]
-                    Statistics: Num rows: 20 Data size: 7964 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 19 Data size: 7527 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 20 Data size: 7964 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 19 Data size: 7527 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -7921,23 +7921,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_ptf_part_simple_orc
 #### A masked pattern was here ####
 p_mfgr	p_name	p_timestamp	rowindex	p_date	p_retailprice	p_char	p_boolean	cs	s
-Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-05 00:00:00	5	1970-01-05	1753.76	B	false	20	25476.100000000002
-Manufacturer#5	almond antique medium spring khaki	1970-01-01 00:00:00	6	1970-01-01	1611.66	C	false	20	25476.100000000002
-Manufacturer#1	almond antique burnished rose metallic	1970-01-03 00:00:00	8	1970-01-03	1173.15	A	false	20	25476.100000000002
-Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-04 00:00:00	9	1970-01-04	1632.66	B	false	20	25476.100000000002
-Manufacturer#4	almond aquamarine yellow dodger mint	1970-01-01 00:00:00	11	1970-01-01	1844.92	D	false	20	25476.100000000002
-Manufacturer#2	almond antique violet turquoise frosted	NULL	13	NULL	1800.7	B	false	20	25476.100000000002
-Manufacturer#3	almond antique forest lavender goldenrod	1970-01-04 00:00:00	14	1970-01-04	NULL	C	false	20	25476.100000000002
-Manufacturer#2	almond antique violet chocolate turquoise	1970-01-05 00:00:00	15	1970-01-05	1690.68	D	false	20	25476.100000000002
-Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-05 00:00:00	20	1970-01-05	1753.76	A	false	20	25476.100000000002
-Manufacturer#2	almond antique violet turquoise frosted	1970-01-01 00:00:00	21	1970-01-01	1800.7	B	false	20	25476.100000000002
-Manufacturer#5	almond antique sky peru orange	1970-01-02 00:00:00	22	1970-01-02	1788.73	A	false	20	25476.100000000002
-Manufacturer#3	almond antique chartreuse khaki white	1970-01-04 00:00:00	24	1970-01-04	99.68	C	false	20	25476.100000000002
-Manufacturer#4	almond antique gainsboro frosted violet	NULL	25	NULL	NULL	A	false	20	25476.100000000002
-Manufacturer#3	almond antique olive coral navajo	1970-01-03 00:00:00	28	1970-01-03	1337.29	A	false	20	25476.100000000002
-Manufacturer#5	almond antique medium spring khaki	1970-01-04 00:00:00	29	1970-01-04	1611.66	B	false	20	25476.100000000002
-Manufacturer#3	almond antique misty red olive	1970-01-01 00:00:00	31	1970-01-01	1922.98	D	false	20	25476.100000000002
-Manufacturer#3	almond antique forest lavender goldenrod	1970-01-03 00:00:00	33	1970-01-03	1190.27	B	false	20	25476.100000000002
-Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05 00:00:00	35	1970-01-05	NULL	A	false	20	25476.100000000002
-Manufacturer#4	almond azure aquamarine papaya violet	1970-01-02 00:00:00	37	1970-01-02	1290.35	C	false	20	25476.100000000002
-Manufacturer#1	almond antique burnished rose metallic	1970-01-04 00:00:00	39	1970-01-04	1173.15	D	false	20	25476.100000000002
+Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-05 00:00:00	5	1970-01-05	1753.76	B	false	18	22495.070000000003
+Manufacturer#5	almond antique medium spring khaki	1970-01-01 00:00:00	6	1970-01-01	1611.66	C	false	18	22495.070000000003
+Manufacturer#1	almond antique burnished rose metallic	1970-01-03 00:00:00	8	1970-01-03	1173.15	A	false	18	22495.070000000003
+Manufacturer#1	almond aquamarine pink moccasin thistle	1970-01-04 00:00:00	9	1970-01-04	1632.66	B	false	18	22495.070000000003
+Manufacturer#4	almond aquamarine yellow dodger mint	1970-01-01 00:00:00	11	1970-01-01	1844.92	D	false	18	22495.070000000003
+Manufacturer#2	almond antique violet turquoise frosted	NULL	13	NULL	1800.7	B	false	18	22495.070000000003
+Manufacturer#3	almond antique forest lavender goldenrod	1970-01-04 00:00:00	14	1970-01-04	NULL	C	false	18	22495.070000000003
+Manufacturer#1	almond antique chartreuse lavender yellow	1970-01-05 00:00:00	20	1970-01-05	1753.76	A	false	18	22495.070000000003
+Manufacturer#2	almond antique violet turquoise frosted	1970-01-01 00:00:00	21	1970-01-01	1800.7	B	false	18	22495.070000000003
+Manufacturer#5	almond antique sky peru orange	1970-01-02 00:00:00	22	1970-01-02	1788.73	A	false	18	22495.070000000003
+Manufacturer#3	almond antique chartreuse khaki white	1970-01-04 00:00:00	24	1970-01-04	99.68	C	false	18	22495.070000000003
+Manufacturer#4	almond antique gainsboro frosted violet	NULL	25	NULL	NULL	A	false	18	22495.070000000003
+Manufacturer#3	almond antique olive coral navajo	1970-01-03 00:00:00	28	1970-01-03	1337.29	A	false	18	22495.070000000003
+Manufacturer#5	almond antique medium spring khaki	1970-01-04 00:00:00	29	1970-01-04	1611.66	B	false	18	22495.070000000003
+Manufacturer#3	almond antique misty red olive	1970-01-01 00:00:00	31	1970-01-01	1922.98	D	false	18	22495.070000000003
+Manufacturer#3	almond antique forest lavender goldenrod	1970-01-03 00:00:00	33	1970-01-03	1190.27	B	false	18	22495.070000000003
+Manufacturer#4	almond aquamarine floral ivory bisque	1970-01-05 00:00:00	35	1970-01-05	NULL	A	false	18	22495.070000000003
+Manufacturer#1	almond antique burnished rose metallic	1970-01-04 00:00:00	39	1970-01-04	1173.15	D	false	18	22495.070000000003

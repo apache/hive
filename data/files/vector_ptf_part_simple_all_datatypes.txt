@@ -12,7 +12,7 @@ Manufacturer#4,almond aquamarine yellow dodger mint,1970-01-01,1844.92,D,FD,fals
 Manufacturer#1,almond antique chartreuse lavender yellow,1970-01-02,1753.76,D,DA,true,12
 Manufacturer#2,almond antique violet turquoise frosted,NULL,1800.7,B,AC,false,13
 Manufacturer#3,almond antique forest lavender goldenrod,1970-01-04,NULL,C,BB,false,14
-Manufacturer#2,almond antique violet chocolate turquoise,1970-01-05,1690.68,D,LM,false,15
+Manufacturer#2,almond antique violet chocolate turquoise,1970-01-05,1690.68,D,LM,NULL,15
 Manufacturer#4,almond antique violet mint lemon,1970-01-01,1375.42,B,OP,true,16
 Manufacturer#1,almond aquamarine pink moccasin thistle,1970-01-02,1632.66,D,RS,true,17
 Manufacturer#5,almond azure blanched chiffon midnight,1970-01-03,1464.48,C,AB,true,18
@@ -29,12 +29,12 @@ Manufacturer#3,almond antique olive coral navajo,1970-01-03,1337.29,A,AC,false,2
 Manufacturer#5,almond antique medium spring khaki,1970-01-04,1611.66,B,AA,false,29
 Manufacturer#1,almond antique salmon chartreuse burlywood,1970-01-05,1602.59,C,BB,true,30
 Manufacturer#3,almond antique misty red olive,1970-01-01,1922.98,D,BC,false,31
-Manufacturer#2,almond aquamarine sandy cyan gainsboro,NULL,1000.6,A,BD,true,32
+Manufacturer#2,almond aquamarine sandy cyan gainsboro,NULL,1000.6,A,BD,NULL,32
 Manufacturer#3,almond antique forest lavender goldenrod,1970-01-03,1190.27,B,CA,false,33
 Manufacturer#2,almond aquamarine midnight light salmon,1970-01-04,2031.98,C,CB,true,34
 Manufacturer#4,almond aquamarine floral ivory bisque,1970-01-05,NULL,A,CC,false,35
 Manufacturer#5,almond aquamarine dodger light gainsboro,1970-01-01,1018.1,B,CD,true,36
-Manufacturer#4,almond azure aquamarine papaya violet,1970-01-02,1290.35,C,DA,false,37
+Manufacturer#4,almond azure aquamarine papaya violet,1970-01-02,1290.35,C,DA,NULL,37
 Manufacturer#3,almond antique metallic orange dim,NULL,55.39,D,DB,true,38
 Manufacturer#1,almond antique burnished rose metallic,1970-01-04,1173.15,D,DC,false,39
 Manufacturer#4,almond aquamarine floral ivory bisque,1970-01-05,1206.26,C,DD,true,40
