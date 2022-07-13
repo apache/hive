@@ -897,10 +897,16 @@ public class HiveServer2 extends CompositeService {
     }
   }
 
+  /**
+   * Decommission HiveServer2. As a consequence, SessionManager stops
+   * opening new sessions, OperationManager refuses running new queries and
+   * HiveServer2 deregisters itself from Zookeeper if service discovery is enabled,
+   * but the decommissioning has no effect on the current running queries.
+   */
   public synchronized void decommission() {
     LOG.info("Decommissioning HiveServer2");
     // Remove this server instance from ZooKeeper if dynamic service discovery is set
-    if (serviceDiscovery && !activePassiveHA && zooKeeperHelper != null) {
+    if (zooKeeperHelper != null && !isDeregisteredWithZooKeeper()) {
       try {
         zooKeeperHelper.removeServerInstanceFromZooKeeper();
       } catch (Exception e) {
@@ -918,9 +924,14 @@ public class HiveServer2 extends CompositeService {
       if (maxTimeForWait > 0) {
         ExecutorService service = Executors.newSingleThreadExecutor();
         Future future = service.submit(() -> {
+          long sleepInterval = Math.min(100, maxTimeForWait);
           while (getCliService() != null && getCliService().getSessionManager()
                   .getOperations().size() != 0) {
-            continue;
+            try {
+              Thread.sleep(sleepInterval);
+            } catch (InterruptedException e) {
+              break;
+            }
           }
         });
         try {

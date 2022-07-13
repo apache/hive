@@ -99,7 +99,7 @@ public class TestGracefulStopHS2 {
     } catch (Exception e) {
       assertTrue(e instanceof HiveSQLException);
       assertTrue(e.getMessage().contains(ErrorMsg.HIVE_SERVER2_INACTIVE
-              .format(Service.STATE.DECOMMISSIONED.name())));
+              .format(Service.STATE.DECOMMISSIONING.name())));
     }
     // Close existing connections with no errors
     stmt.close();

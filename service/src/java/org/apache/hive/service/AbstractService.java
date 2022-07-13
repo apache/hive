@@ -121,12 +121,12 @@ public abstract class AbstractService implements Service {
     if (state == STATE.STOPPED ||
         state == STATE.INITED ||
         state == STATE.NOTINITED ||
-        state == STATE.DECOMMISSIONED) {
+        state == STATE.DECOMMISSIONING) {
       return;
     }
     ensureCurrentState(STATE.STARTED);
-    changeState(STATE.DECOMMISSIONED);
-    LOG.info("Service:" + getName() + " is decommissioned.");
+    changeState(STATE.DECOMMISSIONING);
+    LOG.info("Service:" + getName() + " is decommissioning.");
   }
 
   /**
