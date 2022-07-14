@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -34,6 +36,7 @@ public class IncrementalDumpEvent extends ReplState {
   private String eventsDumpProgress;
 
   @JsonProperty
+  @JsonSerialize(using = ReplUtils.TimeSerializer.class)
   private Long dumpTime;
 
   public IncrementalDumpEvent(String dbName,

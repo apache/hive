@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.log.state;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.apache.hive.common.util.SuppressFBWarnings;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,6 +41,7 @@ public class AtlasLoadEnd extends ReplState {
 
   @SuppressFBWarnings("URF_UNREAD_FIELD")
   @JsonProperty
+  @JsonSerialize(using = ReplUtils.TimeSerializer.class)
   private Long loadEndTime;
 
   @SuppressFBWarnings("URF_UNREAD_FIELD")

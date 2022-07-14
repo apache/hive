@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,6 +37,7 @@ public class BootstrapDumpEnd extends ReplState {
   private Long actualNumFunctions;
 
   @JsonProperty
+  @JsonSerialize(using = ReplUtils.TimeSerializer.class)
   private Long dumpEndTime;
 
   @JsonProperty
