@@ -1279,6 +1279,7 @@ public class HiveServer2 extends CompositeService {
       // --graceful_stop
       options.addOption(OptionBuilder
         .hasArgs(1)
+        .isRequired(false)
         .withArgName("pid")
         .withLongOpt("graceful_stop")
         .withDescription("Gracefully stopping HS2 instance of" +
