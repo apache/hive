@@ -1484,8 +1484,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     String tableName = "testMinorCompaction";
     executeStatementOnDriver("drop table if exists " + tableName, driver);
     executeStatementOnDriver(
-        "CREATE TABLE " + tableName + "(a INT, b STRING) " + " STORED AS ORC  TBLPROPERTIES ('transactional'='true')",
-        driver);
+            "CREATE TABLE " + tableName + "(a INT, b STRING, c int, d int, e int, f int, j int, i int) " +
+                    " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
     CompactorTestUtil.runStreamingAPI(conf, dbName, tableName, Lists
         .newArrayList(new CompactorTestUtil.StreamingConnectionOption(false, false),
             new CompactorTestUtil.StreamingConnectionOption(true, false),
