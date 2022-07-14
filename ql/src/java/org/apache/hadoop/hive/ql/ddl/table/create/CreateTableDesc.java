@@ -127,6 +127,8 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   private transient FileSinkDesc writer;
   private Long replWriteId; // to be used by repl task to get the txn and valid write id list
   private String ownerName = null;
+  private String likeFile = null;
+  private String likeFileFormat = null;
 
   public CreateTableDesc() {
   }
@@ -230,6 +232,22 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     return copy == null ? null : new ArrayList<T>(copy);
   }
 
+  public void setLikeFile(String likeFile) {
+    this.likeFile = likeFile;
+  }
+
+  public void setLikeFileFormat(String likeFileFormat) {
+    this.likeFileFormat = likeFileFormat;
+  }
+
+  public String getLikeFile() {
+    return likeFile;
+  }
+
+  public String getLikeFileFormat() {
+    return likeFileFormat;
+  }
+
   @Explain(displayName = "columns")
   public List<String> getColsString() {
     return Utilities.getFieldSchemaString(getCols());
@@ -268,7 +286,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     return cols;
   }
 
-  public void setCols(ArrayList<FieldSchema> cols) {
+  public void setCols(List<FieldSchema> cols) {
     this.cols = cols;
   }
 
@@ -544,13 +562,13 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     this.skewedColValues = skewedColValues;
   }
 
-  public void validate(HiveConf conf)
-      throws SemanticException {
+  public void validate(HiveConf conf) throws SemanticException {
 
     if ((this.getCols() == null) || (this.getCols().size() == 0)) {
-      // for now make sure that serde exists
-      if (Table.hasMetastoreBasedSchema(conf, serName) &&
-              StringUtils.isEmpty(getStorageHandler())) {
+      // if the table has no columns and is a HMS backed SerDe - it should have a storage handler OR
+      // is a CREATE TABLE LIKE FILE statement.
+      if (Table.hasMetastoreBasedSchema(conf, serName) && StringUtils.isEmpty(getStorageHandler())
+          && this.getLikeFile() == null) {
         throw new SemanticException(ErrorMsg.INVALID_TBL_DDL_SERDE.getMsg());
       }
       return;
