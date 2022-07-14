@@ -37,7 +37,7 @@ public class ArrayStack<E> extends AbstractCollection<E>
   /**
    * An array list is used for indexed accesses.
    */
-  private final List<E> list = new ArrayList<>();
+  protected final List<E> list = new ArrayList<>();
 
   @Override
   public Iterator<E> iterator() {

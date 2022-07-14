@@ -120,9 +120,19 @@ public class LevelOrderWalker extends DefaultGraphWalker {
         continue;
       }
 
-      opStack.clear();
-      opStack.push(nd);
-      walk(nd, 0, opStack);
+      // Level order walker uses the node stack in inverse.
+      final ArrayStack<Node> inverseStack = new ArrayStack<Node>() {
+        @Override
+        public void push(Node element) {
+          list.add(0, element);
+        }
+
+        @Override
+        public Node pop() {
+          return list.remove(0);
+        }
+      };
+      walk(nd, 0, inverseStack);
       if (nodeOutput != null && getDispatchedList().contains(nd)) {
         nodeOutput.put(nd, retMap.get(nd));
       }
