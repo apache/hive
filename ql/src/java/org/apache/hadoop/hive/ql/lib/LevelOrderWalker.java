@@ -120,20 +120,10 @@ public class LevelOrderWalker extends DefaultGraphWalker {
         continue;
       }
 
-      // Level order walker uses the node stack in inverse.
-      final ArrayStack<Node> inverseStack = new ArrayStack<Node>() {
-        @Override
-        public void push(Node element) {
-          list.add(0, element);
-        }
-
-        @Override
-        public Node pop() {
-          return list.remove(0);
-        }
-      };
-      inverseStack.push(nd);
-      walk(nd, 0, inverseStack);
+      opStack.clear();
+      final MyArrayStack<Node> myArrayStack = new MyArrayStack<>();
+      myArrayStack.push(nd);
+      walk(nd, 0, myArrayStack);
       if (nodeOutput != null && getDispatchedList().contains(nd)) {
         nodeOutput.put(nd, retMap.get(nd));
       }
@@ -150,7 +140,7 @@ public class LevelOrderWalker extends DefaultGraphWalker {
    * @throws SemanticException
    */
   @SuppressWarnings("unchecked")
-  private void walk(Node nd, int level, ArrayStack<Node> stack)
+  private void walk(Node nd, int level, MyArrayStack<Node> stack)
       throws SemanticException {
     List<Operator<? extends OperatorDesc>> parents =
         ((Operator<? extends OperatorDesc>) nd).getParentOperators();
@@ -161,9 +151,19 @@ public class LevelOrderWalker extends DefaultGraphWalker {
     }
 
     for (Node parent : parents) {
-      stack.push(parent);
+      stack.add(0, parent);
       walk(parent, level + 1, stack);
-      stack.pop();
+      stack.remove(0);
+    }
+  }
+
+  private static class MyArrayStack<E> extends ArrayStack<E> {
+    public void add(int index, E element) {
+      list.add(index, element);
+    }
+
+    public E remove(int index) {
+      return list.remove(index);
     }
   }
 }
