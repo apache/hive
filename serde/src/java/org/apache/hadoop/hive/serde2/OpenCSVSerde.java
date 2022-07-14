@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveWritableObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.Text;
@@ -115,12 +116,19 @@ public final class OpenCSVSerde extends AbstractSerDe {
       final Object field = outputRowOI.getStructFieldData(obj, outputFieldRefs.get(c));
       final ObjectInspector fieldOI = outputFieldRefs.get(c).getFieldObjectInspector();
 
-      // The data must be of type String
-      final StringObjectInspector fieldStringOI = (StringObjectInspector) fieldOI;
-
       // Convert the field to Java class String, because objects of String type
       // can be stored in String, Text, or some other classes.
-      outputFields[c] = fieldStringOI.getPrimitiveJavaObject(field);
+      if (fieldOI instanceof StringObjectInspector) {
+        outputFields[c] = ((StringObjectInspector) fieldOI).getPrimitiveJavaObject(field);
+      } else if (fieldOI instanceof AbstractPrimitiveWritableObjectInspector) {
+        final AbstractPrimitiveWritableObjectInspector fieldStringOI =
+            (AbstractPrimitiveWritableObjectInspector) fieldOI;
+        Object primitiveJavaObject = fieldStringOI.getPrimitiveJavaObject(field);
+        outputFields[c] = primitiveJavaObject != null ? primitiveJavaObject.toString() : null;
+      } else {
+        throw new UnsupportedOperationException("Column type of " + fieldOI.getTypeName() + " is not supported with "
+            + "OpenCSVSerde");
+      }
     }
 
     final StringWriter writer = new StringWriter();
