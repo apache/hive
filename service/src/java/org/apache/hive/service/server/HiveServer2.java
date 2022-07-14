@@ -924,6 +924,9 @@ public class HiveServer2 extends CompositeService {
       if (maxTimeForWait > 0) {
         ExecutorService service = Executors.newSingleThreadExecutor();
         Future future = service.submit(() -> {
+          // For gracefully stopping, sleeping some time while looping does not bring much overhead,
+          // that is, at most 100ms are wasted for waiting for OperationManager to be done,
+          // and this code path will only be executed when HS2 is being terminated.
           long sleepInterval = Math.min(100, maxTimeForWait);
           while (getCliService() != null && getCliService().getSessionManager()
                   .getOperations().size() != 0) {
