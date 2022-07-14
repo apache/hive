@@ -132,6 +132,7 @@ public class LevelOrderWalker extends DefaultGraphWalker {
           return list.remove(0);
         }
       };
+      inverseStack.push(nd);
       walk(nd, 0, inverseStack);
       if (nodeOutput != null && getDispatchedList().contains(nd)) {
         nodeOutput.put(nd, retMap.get(nd));
