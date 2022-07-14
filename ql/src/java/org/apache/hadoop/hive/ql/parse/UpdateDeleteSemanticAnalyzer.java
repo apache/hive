@@ -74,8 +74,6 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
   private void analyzeUpdate(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
     operation = Context.Operation.UPDATE;
-    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
-
     if (HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.SPLIT_UPDATE)) {
       analyzeSplitUpdate(tree, mTable, tabNameNode);
     } else {

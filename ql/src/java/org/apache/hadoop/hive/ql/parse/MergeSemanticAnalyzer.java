@@ -202,7 +202,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
         break;
       case HiveParser.TOK_DELETE:
         numWhenMatchedDeleteClauses++;
-        String s1 = handleDelete(whenClause, rewrittenQueryStr, targetNameNode,
+        String s1 = handleDelete(whenClause, rewrittenQueryStr,
             onClauseAsText, extraPredicate, hintProcessed ? null : hintStr, false, columnAppender);
         hintProcessed = true;
         if (numWhenMatchedUpdateClauses + numWhenMatchedDeleteClauses == 1) {
@@ -433,7 +433,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
        * by this call to handleDelete()
        */
       rewrittenQueryStr.append("    -- update clause (delete part)\n");
-      handleDelete(whenMatchedUpdateClause, rewrittenQueryStr, target, onClauseAsString,
+      handleDelete(whenMatchedUpdateClause, rewrittenQueryStr, onClauseAsString,
           deleteExtraPredicate, hintStr, true, columnAppender);
     }
 
@@ -445,8 +445,8 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
    * @param updateExtraPredicate - see notes at caller
    */
   private String handleDelete(ASTNode whenMatchedDeleteClause, StringBuilder rewrittenQueryStr,
-      ASTNode target, String onClauseAsString, String updateExtraPredicate,
-      String hintStr, boolean splitUpdateEarly, ColumnAppender columnAppender) throws SemanticException {
+      String onClauseAsString, String updateExtraPredicate,
+      String hintStr, boolean splitUpdateEarly, ColumnAppender columnAppender) {
     assert whenMatchedDeleteClause.getType() == HiveParser.TOK_MATCHED;
     assert (splitUpdateEarly &&
         getWhenClauseOperation(whenMatchedDeleteClause).getType() == HiveParser.TOK_UPDATE) ||
