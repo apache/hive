@@ -243,6 +243,8 @@ public class PersistenceManagerProvider {
     // Any preexisting datanucleus property should be passed along
     Map<Object, Object> dsProp = new HashMap<>(prop);
     int maxPoolSize = -1;
+    // Reuse the existing connection in PM for value generation to ensure single connection at any one time
+    dsProp.put(PropertyNames.PROPERTY_VALUEGEN_TXN_ATTRIBUTE, "EXISTING");
     
     if (forCompactor) {
       maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS);
