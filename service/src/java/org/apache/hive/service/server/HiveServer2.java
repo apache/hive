@@ -920,16 +920,16 @@ public class HiveServer2 extends CompositeService {
     try {
       decommission();
       long maxTimeForWait = HiveConf.getTimeVar(getHiveConf(),
-              HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS);
-      if (maxTimeForWait > 0) {
+          HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS);
+
+      if (getServiceState() == STATE.STARTED && maxTimeForWait > 0) {
         ExecutorService service = Executors.newSingleThreadExecutor();
         Future future = service.submit(() -> {
           // For gracefully stopping, sleeping some time while looping does not bring much overhead,
           // that is, at most 100ms are wasted for waiting for OperationManager to be done,
           // and this code path will only be executed when HS2 is being terminated.
           long sleepInterval = Math.min(100, maxTimeForWait);
-          while (getCliService() != null && getCliService().getSessionManager()
-                  .getOperations().size() != 0) {
+          while (getCliService().getSessionManager().getOperations().size() != 0) {
             try {
               Thread.sleep(sleepInterval);
             } catch (InterruptedException e) {
@@ -941,7 +941,7 @@ public class HiveServer2 extends CompositeService {
           future.get(maxTimeForWait, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
           future.cancel(true);
-          LOG.warn("Error decommissioning HiveServer2", e);
+          LOG.warn("Error decommissioning HiveServer2 in " + maxTimeForWait + "ms", e);
         } finally {
           service.shutdownNow();
         }

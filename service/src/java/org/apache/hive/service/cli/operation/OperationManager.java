@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hadoop.hive.ql.log.LogDivertAppender;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
@@ -225,7 +224,8 @@ public class OperationManager extends AbstractService {
 
   private void addOperation(Operation operation) throws HiveSQLException {
     if (getServiceState() != STATE.STARTED) {
-      throw new HiveSQLException(ErrorMsg.HIVE_SERVER2_INACTIVE, getServiceState().name());
+      throw new HiveSQLException("Unable to run new queries as HiveServer2 is decommissioned or inactive,"
+          + " state: " + getServiceState());
     }
     LOG.info("Adding operation: {} {}", operation.getHandle(),
         operation.getParentSession().getSessionHandle());

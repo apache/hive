@@ -96,6 +96,10 @@ public class CompositeService extends AbstractService {
 
   @Override
   public synchronized void decommission() {
+    if (this.getServiceState() == STATE.DECOMMISSIONING) {
+      return;
+    }
+    // decommission in reserve order of start
     for (int i = serviceList.size() - 1; i >= 0; i--) {
       Service service = serviceList.get(i);
       try {
