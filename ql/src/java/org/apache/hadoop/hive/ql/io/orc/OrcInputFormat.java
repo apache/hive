@@ -268,7 +268,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       // clustered by (`bucket`) sorted by (`originalTransaction`, `bucket`, `rowId`) into 1 buckets stored as
       // orc LOCATION 'file:/warehouse/testminorcompaction/delete_delta_0000001_0000006_v0000009'
       // TBLPROPERTIES ('compactiontable'='true', 'bucketing_version'='2', 'transactional'='false')
-      this.reader = createReaderFromFile(file, conf, offset, length, ((OrcSplit)inputSplit).isOriginal());
+      if (inputSplit instanceof OrcSplit) {
+        this.reader = createReaderFromFile(file, conf, offset, length, ((OrcSplit) inputSplit).isOriginal());
+      } else {
+        this.reader = createReaderFromFile(file, conf, offset, length);
+      }
 
       this.stats = new SerDeStats();
     }

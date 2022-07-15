@@ -68,9 +68,12 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
                     long offset, long length, InputSplit inputSplit) throws IOException {
       numColumns = file.getSchema().getChildren().size();
       value = new OrcStruct(numColumns);
-      boolean isOriginal = ((OrcNewSplit)inputSplit).isOriginal();
-      this.reader = OrcInputFormat.createReaderFromFile(file, conf, offset,
-          length, isOriginal);
+      if (inputSplit instanceof OrcNewSplit) {
+        this.reader = OrcInputFormat.createReaderFromFile(file, conf, offset,
+                length, ((OrcNewSplit)inputSplit).isOriginal());
+      } else {
+        this.reader = OrcInputFormat.createReaderFromFile(file, conf, offset, length);
+      }
     }
 
     @Override
