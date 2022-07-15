@@ -251,9 +251,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
 
     OrcRecordReader(Reader file, Configuration conf,
-                    FileSplit split) throws IOException {
+                    InputSplit inputSplit) throws IOException {
       this.file = file;
       numColumns = file.getSchema().getChildren().size();
+      FileSplit split = (FileSplit)inputSplit;
       this.offset = split.getStart();
       this.length = split.getLength();
 
@@ -267,7 +268,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       // clustered by (`bucket`) sorted by (`originalTransaction`, `bucket`, `rowId`) into 1 buckets stored as
       // orc LOCATION 'file:/warehouse/testminorcompaction/delete_delta_0000001_0000006_v0000009'
       // TBLPROPERTIES ('compactiontable'='true', 'bucketing_version'='2', 'transactional'='false')
-      this.reader = createReaderFromFile(file, conf, offset, length, ((OrcSplit)split).isOriginal());
+      this.reader = createReaderFromFile(file, conf, offset, length, ((OrcSplit)inputSplit).isOriginal());
 
       this.stats = new SerDeStats();
     }
@@ -1998,7 +1999,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         return new OrcRecordReader(OrcFile.createReader(
             ((FileSplit) inputSplit).getPath(),
             readerOptions),
-            conf, (FileSplit) inputSplit);
+            conf, inputSplit);
       }
     }
 
