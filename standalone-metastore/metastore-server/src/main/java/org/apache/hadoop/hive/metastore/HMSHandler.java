@@ -4135,6 +4135,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             + TableName.getQualified(catName, dbName, tblName) +
             " does not exist");
       }
+      if (!tbl.isSetPartitionKeys()) {
+        throw new InvalidOperationException("Unable to add partitions because "
+            + "table " + getCatalogQualifiedTableName(tbl) + " is not a partitioned table.");
+      }
 
       db = ms.getDatabase(catName, dbName);
 
@@ -4144,7 +4148,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       Set<PartValEqWrapperLite> partsToAdd = new HashSet<>(parts.size());
       List<Partition> partitionsToAdd = new ArrayList<>(parts.size());
-      List<FieldSchema> partitionKeys = tbl.getPartitionKeys();
       for (final Partition part : parts) {
         // Collect partition column stats to be updated if present. Partition objects passed down
         // here at the time of replication may have statistics in them, which is required to be
@@ -4160,8 +4163,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         // incorrect, an exception will be thrown before the threads which create the partition
         // folders are submitted. This way we can be sure that no partition and no partition
         // folder will be created if the list contains an invalid partition.
-        if (validatePartition(part, catName, tblName, dbName, partsToAdd, ms, ifNotExists,
-            partitionKeys)) {
+        if (validatePartition(tbl, part, partsToAdd, ms, ifNotExists)) {
           partitionsToAdd.add(part);
         } else {
           existingParts.add(part);
@@ -4279,10 +4281,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * that the partition is tried to be added multiple times in the same batch. Please note that
    * the set will be updated with the current partition if the validation was successful.</li>
    * </ul>
+   * @param tbl
    * @param part
-   * @param catName
-   * @param tblName
-   * @param dbName
    * @param partsToAdd
    * @param ms
    * @param ifNotExists
@@ -4290,20 +4290,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * @throws MetaException
    * @throws TException
    */
-  private boolean validatePartition(final Partition part, final String catName,
-                                    final String tblName, final String dbName, final Set<PartValEqWrapperLite> partsToAdd,
-                                    final RawStore ms, final boolean ifNotExists, List<FieldSchema> partitionKeys) throws MetaException, TException {
-
+  private boolean validatePartition(final Table tbl, final Partition part, final Set<PartValEqWrapperLite> partsToAdd,
+                                    final RawStore ms, final boolean ifNotExists) throws MetaException, TException {
     if (part.getDbName() == null || part.getTableName() == null) {
       throw new MetaException("The database and table name must be set in the partition.");
     }
 
-    if (!part.getTableName().equalsIgnoreCase(tblName)
-        || !part.getDbName().equalsIgnoreCase(dbName)) {
+    if (!part.getTableName().equalsIgnoreCase(tbl.getTableName())
+        || !part.getDbName().equalsIgnoreCase(tbl.getDbName())) {
       String errorMsg = String.format(
           "Partition does not belong to target table %s. It belongs to the table %s.%s : %s",
-          TableName.getQualified(catName, dbName, tblName), part.getDbName(),
-          part.getTableName(), part.toString());
+          getCatalogQualifiedTableName(tbl), part.getDbName(), part.getTableName(), part);
       throw new MetaException(errorMsg);
     }
 
@@ -4315,9 +4312,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw new MetaException("Partition value cannot be null.");
     }
 
-    boolean shouldAdd = startAddPartition(ms, part, partitionKeys, ifNotExists);
+    boolean shouldAdd = startAddPartition(ms, part, tbl.getPartitionKeys(), ifNotExists);
     if (!shouldAdd) {
-      LOG.info("Not adding partition {} as it already exists", part);
+      LOG.info(
+          String.format("Not adding partition %s[%s] as it already exists",
+              getCatalogQualifiedTableName(tbl),
+              Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues())));
       return false;
     }
 
@@ -4537,18 +4537,20 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new InvalidObjectException("Unable to add partitions because "
             + "database or table " + dbName + "." + tblName + " does not exist");
       }
+      if (!tbl.isSetPartitionKeys()) {
+        throw new InvalidOperationException("Unable to add partitions because "
+            + "table " + getCatalogQualifiedTableName(tbl) + " is not a partitioned table.");
+      }
       firePreEvent(new PreAddPartitionEvent(tbl, partitionSpecProxy, this));
       Set<PartValEqWrapperLite> partsToAdd = new HashSet<>(partitionSpecProxy.size());
       List<Partition> partitionsToAdd = new ArrayList<>(partitionSpecProxy.size());
-      List<FieldSchema> partitionKeys = tbl.getPartitionKeys();
       while (partitionIterator.hasNext()) {
         // Iterate through the partitions and validate them. If one of the partitions is
         // incorrect, an exception will be thrown before the threads which create the partition
         // folders are submitted. This way we can be sure that no partition or partition folder
         // will be created if the list contains an invalid partition.
         final Partition part = partitionIterator.getCurrent();
-        if (validatePartition(part, catName, tblName, dbName, partsToAdd, ms, ifNotExists,
-            partitionKeys)) {
+        if (validatePartition(tbl, part, partsToAdd, ms, ifNotExists)) {
           partitionsToAdd.add(part);
         }
         partitionIterator.next();
