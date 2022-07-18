@@ -55,6 +55,8 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
     super(context, desc);
   }
 
+  // Sets the tables columns using the FieldSchema inferred from the SerDe's SchemaInference
+  // implementation. This is used by CREATE TABLE LIKE FILE.
   private void readSchemaFromFile() throws HiveException {
     String fileFormat = desc.getLikeFileFormat();
     String filePath = desc.getLikeFile();
