@@ -17,21 +17,26 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.DirCopyWork;
-import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -39,6 +44,7 @@ import java.util.HashSet;
  * ReplicationTestUtils - static helper functions for replication test
  */
 public class ReplicationTestUtils {
+  private static final Logger LOG = LoggerFactory.getLogger(ReplicationTestUtils.class);
 
   public enum OperationType {
     REPL_TEST_ACID_INSERT, REPL_TEST_ACID_INSERT_SELECT, REPL_TEST_ACID_CTAS,
@@ -554,5 +560,45 @@ public class ReplicationTestUtils {
     }
     Assert.assertTrue(tableNames.containsAll(expected));
     reader.close();
+  }
+
+  public static void findTxnsFromDump(WarehouseInstance.Tuple tuple, HiveConf conf,
+                                      List<Path> openTxns, List<Path> commitTxns, List<Path> abortTxns) throws IOException {
+    Path dumpRoot = new Path(tuple.dumpLocation);
+    FileSystem fs = FileSystem.get(dumpRoot.toUri(), conf);
+
+    LOG.info("Scanning for event files: " + dumpRoot.toString());
+    RemoteIterator<LocatedFileStatus> files = fs.listFiles(dumpRoot, true);
+    while(files.hasNext()) {
+      LocatedFileStatus status = files.next();
+
+      if (!status.getPath().getName().equals("_dumpmetadata")) {
+        continue;
+      }
+
+      String event = getEvent(fs, status.getPath());
+      if (event.equals("EVENT_OPEN_TXN")) {
+        openTxns.add(status.getPath());
+      } else if (event.equals("EVENT_COMMIT_TXN")) {
+        commitTxns.add(status.getPath());
+      } else if (event.equals("EVENT_ABORT_TXN")) {
+        abortTxns.add(status.getPath());
+      }
+    }
+  }
+
+  private static String getEvent(FileSystem fs, Path path) throws IOException {
+    try (FSDataInputStream fdis = fs.open(path);
+         BufferedReader br = new BufferedReader(new InputStreamReader(fdis))) {
+      // Assumes event is at least on first line.
+      String line = br.readLine();
+      Assert.assertNotNull(line);
+      // Assumes event is present.
+      int index = line.indexOf("\t");
+      Assert.assertNotEquals(-1, index);
+      String event = line.substring(0, index);
+      LOG.info("Reading event file: " + path.toString() + " : " + event + ", raw: " + line);
+      return event;
+    }
   }
 }

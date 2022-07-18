@@ -1638,11 +1638,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
         if (materializedViews != null && !materializedViews.isEmpty()) {
           for (Table materializedView : materializedViews) {
-            if (materializedView.getSd().getLocation() != null) {
+            boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(materializedView, req.isSoftDelete());
+            
+            if (materializedView.getSd().getLocation() != null && !isSoftDelete) {
               Path materializedViewPath = wh.getDnsPath(new Path(materializedView.getSd().getLocation()));
-
-              if (!FileUtils.isSubdirectory(databasePath.toString(),
-                  materializedViewPath.toString())) {
+              
+              if (!FileUtils.isSubdirectory(databasePath.toString(), materializedViewPath.toString()) || req.isSoftDelete()) {
                 if (!wh.isWritable(materializedViewPath.getParent())) {
                   throw new MetaException("Database metadata not deleted since table: " +
                       materializedView.getTableName() + " has a parent location " + materializedViewPath.getParent() +
@@ -1651,8 +1652,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                 tablePaths.add(materializedViewPath);
               }
             }
+            EnvironmentContext context = null;
+            if (isSoftDelete) {
+              context = new EnvironmentContext();
+              context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
+            }
             // Drop the materialized view but not its data
-            drop_table(req.getName(), materializedView.getTableName(), false);
+            drop_table_with_environment_context(
+                req.getName(), materializedView.getTableName(), false, context);
+            
             // Remove from all tables
             uniqueTableNames.remove(materializedView.getTableName());
           }
@@ -1677,12 +1685,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
         if (tables != null && !tables.isEmpty()) {
           for (Table table : tables) {
-
             // If the table is not external and it might not be in a subdirectory of the database
             // add it's locations to the list of paths to delete
+            boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(table, req.isSoftDelete());
             Path tablePath = null;
-            boolean isSoftDelete = req.isSoftDelete() && TxnUtils.isTransactionalTable(table) 
-              && Boolean.parseBoolean(table.getParameters().get(SOFT_DELETE_TABLE));
             
             boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, req.isDeleteData()) 
               && !isSoftDelete;
@@ -1707,7 +1713,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             EnvironmentContext context = null;
             if (isSoftDelete) {
               context = new EnvironmentContext();
-              context.putToProperties("txnId", String.valueOf(req.getTxnId()));
+              context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
               req.setDeleteManagedDir(false);
             }
             // Drop the table but not its data
@@ -1725,7 +1731,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           EnvironmentContext context = null;
           if (!req.isDeleteManagedDir()) {
             context = new EnvironmentContext();
-            context.putToProperties("txnId", String.valueOf(req.getTxnId()));
+            context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
           }
           dropEvent.setEnvironmentContext(context);
           transactionalListenerResponses =
@@ -2048,16 +2054,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     RawStore ms = getMS();
     try {
-      ms.openTransaction();
       connector = getMS().getDataConnector(dcName);
-
-      if (connector == null) {
-        if (!ifNotExists) {
-          throw new NoSuchObjectException("DataConnector " + dcName + " doesn't exist");
-        } else {
-          return;
-        }
+    } catch (NoSuchObjectException e) {
+      if (!ifNotExists) {
+        throw new NoSuchObjectException("DataConnector " + dcName + " doesn't exist");
+      } else {
+        return;
       }
+    }
+    try {
+      ms.openTransaction();
       // TODO find DBs with references to this connector
       // if any existing references and checkReferences=true, do not drop
 
@@ -5113,7 +5119,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   static long getWriteId(EnvironmentContext context){
     return Optional.ofNullable(context)
       .map(EnvironmentContext::getProperties)
-      .map(prop -> prop.get("writeId"))
+      .map(prop -> prop.get(hive_metastoreConstants.WRITE_ID))
       .map(Long::parseLong)
       .orElse(0L);
   }
@@ -5848,7 +5854,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public RenamePartitionResponse rename_partition_req(RenamePartitionRequest req) throws TException {
     EnvironmentContext context = new EnvironmentContext();
     context.putToProperties(RENAME_PARTITION_MAKE_COPY, String.valueOf(req.isClonePart()));
-    context.putToProperties("txnId", String.valueOf(req.getTxnId()));
+    context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
     
     rename_partition(req.getCatName(), req.getDbName(), req.getTableName(), req.getPartVals(),
         req.getNewPart(), context, req.getValidWriteIdList());
@@ -8698,6 +8704,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     getTxnHandler().abortTxn(rqst);
     boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
     if (listeners != null && !listeners.isEmpty() && !isHiveReplTxn) {
+      // Not adding dbsUpdated to AbortTxnEvent because
+      // only DbNotificationListener cares about it, and this is already
+      // handled with transactional listeners in TxnHandler.
       MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ABORT_TXN,
           new AbortTxnEvent(rqst.getTxnid(), this));
     }
@@ -8708,6 +8717,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     getTxnHandler().abortTxns(rqst);
     if (listeners != null && !listeners.isEmpty()) {
       for (Long txnId : rqst.getTxn_ids()) {
+        // See above abort_txn() note about not adding dbsUpdated.
         MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ABORT_TXN,
             new AbortTxnEvent(txnId, this));
       }

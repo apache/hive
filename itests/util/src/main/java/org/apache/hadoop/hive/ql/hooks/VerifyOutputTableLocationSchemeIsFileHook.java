@@ -25,7 +25,7 @@ public class VerifyOutputTableLocationSchemeIsFileHook implements ExecuteWithHoo
   @Override
   public void run(HookContext hookContext) {
     for (WriteEntity output : hookContext.getOutputs()) {
-      if (output.getType() == WriteEntity.Type.TABLE) {
+      if (output.getType() == WriteEntity.Type.TABLE && hookContext.getInputs().iterator().next().getT().equals(output.getT())) {
         String scheme = output.getTable().getDataLocation().toUri().getScheme();
         Assert.assertTrue(output.getTable().getTableName() + " has a location which has a " +
               "scheme other than file: " + scheme, scheme.equals("file"));

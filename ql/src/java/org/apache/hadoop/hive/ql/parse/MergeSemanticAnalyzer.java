@@ -49,6 +49,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * they are actually inserts) and then doing some patch up to make them work as merges instead.
  */
 public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
+  private int numWhenMatchedUpdateClauses;
+  private int numWhenMatchedDeleteClauses;
+
   MergeSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
@@ -163,8 +166,9 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
      * Update and Delete may be in any order.  (Insert is always last)
      */
     String extraPredicate = null;
-    int numWhenMatchedUpdateClauses = 0, numWhenMatchedDeleteClauses = 0;
     int numInsertClauses = 0;
+    numWhenMatchedUpdateClauses = 0;
+    numWhenMatchedDeleteClauses = 0;
     boolean hintProcessed = false;
     for (ASTNode whenClause : whenClauses) {
       switch (getWhenClauseOperation(whenClause).getType()) {
@@ -342,7 +346,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     String targetName = getSimpleTableName(target);
     List<String> values = new ArrayList<>(targetTable.getCols().size() + (splitUpdateEarly ? 1 : 0));
     if(!splitUpdateEarly) {
-      values.add(targetName + ".ROW__ID, ");
+      values.add(targetName + ".ROW__ID");
     }
 
     ASTNode setClause = (ASTNode)getWhenClauseOperation(whenMatchedUpdateClause).getChild(0);
@@ -705,5 +709,10 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
   @Override
   protected boolean allowOutputMultipleTimes() {
     return conf.getBoolVar(HiveConf.ConfVars.SPLIT_UPDATE) || conf.getBoolVar(HiveConf.ConfVars.MERGE_SPLIT_UPDATE);
+  }
+
+  @Override
+  protected boolean enableColumnStatsCollecting() {
+    return numWhenMatchedUpdateClauses == 0 && numWhenMatchedDeleteClauses == 0;
   }
 }

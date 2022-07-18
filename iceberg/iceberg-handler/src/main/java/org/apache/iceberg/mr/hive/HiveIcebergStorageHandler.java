@@ -24,11 +24,13 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -77,8 +79,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
 import org.apache.hadoop.mapred.JobID;
-import org.apache.hadoop.mapred.JobStatus;
-import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
@@ -100,6 +100,7 @@ import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
@@ -411,24 +412,28 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     Configuration configuration = SessionState.getSessionConf();
-    Optional<JobContext> jobContext = generateJobContext(configuration, tableName, overwrite);
-    if (jobContext.isPresent()) {
-      OutputCommitter committer = new HiveIcebergOutputCommitter();
+    List<JobContext> jobContextList = generateJobContext(configuration, tableName, overwrite);
+    if (jobContextList.isEmpty()) {
+      return;
+    }
+
+    HiveIcebergOutputCommitter committer = new HiveIcebergOutputCommitter();
+    try {
+      committer.commitJobs(jobContextList);
+    } catch (Throwable e) {
+      String ids = jobContextList
+          .stream().map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(", "));
+      // Aborting the job if the commit has failed
+      LOG.error("Error while trying to commit job: {}, starting rollback changes for table: {}",
+          ids, tableName, e);
       try {
-        committer.commitJob(jobContext.get());
-      } catch (Throwable e) {
-        // Aborting the job if the commit has failed
-        LOG.error("Error while trying to commit job: {}, starting rollback changes for table: {}",
-            jobContext.get().getJobID(), tableName, e);
-        try {
-          committer.abortJob(jobContext.get(), JobStatus.State.FAILED);
-        } catch (IOException ioe) {
-          LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", ioe);
-          // no throwing here because the original exception should be propagated
-        }
-        throw new HiveException(
-            "Error committing job: " + jobContext.get().getJobID() + " for table: " + tableName, e);
+        committer.abortJobs(jobContextList);
+      } catch (IOException ioe) {
+        LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", ioe);
+        // no throwing here because the original exception should be propagated
       }
+      throw new HiveException(
+          "Error committing job: " + ids + " for table: " + tableName, e);
     }
   }
 
@@ -454,10 +459,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public void executeOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable, AlterTableExecuteSpec executeSpec) {
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     switch (executeSpec.getOperationType()) {
       case ROLLBACK:
-        TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
-        Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
         LOG.info("Executing rollback operation on iceberg table. If you would like to revert rollback you could " +
               "try altering the metadata location to the current metadata location by executing the following query:" +
               "ALTER TABLE {}.{} SET TBLPROPERTIES('metadata_location'='{}'). This operation is supported for Hive " +
@@ -466,6 +471,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         AlterTableExecuteSpec.RollbackSpec rollbackSpec =
             (AlterTableExecuteSpec.RollbackSpec) executeSpec.getOperationParams();
         IcebergTableUtil.rollback(icebergTable, rollbackSpec.getRollbackType(), rollbackSpec.getParam());
+        break;
+      case EXPIRE_SNAPSHOT:
+        LOG.info("Executing expire snapshots operation on iceberg table {}.{}", hmsTable.getDbName(),
+            hmsTable.getTableName());
+        AlterTableExecuteSpec.ExpireSnapshotsSpec expireSnapshotsSpec =
+            (AlterTableExecuteSpec.ExpireSnapshotsSpec) executeSpec.getOperationParams();
+        icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis()).commit();
         break;
       default:
         throw new UnsupportedOperationException(
@@ -646,8 +658,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * @param config The configuration used to get the data from
    * @return The collection of the table names as returned by TableDesc.getTableName()
    */
-  public static Collection<String> outputTables(Configuration config) {
-    return TABLE_NAME_SPLITTER.splitToList(config.get(InputFormatConfig.OUTPUT_TABLES));
+  public static Set<String> outputTables(Configuration config) {
+    return Sets.newHashSet(TABLE_NAME_SPLITTER.split(config.get(InputFormatConfig.OUTPUT_TABLES)));
   }
 
   /**
@@ -796,53 +808,91 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    *   <li>fileformat is set to avro</li>
    *   <li>querying metadata tables</li>
    *   <li>fileformat is set to ORC, and table schema has time type column</li>
+   *   <li>fileformat is set to PARQUET, and table schema has a list type column, that has a complex type element</li>
    * </ul>
    * @param tableProps table properties, must be not null
    */
   private void fallbackToNonVectorizedModeBasedOnProperties(Properties tableProps) {
+    Schema tableSchema = SchemaParser.fromJson(tableProps.getProperty(InputFormatConfig.TABLE_SCHEMA));
     if ("2".equals(tableProps.get(TableProperties.FORMAT_VERSION)) ||
         FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
         (tableProps.containsKey("metaTable") && isValidMetadataTable(tableProps.getProperty("metaTable"))) ||
-        hasOrcTimeInSchema(tableProps)) {
+        hasOrcTimeInSchema(tableProps, tableSchema) ||
+        !hasParquetListColumnSupport(tableProps, tableSchema)) {
       conf.setBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname, false);
     }
   }
 
-  // Iceberg Time type columns are written as longs into ORC files. There is no Time type in Hive, so it is represented
-  // as String instead. For ORC there's no automatic conversion from long to string during vectorized reading such as
-  // for example in Parquet (in Parquet files Time type is an int64 with 'time' logical annotation).
-  private static boolean hasOrcTimeInSchema(Properties tableProps) {
+  /**
+   * Iceberg Time type columns are written as longs into ORC files. There is no Time type in Hive, so it is represented
+   * as String instead. For ORC there's no automatic conversion from long to string during vectorized reading such as
+   * for example in Parquet (in Parquet files Time type is an int64 with 'time' logical annotation).
+   * @param tableProps iceberg table properties
+   * @param tableSchema iceberg table schema
+   * @return
+   */
+  private static boolean hasOrcTimeInSchema(Properties tableProps, Schema tableSchema) {
     if (!FileFormat.ORC.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
       return false;
     }
-    Schema tableSchema = SchemaParser.fromJson(tableProps.getProperty(InputFormatConfig.TABLE_SCHEMA));
     return tableSchema.columns().stream().anyMatch(f -> Types.TimeType.get().typeId() == f.type().typeId());
   }
 
   /**
-   * Generates a JobContext for the OutputCommitter for the specific table.
+   * Vectorized reads of parquet files from columns with list type is only supported if the element is a primitive type
+   * check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details
+   * @param tableProps iceberg table properties
+   * @param tableSchema iceberg table schema
+   * @return
+   */
+  private static boolean hasParquetListColumnSupport(Properties tableProps, Schema tableSchema) {
+    if (!FileFormat.PARQUET.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
+      return true;
+    }
+
+    for (Types.NestedField field : tableSchema.columns()) {
+      if (field.type().isListType()) {
+        for (Types.NestedField nestedField : field.type().asListType().fields()) {
+          if (!nestedField.type().isPrimitiveType()) {
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Generates {@link JobContext}s for the OutputCommitter for the specific table.
    * @param configuration The configuration used for as a base of the JobConf
    * @param tableName The name of the table we are planning to commit
    * @param overwrite If we have to overwrite the existing table or just add the new data
-   * @return The generated JobContext
+   * @return The generated Optional JobContext list or empty if not presents.
    */
-  private Optional<JobContext> generateJobContext(Configuration configuration, String tableName, boolean overwrite) {
+  private List<JobContext> generateJobContext(Configuration configuration, String tableName,
+      boolean overwrite) {
     JobConf jobConf = new JobConf(configuration);
-    Optional<SessionStateUtil.CommitInfo> commitInfo = SessionStateUtil.getCommitInfo(jobConf, tableName);
-    if (commitInfo.isPresent()) {
-      JobID jobID = JobID.forName(commitInfo.get().getJobIdStr());
-      commitInfo.get().getProps().forEach(jobConf::set);
-      jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
+    Optional<Map<String, SessionStateUtil.CommitInfo>> commitInfoMap =
+        SessionStateUtil.getCommitInfo(jobConf, tableName);
+    if (commitInfoMap.isPresent()) {
+      List<JobContext> jobContextList = Lists.newLinkedList();
+      for (SessionStateUtil.CommitInfo commitInfo : commitInfoMap.get().values()) {
+        JobID jobID = JobID.forName(commitInfo.getJobIdStr());
+        commitInfo.getProps().forEach(jobConf::set);
+        jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
 
-      // we should only commit this current table because
-      // for multi-table inserts, this hook method will be called sequentially for each target table
-      jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
+        // we should only commit this current table because
+        // for multi-table inserts, this hook method will be called sequentially for each target table
+        jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
 
-      return Optional.of(new JobContextImpl(jobConf, jobID, null));
+        jobContextList.add(new JobContextImpl(jobConf, jobID, null));
+      }
+      return jobContextList;
     } else {
       // most likely empty write scenario
       LOG.debug("Unable to find commit information in query state for table: {}", tableName);
-      return Optional.empty();
+      return Collections.emptyList();
     }
   }
 

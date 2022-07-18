@@ -16,3 +16,10 @@ WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b);
 --now we expect no cardinality check since only have insert clause
 explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b);
+
+set hive.split.update=false;
+set hive.merge.split.update=false;
+explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a
+WHEN MATCHED AND s.a > 8 THEN DELETE
+WHEN MATCHED THEN UPDATE SET b = 7
+WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b);

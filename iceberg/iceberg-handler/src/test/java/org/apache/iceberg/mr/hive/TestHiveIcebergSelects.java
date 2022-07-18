@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -262,5 +263,18 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
 
     Assert.assertEquals(20000, result.size());
 
+  }
+
+  @Test
+  public void testHistory() throws IOException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "source");
+    Table table = testTables.createTableWithVersions(shell, identifier.name(),
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 1);
+    List<Object[]> history = shell.executeStatement("SELECT snapshot_id FROM default.source.history");
+    Assert.assertEquals(table.history().size(), history.size());
+    for (int i = 0; i < table.history().size(); ++i) {
+      Assert.assertEquals(table.history().get(i).snapshotId(), history.get(i)[0]);
+    }
   }
 }

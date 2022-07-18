@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.avro;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -498,6 +499,6 @@ public class AvroLazyObjectInspector extends LazySimpleStructObjectInspector {
    * */
   private boolean isPrimitive(Class<?> clazz) {
     return clazz.isPrimitive() || ClassUtils.wrapperToPrimitive(clazz) != null
-        || clazz.getSimpleName().equals("String");
+      || Arrays.asList("String", "Timestamp").contains(clazz.getSimpleName());
   }
 }

@@ -1868,13 +1868,11 @@ STAGE PLANS:
   Stage: Stage-5
     Tez
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 9 <- Map 8 (SIMPLE_EDGE)
+        Reducer 7 <- Map 6 (SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -1914,7 +1912,7 @@ STAGE PLANS:
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
                     scratchColumnTypeNames: []
-        Map 8 
+        Map 6 
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
@@ -2004,70 +2002,6 @@ STAGE PLANS:
                       className: VectorFileSinkOperator
                       native: false
         Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                reduceColumnNullOrder: zz
-                reduceColumnSortOrder: ++
-                allNative: false
-                usesVectorUDFAdaptor: true
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 11
-                    dataColumns: KEY._col0:string, KEY._col1:string, VALUE._col0:int, VALUE._col1:struct<count:bigint,sum:double,input:int>, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary, VALUE._col5:int, VALUE._col6:struct<count:bigint,sum:double,input:int>, VALUE._col7:bigint, VALUE._col8:binary
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Reduce Operator Tree:
-                Group By Vectorization:
-                    aggregators: VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFAvgFinal(col 3:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 4:bigint) -> bigint, VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 6:binary) -> binary, VectorUDAFMaxLong(col 7:int) -> int, VectorUDAFAvgFinal(col 8:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 9:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 10:binary) -> binary
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:string, col 1:string
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [11, 13, 15, 16, 19, 6, 20, 22, 24, 25, 28, 10, 0, 1]
-                      selectExpressions: ConstantVectorExpression(val STRING) -> 11:string, VectorCoalesce(columns [2, 12])(children: col 2:int, ConstantVectorExpression(val 0) -> 12:int) -> 13:int, VectorCoalesce(columns [3, 14])(children: col 3:double, ConstantVectorExpression(val 0.0) -> 14:double) -> 15:double, LongColSubtractLongColumn(col 4:bigint, col 5:bigint) -> 16:bigint, VectorCoalesce(columns [17, 18])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col6)) -> 17:bigint, ConstantVectorExpression(val 0) -> 18:bigint) -> 19:bigint, ConstantVectorExpression(val STRING) -> 20:string, VectorCoalesce(columns [7, 21])(children: col 7:int, ConstantVectorExpression(val 0) -> 21:int) -> 22:int, VectorCoalesce(columns [8, 23])(children: col 8:double, ConstantVectorExpression(val 0.0) -> 23:double) -> 24:double, LongColSubtractLongColumn(col 4:bigint, col 9:bigint) -> 25:bigint, VectorCoalesce(columns [26, 27])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col10)) -> 26:bigint, ConstantVectorExpression(val 0) -> 27:bigint) -> 28:bigint
-                    File Sink Vectorization:
-                        className: VectorFileSinkOperator
-                        native: false
-        Reducer 6 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                reduceColumnNullOrder: zz
-                reduceColumnSortOrder: ++
-                allNative: false
-                usesVectorUDFAdaptor: true
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 11
-                    dataColumns: KEY._col0:string, KEY._col1:string, VALUE._col0:int, VALUE._col1:struct<count:bigint,sum:double,input:int>, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary, VALUE._col5:int, VALUE._col6:struct<count:bigint,sum:double,input:int>, VALUE._col7:bigint, VALUE._col8:binary
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Reduce Operator Tree:
-                Group By Vectorization:
-                    aggregators: VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFAvgFinal(col 3:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 4:bigint) -> bigint, VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 6:binary) -> binary, VectorUDAFMaxLong(col 7:int) -> int, VectorUDAFAvgFinal(col 8:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 9:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 10:binary) -> binary
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:string, col 1:string
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [11, 13, 15, 16, 19, 6, 20, 22, 24, 25, 28, 10, 0, 1]
-                      selectExpressions: ConstantVectorExpression(val STRING) -> 11:string, VectorCoalesce(columns [2, 12])(children: col 2:int, ConstantVectorExpression(val 0) -> 12:int) -> 13:int, VectorCoalesce(columns [3, 14])(children: col 3:double, ConstantVectorExpression(val 0.0) -> 14:double) -> 15:double, LongColSubtractLongColumn(col 4:bigint, col 5:bigint) -> 16:bigint, VectorCoalesce(columns [17, 18])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col6)) -> 17:bigint, ConstantVectorExpression(val 0) -> 18:bigint) -> 19:bigint, ConstantVectorExpression(val STRING) -> 20:string, VectorCoalesce(columns [7, 21])(children: col 7:int, ConstantVectorExpression(val 0) -> 21:int) -> 22:int, VectorCoalesce(columns [8, 23])(children: col 8:double, ConstantVectorExpression(val 0.0) -> 23:double) -> 24:double, LongColSubtractLongColumn(col 4:bigint, col 9:bigint) -> 25:bigint, VectorCoalesce(columns [26, 27])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col10)) -> 26:bigint, ConstantVectorExpression(val 0) -> 27:bigint) -> 28:bigint
-                    File Sink Vectorization:
-                        className: VectorFileSinkOperator
-                        native: false
-        Reducer 7 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
@@ -2075,7 +2009,7 @@ STAGE PLANS:
                 notVectorizedReason: Key expression for GROUPBY operator: Vectorizing complex type STRUCT not supported
                 vectorized: false
             Reduce Operator Tree:
-        Reducer 9 
+        Reducer 7 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -2836,15 +2770,13 @@ STAGE PLANS:
   Stage: Stage-5
     Tez
       Edges:
-        Reducer 11 <- Map 10 (SIMPLE_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 11 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 7 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
-        Reducer 9 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 9 <- Map 8 (SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -2884,7 +2816,7 @@ STAGE PLANS:
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
                     scratchColumnTypeNames: []
-        Map 10 
+        Map 8 
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
@@ -2923,66 +2855,6 @@ STAGE PLANS:
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
                     scratchColumnTypeNames: []
-        Reducer 11 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                reduceColumnNullOrder: zzzz
-                reduceColumnSortOrder: ++++
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: KEY._col0:string, KEY._col1:string, KEY._col2:string, KEY._col3:string
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Reduce Operator Tree:
-                Group By Vectorization:
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:string, col 1:string, col 2:string, col 3:string
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: []
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [2, 3, 0, 1]
-                    Reduce Sink Vectorization:
-                        className: VectorReduceSinkMultiKeyOperator
-                        keyColumns: 0:string, 1:string, 2:string, 3:string
-                        native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [2]
-                      Group By Vectorization:
-                          className: VectorGroupByOperator
-                          groupByMode: HASH
-                          keyExpressions: col 2:string
-                          native: false
-                          vectorProcessingMode: HASH
-                          projectedOutputColumnNums: []
-                        App Master Event Vectorization:
-                            className: VectorAppMasterEventOperator
-                            native: true
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [3]
-                      Group By Vectorization:
-                          className: VectorGroupByOperator
-                          groupByMode: HASH
-                          keyExpressions: col 3:string
-                          native: false
-                          vectorProcessingMode: HASH
-                          projectedOutputColumnNums: []
-                        App Master Event Vectorization:
-                            className: VectorAppMasterEventOperator
-                            native: true
         Reducer 2 
             MergeJoin Vectorization:
                 enabled: false
@@ -3047,7 +2919,7 @@ STAGE PLANS:
                     dataColumnCount: 4
                     dataColumns: KEY.reducesinkkey0:string, VALUE._col0:string, VALUE._col1:string, VALUE._col2:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+                    scratchColumnTypeNames: []
             Reduce Operator Tree:
                 Select Vectorization:
                     className: VectorSelectOperator
@@ -3056,57 +2928,7 @@ STAGE PLANS:
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [0, 1, 2, 3]
-                    Group By Vectorization:
-                        aggregators: VectorUDAFMaxLong(StringLength(col 0:string) -> 4:int) -> int, VectorUDAFAvgLong(VectorCoalesce(columns [5, 6])(children: StringLength(col 0:string) -> 5:int, ConstantVectorExpression(val 0) -> 6:int) -> 7:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFCount(ConstantVectorExpression(val 1) -> 8:int) -> bigint, VectorUDAFCount(col 0:string) -> bigint, VectorUDAFComputeBitVectorString(col 0:string) -> binary, VectorUDAFMaxLong(StringLength(col 1:string) -> 9:int) -> int, VectorUDAFAvgLong(VectorCoalesce(columns [10, 11])(children: StringLength(col 1:string) -> 10:int, ConstantVectorExpression(val 0) -> 11:int) -> 12:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFCount(col 1:string) -> bigint, VectorUDAFComputeBitVectorString(col 1:string) -> binary
-                        className: VectorGroupByOperator
-                        groupByMode: HASH
-                        keyExpressions: col 2:string, col 3:string
-                        native: false
-                        vectorProcessingMode: HASH
-                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkMultiKeyOperator
-                          keyColumns: 0:string, 1:string
-                          native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumns: 2:int, 3:struct<count:bigint,sum:double,input:int>, 4:bigint, 5:bigint, 6:binary, 7:int, 8:struct<count:bigint,sum:double,input:int>, 9:bigint, 10:binary
         Reducer 6 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                reduceColumnNullOrder: zz
-                reduceColumnSortOrder: ++
-                allNative: false
-                usesVectorUDFAdaptor: true
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 11
-                    dataColumns: KEY._col0:string, KEY._col1:string, VALUE._col0:int, VALUE._col1:struct<count:bigint,sum:double,input:int>, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary, VALUE._col5:int, VALUE._col6:struct<count:bigint,sum:double,input:int>, VALUE._col7:bigint, VALUE._col8:binary
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Reduce Operator Tree:
-                Group By Vectorization:
-                    aggregators: VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFAvgFinal(col 3:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 4:bigint) -> bigint, VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 6:binary) -> binary, VectorUDAFMaxLong(col 7:int) -> int, VectorUDAFAvgFinal(col 8:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 9:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 10:binary) -> binary
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:string, col 1:string
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [11, 13, 15, 16, 19, 6, 20, 22, 24, 25, 28, 10, 0, 1]
-                      selectExpressions: ConstantVectorExpression(val STRING) -> 11:string, VectorCoalesce(columns [2, 12])(children: col 2:int, ConstantVectorExpression(val 0) -> 12:int) -> 13:int, VectorCoalesce(columns [3, 14])(children: col 3:double, ConstantVectorExpression(val 0.0) -> 14:double) -> 15:double, LongColSubtractLongColumn(col 4:bigint, col 5:bigint) -> 16:bigint, VectorCoalesce(columns [17, 18])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col6)) -> 17:bigint, ConstantVectorExpression(val 0) -> 18:bigint) -> 19:bigint, ConstantVectorExpression(val STRING) -> 20:string, VectorCoalesce(columns [7, 21])(children: col 7:int, ConstantVectorExpression(val 0) -> 21:int) -> 22:int, VectorCoalesce(columns [8, 23])(children: col 8:double, ConstantVectorExpression(val 0.0) -> 23:double) -> 24:double, LongColSubtractLongColumn(col 4:bigint, col 9:bigint) -> 25:bigint, VectorCoalesce(columns [26, 27])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col10)) -> 26:bigint, ConstantVectorExpression(val 0) -> 27:bigint) -> 28:bigint
-                    File Sink Vectorization:
-                        className: VectorFileSinkOperator
-                        native: false
-        Reducer 7 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -3117,69 +2939,20 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:string, VALUE._col0:string, VALUE._col1:string, VALUE._col2:string
+                    dataColumnCount: 1
+                    dataColumns: KEY.reducesinkkey0:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+                    scratchColumnTypeNames: [string, string, string, string]
             Reduce Operator Tree:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [0, 1, 2, 3]
+                    projectedOutputColumnNums: [1, 2, 3, 4]
+                    selectExpressions: ConstantVectorExpression(val this) -> 1:string, ConstantVectorExpression(val should) -> 2:string, ConstantVectorExpression(val not) -> 3:string, ConstantVectorExpression(val be there) -> 4:string
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [0, 1, 2, 3]
-                    Group By Vectorization:
-                        aggregators: VectorUDAFMaxLong(StringLength(col 0:string) -> 4:int) -> int, VectorUDAFAvgLong(VectorCoalesce(columns [5, 6])(children: StringLength(col 0:string) -> 5:int, ConstantVectorExpression(val 0) -> 6:int) -> 7:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFCount(ConstantVectorExpression(val 1) -> 8:int) -> bigint, VectorUDAFCount(col 0:string) -> bigint, VectorUDAFComputeBitVectorString(col 0:string) -> binary, VectorUDAFMaxLong(StringLength(col 1:string) -> 9:int) -> int, VectorUDAFAvgLong(VectorCoalesce(columns [10, 11])(children: StringLength(col 1:string) -> 10:int, ConstantVectorExpression(val 0) -> 11:int) -> 12:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFCount(col 1:string) -> bigint, VectorUDAFComputeBitVectorString(col 1:string) -> binary
-                        className: VectorGroupByOperator
-                        groupByMode: HASH
-                        keyExpressions: col 2:string, col 3:string
-                        native: false
-                        vectorProcessingMode: HASH
-                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkMultiKeyOperator
-                          keyColumns: 0:string, 1:string
-                          native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumns: 2:int, 3:struct<count:bigint,sum:double,input:int>, 4:bigint, 5:bigint, 6:binary, 7:int, 8:struct<count:bigint,sum:double,input:int>, 9:bigint, 10:binary
-        Reducer 8 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                reduceColumnNullOrder: zz
-                reduceColumnSortOrder: ++
-                allNative: false
-                usesVectorUDFAdaptor: true
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 11
-                    dataColumns: KEY._col0:string, KEY._col1:string, VALUE._col0:int, VALUE._col1:struct<count:bigint,sum:double,input:int>, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary, VALUE._col5:int, VALUE._col6:struct<count:bigint,sum:double,input:int>, VALUE._col7:bigint, VALUE._col8:binary
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
-            Reduce Operator Tree:
-                Group By Vectorization:
-                    aggregators: VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFAvgFinal(col 3:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 4:bigint) -> bigint, VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 6:binary) -> binary, VectorUDAFMaxLong(col 7:int) -> int, VectorUDAFAvgFinal(col 8:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 9:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 10:binary) -> binary
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:string, col 1:string
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [11, 13, 15, 16, 19, 6, 20, 22, 24, 25, 28, 10, 0, 1]
-                      selectExpressions: ConstantVectorExpression(val STRING) -> 11:string, VectorCoalesce(columns [2, 12])(children: col 2:int, ConstantVectorExpression(val 0) -> 12:int) -> 13:int, VectorCoalesce(columns [3, 14])(children: col 3:double, ConstantVectorExpression(val 0.0) -> 14:double) -> 15:double, LongColSubtractLongColumn(col 4:bigint, col 5:bigint) -> 16:bigint, VectorCoalesce(columns [17, 18])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col6)) -> 17:bigint, ConstantVectorExpression(val 0) -> 18:bigint) -> 19:bigint, ConstantVectorExpression(val STRING) -> 20:string, VectorCoalesce(columns [7, 21])(children: col 7:int, ConstantVectorExpression(val 0) -> 21:int) -> 22:int, VectorCoalesce(columns [8, 23])(children: col 8:double, ConstantVectorExpression(val 0.0) -> 23:double) -> 24:double, LongColSubtractLongColumn(col 4:bigint, col 9:bigint) -> 25:bigint, VectorCoalesce(columns [26, 27])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col10)) -> 26:bigint, ConstantVectorExpression(val 0) -> 27:bigint) -> 28:bigint
-                    File Sink Vectorization:
-                        className: VectorFileSinkOperator
-                        native: false
-        Reducer 9 
+        Reducer 7 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
@@ -3187,6 +2960,66 @@ STAGE PLANS:
                 notVectorizedReason: Key expression for GROUPBY operator: Vectorizing complex type STRUCT not supported
                 vectorized: false
             Reduce Operator Tree:
+        Reducer 9 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: zzzz
+                reduceColumnSortOrder: ++++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY._col0:string, KEY._col1:string, KEY._col2:string, KEY._col3:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:string, col 1:string, col 2:string, col 3:string
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: []
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [2, 3, 0, 1]
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkMultiKeyOperator
+                        keyColumns: 0:string, 1:string, 2:string, 3:string
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [2]
+                      Group By Vectorization:
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 2:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: []
+                        App Master Event Vectorization:
+                            className: VectorAppMasterEventOperator
+                            native: true
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                      Group By Vectorization:
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 3:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: []
+                        App Master Event Vectorization:
+                            className: VectorAppMasterEventOperator
+                            native: true
 
   Stage: Stage-6
 

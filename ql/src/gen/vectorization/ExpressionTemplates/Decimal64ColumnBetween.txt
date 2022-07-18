@@ -47,4 +47,9 @@ public class <ClassName> extends <BaseClassName> {
         ", decimal64Left " + leftValue + ", decimalLeft " + writable1.toString() +
         ", decimal64Right " + rightValue + ", decimalRight " + writable2.toString();
   }
+
+  @Override
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return false;
+  }
 }

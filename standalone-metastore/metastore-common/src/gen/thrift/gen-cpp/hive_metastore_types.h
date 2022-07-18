@@ -9877,10 +9877,11 @@ void swap(LockComponent &a, LockComponent &b);
 std::ostream& operator<<(std::ostream& out, const LockComponent& obj);
 
 typedef struct _LockRequest__isset {
-  _LockRequest__isset() : txnid(false), agentInfo(true), zeroWaitReadEnabled(true) {}
+  _LockRequest__isset() : txnid(false), agentInfo(true), zeroWaitReadEnabled(true), exclusiveCTAS(true) {}
   bool txnid :1;
   bool agentInfo :1;
   bool zeroWaitReadEnabled :1;
+  bool exclusiveCTAS :1;
 } _LockRequest__isset;
 
 class LockRequest : public virtual ::apache::thrift::TBase {
@@ -9892,7 +9893,8 @@ class LockRequest : public virtual ::apache::thrift::TBase {
                   user(),
                   hostname(),
                   agentInfo("Unknown"),
-                  zeroWaitReadEnabled(false) {
+                  zeroWaitReadEnabled(false),
+                  exclusiveCTAS(false) {
   }
 
   virtual ~LockRequest() noexcept;
@@ -9902,6 +9904,7 @@ class LockRequest : public virtual ::apache::thrift::TBase {
   std::string hostname;
   std::string agentInfo;
   bool zeroWaitReadEnabled;
+  bool exclusiveCTAS;
 
   _LockRequest__isset __isset;
 
@@ -9916,6 +9919,8 @@ class LockRequest : public virtual ::apache::thrift::TBase {
   void __set_agentInfo(const std::string& val);
 
   void __set_zeroWaitReadEnabled(const bool val);
+
+  void __set_exclusiveCTAS(const bool val);
 
   bool operator == (const LockRequest & rhs) const
   {
@@ -9936,6 +9941,10 @@ class LockRequest : public virtual ::apache::thrift::TBase {
     if (__isset.zeroWaitReadEnabled != rhs.__isset.zeroWaitReadEnabled)
       return false;
     else if (__isset.zeroWaitReadEnabled && !(zeroWaitReadEnabled == rhs.zeroWaitReadEnabled))
+      return false;
+    if (__isset.exclusiveCTAS != rhs.__isset.exclusiveCTAS)
+      return false;
+    else if (__isset.exclusiveCTAS && !(exclusiveCTAS == rhs.exclusiveCTAS))
       return false;
     return true;
   }

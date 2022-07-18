@@ -309,6 +309,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" FROM \"TXN_COMPONENTS\" " +
           "INNER JOIN \"TXNS\" ON \"TC_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
       " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" HAVING COUNT(\"TXN_ID\") > ?";
+  
+  private static final String  EXCL_CTAS_ERR_MSG = 
+      "Failed to initiate a concurrent CTAS operation with the same table name, lockInfo : %s";
+  private static final String ZERO_WAIT_READ_ERR_MSG = "Unable to acquire read lock due to an existing exclusive lock {%s}";
 
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
@@ -379,16 +383,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if (connPool == null) {
         connPool = setupJdbcConnectionPool(conf, maxPoolSize);
       }
-
       if (connPoolMutex == null) {
-        /*the mutex pools should ideally be somewhat larger since some operations require 1
-           connection from each pool and we want to avoid taking a connection from primary pool
-           and then blocking because mutex pool is empty.  There is only 1 thread in any HMS trying
-           to mutex on each MUTEX_KEY except MUTEX_KEY.CheckLock.  The CheckLock operation gets a
-           connection from connPool first, then connPoolMutex.  All others, go in the opposite
-           order (not very elegant...).  So number of connection requests for connPoolMutex cannot
-           exceed (size of connPool + MUTEX_KEY.values().length - 1).*/
-        connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize + MUTEX_KEY.values().length);
+        connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize);
       }
 
       if (dbProduct == null) {
@@ -1076,8 +1072,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (transactionalListeners != null && !isHiveReplTxn) {
+          List<String> dbsUpdated = getTxnDbsUpdated(txnid, dbConn);
           MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
-                  EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnid, txnType), dbConn, sqlGenerator);
+                  EventMessage.EventType.ABORT_TXN,
+                  new AbortTxnEvent(txnid, txnType, null, dbsUpdated), dbConn, sqlGenerator);
         }
 
         LOG.debug("Going to commit");
@@ -1137,9 +1135,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         if (transactionalListeners != null){
           for (Long txnId : txnIds) {
+            List<String> dbsUpdated = getTxnDbsUpdated(txnId, dbConn);
             MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                     EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnId,
-                nonReadOnlyTxns.getOrDefault(txnId, TxnType.READ_ONLY)), dbConn, sqlGenerator);
+                nonReadOnlyTxns.getOrDefault(txnId, TxnType.READ_ONLY), null, dbsUpdated), dbConn, sqlGenerator);
           }
         }
         LOG.debug("Going to commit");
@@ -1671,6 +1670,39 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return getLatestTxnIdInConflict(txnid);
     }
   }
+
+  /**
+   * Returns the databases updated by txnId.
+   * Queries TXN_TO_WRITE_ID using txnId.
+   *
+   * @param txnId
+   * @throws MetaException
+   */
+    private List<String> getTxnDbsUpdated(long txnId, Connection dbConn) throws MetaException {
+    try {
+      try (Statement stmt = dbConn.createStatement()) {
+
+        String query = "SELECT DISTINCT \"T2W_DATABASE\" " +
+                " FROM \"TXN_TO_WRITE_ID\" \"COMMITTED\"" +
+                "   WHERE \"T2W_TXNID\" = " + txnId;
+
+        LOG.debug("Going to execute query: <" + query + ">");
+        try (ResultSet rs = stmt.executeQuery(query)) {
+          List<String> dbsUpdated = new ArrayList<String>();
+          while (rs.next()) {
+            dbsUpdated.add(rs.getString(1));
+          }
+          return dbsUpdated;
+        }
+      } catch (SQLException e) {
+        checkRetryable(e, "getTxnDbsUpdated");
+        throw new MetaException(StringUtils.stringifyException(e));
+      }
+    } catch (RetryException e) {
+      return getTxnDbsUpdated(txnId, dbConn);
+    }
+  }
+
 
   private ResultSet checkForWriteConflict(Statement stmt, long txnid) throws SQLException, MetaException {
     String writeConflictQuery = sqlGenerator.addLimitClause(1, "\"COMMITTED\".\"WS_TXNID\", \"COMMITTED\".\"WS_COMMIT_ID\", " +
@@ -2931,7 +2963,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     ConnectionLockIdPair connAndLockId = enqueueLockWithRetry(rqst);
     try {
       return checkLockWithRetry(connAndLockId.dbConn, connAndLockId.extLockId, rqst.getTxnid(),
-          rqst.isZeroWaitReadEnabled());
+          rqst.isZeroWaitReadEnabled(), rqst.isExclusiveCTAS());
     }
     catch(NoSuchLockException e) {
       // This should never happen, as we just added the lock id
@@ -2973,7 +3005,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * 1. We use S4U (withe read_committed) to generate the next (ext) lock id.  This serializes
    * any 2 {@code enqueueLockWithRetry()} calls.
    * 2. We use S4U on the relevant TXNS row to block any concurrent abort/commit/etc operations
-   * @see #checkLockWithRetry(Connection, long, long, boolean)
+   * @see #checkLockWithRetry(Connection, long, long, boolean, boolean)
    */
   private ConnectionLockIdPair enqueueLockWithRetry(LockRequest rqst)
       throws NoSuchTxnException, TxnAbortedException, MetaException {
@@ -3247,8 +3279,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return FileUtils.makePartName(new ArrayList<>(map.keySet()), new ArrayList<>(map.values()));
   }
 
-  private LockResponse checkLockWithRetry(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled)
-    throws NoSuchLockException, TxnAbortedException, MetaException {
+  private LockResponse checkLockWithRetry(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled, 
+          boolean isExclusiveCTAS)
+      throws NoSuchLockException, TxnAbortedException, MetaException {
     try {
       try {
         lockInternal();
@@ -3256,7 +3289,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           //should only get here if retrying this op
           dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         }
-        return checkLock(dbConn, extLockId, txnId, zeroWaitReadEnabled);
+        return checkLock(dbConn, extLockId, txnId, zeroWaitReadEnabled, isExclusiveCTAS);
       } catch (SQLException e) {
         LOG.error("checkLock failed for extLockId={}/txnId={}. Exception msg: {}", extLockId, txnId, getMessage(e));
         rollbackDBConn(dbConn);
@@ -3271,7 +3304,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     catch(RetryException e) {
       LOG.debug("Going to retry checkLock for extLockId={}/txnId={} after catching RetryException with message: {}",
               extLockId, txnId, e.getMessage());
-      return checkLockWithRetry(dbConn, extLockId, txnId, zeroWaitReadEnabled);
+      return checkLockWithRetry(dbConn, extLockId, txnId, zeroWaitReadEnabled, isExclusiveCTAS);
     }
   }
   /**
@@ -3285,12 +3318,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * The clients that operate in blocking mode, can't heartbeat a lock until the lock is acquired.
    * We should make CheckLockRequest include timestamp or last request to skip unnecessary heartbeats. Thrift change.
    *
-   * {@link #checkLock(java.sql.Connection, long, long, boolean)}  must run at SERIALIZABLE
+   * {@link #checkLock(java.sql.Connection, long, long, boolean, boolean)}  must run at SERIALIZABLE
    * (make sure some lock we are checking against doesn't move from W to A in another txn)
    * but this method can heartbeat in separate txn at READ_COMMITTED.
    *
    * Retry-by-caller note:
-   * Retryable because {@link #checkLock(Connection, long, long, boolean)} is
+   * Retryable because {@link #checkLock(Connection, long, long, boolean, boolean)} is
    */
   @Override
   @RetrySemantics.SafeToRetry
@@ -3316,7 +3349,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //todo: strictly speaking there is a bug here.  heartbeat*() commits but both heartbeat and
         //checkLock() are in the same retry block, so if checkLock() throws, heartbeat is also retired
         //extra heartbeat is logically harmless, but ...
-        return checkLock(dbConn, extLockId, lockInfo.txnId, false);
+        return checkLock(dbConn, extLockId, lockInfo.txnId, false, false);
       } catch (SQLException e) {
         LOG.error("checkLock failed for request={}. Exception msg: {}", rqst, getMessage(e));
         rollbackDBConn(dbConn);
@@ -5139,7 +5172,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * checkLock() will in the worst case keep locks in Waiting state a little longer.
    */
   @RetrySemantics.SafeToRetry("See @SafeToRetry")
-  private LockResponse checkLock(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled)
+  private LockResponse checkLock(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled, 
+          boolean isExclusiveCTAS)
       throws NoSuchLockException, TxnAbortedException, MetaException, SQLException {
     Statement stmt = null;
     ResultSet rs = null;
@@ -5276,26 +5310,23 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LockInfo blockedBy = new LockInfo(rs);
         long intLockId = rs.getLong("LOCK_INT_ID");
         char lockChar = rs.getString("LOCK_TYPE").charAt(0);
-
+        
         LOG.debug("Failure to acquire lock({} intLockId:{} {}), blocked by ({})", JavaUtils.lockIdToString(extLockId),
             intLockId, JavaUtils.txnIdToString(txnId), blockedBy);
 
-        if (zeroWaitReadEnabled && isValidTxn(txnId)) {
-          LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
-              .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
+        LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
+            .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
+        
+        if ((zeroWaitReadEnabled && LockType.SHARED_READ == lockType || isExclusiveCTAS) && isValidTxn(txnId)) {
+          String cleanupQuery = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
+          LOG.debug("Going to execute query: <" + cleanupQuery + ">");
+          stmt.executeUpdate(cleanupQuery);
+          dbConn.commit();
 
-          if (lockType == LockType.SHARED_READ) {
-            String cleanupQuery = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
-
-            LOG.debug("Going to execute query: <" + cleanupQuery + ">");
-            stmt.executeUpdate(cleanupQuery);
-            dbConn.commit();
-
-            response.setErrorMessage(String.format(
-                "Unable to acquire read lock due to an exclusive lock {%s}", blockedBy));
-            response.setState(LockState.NOT_ACQUIRED);
-            return response;
-          }
+          response.setErrorMessage(String.format(
+              isExclusiveCTAS ? EXCL_CTAS_ERR_MSG : ZERO_WAIT_READ_ERR_MSG, blockedBy));
+          response.setState(LockState.NOT_ACQUIRED);
+          return response;
         }
         String updateBlockedByQuery = "UPDATE \"HIVE_LOCKS\"" +
             " SET \"HL_BLOCKEDBY_EXT_ID\" = " + blockedBy.extLockId +

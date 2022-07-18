@@ -262,6 +262,7 @@ public class StatsUtils {
     boolean fetchColStats =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
     boolean estimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
+    boolean metaTable = table.getMetaTable() != null;
 
     if (!table.isPartitioned()) {
 
@@ -285,7 +286,7 @@ public class StatsUtils {
 
       long numErasureCodedFiles = getErasureCodedFiles(table);
 
-      if (needColStats) {
+      if (needColStats && !metaTable) {
         colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache, fetchColStats);
         if (estimateStats) {
           estimateStatsForMissingCols(neededColumns, colStats, table, conf, nr, schema);
