@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -40,6 +42,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -188,20 +191,7 @@ public class HiveSplitGenerator extends InputInitializer {
           (InputFormat<?, ?>) ReflectionUtils.newInstance(JavaUtils.loadClass(realInputFormatName),
             jobConf);
 
-        int totalResource = 0;
-        int taskResource = 0;
-        int availableSlots = 0;
-        // FIXME. Do the right thing Luke.
-        if (getContext() == null) {
-          // for now, totalResource = taskResource for llap
-          availableSlots = 1;
-        }
-
-        if (getContext() != null) {
-          totalResource = getContext().getTotalAvailableResource().getMemory();
-          taskResource = getContext().getVertexTaskResource().getMemory();
-          availableSlots = totalResource / taskResource;
-        }
+        int availableSlots = getAvailableSlotsCalculator().getAvailaleSlots(getContext());
 
         if (HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1) <= 1) {
           // broken configuration from mapred-default.xml
@@ -450,5 +440,13 @@ public class HiveSplitGenerator extends InputInitializer {
         throw new RuntimeException("Problem getting input split size", e);
       }
     }
+  }
+
+  private AvailableSlotsCalculator getAvailableSlotsCalculator() throws Exception {
+    Class<?> clazz = Class.forName(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_AVAILABLE_SLOTS_CALCULATOR_CLASS),
+            true, Utilities.getSessionSpecifiedClassLoader());
+    AvailableSlotsCalculator slotsCalculator = (AvailableSlotsCalculator) ReflectionUtil.newInstance(clazz, null);
+    slotsCalculator.initialize(conf);
+    return slotsCalculator;
   }
 }
