@@ -309,12 +309,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       findNextCompactRequest.setWorkerId(workerName);
       findNextCompactRequest.setWorkerVersion(runtimeVersion);
 
-      try {
-        ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(findNextCompactRequest));
-      }
-      catch (TException e){
-        LOG.error("Failed to get next compaction", e);
-      }
+      ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(findNextCompactRequest));
 
       LOG.info("Processing compaction request {}", ci);
 
@@ -481,7 +476,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
         AcidMetricService.updateMetricsFromWorker(ci.dbname, ci.tableName, ci.partName, ci.type,
             dir.getCurrentDirectories().size(), dir.getDeleteDeltas().size(), conf, msc);
-
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
             ". Marking failed to avoid repeated failures", e);
@@ -508,7 +502,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     } catch (TException | IOException t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
-      markFailed(ci, t.getMessage());
+
+      if (ci != null) {
+        markFailed(ci, t.getMessage());
+      }
+
       if (msc != null) {
         msc.close();
         msc = null;
