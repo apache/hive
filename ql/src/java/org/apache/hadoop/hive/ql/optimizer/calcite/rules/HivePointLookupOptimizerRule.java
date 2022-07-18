@@ -541,19 +541,33 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     }
 
     private RexNode buildInFor(Set<RexNodeRef> set, Collection<ConstraintGroup> value) throws SemanticException {
-
+      List<RexNode>operands = new ArrayList<>();
       List<RexNodeRef> columns = new ArrayList<>(set);
       columns.sort(RexNodeRef.COMPARATOR);
-      List<RexNode >operands = new ArrayList<>();
-
       List<RexNode> columnNodes = columns.stream().map(RexNodeRef::getRexNode).collect(Collectors.toList());
-      operands.add(useStructIfNeeded(columnNodes));
+      boolean first = true;
       for (ConstraintGroup node : value) {
         List<RexNode> values = node.getValuesInOrder(columns);
+        if (first) {
+          first = false;
+          // add LHS side (and add casts if needed for nested struct values)
+          operands.add(useStructIfNeeded(castIfNeeded(columnNodes, values)));
+        }
         operands.add(useStructIfNeeded(values));
       }
 
       return rexBuilder.makeCall(HiveIn.INSTANCE, operands);
+    }
+
+    private List<? extends RexNode> castIfNeeded(List<RexNode> columns, List<RexNode> toColumns) {
+      for (int i = 0; i < columns.size();i++) {
+        RexNode from  = columns.get(i);
+        RexNode to = toColumns.get(i);
+        if (!from.getType().equals(to.getType())) {
+          columns.set(i, rexBuilder.makeCast(to.getType(), from, true));
+        }
+      }
+      return columns;
     }
 
     private RexNode useStructIfNeeded(List<? extends RexNode> columns) {

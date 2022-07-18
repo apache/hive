@@ -127,3 +127,21 @@ or inOutputOpt.key = null;
 drop table orOutput;
 drop table inOutput;
 drop table inOutputOpt;
+
+-- test case(s) for HIVE-26320
+SET hive.optimize.point.lookup=true;
+CREATE EXTERNAL TABLE hive2623(kob varchar(2), enhanced_type_code int);
+INSERT INTO hive2623 VALUES('BB',18),('BC',18),('AB',18);
+
+SELECT
+CASE WHEN ((kob='BB' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623;
+DROP TABLE hive2623;
+
+CREATE EXTERNAL TABLE hive2623_char(kob char(2), enhanced_type_code int);
+INSERT INTO hive2623_char VALUES('B',18),('BC',18),('AB',18);
+
+SELECT
+CASE WHEN ((kob='B ' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623_char;
+DROP TABLE hive2623_char;
