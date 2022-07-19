@@ -1,0 +1,676 @@
+PREHOOK: query: CREATE TABLE test_stats (a string, b int)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: CREATE TABLE test_stats (a string, b int)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_stats
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("a", 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("a", 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b SCRIPT []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("b", 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("b", 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b SCRIPT []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("c", 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("c", 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b SCRIPT []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("d", 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("d", 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b SCRIPT []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("e", 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("e", 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b SCRIPT []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("f", 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("f", 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b SCRIPT []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("g", 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("g", 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b SCRIPT []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("h", 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("h", 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b SCRIPT []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("i", 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("i", 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b SCRIPT []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("j", 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("j", 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b SCRIPT []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("k", 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("k", 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b SCRIPT []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("l", 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("l", 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b SCRIPT []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("m", 7)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("m", 7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b SCRIPT []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("n", NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("n", NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b EXPRESSION []
+PREHOOK: query: INSERT INTO test_stats (a, b) VALUES ("o", NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats (a, b) VALUES ("o", NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.a SCRIPT []
+POSTHOOK: Lineage: test_stats.b EXPRESSION []
+PREHOOK: query: EXPLAIN CBO COST SELECT * FROM test_stats t1 JOIN test_stats t2 ON (t1.a = t2.a) WHERE t1.b < 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO COST SELECT * FROM test_stats t1 JOIN test_stats t2 ON (t1.a = t2.a) WHERE t1.b < 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+  HiveProject(a=[$0], b=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    HiveFilter(condition=[AND(<($1, 3), IS NOT NULL($0))]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+      HiveTableScan(table=[[default, test_stats]], table:alias=[t1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+  HiveProject(a=[$0], b=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    HiveFilter(condition=[IS NOT NULL($0)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+      HiveTableScan(table=[[default, test_stats]], table:alias=[t2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+
+PREHOOK: query: EXPLAIN CBO COST SELECT COUNT(*) FROM test_stats WHERE b < 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO COST SELECT COUNT(*) FROM test_stats WHERE b < 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+  HiveFilter(condition=[<($1, 3)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    HiveTableScan(table=[[default, test_stats]], table:alias=[test_stats]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+
+PREHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE b < 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE b < 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_stats
+                  filterExpr: (b < 3) (type: boolean)
+                  Statistics: Num rows: 15 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (b < 3) (type: boolean)
+                    Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.875
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM test_stats WHERE b < 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM test_stats WHERE b < 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM `default`.`test_stats`
+WHERE `b` < 3
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_stats
+                  filterExpr: (b < 3) (type: boolean)
+                  Statistics: Num rows: 15 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (b < 3) (type: boolean)
+                    Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.875
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: test_stats
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns a,b
+                    columns.types string:int
+#### A masked pattern was here ####
+                    name default.test_stats
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns a,b
+                      columns.comments 
+                      columns.types string:int
+#### A masked pattern was here ####
+                      name default.test_stats
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: default.test_stats
+                  name: default.test_stats
+            Truncated Path -> Alias:
+              /test_stats [test_stats]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT COUNT(*) FROM test_stats WHERE b < 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM test_stats WHERE b < 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+8
+PREHOOK: query: EXPLAIN CBO COST SELECT COUNT(*) FROM test_stats WHERE b >= 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO COST SELECT COUNT(*) FROM test_stats WHERE b >= 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[count()]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+  HiveFilter(condition=[>=($1, 7)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    HiveTableScan(table=[[default, test_stats]], table:alias=[test_stats]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+
+PREHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE b >= 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT COUNT(*) FROM test_stats WHERE b >= 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_stats
+                  filterExpr: (b >= 7) (type: boolean)
+                  Statistics: Num rows: 15 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (b >= 7) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM test_stats WHERE b >= 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM test_stats WHERE b >= 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM `default`.`test_stats`
+WHERE `b` >= 7
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_stats
+                  filterExpr: (b >= 7) (type: boolean)
+                  Statistics: Num rows: 15 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (b >= 7) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: test_stats
+                  input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns a,b
+                    columns.types string:int
+#### A masked pattern was here ####
+                    name default.test_stats
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                
+                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns a,b
+                      columns.comments 
+                      columns.types string:int
+#### A masked pattern was here ####
+                      name default.test_stats
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                    name: default.test_stats
+                  name: default.test_stats
+            Truncated Path -> Alias:
+              /test_stats [test_stats]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT COUNT(*) FROM test_stats WHERE b >= 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM test_stats WHERE b >= 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+1
+PREHOOK: query: DESCRIBE FORMATTED test_stats
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_stats
+POSTHOOK: query: DESCRIBE FORMATTED test_stats
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_stats
+# col_name            	data_type           	comment             
+a                   	string              	                    
+b                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	15                  
+	numRows             	15                  
+	rawDataSize         	1327                
+	totalSize           	4265                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED test_stats b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_stats
+POSTHOOK: query: DESCRIBE FORMATTED test_stats b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_stats
+col_name            	b                   
+data_type           	int                 
+min                 	2                   
+max                 	7                   
+num_nulls           	2                   
+distinct_count      	6                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	Q1: 2, Q2: 2, Q3: 4 
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+PREHOOK: query: DROP TABLE test_stats
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_stats
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: DROP TABLE test_stats
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_stats
+POSTHOOK: Output: default@test_stats
