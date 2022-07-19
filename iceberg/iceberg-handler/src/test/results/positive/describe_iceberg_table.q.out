@@ -256,6 +256,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\",\"i\":\"true\",\"s\":\"true\",\"ts\":\"true\"}}
 PREHOOK: query: DESCRIBE FORMATTED ice_t_transform year_field
@@ -275,6 +276,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"bucket_field\":\"true\",\"day_field\":\"true\",\"hour_field\":\"true\",\"identity_field\":\"true\",\"month_field\":\"true\",\"truncate_field\":\"true\",\"year_field\":\"true\"}}
 PREHOOK: query: DESCRIBE FORMATTED ice_t_transform_prop id
@@ -294,6 +296,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"bucket_field\":\"true\",\"day_field\":\"true\",\"hour_field\":\"true\",\"id\":\"true\",\"identity_field\":\"true\",\"month_field\":\"true\",\"truncate_field\":\"true\",\"year_field\":\"true\"}}
 PREHOOK: query: DESCRIBE FORMATTED ice_t_identity_part a
@@ -313,5 +316,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}

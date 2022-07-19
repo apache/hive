@@ -70,6 +70,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col2
@@ -89,6 +90,7 @@ max_col_len         	7
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col3
@@ -108,6 +110,7 @@ max_col_len         	4
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
@@ -139,6 +142,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb2.testtable2 col2
@@ -158,6 +162,7 @@ max_col_len         	7
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb2.testtable2 col3
@@ -177,6 +182,7 @@ max_col_len         	4
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: use default
@@ -275,6 +281,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col2
@@ -294,6 +301,7 @@ max_col_len         	7
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb1.testtable1 col3
@@ -313,6 +321,7 @@ max_col_len         	4
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: alter table statsdb1.testtable1 rename to statsdb2.testtable2
@@ -344,6 +353,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb2.testtable2 col2
@@ -363,6 +373,7 @@ max_col_len         	7
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: describe formatted statsdb2.testtable2 col3
@@ -382,6 +393,7 @@ max_col_len         	4
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
 PREHOOK: query: use default

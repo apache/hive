@@ -216,6 +216,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{}                  
 PREHOOK: query: DESCRIBE db1.t1 key1
@@ -249,6 +250,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{}                  
 PREHOOK: query: DESCRIBE t1 key1
@@ -282,6 +284,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{}                  
 PREHOOK: query: DESCRIBE t1 PARTITION(ds='4', part='5')

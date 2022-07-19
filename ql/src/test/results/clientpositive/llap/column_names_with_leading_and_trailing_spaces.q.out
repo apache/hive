@@ -59,6 +59,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" left\":\"true\",\" middle \":\"true\",\"right \":\"true\"}}
 PREHOOK: query: insert into space values ("1", "2", "3")
@@ -89,6 +90,7 @@ max_col_len         	1
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" left\":\"true\",\" middle \":\"true\",\"right \":\"true\"}}
 PREHOOK: query: select * from space

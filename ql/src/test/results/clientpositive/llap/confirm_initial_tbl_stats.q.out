@@ -25,6 +25,7 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: describe extended src1
@@ -54,6 +55,7 @@ max_col_len         	7
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: describe extended src_json
@@ -82,6 +84,7 @@ max_col_len         	644
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"json\":\"true\"}}
 PREHOOK: query: describe extended src_sequencefile
@@ -111,6 +114,7 @@ max_col_len         	7
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: describe extended srcbucket
@@ -140,6 +144,7 @@ max_col_len         	7
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: describe extended srcbucket2
@@ -169,6 +174,7 @@ max_col_len         	7
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: describe extended srcpart
@@ -205,6 +211,7 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe extended alltypesorc
 PREHOOK: type: DESCTABLE
@@ -243,6 +250,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}
 PREHOOK: query: describe formatted alltypesorc cfloat
@@ -262,6 +270,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}
 PREHOOK: query: describe formatted alltypesorc ctimestamp1
@@ -281,6 +290,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}
 PREHOOK: query: describe formatted alltypesorc cboolean2
@@ -300,5 +310,6 @@ max_col_len
 num_trues           	3983                
 num_falses          	5190                
 bit_vector          	                    
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}

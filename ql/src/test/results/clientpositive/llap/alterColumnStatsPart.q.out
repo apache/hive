@@ -77,6 +77,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: desc formatted p partition (c=1)
 PREHOOK: type: DESCTABLE

@@ -87,6 +87,7 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: alter table src_p3 add if not exists partition(`!@#$%^&*()_q`='b')
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -143,6 +144,7 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted src_p3 PARTITION(`!@#$%^&*()_q`='b') `x+1`
 PREHOOK: type: DESCTABLE
@@ -161,6 +163,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: alter table src_p3 partition(`!@#$%^&*()_q`='b') rename to partition(`!@#$%^&*()_q`='c')
 PREHOOK: type: ALTERTABLE_RENAMEPART
@@ -220,6 +223,7 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted src_p3 PARTITION(`!@#$%^&*()_q`='c') `x+1`
 PREHOOK: type: DESCTABLE
@@ -238,4 +242,5 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	from deserializer   

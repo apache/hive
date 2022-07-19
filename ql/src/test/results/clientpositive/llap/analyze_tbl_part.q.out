@@ -65,6 +65,7 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: ANALYZE TABLE src_stat_part_n1 partition (partitionId) COMPUTE STATISTICS for columns key, value
 PREHOOK: type: ANALYZE_TABLE
@@ -101,6 +102,7 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted src_stat_part_n1 PARTITION(partitionId=2) value
 PREHOOK: type: DESCTABLE
@@ -119,6 +121,7 @@ max_col_len         	7
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: create table src_stat_string_part(key string, value string) partitioned by (partitionName string)
 PREHOOK: type: CREATETABLE

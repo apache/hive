@@ -309,6 +309,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) value
 PREHOOK: type: DESCTABLE
@@ -327,6 +328,7 @@ max_col_len         	7
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted partcoltypenum tint
 PREHOOK: type: DESCTABLE
@@ -345,6 +347,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"tint\":\"true\"}}
 PREHOOK: query: describe formatted partcoltypenum sint
@@ -364,6 +367,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sint\":\"true\"}}
 PREHOOK: query: describe formatted partcoltypenum bint
@@ -383,6 +387,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bint\":\"true\"}}
 PREHOOK: query: alter table partcoltypenum change key key decimal(10,0)
@@ -506,6 +511,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
+histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"tint\":\"true\"}}
 PREHOOK: query: show partitions partcoltypenum partition (tint=110BD, sint=22000S, bint=330000000000L)

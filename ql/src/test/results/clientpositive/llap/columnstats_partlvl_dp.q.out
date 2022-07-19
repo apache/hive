@@ -219,6 +219,7 @@ max_col_len         	6
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: explain	
 analyze table Employee_Part_n0 partition (employeeSalary='2000.0') compute statistics for columns employeeID
@@ -342,6 +343,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted Employee_Part_n0 partition (employeeSalary='2000.0', country='UK') employeeID
 PREHOOK: type: DESCTABLE
@@ -360,6 +362,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: explain	
 analyze table Employee_Part_n0 partition (employeeSalary) compute statistics for columns employeeID
@@ -514,6 +517,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: explain	
 analyze table Employee_Part_n0 partition (employeeSalary,country) compute statistics for columns
@@ -668,6 +672,7 @@ max_col_len         	6
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: drop table Employee_n0
 PREHOOK: type: DROPTABLE
@@ -762,6 +767,7 @@ max_col_len         	6
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee2.dat" INTO TABLE Employee_n0 partition(employeeSalary='3000.0', country='USA')
 PREHOOK: type: LOAD
@@ -832,6 +838,7 @@ max_col_len         	6
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: alter table Employee_n0 add columns (c int ,d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
@@ -881,6 +888,7 @@ max_col_len         	6
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') c
 PREHOOK: type: DESCTABLE
@@ -899,6 +907,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') d
 PREHOOK: type: DESCTABLE
@@ -917,6 +926,7 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: analyze table Employee_n0 partition (employeeSalary,country) compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
@@ -973,6 +983,7 @@ max_col_len         	6
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') c
 PREHOOK: type: DESCTABLE
@@ -991,6 +1002,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted Employee_n0 partition (employeeSalary='6000.0', country='UK') d
 PREHOOK: type: DESCTABLE
@@ -1009,4 +1021,5 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   

@@ -109,6 +109,7 @@ max_col_len         	2
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d_n1 PARTITION(year='2002') state
 PREHOOK: type: DESCTABLE
@@ -127,6 +128,7 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: explain extended select state from loc_orc_1d_n1
 PREHOOK: type: QUERY

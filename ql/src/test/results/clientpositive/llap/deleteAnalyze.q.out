@@ -85,6 +85,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"amount\":\"true\",\"id\":\"true\",\"item\":\"true\",\"sales_tax\":\"true\"}}
 PREHOOK: query: analyze table testdeci2_n0 compute statistics for columns

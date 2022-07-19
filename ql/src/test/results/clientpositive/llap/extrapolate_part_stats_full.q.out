@@ -101,6 +101,7 @@ max_col_len         	2
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
+histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: explain extended select state from loc_orc_1d
 PREHOOK: type: QUERY
