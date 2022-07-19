@@ -437,7 +437,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     return lockState;
   }
 
-  private Collection<LockComponent> getGlobalLocks(Configuration conf) {
+  private Collection<LockComponent> getGlobalLocks(Configuration conf) throws LockException {
     String lockNames = conf.get(Constants.HIVE_QUERY_EXCLUSIVE_LOCK);
     if (StringUtils.isEmpty(lockNames)) {
       return Collections.emptyList();
@@ -453,6 +453,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       compBuilder.setOperationType(DataOperationType.UPDATE);
       compBuilder.setDbName(GLOBAL_LOCKS);
       compBuilder.setTableName(lockName);
+
+      // Initiatize a writeId for the __global_locks.lockName table.
+      getTableWriteId(GLOBAL_LOCKS, lockName);
       globalLocks.add(compBuilder.build());
       LOG.debug("Adding global lock: " + lockName);
     }

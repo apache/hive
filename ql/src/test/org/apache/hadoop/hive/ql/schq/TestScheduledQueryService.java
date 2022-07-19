@@ -101,11 +101,11 @@ public class TestScheduledQueryService {
 
   public static class MockScheduledQueryService implements IScheduledQueryMaintenanceService {
     // Use notify/wait on this object to indicate when the scheduled query has finished executing.
-    Object notifier = new Object();
+    public final Object notifier = new Object();
 
     int id = 0;
     private String stmt;
-    ScheduledQueryProgressInfo lastProgressInfo;
+    public ScheduledQueryProgressInfo lastProgressInfo;
 
     public MockScheduledQueryService(String string) {
       stmt = string;
