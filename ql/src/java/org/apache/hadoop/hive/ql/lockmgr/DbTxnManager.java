@@ -450,12 +450,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       }
       LockComponentBuilder compBuilder = new LockComponentBuilder();
       compBuilder.setExclusive();
-      compBuilder.setOperationType(DataOperationType.UPDATE);
+      compBuilder.setOperationType(DataOperationType.NO_TXN);
       compBuilder.setDbName(GLOBAL_LOCKS);
       compBuilder.setTableName(lockName);
 
-      // Initiatize a writeId for the __global_locks.lockName table.
-      getTableWriteId(GLOBAL_LOCKS, lockName);
+//      // Initiatize a writeId for the __global_locks.lockName table.
+//      getTableWriteId(GLOBAL_LOCKS, lockName);
       globalLocks.add(compBuilder.build());
       LOG.debug("Adding global lock: " + lockName);
     }

@@ -114,14 +114,14 @@ public class TestScheduledQueryService {
     @Override
     public ScheduledQueryPollResponse scheduledQueryPoll() {
       ScheduledQueryPollResponse r = new ScheduledQueryPollResponse();
-      r.setExecutionId(id++);
       r.setQuery(stmt);
       r.setScheduleKey(new ScheduledQueryKey("sch1", getClusterNamespace()));
       r.setUser("nobody");
-      if (id == 1) {
+      if (id == 0) {
+        r.setExecutionId(id++);
         return r;
       } else {
-        return null;
+        return r;
       }
     }
 
