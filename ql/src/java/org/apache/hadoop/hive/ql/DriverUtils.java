@@ -46,26 +46,51 @@ public final class DriverUtils {
     throw new UnsupportedOperationException("DriverUtils should not be instantiated!");
   }
 
-  public static void runOnDriver(HiveConf conf, String user, SessionState sessionState,
+  @FunctionalInterface
+  private interface DriverCreator {
+    Driver createDriver(QueryState qs);
+  }
+
+  public static void runOnDriver(HiveConf conf, SessionState sessionState,
       String query) throws HiveException {
-    runOnDriver(conf, user, sessionState, query, null, -1);
+    runOnDriver(conf, sessionState, query, null, -1);
   }
 
   /**
    * For Query Based compaction to run the query to generate the compacted data.
    */
-  public static void runOnDriver(HiveConf conf, String user,
+  public static void runOnDriver(HiveConf conf,
       SessionState sessionState, String query, ValidWriteIdList writeIds, long compactorTxnId)
       throws HiveException {
-    if(writeIds != null && compactorTxnId < 0) {
+    if (writeIds != null && compactorTxnId < 0) {
       throw new IllegalArgumentException(JavaUtils.txnIdToString(compactorTxnId) +
           " is not valid. Context: " + query);
     }
+    runOnDriverInternal(query, conf, sessionState, (qs) -> new Driver(qs, writeIds, compactorTxnId));
+  }
+
+  /**
+   * For Statistics gathering after compaction. Using this overload won't increment the writeid during stats gathering.
+   */
+  public static void runOnDriver(HiveConf conf, SessionState sessionState, String query, long analyzeTableWriteId)
+      throws HiveException {
+    if (analyzeTableWriteId < 0) {
+      throw new IllegalArgumentException(JavaUtils.txnIdToString(analyzeTableWriteId) +
+          " is not valid. Context: " + query);
+    }
+    runOnDriverInternal(query, conf, sessionState, (qs) -> new Driver(qs, analyzeTableWriteId));
+  }
+
+  private static void runOnDriverInternal(String query, HiveConf conf, SessionState sessionState, DriverCreator creator) throws HiveException {
     SessionState.setCurrentSessionState(sessionState);
     boolean isOk = false;
     try {
-      QueryState qs = new QueryState.Builder().withHiveConf(conf).withGenerateNewQueryId(true).nonIsolated().build();
-      Driver driver = new Driver(qs, null, null, writeIds, compactorTxnId);
+      Driver driver = creator.createDriver(
+          new QueryState.Builder()
+              .withHiveConf(conf)
+              .withGenerateNewQueryId(true)
+              .nonIsolated()
+              .build());
       try {
         try {
           driver.run(query);

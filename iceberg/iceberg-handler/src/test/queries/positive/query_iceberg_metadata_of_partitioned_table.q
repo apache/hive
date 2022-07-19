@@ -4,7 +4,6 @@
 --! qt:replace:/("total-files-size":)\d+/$1#Masked#/
 --! qt:replace:/((ORC|PARQUET|AVRO)\s+\d+\s+)\d+/$1#Masked#/
 
-set hive.vectorized.execution.enabled = false;
 set tez.mrreader.config.update.properties=hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids;
 set hive.query.results.cache.enabled=false;
 set hive.fetch.task.conversion=none;
@@ -73,3 +72,16 @@ select partition_summaries from default.ice_meta_3.manifests where partition_sum
 
 drop table ice_meta_2;
 drop table ice_meta_3;
+
+
+CREATE EXTERNAL TABLE `partevv`( `id` int, `ts` timestamp, `ts2` timestamp)  STORED BY ICEBERG STORED AS ORC TBLPROPERTIES  ('format-version'='1');
+
+ALTER TABLE partevv SET PARTITION SPEC (id);
+INSERT INTO partevv VALUES (1, '2022-04-29 16:32:01', '2022-04-29 16:32:01');
+INSERT INTO partevv VALUES (2, '2022-04-29 16:32:02', '2022-04-29 16:32:02');
+
+
+ALTER TABLE partevv SET PARTITION SPEC (day(ts));
+INSERT INTO partevv VALUES (100, '2022-04-29 16:32:03', '2022-04-29 16:32:03');
+
+select * from default.partevv.partitions;

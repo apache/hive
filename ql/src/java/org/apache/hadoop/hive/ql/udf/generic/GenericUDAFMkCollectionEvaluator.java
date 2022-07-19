@@ -95,11 +95,27 @@ public class GenericUDAFMkCollectionEvaluator extends GenericUDAFEvaluator
         throw new RuntimeException("Buffer type unknown");
       }
     }
+
+    private void reset() {
+      if (bufferType == BufferType.LIST) {
+        container.clear();
+      } else if (bufferType == BufferType.SET) {
+        // Don't reuse a container because HashSet#clear can be very slow. The operation takes O(N)
+        // and N is the capacity of the internal hash table. The internal capacity grows based on
+        // the number of elements and it never shrinks. Thus, HashSet#clear takes O(N) every time
+        // once a skewed key appears.
+        // In order to avoid too many resizing in average cases, we set the initial capacity to the
+        // number of elements of the previous aggregation.
+        container = new LinkedHashSet<>(container.size());
+      } else {
+        throw new RuntimeException("Buffer type unknown");
+      }
+    }
   }
 
   @Override
   public void reset(AggregationBuffer agg) throws HiveException {
-    ((MkArrayAggregationBuffer) agg).container.clear();
+    ((MkArrayAggregationBuffer) agg).reset();
   }
 
   @Override

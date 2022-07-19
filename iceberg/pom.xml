@@ -183,6 +183,12 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.iceberg</groupId>
+        <artifactId>iceberg-core</artifactId>
+        <classifier>tests</classifier>
+        <version>${iceberg.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
         <version>${assertj.version}</version>

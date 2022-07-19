@@ -36,6 +36,8 @@ public class DropDatabaseDesc implements DDLDesc, Serializable {
   private final boolean ifExists;
   private final boolean cascade;
   private final ReplicationSpec replicationSpec;
+  
+  private boolean deleteData = true;
 
   public DropDatabaseDesc(String databaseName, boolean ifExists, ReplicationSpec replicationSpec) {
     this(databaseName, ifExists, false, replicationSpec);
@@ -46,6 +48,11 @@ public class DropDatabaseDesc implements DDLDesc, Serializable {
     this.ifExists = ifExists;
     this.cascade = cascade;
     this.replicationSpec = replicationSpec;
+  }
+
+  public DropDatabaseDesc(String databaseName, boolean ifExists, boolean cascade, boolean deleteData) {
+    this(databaseName, ifExists, cascade, null);
+    this.deleteData = deleteData;
   }
 
   @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -64,5 +71,9 @@ public class DropDatabaseDesc implements DDLDesc, Serializable {
 
   public ReplicationSpec getReplicationSpec() {
     return replicationSpec;
+  }
+  
+  public boolean isDeleteData() {
+    return deleteData;
   }
 }

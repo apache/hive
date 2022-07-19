@@ -74,7 +74,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_DONT_SET;
 import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_RESET;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -967,13 +967,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   }
 
   private void verifyIfCkptSet(Map<String, String> props, String dumpDir) {
-    assertTrue(props.containsKey(ReplUtils.REPL_CHECKPOINT_KEY));
+    assertTrue(props.containsKey(ReplConst.REPL_TARGET_DB_PROPERTY));
     String hiveDumpDir = dumpDir + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
-    assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equals(hiveDumpDir));
+    assertTrue(props.get(ReplConst.REPL_TARGET_DB_PROPERTY).equals(hiveDumpDir));
   }
 
   private void verifyIfCkptPropMissing(Map<String, String> props) {
-    assertFalse(props.containsKey(ReplUtils.REPL_CHECKPOINT_KEY));
+    assertFalse(props.containsKey(ReplConst.REPL_TARGET_DB_PROPERTY));
   }
 
   private void verifyIfSrcOfReplPropMissing(Map<String, String> props) {
@@ -1005,13 +1005,14 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .status(replicatedDbName)
             .verifyResult(tuple.lastReplicationId);
 
-    // Bootstrap load from an empty dump directory should return empty load directory error.
-    tuple = primary.dump("someJunkDB", Collections.emptyList());
+    // Bootstrap dump should fail if source database does not exist.
+    String nonExistingDb = "someJunkDB";
+    assertEquals (primary.getDatabase(nonExistingDb), null);
     try {
-      replica.runCommand("REPL LOAD someJunkDB into someJunkDB");
+      primary.run("REPL DUMP " + nonExistingDb);
       assert false;
-    } catch (CommandProcessorException e) {
-      assertTrue(e.getMessage().toLowerCase().contains("semanticException no data to load in path".toLowerCase()));
+    } catch (Exception e) {
+      assertEquals (ErrorMsg.REPL_SOURCE_DATABASE_NOT_FOUND.format(nonExistingDb), e.getMessage());
     }
     primary.run(" drop database if exists " + testDbName + " cascade");
   }

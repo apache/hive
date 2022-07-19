@@ -205,6 +205,7 @@ public class TestHiveShell {
     // Disable vectorization for HiveIcebergInputFormat
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
 
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     hiveConf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname, DbTxnManager.class.getName());
     hiveConf.set(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.varname, SQLStdHiveAuthorizerFactory.class.getName());
 

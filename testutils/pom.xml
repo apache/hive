@@ -30,17 +30,8 @@
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- inter-project -->
     <dependency>
-      <groupId>com.google.code.tempus-fugit</groupId>
-      <artifactId>tempus-fugit</artifactId>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
-      <version>${log4j2.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>

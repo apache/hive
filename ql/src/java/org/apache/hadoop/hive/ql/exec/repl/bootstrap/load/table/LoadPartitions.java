@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -63,7 +64,6 @@ import java.util.Map;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState.PartitionState;
-import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.REPL_CHECKPOINT_KEY;
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.isPartitioned;
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.partSpecToString;
 
@@ -221,7 +221,7 @@ public class LoadPartitions {
         if (partParams == null) {
           partParams = new HashMap<>();
         }
-        partParams.put(REPL_CHECKPOINT_KEY, context.dumpDirectory);
+        partParams.put(ReplConst.REPL_TARGET_DB_PROPERTY, context.dumpDirectory);
         Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, src);
         partitions.add(new AlterTableAddPartitionDesc.PartitionDesc(
           src.getPartSpec(), replicaWarehousePartitionLocation.toString(), partParams, src.getInputFormat(),
@@ -387,7 +387,7 @@ public class LoadPartitions {
       AlterTableAddPartitionDesc.PartitionDesc src = addPartitionDesc.getPartitions().get(0);
       //Add check point task as part of add partition
       Map<String, String> partParams = new HashMap<>();
-      partParams.put(REPL_CHECKPOINT_KEY, context.dumpDirectory);
+      partParams.put(ReplConst.REPL_TARGET_DB_PROPERTY, context.dumpDirectory);
       Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, src);
       src.setLocation(replicaWarehousePartitionLocation.toString());
       src.addPartParams(partParams);

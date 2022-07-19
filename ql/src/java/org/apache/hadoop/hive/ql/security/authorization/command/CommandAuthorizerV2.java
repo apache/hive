@@ -158,10 +158,9 @@ final class CommandAuthorizerV2 {
     if (TableType.MATERIALIZED_VIEW.name().equals(tableType) || TableType.VIRTUAL_VIEW.name().equals(tableType)) {
       isView = true;
     }
-    if(isView){
+    if (isView) {
       Map<String, String> params = t.getParameters();
-      if (HiveConf.getBoolVar(SessionState.get().getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED_ON_SPARK_VIEWS)
-              && params != null && params.containsKey(authorizedKeyword)) {
+      if (params != null && params.containsKey(authorizedKeyword)) {
         String authorizedValue = params.get(authorizedKeyword);
         if ("false".equalsIgnoreCase(authorizedValue)) {
           return true;
@@ -188,7 +187,8 @@ final class CommandAuthorizerV2 {
           tableName2Cols.get(Table.getCompleteName(table.getDbName(), table.getTableName()));
       hivePrivObject = new HivePrivilegeObject(privObjType, table.getCatalogName(), table.getDbName(), table.getTableName(),
           null, columns, actionType, null, null, table.getOwner(), table.getOwnerType());
-      if (table.getStorageHandler() != null) {
+      if (table.getStorageHandler() != null && HiveConf.getBoolVar(SessionState.getSessionConf(),
+          HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLES_ON_STORAGEHANDLERS)) {
         //TODO: add hive privilege object for storage based handlers for create and alter table commands.
         if (hiveOpType == HiveOperationType.CREATETABLE ||
                 hiveOpType == HiveOperationType.ALTERTABLE_PROPERTIES ||

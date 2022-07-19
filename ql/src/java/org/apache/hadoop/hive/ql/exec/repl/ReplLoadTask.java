@@ -17,11 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.fs.Options;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.ddl.database.alter.owner.AlterDatabaseSetOwnerDesc;
+import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.exec.repl.util.SnapshotUtils;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.IncrementalLoadLogger;
 import org.apache.thrift.TException;
 import com.google.common.collect.Collections2;
@@ -30,7 +36,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -87,6 +93,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedList;
+import java.util.Arrays;
+import java.util.Set;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_SNAPSHOT_DIFF_FOR_EXTERNAL_TABLE_COPY;
@@ -96,7 +104,6 @@ import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.checkF
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
 import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.prepareTableDiffFile;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_METADATA;
-import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.getExternalTableBaseDir;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.LoadDatabase.AlterDatabase;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
@@ -106,6 +113,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private final static int ZERO_TASKS = 0;
   private final String STAGE_NAME = "REPL_LOAD";
+  private List<TxnType> excludedTxns = Arrays.asList(TxnType.READ_ONLY, TxnType.REPL_CREATED);
 
   @Override
   public String getName() {
@@ -549,8 +557,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         @Override
         public void run() throws SemanticException {
           try {
-            HiveMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
-            long currentNotificationID = metaStoreClient.getCurrentNotificationEventId().getEventId();
+            IMetaStoreClient client = getHive().getMSC();
+            long currentNotificationID = client.getCurrentNotificationEventId().getEventId();
             Path loadMetadataFilePath = new Path(work.dumpDirectory, LOAD_METADATA.toString());
             Utils.writeOutput(String.valueOf(currentNotificationID), loadMetadataFilePath, conf);
             LOG.info("Created LOAD Metadata file : {} with NotificationID : {}",
@@ -723,15 +731,29 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
       boolean isTableDiffPresent =
           checkFileExists(new Path(work.dumpDirectory).getParent(), conf, TABLE_DIFF_COMPLETE_DIRECTORY);
+      boolean isAbortTxnsListPresent =
+              checkFileExists(new Path(work.dumpDirectory).getParent(), conf, OptimisedBootstrapUtils.ABORT_TXNS_FILE);
       Long eventId = Long.parseLong(getEventIdFromFile(new Path(work.dumpDirectory).getParent(), conf)[0]);
-      if (!isTableDiffPresent) {
-        prepareTableDiffFile(eventId, getHive(), work, conf);
-        if (this.childTasks == null) {
-          this.childTasks = new ArrayList<>();
-        }
-        createReplLoadCompleteAckTask();
-        return 0;
+      List<NotificationEvent> notificationEvents = OptimisedBootstrapUtils.getListOfNotificationEvents(eventId, getHive(), work);
+      if (!isAbortTxnsListPresent) {
+        //Abort the ongoing transactions(opened prior to failover) for the target database.
+        HiveTxnManager hiveTxnManager = getTxnMgr();
+        ValidTxnList validTxnList = hiveTxnManager.getValidTxns(excludedTxns);
+        Set<Long> allOpenTxns = new HashSet<>(ReplUtils.getOpenTxns(validTxnList));
+        abortOpenTxnsForDatabase(hiveTxnManager, validTxnList, work.dbNameToLoadIn, getHive());
+        //Re-fetch the list of notification events post failover eventId.
+        notificationEvents = OptimisedBootstrapUtils.getListOfNotificationEvents(eventId, getHive(), work);
+        OptimisedBootstrapUtils.prepareAbortTxnsFile(notificationEvents, allOpenTxns,
+                new Path(work.dumpDirectory).getParent(), conf);
       }
+      if (!isTableDiffPresent) {
+        prepareTableDiffFile(notificationEvents, getHive(), work, conf);
+      }
+      if (this.childTasks == null) {
+        this.childTasks = new ArrayList<>();
+      }
+      createReplLoadCompleteAckTask();
+      return 0;
     } else if (work.isSecondFailover) {
       // DROP the tables extra on target, which are not on source cluster.
 
@@ -740,6 +762,27 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         LOG.info("Dropping table {} for optimised bootstarap", work.dbNameToLoadIn + "." + table);
         db.dropTable(work.dbNameToLoadIn + "." + table, true);
       }
+      Database sourceDb = getSourceDbMetadata();  //This sourceDb was the actual target prior to failover.
+      Map<String, String> sourceDbProps = sourceDb.getParameters();
+      Map<String, String> targetDbProps = new HashMap<>(targetDb.getParameters());
+      for (String key : MetaStoreUtils.getReplicationDbProps()) {
+        //Replication Props will be handled separately as part of preAckTask.
+        targetDbProps.remove(key);
+      }
+      for (Map.Entry<String, String> currProp : targetDbProps.entrySet()) {
+        String actualVal = sourceDbProps.get(currProp.getKey());
+        if (!currProp.getValue().equals(actualVal)) {
+          props.put(currProp.getKey(), (actualVal == null) ? "" : actualVal);
+        }
+      }
+      AlterDatabaseSetOwnerDesc alterDbDesc = new AlterDatabaseSetOwnerDesc(sourceDb.getName(),
+              new PrincipalDesc(sourceDb.getOwnerName(), sourceDb.getOwnerType()), null);
+      DDLWork ddlWork = new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc, true,
+              (new Path(work.dumpDirectory)).getParent().toString(), work.getMetricCollector());
+      if (this.childTasks == null) {
+        this.childTasks = new ArrayList<>();
+      }
+      this.childTasks.add(TaskFactory.get(ddlWork, conf));
     }
     if (!MetaStoreUtils.isTargetOfReplication(targetDb)) {
       props.put(ReplConst.TARGET_OF_REPLICATION, ReplConst.TRUE);
@@ -825,5 +868,36 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     ((IncrementalLoadLogger)work.incrementalLoadTasksBuilder().getReplLogger()).initiateEventTimestamp(currentTimestamp);
     LOG.info("REPL_INCREMENTAL_LOAD stage duration : {} ms", currentTimestamp - loadStartTime);
     return 0;
+  }
+
+  private void abortOpenTxnsForDatabase(HiveTxnManager hiveTxnManager, ValidTxnList validTxnList, String dbName,
+                                        Hive hiveDb) throws HiveException {
+    List<Long> openTxns = ReplUtils.getOpenTxns(hiveTxnManager, validTxnList, dbName);
+    if (!openTxns.isEmpty()) {
+      LOG.info("Rolling back write txns:" + openTxns.toString() + " for the database: " + dbName);
+      //abort only write transactions for the current database if abort transactions is enabled.
+      hiveDb.abortTransactions(openTxns);
+      validTxnList = hiveTxnManager.getValidTxns(excludedTxns);
+      openTxns = ReplUtils.getOpenTxns(hiveTxnManager, validTxnList, dbName);
+      if (!openTxns.isEmpty()) {
+        LOG.warn("Unable to force abort all the open txns: {}.", openTxns);
+        throw new IllegalStateException("Failover triggered abort txns request failed for unknown reasons.");
+      }
+    }
+  }
+
+  private Database getSourceDbMetadata() throws IOException, SemanticException {
+    Path dbMetadata = new Path(work.dumpDirectory, EximUtil.METADATA_PATH_NAME);
+    BootstrapEventsIterator itr = new BootstrapEventsIterator(dbMetadata.toString(), work.dbNameToLoadIn,
+            true, conf, work.getMetricCollector());
+    if (!itr.hasNext()) {
+      throw new SemanticException("Unable to find source db metadata in " + dbMetadata.toString());
+    }
+    BootstrapEvent next = itr.next();
+    if (!next.eventType().equals(BootstrapEvent.EventType.Database)) {
+      throw new SemanticException("Invalid eventType: " + next.eventType() + " encountered while fetching " +
+              "source db metadata from " + dbMetadata.toString());
+    }
+    return ((DatabaseEvent) next).dbInMetadata(work.dbNameToLoadIn);
   }
 }

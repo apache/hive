@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.HashTableSinkDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -30,10 +29,6 @@ class MemoryExhaustionCheckerFactory {
 
   static MemoryExhaustionChecker getChecker(SessionState.LogHelper console, Configuration conf,
                                             HashTableSinkDesc hashTableSinkDesc) {
-    if ("spark".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
-      return SparkMemoryExhaustionChecker.get(conf);
-    } else {
-      return new DefaultMemoryExhaustionChecker(console, hashTableSinkDesc);
-    }
+    return new DefaultMemoryExhaustionChecker(console, hashTableSinkDesc);
   }
 }

@@ -1,6 +1,5 @@
 --! qt:dataset:src
 set hive.merge.mapredfiles=true;
-set hive.merge.sparkfiles=true;
 set hive.auto.convert.join=false;
 set mapreduce.job.reduces=1000;
 

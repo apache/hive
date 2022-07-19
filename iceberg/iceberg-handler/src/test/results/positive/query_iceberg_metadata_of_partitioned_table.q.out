@@ -526,3 +526,60 @@ POSTHOOK: query: drop table ice_meta_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: default@ice_meta_3
+PREHOOK: query: CREATE EXTERNAL TABLE `partevv`( `id` int, `ts` timestamp, `ts2` timestamp)  STORED BY ICEBERG STORED AS ORC TBLPROPERTIES  ('format-version'='1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partevv
+POSTHOOK: query: CREATE EXTERNAL TABLE `partevv`( `id` int, `ts` timestamp, `ts2` timestamp)  STORED BY ICEBERG STORED AS ORC TBLPROPERTIES  ('format-version'='1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partevv
+PREHOOK: query: ALTER TABLE partevv SET PARTITION SPEC (id)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@partevv
+POSTHOOK: query: ALTER TABLE partevv SET PARTITION SPEC (id)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@partevv
+POSTHOOK: Output: default@partevv
+PREHOOK: query: INSERT INTO partevv VALUES (1, '2022-04-29 16:32:01', '2022-04-29 16:32:01')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partevv
+POSTHOOK: query: INSERT INTO partevv VALUES (1, '2022-04-29 16:32:01', '2022-04-29 16:32:01')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partevv
+PREHOOK: query: INSERT INTO partevv VALUES (2, '2022-04-29 16:32:02', '2022-04-29 16:32:02')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partevv
+POSTHOOK: query: INSERT INTO partevv VALUES (2, '2022-04-29 16:32:02', '2022-04-29 16:32:02')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partevv
+PREHOOK: query: ALTER TABLE partevv SET PARTITION SPEC (day(ts))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@partevv
+POSTHOOK: query: ALTER TABLE partevv SET PARTITION SPEC (day(ts))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@partevv
+POSTHOOK: Output: default@partevv
+PREHOOK: query: INSERT INTO partevv VALUES (100, '2022-04-29 16:32:03', '2022-04-29 16:32:03')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@partevv
+POSTHOOK: query: INSERT INTO partevv VALUES (100, '2022-04-29 16:32:03', '2022-04-29 16:32:03')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@partevv
+PREHOOK: query: select * from default.partevv.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partevv
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.partevv.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partevv
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"id":1,"ts_day":null}	1	1
+{"id":2,"ts_day":null}	1	1
+{"id":null,"ts_day":"2022-04-29"}	1	1

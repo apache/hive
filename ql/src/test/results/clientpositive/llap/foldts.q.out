@@ -64,6 +64,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src1orc
+POSTHOOK: Lineage: src1orc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src1orc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain
 select from_unixtime(to_unix_timestamp(ctimestamp1), 'EEEE') from alltypesorc limit 1
 PREHOOK: type: QUERY

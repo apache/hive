@@ -4113,7 +4113,7 @@ public class TestInputOutputFormat {
             "currentTransaction:bigint," +
             "row:struct<a:int,b:struct<c:int>,d:string>>");
 
-    OrcRecordUpdater.KeyIndexBuilder indexBuilder = new OrcRecordUpdater.KeyIndexBuilder("test");
+    OrcRecordUpdater.KeyIndexBuilder indexBuilder = new OrcRecordUpdater.KeyIndexBuilder();
     OrcFile.WriterOptions options = OrcFile.writerOptions(conf)
         .fileSystem(fs)
         .setSchema(fileSchema)

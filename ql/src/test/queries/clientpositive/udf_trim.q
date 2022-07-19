@@ -1,6 +1,18 @@
 DESCRIBE FUNCTION trim;
 DESCRIBE FUNCTION EXTENDED trim;
 
+SET hive.vectorized.execution.enabled=false;
+
+SELECT trim(null);
+
+SELECT '"' || trim(null, null) || '"';
+
+SET hive.vectorized.execution.enabled=true;
+
+SELECT trim(null);
+
+SELECT '"' || trim(null, null) || '"';
+
 SELECT '"' || trim('   tech   ') || '"';
 
 SELECT '"' || TRIM(' '  FROM  '   tech   ') || '"';

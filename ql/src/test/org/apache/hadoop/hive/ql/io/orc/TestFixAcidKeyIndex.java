@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -32,6 +33,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.orc.OrcFile.WriterContext;
+import org.apache.orc.impl.OrcAcidUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,9 +65,6 @@ public class TestFixAcidKeyIndex {
   static abstract class TestKeyIndexBuilder
       extends OrcRecordUpdater.KeyIndexBuilder
       implements OrcFile.WriterCallback {
-    public TestKeyIndexBuilder(String name) {
-      super(name);
-    }
 
     // Will be called before closing the ORC file to stop writing any additional information
     // to the acid key index.
@@ -242,6 +241,21 @@ public class TestFixAcidKeyIndex {
   }
 
   @Test
+  public void testMissingKeyIndex() throws Exception {
+    // Try single stripe
+    createTestAcidFile(testFilePath, 100, new MissingKeyIndexBuilder());
+    checkInvalidKeyIndex(testFilePath);
+    // Try fixing, this should result in new fixed file.
+    fixInvalidIndex(testFilePath);
+
+    // Multiple stripes
+    createTestAcidFile(testFilePath, 12000, new MissingKeyIndexBuilder());
+    checkInvalidKeyIndex(testFilePath);
+    // Try fixing, this should result in new fixed file.
+    fixInvalidIndex(testFilePath);
+  }
+
+  @Test
   public void testNonAcidOrcFile() throws Exception {
     // Copy data/files/alltypesorc to workDir
     Path baseSrcDir = new Path(System.getProperty("basedir")).getParent();
@@ -259,13 +273,30 @@ public class TestFixAcidKeyIndex {
   }
 
   /**
+   * Version of KeyIndexBuilder that does not generate any key index
+   */
+  static class MissingKeyIndexBuilder extends TestKeyIndexBuilder {
+
+    @Override
+    public void stopWritingKeyIndex() {
+      // Do nothing - this should generate proper index.
+    }
+
+    @Override
+    public void preFooterWrite(OrcFile.WriterContext context) throws IOException {
+      if(numKeysCurrentStripe > 0) {
+        preStripeWrite(context);
+      }
+      context.getWriter().addUserMetadata(
+          OrcAcidUtils.ACID_STATS, StandardCharsets.UTF_8.encode(acidStats.serialize()));
+      // here we don't generate the "hive.acid.key.index" metadata entry
+    }
+  }
+
+  /**
    * Version of KeyIndexBuilder that generates a valid key index
    */
   static class GoodKeyIndexBuilder extends TestKeyIndexBuilder {
-
-    GoodKeyIndexBuilder() {
-      super("GoodKeyIndexBuilder");
-    }
 
     @Override
     public void stopWritingKeyIndex() {
@@ -280,10 +311,6 @@ public class TestFixAcidKeyIndex {
   static class BadKeyIndexBuilder extends TestKeyIndexBuilder {
 
     boolean writeAcidIndexInfo = true;
-
-    BadKeyIndexBuilder() {
-      super("BadKeyIndexBuilder");
-    }
 
     public void stopWritingKeyIndex() {
       LOG.info("*** Stop writing index!");
@@ -306,10 +333,6 @@ public class TestFixAcidKeyIndex {
    * by inserting wrong values.
    */
   static class FaultyKeyIndexBuilder extends TestKeyIndexBuilder {
-
-    public FaultyKeyIndexBuilder() {
-      super("FaultyKeyIndexBuilder");
-    }
 
     @Override
     public void preStripeWrite(WriterContext context) throws IOException {

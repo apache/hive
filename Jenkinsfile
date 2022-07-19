@@ -93,7 +93,7 @@ OPTS+=" -Dorg.slf4j.simpleLogger.log.org.apache.maven.plugin.surefire.SurefirePl
 OPTS+=" -Dmaven.repo.local=$PWD/.git/m2"
 git config extra.mavenOpts "$OPTS"
 OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
-if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt"; sed -i '/\\/ITest/d' $PWD/inclusions.txt;fi
+if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
 if [ -s exclusions.txt ]; then OPTS+=" -Dsurefire.excludesFile=$PWD/exclusions.txt";fi
 mvn $OPTS '''+args+'''
 du -h --max-depth=1
@@ -257,7 +257,7 @@ fi
   }
 
   def branches = [:]
-  for (def d in ['derby','postgres','mysql','oracle']) {
+  for (def d in ['derby','postgres',/*'mysql',*/'oracle']) {
     def dbType=d
     def splitName = "init@$dbType"
     branches[splitName] = {
@@ -278,15 +278,6 @@ export DBNAME=metastore
 reinit_metastore $dbType
 time docker rm -f dev_$dbType || true
 '''
-          }
-          stage('verify') {
-            try {
-              sh """#!/bin/bash -e
-mvn verify -DskipITests=false -Dit.test=ITest${dbType.capitalize()} -Dtest=nosuch -pl standalone-metastore/metastore-server -Dmaven.test.failure.ignore -B
-"""
-            } finally {
-              junit '**/TEST-*.xml'
-            }
           }
         }
       }

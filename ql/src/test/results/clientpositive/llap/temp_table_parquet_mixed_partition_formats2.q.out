@@ -87,6 +87,10 @@ POSTHOOK: Input: default@parquet_table_json_partition_temp
 POSTHOOK: Input: default@parquet_table_json_partition_temp@ts=20150101
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@new_table_temp
+POSTHOOK: Lineage: new_table_temp.address SIMPLE [(parquet_table_json_partition_temp)parquet_table_json_partition_temp.FieldSchema(name:address, type:struct<country:bigint,state:bigint>, comment:from deserializer), ]
+POSTHOOK: Lineage: new_table_temp.id SIMPLE [(parquet_table_json_partition_temp)parquet_table_json_partition_temp.FieldSchema(name:id, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: new_table_temp.reports SIMPLE [(parquet_table_json_partition_temp)parquet_table_json_partition_temp.FieldSchema(name:reports, type:array<bigint>, comment:from deserializer), ]
+POSTHOOK: Lineage: new_table_temp.ts SIMPLE [(parquet_table_json_partition_temp)parquet_table_json_partition_temp.FieldSchema(name:ts, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM new_table_temp ORDER by id, address, reports
 PREHOOK: type: QUERY
 PREHOOK: Input: default@new_table_temp

@@ -108,7 +108,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
       AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN,
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC,
-      AlterTableType.UPDATE_COLUMNS);
+      AlterTableType.UPDATE_COLUMNS, AlterTableType.SETPARTITIONSPEC, AlterTableType.EXECUTE);
   private static final List<String> MIGRATION_ALLOWED_SOURCE_FORMATS = ImmutableList.of(
       FileFormat.PARQUET.name().toLowerCase(),
       FileFormat.ORC.name().toLowerCase(),
@@ -130,6 +130,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   private UpdatePartitionSpec updatePartitionSpec;
   private Transaction transaction;
   private AlterTableType currentAlterTableOp;
+  private boolean createHMSTableInHook = false;
 
   public HiveIcebergMetaHook(Configuration conf) {
     this.conf = conf;
@@ -183,6 +184,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(schema));
     catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
     setCommonHmsTablePropertiesForIceberg(hmsTable);
+
+    if (hmsTable.getParameters().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
+      createHMSTableInHook = true;
+    }
   }
 
   @Override
@@ -197,7 +202,12 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         catalogProperties.put(TableProperties.ENGINE_HIVE_ENABLED, true);
       }
 
-      Catalogs.createTable(conf, catalogProperties);
+      String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+      if (metadataLocation != null) {
+        Catalogs.registerTable(conf, catalogProperties, metadataLocation);
+      } else {
+        Catalogs.createTable(conf, catalogProperties);
+      }
     }
   }
 
@@ -326,6 +336,31 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       // that users can change data types or reorder columns too with this alter op type, so its name is misleading..)
       assertNotMigratedTable(hmsTable.getParameters(), "CHANGE COLUMN");
       handleChangeColumn(hmsTable);
+    } else if (AlterTableType.ADDPROPS.equals(currentAlterTableOp)) {
+      assertNotCrossTableMetadataLocationChange(hmsTable.getParameters());
+    }
+  }
+
+  /**
+   * Perform a check on the current iceberg table whether a metadata change can be performed. A table is eligible if
+   * the current metadata uuid and the new metadata uuid matches.
+   * @param tblParams hms table properties, must be non-null
+   */
+  private void assertNotCrossTableMetadataLocationChange(Map<String, String> tblParams) {
+    if (tblParams.containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
+      Preconditions.checkArgument(icebergTable != null,
+          "Cannot perform table migration to Iceberg and setting the snapshot location in one step. " +
+              "Please migrate the table first");
+      String newMetadataLocation = tblParams.get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+      FileIO io = ((BaseTable) icebergTable).operations().io();
+      TableMetadata newMetadata = TableMetadataParser.read(io, newMetadataLocation);
+      TableMetadata currentMetadata = ((BaseTable) icebergTable).operations().current();
+      if (!currentMetadata.uuid().equals(newMetadata.uuid())) {
+        throw new UnsupportedOperationException(
+            String.format("Cannot change iceberg table %s metadata location pointing to another table's metadata %s",
+                icebergTable.name(), newMetadataLocation)
+        );
+      }
     }
   }
 
@@ -430,6 +465,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     delete.deleteFromRowFilter(Expressions.alwaysTrue());
     delete.commit();
     context.putToProperties("truncateSkipDataDeletion", "true");
+  }
+
+  @Override public boolean createHMSTableInHook() {
+    return createHMSTableInHook;
   }
 
   private void alterTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable,

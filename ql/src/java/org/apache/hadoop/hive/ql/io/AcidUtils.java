@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
 import static org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
@@ -50,6 +51,7 @@ import com.google.common.base.Strings;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -86,6 +88,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat.DeltaFileMetaData;
 import org.apache.hadoop.hive.ql.io.HdfsUtils.HdfsFileStatusWithoutId;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
@@ -98,6 +101,7 @@ import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
@@ -418,9 +422,9 @@ public class AcidUtils {
   }
 
   public static boolean isTableSoftDeleteEnabled(Table table, HiveConf conf) {
-    return (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
-        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
-      && AcidUtils.isTransactionalTable(table)
+    boolean isSoftDelete = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+      || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
+    return isSoftDelete && AcidUtils.isTransactionalTable(table)
       && Boolean.parseBoolean(table.getProperty(SOFT_DELETE_TABLE));
   }
 
@@ -2154,7 +2158,7 @@ public class AcidUtils {
    */
   public static long getLogicalLength(FileSystem fs, FileStatus file) throws IOException {
     Path acidDir = file.getPath().getParent(); //should be base_x or delta_x_y_
-    if(AcidUtils.isInsertDelta(acidDir)) {
+    if (AcidUtils.isInsertDelta(acidDir)) {
       ParsedDeltaLight pd = ParsedDeltaLight.parse(acidDir);
       if(!pd.mayContainSideFile()) {
         return file.getLen();
@@ -2842,35 +2846,33 @@ public class AcidUtils {
     tblProps.remove(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
   }
 
-  private static boolean needsLock(Entity entity) {
+  private static boolean needsLock(Entity entity, boolean isExternalEnabled) {
+    return needsLock(entity, isExternalEnabled, false);
+  }
+
+  private static boolean needsLock(Entity entity, boolean isExternalEnabled, boolean isLocklessReads) {
     switch (entity.getType()) {
-    case TABLE:
-      return isLockableTable(entity.getTable());
-    case PARTITION:
-      return isLockableTable(entity.getPartition().getTable());
-    default:
-      return true;
+      case TABLE:
+        return isLockableTable(entity.getTable(), isExternalEnabled, isLocklessReads);
+      case PARTITION:
+        return isLockableTable(entity.getPartition().getTable(), isExternalEnabled, isLocklessReads);
+      default:
+        return true;
     }
   }
 
-  private static Table getTable(WriteEntity we) {
-    Table t = we.getTable();
-    if (t == null) {
-      throw new IllegalStateException("No table info for " + we);
-    }
-    return t;
-  }
-
-  private static boolean isLockableTable(Table t) {
+  private static boolean isLockableTable(Table t, boolean isExternalEnabled, boolean isLocklessReads) {
     if (t.isTemporary()) {
       return false;
     }
     switch (t.getTableType()) {
-    case MANAGED_TABLE:
-    case MATERIALIZED_VIEW:
-      return true;
-    default:
-      return false;
+      case MANAGED_TABLE:
+      case MATERIALIZED_VIEW:
+        return !(isLocklessReads && isTransactionalTable(t));
+      case EXTERNAL_TABLE:
+        return isExternalEnabled;
+      default:
+        return false;
     }
   }
 
@@ -2885,9 +2887,12 @@ public class AcidUtils {
       Context.Operation operation, HiveConf conf) {
 
     List<LockComponent> lockComponents = new ArrayList<>();
+    boolean isLocklessReadsEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
     boolean skipReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_READ_LOCKS);
     boolean skipNonAcidReadLock = !conf.getBoolVar(ConfVars.HIVE_TXN_NONACID_READ_LOCKS);
+    
     boolean sharedWrite = !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK);
+    boolean isExternalEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED);
     boolean isMerge = operation == Context.Operation.MERGE;
 
     // We don't want to acquire read locks during update or delete as we'll be acquiring write
@@ -2896,7 +2901,7 @@ public class AcidUtils {
       .filter(input -> !input.isDummy()
         && input.needsLock()
         && !input.isUpdateOrDelete()
-        && AcidUtils.needsLock(input)
+        && AcidUtils.needsLock(input, isExternalEnabled, isLocklessReadsEnabled)
         && !skipReadLock)
       .collect(Collectors.toList());
 
@@ -2955,9 +2960,8 @@ public class AcidUtils {
     // overwrite) than we need a shared.  If it's update or delete then we
     // need a SHARED_WRITE.
     for (WriteEntity output : outputs) {
-      LOG.debug("output is null " + (output == null));
-      if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR || !AcidUtils
-          .needsLock(output)) {
+      if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR 
+          || !AcidUtils.needsLock(output, isExternalEnabled)) {
         // We don't lock files or directories. We also skip locking temp tables.
         continue;
       }
@@ -3002,14 +3006,28 @@ public class AcidUtils {
         compBuilder.setExclusive();
         compBuilder.setOperationType(DataOperationType.NO_TXN);
         break;
+
       case DDL_EXCL_WRITE:
         compBuilder.setExclWrite();
         compBuilder.setOperationType(DataOperationType.NO_TXN);
         break;
-      case INSERT_OVERWRITE:
-        t = AcidUtils.getTable(output);
+        
+      case CTAS:
+        assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
-          if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) && !sharedWrite) {
+          compBuilder.setExclWrite();
+          compBuilder.setOperationType(DataOperationType.INSERT);
+        } else {
+          compBuilder.setExclusive();
+          compBuilder.setOperationType(DataOperationType.NO_TXN);
+        }
+        break;
+        
+      case INSERT_OVERWRITE:
+        assert t != null;
+        if (AcidUtils.isTransactionalTable(t)) {
+          if (conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) && !sharedWrite 
+              && !isLocklessReadsEnabled) {
             compBuilder.setExclusive();
           } else {
             compBuilder.setExclWrite();
@@ -3020,18 +3038,21 @@ public class AcidUtils {
           compBuilder.setOperationType(DataOperationType.NO_TXN);
         }
         break;
+      
       case INSERT:
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
           boolean isExclMergeInsert = conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge;
+          compBuilder.setSharedRead();
 
           if (sharedWrite) {
             compBuilder.setSharedWrite();
           } else {
             if (isExclMergeInsert) {
               compBuilder.setExclWrite();
-            } else {
-              compBuilder.setSharedRead();
+              
+            } else if (isLocklessReadsEnabled) {
+              compBuilder.setSharedWrite();
             }
           }
           if (isExclMergeInsert) {
@@ -3057,6 +3078,7 @@ public class AcidUtils {
         }
         compBuilder.setOperationType(DataOperationType.INSERT);
         break;
+      
       case DDL_SHARED:
         compBuilder.setSharedRead();
         if (output.isTxnAnalyze()) {
@@ -3096,6 +3118,14 @@ public class AcidUtils {
       lockComponents.add(comp);
     }
     return lockComponents;
+  }
+  
+  public static boolean isExclusiveCTASEnabled(Configuration conf) {
+    return HiveConf.getBoolVar(conf, ConfVars.TXN_CTAS_X_LOCK);
+  }
+  
+  public static boolean isExclusiveCTAS(Set<WriteEntity> outputs, HiveConf conf) {
+    return outputs.stream().anyMatch(we -> we.getWriteType().equals(WriteType.CTAS) && isExclusiveCTASEnabled(conf));
   }
 
   private static Set<Table> getFullTableLock(List<ReadEntity> readEntities, HiveConf conf) {
@@ -3191,23 +3221,32 @@ public class AcidUtils {
   
   private static boolean isSoftDeleteTxn(Configuration conf, ASTNode tree) {
     boolean locklessReadsEnabled = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
-    
+
     switch (tree.getToken().getType()) {
+      case HiveParser.TOK_DROPDATABASE:
       case HiveParser.TOK_DROPTABLE:
       case HiveParser.TOK_DROP_MATERIALIZED_VIEW:
-        return locklessReadsEnabled 
+        return locklessReadsEnabled
           || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX);
-        
-      case HiveParser.TOK_ALTERTABLE_DROPPARTS:
-        return locklessReadsEnabled 
-          || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE);
-        
-      case HiveParser.TOK_ALTERTABLE_RENAMEPART:
-        return locklessReadsEnabled 
-          || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY);
-      default:
-        return false;
+
+      case HiveParser.TOK_ALTERTABLE: {
+        boolean isDropParts = tree.getFirstChildWithType(HiveParser.TOK_ALTERTABLE_DROPPARTS) != null;
+        if (isDropParts) {
+          return locklessReadsEnabled
+            || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE);
+        }
+        boolean isRenamePart = tree.getFirstChildWithType(HiveParser.TOK_ALTERTABLE_RENAMEPART) != null;
+        if (isRenamePart) {
+          return locklessReadsEnabled
+            || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY);
+        }
+      }
     }
+    return false;
+  }
+
+  public static String getPathSuffix(long txnId) {
+    return (SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, txnId));
   }
 
   @VisibleForTesting
@@ -3328,6 +3367,23 @@ public class AcidUtils {
   public static boolean isNonNativeAcidTable(Table table) {
     return table != null && table.getStorageHandler() != null &&
         table.getStorageHandler().supportsAcidOperations() != HiveStorageHandler.AcidSupportType.NONE;
+  }
+
+  /**
+   * Returns the virtual columns needed for update queries. For ACID queries it is a single ROW__ID, for non-native
+   * tables the list is provided by the {@link HiveStorageHandler#acidVirtualColumns()}.
+   * @param table The table for which we run the query
+   * @return The list of virtual columns used
+   */
+  public static List<VirtualColumn> getAcidVirtualColumns(Table table) {
+    if (isTransactionalTable(table)) {
+      return Lists.newArrayList(VirtualColumn.ROWID);
+    } else {
+      if (isNonNativeAcidTable(table)) {
+        return table.getStorageHandler().acidVirtualColumns();
+      }
+    }
+    return Collections.emptyList();
   }
 
   public static boolean acidTableWithoutTransactions(Table table) {

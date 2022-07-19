@@ -20,29 +20,30 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
+import org.apache.iceberg.relocated.com.google.common.base.MoreObjects;
 
 public class FilesForCommit implements Serializable {
 
-  private final List<DataFile> dataFiles;
-  private final List<DeleteFile> deleteFiles;
+  private final Collection<DataFile> dataFiles;
+  private final Collection<DeleteFile> deleteFiles;
 
-  public FilesForCommit(List<DataFile> dataFiles, List<DeleteFile> deleteFiles) {
+  public FilesForCommit(Collection<DataFile> dataFiles, Collection<DeleteFile> deleteFiles) {
     this.dataFiles = dataFiles;
     this.deleteFiles = deleteFiles;
   }
 
-  public static FilesForCommit onlyDelete(List<DeleteFile> deleteFiles) {
+  public static FilesForCommit onlyDelete(Collection<DeleteFile> deleteFiles) {
     return new FilesForCommit(Collections.emptyList(), deleteFiles);
   }
 
-  public static FilesForCommit onlyData(List<DataFile> dataFiles) {
+  public static FilesForCommit onlyData(Collection<DataFile> dataFiles) {
     return new FilesForCommit(dataFiles, Collections.emptyList());
   }
 
@@ -50,15 +51,27 @@ public class FilesForCommit implements Serializable {
     return new FilesForCommit(Collections.emptyList(), Collections.emptyList());
   }
 
-  public List<DataFile> dataFiles() {
+  public Collection<DataFile> dataFiles() {
     return dataFiles;
   }
 
-  public List<DeleteFile> deleteFiles() {
+  public Collection<DeleteFile> deleteFiles() {
     return deleteFiles;
   }
 
-  public List<? extends ContentFile> allFiles() {
+  public Collection<? extends ContentFile> allFiles() {
     return Stream.concat(dataFiles.stream(), deleteFiles.stream()).collect(Collectors.toList());
+  }
+
+  public boolean isEmpty() {
+    return dataFiles.isEmpty() && deleteFiles.isEmpty();
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("dataFiles", dataFiles.toString())
+        .add("deleteFiles", deleteFiles.toString())
+        .toString();
   }
 }

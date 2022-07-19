@@ -438,6 +438,9 @@ public class MetastoreConf {
     COMPACTOR_RUN_AS_USER("metastore.compactor.run.as.user", "hive.compactor.run.as.user", "",
         "Specify the user to run compactor Initiator and Worker as. If empty string, defaults to table/partition " +
         "directory owner."),
+    COMPACTOR_USE_CUSTOM_POOL("metastore.compactor.use.custom.pool", "hive.compactor.use.custom.pool",
+            false, "internal usage only -- use custom connection pool specific to compactor components."
+    ),
     COMPACTOR_OLDEST_REPLICATION_OPENTXN_THRESHOLD_WARNING(
         "metastore.compactor.oldest.replication.open.txn.threshold.warning",
         "hive.compactor.oldest.replication.open.txn.threshold.warning",
@@ -625,6 +628,9 @@ public class MetastoreConf {
             "hive.compactor.cleaner.retry.retentionTime", 300, TimeUnit.SECONDS, new TimeValidator(TimeUnit.SECONDS),
             "Initial value of the cleaner retry retention time. The delay has a backoff, and calculated the following way: " +
             "pow(2, number_of_failed_attempts) * HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME."),
+    HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS("metastore.compactor.connectionPool.maxPoolSize",
+            "hive.compactor.connectionPool.maxPoolSize", 5,
+            "Specify the maximum number of connections in the connection pool used by the compactor."),
     CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
         "javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",
         "Driver class name for a JDBC metastore"),
@@ -869,7 +875,7 @@ public class MetastoreConf {
             "The special string _HOST will be replaced automatically with the correct host name."),
     THRIFT_METASTORE_AUTHENTICATION("metastore.authentication", "hive.metastore.authentication",
             "NOSASL",
-      new StringSetValidator("NOSASL", "NONE", "LDAP", "KERBEROS", "CUSTOM"),
+      new StringSetValidator("NOSASL", "NONE", "LDAP", "KERBEROS", "CUSTOM", "JWT"),
         "Client authentication types.\n" +
                 "  NONE: no authentication check\n" +
                 "  LDAP: LDAP/AD based authentication\n" +
@@ -877,7 +883,12 @@ public class MetastoreConf {
                 "  CUSTOM: Custom authentication provider\n" +
                 "          (Use with property metastore.custom.authentication.class)\n" +
                 "  CONFIG: username and password is specified in the config" +
-                "  NOSASL:  Raw transport"),
+                "  NOSASL:  Raw transport" +
+                "  JWT:  JSON Web Token authentication via JWT token. Only supported in Http/Https mode"),
+    THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL("metastore.authentication.jwt.jwks.url",
+        "hive.metastore.authentication.jwt.jwks.url", "", "File URL from where URLBasedJWKSProvider "
+        + "in metastore server will try to load JWKS to match a JWT sent in HTTP request header. Used only when "
+        + "Hive metastore server is running in JWT auth mode"),
     METASTORE_CUSTOM_AUTHENTICATION_CLASS("metastore.custom.authentication.class",
             "hive.metastore.custom.authentication.class",
             "",
@@ -1364,6 +1375,13 @@ public class MetastoreConf {
         "Comma-separated list of tasks that will be started in separate threads.  These will be" +
             " started only when the metastore is running as a separate service.  They must " +
             "implement " + METASTORE_TASK_THREAD_CLASS),
+    THRIFT_TRANSPORT_MODE("metastore.server.thrift.transport.mode",
+        "hive.metastore.server.thrift.transport.mode", "binary",
+        "Transport mode for thrift server in Metastore. Can be binary or http"),
+    THRIFT_HTTP_PATH("metastore.server.thrift.http.path",
+        "hive.metastore.server.thrift.http.path",
+        "metastore",
+        "Path component of URL endpoint when in HTTP mode"),
     TCP_KEEP_ALIVE("metastore.server.tcp.keepalive",
         "hive.metastore.server.tcp.keepalive", true,
         "Whether to enable TCP keepalive for the metastore server. Keepalive will prevent accumulation of half-open connections."),
@@ -1504,6 +1522,26 @@ public class MetastoreConf {
     USERS_IN_ADMIN_ROLE("metastore.users.in.admin.role", "hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +
             "More users can be added in ADMIN role later."),
+    // TODO: Should we have a separate config for the metastoreclient or THRIFT_TRANSPORT_MODE
+    // would suffice ?
+    METASTORE_CLIENT_THRIFT_TRANSPORT_MODE("metastore.client.thrift.transport.mode",
+        "hive.metastore.client.thrift.transport.mode", "binary",
+        "Transport mode to be used by the metastore client. It should be the same as " + THRIFT_TRANSPORT_MODE),
+    METASTORE_CLIENT_THRIFT_HTTP_PATH("metastore.client.thrift.http.path",
+        "hive.metastore.client.thrift.http.path",
+        "metastore",
+        "Path component of URL endpoint when in HTTP mode"),
+    METASTORE_THRIFT_HTTP_REQUEST_HEADER_SIZE("metastore.server.thrift.http.request.header.size",
+        "hive.metastore.server.thrift.http.request.header.size", 6*1024,
+        "Request header size in bytes when using HTTP transport mode for metastore thrift server."
+            + " Defaults to jetty's defaults"),
+    METASTORE_THRIFT_HTTP_RESPONSE_HEADER_SIZE("metastore.server.thrift.http.response.header.size",
+        "metastore.server.thrift.http.response.header.size", 6*1024,
+        "Response header size in bytes when using HTTP transport mode for metastore thrift server."
+            + " Defaults to jetty's defaults"),
+    METASTORE_THRIFT_HTTP_MAX_IDLE_TIME("metastore.thrift.http.max.idle.time", "hive.metastore.thrift.http.max.idle.time", 
+        1800, TimeUnit.SECONDS,
+        "Maximum idle time for a connection on the server when in HTTP mode."),
     USE_SSL("metastore.use.SSL", "hive.metastore.use.SSL", false,
         "Set this to true for using SSL encryption in HMS server."),
     // We should somehow unify next two options.
@@ -1511,9 +1549,11 @@ public class MetastoreConf {
         "If true, the metastore Thrift interface will be secured with SASL. Clients must authenticate with Kerberos."),
     METASTORE_CLIENT_AUTH_MODE("metastore.client.auth.mode",
             "hive.metastore.client.auth.mode", "NOSASL",
-            new StringSetValidator("NOSASL", "PLAIN", "KERBEROS"),
+            new StringSetValidator("NOSASL", "PLAIN", "KERBEROS", "JWT"),
             "If PLAIN, clients will authenticate using plain authentication, by providing username" +
-                    " and password. Any other value is ignored right now but may be used later."),
+                    " and password. Any other value is ignored right now but may be used later."
+                + "If JWT- Supported only in HTTP transport mode. If set, HMS Client will pick the value of JWT from "
+                + "environment variable HMS_JWT and set it in Authorization header in http request"),
     METASTORE_CLIENT_PLAIN_USERNAME("metastore.client.plain.username",
             "hive.metastore.client.plain.username",  "",
         "The username used by the metastore client when " +
@@ -1889,7 +1929,7 @@ public class MetastoreConf {
        * this 'if' is pretty lame - QTestUtil.QTestUtil() uses hiveSiteURL to load a specific
        * hive-site.xml from data/conf/<subdir> so this makes it follow the same logic - otherwise
        * HiveConf and MetastoreConf may load different hive-site.xml  ( For example,
-       * HiveConf uses data/conf/spark/hive-site.xml and MetastoreConf data/conf/hive-site.xml)
+       * HiveConf uses data/conf/tez/hive-site.xml and MetastoreConf data/conf/hive-site.xml)
        */
       hiveSiteURL = findConfigFile(classLoader, "hive-site.xml");
     }

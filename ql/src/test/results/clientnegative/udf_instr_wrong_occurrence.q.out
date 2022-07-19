@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10014]: Line 2:7 Wrong arguments '0': occurrence of function INSTR should be positive, got 0

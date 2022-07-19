@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
@@ -40,6 +41,7 @@ import org.apache.iceberg.data.RandomGenericData;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.junit.rules.TemporaryFolder;
 
@@ -120,8 +122,56 @@ public class TestHelper {
     appender().appendToTable(partition, records);
   }
 
+  /**
+   * Appends the rows to the table. If the table is partitioned then it will create the correct partitions.
+   * @param rowSet The rows to add
+   * @throws IOException If there is an exception during writing out the files
+   */
+  public void appendToTable(List<Record> rowSet) throws IOException {
+    // The rows collected by partitions
+    Map<PartitionKey, List<Record>> rows = Maps.newHashMap();
+    PartitionKey partitionKey = new PartitionKey(table.spec(), table.schema());
+    for (Record record : rowSet) {
+      partitionKey.partition(record);
+      List<Record> partitionRows = rows.get(partitionKey);
+      if (partitionRows == null) {
+        partitionRows = Lists.newArrayList();
+        rows.put(partitionKey.copy(), partitionRows);
+      }
+
+      partitionRows.add(record);
+    }
+
+    for (PartitionKey partition : rows.keySet()) {
+      appendToTable(partition, rows.get(partition));
+    }
+  }
+
   public DataFile writeFile(StructLike partition, List<Record> records) throws IOException {
     return appender().writeFile(partition, records);
+  }
+
+  public Map<DataFile, List<Record>> writeFiles(List<Record> rowSet) throws IOException {
+    // The rows collected by partitions
+    Map<PartitionKey, List<Record>> rows = Maps.newHashMap();
+    PartitionKey partitionKey = new PartitionKey(table.spec(), table.schema());
+    for (Record record : rowSet) {
+      partitionKey.partition(record);
+      List<Record> partitionRows = rows.get(partitionKey);
+      if (partitionRows == null) {
+        partitionRows = rows.put(partitionKey.copy(), Lists.newArrayList());
+      }
+
+      partitionRows.add(record);
+    }
+
+    // Write out the partitions one-by-one
+    Map<DataFile, List<Record>> dataFiles = Maps.newHashMapWithExpectedSize(rows.size());
+    for (PartitionKey partition : rows.keySet()) {
+      dataFiles.put(writeFile(partition, rows.get(partition)), rows.get(partition));
+    }
+
+    return dataFiles;
   }
 
   private GenericAppenderHelper appender() {

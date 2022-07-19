@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
-import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -118,7 +117,6 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -353,7 +351,7 @@ public class HiveServer2 extends CompositeService {
           if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL)) {
             String keyStorePath = hiveConf.getVar(
               ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH);
-            if (Strings.isBlank(keyStorePath)) {
+            if (StringUtils.isBlank(keyStorePath)) {
               throw new IllegalArgumentException(
                 ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PATH.varname
                   + " Not configured for SSL connection");
@@ -373,7 +371,7 @@ public class HiveServer2 extends CompositeService {
                 ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL);
             String spnegoKeytab = hiveConf.getVar(
                 ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB);
-            if (Strings.isBlank(spnegoPrincipal) || Strings.isBlank(spnegoKeytab)) {
+            if (StringUtils.isBlank(spnegoPrincipal) || StringUtils.isBlank(spnegoKeytab)) {
               throw new IllegalArgumentException(
                 ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_PRINCIPAL.varname
                   + "/" + ConfVars.HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB.varname
@@ -388,7 +386,7 @@ public class HiveServer2 extends CompositeService {
             String allowedOrigins = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS);
             String allowedMethods = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_METHODS);
             String allowedHeaders = hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_HEADERS);
-            if (Strings.isBlank(allowedOrigins) || Strings.isBlank(allowedMethods) || Strings.isBlank(allowedHeaders)) {
+            if (StringUtils.isBlank(allowedOrigins) || StringUtils.isBlank(allowedMethods) || StringUtils.isBlank(allowedHeaders)) {
               throw new IllegalArgumentException("CORS enabled. But " +
                 ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_ORIGINS.varname + "/" +
                 ConfVars.HIVE_SERVER2_WEBUI_CORS_ALLOWED_METHODS.varname + "/" +
@@ -947,14 +945,6 @@ public class HiveServer2 extends CompositeService {
 
     stopOrDisconnectTezSessions();
 
-    if (hiveConf != null && hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-      try {
-        SparkSessionManagerImpl.getInstance().shutdown();
-      } catch(Exception ex) {
-        LOG.error("Spark session pool manager failed to stop during HiveServer2 shutdown.", ex);
-      }
-    }
-
     if (zKClientForPrivSync != null) {
       zKClientForPrivSync.close();
     }
@@ -1069,9 +1059,6 @@ public class HiveServer2 extends CompositeService {
             "warned upon.", t);
         }
 
-        if (hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-          SparkSessionManagerImpl.getInstance().setup(hiveConf);
-        }
         break;
       } catch (Throwable throwable) {
         if (server != null) {

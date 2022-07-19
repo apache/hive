@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -298,19 +297,13 @@ public class Executor {
   }
 
   private String getJobName() {
-    int maxlen;
-    if ("spark".equals(driverContext.getConf().getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
-      maxlen = driverContext.getConf().getIntVar(HiveConf.ConfVars.HIVESPARKJOBNAMELENGTH);
-    } else {
-      maxlen = driverContext.getConf().getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
-    }
+    int maxlen = driverContext.getConf().getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
     return Utilities.abbreviate(driverContext.getQueryString(), maxlen - 6);
   }
 
   private int getJobCount() {
     int mrJobCount = Utilities.getMRTasks(driverContext.getPlan().getRootTasks()).size();
-    int jobCount = mrJobCount + Utilities.getTezTasks(driverContext.getPlan().getRootTasks()).size()
-        + Utilities.getSparkTasks(driverContext.getPlan().getRootTasks()).size();
+    int jobCount = mrJobCount + Utilities.getTezTasks(driverContext.getPlan().getRootTasks()).size();
     if (jobCount > 0) {
       if (mrJobCount > 0 && "mr".equals(HiveConf.getVar(driverContext.getConf(), ConfVars.HIVE_EXECUTION_ENGINE))) {
         LOG.warn(HiveConf.generateMrDeprecationWarning());
@@ -544,10 +537,6 @@ public class Executor {
     driverContext.getQueryDisplay().setHmsTimings(QueryDisplay.Phase.EXECUTION, executionHMSTimings);
 
     logExecutionResourceUsage();
-
-    if (SessionState.get().getSparkSession() != null) {
-      SessionState.get().getSparkSession().onQueryCompletion(driverContext.getQueryId());
-    }
 
     driverState.executionFinishedWithLocking(executionError);
 

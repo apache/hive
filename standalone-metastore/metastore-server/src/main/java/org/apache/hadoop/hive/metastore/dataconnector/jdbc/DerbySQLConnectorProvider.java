@@ -21,14 +21,11 @@ package org.apache.hadoop.hive.metastore.dataconnector.jdbc;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 
 public class DerbySQLConnectorProvider extends AbstractJDBCConnectorProvider {
   private static Logger LOG = LoggerFactory.getLogger(DerbySQLConnectorProvider.class);
@@ -66,6 +63,14 @@ public class DerbySQLConnectorProvider extends AbstractJDBCConnectorProvider {
   @Override
   public ResultSet fetchTableMetadata(String tableName) throws MetaException {
      return null;
+  }
+
+  @Override protected String getCatalogName() {
+    return scoped_db;
+  }
+
+  @Override protected String getDatabaseName() {
+    return null;
   }
 
   protected String getDataType(String dbDataType, int size) {

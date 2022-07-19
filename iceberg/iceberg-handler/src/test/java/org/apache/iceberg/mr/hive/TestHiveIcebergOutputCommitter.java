@@ -35,17 +35,17 @@ import org.apache.hadoop.mapred.TaskAttemptContextImpl;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.hadoop.mapreduce.JobStatus;
 import org.apache.hadoop.mapreduce.TaskType;
-import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hadoop.HadoopTables;
-import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
+import org.apache.iceberg.mr.hive.writer.WriterBuilder;
+import org.apache.iceberg.mr.hive.writer.WriterRegistry;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -59,11 +59,9 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import static org.apache.iceberg.mr.hive.HiveIcebergWriter.getWriters;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
 public class TestHiveIcebergOutputCommitter {
-  private static final long TARGET_FILE_SIZE = 128 * 1024 * 1024;
   private static final int RECORD_NUM = 5;
   private static final String QUERY_ID = "query_id";
   private static final JobID JOB_ID = new JobID("test", 0);
@@ -209,10 +207,10 @@ public class TestHiveIcebergOutputCommitter {
     Assert.assertEquals(1, argumentCaptor.getAllValues().size());
     TaskAttemptID capturedId = TezUtil.taskAttemptWrapper(argumentCaptor.getValue().getTaskAttemptID());
     // writer is still in the map after commitTask failure
-    Assert.assertNotNull(getWriters(capturedId));
+    Assert.assertNotNull(WriterRegistry.writers(capturedId));
     failingCommitter.abortTask(new TaskAttemptContextImpl(conf, capturedId));
     // abortTask succeeds and removes writer
-    Assert.assertNull(getWriters(capturedId));
+    Assert.assertNull(WriterRegistry.writers(capturedId));
   }
 
   private Table table(String location, boolean partitioned) {
@@ -247,7 +245,7 @@ public class TestHiveIcebergOutputCommitter {
 
   /**
    * Write random records to the given table using separate {@link HiveIcebergOutputCommitter} and
-   * a separate {@link HiveIcebergRecordWriter} for every task.
+   * a separate {@link HiveIcebergWriter} for every task.
    * @param name The name of the table to get the table object from the conf
    * @param taskNum The number of tasks in the job handled by the committer
    * @param attemptNum The id used for attempt number generation
@@ -257,16 +255,14 @@ public class TestHiveIcebergOutputCommitter {
    * @param conf The job configuration
    * @param committer The output committer that should be used for committing/aborting the tasks
    * @return The random generated records which were appended to the table
-   * @throws IOException Propagating {@link HiveIcebergRecordWriter} exceptions
+   * @throws IOException Propagating {@link HiveIcebergWriter} exceptions
    */
   private List<Record> writeRecords(String name, int taskNum, int attemptNum, boolean commitTasks, boolean abortTasks,
                                     JobConf conf, OutputCommitter committer) throws IOException {
     List<Record> expected = Lists.newArrayListWithExpectedSize(RECORD_NUM * taskNum);
 
     Table table = HiveIcebergStorageHandler.table(conf, name);
-    FileIO io = table.io();
     Schema schema = HiveIcebergStorageHandler.schema(conf);
-    PartitionSpec spec = table.spec();
 
     for (int i = 0; i < taskNum; ++i) {
       List<Record> records = TestHelper.generateRandomRecords(schema, RECORD_NUM, i + attemptNum);
@@ -274,22 +270,14 @@ public class TestHiveIcebergOutputCommitter {
       for (int j = 0; j < RECORD_NUM; ++j) {
         records.get(j).setField("customer_id", j / 3L);
       }
+
       TaskAttemptID taskId = new TaskAttemptID(JOB_ID.getJtIdentifier(), JOB_ID.getId(), TaskType.MAP, i, attemptNum);
-      int partitionId = taskId.getTaskID().getId();
-      String operationId = QUERY_ID + "-" + JOB_ID;
-      FileFormat fileFormat = FileFormat.PARQUET;
-      OutputFileFactory outputFileFactory = OutputFileFactory.builderFor(table, partitionId, attemptNum)
-          .format(fileFormat)
-          .operationId(operationId)
+      HiveIcebergWriter testWriter = WriterBuilder.builderFor(table)
+          .attemptID(TezUtil.taskAttemptWrapper(taskId))
+          .queryId("Q_ID")
+          .tableName(conf.get(Catalogs.NAME))
+          .operation(Context.Operation.OTHER)
           .build();
-
-      HiveFileWriterFactory hfwf = new HiveFileWriterFactory(table, fileFormat, schema,
-          null, fileFormat, null, null, null, null);
-
-
-      HiveIcebergRecordWriter testWriter = new HiveIcebergRecordWriter(schema, spec, fileFormat,
-          hfwf, outputFileFactory, io, TARGET_FILE_SIZE,
-          TezUtil.taskAttemptWrapper(taskId), conf.get(Catalogs.NAME));
 
       Container<Record> container = new Container<>();
 

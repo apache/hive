@@ -78,9 +78,6 @@ public class SyntheticJoinPredicate extends Transform {
     if (queryEngine.equals("tez")
         && pctx.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING)) {
       enabled = true;
-    } else if ((queryEngine.equals("spark")
-        && pctx.getConf().isSparkDPPAny())) {
-      enabled = true;
     }
 
     if (!enabled) {

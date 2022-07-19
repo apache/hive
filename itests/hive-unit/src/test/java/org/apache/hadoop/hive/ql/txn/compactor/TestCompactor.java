@@ -65,17 +65,20 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.Retry;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -139,6 +142,7 @@ public class TestCompactor {
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
 
     TestTxnDbUtil.setConfValues(hiveConf);
     TestTxnDbUtil.cleanDb(hiveConf);
@@ -873,7 +877,7 @@ public class TestCompactor {
         Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
       }
       String name = stat[0].getPath().getName();
-      Assert.assertEquals("base_0000005_v0000009", name);
+      Assert.assertEquals("base_0000004_v0000009", name);
       CompactorTestUtil
           .checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, null,
               1);
@@ -918,11 +922,11 @@ public class TestCompactor {
     runMajorCompaction(dbName, tblName);
 
     List<String> matchesNotFound = new ArrayList<>(5);
-    matchesNotFound.add(AcidUtils.deleteDeltaSubdir(4, 5) + VISIBILITY_PATTERN);
-    matchesNotFound.add(AcidUtils.deltaSubdir(4, 5) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.deleteDeltaSubdir(3, 4) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.deltaSubdir(3, 4) + VISIBILITY_PATTERN);
     matchesNotFound.add(AcidUtils.deleteDeltaSubdir(5, 5, 0));
     matchesNotFound.add(AcidUtils.deltaSubdir(5, 5, 1));
-    matchesNotFound.add(AcidUtils.baseDir(6) + VISIBILITY_PATTERN);
+    matchesNotFound.add(AcidUtils.baseDir(5) + VISIBILITY_PATTERN);
 
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     Table table = msClient.getTable(dbName, tblName);
@@ -1021,6 +1025,36 @@ public class TestCompactor {
     CompactorTestUtil
         .checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L,
             Lists.newArrayList(5, 6), 1);
+  }
+
+  @Test
+  public void majorCompactDuringFetchTaskConvertedRead() throws Exception {
+    driver.close();
+    driver = DriverFactory.newDriver(conf);
+    String dbName = "default";
+    String tblName = "cws";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+
+    executeStatementOnDriver(
+        "CREATE TABLE " + tblName + "(a INT, b STRING) " + " STORED AS ORC  TBLPROPERTIES ('transactional'='true')",
+        driver);
+    executeStatementOnDriver("insert into " + tblName + " values (1, 'a')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values (3, 'b')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values (4, 'a')", driver);
+    executeStatementOnDriver("insert into " + tblName + " values (5, 'b')", driver);
+
+    CommandProcessorResponse resp = driver.run("select * from " + tblName + " LIMIT 5");
+    FetchTask ft = driver.getFetchTask();
+    ft.setMaxRows(1);
+    List res = new ArrayList();
+    ft.fetch(res);
+    assertEquals(1, res.size());
+
+    runMajorCompaction(dbName, tblName);
+    runCleaner(conf);
+
+    ft.fetch(res);
+    assertEquals(2, res.size());
   }
 
   @Test
@@ -1722,11 +1756,11 @@ public class TestCompactor {
     msClient.abortTxns(Lists.newArrayList(openTxnId)); // Now abort 3.
     runMajorCompaction(dbName, tblName); // Compact 4 and 5.
     verifyFooBarResult(tblName, 2);
-    verifyHasBase(table.getSd(), fs, "base_0000006_v0000017");
+    verifyHasBase(table.getSd(), fs, "base_0000005_v0000017");
     runCleaner(conf);
     // in case when we have # of accumulated entries for the same table/partition - we need to process them one-by-one in ASC order of write_id's,
-    // however, to support multi-threaded processing in the Cleaner, we have to move entries from the same group to the next Cleaner cycle, 
-    // so that they are not processed by multiple threads concurrently. 
+    // however, to support multi-threaded processing in the Cleaner, we have to move entries from the same group to the next Cleaner cycle,
+    // so that they are not processed by multiple threads concurrently.
     runCleaner(conf);
     verifyDeltaCount(table.getSd(), fs, 0);
   }
@@ -1740,7 +1774,9 @@ public class TestCompactor {
       StorageDescriptor sd, FileSystem fs, String name, PathFilter filter) throws Exception {
     FileStatus[] stat = fs.listStatus(new Path(sd.getLocation()), filter);
     for (FileStatus file : stat) {
-      if (name.equals(file.getPath().getName())) return;
+      if (name.equals(file.getPath().getName())) {
+        return;
+      }
     }
     Assert.fail("Cannot find " + name + ": " + Arrays.toString(stat));
   }
@@ -1791,7 +1827,7 @@ public class TestCompactor {
     verifyFooBarResult(tblName, 3);
     verifyDeltaCount(p3.getSd(), fs, 1);
     verifyHasBase(p1.getSd(), fs, "base_0000006_v0000010");
-    verifyHasBase(p2.getSd(), fs, "base_0000007_v0000015");
+    verifyHasBase(p2.getSd(), fs, "base_0000006_v0000015");
 
     executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(1, 'foo', 2)", driver);
     executeStatementOnDriver("INSERT INTO " + tblName + " partition (ds) VALUES(2, 'bar', 2)", driver);
@@ -1802,7 +1838,7 @@ public class TestCompactor {
     verifyFooBarResult(tblName, 4);
     verifyDeltaCount(p3.getSd(), fs, 1);
     verifyHasBase(p1.getSd(), fs, "base_0000006_v0000010");
-    verifyHasBase(p2.getSd(), fs, "base_0000007_v0000015");
+    verifyHasBase(p2.getSd(), fs, "base_0000006_v0000015");
 
   }
 
@@ -2469,7 +2505,7 @@ public class TestCompactor {
     files = fs.listStatus(new Path(table.getSd().getLocation()));
     // base dir
     assertEquals(1, files.length);
-    assertEquals("base_0000004_v0000016", files[0].getPath().getName());
+    assertEquals("base_0000003_v0000016", files[0].getPath().getName());
     files = fs.listStatus(files[0].getPath(), AcidUtils.bucketFileFilter);
     // files
     assertEquals(2, files.length);

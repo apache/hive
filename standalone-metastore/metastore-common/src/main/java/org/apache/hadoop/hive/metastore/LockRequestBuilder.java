@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 
@@ -87,6 +88,11 @@ public class LockRequestBuilder {
 
   public LockRequestBuilder setZeroWaitReadEnabled(boolean zeroWaitRead) {
     req.setZeroWaitReadEnabled(zeroWaitRead);
+    return this;
+  }
+
+  public LockRequestBuilder setExclusiveCTAS(boolean exclusiveCTAS) {
+    req.setExclusiveCTAS(exclusiveCTAS);
     return this;
   }
 
@@ -168,8 +174,9 @@ public class LockRequestBuilder {
       if (existing == null) {
         // No existing lock for this partition.
         parts.put(comp.getPartitionname(), comp);
-      }  else if (lockTypeComparator.compare(comp.getType(), existing.getType()) > 0) {
-        // We only need to promote if comp.type is > existing.type.
+      } else if (lockTypeComparator.compare(comp.getType(), existing.getType()) > 0
+          || comp.getType() == existing.getType() && existing.getOperationType() == DataOperationType.INSERT) {
+        // We only need to promote if comp.type is > existing.type or it's an update/delete
         parts.put(comp.getPartitionname(), comp);
       }
     }

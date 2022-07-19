@@ -418,8 +418,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LOG.debug("No locks needed for queryId=" + queryId);
       return null;
     }
+
     List<LockComponent> lockComponents = AcidUtils.makeLockComponents(plan.getOutputs(), plan.getInputs(),
         ctx.getOperation(), conf);
+    rqstBuilder.setExclusiveCTAS(AcidUtils.isExclusiveCTAS(plan.getOutputs(), conf));
     lockComponents.addAll(getGlobalLocks(ctx.getConf()));
 
     //It's possible there's nothing to lock even if we have w/r entities.
@@ -944,6 +946,16 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     // This happens when the current context is before
     // Driver.acquireLocks() is called.
     return getTableWriteId(dbName, tableName, false);
+  }
+
+  @Override
+  public void setTableWriteId(String dbName, String tableName, long writeId) throws LockException {
+    String fullTableName = AcidUtils.getFullTableName(dbName, tableName);
+    if (writeId > 0) {
+      tableWriteIds.put(fullTableName, writeId);
+    } else {
+      getTableWriteId(dbName, tableName);
+    }
   }
 
   private long getTableWriteId(

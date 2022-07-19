@@ -134,6 +134,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
@@ -194,6 +195,7 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.ddl.database.drop.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
@@ -209,6 +211,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -661,15 +664,34 @@ public class Hive {
    */
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
       throws HiveException, NoSuchObjectException {
+    dropDatabase(new DropDatabaseDesc(name, ignoreUnknownDb, cascade, deleteData));
+  }
+
+  public void dropDatabase(DropDatabaseDesc desc) 
+      throws HiveException, NoSuchObjectException {
+    boolean isSoftDelete = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
+    
+    long txnId = Optional.ofNullable(SessionState.get())
+      .map(SessionState::getTxnMgr)
+      .map(HiveTxnManager::getCurrentTxnId).orElse(0L);
+    
+    DropDatabaseRequest req = new DropDatabaseRequest();
+    req.setCatalogName(getDefaultCatalog(conf));
+    req.setName(desc.getDatabaseName());
+    req.setIgnoreUnknownDb(desc.getIfExists());
+    req.setDeleteData(desc.isDeleteData());
+    req.setCascade(desc.isCasdade());
+    req.setSoftDelete(isSoftDelete);
+    req.setTxnId(txnId);
+    
     try {
-      getMSC().dropDatabase(name, deleteData, ignoreUnknownDb, cascade);
+      getMSC().dropDatabase(req);
     } catch (NoSuchObjectException e) {
       throw e;
     } catch (Exception e) {
       throw new HiveException(e);
     }
   }
-
 
   /**
    * Dry run that translates table
@@ -941,9 +963,6 @@ public class Hive {
       throws HiveException, NoSuchObjectException {
     try {
       getMSC().dropDataConnector(name, ifNotExists, checkReferences);
-    } catch (NoSuchObjectException e) {
-      if (!ifNotExists)
-        throw e;
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -1287,7 +1306,8 @@ public class Hive {
           boolean createTableUseSuffix = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
             || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
 
-          if (createTableUseSuffix) {
+          if (createTableUseSuffix 
+                && (tbl.getSd().getLocation() == null || tbl.getSd().getLocation().isEmpty())) {
             tbl.setProperty(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
           }
           tTbl.setTxnId(ss.getTxnMgr().getCurrentTxnId());
@@ -1353,11 +1373,7 @@ public class Hive {
   }
 
   public void dropTable(Table table, boolean ifPurge) throws HiveException {
-    boolean tableWithSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
-        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
-      && AcidUtils.isTransactionalTable(table)
-      && Boolean.parseBoolean(table.getProperty(SOFT_DELETE_TABLE));
-    
+    boolean tableWithSuffix = AcidUtils.isTableSoftDeleteEnabled(table, conf);
     long txnId = Optional.ofNullable(SessionState.get())
       .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
     table.getTTable().setTxnId(txnId);
@@ -3134,7 +3150,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           if (partitionDetails.newFiles != null) {
             // If we already know the files from the direct insert manifest, use them
             newFiles = partitionDetails.newFiles;
-          } else if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPartition == null) {
+          } else if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
             // Otherwise only collect them, if we are going to fire write notifications
             newFiles = Collections.synchronizedList(new ArrayList<>());
           }
@@ -4987,10 +5003,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
         boolean isOwned = FileUtils.isOwnerOfFileHierarchy(srcFs, srcs, configuredOwner, false);
         if (configuredOwner.equals(runningUser)) {
           // Check if owner has write permission, else it will have to copy
-          if (!(isOwned &&
-              FileUtils.isActionPermittedForFileHierarchy(
-                  srcFs, srcs, configuredOwner, FsAction.WRITE, false))) {
-            return true;
+          UserGroupInformation proxyUser = null;
+          try {
+            proxyUser = FileUtils.getProxyUser(configuredOwner);
+            FileSystem fsAsUser = FileUtils.getFsAsUser(srcFs, proxyUser);
+            if (!(isOwned && FileUtils.isActionPermittedForFileHierarchy(srcFs, srcs, configuredOwner, FsAction.WRITE,
+                false, fsAsUser))) {
+              return true;
+            }
+          }
+          finally {
+            FileUtils.closeFs(proxyUser);
           }
         } else {
           // If the configured owner does not own the file, throw
@@ -6473,6 +6496,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
       HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
       return storageHandler == null ? null : storageHandler.getStorageHandlerInfo(table.getTTable());
     } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void alterTableExecuteOperation(Table table, AlterTableExecuteSpec executeSpec) throws HiveException {
+    try {
+      HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
+      storageHandler.executeOperation(table, executeSpec);
+    } catch (MetaException e) {
       throw new HiveException(e);
     }
   }

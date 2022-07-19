@@ -14,4 +14,4 @@ SELECT evaluate_npe(src.key) LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-Failed with exception java.io.IOException:org.apache.hadoop.hive.ql.metadata.HiveException: Error evaluating evaluate_npe(key)
+Failed with exception org.apache.hadoop.hive.ql.metadata.HiveException:Error evaluating evaluate_npe(key)

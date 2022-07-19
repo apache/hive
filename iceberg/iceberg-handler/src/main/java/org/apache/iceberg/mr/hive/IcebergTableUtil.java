@@ -24,14 +24,18 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.UpdatePartitionSpec;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.mr.Catalogs;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +45,25 @@ public class IcebergTableUtil {
 
   private IcebergTableUtil() {
 
+  }
+
+  /**
+   * Constructs the table properties needed for the Iceberg table loading by retrieving the information from the
+   * hmsTable. It then calls {@link IcebergTableUtil#getTable(Configuration, Properties)} with these properties.
+   * @param configuration a Hadoop configuration
+   * @param hmsTable the HMS table
+   * @return the Iceberg table
+   */
+  static Table getTable(Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    Properties properties = new Properties();
+    properties.setProperty(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
+    properties.setProperty(Catalogs.LOCATION, hmsTable.getSd().getLocation());
+    hmsTable.getParameters().computeIfPresent(InputFormatConfig.CATALOG_NAME,
+        (k, v) -> {
+          properties.setProperty(k, v);
+          return v;
+        });
+    return getTable(configuration, properties);
   }
 
   /**
@@ -54,8 +77,12 @@ public class IcebergTableUtil {
   static Table getTable(Configuration configuration, Properties properties) {
     String metaTable = properties.getProperty("metaTable");
     String tableName = properties.getProperty(Catalogs.NAME);
+    String location = properties.getProperty(Catalogs.LOCATION);
     if (metaTable != null) {
+      // HiveCatalog, HadoopCatalog uses NAME to identify the metadata table
       properties.setProperty(Catalogs.NAME, tableName + "." + metaTable);
+      // HadoopTable uses LOCATION to identify the metadata table
+      properties.setProperty(Catalogs.LOCATION, location + "#" + metaTable);
     }
 
     String tableIdentifier = properties.getProperty(Catalogs.NAME);
@@ -162,5 +189,23 @@ public class IcebergTableUtil {
 
   public static boolean isBucketed(Table table) {
     return table.spec().fields().stream().anyMatch(f -> f.transform().toString().startsWith("bucket["));
+  }
+
+  /**
+   * Roll an iceberg table's data back to a specific snapshot identified either by id or before a given timestamp.
+   * @param table the iceberg table
+   * @param type the type of the rollback, can be either time based or version based
+   * @param value parameter of the rollback, that can be a timestamp in millis or a snapshot id
+   */
+  public static void rollback(Table table, AlterTableExecuteSpec.RollbackSpec.RollbackType type, Long value) {
+    ManageSnapshots manageSnapshots = table.manageSnapshots();
+    if (type == AlterTableExecuteSpec.RollbackSpec.RollbackType.TIME) {
+      LOG.debug("Trying to rollback iceberg table to snapshot before timestamp {}", value);
+      manageSnapshots.rollbackToTime(value);
+    } else {
+      LOG.debug("Trying to rollback iceberg table to snapshot ID {}", value);
+      manageSnapshots.rollbackTo(value);
+    }
+    manageSnapshots.commit();
   }
 }

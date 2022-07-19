@@ -29,9 +29,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOuterFilteredOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorSparkHashTableSinkOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorSparkPartitionPruningSinkOperator;
-import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.After;
@@ -103,16 +100,6 @@ public class TestOperatorNames {
 
     assertEquals(MapJoinOperator.getOperatorName(),
         new VectorMapJoinOuterFilteredOperator().getName());
-
-    assertEquals(SparkHashTableSinkOperator.getOperatorName(),
-        new SparkHashTableSinkOperator().getName());
-    assertEquals(SparkHashTableSinkOperator.getOperatorName(),
-        new VectorSparkHashTableSinkOperator().getName());
-
-    assertEquals(SparkPartitionPruningSinkOperator.getOperatorName(),
-        new SparkPartitionPruningSinkOperator().getName());
-    assertEquals(SparkPartitionPruningSinkOperator.getOperatorName(),
-        new VectorSparkPartitionPruningSinkOperator().getName());
 
   }
 

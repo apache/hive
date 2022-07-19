@@ -61,4 +61,8 @@ public class <ClassName> extends <ParentClassName> {
         .setUnscaled(true).build();
   }
 
+  @Override
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return false;
+  }
 }

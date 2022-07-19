@@ -93,6 +93,7 @@ PREHOOK: Input: default@test_update_part@c=11
 PREHOOK: Input: default@test_update_part@c=22
 PREHOOK: Input: default@test_update_part@c=33
 PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@test_update_part
 PREHOOK: Output: default@test_update_part@c=11
 PREHOOK: Output: default@test_update_part@c=22
 PREHOOK: Output: default@test_update_part@c=33
@@ -104,10 +105,14 @@ POSTHOOK: Input: default@test_update_part@c=11
 POSTHOOK: Input: default@test_update_part@c=22
 POSTHOOK: Input: default@test_update_part@c=33
 POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_update_part
 POSTHOOK: Output: default@test_update_part@c=11
+POSTHOOK: Output: default@test_update_part@c=22
 POSTHOOK: Output: default@test_update_part@c=22
 POSTHOOK: Output: default@test_update_part@c=33
 POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: test_update_part PARTITION(c=22).a SIMPLE [(test_update_part)test_update_part.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=22).b SIMPLE []
 PREHOOK: query: UPDATE test_update_part SET b=2222 WHERE a=8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_part
@@ -115,6 +120,7 @@ PREHOOK: Input: default@test_update_part@c=11
 PREHOOK: Input: default@test_update_part@c=22
 PREHOOK: Input: default@test_update_part@c=33
 PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@test_update_part
 PREHOOK: Output: default@test_update_part@c=11
 PREHOOK: Output: default@test_update_part@c=22
 PREHOOK: Output: default@test_update_part@c=33
@@ -126,6 +132,7 @@ POSTHOOK: Input: default@test_update_part@c=11
 POSTHOOK: Input: default@test_update_part@c=22
 POSTHOOK: Input: default@test_update_part@c=33
 POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_update_part
 POSTHOOK: Output: default@test_update_part@c=11
 POSTHOOK: Output: default@test_update_part@c=22
 POSTHOOK: Output: default@test_update_part@c=33
@@ -137,6 +144,7 @@ PREHOOK: Input: default@test_update_part@c=11
 PREHOOK: Input: default@test_update_part@c=22
 PREHOOK: Input: default@test_update_part@c=33
 PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@test_update_part
 PREHOOK: Output: default@test_update_part@c=11
 PREHOOK: Output: default@test_update_part@c=22
 PREHOOK: Output: default@test_update_part@c=33
@@ -148,30 +156,50 @@ POSTHOOK: Input: default@test_update_part@c=11
 POSTHOOK: Input: default@test_update_part@c=22
 POSTHOOK: Input: default@test_update_part@c=33
 POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_update_part
 POSTHOOK: Output: default@test_update_part@c=11
+POSTHOOK: Output: default@test_update_part@c=11
+POSTHOOK: Output: default@test_update_part@c=22
 POSTHOOK: Output: default@test_update_part@c=22
 POSTHOOK: Output: default@test_update_part@c=33
 POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: test_update_part PARTITION(c=11).a SIMPLE []
+POSTHOOK: Lineage: test_update_part PARTITION(c=11).b SIMPLE []
+POSTHOOK: Lineage: test_update_part PARTITION(c=22).a SIMPLE []
+POSTHOOK: Lineage: test_update_part PARTITION(c=22).b SIMPLE []
+POSTHOOK: Lineage: test_update_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
+POSTHOOK: Lineage: test_update_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
 PREHOOK: query: UPDATE test_update_part SET b=4444 WHERE c is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_part
 PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@test_update_part
 PREHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: query: UPDATE test_update_part SET b=4444 WHERE c is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_part
 POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_update_part
 POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: test_update_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(test_update_part)test_update_part.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
 PREHOOK: query: UPDATE test_update_part SET b=5555 WHERE c=33
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_part
 PREHOOK: Input: default@test_update_part@c=33
+PREHOOK: Output: default@test_update_part
 PREHOOK: Output: default@test_update_part@c=33
 POSTHOOK: query: UPDATE test_update_part SET b=5555 WHERE c=33
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_part
 POSTHOOK: Input: default@test_update_part@c=33
+POSTHOOK: Output: default@test_update_part
 POSTHOOK: Output: default@test_update_part@c=33
+POSTHOOK: Output: default@test_update_part@c=33
+POSTHOOK: Lineage: test_update_part PARTITION(c=33).a SIMPLE [(test_update_part)test_update_part.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=33).b SIMPLE []
 PREHOOK: query: UPDATE test_update_part SET b=6666 WHERE a IN (SELECT a FROM test_update_part_text WHERE (c=11 and b=2) or c=33)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_part
@@ -180,6 +208,7 @@ PREHOOK: Input: default@test_update_part@c=22
 PREHOOK: Input: default@test_update_part@c=33
 PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Input: default@test_update_part_text
+PREHOOK: Output: default@test_update_part
 PREHOOK: Output: default@test_update_part@c=11
 PREHOOK: Output: default@test_update_part@c=22
 PREHOOK: Output: default@test_update_part@c=33
@@ -192,10 +221,17 @@ POSTHOOK: Input: default@test_update_part@c=22
 POSTHOOK: Input: default@test_update_part@c=33
 POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Input: default@test_update_part_text
+POSTHOOK: Output: default@test_update_part
+POSTHOOK: Output: default@test_update_part@c=11
 POSTHOOK: Output: default@test_update_part@c=11
 POSTHOOK: Output: default@test_update_part@c=22
 POSTHOOK: Output: default@test_update_part@c=33
+POSTHOOK: Output: default@test_update_part@c=33
 POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: test_update_part PARTITION(c=11).a SIMPLE [(test_update_part)test_update_part.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=11).b SIMPLE []
+POSTHOOK: Lineage: test_update_part PARTITION(c=33).a SIMPLE [(test_update_part)test_update_part.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=33).b SIMPLE []
 PREHOOK: query: SELECT * FROM test_update_part ORDER BY c, b, a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_part

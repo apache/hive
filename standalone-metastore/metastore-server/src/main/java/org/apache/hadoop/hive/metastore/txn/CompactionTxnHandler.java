@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
+import org.apache.hadoop.hive.metastore.DatabaseProduct.DbType;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
@@ -31,6 +33,7 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -55,12 +58,15 @@ class CompactionTxnHandler extends TxnHandler {
   static final private String CLASS_NAME = CompactionTxnHandler.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
+  private static DataSource connPoolCompaction;
+
   private static final String SELECT_COMPACTION_QUEUE_BY_TXN_ID =
       "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
           + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
           + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
           + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
-          + "\"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_TXN_ID\" = ?";
+          + "\"CQ_RETRY_RETENTION\", \"CQ_NEXT_TXN_ID\", \"CQ_TXN_ID\", \"CQ_COMMIT_TIME\""
+          + " FROM \"COMPACTION_QUEUE\" WHERE \"CQ_TXN_ID\" = ?";
   private static final String SELECT_COMPACTION_METRICS_CACHE_QUERY =
       "SELECT \"CMC_METRIC_VALUE\", \"CMC_VERSION\" FROM \"COMPACTION_METRICS_CACHE\" " +
           "WHERE \"CMC_DATABASE\" = ? AND \"CMC_TABLE\" = ? AND \"CMC_METRIC_TYPE\" = ?";
@@ -80,6 +86,17 @@ class CompactionTxnHandler extends TxnHandler {
           "AND \"CMC_METRIC_TYPE\" = ?";
 
   public CompactionTxnHandler() {
+  }
+
+  @Override
+  public void setConf(Configuration conf) {
+    super.setConf(conf);
+    synchronized (CompactionTxnHandler.class) {
+      if (connPoolCompaction == null) {
+        int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS);
+        connPoolCompaction = setupJdbcConnectionPool(conf, maxPoolSize);
+      }
+    }
   }
 
   /**
@@ -107,7 +124,7 @@ class CompactionTxnHandler extends TxnHandler {
     ResultSet rs = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         stmt = dbConn.createStatement();
 
         // Check for completed transactions
@@ -217,7 +234,7 @@ class CompactionTxnHandler extends TxnHandler {
       Statement updStmt = null;
       ResultSet rs = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         stmt = dbConn.createStatement();
         String query = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
           "\"CQ_TYPE\", \"CQ_TBLPROPERTIES\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '" + INITIATED_STATE + "'";
@@ -301,7 +318,7 @@ class CompactionTxnHandler extends TxnHandler {
       Connection dbConn = null;
       Statement stmt = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         stmt = dbConn.createStatement();
         String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_STATE\" = '" + READY_FOR_CLEANING + "', "
             + "\"CQ_WORKER_ID\" = NULL"
@@ -343,7 +360,7 @@ class CompactionTxnHandler extends TxnHandler {
     try {
       List<CompactionInfo> rc = new ArrayList<>();
 
-      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
           Statement stmt = dbConn.createStatement()) {
         /*
          * By filtering on minOpenTxnWaterMark, we will only cleanup after every transaction is committed, that could see
@@ -417,7 +434,7 @@ class CompactionTxnHandler extends TxnHandler {
     try {
       Connection dbConn = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         long now = getDbTime(dbConn);
         setCleanerStart(dbConn, info, now);
       } catch (SQLException e) {
@@ -449,7 +466,7 @@ class CompactionTxnHandler extends TxnHandler {
     try {
       Connection dbConn = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         setCleanerStart(dbConn, info, -1L);
       } catch (SQLException e) {
         LOG.error("Unable to clear the cleaner start time for compaction record  " + e.getMessage());
@@ -515,17 +532,19 @@ class CompactionTxnHandler extends TxnHandler {
       PreparedStatement pStmt = null;
       ResultSet rs = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         String s = "INSERT INTO \"COMPLETED_COMPACTIONS\"(\"CC_ID\", \"CC_DATABASE\", "
             + "\"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", "
             + "\"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", "
             + "\"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", \"CC_ENQUEUE_TIME\", "
-            + "\"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\") "
+            + "\"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\", "
+            + "\"CC_NEXT_TXN_ID\", \"CC_TXN_ID\", \"CC_COMMIT_TIME\") "
           + "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
             + quoteChar(SUCCEEDED_STATE) + ", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", "
             + getEpochFn(dbProduct) + ", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", "
             + "\"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", \"CQ_ENQUEUE_TIME\", "
-            + "\"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\""
+            + "\"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
+            + "\"CQ_NEXT_TXN_ID\", \"CQ_TXN_ID\", \"CQ_COMMIT_TIME\" "
             + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
         pStmt = dbConn.prepareStatement(s);
         pStmt.setLong(1, info.id);
@@ -658,7 +677,7 @@ class CompactionTxnHandler extends TxnHandler {
 
         // We query for minimum values in all the queries and they can only increase by any concurrent
         // operations. So, READ COMMITTED is sufficient.
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         stmt = dbConn.createStatement();
 
         // First need to find the min_uncommitted_txnid which is currently seen by any open transactions.
@@ -713,7 +732,7 @@ class CompactionTxnHandler extends TxnHandler {
       Connection dbConn = null;
       Statement stmt = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         stmt = dbConn.createStatement();
 
         String s;
@@ -735,7 +754,10 @@ class CompactionTxnHandler extends TxnHandler {
               "  GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\") \"c2\" " +
               "ON \"tc\".\"CTC_DATABASE\" = \"c2\".\"CTC_DATABASE\" AND \"tc\".\"CTC_TABLE\" = \"c2\".\"CTC_TABLE\"" +
               "  AND (\"tc\".\"CTC_PARTITION\" = \"c2\".\"CTC_PARTITION\" OR (\"tc\".\"CTC_PARTITION\" IS NULL AND \"c2\".\"CTC_PARTITION\" IS NULL)) " +
-              "WHERE \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" AND \"tc\".\"CTC_WRITEID\" != \"c2\".\"updateWriteId\"";
+              "WHERE \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" " +
+              (DbType.MYSQL == dbProduct.dbType ?
+              "  AND NOT \"tc\".\"CTC_WRITEID\" <=> \"c2\".\"updateWriteId\"" :
+              "  AND (\"tc\".\"CTC_WRITEID\" != \"c2\".\"updateWriteId\" OR \"c2\".\"updateWriteId\" IS NULL)");
             break;
           case DERBY:
           case ORACLE:
@@ -747,7 +769,7 @@ class CompactionTxnHandler extends TxnHandler {
               "  WHERE \"CTC_DATABASE\" = \"tc\".\"CTC_DATABASE\"" +
               "    AND \"CTC_TABLE\" = \"tc\".\"CTC_TABLE\"" +
               "    AND (\"CTC_PARTITION\" = \"tc\".\"CTC_PARTITION\" OR (\"CTC_PARTITION\" IS NULL AND \"tc\".\"CTC_PARTITION\" IS NULL))" +
-              "    AND (\"tc\".\"CTC_UPDATE_DELETE\"='N' OR \"tc\".\"CTC_UPDATE_DELETE\"='Y' AND \"CTC_UPDATE_DELETE\"='Y')" +
+              "    AND (\"tc\".\"CTC_UPDATE_DELETE\"='N' OR \"CTC_UPDATE_DELETE\"='Y')" +
               "    AND \"tc\".\"CTC_WRITEID\" < \"CTC_WRITEID\")";
             break;
           case POSTGRES:
@@ -768,7 +790,8 @@ class CompactionTxnHandler extends TxnHandler {
               ") \"c\" " +
               "WHERE \"tc\".\"CTC_DATABASE\" = \"c\".\"CTC_DATABASE\" AND \"tc\".\"CTC_TABLE\" = \"c\".\"CTC_TABLE\"" +
               "  AND (\"tc\".\"CTC_PARTITION\" = \"c\".\"CTC_PARTITION\" OR (\"tc\".\"CTC_PARTITION\" IS NULL AND \"c\".\"CTC_PARTITION\" IS NULL))" +
-              "  AND \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" AND \"tc\".\"CTC_WRITEID\" != \"c\".\"updateWriteId\"";
+              "  AND \"tc\".\"CTC_WRITEID\" < \"c\".\"highestWriteId\" " +
+              "  AND \"tc\".\"CTC_WRITEID\" IS DISTINCT FROM \"c\".\"updateWriteId\"";
             break;
           default:
             String msg = "Unknown database product: " + dbProduct.dbType;
@@ -814,7 +837,7 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         //Aborted and committed are terminal states, so nothing about the txn can change
         //after that, so READ COMMITTED is sufficient.
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         stmt = dbConn.createStatement();
         /*
          * Only delete aborted / committed transaction in a way that guarantees two things:
@@ -885,7 +908,7 @@ class CompactionTxnHandler extends TxnHandler {
       Connection dbConn = null;
       Statement stmt = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         stmt = dbConn.createStatement();
         String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = NULL, \"CQ_START\" = NULL, \"CQ_STATE\" = '"
           + INITIATED_STATE+ "' WHERE \"CQ_STATE\" = '" + WORKING_STATE + "' AND \"CQ_WORKER_ID\" LIKE '"
@@ -931,7 +954,7 @@ class CompactionTxnHandler extends TxnHandler {
       Connection dbConn = null;
       Statement stmt = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         long latestValidStart = getDbTime(dbConn) - timeout;
         stmt = dbConn.createStatement();
         String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = NULL, \"CQ_START\" = NULL, \"CQ_STATE\" = '"
@@ -979,7 +1002,7 @@ class CompactionTxnHandler extends TxnHandler {
     ResultSet rs = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         String quote = getIdentifierQuoteString(dbConn);
         StringBuilder bldr = new StringBuilder();
         bldr.append("SELECT ").append(quote).append("COLUMN_NAME").append(quote)
@@ -1035,7 +1058,7 @@ class CompactionTxnHandler extends TxnHandler {
     Statement stmt = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         stmt = dbConn.createStatement();
         String sqlText = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_HIGHEST_WRITE_ID\" = " +
             ci.highestWriteId + ", \"CQ_RUN_AS\" = " + quoteString(ci.runAs) + ", \"CQ_TXN_ID\" = " + compactionTxnId +
@@ -1175,7 +1198,7 @@ class CompactionTxnHandler extends TxnHandler {
     int refusedRetention = MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_REFUSED);
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         stmt = dbConn.createStatement();
         /* cc_id is monotonically increasing so for any entity sorts in order of compaction history,
         thus this query groups by entity and withing group sorts most recent first */
@@ -1281,7 +1304,7 @@ class CompactionTxnHandler extends TxnHandler {
     ResultSet rs = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         pStmt = dbConn.prepareStatement("SELECT \"CC_STATE\", \"CC_ENQUEUE_TIME\" FROM \"COMPLETED_COMPACTIONS\" WHERE " +
           "\"CC_DATABASE\" = ? AND " +
           "\"CC_TABLE\" = ? " +
@@ -1342,13 +1365,14 @@ class CompactionTxnHandler extends TxnHandler {
       PreparedStatement pStmt = null;
       ResultSet rs = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         stmt = dbConn.createStatement();
         pStmt = dbConn.prepareStatement("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
                 + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
                 + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
                 + "\"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", "
-                + "\"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
+                + "\"CQ_RETRY_RETENTION\", \"CQ_NEXT_TXN_ID\", \"CQ_TXN_ID\", \"CQ_COMMIT_TIME\" "
+                + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
         pStmt.setLong(1, ci.id);
         rs = pStmt.executeQuery();
         if (rs.next()) {
@@ -1390,8 +1414,9 @@ class CompactionTxnHandler extends TxnHandler {
                 + "(\"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", "
                 + "\"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", \"CC_START\", \"CC_END\", \"CC_RUN_AS\", "
                 + "\"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", \"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", "
-                + "\"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\") "
-                + "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?,?,?,?)");
+                + "\"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\","
+                + "\"CC_NEXT_TXN_ID\", \"CC_TXN_ID\", \"CC_COMMIT_TIME\") "
+                + "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?,?,?,?,?,?,?)");
         CompactionInfo.insertIntoCompletedCompactions(pStmt, ci, getDbTime(dbConn));
         int updCount = pStmt.executeUpdate();
         LOG.debug("Inserted " + updCount + " entries into COMPLETED_COMPACTIONS");
@@ -1440,7 +1465,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.CannotRetry
   public void setCleanerRetryRetentionTimeOnError(CompactionInfo info) throws MetaException {
     try {
-      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED)) {
+      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction)) {
         try (PreparedStatement stmt = dbConn.prepareStatement("UPDATE \"COMPACTION_QUEUE\" " +
                 "SET \"CQ_RETRY_RETENTION\" = ?, \"CQ_ERROR_MESSAGE\"= ? WHERE \"CQ_ID\" = ?")) {
           stmt.setLong(1, info.retryRetention);
@@ -1479,7 +1504,7 @@ class CompactionTxnHandler extends TxnHandler {
       Connection dbConn = null;
       Statement stmt = null;
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         stmt = dbConn.createStatement();
         String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_HADOOP_JOB_ID\" = " + quoteString(hadoopJobId)
             + " WHERE \"CQ_ID\" = " + id;
@@ -1508,7 +1533,7 @@ class CompactionTxnHandler extends TxnHandler {
     Connection dbConn = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         return getMinOpenTxnIdWaterMark(dbConn);
       } catch (SQLException e) {
         LOG.error("Unable to getMinOpenTxnIdForCleaner", e);
@@ -1540,7 +1565,7 @@ class CompactionTxnHandler extends TxnHandler {
     Connection dbConn = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         long minOpenTxn;
         try (Statement stmt = dbConn.createStatement()) {
           try (ResultSet rs = stmt.executeQuery("SELECT MIN(\"MHL_MIN_OPEN_TXNID\") FROM \"MIN_HISTORY_LEVEL\"")) {
@@ -1602,7 +1627,7 @@ class CompactionTxnHandler extends TxnHandler {
     Connection dbConn = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         return getCompactionByTxnId(dbConn, txnId);
       } catch (SQLException e) {
         LOG.error("Unable to getCompactionByTxnId", e);
@@ -1638,7 +1663,7 @@ class CompactionTxnHandler extends TxnHandler {
     Connection dbConn = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         boolean updateRes;
         CompactionMetricsData prevMetricsData = getCompactionMetricsData(data, dbConn);
         if (data.getMetricValue() >= data.getThreshold()) {
@@ -1676,7 +1701,7 @@ class CompactionTxnHandler extends TxnHandler {
     List<CompactionMetricsData> metricsDataList = new ArrayList<>();
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         for (CompactionMetricsData.MetricType type : CompactionMetricsData.MetricType.values()) {
           String query = sqlGenerator.addLimitClause(limit, NO_SELECT_COMPACTION_METRICS_CACHE_FOR_TYPE_QUERY);
           try (PreparedStatement pstmt = dbConn.prepareStatement(query)) {
@@ -1715,7 +1740,7 @@ class CompactionTxnHandler extends TxnHandler {
     Connection dbConn = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         return getCompactionMetricsData(new CompactionMetricsData.Builder().dbName(dbName).tblName(tblName)
             .partitionName(partitionName).metricType(type).build(), dbConn);
       } catch (SQLException e) {
@@ -1764,7 +1789,7 @@ class CompactionTxnHandler extends TxnHandler {
     Connection dbConn = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         removeCompactionMetricsData(dbConn, dbName, tblName, partitionName, type);
       } catch (SQLException e) {
         rollbackDBConn(dbConn);

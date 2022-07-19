@@ -20,11 +20,18 @@ package org.apache.hadoop.hive.ql.ddl.table.misc.rename;
 
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -49,6 +56,9 @@ public abstract class AbstractAlterTableRenameAnalyzer extends AbstractAlterTabl
       setAcidDdlDesc(desc);
     }
     addInputsOutputsAlterTable(tableName, null, desc, desc.getType(), false);
+    String newDatabaseName = target.getDb() != null ? target.getDb() : table.getDbName(); // extract new database name from new table name, if not specified, then src dbname is used
+    DDLUtils.addDbAndTableToOutputs(getDatabase(newDatabaseName), target,
+            table.getTableType(), table.isTemporary(), table.getParameters(), outputs);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 

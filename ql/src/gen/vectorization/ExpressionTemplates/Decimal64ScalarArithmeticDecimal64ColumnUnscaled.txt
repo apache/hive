@@ -62,4 +62,9 @@ public class <ClassName> extends <ParentClassName> {
             VectorExpressionDescriptor.InputExpressionType.COLUMN)
         .setUnscaled(true).build();
   }
+
+  @Override
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return false;
+  }
 }

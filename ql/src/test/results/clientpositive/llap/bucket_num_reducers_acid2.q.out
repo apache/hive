@@ -54,10 +54,14 @@ PREHOOK: query: update bucket_nr_acid2 set b = -1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket_nr_acid2
 PREHOOK: Output: default@bucket_nr_acid2
+PREHOOK: Output: default@bucket_nr_acid2
 POSTHOOK: query: update bucket_nr_acid2 set b = -1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket_nr_acid2
 POSTHOOK: Output: default@bucket_nr_acid2
+POSTHOOK: Output: default@bucket_nr_acid2
+POSTHOOK: Lineage: bucket_nr_acid2.a SIMPLE [(bucket_nr_acid2)bucket_nr_acid2.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: bucket_nr_acid2.b SIMPLE []
 PREHOOK: query: select * from bucket_nr_acid2 order by a, b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket_nr_acid2

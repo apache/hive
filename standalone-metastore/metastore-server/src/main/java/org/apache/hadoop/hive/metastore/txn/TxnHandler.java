@@ -69,6 +69,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -171,6 +172,7 @@ import static org.apache.commons.lang3.StringUtils.repeat;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatchNoCount;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatch;
+import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getFullTableName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -307,6 +309,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" FROM \"TXN_COMPONENTS\" " +
           "INNER JOIN \"TXNS\" ON \"TC_TXNID\" = \"TXN_ID\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED +
       " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" HAVING COUNT(\"TXN_ID\") > ?";
+  
+  private static final String  EXCL_CTAS_ERR_MSG = 
+      "Failed to initiate a concurrent CTAS operation with the same table name, lockInfo : %s";
+  private static final String ZERO_WAIT_READ_ERR_MSG = "Unable to acquire read lock due to an existing exclusive lock {%s}";
 
 
   protected List<TransactionalMetaStoreEventListener> transactionalListeners;
@@ -373,21 +379,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     this.conf = conf;
 
     int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
-    long getConnectionTimeoutMs = 30000;
     synchronized (TxnHandler.class) {
       if (connPool == null) {
-        connPool = setupJdbcConnectionPool(conf, maxPoolSize, getConnectionTimeoutMs);
+        connPool = setupJdbcConnectionPool(conf, maxPoolSize);
       }
-
       if (connPoolMutex == null) {
-        /*the mutex pools should ideally be somewhat larger since some operations require 1
-           connection from each pool and we want to avoid taking a connection from primary pool
-           and then blocking because mutex pool is empty.  There is only 1 thread in any HMS trying
-           to mutex on each MUTEX_KEY except MUTEX_KEY.CheckLock.  The CheckLock operation gets a
-           connection from connPool first, then connPoolMutex.  All others, go in the opposite
-           order (not very elegant...).  So number of connection requests for connPoolMutex cannot
-           exceed (size of connPool + MUTEX_KEY.values().length - 1).*/
-        connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize + MUTEX_KEY.values().length, getConnectionTimeoutMs);
+        connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize);
       }
 
       if (dbProduct == null) {
@@ -1075,8 +1072,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (transactionalListeners != null && !isHiveReplTxn) {
+          List<String> dbsUpdated = getTxnDbsUpdated(txnid, dbConn);
           MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
-                  EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnid, txnType), dbConn, sqlGenerator);
+                  EventMessage.EventType.ABORT_TXN,
+                  new AbortTxnEvent(txnid, txnType, null, dbsUpdated), dbConn, sqlGenerator);
         }
 
         LOG.debug("Going to commit");
@@ -1136,9 +1135,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         if (transactionalListeners != null){
           for (Long txnId : txnIds) {
+            List<String> dbsUpdated = getTxnDbsUpdated(txnId, dbConn);
             MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                     EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnId,
-                nonReadOnlyTxns.getOrDefault(txnId, TxnType.READ_ONLY)), dbConn, sqlGenerator);
+                nonReadOnlyTxns.getOrDefault(txnId, TxnType.READ_ONLY), null, dbsUpdated), dbConn, sqlGenerator);
           }
         }
         LOG.debug("Going to commit");
@@ -1670,6 +1670,39 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return getLatestTxnIdInConflict(txnid);
     }
   }
+
+  /**
+   * Returns the databases updated by txnId.
+   * Queries TXN_TO_WRITE_ID using txnId.
+   *
+   * @param txnId
+   * @throws MetaException
+   */
+    private List<String> getTxnDbsUpdated(long txnId, Connection dbConn) throws MetaException {
+    try {
+      try (Statement stmt = dbConn.createStatement()) {
+
+        String query = "SELECT DISTINCT \"T2W_DATABASE\" " +
+                " FROM \"TXN_TO_WRITE_ID\" \"COMMITTED\"" +
+                "   WHERE \"T2W_TXNID\" = " + txnId;
+
+        LOG.debug("Going to execute query: <" + query + ">");
+        try (ResultSet rs = stmt.executeQuery(query)) {
+          List<String> dbsUpdated = new ArrayList<String>();
+          while (rs.next()) {
+            dbsUpdated.add(rs.getString(1));
+          }
+          return dbsUpdated;
+        }
+      } catch (SQLException e) {
+        checkRetryable(e, "getTxnDbsUpdated");
+        throw new MetaException(StringUtils.stringifyException(e));
+      }
+    } catch (RetryException e) {
+      return getTxnDbsUpdated(txnId, dbConn);
+    }
+  }
+
 
   private ResultSet checkForWriteConflict(Statement stmt, long txnid) throws SQLException, MetaException {
     String writeConflictQuery = sqlGenerator.addLimitClause(1, "\"COMMITTED\".\"WS_TXNID\", \"COMMITTED\".\"WS_COMMIT_ID\", " +
@@ -2930,7 +2963,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     ConnectionLockIdPair connAndLockId = enqueueLockWithRetry(rqst);
     try {
       return checkLockWithRetry(connAndLockId.dbConn, connAndLockId.extLockId, rqst.getTxnid(),
-          rqst.isZeroWaitReadEnabled());
+          rqst.isZeroWaitReadEnabled(), rqst.isExclusiveCTAS());
     }
     catch(NoSuchLockException e) {
       // This should never happen, as we just added the lock id
@@ -2972,7 +3005,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * 1. We use S4U (withe read_committed) to generate the next (ext) lock id.  This serializes
    * any 2 {@code enqueueLockWithRetry()} calls.
    * 2. We use S4U on the relevant TXNS row to block any concurrent abort/commit/etc operations
-   * @see #checkLockWithRetry(Connection, long, long, boolean)
+   * @see #checkLockWithRetry(Connection, long, long, boolean, boolean)
    */
   private ConnectionLockIdPair enqueueLockWithRetry(LockRequest rqst)
       throws NoSuchTxnException, TxnAbortedException, MetaException {
@@ -3246,8 +3279,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return FileUtils.makePartName(new ArrayList<>(map.keySet()), new ArrayList<>(map.values()));
   }
 
-  private LockResponse checkLockWithRetry(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled)
-    throws NoSuchLockException, TxnAbortedException, MetaException {
+  private LockResponse checkLockWithRetry(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled, 
+          boolean isExclusiveCTAS)
+      throws NoSuchLockException, TxnAbortedException, MetaException {
     try {
       try {
         lockInternal();
@@ -3255,7 +3289,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           //should only get here if retrying this op
           dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         }
-        return checkLock(dbConn, extLockId, txnId, zeroWaitReadEnabled);
+        return checkLock(dbConn, extLockId, txnId, zeroWaitReadEnabled, isExclusiveCTAS);
       } catch (SQLException e) {
         LOG.error("checkLock failed for extLockId={}/txnId={}. Exception msg: {}", extLockId, txnId, getMessage(e));
         rollbackDBConn(dbConn);
@@ -3270,7 +3304,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     catch(RetryException e) {
       LOG.debug("Going to retry checkLock for extLockId={}/txnId={} after catching RetryException with message: {}",
               extLockId, txnId, e.getMessage());
-      return checkLockWithRetry(dbConn, extLockId, txnId, zeroWaitReadEnabled);
+      return checkLockWithRetry(dbConn, extLockId, txnId, zeroWaitReadEnabled, isExclusiveCTAS);
     }
   }
   /**
@@ -3284,12 +3318,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * The clients that operate in blocking mode, can't heartbeat a lock until the lock is acquired.
    * We should make CheckLockRequest include timestamp or last request to skip unnecessary heartbeats. Thrift change.
    *
-   * {@link #checkLock(java.sql.Connection, long, long, boolean)}  must run at SERIALIZABLE
+   * {@link #checkLock(java.sql.Connection, long, long, boolean, boolean)}  must run at SERIALIZABLE
    * (make sure some lock we are checking against doesn't move from W to A in another txn)
    * but this method can heartbeat in separate txn at READ_COMMITTED.
    *
    * Retry-by-caller note:
-   * Retryable because {@link #checkLock(Connection, long, long, boolean)} is
+   * Retryable because {@link #checkLock(Connection, long, long, boolean, boolean)} is
    */
   @Override
   @RetrySemantics.SafeToRetry
@@ -3315,7 +3349,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         //todo: strictly speaking there is a bug here.  heartbeat*() commits but both heartbeat and
         //checkLock() are in the same retry block, so if checkLock() throws, heartbeat is also retired
         //extra heartbeat is logically harmless, but ...
-        return checkLock(dbConn, extLockId, lockInfo.txnId, false);
+        return checkLock(dbConn, extLockId, lockInfo.txnId, false, false);
       } catch (SQLException e) {
         LOG.error("checkLock failed for request={}. Exception msg: {}", rqst, getMessage(e));
         rollbackDBConn(dbConn);
@@ -3688,9 +3722,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public CompactionResponse compact(CompactionRequest rqst) throws MetaException {
     // Put a compaction request in the queue.
     try {
-      Connection dbConn = null;
-      Statement stmt = null;
-      PreparedStatement pst = null;
       TxnStore.MutexAPI.LockHandle handle = null;
       try {
         lockInternal();
@@ -3700,110 +3731,127 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
          * compactions for any resource.
          */
         handle = getMutexAPI().acquireLock(MUTEX_KEY.CompactionScheduler.name());
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.createStatement();
 
-        long id = generateCompactionQueueId(stmt);
+        try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED)) {
+          try (Statement stmt = dbConn.createStatement()) {
 
-        List<String> params = new ArrayList<>();
-        StringBuilder sb = new StringBuilder("SELECT \"CQ_ID\", \"CQ_STATE\" FROM \"COMPACTION_QUEUE\" WHERE").
-          append(" \"CQ_STATE\" IN(").append(quoteChar(INITIATED_STATE)).
-            append(",").append(quoteChar(WORKING_STATE)).
-          append(") AND \"CQ_DATABASE\"=?").
-          append(" AND \"CQ_TABLE\"=?").append(" AND ");
-        params.add(rqst.getDbname());
-        params.add(rqst.getTablename());
-        if(rqst.getPartitionname() == null) {
-          sb.append("\"CQ_PARTITION\" is null");
-        } else {
-          sb.append("\"CQ_PARTITION\"=?");
-          params.add(rqst.getPartitionname());
-        }
+            long id = generateCompactionQueueId(stmt);
 
-        pst = sqlGenerator.prepareStmtWithParameters(dbConn, sb.toString(), params);
-        LOG.debug("Going to execute query <" + sb.toString() + ">");
-        ResultSet rs = pst.executeQuery();
-        if(rs.next()) {
-          long enqueuedId = rs.getLong(1);
-          String state = compactorStateToResponse(rs.getString(2).charAt(0));
-          LOG.info("Ignoring request to compact " + rqst.getDbname() + "/" + rqst.getTablename() +
-            "/" + rqst.getPartitionname() + " since it is already " + quoteString(state) +
-            " with id=" + enqueuedId);
-          return new CompactionResponse(enqueuedId, state, false);
+            GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(
+                Collections.singletonList(getFullTableName(rqst.getDbname(), rqst.getTablename())));
+            final ValidCompactorWriteIdList tblValidWriteIds =
+                TxnUtils.createValidCompactWriteIdList(getValidWriteIds(request).getTblValidWriteIds().get(0));
+            LOG.debug("ValidCompactWriteIdList: " + tblValidWriteIds.writeToString());
+
+            StringBuilder sb = new StringBuilder("SELECT \"CQ_ID\", \"CQ_STATE\" FROM \"COMPACTION_QUEUE\" WHERE").
+                append(" (\"CQ_STATE\" IN(").
+                append(quoteChar(INITIATED_STATE)).append(",").append(quoteChar(WORKING_STATE)).
+                append(") OR (\"CQ_STATE\" = ").append(quoteChar(READY_FOR_CLEANING)).
+                append(" AND \"CQ_HIGHEST_WRITE_ID\" = ?))").
+                append(" AND \"CQ_DATABASE\"=?").
+                append(" AND \"CQ_TABLE\"=?").append(" AND ");
+            if(rqst.getPartitionname() == null) {
+              sb.append("\"CQ_PARTITION\" is null");
+            } else {
+              sb.append("\"CQ_PARTITION\"=?");
+            }
+
+            try (PreparedStatement pst = dbConn.prepareStatement(sqlGenerator.addEscapeCharacters(sb.toString()))) {
+              pst.setLong(1, tblValidWriteIds.getHighWatermark());
+              pst.setString(2, rqst.getDbname());
+              pst.setString(3, rqst.getTablename());
+              if (rqst.getPartitionname() != null) {
+                pst.setString(4, rqst.getPartitionname());
+              }
+              LOG.debug("Going to execute query <" + sb + ">");
+              try (ResultSet rs = pst.executeQuery()) {
+                if(rs.next()) {
+                  long enqueuedId = rs.getLong(1);
+                  String state = compactorStateToResponse(rs.getString(2).charAt(0));
+                  LOG.info("Ignoring request to compact " + rqst.getDbname() + "/" + rqst.getTablename() +
+                      "/" + rqst.getPartitionname() + " since it is already " + quoteString(state) +
+                      " with id=" + enqueuedId);
+                  CompactionResponse resp = new CompactionResponse(-1, REFUSED_RESPONSE, false);
+                  resp.setErrormessage("Compaction is already scheduled with state=" + quoteString(state) +
+                      " and id=" + enqueuedId);
+                  return resp;
+                }
+              }
+            }
+            List<String> params = new ArrayList<>();
+            StringBuilder buf = new StringBuilder("INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", " +
+                "\"CQ_TABLE\", ");
+            String partName = rqst.getPartitionname();
+            if (partName != null) buf.append("\"CQ_PARTITION\", ");
+            buf.append("\"CQ_STATE\", \"CQ_TYPE\", \"CQ_ENQUEUE_TIME\"");
+            if (rqst.getProperties() != null) {
+              buf.append(", \"CQ_TBLPROPERTIES\"");
+            }
+            if (rqst.getRunas() != null) {
+              buf.append(", \"CQ_RUN_AS\"");
+            }
+            if (rqst.getInitiatorId() != null) {
+              buf.append(", \"CQ_INITIATOR_ID\"");
+            }
+            if (rqst.getInitiatorVersion() != null) {
+              buf.append(", \"CQ_INITIATOR_VERSION\"");
+            }
+            buf.append(") values (");
+            buf.append(id);
+            buf.append(", ?");
+            buf.append(", ?");
+            buf.append(", ");
+            params.add(rqst.getDbname());
+            params.add(rqst.getTablename());
+            if (partName != null) {
+              buf.append("?, '");
+              params.add(partName);
+            } else {
+              buf.append("'");
+            }
+            buf.append(INITIATED_STATE);
+            buf.append("', '");
+            buf.append(thriftCompactionType2DbType(rqst.getType()));
+            buf.append("',");
+            buf.append(getEpochFn(dbProduct));
+            if (rqst.getProperties() != null) {
+              buf.append(", ?");
+              params.add(new StringableMap(rqst.getProperties()).toString());
+            }
+            if (rqst.getRunas() != null) {
+              buf.append(", ?");
+              params.add(rqst.getRunas());
+            }
+            if (rqst.getInitiatorId() != null) {
+              buf.append(", ?");
+              params.add(rqst.getInitiatorId());
+            }
+            if (rqst.getInitiatorVersion() != null) {
+              buf.append(", ?");
+              params.add(rqst.getInitiatorVersion());
+            }
+            buf.append(")");
+            String s = buf.toString();
+
+            try (PreparedStatement pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params)) {
+              LOG.debug("Going to execute update <" + s + ">");
+              pst.executeUpdate();
+            }
+            LOG.debug("Going to commit");
+            dbConn.commit();
+            return new CompactionResponse(id, INITIATED_RESPONSE, true);
+          } catch (SQLException e) {
+            LOG.debug("Going to rollback: ", e);
+            dbConn.rollback();
+            throw e;
+          }
         }
-        close(rs);
-        closeStmt(pst);
-        params.clear();
-        StringBuilder buf = new StringBuilder("INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", " +
-          "\"CQ_TABLE\", ");
-        String partName = rqst.getPartitionname();
-        if (partName != null) buf.append("\"CQ_PARTITION\", ");
-        buf.append("\"CQ_STATE\", \"CQ_TYPE\", \"CQ_ENQUEUE_TIME\"");
-        if (rqst.getProperties() != null) {
-          buf.append(", \"CQ_TBLPROPERTIES\"");
-        }
-        if (rqst.getRunas() != null) {
-          buf.append(", \"CQ_RUN_AS\"");
-        }
-        if (rqst.getInitiatorId() != null) {
-          buf.append(", \"CQ_INITIATOR_ID\"");
-        }
-        if (rqst.getInitiatorVersion() != null) {
-          buf.append(", \"CQ_INITIATOR_VERSION\"");
-        }
-        buf.append(") values (");
-        buf.append(id);
-        buf.append(", ?");
-        buf.append(", ?");
-        buf.append(", ");
-        params.add(rqst.getDbname());
-        params.add(rqst.getTablename());
-        if (partName != null) {
-          buf.append("?, '");
-          params.add(partName);
-        } else {
-          buf.append("'");
-        }
-        buf.append(INITIATED_STATE);
-        buf.append("', '");
-        buf.append(thriftCompactionType2DbType(rqst.getType()));
-        buf.append("',");
-        buf.append(getEpochFn(dbProduct));
-        if (rqst.getProperties() != null) {
-          buf.append(", ?");
-          params.add(new StringableMap(rqst.getProperties()).toString());
-        }
-        if (rqst.getRunas() != null) {
-          buf.append(", ?");
-          params.add(rqst.getRunas());
-        }
-        if (rqst.getInitiatorId() != null) {
-          buf.append(", ?");
-          params.add(rqst.getInitiatorId());
-        }
-        if (rqst.getInitiatorVersion() != null) {
-          buf.append(", ?");
-          params.add(rqst.getInitiatorVersion());
-        }
-        buf.append(")");
-        String s = buf.toString();
-        pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
-        LOG.debug("Going to execute update <" + s + ">");
-        pst.executeUpdate();
-        LOG.debug("Going to commit");
-        dbConn.commit();
-        return new CompactionResponse(id, INITIATED_RESPONSE, true);
       } catch (SQLException e) {
-        LOG.debug("Going to rollback: ", e);
-        rollbackDBConn(dbConn);
         checkRetryable(e, "COMPACT(" + rqst + ")");
-        throw new MetaException("Unable to select from transaction database " +
+        throw new MetaException("Unable to put the compaction request into the queue: " +
           StringUtils.stringifyException(e));
       } finally {
-        closeStmt(pst);
-        closeStmt(stmt);
-        closeDbConn(dbConn);
-        if(handle != null) {
+        if (handle != null) {
           handle.releaseLocks();
         }
         unlockInternal();
@@ -4208,7 +4256,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.Idempotent
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
-      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException {
+        Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException {
+    cleanupRecords(type, db, table, partitionIterator, keepTxnToWriteIdMetaData, 0);
+  }
+
+  @Override
+  @RetrySemantics.Idempotent
+  public void cleanupRecords(HiveObjectType type, Database db, Table table,
+        Iterator<Partition> partitionIterator, long txnId) throws MetaException {
+    cleanupRecords(type, db , table, partitionIterator, false, txnId);
+  }
+  
+  private void cleanupRecords(HiveObjectType type, Database db, Table table,
+      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData, long txnId) throws MetaException {
 
     // cleanup should be done only for objects belonging to default catalog
     final String defaultCatalog = getDefaultCatalog(conf);
@@ -4244,11 +4304,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             buff.append(dbName);
             buff.append("'");
             queries.add(buff.toString());
-
+            
             buff.setLength(0);
             buff.append("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_DATABASE\"='");
             buff.append(dbName);
-            buff.append("'");
+            buff.append("' AND \"CQ_TXN_ID\"!=").append(txnId);
             queries.add(buff.toString());
 
             buff.setLength(0);
@@ -4676,7 +4736,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return getDbConn(isolationLevel, connPool);
   }
 
-  private Connection getDbConn(int isolationLevel, DataSource connPool) throws SQLException {
+  protected Connection getDbConn(int isolationLevel, DataSource connPool) throws SQLException {
     Connection dbConn = null;
     try {
       dbConn = connPool.getConnection();
@@ -5112,7 +5172,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * checkLock() will in the worst case keep locks in Waiting state a little longer.
    */
   @RetrySemantics.SafeToRetry("See @SafeToRetry")
-  private LockResponse checkLock(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled)
+  private LockResponse checkLock(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled, 
+          boolean isExclusiveCTAS)
       throws NoSuchLockException, TxnAbortedException, MetaException, SQLException {
     Statement stmt = null;
     ResultSet rs = null;
@@ -5249,26 +5310,23 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LockInfo blockedBy = new LockInfo(rs);
         long intLockId = rs.getLong("LOCK_INT_ID");
         char lockChar = rs.getString("LOCK_TYPE").charAt(0);
-
+        
         LOG.debug("Failure to acquire lock({} intLockId:{} {}), blocked by ({})", JavaUtils.lockIdToString(extLockId),
             intLockId, JavaUtils.txnIdToString(txnId), blockedBy);
 
-        if (zeroWaitReadEnabled && isValidTxn(txnId)) {
-          LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
-              .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
+        LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
+            .orElseThrow(() -> new MetaException("Unknown lock type: " + lockChar));
+        
+        if ((zeroWaitReadEnabled && LockType.SHARED_READ == lockType || isExclusiveCTAS) && isValidTxn(txnId)) {
+          String cleanupQuery = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
+          LOG.debug("Going to execute query: <" + cleanupQuery + ">");
+          stmt.executeUpdate(cleanupQuery);
+          dbConn.commit();
 
-          if (lockType == LockType.SHARED_READ) {
-            String cleanupQuery = "DELETE FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = " + extLockId;
-
-            LOG.debug("Going to execute query: <" + cleanupQuery + ">");
-            stmt.executeUpdate(cleanupQuery);
-            dbConn.commit();
-
-            response.setErrorMessage(String.format(
-                "Unable to acquire read lock due to an exclusive lock {%s}", blockedBy));
-            response.setState(LockState.NOT_ACQUIRED);
-            return response;
-          }
+          response.setErrorMessage(String.format(
+              isExclusiveCTAS ? EXCL_CTAS_ERR_MSG : ZERO_WAIT_READ_ERR_MSG, blockedBy));
+          response.setState(LockState.NOT_ACQUIRED);
+          return response;
         }
         String updateBlockedByQuery = "UPDATE \"HIVE_LOCKS\"" +
             " SET \"HL_BLOCKEDBY_EXT_ID\" = " + blockedBy.extLockId +
@@ -5836,11 +5894,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private synchronized static DataSource setupJdbcConnectionPool(Configuration conf, int maxPoolSize, long getConnectionTimeoutMs) {
+  protected synchronized static DataSource setupJdbcConnectionPool(Configuration conf, int maxPoolSize) {
     DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     if (dsp != null) {
       try {
-        return dsp.create(conf);
+        return dsp.create(conf, maxPoolSize);
       } catch (SQLException e) {
         LOG.error("Unable to instantiate JDBC connection pooling", e);
         throw new RuntimeException(e);

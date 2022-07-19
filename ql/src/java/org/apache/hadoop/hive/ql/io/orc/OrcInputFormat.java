@@ -251,13 +251,29 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
 
     OrcRecordReader(Reader file, Configuration conf,
-                    FileSplit split) throws IOException {
-      List<OrcProto.Type> types = file.getTypes();
+                    InputSplit inputSplit) throws IOException {
       this.file = file;
-      numColumns = (types.size() == 0) ? 0 : types.get(0).getSubtypesCount();
+      numColumns = file.getSchema().getChildren().size();
+      FileSplit split = (FileSplit)inputSplit;
       this.offset = split.getStart();
       this.length = split.getLength();
-      this.reader = createReaderFromFile(file, conf, offset, length);
+
+      // In case of query based compaction, the ACID table location is used as the location of the external table.
+      // The assumption is that the table is treated as a external table. But as per file, the table is ACID and thus
+      // the file schema can not be used to judge if the table is original or not. It has to be as per the file split.
+
+      // CREATE temporary external table delete_delta_default_tmp_compactor_testminorcompaction_1657797233724_result(
+      // `operation` int, `originalTransaction` bigint, `bucket` int, `rowId` bigint, `currentTransaction` bigint,
+      // `row` struct<`a` :int, `b` :string, `c` :int, `d` :int, `e` :int, `f` :int, `j` :int, `i` :int>)
+      // clustered by (`bucket`) sorted by (`originalTransaction`, `bucket`, `rowId`) into 1 buckets stored as
+      // orc LOCATION 'file:/warehouse/testminorcompaction/delete_delta_0000001_0000006_v0000009'
+      // TBLPROPERTIES ('compactiontable'='true', 'bucketing_version'='2', 'transactional'='false')
+      if (inputSplit instanceof OrcSplit) {
+        this.reader = createReaderFromFile(file, conf, offset, length, ((OrcSplit) inputSplit).isOriginal());
+      } else {
+        this.reader = createReaderFromFile(file, conf, offset, length);
+      }
+
       this.stats = new SerDeStats();
     }
 
@@ -328,6 +344,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   public static RecordReader createReaderFromFile(Reader file,
                                                   Configuration conf,
                                                   long offset, long length
+  ) throws IOException {
+    return createReaderFromFile(file, conf, offset, length, isOriginal(file));
+  }
+
+  public static RecordReader createReaderFromFile(Reader file,
+                                                  Configuration conf,
+                                                  long offset, long length,
+                                                  boolean isOriginal
                                                   ) throws IOException {
     if (AcidUtils.isFullAcidScan(conf)) {
       raiseAcidTablesMustBeReadWithAcidReaderException(conf);
@@ -340,7 +364,6 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     Reader.Options options = new Reader.Options(conf).range(offset, length);
     options.schema(schema);
-    boolean isOriginal = isOriginal(file);
     if (schema == null) {
       schema = file.getSchema();
     }
@@ -1980,7 +2003,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         return new OrcRecordReader(OrcFile.createReader(
             ((FileSplit) inputSplit).getPath(),
             readerOptions),
-            conf, (FileSplit) inputSplit);
+            conf, inputSplit);
       }
     }
 

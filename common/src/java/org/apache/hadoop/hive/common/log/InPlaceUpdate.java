@@ -186,10 +186,6 @@ public class InPlaceUpdate {
       inPlaceUpdates = HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_INPLACE_PROGRESS);
     }
 
-    if (engine.equals("spark")) {
-      inPlaceUpdates = HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPARK_EXEC_INPLACE_PROGRESS);
-    }
-
     return inPlaceUpdates && isUnixTerminal();
   }
 

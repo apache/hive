@@ -22,10 +22,14 @@ PREHOOK: query: update masking_acid_no_masking set key=1 where value='ddd'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@masking_acid_no_masking
 PREHOOK: Output: default@masking_acid_no_masking
+PREHOOK: Output: default@masking_acid_no_masking
 POSTHOOK: query: update masking_acid_no_masking set key=1 where value='ddd'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@masking_acid_no_masking
 POSTHOOK: Output: default@masking_acid_no_masking
+POSTHOOK: Output: default@masking_acid_no_masking
+POSTHOOK: Lineage: masking_acid_no_masking.key SIMPLE []
+POSTHOOK: Lineage: masking_acid_no_masking.value SIMPLE []
 PREHOOK: query: delete from masking_acid_no_masking where value='ddd'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@masking_acid_no_masking

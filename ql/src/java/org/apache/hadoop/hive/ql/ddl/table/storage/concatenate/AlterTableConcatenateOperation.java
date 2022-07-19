@@ -63,7 +63,7 @@ public class AlterTableConcatenateOperation extends DDLOperation<AlterTableConca
     return executeTask(generalContext, task);
   }
 
-  private MergeFileWork getMergeFileWork(CompilationOpContext opContext) {
+  private MergeFileWork getMergeFileWork(CompilationOpContext opContext) throws HiveException {
     List<Path> inputDirList = Lists.newArrayList(desc.getInputDir());
 
     // merge work only needs input and output.

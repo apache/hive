@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.shims.Utils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -36,7 +37,7 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 
 public class BaseReplicationAcrossInstances {
   @Rule
@@ -121,6 +122,7 @@ public class BaseReplicationAcrossInstances {
   public static void classLevelTearDown() throws IOException {
     primary.close();
     replica.close();
+    Hive.closeCurrent();
   }
 
   private static void setFullyQualifiedReplicaExternalTableBase(FileSystem fs) throws IOException {

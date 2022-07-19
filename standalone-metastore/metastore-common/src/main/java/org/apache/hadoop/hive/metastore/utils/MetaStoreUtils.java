@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.utils;
 
 import java.io.File;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
@@ -127,6 +128,8 @@ public class MetaStoreUtils {
   };
 
   public static final String NO_VAL = " --- ";
+
+  public static final String USER_NAME_HTTP_HEADER = "x-actor-username";
 
   /**
    * Catches exceptions that cannot be handled and wraps them in MetaException.
@@ -242,6 +245,13 @@ public class MetaStoreUtils {
     return isExternal(params);
   }
 
+  public static boolean isTranslatedToExternalTable(Table table) {
+    Map<String, String> params = table.getParameters();
+    return params != null && MetaStoreUtils.isPropertyTrue(params, "EXTERNAL")
+        && MetaStoreUtils.isPropertyTrue(params, "TRANSLATED_TO_EXTERNAL") && table.getSd() != null
+        && table.getSd().isSetLocation();
+  }
+
   public static String getDbNameFromReplPolicy(String replPolicy) {
     assert replPolicy != null;
     return replPolicy.split(Pattern.quote("."))[0];
@@ -281,9 +291,17 @@ public class MetaStoreUtils {
     return dbParameters != null && !StringUtils.isEmpty(dbParameters.get(ReplConst.TARGET_OF_REPLICATION));
   }
 
+  public static boolean isBackgroundThreadsEnabledForRepl(Database db) {
+    assert (db != null);
+    Map<String, String> dbParameters = db.getParameters();
+    return dbParameters != null && !StringUtils.isEmpty(dbParameters.get(ReplConst.REPL_ENABLE_BACKGROUND_THREAD));
+  }
+
   public static boolean checkIfDbNeedsToBeSkipped(Database db) {
     assert (db != null);
-    if (isDbBeingFailedOver(db)) {
+    if (isBackgroundThreadsEnabledForRepl(db)) {
+      return false;
+    } else if (isDbBeingFailedOver(db)) {
       LOG.info("Skipping all the tables which belong to database: {} as it is being failed over", db.getName());
       return true;
     } else if (isTargetOfReplication(db)) {
@@ -291,6 +309,20 @@ public class MetaStoreUtils {
       return true;
     }
     return false;
+  }
+
+  public static List<String> getReplicationDbProps() {
+    return Arrays.stream(ReplConst.class.getDeclaredFields())
+            .filter(field -> Modifier.isStatic(field.getModifiers()))
+            .map(field -> {
+              try {
+                String prop = (String) field.get(String.class);
+                return prop.replace("\"", "");
+              } catch (IllegalAccessException e) {
+                LOG.error("Failed to collect replication specific properties. Reason: ", e);
+                throw new RuntimeException(e);
+              }
+            }).collect(Collectors.toList());
   }
 
   /**
@@ -345,7 +377,13 @@ public class MetaStoreUtils {
     if (table == null || table.getParameters() == null) {
       return false;
     }
-    return (table.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE) != null);
+    return isNonNativeTable(table.getParameters());
+  }
+
+  public static boolean isNonNativeTable(Map<String, String> tblProps) {
+    return tblProps.get(
+            org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE)
+            != null;
   }
 
   /**
@@ -466,7 +504,7 @@ public class MetaStoreUtils {
 
   /**
    * Returns currently known class paths as best effort. For system class loader, this may return
-   * In such cases we will anyway create new child class loader in {@link #addToClassPath(ClassLo
+   * In such cases we will anyway create new child class loader in {@link #addToClassPath(ClassLoader cloader, String[] newPaths)
    * so all new class paths will be added and next time we will have a URLClassLoader to work wit
    */
   private static List<URL> getCurrentClassPaths(ClassLoader parentLoader) {
@@ -921,14 +959,19 @@ public class MetaStoreUtils {
    */
   public static String prependCatalogToDbName(@Nullable String catalogName, @Nullable String dbName,
                                               Configuration conf) {
-    if (catalogName == null) catalogName = getDefaultCatalog(conf);
+    if (catalogName == null) {
+      catalogName = getDefaultCatalog(conf);
+    }
     StringBuilder buf = new StringBuilder()
         .append(CATALOG_DB_THRIFT_NAME_MARKER)
         .append(catalogName)
         .append(CATALOG_DB_SEPARATOR);
     if (dbName != null) {
-      if (dbName.isEmpty()) buf.append(DB_EMPTY_MARKER);
-      else buf.append(dbName);
+      if (dbName.isEmpty()) {
+        buf.append(DB_EMPTY_MARKER);
+      } else {
+        buf.append(dbName);
+      }
     }
     return buf.toString();
   }
@@ -1007,7 +1050,9 @@ public class MetaStoreUtils {
       return Warehouse.DEFAULT_CATALOG_NAME;
     }
     String catName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT);
-    if (catName == null || "".equals(catName)) catName = Warehouse.DEFAULT_CATALOG_NAME;
+    if (catName == null || "".equals(catName)) {
+      catName = Warehouse.DEFAULT_CATALOG_NAME;
+    }
     return catName;
   }
 
@@ -1156,5 +1201,28 @@ public class MetaStoreUtils {
       result.setId(tableId);
     }
     return result;
+  }
+
+  /**
+   * The config parameter can be like "path", "/path", "/path/", "path/*", "/path1/path2/*" and so on.
+   * httpPath should end up as "/*", "/path/*" or "/path1/../pathN/*"
+   * @param httpPath
+   * @return
+   */
+  public static String getHttpPath(String httpPath) {
+    if (httpPath == null || httpPath.equals("")) {
+      httpPath = "/*";
+    } else {
+      if (!httpPath.startsWith("/")) {
+        httpPath = "/" + httpPath;
+      }
+      if (httpPath.endsWith("/")) {
+        httpPath = httpPath + "*";
+      }
+      if (!httpPath.endsWith("/*")) {
+        httpPath = httpPath + "/*";
+      }
+    }
+    return httpPath;
   }
 }

@@ -252,6 +252,10 @@ sys	locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -482,6 +486,7 @@ PREHOOK: Output: sys@global_privs
 PREHOOK: Output: sys@hive_locks
 PREHOOK: Output: sys@key_constraints
 PREHOOK: Output: sys@locks
+PREHOOK: Output: sys@min_history_level
 PREHOOK: Output: sys@mv_creation_metadata
 PREHOOK: Output: sys@mv_tables_used
 PREHOOK: Output: sys@notification_log
@@ -544,6 +549,7 @@ POSTHOOK: Output: sys@global_privs
 POSTHOOK: Output: sys@hive_locks
 POSTHOOK: Output: sys@key_constraints
 POSTHOOK: Output: sys@locks
+POSTHOOK: Output: sys@min_history_level
 POSTHOOK: Output: sys@mv_creation_metadata
 POSTHOOK: Output: sys@mv_tables_used
 POSTHOOK: Output: sys@notification_log

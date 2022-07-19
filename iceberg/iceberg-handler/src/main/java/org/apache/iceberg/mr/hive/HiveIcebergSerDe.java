@@ -31,6 +31,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -128,28 +130,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       }
     }
 
-    String tableName = serDeProperties.getProperty(Catalogs.NAME);
-    if (HiveIcebergStorageHandler.isDelete(configuration, tableName)) {
-      // when writing delete files, we should use the full delete schema
-      projectedSchema = IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
-    } else if (HiveIcebergStorageHandler.isWrite(configuration, tableName)) {
-      // when writing out data, we should not do projection pushdown
-      projectedSchema = tableSchema;
-    } else {
-      configuration.setBoolean(InputFormatConfig.CASE_SENSITIVE, false);
-      String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(configuration);
-      // When same table is joined multiple times, it is possible some selected columns are duplicated,
-      // in this case wrong recordStructField position leads wrong value or ArrayIndexOutOfBoundException
-      String[] distinctSelectedColumns = Arrays.stream(selectedColumns).distinct().toArray(String[]::new);
-      projectedSchema = distinctSelectedColumns.length > 0 ?
-              tableSchema.caseInsensitiveSelect(distinctSelectedColumns) : tableSchema;
-      // the input split mapper handles does not belong to this table
-      // it is necessary to ensure projectedSchema equals to tableSchema,
-      // or we cannot find selectOperator's column from inspector
-      if (projectedSchema.columns().size() != distinctSelectedColumns.length) {
-        projectedSchema = tableSchema;
-      }
-    }
+    this.projectedSchema = projectedSchema(configuration, serDeProperties.getProperty(Catalogs.NAME), tableSchema);
 
     // Currently ClusteredWriter is used which requires that records are ordered by partition keys.
     // Here we ensure that SortedDynPartitionOptimizer will kick in and do the sorting.
@@ -161,6 +142,38 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       this.inspector = IcebergObjectInspector.create(projectedSchema);
     } catch (Exception e) {
       throw new SerDeException(e);
+    }
+  }
+
+  private static Schema projectedSchema(Configuration configuration, String tableName, Schema tableSchema) {
+    Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(configuration, tableName);
+    if (operation != null) {
+      switch (operation) {
+        case DELETE:
+          return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
+        case UPDATE:
+          return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
+        case OTHER:
+          return tableSchema;
+        default:
+          throw new IllegalArgumentException("Unsupported operation " + operation);
+      }
+    } else {
+      configuration.setBoolean(InputFormatConfig.CASE_SENSITIVE, false);
+      String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(configuration);
+      // When same table is joined multiple times, it is possible some selected columns are duplicated,
+      // in this case wrong recordStructField position leads wrong value or ArrayIndexOutOfBoundException
+      String[] distinctSelectedColumns = Arrays.stream(selectedColumns).distinct().toArray(String[]::new);
+      Schema projectedSchema = distinctSelectedColumns.length > 0 ?
+          tableSchema.caseInsensitiveSelect(distinctSelectedColumns) : tableSchema;
+      // the input split mapper handles does not belong to this table
+      // it is necessary to ensure projectedSchema equals to tableSchema,
+      // or we cannot find selectOperator's column from inspector
+      if (projectedSchema.columns().size() != distinctSelectedColumns.length) {
+        return tableSchema;
+      } else {
+        return projectedSchema;
+      }
     }
   }
 

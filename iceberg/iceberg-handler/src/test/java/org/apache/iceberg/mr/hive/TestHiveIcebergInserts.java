@@ -70,14 +70,17 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
   public void testInsertSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
+
       // TODO: remove this filter when issue #1881 is resolved
       if (type == Types.UUIDType.get() && fileFormat == FileFormat.PARQUET) {
         continue;
       }
+
       // TODO: remove this filter when we figure out how we could test binary types
-      if (type.equals(Types.BinaryType.get()) || type.equals(Types.FixedType.ofLength(5))) {
+      if (type == Types.BinaryType.get() || type.equals(Types.FixedType.ofLength(5))) {
         continue;
       }
+
       String columnName = type.typeId().toString().toLowerCase() + "_column";
 
       Schema schema = new Schema(required(1, "id", Types.LongType.get()), required(2, columnName, type));
@@ -327,6 +330,30 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
     // Check that everything is as expected
     HiveIcebergTestUtils.validateData(target1, target1Records, 0);
     HiveIcebergTestUtils.validateData(target2, target2Records, 1);
+  }
+
+  @Test
+  public void testStructMapWithNull() throws IOException {
+    Assume.assumeTrue("Vectorized parquet read throws class cast exception",
+        !(fileFormat == FileFormat.PARQUET && isVectorized));
+    Schema schema = new Schema(required(1, "id", Types.LongType.get()),
+        required(2, "mapofstructs", Types.MapType.ofRequired(3, 4, Types.StringType.get(),
+            Types.StructType.of(required(5, "something", Types.StringType.get()),
+                required(6, "someone", Types.StringType.get()),
+                required(7, "somewhere", Types.StringType.get())
+            ))
+        )
+    );
+
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
+        .add(0L, ImmutableMap.of())
+        .build();
+
+    testTables.createTable(shell, "mapwithnull", schema, fileFormat, records);
+
+    List<Object[]> results = shell.executeStatement("select mapofstructs['context'].someone FROM mapwithnull");
+    Assert.assertEquals(1, results.size());
+    Assert.assertNull(results.get(0)[0]);
   }
 
   @Test
