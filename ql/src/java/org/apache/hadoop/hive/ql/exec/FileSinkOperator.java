@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
+import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperation;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -616,17 +617,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       initializeSpecPath();
       fs = specPath.getFileSystem(hconf);
 
-      if (hconf instanceof JobConf) {
-        jc = (JobConf) hconf;
-      } else {
-        // test code path
-        jc = new JobConf(hconf);
-      }
+      jc = new JobConf(hconf);
+      setWriteOperation(jc, getConf().getTableInfo().getTableName(), getConf().getWriteOperation());
 
       try {
         createHiveOutputFormat(jc);
       } catch (HiveException ex) {
-        logOutputFormatError(hconf, ex);
+        logOutputFormatError(jc, ex);
         throw ex;
       }
       isCompressed = conf.getCompressed();
@@ -637,7 +634,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
       statsFromRecordWriter = new boolean[numFiles];
       AbstractSerDe serde = conf.getTableInfo().getSerDeClass().newInstance();
-      serde.initialize(unsetNestedColumnPaths(hconf), conf.getTableInfo().getProperties(), null);
+      serde.initialize(unsetNestedColumnPaths(jc), conf.getTableInfo().getProperties(), null);
 
       serializer = serde;
 
@@ -1143,7 +1140,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           cntr = 0;
           numRows = 1;
         }
-        LOG.info(toString() + ": records written - " + numRows);
+        LOG.info("{}: {} written - {}",
+                this, conf.isDeleteOfSplitUpdate() ? "delete delta records" : "records", numRows);
       }
 
       int writerOffset;
@@ -1442,8 +1440,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   @Override
   public void closeOp(boolean abort) throws HiveException {
 
-    row_count.set(numRows);
-    LOG.info(toString() + ": records written - " + numRows);
+    row_count.set(conf.isDeleteOfSplitUpdate() ? 0 : numRows);
+
+    LOG.info("{}: {} written - {}",
+            this, conf.isDeleteOfSplitUpdate() ? "delete delta records" : "records", numRows);
 
     if (!bDynParts && !filesCreated) {
       boolean isTez = "tez".equalsIgnoreCase(

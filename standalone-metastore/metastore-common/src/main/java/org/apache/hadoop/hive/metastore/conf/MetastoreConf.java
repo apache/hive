@@ -629,7 +629,7 @@ public class MetastoreConf {
             "Initial value of the cleaner retry retention time. The delay has a backoff, and calculated the following way: " +
             "pow(2, number_of_failed_attempts) * HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME."),
     HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS("metastore.compactor.connectionPool.maxPoolSize",
-            "hive.compactor.connectionPool.maxPoolSize", 10,
+            "hive.compactor.connectionPool.maxPoolSize", 5,
             "Specify the maximum number of connections in the connection pool used by the compactor."),
     CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
         "javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",

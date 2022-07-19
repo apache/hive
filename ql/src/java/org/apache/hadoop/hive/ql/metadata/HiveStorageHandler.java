@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -371,7 +372,8 @@ public interface HiveStorageHandler extends Configurable {
    * @return the created DP context object, null if DP context / sorting is not required
    * @throws SemanticException
    */
-  default DynamicPartitionCtx createDPContext(HiveConf conf, org.apache.hadoop.hive.ql.metadata.Table table)
+  default DynamicPartitionCtx createDPContext(
+          HiveConf conf, org.apache.hadoop.hive.ql.metadata.Table table, Operation writeOperation)
       throws SemanticException {
     Preconditions.checkState(alwaysUnpartitioned(), "Should only be called for table formats where partitioning " +
         "is not handled by Hive but the table format itself. See alwaysUnpartitioned() method.");
@@ -460,5 +462,12 @@ public interface HiveStorageHandler extends Configurable {
    * @throws SemanticException if the sink operation is not allowed
    */
   default void validateSinkDesc(FileSinkDesc sinkDesc) throws SemanticException {
+  }
+
+  /**
+   * Execute an operation on storage handler level
+   * @param executeSpec operation specification
+   */
+  default void executeOperation(org.apache.hadoop.hive.ql.metadata.Table table, AlterTableExecuteSpec executeSpec) {
   }
 }

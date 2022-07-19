@@ -24,6 +24,8 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@separator_test
+POSTHOOK: Lineage: separator_test.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: separator_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 "100"|"val_100"
 PREHOOK: query: drop table separator_test
 PREHOOK: type: DROPTABLE

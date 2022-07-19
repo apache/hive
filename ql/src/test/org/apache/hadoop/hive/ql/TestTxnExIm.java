@@ -338,8 +338,8 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
             "t/delta_0000001_0000001_0000/000000_0"},
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
             "t/delta_0000001_0000001_0000/000000_0"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t6",
-            "t/delta_0000002_0000002_0000/bucket_00000_0"}};
+        {"{\"writeid\":2,\"bucketid\":536870913,\"rowid\":0}\t0\t6",
+            "t/delta_0000002_0000002_0001/bucket_00000_0"}};
     checkResult(expected2, testQuery, isVectorized, "update imported table");
 
     runStatementOnDriver("alter table T compact 'minor'");
@@ -349,7 +349,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
             ".*t/delta_0000001_0000002_v000002[6-7]/bucket_00000"},
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
             ".*t/delta_0000001_0000002_v000002[6-7]/bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t6",
+        {"{\"writeid\":2,\"bucketid\":536870913,\"rowid\":0}\t0\t6",
             ".*t/delta_0000001_0000002_v000002[6-7]/bucket_00000"}};
     checkResult(expected3, testQuery, isVectorized, "minor compact imported table");
 

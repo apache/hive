@@ -1,0 +1,471 @@
+PREHOOK: query: create table geom_binary
+(
+  id   int,
+  geom binary
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geom_binary
+POSTHOOK: query: create table geom_binary
+(
+  id   int,
+  geom binary
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geom_binary
+PREHOOK: query: insert into geom_binary values
+(1, ST_GeomFromText('multipolygon (((0 0, 0 1, 1 0, 0 0)), ((2 2, 2 3, 3 2, 2 2)))')),
+(2, ST_GeomFromText('multilinestring ((2 4, 10 10), (20 20, 7 8))')),
+(3, ST_GeomFromText('MULTIPOINT ((10 40), (40 30), (20 20), (30 10))')),
+(4, ST_GeomFromText('polygon ((0 0, 0 10, 10 10, 0 0))')),
+(6, ST_GeomFromText('linestring (10 10, 20 20)')),
+(7, ST_GeomFromText('point (10.02 20.01)')),
+(8, ST_GeomFromText('linestring z (1.5 2.5 2, 3.0 2.2 1)')),
+(9, ST_GeomFromText('multipoint z((0 0 1), (2 2 3))')),
+(10, ST_GeomFromText('point z(10.02 20.01 25.0)')),
+(11, ST_GeomFromText('multipolygon (((0 0, 1 0, 0 1, 0 0)), ((2 2, 1 2, 2 1, 2 2)))')),
+(12, ST_GeomFromText('polygon ((0 0, 8 0, 0 8, 0 0), (1 1, 1 5, 5 1, 1 1))')),
+(13, ST_PointZ(1.5, 2.5, 2)),
+(14, ST_Point(5, 6)),
+(15, ST_Polygon(1,1, 1,4, 4,4, 4,1)),
+(16, ST_Linestring('linestring (10 10, 20 20)')),
+(17, ST_LineString(0.,0., 3.,4., 0.,4., 0.,0.)),
+(18, ST_MultiLineString('multilinestring ((0 0, 3 4, 2 2, 0 0), (6 2, 7 5, 6 8, 6 2))')),
+(19, ST_GeomFromText('point empty')),
+(20, ST_LineString(0,0, 1,0, 1,1, 0,2, 2,2, 1,1, 2,0)),
+(21, ST_Point('point m(0. 3. 1)')),
+(22, ST_Point('pointzm (0. 3. 1. 2.)')),
+(23, ST_GeomFromText('linestring m (10 10 2, 20 20 4)')),
+(24, ST_Polygon(1, 1, 1, 4, 4, 4, 4, 1)),
+(25, ST_Polygon(2,0, 2,1, 3,1)),
+(26, ST_GeomFromJSON(('{"x":0.0,"y":0.0}'))),
+(27, ST_GeomFromGeoJSON('{"type":"LineString", "coordinates":[[1,2], [3,4]]}')),
+(28, ST_GeometryN(ST_GeomFromText('multilinestring ((2 4, 10 10), (20 20, 7 8))'), 2))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@geom_binary
+POSTHOOK: query: insert into geom_binary values
+(1, ST_GeomFromText('multipolygon (((0 0, 0 1, 1 0, 0 0)), ((2 2, 2 3, 3 2, 2 2)))')),
+(2, ST_GeomFromText('multilinestring ((2 4, 10 10), (20 20, 7 8))')),
+(3, ST_GeomFromText('MULTIPOINT ((10 40), (40 30), (20 20), (30 10))')),
+(4, ST_GeomFromText('polygon ((0 0, 0 10, 10 10, 0 0))')),
+(6, ST_GeomFromText('linestring (10 10, 20 20)')),
+(7, ST_GeomFromText('point (10.02 20.01)')),
+(8, ST_GeomFromText('linestring z (1.5 2.5 2, 3.0 2.2 1)')),
+(9, ST_GeomFromText('multipoint z((0 0 1), (2 2 3))')),
+(10, ST_GeomFromText('point z(10.02 20.01 25.0)')),
+(11, ST_GeomFromText('multipolygon (((0 0, 1 0, 0 1, 0 0)), ((2 2, 1 2, 2 1, 2 2)))')),
+(12, ST_GeomFromText('polygon ((0 0, 8 0, 0 8, 0 0), (1 1, 1 5, 5 1, 1 1))')),
+(13, ST_PointZ(1.5, 2.5, 2)),
+(14, ST_Point(5, 6)),
+(15, ST_Polygon(1,1, 1,4, 4,4, 4,1)),
+(16, ST_Linestring('linestring (10 10, 20 20)')),
+(17, ST_LineString(0.,0., 3.,4., 0.,4., 0.,0.)),
+(18, ST_MultiLineString('multilinestring ((0 0, 3 4, 2 2, 0 0), (6 2, 7 5, 6 8, 6 2))')),
+(19, ST_GeomFromText('point empty')),
+(20, ST_LineString(0,0, 1,0, 1,1, 0,2, 2,2, 1,1, 2,0)),
+(21, ST_Point('point m(0. 3. 1)')),
+(22, ST_Point('pointzm (0. 3. 1. 2.)')),
+(23, ST_GeomFromText('linestring m (10 10 2, 20 20 4)')),
+(24, ST_Polygon(1, 1, 1, 4, 4, 4, 4, 1)),
+(25, ST_Polygon(2,0, 2,1, 3,1)),
+(26, ST_GeomFromJSON(('{"x":0.0,"y":0.0}'))),
+(27, ST_GeomFromGeoJSON('{"type":"LineString", "coordinates":[[1,2], [3,4]]}')),
+(28, ST_GeometryN(ST_GeomFromText('multilinestring ((2 4, 10 10), (20 20, 7 8))'), 2))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@geom_binary
+POSTHOOK: Lineage: geom_binary.geom SCRIPT []
+POSTHOOK: Lineage: geom_binary.id SCRIPT []
+PREHOOK: query: select id, ST_AsText(geom), ST_GeometryType(ST_GeomFromWKB(ST_AsBinary(geom))), ST_MaxX(geom), ST_MaxY(geom),
+       ST_MaxZ(geom), ST_MinX(geom), ST_MinY(geom), ST_MinZ(geom), ST_NumGeometries(geom), ST_AsText(ST_Centroid(geom)),
+       ST_Dimension(geom), ST_IsEmpty(geom), ST_IsMeasured(geom), ST_IsSimple(geom)
+from geom_binary
+order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select id, ST_AsText(geom), ST_GeometryType(ST_GeomFromWKB(ST_AsBinary(geom))), ST_MaxX(geom), ST_MaxY(geom),
+       ST_MaxZ(geom), ST_MinX(geom), ST_MinY(geom), ST_MinZ(geom), ST_NumGeometries(geom), ST_AsText(ST_Centroid(geom)),
+       ST_Dimension(geom), ST_IsEmpty(geom), ST_IsMeasured(geom), ST_IsSimple(geom)
+from geom_binary
+order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+1	MULTIPOLYGON (((0 0, 1 0, 0 1, 0 0)), ((2 2, 3 2, 2 3, 2 2)))	ST_MULTIPOLYGON	3.0	3.0	NULL	0.0	0.0	NULL	2	POINT (1.3333333333333333 1.3333333333333333)	2	false	false	true
+2	MULTILINESTRING ((2 4, 10 10), (20 20, 7 8))	ST_MULTILINESTRING	20.0	20.0	NULL	2.0	4.0	NULL	2	POINT (10.791617601072488 11.472176427667655)	1	false	false	true
+3	MULTIPOINT ((10 40), (40 30), (20 20), (30 10))	ST_MULTIPOINT	40.0	40.0	NULL	10.0	10.0	NULL	4	POINT (25 25)	0	false	false	true
+4	POLYGON ((0 0, 10 10, 0 10, 0 0))	ST_POLYGON	10.0	10.0	NULL	0.0	0.0	NULL	NULL	POINT (3.3333333333333335 6.666666666666667)	2	false	false	true
+6	LINESTRING (10 10, 20 20)	ST_LINESTRING	20.0	20.0	NULL	10.0	10.0	NULL	NULL	POINT (15 15)	1	false	false	true
+7	POINT (10.02 20.01)	ST_POINT	10.02	20.01	NULL	10.02	20.01	NULL	NULL	POINT (10.02 20.01)	0	false	false	true
+8	LINESTRING Z (1.5 2.5 2, 3 2.2 1)	ST_LINESTRING	3.0	2.5	2.0	1.5	2.2	1.0	NULL	POINT (2.25 2.35)	1	false	false	true
+9	MULTIPOINT Z ((0 0 1), (2 2 3))	ST_MULTIPOINT	2.0	2.0	3.0	0.0	0.0	1.0	2	POINT (1 1)	0	false	false	true
+10	POINT Z (10.02 20.01 25)	ST_POINT	10.02	20.01	25.0	10.02	20.01	25.0	NULL	POINT (10.02 20.01)	0	false	false	true
+11	MULTIPOLYGON (((0 0, 1 0, 0 1, 0 0)), ((2 2, 1 2, 2 1, 2 2)))	ST_MULTIPOLYGON	2.0	2.0	NULL	0.0	0.0	NULL	2	POINT (1 1)	2	false	false	true
+12	POLYGON ((0 0, 8 0, 0 8, 0 0), (1 1, 1 5, 5 1, 1 1))	ST_POLYGON	8.0	8.0	NULL	0.0	0.0	NULL	NULL	POINT (2.7777777777777777 2.7777777777777777)	2	false	false	true
+13	POINT Z (1.5 2.5 2)	ST_POINT	1.5	2.5	2.0	1.5	2.5	2.0	NULL	POINT (1.5 2.5)	0	false	false	true
+14	POINT (5 6)	ST_POINT	5.0	6.0	NULL	5.0	6.0	NULL	NULL	POINT (5 6)	0	false	false	true
+15	POLYGON ((1 1, 4 1, 4 4, 1 4, 1 1))	ST_POLYGON	4.0	4.0	NULL	1.0	1.0	NULL	NULL	POINT (2.5 2.5)	2	false	false	true
+16	LINESTRING (10 10, 20 20)	ST_LINESTRING	20.0	20.0	NULL	10.0	10.0	NULL	NULL	POINT (15 15)	1	false	false	true
+17	LINESTRING (0 0, 3 4, 0 4, 0 0)	ST_LINESTRING	3.0	4.0	NULL	0.0	0.0	NULL	NULL	POINT (1 2.5)	1	false	false	true
+18	MULTILINESTRING ((0 0, 3 4, 2 2, 0 0), (6 2, 7 5, 6 8, 6 2))	ST_MULTILINESTRING	7.0	8.0	NULL	0.0	0.0	NULL	2	POINT (4.155076025772472 3.624959796288092)	1	false	false	true
+19	POINT EMPTY	ST_POINT	NaN	NaN	NULL	NaN	NaN	NULL	NULL	POINT EMPTY	0	true	false	true
+20	LINESTRING (0 0, 1 0, 1 1, 0 2, 2 2, 1 1, 2 0)	ST_LINESTRING	2.0	2.0	NULL	0.0	0.0	NULL	NULL	POINT (1.0251262658470837 1.1464466094067263)	1	false	false	false
+21	POINT M (0 3 1)	ST_POINT	0.0	3.0	NULL	0.0	3.0	NULL	NULL	POINT (0 3)	0	false	true	true
+22	POINT ZM (0 3 1 2)	ST_POINT	0.0	3.0	1.0	0.0	3.0	1.0	NULL	POINT (0 3)	0	false	true	true
+23	LINESTRING M (10 10 2, 20 20 4)	ST_LINESTRING	20.0	20.0	NULL	10.0	10.0	NULL	NULL	POINT (15 15)	1	false	true	true
+24	POLYGON ((1 1, 4 1, 4 4, 1 4, 1 1))	ST_POLYGON	4.0	4.0	NULL	1.0	1.0	NULL	NULL	POINT (2.5 2.5)	2	false	false	true
+25	POLYGON ((2 0, 3 1, 2 1, 2 0))	ST_POLYGON	3.0	1.0	NULL	2.0	0.0	NULL	NULL	POINT (2.3333333333333335 0.6666666666666666)	2	false	false	true
+26	POINT (0 0)	ST_POINT	0.0	0.0	NULL	0.0	0.0	NULL	NULL	POINT (0 0)	0	false	false	true
+27	LINESTRING (1 2, 3 4)	ST_LINESTRING	3.0	4.0	NULL	1.0	2.0	NULL	NULL	POINT (2 3)	1	false	false	true
+28	LINESTRING (20 20, 7 8)	ST_LINESTRING	20.0	20.0	NULL	7.0	8.0	NULL	NULL	POINT (13.5 14)	1	false	false	true
+PREHOOK: query: select ST_GeometryType(ST_MLineFromWKB(ST_AsBinary(geom)))
+from geom_binary
+where id = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_GeometryType(ST_MLineFromWKB(ST_AsBinary(geom)))
+from geom_binary
+where id = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+ST_MULTILINESTRING
+PREHOOK: query: select ST_GeometryType(ST_MPointFromWKB(ST_AsBinary(geom)))
+from geom_binary
+where id = 9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_GeometryType(ST_MPointFromWKB(ST_AsBinary(geom)))
+from geom_binary
+where id = 9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+ST_MULTIPOINT
+PREHOOK: query: select ST_GeometryType(ST_MPolyFromWKB(ST_AsBinary(geom)))
+from geom_binary
+where id = 11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_GeometryType(ST_MPolyFromWKB(ST_AsBinary(geom)))
+from geom_binary
+where id = 11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+ST_MULTIPOLYGON
+PREHOOK: query: select ST_AsJson(ST_MultiLineString(ST_AsText(geom)))
+from geom_binary
+where id = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_AsJson(ST_MultiLineString(ST_AsText(geom)))
+from geom_binary
+where id = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+{"paths":[[[2,4],[10,10]],[[20,20],[7,8]]]}
+PREHOOK: query: select ST_Equals(ST_MultiPoint((ST_AsText(geom))), ST_GeomFromText('MULTIPOINT ((10 40), (40 30))')),
+       ST_Equals(ST_MultiPoint((ST_AsText(geom))), ST_GeomFromText('MULTIPOINT ((10 40), (40 30), (20 20), (30 10))'))
+from geom_binary
+where id = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_Equals(ST_MultiPoint((ST_AsText(geom))), ST_GeomFromText('MULTIPOINT ((10 40), (40 30))')),
+       ST_Equals(ST_MultiPoint((ST_AsText(geom))), ST_GeomFromText('MULTIPOINT ((10 40), (40 30), (20 20), (30 10))'))
+from geom_binary
+where id = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+false	true
+PREHOOK: query: select ST_AsJson(ST_MultiPolygon(ST_AsText(geom)))
+from geom_binary
+where id = 11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_AsJson(ST_MultiPolygon(ST_AsText(geom)))
+from geom_binary
+where id = 11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+{"rings":[[[0,0],[0,1],[1,0],[0,0]],[[2,2],[2,1],[1,2],[2,2]]]}
+PREHOOK: query: select ST_AsText(ST_PointN(geom, 2))
+from geom_binary
+where id = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_AsText(ST_PointN(geom, 2))
+from geom_binary
+where id = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POINT (40 30)
+PREHOOK: query: select ST_NumInteriorRing(ST_Polygon(ST_AsText(geom))),
+       ST_GeometryType(ST_PolyFromWKB(ST_AsBinary(geom)))
+from geom_binary
+where id = 4 OR id = 12
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_NumInteriorRing(ST_Polygon(ST_AsText(geom))),
+       ST_GeometryType(ST_PolyFromWKB(ST_AsBinary(geom)))
+from geom_binary
+where id = 4 OR id = 12
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+0	ST_POLYGON
+1	ST_POLYGON
+PREHOOK: query: select ST_NumPoints(geom)
+from geom_binary
+where id = 2 OR id = 3 OR id = 9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_NumPoints(geom)
+from geom_binary
+where id = 2 OR id = 3 OR id = 9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+4
+4
+2
+PREHOOK: query: select ST_Overlaps(ST_Polygon(ST_AsText(geom)), ST_Polygon(1, 1, 1, 4, 4, 4, 4, 1))
+from geom_binary
+where id = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_Overlaps(ST_Polygon(ST_AsText(geom)), ST_Polygon(1, 1, 1, 4, 4, 4, 4, 1))
+from geom_binary
+where id = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+true
+PREHOOK: query: select ST_GeometryType(ST_PointFromWKB(ST_AsBinary(geom)))
+from geom_binary
+where id = 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_GeometryType(ST_PointFromWKB(ST_AsBinary(geom)))
+from geom_binary
+where id = 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+ST_POINT
+PREHOOK: query: select ST_GeometryType(ST_PointFromWKB(ST_AsBinary(geom)))
+from geom_binary
+where id = 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_GeometryType(ST_PointFromWKB(ST_AsBinary(geom)))
+from geom_binary
+where id = 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+ST_POINT
+PREHOOK: query: select ST_X(geom), ST_Y(geom), ST_Z(geom), ST_CoordDim(geom), ST_Is3D(geom)
+from geom_binary
+where id = 14 OR id = 13 order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_X(geom), ST_Y(geom), ST_Z(geom), ST_CoordDim(geom), ST_Is3D(geom)
+from geom_binary
+where id = 14 OR id = 13 order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+1.5	2.5	2.0	3	true
+5.0	6.0	NULL	2	false
+PREHOOK: query: select id
+from geom_binary
+where (id = 4 OR id = 12 OR id = 15) AND (ST_Within(ST_Point(2, 3), (ST_Polygon(ST_AsText(geom)))))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select id
+from geom_binary
+where (id = 4 OR id = 12 OR id = 15) AND (ST_Within(ST_Point(2, 3), (ST_Polygon(ST_AsText(geom)))))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+4
+15
+PREHOOK: query: select id
+from geom_binary
+where (id = 4 OR id = 12 OR id = 15) AND (ST_Contains((ST_Polygon(ST_AsText(geom))), ST_Point(2, 3)))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select id
+from geom_binary
+where (id = 4 OR id = 12 OR id = 15) AND (ST_Contains((ST_Polygon(ST_AsText(geom))), ST_Point(2, 3)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+4
+15
+PREHOOK: query: select id, ST_Area(ST_Polygon(ST_AsText(geom)))
+from geom_binary
+where (id = 4 OR id = 12 OR id = 15)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select id, ST_Area(ST_Polygon(ST_AsText(geom)))
+from geom_binary
+where (id = 4 OR id = 12 OR id = 15)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+4	50.0
+12	24.0
+15	9.0
+PREHOOK: query: select ST_AsText(ST_Boundary(geom))
+from geom_binary
+where id = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_AsText(ST_Boundary(geom))
+from geom_binary
+where id = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+LINESTRING (0 0, 10 10, 0 10, 0 0)
+PREHOOK: query: select ST_AsText(ST_Buffer(geom, 1))
+from geom_binary
+where id = 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_AsText(ST_Buffer(geom, 1))
+from geom_binary
+where id = 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POLYGON ((11.02 20.01, 11.017858923238602 20.075403129230146, 11.011444861373809 20.140526192220054, 11.00078528040323 20.20509032201613, 10.985925826289067 20.26881904510252, 10.966930129495104 20.331439465303163, 10.943879532511286 20.39268343236509, 10.916872741532687 20.452288690219003, 10.886025403784437 20.51, 10.851469612302544 20.565570233019603, 10.813353340291235 20.61876142900872, 10.771839807478976 20.66934581510007, 10.727106781186547 20.717106781186548, 10.679345815100069 20.761839807478978, 10.628761429008721 20.80335334029124, 10.5755702330196 20.841469612302546, 10.52 20.87602540378444, 10.462288690219001 20.90687274153269, 10.40268343236509 20.933879532511288, 10.34143946530316 20.956930129495106, 10.27881904510252 20.97592582628907, 10.215090322016128 20.99078528040323, 10.15052619222005 21.001444861373813, 10.085403129230142 21.007858923238604, 10.02 21.01, 9.954596870769857 21.007858923238604, 9.889473807779948 21.001444861373813, 9.824909677983872 20.99078528040323, 9.76118095489748 20.975925826289068, 9.698560534696838 20.956930129495106, 9.63731656763491 20.933879532511288, 9.577711309780998 20.906872741532688, 9.52 20.87602540378444, 9.464429766980398 20.841469612302546, 9.41123857099128 20.80335334029124, 9.36065418489993 20.761839807478978, 9.312893218813452 20.717106781186548, 9.268160192521023 20.66934581510007, 9.226646659708765 20.61876142900872, 9.188530387697455 20.565570233019603, 9.15397459621556 20.51, 9.123127258467312 20.452288690219003, 9.096120467488714 20.392683432365093, 9.073069870504893 20.331439465303163, 9.054074173710932 20.26881904510252, 9.03921471959677 20.20509032201613, 9.028555138626189 20.140526192220054, 9.022141076761397 20.075403129230146, 9.02 20.01, 9.022141076761397 19.944596870769857, 9.02855513862619 19.87947380777995, 9.03921471959677 19.814909677983874, 9.054074173710932 19.75118095489748, 9.073069870504895 19.68856053469684, 9.096120467488714 19.627316567634914, 9.123127258467312 19.567711309781, 9.153974596215562 19.51, 9.188530387697455 19.4544297669804, 9.226646659708765 19.401238570991282, 9.268160192521023 19.350654184899934, 9.312893218813452 19.302893218813455, 9.36065418489993 19.258160192521025, 9.411238570991278 19.216646659708765, 9.464429766980398 19.178530387697457, 9.52 19.143974596215564, 9.577711309780998 19.113127258467312, 9.63731656763491 19.086120467488715, 9.698560534696838 19.063069870504897, 9.76118095489748 19.044074173710932, 9.824909677983872 19.029214719596773, 9.889473807779948 19.01855513862619, 9.954596870769857 19.0121410767614, 10.02 19.01, 10.085403129230142 19.0121410767614, 10.15052619222005 19.01855513862619, 10.215090322016128 19.029214719596773, 10.27881904510252 19.044074173710936, 10.34143946530316 19.063069870504897, 10.40268343236509 19.086120467488715, 10.462288690219001 19.113127258467316, 10.52 19.143974596215564, 10.5755702330196 19.178530387697457, 10.62876142900872 19.216646659708765, 10.679345815100069 19.258160192521025, 10.727106781186547 19.302893218813455, 10.771839807478976 19.350654184899934, 10.813353340291235 19.401238570991282, 10.851469612302544 19.4544297669804, 10.886025403784439 19.51, 10.916872741532687 19.567711309781, 10.943879532511286 19.62731656763491, 10.966930129495106 19.68856053469684, 10.985925826289067 19.75118095489748, 11.00078528040323 19.814909677983874, 11.01144486137381 19.87947380777995, 11.017858923238602 19.944596870769857, 11.02 20.01))
+PREHOOK: query: SELECT ST_AsText(ST_ConvexHull(geom, ST_Point(0, 1), ST_Point(1, 1)))
+from geom_binary
+where id = 14
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ST_AsText(ST_ConvexHull(geom, ST_Point(0, 1), ST_Point(1, 1)))
+from geom_binary
+where id = 14
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+MULTIPOLYGON (((5 6, 0 1, 1 1, 5 6)))
+PREHOOK: query: select ST_IsClosed(geom)
+from geom_binary
+where id = 16 OR id = 17 OR id =18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_IsClosed(geom)
+from geom_binary
+where id = 16 OR id = 17 OR id =18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+false
+true
+true
+PREHOOK: query: select ST_IsRing(geom), ST_AsText(ST_StartPoint(geom)), ST_AsText(ST_EndPoint(geom)),
+       ST_Distance(geom, ST_Point(3.0, 4.0)), ST_Crosses(geom, st_linestring(15,0, 15,15))
+from geom_binary
+where id = 16 OR id = 17
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_IsRing(geom), ST_AsText(ST_StartPoint(geom)), ST_AsText(ST_EndPoint(geom)),
+       ST_Distance(geom, ST_Point(3.0, 4.0)), ST_Crosses(geom, st_linestring(15,0, 15,15))
+from geom_binary
+where id = 16 OR id = 17
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+false	POINT (10 10)	POINT (20 20)	9.219544457292887	false
+true	POINT (0 0)	POINT (0 0)	0.0	false
+PREHOOK: query: select ST_Equals(ST_LineFromWKB(ST_AsBinary(geom)), ST_GeomFromText('linestring (11 12, 21 23)')),
+       ST_Equals(ST_LineFromWKB(ST_AsBinary(geom)), ST_GeomFromText('linestring (10 10, 20 20)'))
+from geom_binary
+where id = 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_Equals(ST_LineFromWKB(ST_AsBinary(geom)), ST_GeomFromText('linestring (11 12, 21 23)')),
+       ST_Equals(ST_LineFromWKB(ST_AsBinary(geom)), ST_GeomFromText('linestring (10 10, 20 20)'))
+from geom_binary
+where id = 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+false	true
+PREHOOK: query: select ST_M(geom), ST_MaxM(geom), ST_MinM(geom)
+from geom_binary
+where id = 21 OR id = 22 OR id=23
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_M(geom), ST_MaxM(geom), ST_MinM(geom)
+from geom_binary
+where id = 21 OR id = 22 OR id=23
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+1.0	1.0	1.0
+2.0	2.0	2.0
+NULL	4.0	2.0
+PREHOOK: query: select ST_Touches(ST_Point(1, 2), geom), ST_Touches(ST_Point(8, 8), geom)
+from geom_binary
+where id = 24
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_Touches(ST_Point(1, 2), geom), ST_Touches(ST_Point(8, 8), geom)
+from geom_binary
+where id = 24
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+true	false
+PREHOOK: query: select ST_Relate(geom, ST_Polygon(1, 1, 1, 4, 4, 4, 4, 1), '****T****'),
+       ST_Relate(geom, ST_Polygon(1, 1, 1, 4, 4, 4, 4, 1), 'T********')
+from geom_binary
+where id = 25
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_Relate(geom, ST_Polygon(1, 1, 1, 4, 4, 4, 4, 1), '****T****'),
+       ST_Relate(geom, ST_Polygon(1, 1, 1, 4, 4, 4, 4, 1), 'T********')
+from geom_binary
+where id = 25
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geom_binary
+#### A masked pattern was here ####
+true	false

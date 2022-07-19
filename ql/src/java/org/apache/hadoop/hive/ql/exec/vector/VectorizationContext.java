@@ -2407,7 +2407,7 @@ import com.google.common.annotations.VisibleForTesting;
     } else if (udf instanceof GenericUDFToString) {
       ve = getCastToString(childExpr, returnType);
     } else if (udf instanceof GenericUDFToDecimal) {
-      ve = getCastToDecimal(childExpr, returnType);
+      ve = getCastToDecimal(childExpr, mode, returnType);
     } else if (udf instanceof GenericUDFToChar) {
       ve = getCastToChar(childExpr, returnType);
     } else if (udf instanceof GenericUDFToVarchar) {
@@ -3232,8 +3232,8 @@ import com.google.common.annotations.VisibleForTesting;
     return null;
   }
 
-  private VectorExpression getCastToDecimal(List<ExprNodeDesc> childExpr, TypeInfo returnType)
-      throws HiveException {
+  private VectorExpression getCastToDecimal(List<ExprNodeDesc> childExpr, VectorExpressionDescriptor.Mode mode,
+      TypeInfo returnType) throws HiveException {
     ExprNodeDesc child = childExpr.get(0);
     String inputType = childExpr.get(0).getTypeString();
     if (child instanceof ExprNodeConstantDesc) {
@@ -3278,7 +3278,18 @@ import com.google.common.annotations.VisibleForTesting;
         int colIndex = getInputColumnIndex((ExprNodeColumnDesc) child);
         DataTypePhysicalVariation dataTypePhysicalVariation = getDataTypePhysicalVariation(colIndex);
         if (dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
-
+          // try to scale up the expression so we can match the return type scale
+          if (tryDecimal64Cast && ((DecimalTypeInfo)returnType).precision() <= 18) {
+            List<ExprNodeDesc> children = new ArrayList<>();
+            int scaleDiff = ((DecimalTypeInfo)returnType).scale() - ((DecimalTypeInfo)childExpr.get(0).getTypeInfo()).scale();
+            ExprNodeDesc newConstant = new ExprNodeConstantDesc(new DecimalTypeInfo(scaleDiff, 0),
+                HiveDecimal.create(POWEROFTENTABLE[scaleDiff]));
+            children.add(child);
+            children.add(newConstant);
+            ExprNodeGenericFuncDesc newScaledExpr = new ExprNodeGenericFuncDesc(returnType,
+                new GenericUDFOPScaleUpDecimal64(), " ScaleUp ", children);
+            return getVectorExpression(newScaledExpr, mode);
+          }
           // Do Decimal64 conversion instead.
           return createDecimal64ToDecimalConversion(colIndex, returnType);
         } else {

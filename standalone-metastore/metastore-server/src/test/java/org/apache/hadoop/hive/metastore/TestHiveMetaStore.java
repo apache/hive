@@ -3330,7 +3330,7 @@ public abstract class TestHiveMetaStore {
     Field pmCache;
     Field pmf;
     try {
-      pmf = ObjectStore.class.getDeclaredField("pmf");
+      pmf = PersistenceManagerProvider.class.getDeclaredField("pmf");
       if (pmf != null) {
         pmf.setAccessible(true);
         jdoPmf = (JDOPersistenceManagerFactory) pmf.get(null);
@@ -3704,5 +3704,17 @@ public abstract class TestHiveMetaStore {
       System.err.println("testRemoteDatabase() failed.");
       throw e;
     }
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void testDropDataConnectorIfNotExistsFalse() throws Exception {
+    // No such data connector, throw NoSuchObjectException
+    client.dropDataConnector("no_such_data_connector", false, false);
+  }
+
+  @Test
+  public void testDropDataConnectorIfNotExistsTrue() throws Exception {
+    // No such data connector, ignore NoSuchObjectException
+    client.dropDataConnector("no_such_data_connector", true, false);
   }
 }

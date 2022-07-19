@@ -477,8 +477,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
       TableScanOperator ts = (TableScanOperator)work.getAliasToWork().get(entry.getKey());
       // push down projections
-      ColumnProjectionUtils.appendReadColumns(
-          jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
+      ColumnProjectionUtils.appendReadColumns(jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns(),
+              ts.getNeededNestedColumnPaths(), ts.getConf().hasVirtualCols());
       // push down filters and as of information
       HiveInputFormat.pushFiltersAndAsOf(jobClone, ts, null);
 

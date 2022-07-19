@@ -47,30 +47,30 @@ public class TestHiveSchemaUtil {
       optional(1, "id", Types.LongType.get(), ""),
       optional(2, "name", Types.StringType.get(), ""),
       optional(3, "employee_info", Types.StructType.of(
-          optional(4, "employer", Types.StringType.get()),
-          optional(5, "id", Types.LongType.get()),
-          optional(6, "address", Types.StringType.get())
+          optional(7, "employer", Types.StringType.get()),
+          optional(8, "id", Types.LongType.get()),
+          optional(9, "address", Types.StringType.get())
       ), ""),
-      optional(7, "places_lived", Types.ListType.ofOptional(11, Types.StructType.of(
-          optional(8, "street", Types.StringType.get()),
-          optional(9, "city", Types.StringType.get()),
-          optional(10, "country", Types.StringType.get())
+      optional(4, "places_lived", Types.ListType.ofOptional(10, Types.StructType.of(
+          optional(11, "street", Types.StringType.get()),
+          optional(12, "city", Types.StringType.get()),
+          optional(13, "country", Types.StringType.get())
       )), ""),
-      optional(12, "memorable_moments", Types.MapType.ofOptional(16, 17,
+      optional(5, "memorable_moments", Types.MapType.ofOptional(14, 15,
           Types.StringType.get(),
           Types.StructType.of(
-              optional(13, "year", Types.IntegerType.get()),
-              optional(14, "place", Types.StringType.get()),
-              optional(15, "details", Types.StringType.get())
+              optional(16, "year", Types.IntegerType.get()),
+              optional(17, "place", Types.StringType.get()),
+              optional(18, "details", Types.StringType.get())
           )), ""),
-      optional(18, "current_address", Types.StructType.of(
+      optional(6, "current_address", Types.StructType.of(
           optional(19, "street_address", Types.StructType.of(
-              optional(20, "street_number", Types.IntegerType.get()),
-              optional(21, "street_name", Types.StringType.get()),
-              optional(22, "street_type", Types.StringType.get())
+              optional(22, "street_number", Types.IntegerType.get()),
+              optional(23, "street_name", Types.StringType.get()),
+              optional(24, "street_type", Types.StringType.get())
           )),
-          optional(23, "country", Types.StringType.get()),
-          optional(24, "postal_code", Types.StringType.get())
+          optional(20, "country", Types.StringType.get()),
+          optional(21, "postal_code", Types.StringType.get())
       ), "")
   );
 

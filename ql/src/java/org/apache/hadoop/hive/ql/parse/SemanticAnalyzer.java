@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static java.util.Objects.nonNull;
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEARCHIVEENABLED;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
@@ -163,6 +164,7 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat;
+import org.apache.hadoop.hive.ql.io.SchemaInferenceUtils;
 import org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -7601,6 +7603,33 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       destTableIsTransactional = tblProps != null && AcidUtils.isTablePropertyTransactional(tblProps);
       if (destTableIsTransactional) {
+        isNonNativeTable = MetaStoreUtils.isNonNativeTable(tblProps);
+        boolean isCtas = tblDesc != null && tblDesc.isCTAS();
+        isMmTable = isMmCreate = AcidUtils.isInsertOnlyTable(tblProps);
+        if (!isNonNativeTable && !destTableIsTemporary && isCtas) {
+          destTableIsFullAcid = AcidUtils.isFullAcidTable(tblProps);
+          acidOperation = getAcidType(dest);
+          isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOperation);
+
+          // Add suffix only when required confs are present
+          // and user has not specified a location to the table.
+          boolean createTableUseSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+                  || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
+                  && tblDesc.getLocation() == null;
+          if (isDirectInsert || isMmTable) {
+            destinationPath = getCtasLocation(tblDesc);
+            // Property SOFT_DELETE_TABLE needs to be added to indicate that suffixing is used.
+            if (createTableUseSuffix) {
+              long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
+              String suffix = AcidUtils.getPathSuffix(txnId);
+              destinationPath = new Path(destinationPath.toString() + suffix);
+              tblDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
+            }
+            // Setting the location so that metadata transformers
+            // does not change the location later while creating the table.
+            tblDesc.setLocation(destinationPath.toString());
+          }
+        }
         try {
           if (ctx.getExplainConfig() != null) {
             writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
@@ -7610,13 +7639,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } catch (LockException ex) {
           throw new SemanticException("Failed to allocate write Id", ex);
         }
-        if (AcidUtils.isInsertOnlyTable(tblProps, true)) {
-          isMmTable = isMmCreate = true;
+        if (isMmTable) {
           if (tblDesc != null) {
-            tblDesc.setInitialMmWriteId(writeId);
+            tblDesc.setInitialWriteId(writeId);
           } else {
             viewDesc.setInitialMmWriteId(writeId);
           }
+        } else if (isDirectInsert) {
+          tblDesc.setInitialWriteId(writeId);
         }
       }
 
@@ -7630,7 +7660,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // no copy is required. we may want to revisit this policy in future
         try {
           Path qPath = FileUtils.makeQualified(destinationPath, conf);
-          queryTmpdir = isMmTable ? qPath : ctx.getTempDirForFinalJobPath(qPath);
+          queryTmpdir = isMmTable || isDirectInsert ? qPath : ctx.getTempDirForFinalJobPath(qPath);
           if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
             Utilities.FILE_OP_LOGGER.trace("Setting query directory " + queryTmpdir
                 + " from " + destinationPath + " (" + isMmTable + ")");
@@ -7735,7 +7765,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean isDfsDir = (destType == QBMetaData.DEST_DFS_FILE);
 
       try {
-        destinationTable = tblDesc != null ? tblDesc.toTable(conf) : viewDesc != null ? viewDesc.toTable(conf) : null;
+        destinationTable = tblDesc != null ? db.getTranslateTableDryrun(tblDesc.toTable(conf).getTTable()) :
+                viewDesc != null ? viewDesc.toTable(conf) : null;
       } catch (HiveException e) {
         throw new SemanticException(e);
       }
@@ -7789,6 +7820,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           ltd.setLoadFileType(LoadFileType.KEEP_EXISTING);
           ltd.setInsertOverwrite(false);
+          ltd.setIsDirectInsert(isDirectInsert);
           loadTableWork.add(ltd);
         } else {
           // This is a non-native table.
@@ -7886,6 +7918,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         createVwDesc.setWriter(fileSinkDesc);
       }
+    } else if (qb.isCTAS() && isDirectInsert) {
+      if (tableDesc != null) {
+        tableDesc.setWriter(fileSinkDesc);
+      }
     }
 
     if (fileSinkDesc.getInsertOverwrite()) {
@@ -7909,7 +7945,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // operation is the same (the table location) and this can lead to invalid lineage information
     // in case of a merge statement.
     if (!isDirectInsert || acidOperation == AcidUtils.Operation.INSERT) {
-      handleLineage(ltd, output);
+      handleLineage(destinationTable, ltd, output);
     }
     setWriteIdForSurrogateKeys(ltd, input);
 
@@ -7922,6 +7958,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // and it is an insert overwrite or insert into table
     if (conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
         && conf.getBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER)
+        && enableColumnStatsCollecting()
         && destinationTable != null
         && (!destinationTable.isNonNative() || destinationTable.getStorageHandler().commitInMoveTask())
         && !destTableIsTemporary && !destTableIsMaterialization
@@ -7941,6 +7978,39 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return output;
+  }
+
+  protected boolean enableColumnStatsCollecting() {
+    return true;
+  }
+
+  private Path getCtasLocation(CreateTableDesc tblDesc) throws SemanticException {
+    Path location;
+    try {
+      String protoName = tblDesc.getDbTableName();
+      String[] names = Utilities.getDbTableName(protoName);
+
+      // Handle table translation initially and if not present
+      // use default table path.
+      // Property modifications of the table is handled later.
+      // We are interested in the location if it has changed
+      // due to table translation.
+      Table tbl = tblDesc.toTable(conf);
+      tbl = db.getTranslateTableDryrun(tbl.getTTable());
+
+      Warehouse wh = new Warehouse(conf);
+      if (tbl.getSd() == null
+              || tbl.getSd().getLocation() == null) {
+        location = wh.getDefaultTablePath(db.getDatabase(names[0]), names[1], false);
+      } else {
+        location = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
+      }
+      tbl.getSd().setLocation(location.toString());
+
+      return location;
+    } catch (HiveException | MetaException e) {
+      throw new SemanticException(e);
+    }
   }
 
   private boolean isDirectInsert(boolean destTableIsFullAcid, AcidUtils.Operation acidOp) {
@@ -8131,6 +8201,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                           RowSchema fsRS, boolean canBeMerged, Table dest_tab, Long mmWriteId, boolean isMmCtas,
                                           Integer dest_type, QB qb, boolean isDirectInsert, AcidUtils.Operation acidOperation, String moveTaskId) throws SemanticException {
     boolean isInsertOverwrite = false;
+    Context.Operation writeOperation = getWriteOperation(dest);
     switch (dest_type) {
     case QBMetaData.DEST_PARTITION:
       //fall through
@@ -8146,7 +8217,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Some non-native tables might be partitioned without partition spec information being present in the Table object
       HiveStorageHandler storageHandler = dest_tab.getStorageHandler();
       if (storageHandler != null && storageHandler.alwaysUnpartitioned()) {
-        DynamicPartitionCtx nonNativeDpCtx = storageHandler.createDPContext(conf, dest_tab);
+        DynamicPartitionCtx nonNativeDpCtx = storageHandler.createDPContext(conf, dest_tab, writeOperation);
         if (dpCtx == null && nonNativeDpCtx != null) {
           dpCtx = nonNativeDpCtx;
         }
@@ -8164,7 +8235,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT), currentTableId, rsCtx.isMultiFileSpray(),
         canBeMerged, rsCtx.getNumFiles(), rsCtx.getTotalFiles(), rsCtx.getPartnCols(), dpCtx,
         dest_path, mmWriteId, isMmCtas, isInsertOverwrite, qb.getIsQuery(),
-        qb.isCTAS() || qb.isMaterializedView(), isDirectInsert, acidOperation);
+        qb.isCTAS() || qb.isMaterializedView(), isDirectInsert, acidOperation,
+            ctx.isDeleteBranchOfUpdate(dest));
 
     fileSinkDesc.setMoveTaskId(moveTaskId);
     boolean isHiveServerQuery = SessionState.get().isHiveServerQuery();
@@ -8186,6 +8258,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       fileSinkDesc.setWriteType(wt);
       acidFileSinks.add(fileSinkDesc);
     }
+
+    fileSinkDesc.setWriteOperation(writeOperation);
 
     fileSinkDesc.setTemporary(destTableIsTemporary);
     fileSinkDesc.setMaterialization(destTableIsMaterialization);
@@ -8222,7 +8296,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return fileSinkDesc;
   }
 
-  private void handleLineage(LoadTableDesc ltd, Operator output)
+  private void handleLineage(Table destinationTable, LoadTableDesc ltd, Operator output)
       throws SemanticException {
     if (ltd != null) {
       queryState.getLineageState().mapDirToOp(ltd.getSourcePath(), output);
@@ -8232,9 +8306,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Path tlocation = null;
       String tName = Utilities.getDbTableName(tableDesc.getDbTableName())[1];
       try {
+        String suffix = "";
+        if (AcidUtils.isTableSoftDeleteEnabled(destinationTable, conf)) {
+          long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
+          suffix = AcidUtils.getPathSuffix(txnId);
+        }
         Warehouse wh = new Warehouse(conf);
         tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()),
-            tName, tableDesc.isExternal());
+            tName + suffix, tableDesc.isExternal());
+
+        if (destinationTable != null && destinationTable.getSd() != null
+                && destinationTable.getPath() != null) {
+          tlocation = destinationTable.getPath();
+        }
       } catch (MetaException|HiveException e) {
         throw new SemanticException(e);
       }
@@ -8292,8 +8376,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if ((dpCtx == null || dpCtx.getNumDPCols() == 0)) {
       output = new WriteEntity(dest_tab, determineWriteType(ltd, dest));
       if (!outputs.add(output)) {
-        if(!((this instanceof MergeSemanticAnalyzer) &&
-            conf.getBoolVar(ConfVars.MERGE_SPLIT_UPDATE))) {
+        if(!allowOutputMultipleTimes()) {
           /**
            * Merge stmt with early split update may create several (2) writes to the same
            * table with the same {@link WriteType}, e.g. if original Merge stmt has both update and
@@ -8332,6 +8415,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return output;
+  }
+
+  protected boolean allowOutputMultipleTimes() {
+    return false;
   }
 
   private void checkExternalTable(Table dest_tab) throws SemanticException {
@@ -11478,19 +11565,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
       }
 
+      // put virtual columns into RowResolver.
       List<VirtualColumn> vcList = new ArrayList<>();
-      boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(tab);
-      boolean isUpdateDelete = this instanceof UpdateDeleteSemanticAnalyzer;
-      // put all virtual columns in RowResolver.
-      if (!tab.isNonNative() || (nonNativeAcid && isUpdateDelete)) {
-        vcList = VirtualColumn.getRegistry(conf);
-        if (nonNativeAcid && isUpdateDelete) {
-          vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
-        }
-        vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
-            vc.getTypeInfo(), alias, true, vc.getIsHidden()
-        )));
+      if (!tab.isNonNative()) {
+        vcList.addAll(VirtualColumn.getRegistry(conf));
       }
+      if (tab.isNonNative() && AcidUtils.isNonNativeAcidTable(tab)) {
+        vcList.addAll(tab.getStorageHandler().acidVirtualColumns());
+      }
+
+      vcList.forEach(vc -> rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
+              vc.getTypeInfo(), alias, true, vc.getIsHidden()
+      )));
 
       // Create the root of the operator tree
       TableScanDesc tsDesc = new TableScanDesc(alias, vcList, tab);
@@ -13392,6 +13478,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return false;
   }
+
   /**
    * Analyze the create table command. If it is a regular create-table or
    * create-table-like statements, we create a DDLWork and return true. If it is
@@ -13431,7 +13518,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     final int CREATE_TABLE = 0; // regular CREATE TABLE
     final int CTLT = 1; // CREATE TABLE LIKE ... (CTLT)
     final int CTAS = 2; // CREATE TABLE AS SELECT ... (CTAS)
-    final int ctt = 3; // CREATE TRANSACTIONAL TABLE
+    final int CTT = 3; // CREATE TRANSACTIONAL TABLE
+    final int CTLF = 4; // CREATE TABLE LIKE FILE
     int command_type = CREATE_TABLE;
     List<String> skewedColNames = new ArrayList<String>();
     List<List<String>> skewedValues = new ArrayList<List<String>>();
@@ -13439,6 +13527,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean storedAsDirs = false;
     boolean isUserStorageFormat = false;
     boolean partitionTransformSpecExists = false;
+    String likeFile = null;
+    String likeFileFormat = null;
 
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat(conf);
@@ -13484,7 +13574,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.KW_TRANSACTIONAL:
         isTransactional = true;
-        command_type = ctt;
+        command_type = CTT;
+        break;
+      case HiveParser.TOK_LIKEFILE:
+        if (cols.size() != 0) {
+          throw new SemanticException(ErrorMsg.CTLT_COLLST_COEXISTENCE
+              .getMsg());
+        }
+        likeFileFormat = getUnescapedName((ASTNode) child.getChild(0));
+        likeFile = getUnescapedName((ASTNode) child.getChild(1));
+        command_type = CTLF;
         break;
       case HiveParser.TOK_LIKETABLE:
         if (child.getChildCount() > 0) {
@@ -13634,7 +13733,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    if (command_type == CREATE_TABLE || command_type == CTLT || command_type == ctt) {
+    if (command_type == CREATE_TABLE || command_type == CTLT || command_type == CTT || command_type == CTLF) {
       queryState.setCommandType(HiveOperation.CREATETABLE);
     } else if (command_type == CTAS) {
       queryState.setCommandType(HiveOperation.CREATETABLE_AS_SELECT);
@@ -13700,7 +13799,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     switch (command_type) {
-
+    case CTLF:
+      try {
+        if (!SchemaInferenceUtils.doesSupportSchemaInference(conf, likeFileFormat)) {
+          throw new SemanticException(ErrorMsg.CTLF_UNSUPPORTED_FORMAT.getErrorCodedMsg(likeFileFormat));
+        }
+      } catch (HiveException e) {
+        throw new SemanticException(e.getMessage(), e);
+      }
+    // fall through
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
       if (!CollectionUtils.isEmpty(partColNames)) {
         throw new SemanticException(
@@ -13725,6 +13832,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                                        checkConstraints);
       crtTblDesc.setStoredAsSubDirectories(storedAsDirs);
       crtTblDesc.setNullFormat(rowFormatParams.nullFormat);
+      crtTblDesc.setLikeFile(likeFile);
+      crtTblDesc.setLikeFileFormat(likeFileFormat);
 
       crtTblDesc.validate(conf);
       // outputs is empty, which means this create table happens in the current
@@ -13747,7 +13856,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             "Query state attached to Session state must be not null. Table location cannot be saved.");
       }
       break;
-    case ctt: // CREATE TRANSACTIONAL TABLE
+    case CTT: // CREATE TRANSACTIONAL TABLE
       if (isExt && !isDefaultTableTypeChanged) {
         throw new SemanticException(
             qualifiedTabName.getTable() + " cannot be declared transactional because it's an external table");
@@ -13910,10 +14019,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     t.setStorageHandler(storageHandler);
-    for(Map.Entry<String,String> serdeMap : storageFormat.getSerdeProps().entrySet()){
+    for (Map.Entry<String,String> serdeMap : storageFormat.getSerdeProps().entrySet()){
       t.setSerdeParam(serdeMap.getKey(), serdeMap.getValue());
     }
-    outputs.add(new WriteEntity(t, WriteEntity.WriteType.DDL_NO_LOCK));
+    WriteType lockType = tblProps != null && Boolean.parseBoolean(tblProps.get(TABLE_IS_CTAS))
+        && AcidUtils.isExclusiveCTASEnabled(conf) ?
+      WriteType.CTAS : WriteType.DDL_NO_LOCK;
+    
+    outputs.add(new WriteEntity(t, lockType));
   }
 
   protected ASTNode analyzeCreateView(ASTNode ast, QB qb, PlannerContext plannerCtx) throws SemanticException {
@@ -15016,6 +15129,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return deleting(destination) ? AcidUtils.Operation.DELETE :
         (updating(destination) ? AcidUtils.Operation.UPDATE :
             AcidUtils.Operation.INSERT);
+  }
+
+  private Context.Operation getWriteOperation(String destination) {
+    return deleting(destination) ? Context.Operation.DELETE :
+        (updating(destination) ? Context.Operation.UPDATE :
+            Context.Operation.OTHER);
   }
 
   private AcidUtils.Operation getAcidType(Class<? extends OutputFormat> of, String dest,

@@ -410,6 +410,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dual
+POSTHOOK: Lineage: dual._c0 SIMPLE []
 _c0
 PREHOOK: query: select * from dual
 PREHOOK: type: QUERY

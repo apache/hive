@@ -185,7 +185,11 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       childIdx++;
     }
 
-    for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
+    List<String> databases = Utils.matchesDb(db, dbNameOrPattern);
+    if (databases.size() == 0) {
+      throw new SemanticException(ErrorMsg.REPL_SOURCE_DATABASE_NOT_FOUND.format(dbNameOrPattern));
+    }
+    for (String dbName : databases) {
       Database database = db.getDatabase(dbName);
       if (database != null) {
         if (MetaStoreUtils.isTargetOfReplication(database)) {

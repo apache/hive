@@ -1,0 +1,288 @@
+PREHOOK: query: create external table test_decimal(rattag string, newclt_all decimal(15,2)) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_decimal
+POSTHOOK: query: create external table test_decimal(rattag string, newclt_all decimal(15,2)) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_decimal
+PREHOOK: query: insert into test_decimal values('a', '10.20')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_decimal
+POSTHOOK: query: insert into test_decimal values('a', '10.20')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_decimal
+POSTHOOK: Lineage: test_decimal.newclt_all SCRIPT []
+POSTHOOK: Lineage: test_decimal.rattag SCRIPT []
+PREHOOK: query: explain vectorization detail select sum(case when rattag='a' then newclt_all*0.3 else newclt_all end) from test_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select sum(case when rattag='a' then newclt_all*0.3 else newclt_all end) from test_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_decimal
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_decimal
+                  Statistics: Num rows: 1 Data size: 197 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:rattag:string, 1:newclt_all:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: if((rattag = 'a'), (newclt_all * 0.3), newclt_all) (type: decimal(17,3))
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [10]
+                        selectExpressions: IfExprDecimal64ColumnDecimal64Column(col 7:boolean, col 8:decimal(17,3)/DECIMAL_64, col 9:decimal(17,3)/DECIMAL_64)(children: StringGroupColEqualStringScalar(col 0:string, val a) -> 7:boolean, Decimal64ColMultiplyDecimal64ScalarUnscaled(col 1:decimal(15,2)/DECIMAL_64, decimal64Val 3, decimalVal 0.3) -> 8:decimal(17,3)/DECIMAL_64, Decimal64ColScaleUp(col 1:decimal(15,2)/DECIMAL_64, decimal64Val 10, decimalVal 10) -> 9:decimal(17,3)/DECIMAL_64) -> 10:decimal(17,3)/DECIMAL_64
+                    Statistics: Num rows: 1 Data size: 197 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col0)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFSumDecimal64ToDecimal(col 10:decimal(17,3)/DECIMAL_64) -> decimal(27,3)
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkEmptyKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 0:decimal(27,3)
+                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: decimal(27,3))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: rattag:string, newclt_all:decimal(15,2)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, decimal(17,3)/DECIMAL_64, decimal(17,3), bigint, decimal(17,3)/DECIMAL_64, decimal(17,3)/DECIMAL_64, decimal(17,3)/DECIMAL_64]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:decimal(27,3)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 0:decimal(27,3)) -> decimal(27,3)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(case when rattag='a' then newclt_all*0.3 else newclt_all end) from test_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(case when rattag='a' then newclt_all*0.3 else newclt_all end) from test_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_decimal
+#### A masked pattern was here ####
+3.060
+PREHOOK: query: explain vectorization detail select sum(case when rattag='Y' then newclt_all*0.3 else newclt_all end) from test_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select sum(case when rattag='Y' then newclt_all*0.3 else newclt_all end) from test_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_decimal
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_decimal
+                  Statistics: Num rows: 1 Data size: 197 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:rattag:string, 1:newclt_all:decimal(15,2)/DECIMAL_64, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: if((rattag = 'Y'), (newclt_all * 0.3), newclt_all) (type: decimal(17,3))
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [10]
+                        selectExpressions: IfExprDecimal64ColumnDecimal64Column(col 7:boolean, col 8:decimal(17,3)/DECIMAL_64, col 9:decimal(17,3)/DECIMAL_64)(children: StringGroupColEqualStringScalar(col 0:string, val Y) -> 7:boolean, Decimal64ColMultiplyDecimal64ScalarUnscaled(col 1:decimal(15,2)/DECIMAL_64, decimal64Val 3, decimalVal 0.3) -> 8:decimal(17,3)/DECIMAL_64, Decimal64ColScaleUp(col 1:decimal(15,2)/DECIMAL_64, decimal64Val 10, decimalVal 10) -> 9:decimal(17,3)/DECIMAL_64) -> 10:decimal(17,3)/DECIMAL_64
+                    Statistics: Num rows: 1 Data size: 197 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col0)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFSumDecimal64ToDecimal(col 10:decimal(17,3)/DECIMAL_64) -> decimal(27,3)
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkEmptyKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 0:decimal(27,3)
+                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: decimal(27,3))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: rattag:string, newclt_all:decimal(15,2)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, decimal(17,3)/DECIMAL_64, decimal(17,3), bigint, decimal(17,3)/DECIMAL_64, decimal(17,3)/DECIMAL_64, decimal(17,3)/DECIMAL_64]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:decimal(27,3)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 0:decimal(27,3)) -> decimal(27,3)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(case when rattag='Y' then newclt_all*0.3 else newclt_all end) from test_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(case when rattag='Y' then newclt_all*0.3 else newclt_all end) from test_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_decimal
+#### A masked pattern was here ####
+10.200

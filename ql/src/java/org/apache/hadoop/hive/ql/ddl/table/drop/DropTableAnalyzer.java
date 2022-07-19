@@ -35,8 +35,6 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
-
 /**
  * Analyzer for table dropping commands.
  */

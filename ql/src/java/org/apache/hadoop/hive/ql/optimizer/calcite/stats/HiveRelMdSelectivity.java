@@ -149,11 +149,8 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
       if (j.isSemiJoin() || (j.getJoinType().equals(JoinRelType.ANTI))) {
         ndvEstimate = Math.min(mq.getRowCount(j.getLeft()),
             ndvEstimate);
-      } else if (j instanceof HiveJoin) {
-        ndvEstimate = Math.min(mq.getRowCount(j.getLeft())
-            * mq.getRowCount(j.getRight()), ndvEstimate);
       } else {
-        throw new RuntimeException("Unexpected Join type: " + j.getClass().getName());
+        ndvEstimate = Math.min(mq.getRowCount(j.getLeft()) * mq.getRowCount(j.getRight()), ndvEstimate);
       }
     }
 

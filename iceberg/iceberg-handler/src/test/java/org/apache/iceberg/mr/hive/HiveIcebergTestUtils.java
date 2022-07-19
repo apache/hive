@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -35,6 +36,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -59,6 +61,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.HistoryEntry;
 import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -377,6 +380,25 @@ public class HiveIcebergTestUtils {
       deletes.forEach(del -> writer.delete(del.path(), del.pos(), del.row()));
     }
     return posWriter.toDeleteFile();
+  }
+
+  /**
+   * Get the timestamp string which we can use in the queries. The timestamp will be after the given snapshot
+   * and before the next one
+   * @param table The table which we want to query
+   * @param snapshotPosition The position of the last snapshot we want to see in the query results
+   * @return The timestamp which we can use in the queries
+   */
+  public static String timestampAfterSnapshot(Table table, int snapshotPosition) {
+    List<HistoryEntry> history = table.history();
+    long snapshotTime = history.get(snapshotPosition).timestampMillis();
+    long time = snapshotTime + 100;
+    if (history.size() > snapshotPosition + 1) {
+      time = snapshotTime + ((history.get(snapshotPosition + 1).timestampMillis() - snapshotTime) / 2);
+    }
+
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS000000");
+    return simpleDateFormat.format(new Date(time));
   }
 
 }

@@ -35,10 +35,13 @@ ds                  	string
 PREHOOK: query: ALTER VIEW view_j5jbymsx8e_1 RENAME TO view_j5jbymsx8e_2
 PREHOOK: type: ALTERVIEW_RENAME
 PREHOOK: Input: default@view_j5jbymsx8e_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@view_j5jbymsx8e_1
+PREHOOK: Output: default@view_j5jbymsx8e_2
 POSTHOOK: query: ALTER VIEW view_j5jbymsx8e_1 RENAME TO view_j5jbymsx8e_2
 POSTHOOK: type: ALTERVIEW_RENAME
 POSTHOOK: Input: default@view_j5jbymsx8e_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view_j5jbymsx8e_1
 POSTHOOK: Output: default@view_j5jbymsx8e_2
 PREHOOK: query: REVOKE ALL FROM USER hive_test_user

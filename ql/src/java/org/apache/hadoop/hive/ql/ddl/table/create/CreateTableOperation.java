@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
@@ -37,6 +38,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
+import org.apache.hadoop.hive.ql.io.SchemaInferenceUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -53,8 +55,23 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
     super(context, desc);
   }
 
+  // Sets the tables columns using the FieldSchema inferred from the SerDe's SchemaInference
+  // implementation. This is used by CREATE TABLE LIKE FILE.
+  private void readSchemaFromFile() throws HiveException {
+    String fileFormat = desc.getLikeFileFormat();
+    String filePath = desc.getLikeFile();
+    List<FieldSchema> fieldSchema = SchemaInferenceUtils.readSchemaFromFile(context.getConf(), fileFormat, filePath);
+    LOG.debug("Inferred field schema for {} file {} was {}", fileFormat, filePath, fieldSchema);
+    desc.setCols(fieldSchema);
+  }
+
   @Override
   public int execute() throws HiveException {
+    // check if schema is being inferred via LIKE FILE
+    if (desc.getLikeFile() != null) {
+      readSchemaFromFile();
+    }
+
     // create the table
     Table tbl = desc.toTable(context.getConf());
     LOG.debug("creating table {} on {}", tbl.getFullyQualifiedName(), tbl.getDataLocation());

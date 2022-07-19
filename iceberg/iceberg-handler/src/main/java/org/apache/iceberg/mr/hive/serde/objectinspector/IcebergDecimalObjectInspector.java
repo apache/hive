@@ -38,7 +38,7 @@ public final class IcebergDecimalObjectInspector extends AbstractPrimitiveJavaOb
           .build();
 
   public static IcebergDecimalObjectInspector get(int precision, int scale) {
-    Preconditions.checkArgument(scale < precision);
+    Preconditions.checkArgument(scale <= precision);
     Preconditions.checkArgument(precision <= HiveDecimal.MAX_PRECISION);
     Preconditions.checkArgument(scale <= HiveDecimal.MAX_SCALE);
 

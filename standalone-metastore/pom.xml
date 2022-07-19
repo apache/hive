@@ -77,13 +77,13 @@
     <guava.version>19.0</guava.version>
     <hadoop.version>3.1.0</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
-    <jackson.version>2.12.0</jackson.version>
+    <jackson.version>2.12.7</jackson.version>
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.13</junit.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <junit.vintage.version>5.6.2</junit.vintage.version>
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.14.1</libthrift.version>
+    <libthrift.version>0.16.0</libthrift.version>
     <log4j2.version>2.17.1</log4j2.version>
     <mockito-core.version>3.3.3</mockito-core.version>
     <orc.version>1.6.9</orc.version>
@@ -106,6 +106,7 @@
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <pac4j-core.version>4.5.5</pac4j-core.version>
     <nimbus-jose-jwt.version>9.20</nimbus-jose-jwt.version>
+    <jetty.version>9.3.27.v20190418</jetty.version>
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
@@ -206,6 +207,10 @@
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-recipes</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -218,6 +223,12 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-hdfs</artifactId>
         <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -369,6 +380,21 @@
         <artifactId>httpcore</artifactId>
         <version>${httpcomponents.core.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-util</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-servlet</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
       <!-- test scope dependencies -->
       <dependency>
         <groupId>junit</groupId>
@@ -443,6 +469,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven.surefire.plugin.version}</version>
           <configuration>
             <failIfNoTests>false</failIfNoTests>
           </configuration>

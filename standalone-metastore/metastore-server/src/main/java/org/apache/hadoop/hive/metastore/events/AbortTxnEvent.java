@@ -23,6 +23,9 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * AbortTxnEvent
  * Event generated for roll backing a transaction
@@ -33,24 +36,30 @@ public class AbortTxnEvent extends ListenerEvent {
 
   private final Long txnId;
   private final TxnType txnType;
+  private final List<String> dbsUpdated;
 
   public AbortTxnEvent(Long transactionId, IHMSHandler handler) {
-    this(transactionId, null, handler);
+    this(transactionId, null, handler, null);
   }
 
   public AbortTxnEvent(Long transactionId, TxnType txnType) {
-    this(transactionId, txnType, null);
+    this(transactionId, txnType, null, null);
   }
 
   /**
    * @param transactionId Unique identification for the transaction that got rolledback.
    * @param txnType type of transaction
    * @param handler handler that is firing the event
+   * @param dbsUpdated list of databases that had update events
    */
-  public AbortTxnEvent(Long transactionId, TxnType txnType, IHMSHandler handler) {
+  public AbortTxnEvent(Long transactionId, TxnType txnType, IHMSHandler handler, List<String> dbsUpdated) {
     super(true, handler);
     this.txnId = transactionId;
     this.txnType = txnType;
+    this.dbsUpdated = new ArrayList<String>();
+    if (dbsUpdated != null) {
+      this.dbsUpdated.addAll(dbsUpdated);;
+    }
   }
 
   /**
@@ -65,5 +74,13 @@ public class AbortTxnEvent extends ListenerEvent {
    */
   public TxnType getTxnType() {
     return txnType;
+  }
+
+  /**
+   * Returns the list of the db names which might have written anything in this transaction.
+   * @return {@link List} of {@link String}
+   */
+  public List<String> getDbsUpdated() {
+    return dbsUpdated;
   }
 }

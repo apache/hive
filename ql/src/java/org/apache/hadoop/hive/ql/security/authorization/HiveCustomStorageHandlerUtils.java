@@ -20,11 +20,17 @@ package org.apache.hadoop.hive.ql.security.authorization;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 
 public class HiveCustomStorageHandlerUtils {
+
+    public static final String WRITE_OPERATION_CONFIG_PREFIX = "file.sink.write.operation.";
+
 
     public static String getTablePropsForCustomStorageHandler(Map<String, String> tableProperties) {
         StringBuilder properties = new StringBuilder();
@@ -47,5 +53,22 @@ public class HiveCustomStorageHandlerUtils {
         Optional.ofNullable(table.getSd().getSerdeInfo().getParameters())
             .ifPresent(tblProps::putAll);
         return tblProps;
+    }
+
+    public static Context.Operation getWriteOperation(Configuration conf, String tableName) {
+        if (conf == null || tableName == null) {
+            return null;
+        }
+
+        String operation = conf.get(WRITE_OPERATION_CONFIG_PREFIX + tableName);
+        return operation == null ? null : Context.Operation.valueOf(operation);
+    }
+
+    public static void setWriteOperation(Configuration conf, String tableName, Context.Operation operation) {
+        if (conf == null || tableName == null) {
+            return;
+        }
+
+        conf.set(WRITE_OPERATION_CONFIG_PREFIX + tableName, operation.name());
     }
 }

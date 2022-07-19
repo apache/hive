@@ -2878,7 +2878,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists = vectorPTFDesc.getEvaluatorInputExprNodeDescLists();
 
     for (int i = 0; i < count; i++) {
-      String functionName = evaluatorFunctionNames[i];
+      String functionName = evaluatorFunctionNames[i].toLowerCase();
       SupportedFunctionType supportedFunctionType = VectorPTFDesc.supportedFunctionsMap.get(functionName);
       if (supportedFunctionType == null) {
         setOperatorIssue(functionName + " not in supported functions " + VectorPTFDesc.supportedFunctionNames);
@@ -4364,6 +4364,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     ExprNodeDesc predicateExpr = filterDesc.getPredicate();
     VectorExpression vectorPredicateExpr =
         vContext.getVectorExpression(predicateExpr, VectorExpressionDescriptor.Mode.FILTER);
+    if (vectorPredicateExpr != null) {
+      vectorPredicateExpr = fixDecimalDataTypePhysicalVariations(vectorPredicateExpr,
+          vectorPredicateExpr.getChildExpressions(), vContext);
+    }
     vectorFilterDesc.setPredicateExpression(vectorPredicateExpr);
     return OperatorFactory.getVectorOperator(
         filterOp.getCompilationOpContext(), filterDesc,
@@ -4761,8 +4765,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         children[i] = newChild;
       }
     }
-    if (parent.getOutputDataTypePhysicalVariation() == DataTypePhysicalVariation.NONE &&
-      !(parent instanceof ConvertDecimal64ToDecimal)) {
+    if (parent.shouldConvertDecimal64ToDecimal()) {
       boolean inputArgsChanged = false;
       DataTypePhysicalVariation[] dataTypePhysicalVariations = parent.getInputDataTypePhysicalVariations();
       for (int i = 0; i < children.length; i++) {
