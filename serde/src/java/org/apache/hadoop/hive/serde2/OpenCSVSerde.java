@@ -36,6 +36,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -121,13 +122,11 @@ public final class OpenCSVSerde extends AbstractSerDe {
       if (fieldOI instanceof StringObjectInspector) {
         outputFields[c] = ((StringObjectInspector) fieldOI).getPrimitiveJavaObject(field);
       } else if (fieldOI instanceof AbstractPrimitiveWritableObjectInspector) {
-        final AbstractPrimitiveWritableObjectInspector fieldStringOI =
-            (AbstractPrimitiveWritableObjectInspector) fieldOI;
-        Object primitiveJavaObject = fieldStringOI.getPrimitiveJavaObject(field);
-        outputFields[c] = primitiveJavaObject != null ? primitiveJavaObject.toString() : null;
+        Object primitiveJavaObject = ((AbstractPrimitiveWritableObjectInspector) fieldOI).getPrimitiveJavaObject(field);
+        outputFields[c] = Objects.toString(primitiveJavaObject, null);
       } else {
-        throw new UnsupportedOperationException("Column type of " + fieldOI.getTypeName() + " is not supported with "
-            + "OpenCSVSerde");
+        throw new UnsupportedOperationException(
+            "Column type of " + fieldOI.getTypeName() + " is not supported with OpenCSVSerde");
       }
     }
 
