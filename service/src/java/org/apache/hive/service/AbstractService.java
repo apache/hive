@@ -145,7 +145,7 @@ public abstract class AbstractService implements Service {
       // started (eg another service failing canceled startup)
       return;
     }
-    if (state != STATE.DECOMMISSIONING || state != STATE.STOPPED) {
+    if (state != STATE.DECOMMISSIONING && state != STATE.STARTED) {
       throw new IllegalStateException("For stop operation, the current service state must be " +
           STATE.DECOMMISSIONING + " or " + STATE.STARTED + " instead of " + state);
     }
