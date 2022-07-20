@@ -25,7 +25,6 @@ import org.apache.tez.runtime.api.InputInitializerContext;
  * Interface for fetching available slots during split calculation
  */
 public interface AvailableSlotsCalculator {
-
     void initialize(Configuration conf, HiveSplitGenerator splitGenerator);
     int getAvailableSlots();
 }
