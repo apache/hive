@@ -109,25 +109,23 @@ public class WriterBuilder {
         .operationId("delete-" + operationId)
         .build();
 
-    Schema positionDeleteRowSchema = operation == Operation.UPDATE ? null : dataSchema;
     HiveFileWriterFactory writerFactory = new HiveFileWriterFactory(table, dataFileFormat, dataSchema, null,
-        deleteFileFormat, null, null, null,
-        positionDeleteRowSchema);
+        deleteFileFormat, null, null, null, dataSchema);
 
     HiveIcebergWriter writer;
     switch (operation) {
-      case UPDATE:
-        writer = new HiveIcebergUpdateWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
-            deleteOutputFileFactory, dataFileFormat, deleteFileFormat, io, targetFileSize, poolSize);
-        break;
       case DELETE:
         writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
             deleteFileFormat, io, targetFileSize);
         break;
-      default:
+      case OTHER:
         writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
             dataFileFormat, io, targetFileSize);
         break;
+      default:
+        // Update and Merge should be splitted to inserts and deletes
+        throw new IllegalArgumentException("Unsupported operation when creating IcebergRecordWriter: " +
+                operation.name());
     }
 
     WriterRegistry.registerWriter(attemptID, tableName, writer);
