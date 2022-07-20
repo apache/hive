@@ -3120,8 +3120,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
   }
 
   @Test
-  public void testScheduledQueriesCompletedTxnComponentsCleanup() throws Exception {
-    String tableName = "scheduledQueryTable";
+  public void testNoTxnComponentsForScheduledQueries() throws Exception {
+    String tableName = "scheduledquerytable";
     int[][] tableData = {{1, 2},{3, 4}};
     runStatementOnDriver("create table " + tableName + " (a int, b int) stored as orc tblproperties ('transactional'='true')");
 
@@ -3154,12 +3154,12 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     }
 
     // Check whether the table has delta files corresponding to the number of scheduled executions.
-//    FileSystem fs = FileSystem.get(hiveConf);
-//    FileStatus[] fileStatuses = fs.globStatus(new Path(getWarehouseDir() + "/" + tableName + "/*"));
-//    Assert.assertEquals(fileStatuses.length, noOfTimesScheduledQueryExecuted);
-//    for(FileStatus fileStatus : fileStatuses) {
-//      Assert.assertTrue(fileStatus.getPath().getName().startsWith(AcidUtils.DELTA_PREFIX));
-//    }
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] fileStatuses = fs.globStatus(new Path(getWarehouseDir() + "/" + tableName + "/*"));
+    Assert.assertEquals(fileStatuses.length, noOfTimesScheduledQueryExecuted);
+    for(FileStatus fileStatus : fileStatuses) {
+      Assert.assertTrue(fileStatus.getPath().getName().startsWith(AcidUtils.DELTA_PREFIX));
+    }
 
     // Check whether the COMPLETED_TXN_COMPONENTS table has records with
     // '__global_locks' database and associate writeId corresponding to the
@@ -3179,17 +3179,12 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     houseKeeper.setConf(hiveConf);
     houseKeeper.run();
 
-    // Check whether the COMPLETED_TXN_COMPONENTS table has 1 record with
-    // '__global_locks' database and associate writeId after cleanup.
-//    Assert.assertEquals(TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from completed_txn_components" +
-//            " where ctc_database='__global_locks' and ctc_writeid is not null"), 1);
-
     // Check whether the table is compacted.
-//    fileStatuses = fs.globStatus(new Path(getWarehouseDir() + "/" + tableName + "/*"));
-//    Assert.assertEquals(fileStatuses.length, 1);
-//    for(FileStatus fileStatus : fileStatuses) {
-//      Assert.assertTrue(fileStatus.getPath().getName().startsWith(AcidUtils.BASE_PREFIX));
-//    }
+    fileStatuses = fs.globStatus(new Path(getWarehouseDir() + "/" + tableName + "/*"));
+    Assert.assertEquals(fileStatuses.length, 1);
+    for(FileStatus fileStatus : fileStatuses) {
+      Assert.assertTrue(fileStatus.getPath().getName().startsWith(AcidUtils.BASE_PREFIX));
+    }
 
     // Check whether the data in the table is correct.
     int[][] actualData = {{1,2}, {1,2}, {1,2}, {1,2}, {3,4}, {3,4}, {3,4}, {3,4}};
