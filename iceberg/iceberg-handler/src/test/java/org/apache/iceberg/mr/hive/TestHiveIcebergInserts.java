@@ -334,8 +334,6 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
 
   @Test
   public void testStructMapWithNull() throws IOException {
-    Assume.assumeTrue("Vectorized parquet read throws class cast exception",
-        !(fileFormat == FileFormat.PARQUET && isVectorized));
     Schema schema = new Schema(required(1, "id", Types.LongType.get()),
         required(2, "mapofstructs", Types.MapType.ofRequired(3, 4, Types.StringType.get(),
             Types.StructType.of(required(5, "something", Types.StringType.get()),
