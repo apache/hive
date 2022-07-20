@@ -43,9 +43,9 @@ import java.util.Set;
 
 
 /**
- * A subclass of the {@link SemanticAnalyzer} that just handles
- * merge statements. It works by rewriting the updates and deletes into insert statements (since
- * they are actually inserts) and then doing some patch up to make them work as merges instead.
+ * A subclass of the {@link MergeSemanticAnalyzer} that just handles
+ * merge statements. This version of rewrite adds two insert branches for the update clause one for
+ * inserting new values of updated records and one for inserting the deleted delta records of updated records.
  */
 public class SplitMergeSemanticAnalyzer extends MergeSemanticAnalyzer {
 

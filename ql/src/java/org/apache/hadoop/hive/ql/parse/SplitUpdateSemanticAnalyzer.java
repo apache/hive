@@ -36,9 +36,23 @@ import java.util.stream.Collectors;
 
 /**
  * A subclass of the {@link SemanticAnalyzer} that just handles
- * update and delete statements. It works by rewriting the updates and deletes into insert
- * statements (since they are actually inserts) and then doing some patch up to make them work as
- * updates and deletes instead.
+ * update statements. It works by rewriting the updates into multi-insert
+ * statements (since they are actually inserts).
+ * One insert branch for inserting the new values of the updated records.
+ * And another insert branch for inserting delete delta records of the updated records.
+ *
+ * From
+ * UPDATE acidtlb SET b=350
+ * WHERE a = 30
+ *
+ * To
+ * FROM
+ * (SELECT ROW__ID,`a` AS `a`,350 AS `b` FROM `default`.`acidtlb` WHERE a = 30) s
+ * INSERT INTO `default`.`acidtlb`    <- insert delta
+ * SELECT s.`a`,s.`b`
+ * INSERT INTO `default`.`acidtlb`    <- delete delta
+ * SELECT s.ROW__ID
+ * SORT BY s.ROW__ID
  */
 public class SplitUpdateSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
