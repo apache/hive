@@ -277,9 +277,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     StringBuilder rewrittenQueryStr = createRewrittenQueryStrBuilder();
     rewrittenQueryStr.append("(SELECT ");
 
-    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
-    ColumnAppender columnAppender = nonNativeAcid ? new NonNativeAcidColumnAppender(mTable, conf, SUB_QUERY_ALIAS) :
-            new NativeAcidColumnAppender(mTable, conf, SUB_QUERY_ALIAS);
+    ColumnAppender columnAppender = getColumnAppender(SUB_QUERY_ALIAS);
     columnAppender.appendAcidSelectColumns(rewrittenQueryStr, operation);
     List<String> deleteValues = columnAppender.getDeleteValues(operation);
     int columnOffset = deleteValues.size();

@@ -616,6 +616,12 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   public static final String DELETE_PREFIX = "__d__";
   public static final String SUB_QUERY_ALIAS = "s";
 
+  protected ColumnAppender getColumnAppender(String subQueryAlias) {
+    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable);
+    return nonNativeAcid ? new NonNativeAcidColumnAppender(targetTable, conf, subQueryAlias) :
+            new NativeAcidColumnAppender(targetTable, conf, subQueryAlias);
+  }
+
   protected interface ColumnAppender {
     void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation);
     List<String> getDeleteValues(Context.Operation operation);

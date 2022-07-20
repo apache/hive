@@ -139,8 +139,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     rewrittenQueryStr.append("(SELECT ");
     boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable);
     String subQueryAlias = isAliased(targetNameNode) ? targetName : targetTable.getTTable().getTableName();
-    ColumnAppender columnAppender = nonNativeAcid ? new NonNativeAcidColumnAppender(targetTable, conf, subQueryAlias) :
-            new NativeAcidColumnAppender(targetTable, conf, subQueryAlias);
+    ColumnAppender columnAppender = getColumnAppender(subQueryAlias);
     columnAppender.appendAcidSelectColumns(rewrittenQueryStr, Context.Operation.UPDATE);
 
     rewrittenQueryStr.deleteCharAt(rewrittenQueryStr.length() - 1); // remove last ','
