@@ -19,7 +19,6 @@
 package org.apache.hive.service.server;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -92,14 +91,14 @@ public class TestGracefulStopHS2 {
     executors.shutdown();
     Thread.sleep(1000);
     assertTrue(miniHS2.getOpenSessionsCount() == 3);
+    assertTrue(miniHS2.getState() == Service.STATE.DECOMMISSIONING);
     try {
       // Fail to run new queries
       stmt.execute("set a=b");
       fail();
     } catch (Exception e) {
       assertTrue(e instanceof HiveSQLException);
-      assertTrue(e.getMessage().contains(ErrorMsg.HIVE_SERVER2_INACTIVE
-              .format(Service.STATE.DECOMMISSIONING.name())));
+      assertTrue(e.getMessage().contains("Unable to run new queries as HiveServer2 is decommissioned or inactive"));
     }
     // Close existing connections with no errors
     stmt.close();
