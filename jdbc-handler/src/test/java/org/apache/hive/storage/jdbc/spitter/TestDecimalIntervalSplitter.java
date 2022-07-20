@@ -75,7 +75,12 @@ public class TestDecimalIntervalSplitter {
       int partitions = RANDOM.nextInt(maxPartitions);
       data.add(new Object[] { lowerBound.toPlainString(), upperBound.toPlainString(), partitions });
     }
-
+    // Hardcoded bounds for a DECIMAL(16,8) that may lead into problems.
+    // Depending on the implementation the last interval may exceed the
+    // specified upperbound due to rounding.
+    data.add(new Object[] { "8.06500000", "93003738.88252007", 1821 });
+    // TODO Explain why
+    data.add(new Object[] { "0.01", "0.100000000000", 1000 });
     return data;
   }
 
@@ -90,7 +95,7 @@ public class TestDecimalIntervalSplitter {
   }
 
   @Test
-  public void testGetIntevalsCorrectNumberOfPartitions() {
+  public void testGetIntervalsCorrectNumberOfPartitions() {
     DecimalIntervalSplitter splitter = new DecimalIntervalSplitter();
     List<MutablePair<String, String>> bounds = splitter.getIntervals(lowerBound, upperBound, partitions);
     BigDecimal lb = new BigDecimal(lowerBound);
@@ -102,14 +107,13 @@ public class TestDecimalIntervalSplitter {
   }
 
   @Test
-  public void testGetIntevalsCorrectScale() {
+  public void testGetIntervalsCorrectScale() {
     DecimalIntervalSplitter splitter = new DecimalIntervalSplitter();
     List<MutablePair<String, String>> bounds = splitter.getIntervals(lowerBound, upperBound, partitions);
     int lowerBoundScale = countFractionalDigits(lowerBound);
     int upperBoundScale = countFractionalDigits(upperBound);
     int expectedScale = Math.max(lowerBoundScale, upperBoundScale);
     for (MutablePair p : bounds) {
-      // Check values have correct scale
       String lower = (String) p.left;
       String upper = (String) p.right;
       int lowerScale = lower.substring(lower.indexOf('.') + 1).length();
@@ -120,7 +124,7 @@ public class TestDecimalIntervalSplitter {
   }
 
   @Test
-  public void testGetIntevalsInBounds() {
+  public void testGetIntervalsInBounds() {
     DecimalIntervalSplitter splitter = new DecimalIntervalSplitter();
     List<MutablePair<String, String>> bounds = splitter.getIntervals(lowerBound, upperBound, partitions);
     BigDecimal lb = new BigDecimal(lowerBound);
@@ -131,6 +135,30 @@ public class TestDecimalIntervalSplitter {
       Assert.assertTrue(lower, lb.compareTo(new BigDecimal(lower)) <= 0);
       Assert.assertTrue(upper, ub.compareTo(new BigDecimal(upper)) >= 0);
     }
+  }
+
+  @Test
+  public void testGetIntervalsNoGaps() {
+    // If there is a gap between two intervals it is problematic cause we may skip reading some data
+    // which can lead to incorrect results
+    DecimalIntervalSplitter splitter = new DecimalIntervalSplitter();
+    List<MutablePair<String, String>> bounds = splitter.getIntervals(lowerBound, upperBound, partitions);
+    for (int i = 0; i < bounds.size() - 1; i++) {
+      MutablePair<String, String> prev = bounds.get(i);
+      MutablePair<String, String> next = bounds.get(i + 1);
+      BigDecimal pUpper = new BigDecimal(prev.right);
+      BigDecimal nLower = new BigDecimal(next.left);
+      Assert.assertTrue("[LOW, " + pUpper + "),[" + nLower + ", HIGH)", pUpper.compareTo(nLower) == 0);
+    }
+  }
+
+  @Test
+  public void testGetIntervalsAreDistinct() {
+    // Intervals must be distinct otherwise we are gonna read the same values multiple times leading
+    // into erroneous duplicates in the results
+    DecimalIntervalSplitter splitter = new DecimalIntervalSplitter();
+    List<MutablePair<String, String>> intervals = splitter.getIntervals(lowerBound, upperBound, partitions);
+    Assert.assertEquals(intervals.size(), intervals.stream().distinct().count());
   }
 
   private static int countFractionalDigits(String decimal) {
