@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.FileFormat;
@@ -43,6 +44,8 @@ public class WriterBuilder {
   private String queryId;
   private int poolSize;
   private Operation operation;
+  // A task may write multiple output files using multiple writers. Each of them must have a unique operationId.
+  private static AtomicInteger operationNum = new AtomicInteger(0);
 
   private WriterBuilder(Table table) {
     this.table = table;
@@ -95,7 +98,7 @@ public class WriterBuilder {
     int currentSpecId = table.spec().specId();
     int partitionId = attemptID.getTaskID().getId();
     int taskId = attemptID.getId();
-    String operationId = queryId + "-" + attemptID.getJobID();
+    String operationId = queryId + "-" + attemptID.getJobID() + "-" + operationNum.incrementAndGet();
     OutputFileFactory outputFileFactory = OutputFileFactory.builderFor(table, partitionId, taskId)
         .format(dataFileFormat)
         .operationId("data-" + operationId)
