@@ -29,19 +29,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
-import org.apache.hadoop.hive.metastore.api.LockComponent;
-import org.apache.hadoop.hive.metastore.api.LockResponse;
-import org.apache.hadoop.hive.metastore.api.LockState;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
-import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
-import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
-import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
-import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -53,6 +44,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
@@ -172,6 +164,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
   //Contains database under replication name for hive replication transactions (dump and load operation)
   private String replPolicy;
+  // The final destination table information in case of CTAS
+  private Table destinationTable;
 
   /**
    * We do this on every call to make sure TM uses same MS connection as is used by the caller (Driver,
@@ -279,6 +273,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   public void acquireLocks(QueryPlan plan, Context ctx, String username) throws LockException {
     try {
       acquireLocksWithHeartbeatDelay(plan, ctx, username, 0);
+      destinationTable = ctx.getDestinationTable();
     }
     catch(LockException e) {
       if(e.getCause() instanceof TxnAbortedException) {
@@ -485,6 +480,26 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     stopHeartbeat();
   }
 
+  private void cleanupDirForCTAS() {
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.TXN_CTAS_X_LOCK)) {
+      if (destinationTable != null) {
+        try {
+          CompactionRequest rqst = new CompactionRequest(
+                  destinationTable.getDbName(), destinationTable.getTableName(), CompactionType.MAJOR);
+          rqst.setRunas(TxnUtils.findUserToRunAs(destinationTable.getSd().getLocation(),
+                  destinationTable.getTTable(), conf));
+
+          rqst.putToProperties("location", destinationTable.getSd().getLocation());
+          rqst.putToProperties("ifPurge", Boolean.toString(true));
+          TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+          txnHandler.submitForCleanup(rqst, destinationTable.getTTable().getWriteId(), getCurrentTxnId());
+        } catch (InterruptedException | IOException | MetaException e) {
+          throw new RuntimeException("Not able to submit cleanup operation of directory written by CTAS");
+        }
+      }
+    }
+  }
+
   private void resetTxnInfo() {
     txnId = 0;
     stmtId = -1;
@@ -577,6 +592,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     try {
       clearLocksAndHB();
+      cleanupDirForCTAS();
       LOG.debug("Rolling back " + JavaUtils.txnIdToString(txnId));
       
       if (replPolicy != null) {

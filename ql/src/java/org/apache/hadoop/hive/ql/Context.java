@@ -191,6 +191,8 @@ public class Context {
 
   private List<Pair<String, String>> parsedTables = new ArrayList<>();
 
+  private Table destinationTable;
+
   public void setOperation(Operation operation) {
     this.operation = operation;
   }
@@ -209,6 +211,14 @@ public class Context {
 
   public void setReplPolicy(String replPolicy) {
     this.replPolicy = replPolicy;
+  }
+
+  public Table getDestinationTable() {
+    return destinationTable;
+  }
+
+  public void setDestinationTable(Table table) {
+    this.destinationTable = table;
   }
 
   public String getReplPolicy() {

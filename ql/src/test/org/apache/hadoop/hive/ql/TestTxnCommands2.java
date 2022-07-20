@@ -56,6 +56,10 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLTask;
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
@@ -3078,6 +3082,52 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
       Assert.assertEquals("struct<a:int,b:string,s:struct<c:int,si:struct<d:double,e:float>>>", rowSchema.toString());
     }
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+  }
+
+  @Test
+  public void testFailureScenarioCleanupCTAS() throws Exception {
+    hiveConf.setBoolVar(HiveConf.ConfVars.TXN_CTAS_X_LOCK, true);
+    hiveConf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
+    d.run("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
+    d.compileAndRespond("create table atable stored as orc tblproperties ('transactional'='true') as select * from " + Table.ACIDTBL);
+    DriverContext driverContext = d.getDriverContext();
+    traverseTasksRecursively(driverContext.getPlan().getRootTasks());
+    int assertError = 0;
+    try {
+      d.run();
+    } catch (Exception e) {
+      assertError = 1;
+    }
+
+    runInitiator(hiveConf);
+    runCleaner(hiveConf);
+
+    Assert.assertEquals(assertError, 1);
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] fileStatuses = fs.globStatus(new Path(getWarehouseDir() + "/atable/*"));
+    for (FileStatus fileStatus : fileStatuses) {
+      Assert.assertFalse(fileStatus.getPath().getName().startsWith(AcidUtils.DELTA_PREFIX));
+    }
+  }
+
+  public void traverseTasksRecursively(List<Task<?>> tasks) throws Exception {
+    for (int i = 0;i < tasks.size();i++) {
+      Task<?> task = tasks.get(i);
+      if (task instanceof DDLTask) {
+        DDLDesc ddlDesc = ((DDLTask) task).getWork().getDDLDesc();
+        if (ddlDesc instanceof CreateTableDesc) {
+          CreateTableDesc createTableDesc = (CreateTableDesc) ddlDesc;
+          createTableDesc.setTblProps(null);
+          createTableDesc.setOutputFormat(null);
+          createTableDesc.setCols(null);
+          createTableDesc.setInputFormat(null);
+        }
+      }
+      if (task.getNumChild() != 0) {
+        traverseTasksRecursively(task.getChildTasks());
+      }
+    }
   }
 
   /**

@@ -7852,6 +7852,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("Error while getting the full qualified path for the given directory: " + ex.getMessage());
         }
       }
+
+      if (!isNonNativeTable && AcidUtils.isTransactionalTable(destinationTable) && qb.isCTAS()) {
+        ctx.setDestinationTable(destinationTable);
+      }
       break;
     }
     default:
