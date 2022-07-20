@@ -135,7 +135,7 @@ Stage-4
                         Select Operator [SEL_9] (runtime: rows=1 width=84)
                           Output:["_col0","_col1","_col2"]
                           Map Join Operator [MAPJOIN_40] (runtime: rows=1 width=84)
-                            Conds:SEL_2._col0=RS_44._col0(Inner),Output:["_col0","_col1","_col2"]
+                            Conds:SEL_2._col1=RS_44._col0(Inner),Output:["_col0","_col1","_col2"]
                           <-Map 4 [BROADCAST_EDGE] vectorized, llap
                             BROADCAST [RS_44]
                               PartitionCols:_col0
