@@ -437,7 +437,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     return lockState;
   }
 
-  private Collection<LockComponent> getGlobalLocks(Configuration conf) throws LockException {
+  private Collection<LockComponent> getGlobalLocks(Configuration conf) {
     String lockNames = conf.get(Constants.HIVE_QUERY_EXCLUSIVE_LOCK);
     if (StringUtils.isEmpty(lockNames)) {
       return Collections.emptyList();
