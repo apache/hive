@@ -155,10 +155,13 @@ STAGE PLANS:
 PREHOOK: query: alter table stats_nonpart rename to stats_nonpart2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@stats_nonpart
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_nonpart
+PREHOOK: Output: default@stats_nonpart2
 POSTHOOK: query: alter table stats_nonpart rename to stats_nonpart2
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@stats_nonpart
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_nonpart
 POSTHOOK: Output: default@stats_nonpart2
 PREHOOK: query: explain select count(key2) from stats_nonpart2

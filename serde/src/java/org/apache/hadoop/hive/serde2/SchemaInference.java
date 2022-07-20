@@ -15,17 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.serde2;
 
-package org.apache.hadoop.hive.ql.exec.tez;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.tez.runtime.api.InputInitializerContext;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
-/**
- * Interface for fetching available slots during split calculation
- */
-public interface AvailableSlotsCalculator {
-
-    void initialize(Configuration conf, HiveSplitGenerator splitGenerator);
-    int getAvailableSlots();
+public interface SchemaInference {
+  /**
+   * Infer Hive compatible schema from provided file. The purpose of this method is to optionally
+   * allow SerDes to implement schema inference for CREATE TABLE LIKE FILE support.
+   *
+   * @param file Fully qualified path to file to infer schema from (hadoop compatible URI + filename)
+   * @return List of FieldSchema that was derived from the provided file
+   * @throws SerDeException
+   */
+   List<FieldSchema> readSchema(Configuration conf, String file) throws SerDeException;
 }

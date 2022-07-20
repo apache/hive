@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.tez.runtime.api.InputInitializerContext;
 
+/**
+ * Default implementation of AvailableSlotsCalculator which relies on available capacity of the cluster
+ */
 public class TezAvailableSlotsCalculator implements AvailableSlotsCalculator {
     private InputInitializerContext inputInitializerContext;
     @Override
@@ -34,7 +37,6 @@ public class TezAvailableSlotsCalculator implements AvailableSlotsCalculator {
             // for now, totalResource = taskResource for llap
             return 1;
         }
-
         int totalResource = inputInitializerContext.getTotalAvailableResource().getMemory();
         int taskResource = inputInitializerContext.getVertexTaskResource().getMemory();
         return totalResource / taskResource;

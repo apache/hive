@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -181,11 +182,13 @@ public class SQLAuthorizationUtils {
    *          current active roles for user
    * @param isAdmin
    *          if user can run as admin user
+   * @param ignoreUnknown
+   *          boolean flag to ignore unknown table
    * @return
    * @throws HiveAuthzPluginException
    */
   static RequiredPrivileges getPrivilegesFromMetaStore(IMetaStoreClient metastoreClient,
-      String userName, HivePrivilegeObject hivePrivObject, List<String> curRoles, boolean isAdmin)
+      String userName, HivePrivilegeObject hivePrivObject, List<String> curRoles, boolean isAdmin, boolean ignoreUnknown)
           throws HiveAuthzPluginException {
 
     // get privileges for this user and its role on this object
@@ -211,8 +214,16 @@ public class SQLAuthorizationUtils {
     RequiredPrivileges privs = getRequiredPrivsFromThrift(thrifPrivs);
 
     // add owner privilege if user is owner of the object
-    if (isOwner(metastoreClient, userName, curRoles, hivePrivObject)) {
-      privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
+    try {
+      if (isOwner(metastoreClient, userName, curRoles, hivePrivObject)) {
+        privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
+      }
+    } catch (HiveAuthzPluginException ex) {
+      if (ex.getCause() instanceof NoSuchObjectException && ignoreUnknown) {
+        privs.addPrivilege(SQLPrivTypeGrant.OWNER_PRIV);
+      } else {
+        throw ex;
+      }
     }
     if (isAdmin) {
       privs.addPrivilege(SQLPrivTypeGrant.ADMIN_PRIV);

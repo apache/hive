@@ -443,7 +443,7 @@ public class HiveSplitGenerator extends InputInitializer {
   }
 
   private AvailableSlotsCalculator getAvailableSlotsCalculator() throws Exception {
-    Class<?> clazz = Class.forName(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_AVAILABLE_SLOTS_CALCULATOR_CLASS),
+    Class<?> clazz = Class.forName(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SPLITS_AVAILABLE_SLOTS_CALCULATOR_CLASS),
             true, Utilities.getSessionSpecifiedClassLoader());
     AvailableSlotsCalculator slotsCalculator = (AvailableSlotsCalculator) ReflectionUtil.newInstance(clazz, null);
     slotsCalculator.initialize(conf, this);

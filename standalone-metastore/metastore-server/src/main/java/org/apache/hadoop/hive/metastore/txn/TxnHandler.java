@@ -1682,7 +1682,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     try {
       try (Statement stmt = dbConn.createStatement()) {
 
-        String query = "SELECT DISTINCT T2W_DATABASE " +
+        String query = "SELECT DISTINCT \"T2W_DATABASE\" " +
                 " FROM \"TXN_TO_WRITE_ID\" \"COMMITTED\"" +
                 "   WHERE \"T2W_TXNID\" = " + txnId;
 

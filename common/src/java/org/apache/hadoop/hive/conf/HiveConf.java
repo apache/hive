@@ -2237,6 +2237,9 @@ public class HiveConf extends Configuration {
         "Whether to use former Java date/time APIs to convert between timezones when writing timestamps in " +
         "Parquet files. Once data are written to the file the effect is permanent (also reflected in the metadata)." +
         "Changing the value of this property affects only new data written to the file."),
+    HIVE_PARQUET_INFER_BINARY_AS("hive.parquet.infer.binary.as", "binary", new StringSet("binary", "string"),
+        "This setting controls what the parquet binary type gets inferred as by CREATE TABLE LIKE FILE. This is helpful " +
+        "since some systems specify the parquet schema for strings as binary."),
     HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION("hive.avro.timestamp.skip.conversion", false,
         "Some older Hive implementations (pre-3.1) wrote Avro timestamps in a UTC-normalized" +
         "manner, while from version 3.1 until now Hive wrote time zone agnostic timestamps. " +
@@ -4637,9 +4640,9 @@ public class HiveConf extends Configuration {
             + "numRows,impala_.*chunk.*   comma separated and mixed (handles strings and regexes at the same time)"),
     HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true,
         "Whether to generate the splits locally or in the AM (tez only)"),
-    HIVE_AVAILABLE_SLOTS_CALCULATOR_CLASS("hive.available.slots.calculator.class.name",
-            "org.apache.hadoop.hive.ql.exec.tez.TezAvailableSlotsCalculator",
-            "Class to use for calculating available slots during split generation"),
+    HIVE_SPLITS_AVAILABLE_SLOTS_CALCULATOR_CLASS("hive.splits.available.slots.calculator.class.name",
+        "org.apache.hadoop.hive.ql.exec.tez.TezAvailableSlotsCalculator",
+        "Class to use for calculating available slots during split generation"),
     HIVE_TEZ_GENERATE_CONSISTENT_SPLITS("hive.tez.input.generate.consistent.splits", true,
         "Whether to generate consistent split locations when generating splits in the AM"),
     HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez(Hadoop 2 only)"),

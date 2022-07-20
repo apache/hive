@@ -837,7 +837,7 @@ public class DDLPlanUtils {
   /**
    * Struct fields are identifiers, need to be put between ``.
    */
-  private String formatType(TypeInfo typeInfo) {
+  public static String formatType(TypeInfo typeInfo) {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
         return typeInfo.getTypeName();

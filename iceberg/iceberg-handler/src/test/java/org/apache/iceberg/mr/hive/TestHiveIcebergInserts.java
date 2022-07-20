@@ -333,6 +333,28 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
   }
 
   @Test
+  public void testStructMapWithNull() throws IOException {
+    Schema schema = new Schema(required(1, "id", Types.LongType.get()),
+        required(2, "mapofstructs", Types.MapType.ofRequired(3, 4, Types.StringType.get(),
+            Types.StructType.of(required(5, "something", Types.StringType.get()),
+                required(6, "someone", Types.StringType.get()),
+                required(7, "somewhere", Types.StringType.get())
+            ))
+        )
+    );
+
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
+        .add(0L, ImmutableMap.of())
+        .build();
+
+    testTables.createTable(shell, "mapwithnull", schema, fileFormat, records);
+
+    List<Object[]> results = shell.executeStatement("select mapofstructs['context'].someone FROM mapwithnull");
+    Assert.assertEquals(1, results.size());
+    Assert.assertNull(results.get(0)[0]);
+  }
+
+  @Test
   public void testWriteWithDefaultWriteFormat() {
     Assume.assumeTrue("Testing the default file format is enough for a single scenario.",
         testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
