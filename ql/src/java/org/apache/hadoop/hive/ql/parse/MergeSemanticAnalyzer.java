@@ -69,10 +69,6 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     analyzeMerge(tree, targetTable, tableNameNode);
   }
 
-  protected ColumnAppender createColumnAppender(Table targetTable, String subQueryAlias) {
-    return new NativeAcidColumnAppender(targetTable, conf, subQueryAlias);
-  }
-
   /**
    * Here we take a Merge statement AST and generate a semantically equivalent multi-insert
    * statement to execute.  Each Insert leg represents a single WHEN clause.  As much as possible,

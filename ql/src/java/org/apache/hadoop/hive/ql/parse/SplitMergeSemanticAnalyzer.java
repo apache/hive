@@ -64,14 +64,6 @@ public class SplitMergeSemanticAnalyzer extends MergeSemanticAnalyzer {
   }
 
   @Override
-  protected ColumnAppender createColumnAppender(Table targetTable, String subQueryAlias) {
-    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable);
-    return nonNativeAcid ?
-            new NonNativeAcidColumnAppender(targetTable, conf, subQueryAlias) :
-            new NativeAcidColumnAppender(targetTable, conf, subQueryAlias);
-  }
-
-  @Override
   protected String handleUpdate(ASTNode whenMatchedUpdateClause, StringBuilder rewrittenQueryStr,
                                 String onClauseAsString, String deleteExtraPredicate, String hintStr,
                                 ColumnAppender columnAppender, String targetName, List<String> values) {
