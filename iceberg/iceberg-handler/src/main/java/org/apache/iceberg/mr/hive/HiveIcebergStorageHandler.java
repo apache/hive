@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -818,7 +819,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
         (tableProps.containsKey("metaTable") && isValidMetadataTable(tableProps.getProperty("metaTable"))) ||
         hasOrcTimeInSchema(tableProps, tableSchema) ||
-        !hasParquetListColumnSupport(tableProps, tableSchema)) {
+        !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema)) {
       conf.setBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname, false);
     }
   }
@@ -839,20 +840,21 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   /**
-   * Vectorized reads of parquet files from columns with list type is only supported if the element is a primitive type
-   * check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details
+   * Vectorized reads of parquet files from columns with list or map type is only supported if the nested types are of
+   * primitive type category
+   * check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details on nested types under lists
    * @param tableProps iceberg table properties
    * @param tableSchema iceberg table schema
    * @return
    */
-  private static boolean hasParquetListColumnSupport(Properties tableProps, Schema tableSchema) {
+  private static boolean hasParquetNestedTypeWithinListOrMap(Properties tableProps, Schema tableSchema) {
     if (!FileFormat.PARQUET.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
       return true;
     }
 
     for (Types.NestedField field : tableSchema.columns()) {
-      if (field.type().isListType()) {
-        for (Types.NestedField nestedField : field.type().asListType().fields()) {
+      if (field.type().isListType() || field.type().isMapType()) {
+        for (Types.NestedField nestedField : field.type().asNestedType().fields()) {
           if (!nestedField.type().isPrimitiveType()) {
             return false;
           }
