@@ -23,6 +23,6 @@ import org.apache.tez.runtime.api.InputInitializerContext;
 
 public interface AvailableSlotsCalculator {
 
-    void initialize(Configuration conf);
-    int getAvailaleSlots(InputInitializerContext inputInitializerContext);
+    void initialize(Configuration conf, HiveSplitGenerator splitGenerator);
+    int getAvailableSlots();
 }

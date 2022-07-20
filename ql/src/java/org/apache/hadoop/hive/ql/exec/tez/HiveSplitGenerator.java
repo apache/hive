@@ -191,7 +191,7 @@ public class HiveSplitGenerator extends InputInitializer {
           (InputFormat<?, ?>) ReflectionUtils.newInstance(JavaUtils.loadClass(realInputFormatName),
             jobConf);
 
-        int availableSlots = getAvailableSlotsCalculator().getAvailaleSlots(getContext());
+        int availableSlots = getAvailableSlotsCalculator().getAvailableSlots();
 
         if (HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1) <= 1) {
           // broken configuration from mapred-default.xml
@@ -446,7 +446,7 @@ public class HiveSplitGenerator extends InputInitializer {
     Class<?> clazz = Class.forName(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_AVAILABLE_SLOTS_CALCULATOR_CLASS),
             true, Utilities.getSessionSpecifiedClassLoader());
     AvailableSlotsCalculator slotsCalculator = (AvailableSlotsCalculator) ReflectionUtil.newInstance(clazz, null);
-    slotsCalculator.initialize(conf);
+    slotsCalculator.initialize(conf, this);
     return slotsCalculator;
   }
 }

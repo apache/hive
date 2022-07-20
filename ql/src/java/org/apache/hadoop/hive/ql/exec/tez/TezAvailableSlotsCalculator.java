@@ -22,19 +22,21 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.tez.runtime.api.InputInitializerContext;
 
 public class TezAvailableSlotsCalculator implements AvailableSlotsCalculator {
+    private InputInitializerContext inputInitializerContext;
     @Override
-    public void initialize(Configuration conf) {
-        // Noop
+    public void initialize(Configuration conf, HiveSplitGenerator splitGenerator) {
+        inputInitializerContext = splitGenerator.getContext();
     }
 
     @Override
-    public int getAvailaleSlots(InputInitializerContext inputInitializerContext) {
+    public int getAvailableSlots() {
         if (inputInitializerContext == null) {
             // for now, totalResource = taskResource for llap
             return 1;
         }
-            int totalResource = inputInitializerContext.getTotalAvailableResource().getMemory();
-            int taskResource = inputInitializerContext.getVertexTaskResource().getMemory();
-            return totalResource / taskResource;
+
+        int totalResource = inputInitializerContext.getTotalAvailableResource().getMemory();
+        int taskResource = inputInitializerContext.getVertexTaskResource().getMemory();
+        return totalResource / taskResource;
     }
 }
