@@ -52,6 +52,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
+import com.google.protobuf.InvalidProtocolBufferException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -2569,7 +2570,7 @@ public class AcidUtils {
           List<String> columns = schema.getFieldNames();
          */
         return OrcInputFormat.isOriginal(reader);
-      } catch (FileFormatException ex) {
+      } catch (FileFormatException | InvalidProtocolBufferException ex) {
         //We may be parsing a delta for Insert-only table which may not even be an ORC file so
         //cannot have ROW_IDs in it.
         LOG.debug("isRawFormat() called on " + dataFile + " which is not an ORC file: " +
