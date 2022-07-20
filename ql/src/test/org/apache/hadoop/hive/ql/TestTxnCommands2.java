@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionContext;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
+import org.apache.hadoop.hive.ql.schq.MockScheduledQueryService;
 import org.apache.hadoop.hive.ql.schq.TestScheduledQueryService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorMR;
@@ -3131,8 +3132,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
                       .setNameFormat("Scheduled queries for transactional tables").build());
 
       // Mock service which initialises the query for execution.
-      TestScheduledQueryService.MockScheduledQueryService qService = new TestScheduledQueryService
-              .MockScheduledQueryService("insert into " + tableName + " (a,b) " + makeValuesClause(tableData));
+      MockScheduledQueryService qService = new
+              MockScheduledQueryService("insert into " + tableName + " (a,b) " + makeValuesClause(tableData));
       ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, hiveConf, qService);
 
       // Start the scheduled query execution.
