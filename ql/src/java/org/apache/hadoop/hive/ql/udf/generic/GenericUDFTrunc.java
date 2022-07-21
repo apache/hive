@@ -199,9 +199,9 @@ public class GenericUDFTrunc extends GenericUDF {
     ObjectInspector outputOI = null;
     switch (inputType1) {
     case DECIMAL:
-      int s = scale > 0 ? scale : 0;
-      int p = ((PrimitiveObjectInspector) arguments[0]).precision() - s;
-      DecimalTypeInfo t = new DecimalTypeInfo(p, s);
+      int outputScale = scale > 0 ? scale : 0;
+      int outputPrecision = ((PrimitiveObjectInspector) arguments[0]).precision() - ((PrimitiveObjectInspector) arguments[0]).scale() + outputScale;
+      DecimalTypeInfo t = new DecimalTypeInfo(outputPrecision, outputScale);
       outputOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(t);
       break;
     case VOID:
