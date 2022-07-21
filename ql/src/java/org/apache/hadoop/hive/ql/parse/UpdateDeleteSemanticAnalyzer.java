@@ -104,9 +104,11 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
     addPartitionColsToInsert(mTable.getPartCols(), rewrittenQueryStr);
 
-    int columnOffset;
-    rewrittenQueryStr.append(" select ROW__ID");
-    columnOffset = 1;
+    ColumnAppender columnAppender = getColumnAppender(null);
+    int columnOffset = columnAppender.getDeleteValues(operation).size();
+    rewrittenQueryStr.append(" select ");
+    columnAppender.appendAcidSelectColumns(rewrittenQueryStr, operation);
+    rewrittenQueryStr.setLength(rewrittenQueryStr.length() - 1);
 
     Map<Integer, ASTNode> setColExprs = null;
     Map<String, ASTNode> setCols = null;
@@ -149,7 +151,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
 
     // Add a sort by clause so that the row ids come out in the correct order
-    rewrittenQueryStr.append(" sort by ROW__ID ");
+    appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
 
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
