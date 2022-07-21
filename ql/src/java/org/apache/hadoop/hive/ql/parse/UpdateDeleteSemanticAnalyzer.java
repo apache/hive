@@ -138,7 +138,6 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       }
     }
 
-    addColsToSelect(mTable.getPartCols(), rewrittenQueryStr);
     rewrittenQueryStr.append(" from ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
 
