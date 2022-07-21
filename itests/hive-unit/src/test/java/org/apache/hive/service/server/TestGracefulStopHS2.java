@@ -91,7 +91,6 @@ public class TestGracefulStopHS2 {
     executors.shutdown();
     Thread.sleep(1000);
     assertTrue(miniHS2.getOpenSessionsCount() == 3);
-    assertTrue(miniHS2.getState() == Service.STATE.DECOMMISSIONING);
     try {
       // Fail to run new queries
       stmt.execute("set a=b");

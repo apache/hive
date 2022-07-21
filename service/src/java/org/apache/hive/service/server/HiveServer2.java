@@ -30,7 +30,6 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -922,32 +921,24 @@ public class HiveServer2 extends CompositeService {
       long maxTimeForWait = HiveConf.getTimeVar(getHiveConf(),
           HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS);
 
-      if (maxTimeForWait > 0) {
-        ExecutorService service = Executors.newSingleThreadExecutor();
-        Future future = service.submit(() -> {
+      long timeout = maxTimeForWait, startTime = System.currentTimeMillis();
+      try {
+        // The service should be started before when reaches here, as decommissioning would throw
+        // IllegalStateException otherwise, so both cliService and sessionManager should not be null.
+        while (timeout > 0 && !getCliService().getSessionManager().getOperations().isEmpty()) {
           // For gracefully stopping, sleeping some time while looping does not bring much overhead,
           // that is, at most 100ms are wasted for waiting for OperationManager to be done,
           // and this code path will only be executed when HS2 is being terminated.
-          long sleepInterval = Math.min(100, maxTimeForWait);
-          // The service should be started before when reaches here, as decommissioning would throw
-          // IllegalStateException otherwise, so both cliService and sessionManager should not be null.
-          while (getCliService().getSessionManager().getOperations().size() != 0) {
-            try {
-              Thread.sleep(sleepInterval);
-            } catch (InterruptedException e) {
-              break;
-            }
-          }
-        });
-        try {
-          future.get(maxTimeForWait, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-          future.cancel(true);
-          LOG.warn("Error decommissioning HiveServer2 in " + maxTimeForWait + "ms", e);
-        } finally {
-          service.shutdownNow();
+          Thread.sleep(Math.min(100, timeout));
+          timeout = maxTimeForWait + startTime - System.currentTimeMillis();
         }
+      } catch (InterruptedException e) {
+        LOG.warn("Interrupted while waiting for all live operations to be done");
+        Thread.currentThread().interrupt();
       }
+      LOG.info("Spent {}ms waiting for live operations to be done, current live operations: {}"
+          , System.currentTimeMillis() - startTime
+          , getCliService().getSessionManager().getOperations().size());
     } finally {
       stop();
     }
