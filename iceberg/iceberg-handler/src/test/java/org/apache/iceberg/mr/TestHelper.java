@@ -31,6 +31,7 @@ import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -54,6 +55,7 @@ public class TestHelper {
   private final FileFormat fileFormat;
   private final TemporaryFolder tmp;
   private final Map<String, String> tblProps;
+  private SortOrder order;
 
   private Table table;
 
@@ -79,6 +81,10 @@ public class TestHelper {
     conf.set(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(table.schema()));
   }
 
+  public void setOrder(SortOrder order) {
+    this.order = order;
+  }
+
   public Table table() {
     return table;
   }
@@ -91,13 +97,22 @@ public class TestHelper {
   }
 
   public Table createTable(Schema theSchema, PartitionSpec theSpec) {
-    Table tbl = tables.create(theSchema, theSpec, properties(), tableIdentifier);
+    return createTable(theSchema, theSpec, null);
+  }
+
+  public Table createTable(Schema theSchema, PartitionSpec theSpec, SortOrder theOrder) {
+    Table tbl;
+    if (theOrder != null) {
+      tbl = tables.create(theSchema, theSpec, theOrder, properties(), tableIdentifier);
+    } else {
+      tbl = tables.create(theSchema, theSpec, properties(), tableIdentifier);
+    }
     setTable(tbl);
     return tbl;
   }
 
   public Table createTable() {
-    return createTable(schema, spec);
+    return createTable(schema, spec, order);
   }
 
   public Table createUnpartitionedTable() {

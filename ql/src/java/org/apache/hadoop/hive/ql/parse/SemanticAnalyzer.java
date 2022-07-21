@@ -13645,7 +13645,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         break;
       case HiveParser.TOK_TABLEPARTCOLSBYSPEC:
-        List<PartitionTransformSpec> partitionTransformSpec =
+        List<TransformSpec> partitionTransformSpec =
             PartitionTransform.getPartitionTransformSpec(child);
 
         if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
