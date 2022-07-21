@@ -922,13 +922,15 @@ public class HiveServer2 extends CompositeService {
       long maxTimeForWait = HiveConf.getTimeVar(getHiveConf(),
           HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS);
 
-      if (getServiceState() == STATE.STARTED && maxTimeForWait > 0) {
+      if (maxTimeForWait > 0) {
         ExecutorService service = Executors.newSingleThreadExecutor();
         Future future = service.submit(() -> {
           // For gracefully stopping, sleeping some time while looping does not bring much overhead,
           // that is, at most 100ms are wasted for waiting for OperationManager to be done,
           // and this code path will only be executed when HS2 is being terminated.
           long sleepInterval = Math.min(100, maxTimeForWait);
+          // The service should be started before when reaches here, as decommissioning would throw
+          // IllegalStateException otherwise, so both cliService and sessionManager should not be null.
           while (getCliService().getSessionManager().getOperations().size() != 0) {
             try {
               Thread.sleep(sleepInterval);
