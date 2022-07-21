@@ -20,6 +20,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -36,7 +38,6 @@ import org.apache.hive.storage.jdbc.dao.DatabaseAccessor;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessorFactory;
 
 import java.io.IOException;
-import java.sql.JDBCType;
 import java.util.List;
 
 public class JdbcInputFormat extends HiveInputFormat<LongWritable, MapWritable> {
@@ -95,9 +96,11 @@ public class JdbcInputFormat extends HiveInputFormat<LongWritable, MapWritable> 
         if (!columnNames.contains(partitionColumn)) {
           throw new IOException("Cannot find partitionColumn:" + partitionColumn + " in " + columnNames);
         }
-        List<JDBCType> columnTypes = dbAccessor.getColumnTypes(job);
-        JDBCType typeInfo = columnTypes.get(columnNames.indexOf(partitionColumn));
-        IntervalSplitter intervalSplitter = IntervalSplitterFactory.newIntervalSpitter(typeInfo);
+        List<TypeInfo> hiveColumnTypesList = dbAccessor.getColumnTypes(job);
+        TypeInfo typeInfo = hiveColumnTypesList.get(columnNames.indexOf(partitionColumn));
+        if (!(typeInfo instanceof PrimitiveTypeInfo)) {
+          throw new IOException(partitionColumn + " is a complex type, only primitive type can be a partition column");
+        }
         if (lowerBound == null || upperBound == null) {
           Pair<String, String> boundary = dbAccessor.getBounds(job, partitionColumn, lowerBound == null,
                   upperBound == null);
@@ -114,7 +117,9 @@ public class JdbcInputFormat extends HiveInputFormat<LongWritable, MapWritable> 
         if (upperBound == null) {
           throw new IOException("upperBound of " + partitionColumn + " cannot be null");
         }
-        List<MutablePair<String, String>> intervals = intervalSplitter.getIntervals(lowerBound, upperBound, numPartitions);
+        IntervalSplitter intervalSplitter = IntervalSplitterFactory.newIntervalSpitter(typeInfo);
+        List<MutablePair<String, String>> intervals = intervalSplitter.getIntervals(lowerBound, upperBound, numPartitions,
+                typeInfo);
         if (intervals.size()<=1) {
           LOGGER.debug("Creating 1 input splits");
           splits = new InputSplit[1];

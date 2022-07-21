@@ -23,6 +23,8 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
@@ -112,8 +114,47 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
   }
 
   @Override
-  public List<JDBCType> getColumnTypes(Configuration conf) throws HiveJdbcDatabaseAccessException {
-    return getColumnMetadata(conf, (meta, col) -> JDBCType.valueOf(meta.getColumnType(col)));
+  public List<TypeInfo> getColumnTypes(Configuration conf) throws HiveJdbcDatabaseAccessException {
+    return getColumnMetadata(conf, (meta, col) -> {
+      JDBCType type = JDBCType.valueOf(meta.getColumnType(col));
+      int prec = meta.getPrecision(col);
+      int scal = meta.getScale(col);
+      switch (type) {
+      case BIT:
+      case BOOLEAN:
+        return TypeInfoFactory.booleanTypeInfo;
+      case TINYINT:
+        return TypeInfoFactory.byteTypeInfo;
+      case SMALLINT:
+        return TypeInfoFactory.shortTypeInfo;
+      case INTEGER:
+        return TypeInfoFactory.intTypeInfo;
+      case BIGINT:
+        return TypeInfoFactory.longTypeInfo;
+      case CHAR:
+        return TypeInfoFactory.getCharTypeInfo(prec);
+      case VARCHAR:
+      case NVARCHAR:
+      case LONGNVARCHAR:
+      case LONGVARCHAR:
+        return TypeInfoFactory.getVarcharTypeInfo(prec);
+      case DOUBLE:
+      case REAL:
+        return TypeInfoFactory.doubleTypeInfo;
+      case FLOAT:
+        return TypeInfoFactory.floatTypeInfo;
+      case DATE:
+        return TypeInfoFactory.dateTypeInfo;
+      case TIMESTAMP:
+      case TIMESTAMP_WITH_TIMEZONE:
+        return TypeInfoFactory.timestampTypeInfo;
+      case DECIMAL:
+      case NUMERIC:
+        return TypeInfoFactory.getDecimalTypeInfo(prec, scal);
+      default:
+        throw new IllegalStateException(type.getName());
+      }
+    });
   }
 
   protected String getMetaDataQuery(String sql) {

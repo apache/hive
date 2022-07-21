@@ -15,6 +15,8 @@
 package org.apache.hive.storage.jdbc.spitter;
 
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -24,30 +26,21 @@ import java.util.List;
 
 public class DecimalIntervalSplitter implements IntervalSplitter {
   @Override
-  public List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions) {
+  public List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions, TypeInfo
+          typeInfo) {
     List<MutablePair<String, String>> intervals = new ArrayList<>();
+    DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo)typeInfo;
+    int scale = decimalTypeInfo.getScale();
     BigDecimal decimalLower = new BigDecimal(lowerBound);
     BigDecimal decimalUpper = new BigDecimal(upperBound);
-    // The bounds are either fetched automatically by querying the database or specified by the
-    // user writing the table DDL statement. In the first case the scale for both bounds is the
-    // same. In the second case the scale may differ since we have no control over the users choice.
-    //
-    // There is no reason to let a user specify a different scale between the bounds and maybe the
-    // best option would be to throw an exception when this happens. However, throwing an exception
-    // at this stage (query runtime) is not very nice, so we must find an alternative.
-    // 
-    // Using max or min both have some disadvantages and both choices can lead to incorrect results
-    // if additional rounding happens in the database side since the intevals may not be distinct
-    // anymore.
-    int scale = Math.max(decimalLower.scale(), decimalUpper.scale());
     BigDecimal decimalInterval = (decimalUpper.subtract(decimalLower)).divide(new BigDecimal(numPartitions),
             MathContext.DECIMAL64);
     BigDecimal splitDecimalLower, splitDecimalUpper;
     for (int i=0;i<numPartitions;i++) {
       splitDecimalLower = decimalLower.add(decimalInterval.multiply(new BigDecimal(i))).setScale(scale,
-          RoundingMode.HALF_EVEN);
+              RoundingMode.HALF_EVEN);
       splitDecimalUpper = decimalLower.add(decimalInterval.multiply(new BigDecimal(i+1))).setScale(scale,
-          RoundingMode.HALF_EVEN);
+              RoundingMode.HALF_EVEN);
       if (splitDecimalLower.compareTo(splitDecimalUpper) < 0) {
         intervals.add(new MutablePair<String, String>(splitDecimalLower.toPlainString(), splitDecimalUpper.toPlainString()));
       }

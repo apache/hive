@@ -15,6 +15,7 @@
 package org.apache.hive.storage.jdbc.spitter;
 
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -22,7 +23,8 @@ import java.util.List;
 
 public class TimestampIntervalSplitter implements IntervalSplitter {
   @Override
-  public List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions) {
+  public List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions, TypeInfo
+          typeInfo) {
     List<MutablePair<String, String>> intervals = new ArrayList<>();
     Timestamp timestampLower = Timestamp.valueOf(lowerBound);
     Timestamp timestampUpper = Timestamp.valueOf(upperBound);

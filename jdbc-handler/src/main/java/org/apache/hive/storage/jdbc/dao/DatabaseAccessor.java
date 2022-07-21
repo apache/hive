@@ -18,19 +18,19 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
 
 import java.io.IOException;
-import java.sql.JDBCType;
 import java.util.List;
 
 public interface DatabaseAccessor {
 
   List<String> getColumnNames(Configuration conf) throws HiveJdbcDatabaseAccessException;
 
-  List<JDBCType> getColumnTypes(Configuration conf) throws HiveJdbcDatabaseAccessException;
+  List<TypeInfo> getColumnTypes(Configuration conf) throws HiveJdbcDatabaseAccessException;
 
   int getTotalNumberOfRecords(Configuration conf) throws HiveJdbcDatabaseAccessException;
 

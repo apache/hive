@@ -14,31 +14,32 @@
  */
 package org.apache.hive.storage.jdbc.spitter;
 
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
 import java.io.IOException;
-import java.sql.JDBCType;
 
 public class IntervalSplitterFactory {
-  public static IntervalSplitter newIntervalSpitter(JDBCType type) throws IOException {
-    switch (type) {
-    case TINYINT:
-    case SMALLINT:
-    case INTEGER:
-    case BIGINT:
-      return new LongIntervalSpitter();
-    case FLOAT:
-    case DOUBLE:
-    case REAL:
-      return new DoubleIntervalSplitter();
-    case DECIMAL:
-    case NUMERIC:
-      return new DecimalIntervalSplitter();
-    case TIMESTAMP:
-    case TIMESTAMP_WITH_TIMEZONE:
-      return new TimestampIntervalSplitter();
-    case DATE:
-      return new DateIntervalSplitter();
-    default:
-      throw new IOException("Partition column type " + type + " is not splittable");
+  public static IntervalSplitter newIntervalSpitter(TypeInfo typeInfo) throws IOException {
+    PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
+    switch (primitiveTypeInfo.getPrimitiveCategory()) {
+      case BYTE:
+      case SHORT:
+      case INT:
+      case LONG:
+        return new LongIntervalSpitter();
+      case FLOAT:
+      case DOUBLE:
+        return new DoubleIntervalSplitter();
+      case DECIMAL:
+        return new DecimalIntervalSplitter();
+      case TIMESTAMP:
+        return new TimestampIntervalSplitter();
+      case DATE:
+        return new DateIntervalSplitter();
+      default:
+        throw new IOException("partitionColumn is " + primitiveTypeInfo.getPrimitiveCategory() +
+                ", only numeric/date/timestamp type can be a partition column");
     }
   }
 }

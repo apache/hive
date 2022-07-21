@@ -15,9 +15,10 @@
 package org.apache.hive.storage.jdbc.spitter;
 
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.util.List;
 
 public interface IntervalSplitter {
-  List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions);
+  List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions, TypeInfo typeInfo);
 }

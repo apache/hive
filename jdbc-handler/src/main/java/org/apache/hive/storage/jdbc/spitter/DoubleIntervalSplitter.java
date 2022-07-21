@@ -15,13 +15,15 @@
 package org.apache.hive.storage.jdbc.spitter;
 
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DoubleIntervalSplitter implements IntervalSplitter {
   @Override
-  public List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions) {
+  public List<MutablePair<String, String>> getIntervals(String lowerBound, String upperBound, int numPartitions, TypeInfo
+          typeInfo) {
     List<MutablePair<String, String>> intervals = new ArrayList<>();
     double doubleLower = Double.parseDouble(lowerBound);
     double doubleUpper = Double.parseDouble(upperBound);
