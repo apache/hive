@@ -48,9 +48,9 @@ import java.util.stream.Collectors;
  * To
  * FROM
  * (SELECT ROW__ID,`a` AS `a`,350 AS `b` FROM `default`.`acidtlb` WHERE a = 30) s
- * INSERT INTO `default`.`acidtlb`    <- insert delta
+ * INSERT INTO `default`.`acidtlb`    -- insert delta
  * SELECT s.`a`,s.`b`
- * INSERT INTO `default`.`acidtlb`    <- delete delta
+ * INSERT INTO `default`.`acidtlb`    -- delete delta
  * SELECT s.ROW__ID
  * SORT BY s.ROW__ID
  */
