@@ -141,8 +141,6 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     super.initHiveConf();
     //TestTxnCommands2WithSplitUpdateAndVectorization has the vectorized version
     //of these tests.
-    HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME, "1s");
-    HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL, "1s");
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
   }
