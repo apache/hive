@@ -1,11 +1,3 @@
-PREHOOK: query: CREATE TABLE city (id int)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@city
-POSTHOOK: query: CREATE TABLE city (id int)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@city
 PREHOOK: query: CREATE EXTERNAL TABLE book
 (
     id int,

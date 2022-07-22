@@ -1,7 +1,5 @@
 --!qt:database:postgres:q_test_book_table.sql
 
-CREATE TABLE city (id int);
-
 CREATE EXTERNAL TABLE book
 (
     id int,
