@@ -620,9 +620,7 @@ public class SQLStdHiveAccessController implements HiveAccessController {
   public void applyAuthorizationConfigPolicy(HiveConf hiveConf) throws HiveAuthzPluginException {
     // First apply configuration applicable to both Hive Cli and HiveServer2
     // Not adding any authorization related restrictions to hive cli
-    // grant all privileges for table to its owner - set this in cli as well so that owner
-    // has permissions via HiveServer2 as well.
-    hiveConf.setVar(ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS, "INSERT,SELECT,UPDATE,DELETE");
+    // No need to table owner privileges, it will be picked up from hive-site.xml
 
     // Apply rest of the configuration only to HiveServer2
     if (sessionCtx.getClientType() == CLIENT_TYPE.HIVESERVER2
