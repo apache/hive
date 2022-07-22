@@ -244,10 +244,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
         ++insClauseIdx;
         break;
       case HiveParser.TOK_UPDATE:
-        for (Context.DestClausePrefix destClausePrefix : getUpdateClauseDestNamePrefix()) {
-          rewrittenCtx.addDestNamePrefix(insClauseIdx, destClausePrefix);
-          ++insClauseIdx;
-        }
+        insClauseIdx += addDestNamePrefixOfUpdate(insClauseIdx, rewrittenCtx);
         break;
       case HiveParser.TOK_DELETE:
         rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.DELETE);
@@ -266,8 +263,15 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     updateOutputs(targetTable);
   }
 
-  protected Context.DestClausePrefix[] getUpdateClauseDestNamePrefix() {
-    return new Context.DestClausePrefix[] { Context.DestClausePrefix.UPDATE };
+  /**
+   * This sets the destination name prefix for update clause.
+   * @param insClauseIdx index of insert clause in the rewritten multi-insert represents the merge update clause.
+   * @param rewrittenCtx the {@link Context} stores the prefixes
+   * @return the number of prefixes set.
+   */
+  protected int addDestNamePrefixOfUpdate(int insClauseIdx, Context rewrittenCtx) {
+    rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.UPDATE);
+    return 1;
   }
 
   /**

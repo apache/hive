@@ -54,8 +54,10 @@ public class SplitMergeSemanticAnalyzer extends MergeSemanticAnalyzer {
   }
 
   @Override
-  protected Context.DestClausePrefix[] getUpdateClauseDestNamePrefix() {
-    return new Context.DestClausePrefix[] { Context.DestClausePrefix.INSERT, Context.DestClausePrefix.DELETE };
+  protected int addDestNamePrefixOfUpdate(int insClauseIdx, Context rewrittenCtx) {
+    rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.INSERT);
+    rewrittenCtx.addDeleteOfUpdateDestNamePrefix(insClauseIdx + 1, Context.DestClausePrefix.DELETE);
+    return 2;
   }
 
   @Override
