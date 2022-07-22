@@ -268,8 +268,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   @Override
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
-    setupAlterOperationType(hmsTable, context);
     catalogProperties = getCatalogProperties(hmsTable);
+    setupAlterOperationType(hmsTable, context);
     try {
       icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
     } catch (NoSuchTableException nte) {
@@ -499,6 +499,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         throw new MetaException(
             "Unsupported ALTER TABLE operation type on Iceberg table " + tableName + ", must be one of: " +
                 SUPPORTED_ALTER_OPS);
+      }
+
+      if (currentAlterTableOp != AlterTableType.ADDPROPS && Catalogs.hiveCatalog(conf, catalogProperties)) {
+        context.getProperties().put(SKIP_METASTORE_ALTER, "true");
       }
     }
   }

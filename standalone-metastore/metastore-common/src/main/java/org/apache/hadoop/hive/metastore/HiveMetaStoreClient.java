@@ -562,17 +562,23 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (hook != null) {
       hook.preAlterTable(new_tbl, envContext);
     }
-    AlterTableRequest req = new AlterTableRequest(dbName, tbl_name, new_tbl);
-    req.setCatName(catName);
-    req.setValidWriteIdList(validWriteIds);
-    req.setEnvironmentContext(envContext);
-    if (processorCapabilities != null) {
-      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-      req.setProcessorIdentifier(processorIdentifier);
-    }
     boolean success = false;
     try {
-      client.alter_table_req(req);
+      boolean skipAlter = envContext != null && envContext.getProperties() != null &&
+              Boolean.valueOf(envContext.getProperties().getOrDefault(HiveMetaHook.SKIP_METASTORE_ALTER, "false"));
+      if (!skipAlter) {
+        AlterTableRequest req = new AlterTableRequest(dbName, tbl_name, new_tbl);
+        req.setCatName(catName);
+        req.setValidWriteIdList(validWriteIds);
+        req.setEnvironmentContext(envContext);
+        if (processorCapabilities != null) {
+          req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+          req.setProcessorIdentifier(processorIdentifier);
+        }
+
+        client.alter_table_req(req);
+      }
+
       if (hook != null) {
         hook.commitAlterTable(new_tbl, envContext);
       }
