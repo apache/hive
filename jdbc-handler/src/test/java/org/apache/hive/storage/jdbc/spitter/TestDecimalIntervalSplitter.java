@@ -18,7 +18,6 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -35,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class TestDecimalIntervalSplitter {
-  private static final Random RANDOM = new Random(11);
+  private static final Random RANDOM = new Random(31);
   private final String lowerBound;
   private final String upperBound;
   private final int partitions;
@@ -69,8 +68,8 @@ public class TestDecimalIntervalSplitter {
       for (int i = 0; i < 100; i++) {
         BigDecimal b1 = generateRandDecimal(dbType.getPrecision(), dbType.scale());
         BigDecimal b2 = generateRandDecimal(dbType.getPrecision(), dbType.scale());
-        BigDecimal upperBound = b1.compareTo(b2) < 0 ? b2 : b1;
-        BigDecimal lowerBound = b1.compareTo(b2) < 0 ? b1 : b2;
+        BigDecimal upperBound = b1.max(b2);
+        BigDecimal lowerBound = b1.min(b2);
         int partitions = RANDOM.nextInt(maxPartitions);
         data.add(new Object[] { lowerBound.toPlainString(), upperBound.toPlainString(), partitions, dbType });
       }
@@ -82,8 +81,8 @@ public class TestDecimalIntervalSplitter {
         int scale = RANDOM.nextInt(precision);
         BigDecimal b1 = generateRandDecimal(precision, scale);
         BigDecimal b2 = generateRandDecimal(dbType.getPrecision(), dbType.scale());
-        BigDecimal upperBound = b1.compareTo(b2) < 0 ? b2 : b1;
-        BigDecimal lowerBound = b1.compareTo(b2) < 0 ? b1 : b2;
+        BigDecimal upperBound = b1.max(b2);
+        BigDecimal lowerBound = b1.min(b2);
         int partitions = RANDOM.nextInt(maxPartitions);
         data.add(new Object[] { lowerBound.toPlainString(), upperBound.toPlainString(), partitions, dbType });
       }
@@ -142,13 +141,14 @@ public class TestDecimalIntervalSplitter {
 
   @Test
   public void testGetIntervalsInBounds() {
+    // All generated intervals must be within the global specified bounds
     DecimalIntervalSplitter splitter = new DecimalIntervalSplitter();
     List<MutablePair<String, String>> bounds = splitter.getIntervals(lowerBound, upperBound, partitions, type);
-    BigDecimal lb = new BigDecimal(lowerBound);
-    BigDecimal ub = new BigDecimal(upperBound);
+    BigDecimal lb = new BigDecimal(lowerBound).setScale(type.scale(), RoundingMode.FLOOR);
+    BigDecimal ub = new BigDecimal(upperBound).setScale(type.scale(), RoundingMode.CEILING);
     for (MutablePair<String, String> p : bounds) {
-      Assert.assertTrue(p.left, lb.compareTo(new BigDecimal(p.left)) <= 0);
-      Assert.assertTrue(p.right, ub.compareTo(new BigDecimal(p.right)) >= 0);
+      assertTrue(p.left, lb.compareTo(new BigDecimal(p.left)) <= 0);
+      assertTrue(p.right, ub.compareTo(new BigDecimal(p.right)) >= 0);
     }
   }
 
