@@ -50,6 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 
@@ -544,15 +545,6 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     rewrittenQueryStr.append("\n");
   }
 
-  protected void appendDeleteBranch(
-          StringBuilder rewrittenQueryStr, String hintStr, String alias, List<String> values) {
-    List<String> deleteValues = new ArrayList<>(targetTable.getPartCols().size() + values.size());
-    deleteValues.addAll(values);
-    addPartitionColsAsValues(targetTable.getPartCols(), alias, deleteValues);
-
-    appendInsertBranch(rewrittenQueryStr, hintStr, deleteValues);
-  }
-
   protected void appendSortBy(StringBuilder rewrittenQueryStr, List<String> keys) {
     if (keys.isEmpty()) {
       return;
@@ -622,22 +614,33 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
             new NativeAcidColumnAppender(targetTable, conf, subQueryAlias);
   }
 
-  protected interface ColumnAppender {
-    void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation);
-    List<String> getDeleteValues(Context.Operation operation);
-    List<String> getSortKeys();
-  }
+  protected static abstract class ColumnAppender {
+    protected final Table table;
+    protected final HiveConf conf;
+    protected final String subQueryAlias;
 
-  protected static class NativeAcidColumnAppender implements ColumnAppender {
-
-    private final Table table;
-    private final HiveConf conf;
-    private final String subQueryAlias;
-
-    public NativeAcidColumnAppender(Table table, HiveConf conf, String subQueryAlias) {
+    protected ColumnAppender(Table table, HiveConf conf, String subQueryAlias) {
       this.table = table;
       this.conf = conf;
       this.subQueryAlias = subQueryAlias;
+    }
+
+    public abstract void appendAcidSelectColumns(StringBuilder stringBuilder, Context.Operation operation);
+    public abstract List<String> getDeleteValues(Context.Operation operation);
+    public abstract List<String> getSortKeys();
+
+    protected String qualify(String columnName) {
+      if (isBlank(subQueryAlias)) {
+        return columnName;
+      }
+      return String.format("%s.%s", subQueryAlias, columnName);
+    }
+  }
+
+  protected static class NativeAcidColumnAppender extends ColumnAppender {
+
+    public NativeAcidColumnAppender(Table table, HiveConf conf, String subQueryAlias) {
+      super(table, conf, subQueryAlias);
     }
 
     @Override
@@ -653,29 +656,23 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     @Override
     public List<String> getDeleteValues(Context.Operation operation) {
       List<String> deleteValues = new ArrayList<>(1 + table.getPartCols().size());
-      deleteValues.add(subQueryAlias + ".ROW__ID");
+      deleteValues.add(qualify("ROW__ID"));
       for (FieldSchema fieldSchema : table.getPartCols()) {
-        deleteValues.add(subQueryAlias + "." + HiveUtils.unparseIdentifier(fieldSchema.getName(), conf));
+        deleteValues.add(qualify(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf)));
       }
       return deleteValues;
     }
 
     @Override
     public List<String> getSortKeys() {
-      return singletonList(subQueryAlias + ".ROW__ID ");
+      return singletonList(qualify("ROW__ID"));
     }
   }
 
-  protected static class NonNativeAcidColumnAppender implements ColumnAppender {
-
-    private final Table table;
-    private final HiveConf conf;
-    private final String subQueryAlias;
+  protected static class NonNativeAcidColumnAppender extends ColumnAppender {
 
     public NonNativeAcidColumnAppender(Table table, HiveConf conf, String subQueryAlias) {
-      this.table = table;
-      this.conf = conf;
-      this.subQueryAlias = subQueryAlias;
+      super(table, conf, subQueryAlias);
     }
 
     @Override
@@ -696,7 +693,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
       List<String> deleteValues = new ArrayList<>(acidSelectColumns.size());
       for (FieldSchema fieldSchema : acidSelectColumns) {
         String prefixedIdentifier = HiveUtils.unparseIdentifier(DELETE_PREFIX + fieldSchema.getName(), this.conf);
-        deleteValues.add(String.format("%s.%s", subQueryAlias, prefixedIdentifier));
+        deleteValues.add(qualify(prefixedIdentifier));
       }
       return deleteValues;
     }
@@ -704,9 +701,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
     @Override
     public List<String> getSortKeys() {
       return table.getStorageHandler().acidSortColumns(table, Context.Operation.DELETE).stream()
-              .map(fieldSchema -> String.format(
-                      "%s.%s",
-                      subQueryAlias,
+              .map(fieldSchema -> qualify(
                       HiveUtils.unparseIdentifier(DELETE_PREFIX + fieldSchema.getName(), this.conf)))
               .collect(Collectors.toList());
     }
