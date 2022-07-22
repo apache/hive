@@ -100,8 +100,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       return columnMeta;
     }
     catch (Exception e) {
-      LOGGER.error("Error while trying to get column names.", e);
-      throw new HiveJdbcDatabaseAccessException("Error while trying to get column names: " + e.getMessage(), e);
+      throw new HiveJdbcDatabaseAccessException("", e);
     }
     finally {
       cleanupResources(conn, ps, rs);
