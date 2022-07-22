@@ -16,7 +16,6 @@ package org.apache.hive.storage.jdbc.spitter;
 
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 import org.junit.Assert;
@@ -30,13 +29,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static org.junit.Assert.assertEquals;
+
 @RunWith(Parameterized.class)
 public class TestDecimalIntervalSplitter {
   private static final Random RANDOM = new Random(11);
   private final String lowerBound;
   private final String upperBound;
   private final int partitions;
-  private DecimalTypeInfo type;
+  private final DecimalTypeInfo type;
 
   public TestDecimalIntervalSplitter(String lowerBound, String upperBound, int partitions, DecimalTypeInfo type) {
     this.lowerBound = lowerBound;
@@ -48,17 +49,17 @@ public class TestDecimalIntervalSplitter {
   @Parameterized.Parameters(name = "lowerBound={0}, upperBound={1}, partitions={2}, type={3}")
   public static Iterable<Object[]> generate() {
     List<Object[]> data = new ArrayList<>();
-    TypeInfo decimal = TypeInfoFactory.getDecimalTypeInfo(5, 3);
-    // Lets assume the database stores decimals (5,3)
-    // Initially we have two possibilities obtain values from the database or let the user specify them
+    // The bounds can be set in two ways:
+    // i) Get them automatically from the database
+    // ii) Let the user specify them using table properties
     // If the values come from the database then they always have the correct scale, and the result of the partitioning
     // will always have the expected scale.
 
     final int maxPartitions = 10000;
-    // Generate bounds with the same precision and scale.
-    // Simulates what happens when we read the values from a database.
+    // Simulates what happens when we read the bounds from a database where both have the same 
+    // precision and scale.
     DecimalTypeInfo typeInDB = TypeInfoFactory.getDecimalTypeInfo(5, 3);
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 100; i++) {
       BigDecimal b1 = generateRandDecimal(typeInDB.getPrecision(), typeInDB.scale());
       BigDecimal b2 = generateRandDecimal(typeInDB.getPrecision(), typeInDB.scale());
       BigDecimal upperBound = b1.compareTo(b2) < 0 ? b2 : b1;
@@ -67,27 +68,30 @@ public class TestDecimalIntervalSplitter {
       data.add(new Object[] { lowerBound.toPlainString(), upperBound.toPlainString(), partitions, typeInDB });
     }
 
-    // Generate bounds with the different precision and scale.
-    // Simulates what happens when a user specifies the bounds.
+    // Simulates what happens when a user specifies the bounds where it can basically any kind
+    // of string, and we have no control over it.
     for (int i = 0; i < 100; i++) {
       int precision = RANDOM.nextInt(9) + 1;
       int scale = RANDOM.nextInt(precision);
       BigDecimal b1 = generateRandDecimal(precision, scale);
-      BigDecimal b2 = generateRandDecimal(5, 3);
+      BigDecimal b2 = generateRandDecimal(typeInDB.getPrecision(), typeInDB.scale());
       BigDecimal upperBound = b1.compareTo(b2) < 0 ? b2 : b1;
       BigDecimal lowerBound = b1.compareTo(b2) < 0 ? b1 : b2;
       int partitions = RANDOM.nextInt(maxPartitions);
       data.add(new Object[] { lowerBound.toPlainString(), upperBound.toPlainString(), partitions, typeInDB });
     }
-    // Hardcoded bounds for a DECIMAL(16,8) that may lead into problems.
-    // Depending on the implementation the last interval may exceed the
-    // specified upperbound due to rounding.
+    // Below some fixed bounds to capture explicitly certain edge cases:
+    //
+    // With the current implementation the last interval exceeds the specified upperbound due to rounding.
     data.add(new Object[] { "8.06500000", "93003738.88252007", 1821, typeInDB });
-    // TODO Explain why
+    // Very small bounds where the database type (mostly scale) can play a big role in the interval generation.
     data.add(new Object[] { "0.01", "0.100000000000", 1000, typeInDB });
     return data;
   }
 
+  /**
+   * Generates a pseudo random BigDecimal with the specified precision and scale.
+   */
   private static BigDecimal generateRandDecimal(int precision, int scale) {
     if (precision < 0 || precision > 9) {
       throw new IllegalArgumentException("Precision " + precision + " out of bounds [0,9]");
@@ -100,27 +104,29 @@ public class TestDecimalIntervalSplitter {
 
   @Test
   public void testGetIntervalsCorrectNumberOfPartitions() {
+    // The splitter should generate as many partitions as requested by the user if that is possible.
+    // If not possible cause the bounds are too close or the partitions requested are too many we
+    // should go as close as possible
     DecimalIntervalSplitter splitter = new DecimalIntervalSplitter();
     List<MutablePair<String, String>> bounds = splitter.getIntervals(lowerBound, upperBound, partitions, type);
     BigDecimal lb = new BigDecimal(lowerBound);
     BigDecimal ub = new BigDecimal(upperBound);
     BigInteger unscaledDifference = ub.subtract(lb).unscaledValue();
     int maxPartitions = unscaledDifference.min(BigInteger.valueOf(partitions)).intValue();
-    // Check we have the right number of partitions
-    Assert.assertEquals(maxPartitions, bounds.size());
+    assertEquals(maxPartitions, bounds.size());
   }
 
   @Test
   public void testGetIntervalsCorrectScale() {
+    // The bounds of each interval much have the same scale with the decimal type defined in the database.
+    // If the scale is different, then rounding may appear when executing the query to the database.
+    // After rounding two intervals, and subsequently two splits may become identical (or overlapping)
+    // and due to that fetch the same data twice.
     DecimalIntervalSplitter splitter = new DecimalIntervalSplitter();
     List<MutablePair<String, String>> bounds = splitter.getIntervals(lowerBound, upperBound, partitions, type);
-    for (MutablePair p : bounds) {
-      String lower = (String) p.left;
-      String upper = (String) p.right;
-      int lowerScale = lower.substring(lower.indexOf('.') + 1).length();
-      int upperScale = upper.substring(upper.indexOf('.') + 1).length();
-      Assert.assertEquals(lower, type.getScale(), lowerScale);
-      Assert.assertEquals(upper, type.getScale(), upperScale);
+    for (MutablePair<String, String> p : bounds) {
+      assertEquals(p.left, type.getScale(), new BigDecimal(p.left).scale());
+      assertEquals(p.right, type.getScale(), new BigDecimal(p.right).scale());
     }
   }
 
@@ -130,11 +136,9 @@ public class TestDecimalIntervalSplitter {
     List<MutablePair<String, String>> bounds = splitter.getIntervals(lowerBound, upperBound, partitions, type);
     BigDecimal lb = new BigDecimal(lowerBound);
     BigDecimal ub = new BigDecimal(upperBound);
-    for (MutablePair p : bounds) {
-      String lower = (String) p.left;
-      String upper = (String) p.right;
-      Assert.assertTrue(lower, lb.compareTo(new BigDecimal(lower)) <= 0);
-      Assert.assertTrue(upper, ub.compareTo(new BigDecimal(upper)) >= 0);
+    for (MutablePair<String, String> p : bounds) {
+      Assert.assertTrue(p.left, lb.compareTo(new BigDecimal(p.left)) <= 0);
+      Assert.assertTrue(p.right, ub.compareTo(new BigDecimal(p.right)) >= 0);
     }
   }
 
@@ -149,7 +153,7 @@ public class TestDecimalIntervalSplitter {
       MutablePair<String, String> next = bounds.get(i + 1);
       BigDecimal pUpper = new BigDecimal(prev.right);
       BigDecimal nLower = new BigDecimal(next.left);
-      Assert.assertTrue("[LOW, " + pUpper + "),[" + nLower + ", HIGH)", pUpper.compareTo(nLower) == 0);
+      assertEquals("[LOW, " + pUpper + "),[" + nLower + ", HIGH)", 0, pUpper.compareTo(nLower));
     }
   }
 
@@ -159,7 +163,7 @@ public class TestDecimalIntervalSplitter {
     // into erroneous duplicates in the results
     DecimalIntervalSplitter splitter = new DecimalIntervalSplitter();
     List<MutablePair<String, String>> intervals = splitter.getIntervals(lowerBound, upperBound, partitions, type);
-    Assert.assertEquals(intervals.size(), intervals.stream().distinct().count());
+    assertEquals(intervals.size(), intervals.stream().distinct().count());
   }
 
 }
