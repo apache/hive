@@ -256,7 +256,7 @@ public class PersistenceManagerProvider {
         // The secondary connection factory is used for schema generation, and for value generation operations.
         // We should use a different pool for the secondary connection factory to avoid resource starvation.
         // Since DataNucleus uses locks for schema generation and value generation, 2 connections should be sufficient.
-        DataSource ds2 = dsp.create(conf, /* maxPoolSize */ 2);
+        DataSource ds2 = forCompactor ? ds : dsp.create(conf, /* maxPoolSize */ 2);
         dsProp.put(PropertyNames.PROPERTY_CONNECTION_FACTORY, ds);
         dsProp.put(PropertyNames.PROPERTY_CONNECTION_FACTORY2, ds2);
         dsProp.put(ConfVars.MANAGER_FACTORY_CLASS.getVarname(),
