@@ -29,7 +29,20 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
-import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.TxnType;;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -69,6 +82,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.IF_PURGE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
 
 /**
  * An implementation of HiveTxnManager that stores the transactions in the metastore database.
@@ -480,7 +496,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     stopHeartbeat();
   }
 
-  private void cleanupDirForCTAS() {
+  private void cleanupDirForCTAS() throws LockException {
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.TXN_CTAS_X_LOCK)) {
       if (destinationTable != null) {
         try {
@@ -489,12 +505,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           rqst.setRunas(TxnUtils.findUserToRunAs(destinationTable.getSd().getLocation(),
                   destinationTable.getTTable(), conf));
 
-          rqst.putToProperties("location", destinationTable.getSd().getLocation());
-          rqst.putToProperties("ifPurge", Boolean.toString(true));
+          rqst.putToProperties(META_TABLE_LOCATION, destinationTable.getSd().getLocation());
+          rqst.putToProperties(IF_PURGE, Boolean.toString(true));
           TxnStore txnHandler = TxnUtils.getTxnStore(conf);
           txnHandler.submitForCleanup(rqst, destinationTable.getTTable().getWriteId(), getCurrentTxnId());
         } catch (InterruptedException | IOException | MetaException e) {
-          throw new RuntimeException("Not able to submit cleanup operation of directory written by CTAS");
+          throw new LockException("Unable to submit cleanup operation of directory written by CTAS due to: " + e.getMessage());
         }
       }
     }

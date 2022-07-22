@@ -41,6 +41,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String FIELD_TO_DIMENSION = "field_to_dimension";
 
+  public static final java.lang.String IF_PURGE = "ifPurge";
+
   public static final java.lang.String META_TABLE_NAME = "name";
 
   public static final java.lang.String META_TABLE_DB = "db";
