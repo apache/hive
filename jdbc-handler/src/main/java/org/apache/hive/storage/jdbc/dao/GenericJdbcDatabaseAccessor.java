@@ -46,6 +46,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -137,10 +138,10 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       case NVARCHAR:
       case LONGNVARCHAR:
       case LONGVARCHAR:
-        return TypeInfoFactory.getVarcharTypeInfo(prec);
+        return TypeInfoFactory.getVarcharTypeInfo(Math.min(prec, 65535));
       case DOUBLE:
-      case REAL:
         return TypeInfoFactory.doubleTypeInfo;
+      case REAL:
       case FLOAT:
         return TypeInfoFactory.floatTypeInfo;
       case DATE:
@@ -150,9 +151,15 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
         return TypeInfoFactory.timestampTypeInfo;
       case DECIMAL:
       case NUMERIC:
-        return TypeInfoFactory.getDecimalTypeInfo(prec, scal);
+        return TypeInfoFactory.getDecimalTypeInfo(Math.min(prec, 38), scal);
+      case ARRAY:
+        // Best effort with the info that we have at the moment
+        return TypeInfoFactory.getListTypeInfo(TypeInfoFactory.unknownTypeInfo);
+      case STRUCT:
+        // Best effort with the info that we have at the moment
+        return TypeInfoFactory.getStructTypeInfo(Collections.emptyList(), Collections.emptyList());
       default:
-        throw new IllegalStateException(type.getName());
+        return TypeInfoFactory.unknownTypeInfo;
       }
     });
   }
