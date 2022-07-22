@@ -25,11 +25,13 @@ import org.junit.runners.Parameterized;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class TestDecimalIntervalSplitter {
@@ -56,36 +58,42 @@ public class TestDecimalIntervalSplitter {
     // will always have the expected scale.
 
     final int maxPartitions = 10000;
-    // Simulates what happens when we read the bounds from a database where both have the same 
-    // precision and scale.
-    DecimalTypeInfo typeInDB = TypeInfoFactory.getDecimalTypeInfo(5, 3);
-    for (int i = 0; i < 100; i++) {
-      BigDecimal b1 = generateRandDecimal(typeInDB.getPrecision(), typeInDB.scale());
-      BigDecimal b2 = generateRandDecimal(typeInDB.getPrecision(), typeInDB.scale());
-      BigDecimal upperBound = b1.compareTo(b2) < 0 ? b2 : b1;
-      BigDecimal lowerBound = b1.compareTo(b2) < 0 ? b1 : b2;
-      int partitions = RANDOM.nextInt(maxPartitions);
-      data.add(new Object[] { lowerBound.toPlainString(), upperBound.toPlainString(), partitions, typeInDB });
-    }
 
-    // Simulates what happens when a user specifies the bounds where it can basically any kind
-    // of string, and we have no control over it.
-    for (int i = 0; i < 100; i++) {
-      int precision = RANDOM.nextInt(9) + 1;
-      int scale = RANDOM.nextInt(precision);
-      BigDecimal b1 = generateRandDecimal(precision, scale);
-      BigDecimal b2 = generateRandDecimal(typeInDB.getPrecision(), typeInDB.scale());
-      BigDecimal upperBound = b1.compareTo(b2) < 0 ? b2 : b1;
-      BigDecimal lowerBound = b1.compareTo(b2) < 0 ? b1 : b2;
-      int partitions = RANDOM.nextInt(maxPartitions);
-      data.add(new Object[] { lowerBound.toPlainString(), upperBound.toPlainString(), partitions, typeInDB });
+    List<DecimalTypeInfo> dbColumnTypes = new ArrayList<>();
+    dbColumnTypes.add(TypeInfoFactory.getDecimalTypeInfo(3, 1));
+    dbColumnTypes.add(TypeInfoFactory.getDecimalTypeInfo(8, 5));
+    for (DecimalTypeInfo dbType : dbColumnTypes) {
+
+      // Simulates what happens when we read the bounds from a database where both have the same 
+      // precision and scale.
+      for (int i = 0; i < 100; i++) {
+        BigDecimal b1 = generateRandDecimal(dbType.getPrecision(), dbType.scale());
+        BigDecimal b2 = generateRandDecimal(dbType.getPrecision(), dbType.scale());
+        BigDecimal upperBound = b1.compareTo(b2) < 0 ? b2 : b1;
+        BigDecimal lowerBound = b1.compareTo(b2) < 0 ? b1 : b2;
+        int partitions = RANDOM.nextInt(maxPartitions);
+        data.add(new Object[] { lowerBound.toPlainString(), upperBound.toPlainString(), partitions, dbType });
+      }
+
+      // Simulates what happens when a user specifies the bounds where it can basically any kind
+      // of string, and we have no control over it.
+      for (int i = 0; i < 100; i++) {
+        int precision = RANDOM.nextInt(9) + 1;
+        int scale = RANDOM.nextInt(precision);
+        BigDecimal b1 = generateRandDecimal(precision, scale);
+        BigDecimal b2 = generateRandDecimal(dbType.getPrecision(), dbType.scale());
+        BigDecimal upperBound = b1.compareTo(b2) < 0 ? b2 : b1;
+        BigDecimal lowerBound = b1.compareTo(b2) < 0 ? b1 : b2;
+        int partitions = RANDOM.nextInt(maxPartitions);
+        data.add(new Object[] { lowerBound.toPlainString(), upperBound.toPlainString(), partitions, dbType });
+      }
     }
     // Below some fixed bounds to capture explicitly certain edge cases:
     //
     // With the current implementation the last interval exceeds the specified upperbound due to rounding.
-    data.add(new Object[] { "8.06500000", "93003738.88252007", 1821, typeInDB });
+    data.add(new Object[] { "8.06500000", "93003738.88252007", 1821, TypeInfoFactory.getDecimalTypeInfo(5, 3) });
     // Very small bounds where the database type (mostly scale) can play a big role in the interval generation.
-    data.add(new Object[] { "0.01", "0.100000000000", 1000, typeInDB });
+    data.add(new Object[] { "0.01", "0.100000000000", 1000, TypeInfoFactory.getDecimalTypeInfo(5, 3) });
     return data;
   }
 
@@ -106,14 +114,16 @@ public class TestDecimalIntervalSplitter {
   public void testGetIntervalsCorrectNumberOfPartitions() {
     // The splitter should generate as many partitions as requested by the user if that is possible.
     // If not possible cause the bounds are too close or the partitions requested are too many we
-    // should go as close as possible
+    // should go as close as possible (+1/-1).
     DecimalIntervalSplitter splitter = new DecimalIntervalSplitter();
     List<MutablePair<String, String>> bounds = splitter.getIntervals(lowerBound, upperBound, partitions, type);
     BigDecimal lb = new BigDecimal(lowerBound);
     BigDecimal ub = new BigDecimal(upperBound);
-    BigInteger unscaledDifference = ub.subtract(lb).unscaledValue();
-    int maxPartitions = unscaledDifference.min(BigInteger.valueOf(partitions)).intValue();
-    assertEquals(maxPartitions, bounds.size());
+    BigInteger unscaledDifference = ub.subtract(lb).setScale(type.scale(), RoundingMode.HALF_EVEN).unscaledValue();
+    int expectedPartitions = unscaledDifference.min(BigInteger.valueOf(partitions)).intValue();
+    int min = expectedPartitions - 1;
+    int max = expectedPartitions + 1;
+    assertTrue(bounds.size() + " exceeds [" + min + "," + max + "]", min <= bounds.size() && bounds.size() <= max);
   }
 
   @Test
