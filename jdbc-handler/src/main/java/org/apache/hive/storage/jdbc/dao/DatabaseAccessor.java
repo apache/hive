@@ -30,6 +30,22 @@ public interface DatabaseAccessor {
 
   List<String> getColumnNames(Configuration conf) throws HiveJdbcDatabaseAccessException;
 
+  /**
+   * Returns a list of types for the columns in the specified configuration.
+   *
+   * The type must represent as close as possible the respective type of the column stored in the
+   * database. Since it does not exist an exact mapping between database types and Hive types the
+   * result is approximate. When it is not possible to derive a type for a given column the 
+   * {@link org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory#unknownTypeInfo} is used.
+   *
+   * There is a one-to-one correspondence between the types returned in this method and the column
+   * names obtained with {@link #getColumnNames(Configuration)}.
+   *
+   * Implementors of the method can derive the types by querying the database, exploit the state
+   * of the accessor, or use the configuration.
+   *
+   * @throws HiveJdbcDatabaseAccessException if some error occurs while accessing the database
+   */
   List<TypeInfo> getColumnTypes(Configuration conf) throws HiveJdbcDatabaseAccessException;
 
   int getTotalNumberOfRecords(Configuration conf) throws HiveJdbcDatabaseAccessException;
