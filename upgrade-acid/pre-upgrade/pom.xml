@@ -13,13 +13,12 @@
   limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-upgrade-acid</artifactId>
     <version>4.0.0-alpha-2-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
   <!--this module is added to parent pom so that it builds and releases with the reset of Hive-->
   <artifactId>hive-pre-upgrade</artifactId>
   <name>Hive Pre Upgrade Acid</name>
@@ -223,11 +222,6 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
           <artifactId>exec-maven-plugin</artifactId>
           <version>${maven.exec.plugin.version}</version>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${maven.surefire.plugin.version}</version>
-        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -316,6 +310,7 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
           <forkCount>${test.forkcount}</forkCount>
           <argLine>-Xmx2048m</argLine>
           <failIfNoTests>false</failIfNoTests>
+          <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
           <systemPropertyVariables>
             <build.dir>${project.build.directory}</build.dir>
             <datanucleus.schema.autoCreateAll>true</datanucleus.schema.autoCreateAll>

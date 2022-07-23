@@ -18,7 +18,6 @@
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
     <version>4.0.0-alpha-2-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-it</artifactId>
   <packaging>pom</packaging>
@@ -516,11 +515,11 @@
             <id>copy-database</id>
             <phase>install</phase>
             <configuration>
-              <tasks>
+              <target>
                 <copy todir="${hive.path.to.root}/itests/qtest/target/db_for_connectortest.db">
                   <fileset dir="${hive.path.to.root}/data/files/dataconnector_derbydb/db_for_connectortest.db"/>
                 </copy>
-              </tasks>
+              </target>
             </configuration>
             <goals>
               <goal>run</goal>

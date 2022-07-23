@@ -18,7 +18,6 @@
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
     <version>4.0.0-alpha-2-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-it-test-serde</artifactId>
   <packaging>jar</packaging>

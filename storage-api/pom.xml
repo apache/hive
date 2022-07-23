@@ -17,7 +17,8 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>23</version>
+    <version>27</version>
+    <relativePath/>
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-storage-api</artifactId>
@@ -27,17 +28,25 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <commons-logging.version>1.1.3</commons-logging.version>
     <guava.version>19.0</guava.version>
     <hadoop.version>3.1.0</hadoop.version>
-    <junit.version>4.13</junit.version>
-    <junit.jupiter.version>5.6.3</junit.jupiter.version>
-    <junit.vintage.version>5.6.3</junit.vintage.version>
-    <slf4j.version>1.7.30</slf4j.version>
-    <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
+    <slf4j.version>1.7.36</slf4j.version>
+    <maven.checkstyle.plugin.version>3.1.2</maven.checkstyle.plugin.version>
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
-    <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
+    <surefire.version>3.0.0-M7</surefire.version>
+    <project.build.outputTimestamp>2022-06-08T00:00:00Z</project.build.outputTimestamp>
   </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.8.2</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <!-- compile inter-project -->
     <dependency>
@@ -117,21 +126,13 @@
     </dependency>
     <!-- test inter-project -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit.jupiter.version}</version>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
-      <version>${junit.vintage.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -153,13 +154,21 @@
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>${maven.checkstyle.plugin.version}</version>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <!-- remove with upgrade to parent pom 28 -->
+          <version>3.4.2</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${maven.surefire.plugin.version}</version>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>${maven.checkstyle.plugin.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>9.3</version>
+            </dependency>
+          </dependencies>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -176,11 +185,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.0.0-M4</version>
         <configuration>
           <reuseForks>false</reuseForks>
           <argLine>-Xmx3g</argLine>
           <failIfNoTests>false</failIfNoTests>
+          <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
           <systemPropertyVariables>
             <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
           </systemPropertyVariables>

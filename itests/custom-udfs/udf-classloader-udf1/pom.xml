@@ -18,7 +18,6 @@
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it-custom-udfs</artifactId>
     <version>4.0.0-alpha-2-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>org.apache.hive.hive-it-custom-udfs</groupId>
   <artifactId>udf-classloader-udf1</artifactId>

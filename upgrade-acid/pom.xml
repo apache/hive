@@ -18,7 +18,8 @@
     <!--disconnected from hive root pom since this module needs 2.x jars-->
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>23</version>
+    <version>27</version>
+    <relativePath/>
   </parent>
   <!--this module is added to parent pom so that it builds and releases with the reset of Hive-->
   <groupId>org.apache.hive</groupId>
@@ -28,7 +29,6 @@
   <packaging>pom</packaging>
   <properties>
     <!-- Build properties -->
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
@@ -37,10 +37,12 @@
     <!-- Plugin versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <checkstyle.conf.dir>${basedir}/${hive.path.to.root}/checkstyle</checkstyle.conf.dir>
+    <maven.exec.plugin.version>3.0.0</maven.exec.plugin.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <junit.vintage.version>5.6.2</junit.vintage.version>
-    <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
+    <surefire.version>3.0.0-M7</surefire.version>
+    <project.build.outputTimestamp>2022-04-24T00:00:00Z</project.build.outputTimestamp>
   </properties>
   <modules>
     <module>pre-upgrade</module>
@@ -49,8 +51,13 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <!-- remove with upgrade to parent pom 28 -->
+        <version>3.4.2</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${maven.checkstyle.plugin.version}</version>
         <configuration>
           <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
           <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
