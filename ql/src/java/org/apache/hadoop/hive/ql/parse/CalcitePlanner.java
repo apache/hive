@@ -947,7 +947,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     // Now check QB in more detail. canHandleQbForCbo returns null if query can
     // be handled.
     msg = CalcitePlanner.canHandleQbForCbo(queryProperties, conf, true, needToLogMessage);
-    if (msg == null) {
+    if (msg == null || msg.isEmpty()) {
       return Pair.of(true, msg);
     }
     msg = msg.substring(0, msg.length() - 2);
