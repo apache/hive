@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.FileFormat;
@@ -43,6 +44,8 @@ public class WriterBuilder {
   private String queryId;
   private int poolSize;
   private Operation operation;
+  // A task may write multiple output files using multiple writers. Each of them must have a unique operationId.
+  private static AtomicInteger operationNum = new AtomicInteger(0);
 
   private WriterBuilder(Table table) {
     this.table = table;
@@ -95,7 +98,7 @@ public class WriterBuilder {
     int currentSpecId = table.spec().specId();
     int partitionId = attemptID.getTaskID().getId();
     int taskId = attemptID.getId();
-    String operationId = queryId + "-" + attemptID.getJobID();
+    String operationId = queryId + "-" + attemptID.getJobID() + "-" + operationNum.incrementAndGet();
     OutputFileFactory outputFileFactory = OutputFileFactory.builderFor(table, partitionId, taskId)
         .format(dataFileFormat)
         .operationId("data-" + operationId)
@@ -106,25 +109,23 @@ public class WriterBuilder {
         .operationId("delete-" + operationId)
         .build();
 
-    Schema positionDeleteRowSchema = operation == Operation.UPDATE ? null : dataSchema;
     HiveFileWriterFactory writerFactory = new HiveFileWriterFactory(table, dataFileFormat, dataSchema, null,
-        deleteFileFormat, null, null, null,
-        positionDeleteRowSchema);
+        deleteFileFormat, null, null, null, dataSchema);
 
     HiveIcebergWriter writer;
     switch (operation) {
-      case UPDATE:
-        writer = new HiveIcebergUpdateWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
-            deleteOutputFileFactory, dataFileFormat, deleteFileFormat, io, targetFileSize, poolSize);
-        break;
       case DELETE:
         writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
             deleteFileFormat, io, targetFileSize);
         break;
-      default:
+      case OTHER:
         writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
             dataFileFormat, io, targetFileSize);
         break;
+      default:
+        // Update and Merge should be splitted to inserts and deletes
+        throw new IllegalArgumentException("Unsupported operation when creating IcebergRecordWriter: " +
+                operation.name());
     }
 
     WriterRegistry.registerWriter(attemptID, tableName, writer);

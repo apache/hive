@@ -2237,6 +2237,9 @@ public class HiveConf extends Configuration {
         "Whether to use former Java date/time APIs to convert between timezones when writing timestamps in " +
         "Parquet files. Once data are written to the file the effect is permanent (also reflected in the metadata)." +
         "Changing the value of this property affects only new data written to the file."),
+    HIVE_PARQUET_INFER_BINARY_AS("hive.parquet.infer.binary.as", "binary", new StringSet("binary", "string"),
+        "This setting controls what the parquet binary type gets inferred as by CREATE TABLE LIKE FILE. This is helpful " +
+        "since some systems specify the parquet schema for strings as binary."),
     HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION("hive.avro.timestamp.skip.conversion", false,
         "Some older Hive implementations (pre-3.1) wrote Avro timestamps in a UTC-normalized" +
         "manner, while from version 3.1 until now Hive wrote time zone agnostic timestamps. " +

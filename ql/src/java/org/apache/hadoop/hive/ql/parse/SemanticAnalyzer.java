@@ -164,6 +164,7 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.NullRowsInputFormat;
+import org.apache.hadoop.hive.ql.io.SchemaInferenceUtils;
 import org.apache.hadoop.hive.ql.io.arrow.ArrowColumnarBatchSerDe;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -13477,6 +13478,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return false;
   }
+
   /**
    * Analyze the create table command. If it is a regular create-table or
    * create-table-like statements, we create a DDLWork and return true. If it is
@@ -13516,7 +13518,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     final int CREATE_TABLE = 0; // regular CREATE TABLE
     final int CTLT = 1; // CREATE TABLE LIKE ... (CTLT)
     final int CTAS = 2; // CREATE TABLE AS SELECT ... (CTAS)
-    final int ctt = 3; // CREATE TRANSACTIONAL TABLE
+    final int CTT = 3; // CREATE TRANSACTIONAL TABLE
+    final int CTLF = 4; // CREATE TABLE LIKE FILE
     int command_type = CREATE_TABLE;
     List<String> skewedColNames = new ArrayList<String>();
     List<List<String>> skewedValues = new ArrayList<List<String>>();
@@ -13524,6 +13527,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean storedAsDirs = false;
     boolean isUserStorageFormat = false;
     boolean partitionTransformSpecExists = false;
+    String likeFile = null;
+    String likeFileFormat = null;
 
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat(conf);
@@ -13569,7 +13574,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.KW_TRANSACTIONAL:
         isTransactional = true;
-        command_type = ctt;
+        command_type = CTT;
+        break;
+      case HiveParser.TOK_LIKEFILE:
+        if (cols.size() != 0) {
+          throw new SemanticException(ErrorMsg.CTLT_COLLST_COEXISTENCE
+              .getMsg());
+        }
+        likeFileFormat = getUnescapedName((ASTNode) child.getChild(0));
+        likeFile = getUnescapedName((ASTNode) child.getChild(1));
+        command_type = CTLF;
         break;
       case HiveParser.TOK_LIKETABLE:
         if (child.getChildCount() > 0) {
@@ -13631,7 +13645,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         break;
       case HiveParser.TOK_TABLEPARTCOLSBYSPEC:
-        List<PartitionTransformSpec> partitionTransformSpec =
+        List<TransformSpec> partitionTransformSpec =
             PartitionTransform.getPartitionTransformSpec(child);
 
         if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC,
@@ -13719,7 +13733,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    if (command_type == CREATE_TABLE || command_type == CTLT || command_type == ctt) {
+    if (command_type == CREATE_TABLE || command_type == CTLT || command_type == CTT || command_type == CTLF) {
       queryState.setCommandType(HiveOperation.CREATETABLE);
     } else if (command_type == CTAS) {
       queryState.setCommandType(HiveOperation.CREATETABLE_AS_SELECT);
@@ -13785,7 +13799,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     switch (command_type) {
-
+    case CTLF:
+      try {
+        if (!SchemaInferenceUtils.doesSupportSchemaInference(conf, likeFileFormat)) {
+          throw new SemanticException(ErrorMsg.CTLF_UNSUPPORTED_FORMAT.getErrorCodedMsg(likeFileFormat));
+        }
+      } catch (HiveException e) {
+        throw new SemanticException(e.getMessage(), e);
+      }
+    // fall through
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
       if (!CollectionUtils.isEmpty(partColNames)) {
         throw new SemanticException(
@@ -13810,6 +13832,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                                        checkConstraints);
       crtTblDesc.setStoredAsSubDirectories(storedAsDirs);
       crtTblDesc.setNullFormat(rowFormatParams.nullFormat);
+      crtTblDesc.setLikeFile(likeFile);
+      crtTblDesc.setLikeFileFormat(likeFileFormat);
 
       crtTblDesc.validate(conf);
       // outputs is empty, which means this create table happens in the current
@@ -13832,7 +13856,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             "Query state attached to Session state must be not null. Table location cannot be saved.");
       }
       break;
-    case ctt: // CREATE TRANSACTIONAL TABLE
+    case CTT: // CREATE TRANSACTIONAL TABLE
       if (isExt && !isDefaultTableTypeChanged) {
         throw new SemanticException(
             qualifiedTabName.getTable() + " cannot be declared transactional because it's an external table");

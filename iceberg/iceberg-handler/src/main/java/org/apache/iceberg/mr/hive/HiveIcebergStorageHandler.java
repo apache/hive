@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -56,8 +57,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -83,11 +84,15 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.ManifestFile;
+import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.SnapshotSummary;
+import org.apache.iceberg.SortDirection;
+import org.apache.iceberg.SortField;
+import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
@@ -331,27 +336,35 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public List<PartitionTransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+  public List<TransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
-    return table.spec().fields().stream().map(f -> {
-      PartitionTransformSpec spec = new PartitionTransformSpec();
-      spec.setColumnName(table.schema().findColumnName(f.sourceId()));
-      // right now the only way to fetch the transform type and its params is through the toString() call
-      String transformName = f.transform().toString().toUpperCase();
-      // if the transform name contains '[' it means it has some config params
-      if (transformName.contains("[")) {
-        spec.setTransformType(PartitionTransformSpec.TransformType
-            .valueOf(transformName.substring(0, transformName.indexOf("["))));
-        spec.setTransformParam(Optional.of(Integer
-            .valueOf(transformName.substring(transformName.indexOf("[") + 1, transformName.indexOf("]")))));
-      } else {
-        spec.setTransformType(PartitionTransformSpec.TransformType.valueOf(transformName));
-        spec.setTransformParam(Optional.empty());
-      }
+    return table.spec().fields().stream().map(f ->
+      getTransformSpec(table, f.transform().toString().toUpperCase(), f.sourceId())
+    ).collect(Collectors.toList());
+  }
 
-      return spec;
-    }).collect(Collectors.toList());
+  private List<TransformSpec> getSortTransformSpec(Table table) {
+    return table.sortOrder().fields().stream().map(s ->
+      getTransformSpec(table, s.transform().toString().toUpperCase(), s.sourceId())
+    ).collect(Collectors.toList());
+  }
+
+  private TransformSpec getTransformSpec(Table table, String transformName, int sourceId) {
+    TransformSpec spec = new TransformSpec();
+    spec.setColumnName(table.schema().findColumnName(sourceId));
+    // if the transform name contains '[' it means it has some config params
+    if (transformName.contains("[")) {
+      spec.setTransformType(TransformSpec.TransformType
+          .valueOf(transformName.substring(0, transformName.indexOf("["))));
+      spec.setTransformParam(Optional.of(Integer
+          .valueOf(transformName.substring(transformName.indexOf("[") + 1, transformName.indexOf("]")))));
+    } else {
+      spec.setTransformType(TransformSpec.TransformType.valueOf(transformName));
+      spec.setTransformParam(Optional.empty());
+    }
+
+    return spec;
   }
 
   @Override
@@ -366,12 +379,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
-    if (table.spec().isUnpartitioned()) {
-      return null;
-    }
-
-    // Iceberg currently doesn't have publicly accessible partition transform information, hence use above string parse
-    List<PartitionTransformSpec> partitionTransformSpecs = getPartitionTransformSpec(hmsTable);
 
     DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(Maps.newLinkedHashMap(),
         hiveConf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
@@ -379,6 +386,39 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExprs = Lists.newLinkedList();
     dpCtx.setCustomSortExpressions(customSortExprs);
 
+    if (table.spec().isPartitioned()) {
+      addCustomSortExpr(table, hmsTable, writeOperation, customSortExprs, getPartitionTransformSpec(hmsTable));
+    }
+
+    SortOrder sortOrder = table.sortOrder();
+    if (sortOrder.isSorted()) {
+      List<Integer> customSortPositions = Lists.newLinkedList();
+      List<Integer> customSortOrder = Lists.newLinkedList();
+      dpCtx.setCustomSortOrder(customSortOrder);
+      List<Integer> customSortNullOrder = Lists.newLinkedList();
+      dpCtx.setCustomSortNullOrder(customSortNullOrder);
+      for (SortField sortField : sortOrder.fields()) {
+        int pos = 0;
+        for (Types.NestedField field : table.schema().columns()) {
+          if (sortField.sourceId() == field.fieldId()) {
+            customSortPositions.add(pos);
+            customSortOrder.add(sortField.direction() == SortDirection.ASC ? 1 : 0);
+            customSortNullOrder.add(sortField.nullOrder() == NullOrder.NULLS_FIRST ? 0 : 1);
+            break;
+          }
+          pos++;
+        }
+      }
+
+      addCustomSortExpr(table, hmsTable, writeOperation, customSortExprs, getSortTransformSpec(table));
+    }
+
+    return dpCtx;
+  }
+
+  private void addCustomSortExpr(Table table,  org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      Operation writeOperation, List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExprs,
+      List<TransformSpec> transformSpecs) {
     Map<String, Integer> fieldOrderMap = Maps.newHashMap();
     List<Types.NestedField> fields = table.schema().columns();
     for (int i = 0; i < fields.size(); ++i) {
@@ -386,16 +426,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
 
     int offset = acidSelectColumns(hmsTable, writeOperation).size();
-    for (PartitionTransformSpec spec : partitionTransformSpecs) {
+
+    for (TransformSpec spec : transformSpecs) {
       int order = fieldOrderMap.get(spec.getColumnName());
-      if (PartitionTransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {
+      if (TransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {
         customSortExprs.add(BUCKET_SORT_EXPR.apply(order + offset, spec.getTransformParam().get()));
       } else {
         customSortExprs.add(cols -> cols.get(order + offset).clone());
       }
     }
-
-    return dpCtx;
   }
 
   @Override
@@ -567,6 +606,26 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         // {@link #createDPContext(HiveConf, org.apache.hadoop.hive.ql.metadata.Table)}
         return ImmutableList.of();
     }
+  }
+
+  @Override
+  public boolean supportsSortColumns() {
+    return true;
+  }
+
+  @Override
+  public List<FieldSchema> sortColumns(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    if (table.sortOrder().isUnsorted()) {
+      return Collections.emptyList();
+    }
+
+    Schema schema = table.schema();
+    return table.sortOrder().fields().stream().map(s -> new FieldSchema(schema.findColumnName(s.sourceId()),
+        schema.findType(s.sourceId()).toString(),
+        String.format("Transform: %s, Sort direction: %s, Null sort order: %s",
+        s.transform().toString(), s.direction().name(), s.nullOrder().name()))).collect(Collectors.toList());
   }
 
   private void setCommonJobConf(JobConf jobConf) {
@@ -818,7 +877,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
         (tableProps.containsKey("metaTable") && isValidMetadataTable(tableProps.getProperty("metaTable"))) ||
         hasOrcTimeInSchema(tableProps, tableSchema) ||
-        !hasParquetListColumnSupport(tableProps, tableSchema)) {
+        !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema)) {
       conf.setBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname, false);
     }
   }
@@ -839,20 +898,21 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   /**
-   * Vectorized reads of parquet files from columns with list type is only supported if the element is a primitive type
-   * check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details
+   * Vectorized reads of parquet files from columns with list or map type is only supported if the nested types are of
+   * primitive type category
+   * check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details on nested types under lists
    * @param tableProps iceberg table properties
    * @param tableSchema iceberg table schema
    * @return
    */
-  private static boolean hasParquetListColumnSupport(Properties tableProps, Schema tableSchema) {
+  private static boolean hasParquetNestedTypeWithinListOrMap(Properties tableProps, Schema tableSchema) {
     if (!FileFormat.PARQUET.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
       return true;
     }
 
     for (Types.NestedField field : tableSchema.columns()) {
-      if (field.type().isListType()) {
-        for (Types.NestedField nestedField : field.type().asListType().fields()) {
+      if (field.type().isListType() || field.type().isMapType()) {
+        for (Types.NestedField nestedField : field.type().asNestedType().fields()) {
           if (!nestedField.type().isPrimitiveType()) {
             return false;
           }

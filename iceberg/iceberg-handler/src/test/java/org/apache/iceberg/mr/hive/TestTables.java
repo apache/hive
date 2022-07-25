@@ -251,9 +251,33 @@ abstract class TestTables {
    */
   public Table createTable(TestHiveShell shell, String tableName, Schema schema, FileFormat fileFormat,
       List<Record> records, int formatVersion, Map<String, String> tblProperties) throws IOException {
+    return createTable(shell, tableName, schema, SortOrder.unsorted(), PartitionSpec.unpartitioned(), fileFormat,
+        records, formatVersion, tblProperties);
+  }
+
+  /**
+   * Creates a non partitioned Hive test table. Creates the Iceberg table/data and creates the corresponding Hive
+   * table as well when needed. The table will be in the 'default' database. The table will be populated with the
+   * provided List of {@link Record}s.
+   * @param shell The HiveShell used for Hive table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param order The sort order used for the table creation
+   * @param partSpec The partition spec used for the table creation
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @param formatVersion The version of the spec the table should use (format-version)
+   * @param tblProperties Additional table properties
+   * @return The created table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createTable(TestHiveShell shell, String tableName, Schema schema, SortOrder order,
+      PartitionSpec partSpec, FileFormat fileFormat, List<Record> records, int formatVersion,
+      Map<String, String> tblProperties) throws IOException {
     ImmutableMap<String, String> tblProps = ImmutableMap.<String, String>builder().putAll(tblProperties)
         .put(TableProperties.FORMAT_VERSION, Integer.toString(formatVersion)).build();
-    Table table = createIcebergTable(shell.getHiveConf(), tableName, schema, fileFormat, tblProps, records);
+    Table table = createIcebergTable(shell.getHiveConf(), tableName, schema, order, partSpec, fileFormat, tblProps,
+        records);
     String createHiveSQL = createHiveTableSQL(TableIdentifier.of("default", tableName), tblProps);
     if (createHiveSQL != null) {
       shell.executeStatement(createHiveSQL);
@@ -386,9 +410,30 @@ abstract class TestTables {
    */
   public Table createIcebergTable(Configuration configuration, String tableName, Schema schema, FileFormat fileFormat,
       Map<String, String> additionalTableProps, List<Record> records) throws IOException {
+    return createIcebergTable(configuration, tableName, schema, SortOrder.unsorted(), PartitionSpec.unpartitioned(),
+        fileFormat, additionalTableProps, records);
+  }
+
+  /**
+   * Creates an Iceberg table/data without creating the corresponding Hive table. The table will be in the 'default'
+   * namespace.
+   * @param configuration The configuration used during the table creation
+   * @param tableName The name of the test table
+   * @param schema The schema used for the table creation
+   * @param order The sort order used for the table creation
+   * @param partSpec The partition spec used for the table creation
+   * @param fileFormat The file format used for writing the data
+   * @param records The records with which the table is populated
+   * @return The create table
+   * @throws IOException If there is an error writing data
+   */
+  public Table createIcebergTable(Configuration configuration, String tableName, Schema schema, SortOrder order,
+      PartitionSpec partSpec, FileFormat fileFormat, Map<String, String> additionalTableProps, List<Record> records)
+      throws IOException {
     String identifier = identifier("default." + tableName);
     TestHelper helper = new TestHelper(new Configuration(configuration), tables(), identifier, schema,
-        PartitionSpec.unpartitioned(), fileFormat, additionalTableProps, temp);
+        partSpec, fileFormat, additionalTableProps, temp);
+    helper.setOrder(order);
     Table table = helper.createTable();
 
     if (records != null && !records.isEmpty()) {

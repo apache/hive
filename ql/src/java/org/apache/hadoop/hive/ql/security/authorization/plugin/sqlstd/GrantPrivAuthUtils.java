@@ -62,7 +62,7 @@ public class GrantPrivAuthUtils {
 
     // get privileges for this user and its roles on this object
     RequiredPrivileges availPrivs = SQLAuthorizationUtils.getPrivilegesFromMetaStore(
-        metastoreClient, userName, hivePrivObject, curRoles, isAdmin);
+        metastoreClient, userName, hivePrivObject, curRoles, isAdmin, false);
 
     // check if required privileges is subset of available privileges
     List<String> deniedMessages = new ArrayList<String>();

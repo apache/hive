@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
@@ -43,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -418,16 +420,13 @@ class CompactionQueryBuilder {
               + "`currentTransaction` bigint, `row` struct<");
     }
     List<FieldSchema> cols = sourceTab.getSd().getCols();
-    boolean isFirst = true;
+    List<String> columnDescs = new ArrayList<>();
     for (FieldSchema col : cols) {
-      if (!isFirst) {
-        query.append(", ");
-      }
-      isFirst = false;
-      query.append("`").append(col.getName()).append("` ");
-      query.append(crud ? ":" : "");
-      query.append(col.getType());
+      String columnType = DDLPlanUtils.formatType(TypeInfoUtils.getTypeInfoFromTypeString(col.getType()));
+      String columnDesc = "`" + col.getName() + "` " + (crud ? ":" : "") + columnType;
+      columnDescs.add(columnDesc);
     }
+    query.append(StringUtils.join(',',columnDescs));
     query.append(crud ? ">" : "");
     query.append(") ");
   }

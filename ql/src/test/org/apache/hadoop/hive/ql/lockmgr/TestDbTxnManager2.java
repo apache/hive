@@ -3783,10 +3783,11 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     }
     driver2.lockAndRespond();
     locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 1, locks.size());
-
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ,
+            LockState.ACQUIRED, "default", null, null, locks);//destination database
     checkLock(blocking ? LockType.EXCLUSIVE : LockType.EXCL_WRITE,
-      LockState.ACQUIRED, "default", "tab_acid", null, locks);
+      LockState.ACQUIRED, "default", "tab_acid", null, locks);//source table
 
     Mockito.doNothing().when(driver2).lockAndRespond();
     driver2.run();

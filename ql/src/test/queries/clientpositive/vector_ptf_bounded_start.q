@@ -4,15 +4,15 @@ set hive.vectorized.execution.ptf.enabled=true;
 set hive.fetch.task.conversion=none;
 
 CREATE TABLE vector_ptf_part_simple_text(p_mfgr string, p_name string, p_date date, p_retailprice double,
-  p_char char(1), p_varchar varchar(5), rowindex int)
+  p_char char(1), p_varchar varchar(5), p_boolean boolean, rowindex int)
         ROW FORMAT DELIMITED
         FIELDS TERMINATED BY ','
         STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../../data/files/vector_ptf_part_simple_all_datatypes.txt' OVERWRITE INTO TABLE vector_ptf_part_simple_text;
 
 CREATE TABLE vector_ptf_part_simple_orc (p_mfgr string, p_name string, p_date date, p_timestamp timestamp,
-  p_int int, p_retailprice double, p_decimal decimal(10,4), p_char char(1), p_varchar varchar(5),rowindex int) stored
-as orc;
+  p_int int, p_retailprice double, p_decimal decimal(10,4), p_char char(1), p_varchar varchar(5),
+  p_boolean boolean, rowindex int) stored as orc;
 
 SELECT * FROM vector_ptf_part_simple_text;
 
@@ -24,6 +24,7 @@ CAST(UNIX_TIMESTAMP(p_date) as int), p_retailprice,
 CAST(p_retailprice as DECIMAL(10,4)),
 p_char,
 p_varchar,
+p_boolean,
 rowindex 
 FROM vector_ptf_part_simple_text;
 
@@ -727,3 +728,50 @@ EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_dat
                                     sum(p_retailprice) over(partition by p_varchar) as s
 from vector_ptf_part_simple_orc
 where p_varchar = 'DA';
+
+select "************ BOOLEAN WINDOW RANGE TYPE ************";
+set hive.vectorized.execution.ptf.enabled=false;
+
+select "************ BOOLEAN WINDOW RANGE TYPE (NON-VECTORIZED REFERENCE) ************";
+select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_char, p_boolean,
+       count(*) over(partition by p_mfgr order by p_boolean range between 3 preceding and current row) as cs,
+       sum(p_retailprice) over(partition by p_mfgr order by p_boolean range between 3 preceding and current row) as s
+from vector_ptf_part_simple_orc;
+
+select "************ BOOLEAN WINDOW RANGE TYPE (VECTORIZED) ************";
+set hive.vectorized.execution.ptf.enabled=true;
+
+EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char, p_boolean,
+                                    count(*) over(partition by p_mfgr order by p_boolean range between 3 preceding and
+                                    current row) as cs,
+                                    sum(p_retailprice) over(partition by p_mfgr order by p_boolean range between 3 preceding and current row) as s
+from vector_ptf_part_simple_orc;
+
+select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_char, p_boolean,
+       count(*) over(partition by p_mfgr order by p_boolean range between 3 preceding and current row) as cs,
+       sum(p_retailprice) over(partition by p_mfgr order by p_boolean range between 3 preceding and current row) as s
+from vector_ptf_part_simple_orc;
+
+select "************ BOOLEAN PARTITION ************";
+EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,p_boolean,
+                                    count(*) over(partition by p_boolean) as cs,
+                                    sum(p_retailprice) over(partition by p_boolean) as s
+from vector_ptf_part_simple_orc;
+
+select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,p_boolean,
+       count(*) over(partition by p_boolean) as cs,
+       sum(p_retailprice) over(partition by p_boolean) as s
+from vector_ptf_part_simple_orc;
+
+select "************ BOOLEAN PARTITION WITH CONSTANT PARTITION EXPRESSION ************";
+EXPLAIN VECTORIZATION DETAIL select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice,p_char,p_boolean,
+                                    count(*) over(partition by p_boolean) as cs,
+                                    sum(p_retailprice) over(partition by p_boolean) as s
+from vector_ptf_part_simple_orc
+where p_boolean = true;
+
+select p_mfgr, p_name, p_timestamp, rowindex, p_date, p_retailprice, p_char,p_boolean,
+       count(*) over(partition by p_boolean) as cs,
+       sum(p_retailprice) over(partition by p_boolean) as s
+from vector_ptf_part_simple_orc
+where p_boolean = false;

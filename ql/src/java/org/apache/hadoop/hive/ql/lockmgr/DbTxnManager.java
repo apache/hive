@@ -450,9 +450,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       }
       LockComponentBuilder compBuilder = new LockComponentBuilder();
       compBuilder.setExclusive();
-      compBuilder.setOperationType(DataOperationType.UPDATE);
+      compBuilder.setOperationType(DataOperationType.NO_TXN);
       compBuilder.setDbName(GLOBAL_LOCKS);
       compBuilder.setTableName(lockName);
+
       globalLocks.add(compBuilder.build());
       LOG.debug("Adding global lock: " + lockName);
     }

@@ -57,7 +57,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -837,7 +837,7 @@ public class DDLPlanUtils {
   /**
    * Struct fields are identifiers, need to be put between ``.
    */
-  private String formatType(TypeInfo typeInfo) {
+  public static String formatType(TypeInfo typeInfo) {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
         return typeInfo.getTypeName();
@@ -920,13 +920,13 @@ public class DDLPlanUtils {
   private String getPartitionsBySpec(Table table) {
     if (table.isNonNative() && table.getStorageHandler() != null &&
       table.getStorageHandler().supportsPartitionTransform()) {
-      List<PartitionTransformSpec> specs = table.getStorageHandler().getPartitionTransformSpec(table);
+      List<TransformSpec> specs = table.getStorageHandler().getPartitionTransformSpec(table);
       if (specs.isEmpty()) {
         return "";
       }
       List<String> partitionTransforms = new ArrayList<>();
-      for (PartitionTransformSpec spec : specs) {
-        if (spec.getTransformType() == PartitionTransformSpec.TransformType.IDENTITY) {
+      for (TransformSpec spec : specs) {
+        if (spec.getTransformType() == TransformSpec.TransformType.IDENTITY) {
           partitionTransforms.add(spec.getColumnName());
         } else {
           partitionTransforms.add(spec.getTransformType().name() + "(" +
