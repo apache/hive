@@ -960,7 +960,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             "Default database for catalog " + catalog.getName(), catalog.getLocationUri(),
             Collections.emptyMap());
         db.setCatalogName(catalog.getName());
-        create_database_core(ms, db);
+        create_database_core(ms, db, false);
 
         if (!transactionalListeners.isEmpty()) {
           transactionalListenersResponses =
@@ -1175,7 +1175,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   // Assumes that the catalog has already been set.
-  private void create_database_core(RawStore ms, final Database db)
+  private void create_database_core(RawStore ms, final Database db, boolean skipFSWrites)
       throws AlreadyExistsException, InvalidObjectException, MetaException {
     if (!MetaStoreUtils.validateName(db.getName(), conf)) {
       throw new InvalidObjectException(db.getName() + " is not a valid database name");
@@ -1230,74 +1230,78 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Map<String, String> transactionalListenersResponses = Collections.emptyMap();
     try {
       firePreEvent(new PreCreateDatabaseEvent(db, this));
-      //reinstate location uri for metastore db.
-      if (skipAuthorization == true){
-        db.setLocationUri(dbExtPath.toString());
-        if (dbMgdPath != null) {
-          db.setManagedLocationUri(dbMgdPath.toString());
-        }
-      }
-      if (db.getCatalogName() != null && !db.getCatalogName().
-          equals(Warehouse.DEFAULT_CATALOG_NAME)) {
-        if (!wh.isDir(dbExtPath)) {
-          LOG.debug("Creating database path " + dbExtPath);
-          if (!wh.mkdirs(dbExtPath)) {
-            throw new MetaException("Unable to create database path " + dbExtPath +
-                ", failed to create database " + db.getName());
-          }
-          madeExternalDir = true;
-        }
-      } else {
-        if (dbMgdPath != null) {
-          try {
-            // Since this may be done as random user (if doAs=true) he may not have access
-            // to the managed directory. We run this as an admin user
-            madeManagedDir = UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Boolean>() {
-              @Override public Boolean run() throws MetaException {
-                if (!wh.isDir(dbMgdPath)) {
-                  LOG.info("Creating database path in managed directory " + dbMgdPath);
-                  if (!wh.mkdirs(dbMgdPath)) {
-                    throw new MetaException("Unable to create database managed path " + dbMgdPath + ", failed to create database " + db.getName());
-                  }
-                  return true;
-                }
-                return false;
-              }
-            });
-            if (madeManagedDir) {
-              LOG.info("Created database path in managed directory " + dbMgdPath);
-            } else if (!isInTest || !isDbReplicationTarget(db)) { // Hive replication tests doesn't drop the db after each test
-              throw new MetaException(
-                  "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName());
-            }
-          } catch (IOException | InterruptedException e) {
-            throw new MetaException(
-                "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName() + ":" + e.getMessage());
+      if (!skipFSWrites) {
+        //reinstate location uri for metastore db.
+        if (skipAuthorization == true) {
+          db.setLocationUri(dbExtPath.toString());
+          if (dbMgdPath != null) {
+            db.setManagedLocationUri(dbMgdPath.toString());
           }
         }
-        if (dbExtPath != null) {
-          try {
-            madeExternalDir = UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Boolean>() {
-              @Override public Boolean run() throws MetaException {
-                if (!wh.isDir(dbExtPath)) {
-                  LOG.info("Creating database path in external directory " + dbExtPath);
-                  return wh.mkdirs(dbExtPath);
-                }
-                return false;
-              }
-            });
-            if (madeExternalDir) {
-              LOG.info("Created database path in external directory " + dbExtPath);
-            } else {
-              LOG.warn("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
-                  + "StorageBasedAuthorizationProvider is enabled");
+        if (db.getCatalogName() != null && !db.getCatalogName().
+                equals(Warehouse.DEFAULT_CATALOG_NAME)) {
+          if (!wh.isDir(dbExtPath)) {
+            LOG.debug("Creating database path " + dbExtPath);
+            if (!wh.mkdirs(dbExtPath)) {
+              throw new MetaException("Unable to create database path " + dbExtPath +
+                      ", failed to create database " + db.getName());
             }
-          } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
-            throw new MetaException("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
-                + "StorageBasedAuthorizationProvider is enabled: " + e.getMessage());
+            madeExternalDir = true;
           }
         } else {
-          LOG.info("Database external path won't be created since the external warehouse directory is not defined");
+          if (dbMgdPath != null) {
+            try {
+              // Since this may be done as random user (if doAs=true) he may not have access
+              // to the managed directory. We run this as an admin user
+              madeManagedDir = UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+                @Override
+                public Boolean run() throws MetaException {
+                  if (!wh.isDir(dbMgdPath)) {
+                    LOG.info("Creating database path in managed directory " + dbMgdPath);
+                    if (!wh.mkdirs(dbMgdPath)) {
+                      throw new MetaException("Unable to create database managed path " + dbMgdPath + ", failed to create database " + db.getName());
+                    }
+                    return true;
+                  }
+                  return false;
+                }
+              });
+              if (madeManagedDir) {
+                LOG.info("Created database path in managed directory " + dbMgdPath);
+              } else if (!isInTest || !isDbReplicationTarget(db)) { // Hive replication tests doesn't drop the db after each test
+                throw new MetaException(
+                        "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName());
+              }
+            } catch (IOException | InterruptedException e) {
+              throw new MetaException(
+                      "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName() + ":" + e.getMessage());
+            }
+          }
+          if (dbExtPath != null) {
+            try {
+              madeExternalDir = UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Boolean>() {
+                @Override
+                public Boolean run() throws MetaException {
+                  if (!wh.isDir(dbExtPath)) {
+                    LOG.info("Creating database path in external directory " + dbExtPath);
+                    return wh.mkdirs(dbExtPath);
+                  }
+                  return false;
+                }
+              });
+              if (madeExternalDir) {
+                LOG.info("Created database path in external directory " + dbExtPath);
+              } else {
+                LOG.warn("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
+                        + "StorageBasedAuthorizationProvider is enabled");
+              }
+            } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
+              throw new MetaException("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
+                      + "StorageBasedAuthorizationProvider is enabled: " + e.getMessage());
+            }
+          } else {
+            LOG.info("Database external path won't be created since the external warehouse directory is not defined");
+          }
         }
       }
 
@@ -1388,7 +1392,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
         Deadline.checkTimeout();
       }
-      create_database_core(getMS(), db);
+      create_database_core(getMS(), db, false);
       success = true;
     } catch (Exception e) {
       ex = e;
@@ -1397,6 +1401,42 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           .defaultMetaException();
     } finally {
       endFunction("create_database", success, ex);
+    }
+  }
+
+  public void create_database_req(final CreateDatabaseRequest req)
+          throws AlreadyExistsException, InvalidObjectException, MetaException {
+    Database db = req.getDatabase();
+    boolean skipFSWrites = req.isSkipFSWrites();
+    startFunction("create_database_req", ": " + db.toString());
+    boolean success = false;
+    Exception ex = null;
+    if (!db.isSetCatalogName()) {
+      db.setCatalogName(getDefaultCatalog(conf))
+    }
+    try {
+      try {
+        if (null != get_database_core(db.getCatalogName(), db.getName())) {
+          throw new AlreadyExistsException("Database " + db.getName() + " already exists");
+        }
+      } catch (NoSuchObjectException e) {
+        // expected
+      }
+      create_database_core(getMS(), db, skipFSWrites);
+      success = true;
+    } catch (Exception e) {
+      ex = e;
+      if (e instanceof MetaException) {
+        throw (MetaException) e;
+      } else if (e instanceof InvalidObjectException) {
+        throw (InvalidObjectException) e;
+      } else if (e instanceof AlreadyExistsException) {
+        throw (AlreadyExistsException) e;
+      } else {
+        throw newMetaException(e);
+      }
+    } finally {
+      endFunction("create_database_req", success, ex);
     }
   }
 
@@ -2264,6 +2304,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     ColumnStatistics colStats = null;
     Table tbl = req.getTable();
     EnvironmentContext envContext = req.getEnvContext();
+    boolean skipFSWrites = req.isSkipFSWrites();
     SQLAllTableConstraints constraints = new SQLAllTableConstraints();
     constraints.setPrimaryKeys(req.getPrimaryKeys());
     constraints.setForeignKeys(req.getForeignKeys());
@@ -2362,32 +2403,36 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       firePreEvent(new PreCreateTableEvent(tbl, db, this));
 
-      if (!TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType())) {
-        if (tbl.getSd().getLocation() == null
-            || tbl.getSd().getLocation().isEmpty()) {
-          tblPath = wh.getDefaultTablePath(db, tbl.getTableName() + getTableSuffix(tbl), isExternal(tbl));
-        } else {
-          if (!isExternal(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
-            LOG.warn("Location: " + tbl.getSd().getLocation()
-                + " specified for non-external table:" + tbl.getTableName());
+      if (!skipFSWrites) {
+        if (!TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType())) {
+          if (tbl.getSd().getLocation() == null
+                  || tbl.getSd().getLocation().isEmpty()) {
+            tblPath = wh.getDefaultTablePath(db, tbl.getTableName() + getTableSuffix(tbl), isExternal(tbl));
+          } else {
+            if (!isExternal(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
+              LOG.warn("Location: " + tbl.getSd().getLocation()
+                      + " specified for non-external table:" + tbl.getTableName());
+            }
+            tblPath = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
+            // ignore suffix if it's already there (direct-write CTAS)
+            if (!tblPath.getName().matches("(.*)" + SOFT_DELETE_TABLE_PATTERN)) {
+              tblPath = new Path(tblPath + getTableSuffix(tbl));
+            }
           }
-          tblPath = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
-          // ignore suffix if it's already there (direct-write CTAS)
-          if (!tblPath.getName().matches("(.*)" + SOFT_DELETE_TABLE_PATTERN)) {
-            tblPath = new Path(tblPath + getTableSuffix(tbl));
-          }
+          tbl.getSd().setLocation(tblPath.toString());
         }
-        tbl.getSd().setLocation(tblPath.toString());
-      }
 
-      if (tblPath != null) {
-        if (!wh.isDir(tblPath)) {
-          if (!wh.mkdirs(tblPath)) {
-            throw new MetaException(tblPath
-                + " is not a directory or unable to create one");
+        if (tblPath != null) {
+          if (!wh.isDir(tblPath)) {
+            if (!wh.mkdirs(tblPath)) {
+              throw new MetaException(tblPath
+                      + " is not a directory or unable to create one");
+            }
+            madeDir = true;
           }
-          madeDir = true;
         }
+      } else {
+        LOG.warn("Because skipFSWrites is true, skip the creation of directories for tables.");
       }
       if (MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) &&
           !MetaStoreUtils.isView(tbl)) {
@@ -3910,7 +3955,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private Partition append_partition_common(RawStore ms, String catName, String dbName,
                                             String tableName, List<String> part_vals,
-                                            EnvironmentContext envContext)
+                                            EnvironmentContext envContext, boolean skipFSWrites)
       throws InvalidObjectException, AlreadyExistsException, MetaException, NoSuchObjectException {
 
     Partition part = new Partition();
@@ -3959,12 +4004,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new AlreadyExistsException("Partition already exists:" + part);
       }
 
-      if (!wh.isDir(partLocation)) {
-        if (!wh.mkdirs(partLocation)) {
-          throw new MetaException(partLocation
-              + " is not a directory or unable to create one");
+      if (!skipFSWrites) {
+        if (!wh.isDir(partLocation)) {
+          if (!wh.mkdirs(partLocation)) {
+            throw new MetaException(partLocation
+                    + " is not a directory or unable to create one");
+          }
+          madeDir = true;
         }
-        madeDir = true;
+      } else {
+        LOG.warn("Because skipFSWrites is true, skip creating directories for partitions.");
       }
 
       // set create time
@@ -4043,7 +4092,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Partition ret = null;
     Exception ex = null;
     try {
-      ret = append_partition_common(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, part_vals, envContext);
+      ret = append_partition_common(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, part_vals, envContext, false);
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
@@ -6581,7 +6630,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       RawStore ms = getMS();
       List<String> partVals = getPartValsFromName(ms, parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, part_name);
-      ret = append_partition_common(ms, parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, partVals, env_context);
+      ret = append_partition_common(ms, parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, partVals, env_context, false);
     } catch (Exception e) {
       ex = e;
       throw handleException(e)

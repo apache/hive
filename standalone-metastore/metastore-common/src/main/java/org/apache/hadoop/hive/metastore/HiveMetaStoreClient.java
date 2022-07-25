@@ -1278,6 +1278,26 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   /**
+   * Create a new Database
+   *
+   * @param req
+   * @throws AlreadyExistsException
+   * @throws InvalidObjectException
+   * @throws MetaException
+   * @throws TException
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_database(Database)
+   */
+  @Override
+  public void createDatabase(CreateDatabaseRequest req)
+          throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    Database db = req.getDatabase();
+    if (!db.isSetCatalogName()) {
+      db.setCatalogName(getDefaultCatalog(conf));
+    }
+    client.create_database_req(req);
+  }
+
+  /**
    * Create a new DataConnector // TODO
    *
    * @param connector

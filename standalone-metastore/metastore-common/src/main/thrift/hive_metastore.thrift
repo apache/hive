@@ -901,7 +901,9 @@ struct AddPartitionsRequest {
   4: required bool ifNotExists,
   5: optional bool needResult=true,
   6: optional string catName,
-  7: optional string validWriteIdList
+  7: optional string validWriteIdList,
+  // use boolean skipFSWrites to decide whether create directory in file system or not
+  8: optional bool skipFSWrites=false
 }
 
 // Return type for drop_partitions_req
@@ -2025,7 +2027,9 @@ struct CreateTableRequest {
    7: optional list<SQLDefaultConstraint> defaultConstraints,
    8: optional list<SQLCheckConstraint> checkConstraints,
    9: optional list<string> processorCapabilities,
-   10: optional string processorIdentifier
+   10: optional string processorIdentifier,
+   // use boolean skipFSWrites to decide whether create directory in file system or not
+   11: optional bool skipFSWrites=false
 }
 
 struct CreateDatabaseRequest {
@@ -2040,7 +2044,9 @@ struct CreateDatabaseRequest {
   9: optional i32 createTime,
   10: optional string managedLocationUri,
   11: optional string type,
-  12: optional string dataConnectorName
+  12: optional string dataConnectorName,
+  // use boolean skipFSWrites to decide whether create directory in file system or not
+  13: optional bool skipFSWrites=false
 }
 
 struct CreateDataConnectorRequest {
@@ -2418,6 +2424,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void drop_catalog(1: DropCatalogRequest catName) throws (1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
 
   void create_database(1:Database database) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
+  void create_database_req(1:CreateDatabaseRequest req) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   Database get_database_req(1:GetDatabaseRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_database(1:string name, 2:bool deleteData, 3:bool cascade) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)

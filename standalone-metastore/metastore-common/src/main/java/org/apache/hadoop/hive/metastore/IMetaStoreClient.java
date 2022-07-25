@@ -1787,6 +1787,19 @@ public interface IMetaStoreClient {
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
   /**
+   * Create a new database.
+   * @param req CreateDatabaseRequest object.  If the catalog name is null it will be assumed to be
+   *           {@link Warehouse#DEFAULT_CATALOG_NAME}.
+   * @throws InvalidObjectException There is something wrong with the database object.
+   * @throws AlreadyExistsException There is already a database of this name in the specified
+   * catalog.
+   * @throws MetaException something went wrong, usually in the RDBMS
+   * @throws TException general thrift error
+   */
+  void createDatabase(CreateDatabaseRequest req)
+          throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+
+  /**
    * Drop a database.
    * @param name name of the database to drop.
    * @throws NoSuchObjectException No such database exists.
