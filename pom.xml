@@ -117,6 +117,7 @@
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
     <commons-io.version>2.11.0</commons-io.version>
+    <commons-pool2.version>2.11.1</commons-pool2.version>
     <commons-lang3.version>3.9</commons-lang3.version>
     <commons-math3.version>3.6.1</commons-math3.version>
     <commons-dbcp2.version>2.7.0</commons-dbcp2.version>

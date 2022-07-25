@@ -1879,6 +1879,7 @@ public class TestTxnHandler {
   @Test
   public void testGetMaterializationInvalidationInfo() throws MetaException {
     testGetMaterializationInvalidationInfo(
+            new ValidReadTxnList(new long[] {6, 11}, new BitSet(), 10L, 12L),
             new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
     );
   }
@@ -1886,6 +1887,7 @@ public class TestTxnHandler {
   @Test
   public void testGetMaterializationInvalidationInfoWhenTableHasNoException() throws MetaException {
     testGetMaterializationInvalidationInfo(
+            new ValidReadTxnList(new long[] {6, 11}, new BitSet(), 10L, 12L),
             new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[0], new BitSet(), 1)
     );
   }
@@ -1893,12 +1895,13 @@ public class TestTxnHandler {
   @Test
   public void testGetMaterializationInvalidationInfoWhenCurrentTxnListHasNoException() throws MetaException {
     testGetMaterializationInvalidationInfo(
+            new ValidReadTxnList(new long[0], new BitSet(), 10L, 12L),
             new ValidReaderWriteIdList(TableName.getDbTable("default", "t1"), new long[] { 2 }, new BitSet(), 1)
     );
   }
 
   private void testGetMaterializationInvalidationInfo(
-          ValidReaderWriteIdList... tableWriteIdList) throws MetaException {
+          ValidReadTxnList currentValidTxnList, ValidReaderWriteIdList... tableWriteIdList) throws MetaException {
     ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(5L);
     for (ValidReaderWriteIdList tableWriteId : tableWriteIdList) {
       validTxnWriteIdList.addTableValidWriteIdList(tableWriteId);
@@ -1917,10 +1920,11 @@ public class TestTxnHandler {
     CreationMetadata creationMetadata = new CreationMetadata();
     creationMetadata.setDbName("default");
     creationMetadata.setTblName("mat1");
-    creationMetadata.setSourceTables(Collections.singletonList(sourceTable));
+    creationMetadata.setTablesUsed(new HashSet<String>() {{ add("default.t1"); }});
     creationMetadata.setValidTxnList(validTxnWriteIdList.toString());
 
-    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(creationMetadata);
+    Materialization materialization = txnHandler.getMaterializationInvalidationInfo(
+            creationMetadata, currentValidTxnList.toString());
     assertFalse(materialization.isSourceTablesUpdateDeleteModified());
   }
 
