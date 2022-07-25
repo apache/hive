@@ -257,7 +257,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public void rollbackTxn() throws LockException {
+  public void rollbackTxn(Context ctx) throws LockException {
     // No-op
   }
 

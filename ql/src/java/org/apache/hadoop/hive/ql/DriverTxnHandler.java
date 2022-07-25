@@ -602,12 +602,12 @@ class DriverTxnHandler {
     if (commit) {
       if (driverContext.getConf().getBoolVar(ConfVars.HIVE_IN_TEST) &&
           driverContext.getConf().getBoolVar(ConfVars.HIVETESTMODEROLLBACKTXN)) {
-        txnManager.rollbackTxn();
+        txnManager.rollbackTxn(context);
       } else {
         txnManager.commitTxn(); //both commit & rollback clear ALL locks for this transaction
       }
     } else {
-      txnManager.rollbackTxn();
+      txnManager.rollbackTxn(context);
     }
   }
 

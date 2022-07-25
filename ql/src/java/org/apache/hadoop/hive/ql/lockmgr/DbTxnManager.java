@@ -180,8 +180,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
   //Contains database under replication name for hive replication transactions (dump and load operation)
   private String replPolicy;
-  // The final destination table information in case of CTAS
-  private Table destinationTable;
 
   /**
    * We do this on every call to make sure TM uses same MS connection as is used by the caller (Driver,
@@ -289,7 +287,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   public void acquireLocks(QueryPlan plan, Context ctx, String username) throws LockException {
     try {
       acquireLocksWithHeartbeatDelay(plan, ctx, username, 0);
-      destinationTable = ctx.getDestinationTable();
     }
     catch(LockException e) {
       if(e.getCause() instanceof TxnAbortedException) {
@@ -496,8 +493,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     stopHeartbeat();
   }
 
-  private void cleanupDirForCTAS() throws LockException {
+  private void cleanupOutputDir(Context ctx) throws MetaException {
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.TXN_CTAS_X_LOCK)) {
+      Table destinationTable = ctx.getDestinationTable();
       if (destinationTable != null) {
         try {
           CompactionRequest rqst = new CompactionRequest(
@@ -509,8 +507,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           rqst.putToProperties(IF_PURGE, Boolean.toString(true));
           TxnStore txnHandler = TxnUtils.getTxnStore(conf);
           txnHandler.submitForCleanup(rqst, destinationTable.getTTable().getWriteId(), getCurrentTxnId());
-        } catch (InterruptedException | IOException | MetaException e) {
-          throw new LockException("Unable to submit cleanup operation of directory written by CTAS due to: " + e.getMessage());
+        } catch (InterruptedException | IOException e) {
+          throw new MetaException("Unable to submit cleanup operation of directory written by CTAS due to: " + e.getMessage());
         }
       }
     }
@@ -602,13 +600,13 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public void rollbackTxn() throws LockException {
+  public void rollbackTxn(Context ctx) throws LockException {
     if (!isTxnOpen()) {
       throw new RuntimeException("Attempt to rollback before opening a transaction");
     }
     try {
       clearLocksAndHB();
-      cleanupDirForCTAS();
+      cleanupOutputDir(ctx);
       LOG.debug("Rolling back " + JavaUtils.txnIdToString(txnId));
       
       if (replPolicy != null) {
@@ -893,7 +891,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     try {
       stopHeartbeat();
       if (isTxnOpen()) {
-        rollbackTxn();
+        rollbackTxn(new Context(conf));
       }
       if (lockMgr != null) {
         lockMgr.close();

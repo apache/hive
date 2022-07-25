@@ -161,7 +161,7 @@ public interface HiveTxnManager {
    * @throws LockException if there is no current transaction or the
    * transaction has already been committed or aborted.
    */
-  void rollbackTxn() throws LockException;
+  void rollbackTxn(Context ctx) throws LockException;
 
   /**
    * Send a heartbeat to the transaction management storage so other Hive
