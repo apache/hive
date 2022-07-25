@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import jline.internal.Log;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -308,9 +309,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
       findNextCompactRequest.setWorkerId(workerName);
       findNextCompactRequest.setWorkerVersion(runtimeVersion);
-
       ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(findNextCompactRequest));
-
       LOG.info("Processing compaction request {}", ci);
 
       if (ci == null) {
@@ -503,9 +502,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     } catch (TException | IOException t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
 
-      if (ci != null) {
-        markFailed(ci, t.getMessage());
-      }
+      markFailed(ci, t.getMessage());
 
       if (msc != null) {
         msc.close();
@@ -606,6 +603,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   }
 
   private void markFailed(CompactionInfo ci, String errorMessage) {
+    if (ci == null) {
+      LOG.warn("CompactionInfo client was null. Could not mark failed: {}", ci);
+      return;
+    }
     if (ci != null && StringUtils.isNotBlank(errorMessage)) {
       ci.errorMessage = errorMessage;
     }
