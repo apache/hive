@@ -56,7 +56,6 @@ import org.apache.hadoop.io.Text;
     + "  'b'")
 @VectorizedExpressions({StringSubstrColStart.class, StringSubstrColStartLen.class})
 public class UDFSubstr extends UDF implements StatEstimatorProvider {
-
   private final int[] index;
   private final Text r;
 
@@ -66,70 +65,44 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
   }
 
   public Text evaluate(Text t, LongWritable pos, LongWritable len) {
-
     if ((t == null) || (pos == null) || (len == null)) {
       return null;
     }
 
-    r.clear();
-    if ((len.get() <= 0)) {
-      return r;
+    long longPos = pos.get();
+    long longLen = len.get();
+    // If an unsupported value is seen, we don't want to return a string
+    // that doesn't match what the user expects, so we return NULL (still
+    // unexpected, of course, but probably better than a bad string).
+    if (longPos > Integer.MAX_VALUE || longLen > Integer.MAX_VALUE) {
+      return null;
     }
 
-    String s = t.toString();
-    int[] index = makeIndex(pos.get(), len.get(), s.length());
-    if (index == null) {
-      return r;
-    }
-
-    r.set(s.substring(index[0], index[1]));
-    return r;
+    return evaluateInternal(t, (int) longPos, (int) longLen);
   }
 
   public Text evaluate(Text t, IntWritable pos, IntWritable len) {
-
     if ((t == null) || (pos == null) || (len == null)) {
       return null;
     }
 
+    return evaluateInternal(t, pos.get(), len.get());
+  }
+
+  private Text evaluateInternal(Text t, int pos, int len) {
     r.clear();
-    if ((len.get() <= 0)) {
+    if ((len <= 0)) {
       return r;
     }
 
     String s = t.toString();
-    int[] index = makeIndex(pos.get(), len.get(), s.length());
+    int[] index = makeIndex(pos, len, s.length());
     if (index == null) {
       return r;
     }
 
     r.set(s.substring(index[0], index[1]));
     return r;
-  }
-
-  private int[] makeIndex(long pos, long len, int inputLen) {
-    if ((Math.abs(pos) > inputLen)) {
-      return null;
-    }
-
-    long start, end;
-
-    if (pos > 0) {
-      start = pos - 1;
-    } else if (pos < 0) {
-      start = inputLen + pos;
-    } else {
-      start = 0;
-    }
-
-    if ((inputLen - start) < len) {
-      end = inputLen;
-    } else {
-      end = start + len;
-    }
-    index[0] = (int) start;
-    index[1] = (int) end;
-    return index;
   }
 
   private int[] makeIndex(int pos, int len, int inputLen) {
@@ -159,7 +132,9 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
 
   private final IntWritable maxValue = new IntWritable(Integer.MAX_VALUE);
 
-  private final LongWritable maxLongValue = new LongWritable(Long.MAX_VALUE);
+  // Even though we are using longs, substr can only deal with ints, so we use
+  // the maximum int value as the maxValue
+  private final LongWritable maxLongValue = new LongWritable(Integer.MAX_VALUE);
 
   public Text evaluate(Text s, IntWritable pos) {
     return evaluate(s, pos, maxValue);
@@ -170,34 +145,37 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
   }
 
   public BytesWritable evaluate(BytesWritable bw, LongWritable pos, LongWritable len) {
-
     if ((bw == null) || (pos == null) || (len == null)) {
       return null;
     }
 
-    if ((len.get() <= 0)) {
-      return new BytesWritable();
+    long longPos = pos.get();
+    long longLen = len.get();
+    // If an unsupported value is seen, we don't want to return a string
+    // that doesn't match what the user expects, so we return NULL (still
+    // unexpected, of course, but probably better than a bad string).
+    if (longPos > Integer.MAX_VALUE || longLen > Integer.MAX_VALUE) {
+      return null;
     }
 
-    int[] index = makeIndex(pos.get(), len.get(), bw.getLength());
-    if (index == null) {
-      return new BytesWritable();
-    }
-
-    return new BytesWritable(Arrays.copyOfRange(bw.getBytes(), index[0], index[1]));
+    return evaluate(bw, (int) longPos, (int) longLen);
   }
 
   public BytesWritable evaluate(BytesWritable bw, IntWritable pos, IntWritable len) {
-
     if ((bw == null) || (pos == null) || (len == null)) {
       return null;
     }
 
-    if ((len.get() <= 0)) {
+    return evaluate(bw, pos.get(), len.get());
+  }
+
+  public BytesWritable evaluate(BytesWritable bw, int pos, int len) {
+
+    if (len <= 0) {
       return new BytesWritable();
     }
 
-    int[] index = makeIndex(pos.get(), len.get(), bw.getLength());
+    int[] index = makeIndex(pos, len, bw.getLength());
     if (index == null) {
       return new BytesWritable();
     }
