@@ -2972,7 +2972,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
       // Drop the partitions and get a list of locations which need to be deleted
       // In case of drop database cascade we need not to drop the partitions, they are already dropped.
-      if (dropPartitions) {
+      if (dropPartitions && tbl.getPartitionKeysSize() > 0) {
         partPaths = dropPartitionsAndGetLocations(ms, catName, dbname, name, tblPath, tableDataShouldBeDeleted);
       }
       // Drop any constraints on the table
