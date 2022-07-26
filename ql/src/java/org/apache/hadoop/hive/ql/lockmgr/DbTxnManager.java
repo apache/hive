@@ -600,13 +600,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public void rollbackTxn(Context ctx) throws LockException {
+  public void rollbackTxn() throws LockException {
     if (!isTxnOpen()) {
       throw new RuntimeException("Attempt to rollback before opening a transaction");
     }
     try {
       clearLocksAndHB();
-      cleanupOutputDir(ctx);
       LOG.debug("Rolling back " + JavaUtils.txnIdToString(txnId));
       
       if (replPolicy != null) {
@@ -626,6 +625,16 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     } finally {
       resetTxnInfo();
     }
+  }
+
+  @Override
+  public void rollbackTxn(Context ctx) throws LockException {
+    try {
+      cleanupOutputDir(ctx);
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    }
+    rollbackTxn();
   }
 
   @Override
@@ -891,7 +900,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     try {
       stopHeartbeat();
       if (isTxnOpen()) {
-        rollbackTxn(new Context(conf));
+        rollbackTxn();
       }
       if (lockMgr != null) {
         lockMgr.close();
