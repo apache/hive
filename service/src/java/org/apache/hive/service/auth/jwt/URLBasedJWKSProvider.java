@@ -90,8 +90,7 @@ public class URLBasedJWKSProvider {
         context.init(null, new X509TrustManager[]{trustAllManager}, new SecureRandom());
       }
       HttpGet get = new HttpGet(urlString);
-      try (CloseableHttpClient httpClient = (context == null) ?
-          HttpClients.createDefault() : HttpClients.custom().setSSLContext(context).build();
+      try (CloseableHttpClient httpClient = HttpClients.custom().setSSLContext(context).build();
           CloseableHttpResponse response = httpClient.execute(get)) {
         HttpEntity entity = response.getEntity();
         if (entity != null) {
