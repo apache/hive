@@ -158,7 +158,7 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       return null;
     }
 
-    return evaluate(bw, (int) longPos, (int) longLen);
+    return evaluateInternal(bw, (int) longPos, (int) longLen);
   }
 
   public BytesWritable evaluate(BytesWritable bw, IntWritable pos, IntWritable len) {
@@ -166,10 +166,10 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
       return null;
     }
 
-    return evaluate(bw, pos.get(), len.get());
+    return evaluateInternal(bw, pos.get(), len.get());
   }
 
-  public BytesWritable evaluate(BytesWritable bw, int pos, int len) {
+  private BytesWritable evaluateInternal(BytesWritable bw, int pos, int len) {
 
     if (len <= 0) {
       return new BytesWritable();
