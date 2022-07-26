@@ -71,7 +71,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * Tests for the worker thread and its MR jobs.
