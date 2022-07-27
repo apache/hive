@@ -474,7 +474,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
         AcidMetricService.updateMetricsFromWorker(ci.dbname, ci.tableName, ci.partName, ci.type,
             dir.getCurrentDirectories().size(), dir.getDeleteDeltas().size(), conf, msc);
-
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
             ". Marking failed to avoid repeated failures", e);
@@ -501,7 +500,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     } catch (TException | IOException t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
+
       markFailed(ci, t.getMessage());
+
       if (msc != null) {
         msc.close();
         msc = null;
@@ -513,6 +514,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         perfLogger.perfLogEnd(CLASS_NAME, workerMetric);
       }
     }
+
     if (computeStats) {
       StatsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : t1.getOwner(),
               CompactorUtil.getCompactorJobQueueName(conf, ci, t1));
@@ -600,6 +602,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   }
 
   private void markFailed(CompactionInfo ci, String errorMessage) {
+    if (ci == null) {
+      LOG.warn("CompactionInfo client was null. Could not mark failed");
+      return;
+    }
     if (ci != null && StringUtils.isNotBlank(errorMessage)) {
       ci.errorMessage = errorMessage;
     }
