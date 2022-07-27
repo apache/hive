@@ -4326,8 +4326,11 @@ class ThriftHiveMetastore_get_table_objects_by_name_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_get_table_objects_by_name_result__isset {
-  _ThriftHiveMetastore_get_table_objects_by_name_result__isset() : success(false) {}
+  _ThriftHiveMetastore_get_table_objects_by_name_result__isset() : success(false), o1(false), o2(false), o3(false) {}
   bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
 } _ThriftHiveMetastore_get_table_objects_by_name_result__isset;
 
 class ThriftHiveMetastore_get_table_objects_by_name_result {
@@ -4340,14 +4343,29 @@ class ThriftHiveMetastore_get_table_objects_by_name_result {
 
   virtual ~ThriftHiveMetastore_get_table_objects_by_name_result() throw();
   std::vector<Table>  success;
+  MetaException o1;
+  InvalidOperationException o2;
+  UnknownDBException o3;
 
   _ThriftHiveMetastore_get_table_objects_by_name_result__isset __isset;
 
   void __set_success(const std::vector<Table> & val);
 
+  void __set_o1(const MetaException& val);
+
+  void __set_o2(const InvalidOperationException& val);
+
+  void __set_o3(const UnknownDBException& val);
+
   bool operator == (const ThriftHiveMetastore_get_table_objects_by_name_result & rhs) const
   {
     if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
       return false;
     return true;
   }
@@ -4363,8 +4381,11 @@ class ThriftHiveMetastore_get_table_objects_by_name_result {
 };
 
 typedef struct _ThriftHiveMetastore_get_table_objects_by_name_presult__isset {
-  _ThriftHiveMetastore_get_table_objects_by_name_presult__isset() : success(false) {}
+  _ThriftHiveMetastore_get_table_objects_by_name_presult__isset() : success(false), o1(false), o2(false), o3(false) {}
   bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
 } _ThriftHiveMetastore_get_table_objects_by_name_presult__isset;
 
 class ThriftHiveMetastore_get_table_objects_by_name_presult {
@@ -4373,6 +4394,9 @@ class ThriftHiveMetastore_get_table_objects_by_name_presult {
 
   virtual ~ThriftHiveMetastore_get_table_objects_by_name_presult() throw();
   std::vector<Table> * success;
+  MetaException o1;
+  InvalidOperationException o2;
+  UnknownDBException o3;
 
   _ThriftHiveMetastore_get_table_objects_by_name_presult__isset __isset;
 
