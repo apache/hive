@@ -107,6 +107,11 @@ class CreateTableRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        11 => array(
+            'var' => 'skipFSWrites',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -149,6 +154,10 @@ class CreateTableRequest
      * @var string
      */
     public $processorIdentifier = null;
+    /**
+     * @var bool
+     */
+    public $skipFSWrites = false;
 
     public function __construct($vals = null)
     {
@@ -182,6 +191,9 @@ class CreateTableRequest
             }
             if (isset($vals['processorIdentifier'])) {
                 $this->processorIdentifier = $vals['processorIdentifier'];
+            }
+            if (isset($vals['skipFSWrites'])) {
+                $this->skipFSWrites = $vals['skipFSWrites'];
             }
         }
     }
@@ -346,6 +358,13 @@ class CreateTableRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 11:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->skipFSWrites);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -463,6 +482,11 @@ class CreateTableRequest
         if ($this->processorIdentifier !== null) {
             $xfer += $output->writeFieldBegin('processorIdentifier', TType::STRING, 10);
             $xfer += $output->writeString($this->processorIdentifier);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->skipFSWrites !== null) {
+            $xfer += $output->writeFieldBegin('skipFSWrites', TType::BOOL, 11);
+            $xfer += $output->writeBool($this->skipFSWrites);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

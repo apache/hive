@@ -2046,7 +2046,8 @@ struct CreateDatabaseRequest {
   11: optional string type,
   12: optional string dataConnectorName,
   // use boolean skipFSWrites to decide whether create directory in file system or not
-  13: optional bool skipFSWrites=false
+  13: optional bool skipFSWrites=false,
+  14: optional Database database
 }
 
 struct CreateDataConnectorRequest {

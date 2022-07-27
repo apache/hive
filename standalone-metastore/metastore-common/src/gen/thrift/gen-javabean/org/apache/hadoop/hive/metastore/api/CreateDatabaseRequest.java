@@ -23,6 +23,8 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField MANAGED_LOCATION_URI_FIELD_DESC = new org.apache.thrift.protocol.TField("managedLocationUri", org.apache.thrift.protocol.TType.STRING, (short)10);
   private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.STRING, (short)11);
   private static final org.apache.thrift.protocol.TField DATA_CONNECTOR_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dataConnectorName", org.apache.thrift.protocol.TType.STRING, (short)12);
+  private static final org.apache.thrift.protocol.TField SKIP_FSWRITES_FIELD_DESC = new org.apache.thrift.protocol.TField("skipFSWrites", org.apache.thrift.protocol.TType.BOOL, (short)13);
+  private static final org.apache.thrift.protocol.TField DATABASE_FIELD_DESC = new org.apache.thrift.protocol.TField("database", org.apache.thrift.protocol.TType.STRUCT, (short)14);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CreateDatabaseRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CreateDatabaseRequestTupleSchemeFactory();
@@ -39,6 +41,8 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String managedLocationUri; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String type; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String dataConnectorName; // optional
+  private boolean skipFSWrites; // optional
+  private @org.apache.thrift.annotation.Nullable Database database; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -57,7 +61,9 @@ package org.apache.hadoop.hive.metastore.api;
     CREATE_TIME((short)9, "createTime"),
     MANAGED_LOCATION_URI((short)10, "managedLocationUri"),
     TYPE((short)11, "type"),
-    DATA_CONNECTOR_NAME((short)12, "dataConnectorName");
+    DATA_CONNECTOR_NAME((short)12, "dataConnectorName"),
+    SKIP_FSWRITES((short)13, "skipFSWrites"),
+    DATABASE((short)14, "database");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -97,6 +103,10 @@ package org.apache.hadoop.hive.metastore.api;
           return TYPE;
         case 12: // DATA_CONNECTOR_NAME
           return DATA_CONNECTOR_NAME;
+        case 13: // SKIP_FSWRITES
+          return SKIP_FSWRITES;
+        case 14: // DATABASE
+          return DATABASE;
         default:
           return null;
       }
@@ -139,8 +149,9 @@ package org.apache.hadoop.hive.metastore.api;
 
   // isset id assignments
   private static final int __CREATETIME_ISSET_ID = 0;
+  private static final int __SKIPFSWRITES_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.DESCRIPTION,_Fields.LOCATION_URI,_Fields.PARAMETERS,_Fields.PRIVILEGES,_Fields.OWNER_NAME,_Fields.OWNER_TYPE,_Fields.CATALOG_NAME,_Fields.CREATE_TIME,_Fields.MANAGED_LOCATION_URI,_Fields.TYPE,_Fields.DATA_CONNECTOR_NAME};
+  private static final _Fields optionals[] = {_Fields.DESCRIPTION,_Fields.LOCATION_URI,_Fields.PARAMETERS,_Fields.PRIVILEGES,_Fields.OWNER_NAME,_Fields.OWNER_TYPE,_Fields.CATALOG_NAME,_Fields.CREATE_TIME,_Fields.MANAGED_LOCATION_URI,_Fields.TYPE,_Fields.DATA_CONNECTOR_NAME,_Fields.SKIP_FSWRITES,_Fields.DATABASE};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -170,11 +181,17 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.DATA_CONNECTOR_NAME, new org.apache.thrift.meta_data.FieldMetaData("dataConnectorName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.SKIP_FSWRITES, new org.apache.thrift.meta_data.FieldMetaData("skipFSWrites", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.DATABASE, new org.apache.thrift.meta_data.FieldMetaData("database", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Database.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CreateDatabaseRequest.class, metaDataMap);
   }
 
   public CreateDatabaseRequest() {
+    this.skipFSWrites = false;
+
   }
 
   public CreateDatabaseRequest(
@@ -224,6 +241,10 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetDataConnectorName()) {
       this.dataConnectorName = other.dataConnectorName;
     }
+    this.skipFSWrites = other.skipFSWrites;
+    if (other.isSetDatabase()) {
+      this.database = new Database(other.database);
+    }
   }
 
   public CreateDatabaseRequest deepCopy() {
@@ -245,6 +266,9 @@ package org.apache.hadoop.hive.metastore.api;
     this.managedLocationUri = null;
     this.type = null;
     this.dataConnectorName = null;
+    this.skipFSWrites = false;
+
+    this.database = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -552,6 +576,52 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public boolean isSkipFSWrites() {
+    return this.skipFSWrites;
+  }
+
+  public void setSkipFSWrites(boolean skipFSWrites) {
+    this.skipFSWrites = skipFSWrites;
+    setSkipFSWritesIsSet(true);
+  }
+
+  public void unsetSkipFSWrites() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __SKIPFSWRITES_ISSET_ID);
+  }
+
+  /** Returns true if field skipFSWrites is set (has been assigned a value) and false otherwise */
+  public boolean isSetSkipFSWrites() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __SKIPFSWRITES_ISSET_ID);
+  }
+
+  public void setSkipFSWritesIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __SKIPFSWRITES_ISSET_ID, value);
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public Database getDatabase() {
+    return this.database;
+  }
+
+  public void setDatabase(@org.apache.thrift.annotation.Nullable Database database) {
+    this.database = database;
+  }
+
+  public void unsetDatabase() {
+    this.database = null;
+  }
+
+  /** Returns true if field database is set (has been assigned a value) and false otherwise */
+  public boolean isSetDatabase() {
+    return this.database != null;
+  }
+
+  public void setDatabaseIsSet(boolean value) {
+    if (!value) {
+      this.database = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DATABASE_NAME:
@@ -650,6 +720,22 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case SKIP_FSWRITES:
+      if (value == null) {
+        unsetSkipFSWrites();
+      } else {
+        setSkipFSWrites((java.lang.Boolean)value);
+      }
+      break;
+
+    case DATABASE:
+      if (value == null) {
+        unsetDatabase();
+      } else {
+        setDatabase((Database)value);
+      }
+      break;
+
     }
   }
 
@@ -692,6 +778,12 @@ package org.apache.hadoop.hive.metastore.api;
     case DATA_CONNECTOR_NAME:
       return getDataConnectorName();
 
+    case SKIP_FSWRITES:
+      return isSkipFSWrites();
+
+    case DATABASE:
+      return getDatabase();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -727,6 +819,10 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetType();
     case DATA_CONNECTOR_NAME:
       return isSetDataConnectorName();
+    case SKIP_FSWRITES:
+      return isSetSkipFSWrites();
+    case DATABASE:
+      return isSetDatabase();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -852,6 +948,24 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_skipFSWrites = true && this.isSetSkipFSWrites();
+    boolean that_present_skipFSWrites = true && that.isSetSkipFSWrites();
+    if (this_present_skipFSWrites || that_present_skipFSWrites) {
+      if (!(this_present_skipFSWrites && that_present_skipFSWrites))
+        return false;
+      if (this.skipFSWrites != that.skipFSWrites)
+        return false;
+    }
+
+    boolean this_present_database = true && this.isSetDatabase();
+    boolean that_present_database = true && that.isSetDatabase();
+    if (this_present_database || that_present_database) {
+      if (!(this_present_database && that_present_database))
+        return false;
+      if (!this.database.equals(that.database))
+        return false;
+    }
+
     return true;
   }
 
@@ -906,6 +1020,14 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetDataConnectorName()) ? 131071 : 524287);
     if (isSetDataConnectorName())
       hashCode = hashCode * 8191 + dataConnectorName.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetSkipFSWrites()) ? 131071 : 524287);
+    if (isSetSkipFSWrites())
+      hashCode = hashCode * 8191 + ((skipFSWrites) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetDatabase()) ? 131071 : 524287);
+    if (isSetDatabase())
+      hashCode = hashCode * 8191 + database.hashCode();
 
     return hashCode;
   }
@@ -1034,6 +1156,26 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetDataConnectorName()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dataConnectorName, other.dataConnectorName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetSkipFSWrites(), other.isSetSkipFSWrites());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSkipFSWrites()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.skipFSWrites, other.skipFSWrites);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetDatabase(), other.isSetDatabase());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDatabase()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.database, other.database);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1172,6 +1314,22 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
+    if (isSetSkipFSWrites()) {
+      if (!first) sb.append(", ");
+      sb.append("skipFSWrites:");
+      sb.append(this.skipFSWrites);
+      first = false;
+    }
+    if (isSetDatabase()) {
+      if (!first) sb.append(", ");
+      sb.append("database:");
+      if (this.database == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.database);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -1185,6 +1343,9 @@ package org.apache.hadoop.hive.metastore.api;
     // check for sub-struct validity
     if (privileges != null) {
       privileges.validate();
+    }
+    if (database != null) {
+      database.validate();
     }
   }
 
@@ -1333,6 +1494,23 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 13: // SKIP_FSWRITES
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.skipFSWrites = iprot.readBool();
+              struct.setSkipFSWritesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 14: // DATABASE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.database = new Database();
+              struct.database.read(iprot);
+              struct.setDatabaseIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1434,6 +1612,18 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetSkipFSWrites()) {
+        oprot.writeFieldBegin(SKIP_FSWRITES_FIELD_DESC);
+        oprot.writeBool(struct.skipFSWrites);
+        oprot.writeFieldEnd();
+      }
+      if (struct.database != null) {
+        if (struct.isSetDatabase()) {
+          oprot.writeFieldBegin(DATABASE_FIELD_DESC);
+          struct.database.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1486,7 +1676,13 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetDataConnectorName()) {
         optionals.set(10);
       }
-      oprot.writeBitSet(optionals, 11);
+      if (struct.isSetSkipFSWrites()) {
+        optionals.set(11);
+      }
+      if (struct.isSetDatabase()) {
+        optionals.set(12);
+      }
+      oprot.writeBitSet(optionals, 13);
       if (struct.isSetDescription()) {
         oprot.writeString(struct.description);
       }
@@ -1527,6 +1723,12 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetDataConnectorName()) {
         oprot.writeString(struct.dataConnectorName);
       }
+      if (struct.isSetSkipFSWrites()) {
+        oprot.writeBool(struct.skipFSWrites);
+      }
+      if (struct.isSetDatabase()) {
+        struct.database.write(oprot);
+      }
     }
 
     @Override
@@ -1534,7 +1736,7 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       struct.databaseName = iprot.readString();
       struct.setDatabaseNameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(11);
+      java.util.BitSet incoming = iprot.readBitSet(13);
       if (incoming.get(0)) {
         struct.description = iprot.readString();
         struct.setDescriptionIsSet(true);
@@ -1590,6 +1792,15 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(10)) {
         struct.dataConnectorName = iprot.readString();
         struct.setDataConnectorNameIsSet(true);
+      }
+      if (incoming.get(11)) {
+        struct.skipFSWrites = iprot.readBool();
+        struct.setSkipFSWritesIsSet(true);
+      }
+      if (incoming.get(12)) {
+        struct.database = new Database();
+        struct.database.read(iprot);
+        struct.setDatabaseIsSet(true);
       }
     }
   }

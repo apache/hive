@@ -34,6 +34,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_catalogs(GetCatalogsResponse& _return) = 0;
   virtual void drop_catalog(const DropCatalogRequest& catName) = 0;
   virtual void create_database(const Database& database) = 0;
+  virtual void create_database_req(const CreateDatabaseRequest& req) = 0;
   virtual void get_database(Database& _return, const std::string& name) = 0;
   virtual void get_database_req(Database& _return, const GetDatabaseRequest& request) = 0;
   virtual void drop_database(const std::string& name, const bool deleteData, const bool cascade) = 0;
@@ -348,6 +349,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void create_database(const Database& /* database */) override {
+    return;
+  }
+  void create_database_req(const CreateDatabaseRequest& /* req */) override {
     return;
   }
   void get_database(Database& /* _return */, const std::string& /* name */) override {
@@ -2094,6 +2098,126 @@ class ThriftHiveMetastore_create_database_presult {
   MetaException o3;
 
   _ThriftHiveMetastore_create_database_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_create_database_req_args__isset {
+  _ThriftHiveMetastore_create_database_req_args__isset() : req(false) {}
+  bool req :1;
+} _ThriftHiveMetastore_create_database_req_args__isset;
+
+class ThriftHiveMetastore_create_database_req_args {
+ public:
+
+  ThriftHiveMetastore_create_database_req_args(const ThriftHiveMetastore_create_database_req_args&);
+  ThriftHiveMetastore_create_database_req_args& operator=(const ThriftHiveMetastore_create_database_req_args&);
+  ThriftHiveMetastore_create_database_req_args() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_create_database_req_args() noexcept;
+  CreateDatabaseRequest req;
+
+  _ThriftHiveMetastore_create_database_req_args__isset __isset;
+
+  void __set_req(const CreateDatabaseRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_create_database_req_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_create_database_req_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_create_database_req_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_create_database_req_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_create_database_req_pargs() noexcept;
+  const CreateDatabaseRequest* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_create_database_req_result__isset {
+  _ThriftHiveMetastore_create_database_req_result__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_create_database_req_result__isset;
+
+class ThriftHiveMetastore_create_database_req_result {
+ public:
+
+  ThriftHiveMetastore_create_database_req_result(const ThriftHiveMetastore_create_database_req_result&);
+  ThriftHiveMetastore_create_database_req_result& operator=(const ThriftHiveMetastore_create_database_req_result&);
+  ThriftHiveMetastore_create_database_req_result() noexcept {
+  }
+
+  virtual ~ThriftHiveMetastore_create_database_req_result() noexcept;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_create_database_req_result__isset __isset;
+
+  void __set_o1(const AlreadyExistsException& val);
+
+  void __set_o2(const InvalidObjectException& val);
+
+  void __set_o3(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_create_database_req_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_create_database_req_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_create_database_req_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_create_database_req_presult__isset {
+  _ThriftHiveMetastore_create_database_req_presult__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_create_database_req_presult__isset;
+
+class ThriftHiveMetastore_create_database_req_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_create_database_req_presult() noexcept;
+  AlreadyExistsException o1;
+  InvalidObjectException o2;
+  MetaException o3;
+
+  _ThriftHiveMetastore_create_database_req_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -34130,6 +34254,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void create_database(const Database& database) override;
   void send_create_database(const Database& database);
   void recv_create_database();
+  void create_database_req(const CreateDatabaseRequest& req) override;
+  void send_create_database_req(const CreateDatabaseRequest& req);
+  void recv_create_database_req();
   void get_database(Database& _return, const std::string& name) override;
   void send_get_database(const std::string& name);
   void recv_get_database(Database& _return);
@@ -34937,6 +35064,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_catalogs(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_catalog(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_create_database(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_create_database_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_database(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_database_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_database(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -35212,6 +35340,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_catalogs"] = &ThriftHiveMetastoreProcessor::process_get_catalogs;
     processMap_["drop_catalog"] = &ThriftHiveMetastoreProcessor::process_drop_catalog;
     processMap_["create_database"] = &ThriftHiveMetastoreProcessor::process_create_database;
+    processMap_["create_database_req"] = &ThriftHiveMetastoreProcessor::process_create_database_req;
     processMap_["get_database"] = &ThriftHiveMetastoreProcessor::process_get_database;
     processMap_["get_database_req"] = &ThriftHiveMetastoreProcessor::process_get_database_req;
     processMap_["drop_database"] = &ThriftHiveMetastoreProcessor::process_drop_database;
@@ -35581,6 +35710,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->create_database(database);
     }
     ifaces_[i]->create_database(database);
+  }
+
+  void create_database_req(const CreateDatabaseRequest& req) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->create_database_req(req);
+    }
+    ifaces_[i]->create_database_req(req);
   }
 
   void get_database(Database& _return, const std::string& name) override {
@@ -38152,6 +38290,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void create_database(const Database& database) override;
   int32_t send_create_database(const Database& database);
   void recv_create_database(const int32_t seqid);
+  void create_database_req(const CreateDatabaseRequest& req) override;
+  int32_t send_create_database_req(const CreateDatabaseRequest& req);
+  void recv_create_database_req(const int32_t seqid);
   void get_database(Database& _return, const std::string& name) override;
   int32_t send_get_database(const std::string& name);
   void recv_get_database(Database& _return, const int32_t seqid);

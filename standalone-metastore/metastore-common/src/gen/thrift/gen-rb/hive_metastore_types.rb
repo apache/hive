@@ -3255,6 +3255,7 @@ class AddPartitionsRequest
   NEEDRESULT = 5
   CATNAME = 6
   VALIDWRITEIDLIST = 7
+  SKIPFSWRITES = 8
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -3263,7 +3264,8 @@ class AddPartitionsRequest
     IFNOTEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifNotExists'},
     NEEDRESULT => {:type => ::Thrift::Types::BOOL, :name => 'needResult', :default => true, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true}
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
+    SKIPFSWRITES => {:type => ::Thrift::Types::BOOL, :name => 'skipFSWrites', :default => false, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -6819,6 +6821,7 @@ class CreateTableRequest
   CHECKCONSTRAINTS = 8
   PROCESSORCAPABILITIES = 9
   PROCESSORIDENTIFIER = 10
+  SKIPFSWRITES = 11
 
   FIELDS = {
     TABLE => {:type => ::Thrift::Types::STRUCT, :name => 'table', :class => ::Table},
@@ -6830,7 +6833,8 @@ class CreateTableRequest
     DEFAULTCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'defaultConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLDefaultConstraint}, :optional => true},
     CHECKCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'checkConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLCheckConstraint}, :optional => true},
     PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true}
+    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true},
+    SKIPFSWRITES => {:type => ::Thrift::Types::BOOL, :name => 'skipFSWrites', :default => false, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -6856,6 +6860,8 @@ class CreateDatabaseRequest
   MANAGEDLOCATIONURI = 10
   TYPE = 11
   DATACONNECTORNAME = 12
+  SKIPFSWRITES = 13
+  DATABASE = 14
 
   FIELDS = {
     DATABASENAME => {:type => ::Thrift::Types::STRING, :name => 'databaseName'},
@@ -6869,7 +6875,9 @@ class CreateDatabaseRequest
     CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime', :optional => true},
     MANAGEDLOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'managedLocationUri', :optional => true},
     TYPE => {:type => ::Thrift::Types::STRING, :name => 'type', :optional => true},
-    DATACONNECTORNAME => {:type => ::Thrift::Types::STRING, :name => 'dataConnectorName', :optional => true}
+    DATACONNECTORNAME => {:type => ::Thrift::Types::STRING, :name => 'dataConnectorName', :optional => true},
+    SKIPFSWRITES => {:type => ::Thrift::Types::BOOL, :name => 'skipFSWrites', :default => false, :optional => true},
+    DATABASE => {:type => ::Thrift::Types::STRUCT, :name => 'database', :class => ::Database, :optional => true}
   }
 
   def struct_fields; FIELDS; end

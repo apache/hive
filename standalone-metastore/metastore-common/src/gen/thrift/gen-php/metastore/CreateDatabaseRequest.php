@@ -91,6 +91,17 @@ class CreateDatabaseRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        13 => array(
+            'var' => 'skipFSWrites',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
+        14 => array(
+            'var' => 'database',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\Database',
+        ),
     );
 
     /**
@@ -141,6 +152,14 @@ class CreateDatabaseRequest
      * @var string
      */
     public $dataConnectorName = null;
+    /**
+     * @var bool
+     */
+    public $skipFSWrites = false;
+    /**
+     * @var \metastore\Database
+     */
+    public $database = null;
 
     public function __construct($vals = null)
     {
@@ -180,6 +199,12 @@ class CreateDatabaseRequest
             }
             if (isset($vals['dataConnectorName'])) {
                 $this->dataConnectorName = $vals['dataConnectorName'];
+            }
+            if (isset($vals['skipFSWrites'])) {
+                $this->skipFSWrites = $vals['skipFSWrites'];
+            }
+            if (isset($vals['database'])) {
+                $this->database = $vals['database'];
             }
         }
     }
@@ -300,6 +325,21 @@ class CreateDatabaseRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 13:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->skipFSWrites);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 14:
+                    if ($ftype == TType::STRUCT) {
+                        $this->database = new \metastore\Database();
+                        $xfer += $this->database->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -383,6 +423,19 @@ class CreateDatabaseRequest
         if ($this->dataConnectorName !== null) {
             $xfer += $output->writeFieldBegin('dataConnectorName', TType::STRING, 12);
             $xfer += $output->writeString($this->dataConnectorName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->skipFSWrites !== null) {
+            $xfer += $output->writeFieldBegin('skipFSWrites', TType::BOOL, 13);
+            $xfer += $output->writeBool($this->skipFSWrites);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->database !== null) {
+            if (!is_object($this->database)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('database', TType::STRUCT, 14);
+            $xfer += $this->database->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

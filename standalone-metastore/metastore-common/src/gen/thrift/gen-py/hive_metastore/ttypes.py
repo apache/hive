@@ -10473,11 +10473,12 @@ class AddPartitionsRequest(object):
      - needResult
      - catName
      - validWriteIdList
+     - skipFSWrites
 
     """
 
 
-    def __init__(self, dbName=None, tblName=None, parts=None, ifNotExists=None, needResult=True, catName=None, validWriteIdList=None,):
+    def __init__(self, dbName=None, tblName=None, parts=None, ifNotExists=None, needResult=True, catName=None, validWriteIdList=None, skipFSWrites=False,):
         self.dbName = dbName
         self.tblName = tblName
         self.parts = parts
@@ -10485,6 +10486,7 @@ class AddPartitionsRequest(object):
         self.needResult = needResult
         self.catName = catName
         self.validWriteIdList = validWriteIdList
+        self.skipFSWrites = skipFSWrites
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -10536,6 +10538,11 @@ class AddPartitionsRequest(object):
                     self.validWriteIdList = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.BOOL:
+                    self.skipFSWrites = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -10576,6 +10583,10 @@ class AddPartitionsRequest(object):
         if self.validWriteIdList is not None:
             oprot.writeFieldBegin('validWriteIdList', TType.STRING, 7)
             oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
+            oprot.writeFieldEnd()
+        if self.skipFSWrites is not None:
+            oprot.writeFieldBegin('skipFSWrites', TType.BOOL, 8)
+            oprot.writeBool(self.skipFSWrites)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -24413,11 +24424,12 @@ class CreateTableRequest(object):
      - checkConstraints
      - processorCapabilities
      - processorIdentifier
+     - skipFSWrites
 
     """
 
 
-    def __init__(self, table=None, envContext=None, primaryKeys=None, foreignKeys=None, uniqueConstraints=None, notNullConstraints=None, defaultConstraints=None, checkConstraints=None, processorCapabilities=None, processorIdentifier=None,):
+    def __init__(self, table=None, envContext=None, primaryKeys=None, foreignKeys=None, uniqueConstraints=None, notNullConstraints=None, defaultConstraints=None, checkConstraints=None, processorCapabilities=None, processorIdentifier=None, skipFSWrites=False,):
         self.table = table
         self.envContext = envContext
         self.primaryKeys = primaryKeys
@@ -24428,6 +24440,7 @@ class CreateTableRequest(object):
         self.checkConstraints = checkConstraints
         self.processorCapabilities = processorCapabilities
         self.processorIdentifier = processorIdentifier
+        self.skipFSWrites = skipFSWrites
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -24531,6 +24544,11 @@ class CreateTableRequest(object):
                     self.processorIdentifier = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 11:
+                if ftype == TType.BOOL:
+                    self.skipFSWrites = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -24602,6 +24620,10 @@ class CreateTableRequest(object):
             oprot.writeFieldBegin('processorIdentifier', TType.STRING, 10)
             oprot.writeString(self.processorIdentifier.encode('utf-8') if sys.version_info[0] == 2 else self.processorIdentifier)
             oprot.writeFieldEnd()
+        if self.skipFSWrites is not None:
+            oprot.writeFieldBegin('skipFSWrites', TType.BOOL, 11)
+            oprot.writeBool(self.skipFSWrites)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -24637,11 +24659,13 @@ class CreateDatabaseRequest(object):
      - managedLocationUri
      - type
      - dataConnectorName
+     - skipFSWrites
+     - database
 
     """
 
 
-    def __init__(self, databaseName=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None, catalogName=None, createTime=None, managedLocationUri=None, type=None, dataConnectorName=None,):
+    def __init__(self, databaseName=None, description=None, locationUri=None, parameters=None, privileges=None, ownerName=None, ownerType=None, catalogName=None, createTime=None, managedLocationUri=None, type=None, dataConnectorName=None, skipFSWrites=False, database=None,):
         self.databaseName = databaseName
         self.description = description
         self.locationUri = locationUri
@@ -24654,6 +24678,8 @@ class CreateDatabaseRequest(object):
         self.managedLocationUri = managedLocationUri
         self.type = type
         self.dataConnectorName = dataConnectorName
+        self.skipFSWrites = skipFSWrites
+        self.database = database
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -24731,6 +24757,17 @@ class CreateDatabaseRequest(object):
                     self.dataConnectorName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 13:
+                if ftype == TType.BOOL:
+                    self.skipFSWrites = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 14:
+                if ftype == TType.STRUCT:
+                    self.database = Database()
+                    self.database.read(iprot)
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -24792,6 +24829,14 @@ class CreateDatabaseRequest(object):
         if self.dataConnectorName is not None:
             oprot.writeFieldBegin('dataConnectorName', TType.STRING, 12)
             oprot.writeString(self.dataConnectorName.encode('utf-8') if sys.version_info[0] == 2 else self.dataConnectorName)
+            oprot.writeFieldEnd()
+        if self.skipFSWrites is not None:
+            oprot.writeFieldBegin('skipFSWrites', TType.BOOL, 13)
+            oprot.writeBool(self.skipFSWrites)
+            oprot.writeFieldEnd()
+        if self.database is not None:
+            oprot.writeFieldBegin('database', TType.STRUCT, 14)
+            self.database.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -30545,6 +30590,7 @@ AddPartitionsRequest.thrift_spec = (
     (5, TType.BOOL, 'needResult', None, True, ),  # 5
     (6, TType.STRING, 'catName', 'UTF8', None, ),  # 6
     (7, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 7
+    (8, TType.BOOL, 'skipFSWrites', None, False, ),  # 8
 )
 all_structs.append(DropPartitionsResult)
 DropPartitionsResult.thrift_spec = (
@@ -31685,6 +31731,7 @@ CreateTableRequest.thrift_spec = (
     (8, TType.LIST, 'checkConstraints', (TType.STRUCT, [SQLCheckConstraint, None], False), None, ),  # 8
     (9, TType.LIST, 'processorCapabilities', (TType.STRING, 'UTF8', False), None, ),  # 9
     (10, TType.STRING, 'processorIdentifier', 'UTF8', None, ),  # 10
+    (11, TType.BOOL, 'skipFSWrites', None, False, ),  # 11
 )
 all_structs.append(CreateDatabaseRequest)
 CreateDatabaseRequest.thrift_spec = (
@@ -31701,6 +31748,8 @@ CreateDatabaseRequest.thrift_spec = (
     (10, TType.STRING, 'managedLocationUri', 'UTF8', None, ),  # 10
     (11, TType.STRING, 'type', 'UTF8', None, ),  # 11
     (12, TType.STRING, 'dataConnectorName', 'UTF8', None, ),  # 12
+    (13, TType.BOOL, 'skipFSWrites', None, False, ),  # 13
+    (14, TType.STRUCT, 'database', [Database, None], None, ),  # 14
 )
 all_structs.append(CreateDataConnectorRequest)
 CreateDataConnectorRequest.thrift_spec = (

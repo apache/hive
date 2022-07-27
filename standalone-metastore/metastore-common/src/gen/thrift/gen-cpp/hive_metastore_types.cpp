@@ -18244,6 +18244,11 @@ void AddPartitionsRequest::__set_validWriteIdList(const std::string& val) {
   this->validWriteIdList = val;
 __isset.validWriteIdList = true;
 }
+
+void AddPartitionsRequest::__set_skipFSWrites(const bool val) {
+  this->skipFSWrites = val;
+__isset.skipFSWrites = true;
+}
 std::ostream& operator<<(std::ostream& out, const AddPartitionsRequest& obj)
 {
   obj.printTo(out);
@@ -18344,6 +18349,14 @@ uint32_t AddPartitionsRequest::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->skipFSWrites);
+          this->__isset.skipFSWrites = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -18408,6 +18421,11 @@ uint32_t AddPartitionsRequest::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.skipFSWrites) {
+    xfer += oprot->writeFieldBegin("skipFSWrites", ::apache::thrift::protocol::T_BOOL, 8);
+    xfer += oprot->writeBool(this->skipFSWrites);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -18422,6 +18440,7 @@ void swap(AddPartitionsRequest &a, AddPartitionsRequest &b) {
   swap(a.needResult, b.needResult);
   swap(a.catName, b.catName);
   swap(a.validWriteIdList, b.validWriteIdList);
+  swap(a.skipFSWrites, b.skipFSWrites);
   swap(a.__isset, b.__isset);
 }
 
@@ -18433,6 +18452,7 @@ AddPartitionsRequest::AddPartitionsRequest(const AddPartitionsRequest& other677)
   needResult = other677.needResult;
   catName = other677.catName;
   validWriteIdList = other677.validWriteIdList;
+  skipFSWrites = other677.skipFSWrites;
   __isset = other677.__isset;
 }
 AddPartitionsRequest& AddPartitionsRequest::operator=(const AddPartitionsRequest& other678) {
@@ -18443,6 +18463,7 @@ AddPartitionsRequest& AddPartitionsRequest::operator=(const AddPartitionsRequest
   needResult = other678.needResult;
   catName = other678.catName;
   validWriteIdList = other678.validWriteIdList;
+  skipFSWrites = other678.skipFSWrites;
   __isset = other678.__isset;
   return *this;
 }
@@ -18456,6 +18477,7 @@ void AddPartitionsRequest::printTo(std::ostream& out) const {
   out << ", " << "needResult="; (__isset.needResult ? (out << to_string(needResult)) : (out << "<null>"));
   out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
+  out << ", " << "skipFSWrites="; (__isset.skipFSWrites ? (out << to_string(skipFSWrites)) : (out << "<null>"));
   out << ")";
 }
 
@@ -42612,6 +42634,11 @@ void CreateTableRequest::__set_processorIdentifier(const std::string& val) {
   this->processorIdentifier = val;
 __isset.processorIdentifier = true;
 }
+
+void CreateTableRequest::__set_skipFSWrites(const bool val) {
+  this->skipFSWrites = val;
+__isset.skipFSWrites = true;
+}
 std::ostream& operator<<(std::ostream& out, const CreateTableRequest& obj)
 {
   obj.printTo(out);
@@ -42805,6 +42832,14 @@ uint32_t CreateTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
           xfer += iprot->skip(ftype);
         }
         break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->skipFSWrites);
+          this->__isset.skipFSWrites = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -42929,6 +42964,11 @@ uint32_t CreateTableRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeString(this->processorIdentifier);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.skipFSWrites) {
+    xfer += oprot->writeFieldBegin("skipFSWrites", ::apache::thrift::protocol::T_BOOL, 11);
+    xfer += oprot->writeBool(this->skipFSWrites);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -42946,6 +42986,7 @@ void swap(CreateTableRequest &a, CreateTableRequest &b) {
   swap(a.checkConstraints, b.checkConstraints);
   swap(a.processorCapabilities, b.processorCapabilities);
   swap(a.processorIdentifier, b.processorIdentifier);
+  swap(a.skipFSWrites, b.skipFSWrites);
   swap(a.__isset, b.__isset);
 }
 
@@ -42960,6 +43001,7 @@ CreateTableRequest::CreateTableRequest(const CreateTableRequest& other1515) {
   checkConstraints = other1515.checkConstraints;
   processorCapabilities = other1515.processorCapabilities;
   processorIdentifier = other1515.processorIdentifier;
+  skipFSWrites = other1515.skipFSWrites;
   __isset = other1515.__isset;
 }
 CreateTableRequest& CreateTableRequest::operator=(const CreateTableRequest& other1516) {
@@ -42973,6 +43015,7 @@ CreateTableRequest& CreateTableRequest::operator=(const CreateTableRequest& othe
   checkConstraints = other1516.checkConstraints;
   processorCapabilities = other1516.processorCapabilities;
   processorIdentifier = other1516.processorIdentifier;
+  skipFSWrites = other1516.skipFSWrites;
   __isset = other1516.__isset;
   return *this;
 }
@@ -42989,6 +43032,7 @@ void CreateTableRequest::printTo(std::ostream& out) const {
   out << ", " << "checkConstraints="; (__isset.checkConstraints ? (out << to_string(checkConstraints)) : (out << "<null>"));
   out << ", " << "processorCapabilities="; (__isset.processorCapabilities ? (out << to_string(processorCapabilities)) : (out << "<null>"));
   out << ", " << "processorIdentifier="; (__isset.processorIdentifier ? (out << to_string(processorIdentifier)) : (out << "<null>"));
+  out << ", " << "skipFSWrites="; (__isset.skipFSWrites ? (out << to_string(skipFSWrites)) : (out << "<null>"));
   out << ")";
 }
 
@@ -43054,6 +43098,16 @@ __isset.type = true;
 void CreateDatabaseRequest::__set_dataConnectorName(const std::string& val) {
   this->dataConnectorName = val;
 __isset.dataConnectorName = true;
+}
+
+void CreateDatabaseRequest::__set_skipFSWrites(const bool val) {
+  this->skipFSWrites = val;
+__isset.skipFSWrites = true;
+}
+
+void CreateDatabaseRequest::__set_database(const Database& val) {
+  this->database = val;
+__isset.database = true;
 }
 std::ostream& operator<<(std::ostream& out, const CreateDatabaseRequest& obj)
 {
@@ -43197,6 +43251,22 @@ uint32_t CreateDatabaseRequest::read(::apache::thrift::protocol::TProtocol* ipro
           xfer += iprot->skip(ftype);
         }
         break;
+      case 13:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->skipFSWrites);
+          this->__isset.skipFSWrites = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 14:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->database.read(iprot);
+          this->__isset.database = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -43284,6 +43354,16 @@ uint32_t CreateDatabaseRequest::write(::apache::thrift::protocol::TProtocol* opr
     xfer += oprot->writeString(this->dataConnectorName);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.skipFSWrites) {
+    xfer += oprot->writeFieldBegin("skipFSWrites", ::apache::thrift::protocol::T_BOOL, 13);
+    xfer += oprot->writeBool(this->skipFSWrites);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.database) {
+    xfer += oprot->writeFieldBegin("database", ::apache::thrift::protocol::T_STRUCT, 14);
+    xfer += this->database.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -43303,6 +43383,8 @@ void swap(CreateDatabaseRequest &a, CreateDatabaseRequest &b) {
   swap(a.managedLocationUri, b.managedLocationUri);
   swap(a.type, b.type);
   swap(a.dataConnectorName, b.dataConnectorName);
+  swap(a.skipFSWrites, b.skipFSWrites);
+  swap(a.database, b.database);
   swap(a.__isset, b.__isset);
 }
 
@@ -43319,6 +43401,8 @@ CreateDatabaseRequest::CreateDatabaseRequest(const CreateDatabaseRequest& other1
   managedLocationUri = other1526.managedLocationUri;
   type = other1526.type;
   dataConnectorName = other1526.dataConnectorName;
+  skipFSWrites = other1526.skipFSWrites;
+  database = other1526.database;
   __isset = other1526.__isset;
 }
 CreateDatabaseRequest& CreateDatabaseRequest::operator=(const CreateDatabaseRequest& other1527) {
@@ -43334,6 +43418,8 @@ CreateDatabaseRequest& CreateDatabaseRequest::operator=(const CreateDatabaseRequ
   managedLocationUri = other1527.managedLocationUri;
   type = other1527.type;
   dataConnectorName = other1527.dataConnectorName;
+  skipFSWrites = other1527.skipFSWrites;
+  database = other1527.database;
   __isset = other1527.__isset;
   return *this;
 }
@@ -43352,6 +43438,8 @@ void CreateDatabaseRequest::printTo(std::ostream& out) const {
   out << ", " << "managedLocationUri="; (__isset.managedLocationUri ? (out << to_string(managedLocationUri)) : (out << "<null>"));
   out << ", " << "type="; (__isset.type ? (out << to_string(type)) : (out << "<null>"));
   out << ", " << "dataConnectorName="; (__isset.dataConnectorName ? (out << to_string(dataConnectorName)) : (out << "<null>"));
+  out << ", " << "skipFSWrites="; (__isset.skipFSWrites ? (out << to_string(skipFSWrites)) : (out << "<null>"));
+  out << ", " << "database="; (__isset.database ? (out << to_string(database)) : (out << "<null>"));
   out << ")";
 }
 

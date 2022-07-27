@@ -7445,10 +7445,11 @@ void swap(AddPartitionsResult &a, AddPartitionsResult &b);
 std::ostream& operator<<(std::ostream& out, const AddPartitionsResult& obj);
 
 typedef struct _AddPartitionsRequest__isset {
-  _AddPartitionsRequest__isset() : needResult(true), catName(false), validWriteIdList(false) {}
+  _AddPartitionsRequest__isset() : needResult(true), catName(false), validWriteIdList(false), skipFSWrites(true) {}
   bool needResult :1;
   bool catName :1;
   bool validWriteIdList :1;
+  bool skipFSWrites :1;
 } _AddPartitionsRequest__isset;
 
 class AddPartitionsRequest : public virtual ::apache::thrift::TBase {
@@ -7462,7 +7463,8 @@ class AddPartitionsRequest : public virtual ::apache::thrift::TBase {
                          ifNotExists(0),
                          needResult(true),
                          catName(),
-                         validWriteIdList() {
+                         validWriteIdList(),
+                         skipFSWrites(false) {
   }
 
   virtual ~AddPartitionsRequest() noexcept;
@@ -7473,6 +7475,7 @@ class AddPartitionsRequest : public virtual ::apache::thrift::TBase {
   bool needResult;
   std::string catName;
   std::string validWriteIdList;
+  bool skipFSWrites;
 
   _AddPartitionsRequest__isset __isset;
 
@@ -7489,6 +7492,8 @@ class AddPartitionsRequest : public virtual ::apache::thrift::TBase {
   void __set_catName(const std::string& val);
 
   void __set_validWriteIdList(const std::string& val);
+
+  void __set_skipFSWrites(const bool val);
 
   bool operator == (const AddPartitionsRequest & rhs) const
   {
@@ -7511,6 +7516,10 @@ class AddPartitionsRequest : public virtual ::apache::thrift::TBase {
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
     else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
+      return false;
+    if (__isset.skipFSWrites != rhs.__isset.skipFSWrites)
+      return false;
+    else if (__isset.skipFSWrites && !(skipFSWrites == rhs.skipFSWrites))
       return false;
     return true;
   }
@@ -16889,7 +16898,7 @@ void swap(GetRuntimeStatsRequest &a, GetRuntimeStatsRequest &b);
 std::ostream& operator<<(std::ostream& out, const GetRuntimeStatsRequest& obj);
 
 typedef struct _CreateTableRequest__isset {
-  _CreateTableRequest__isset() : envContext(false), primaryKeys(false), foreignKeys(false), uniqueConstraints(false), notNullConstraints(false), defaultConstraints(false), checkConstraints(false), processorCapabilities(false), processorIdentifier(false) {}
+  _CreateTableRequest__isset() : envContext(false), primaryKeys(false), foreignKeys(false), uniqueConstraints(false), notNullConstraints(false), defaultConstraints(false), checkConstraints(false), processorCapabilities(false), processorIdentifier(false), skipFSWrites(true) {}
   bool envContext :1;
   bool primaryKeys :1;
   bool foreignKeys :1;
@@ -16899,6 +16908,7 @@ typedef struct _CreateTableRequest__isset {
   bool checkConstraints :1;
   bool processorCapabilities :1;
   bool processorIdentifier :1;
+  bool skipFSWrites :1;
 } _CreateTableRequest__isset;
 
 class CreateTableRequest : public virtual ::apache::thrift::TBase {
@@ -16907,7 +16917,8 @@ class CreateTableRequest : public virtual ::apache::thrift::TBase {
   CreateTableRequest(const CreateTableRequest&);
   CreateTableRequest& operator=(const CreateTableRequest&);
   CreateTableRequest() noexcept
-                     : processorIdentifier() {
+                     : processorIdentifier(),
+                       skipFSWrites(false) {
   }
 
   virtual ~CreateTableRequest() noexcept;
@@ -16921,6 +16932,7 @@ class CreateTableRequest : public virtual ::apache::thrift::TBase {
   std::vector<SQLCheckConstraint>  checkConstraints;
   std::vector<std::string>  processorCapabilities;
   std::string processorIdentifier;
+  bool skipFSWrites;
 
   _CreateTableRequest__isset __isset;
 
@@ -16943,6 +16955,8 @@ class CreateTableRequest : public virtual ::apache::thrift::TBase {
   void __set_processorCapabilities(const std::vector<std::string> & val);
 
   void __set_processorIdentifier(const std::string& val);
+
+  void __set_skipFSWrites(const bool val);
 
   bool operator == (const CreateTableRequest & rhs) const
   {
@@ -16984,6 +16998,10 @@ class CreateTableRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.processorIdentifier && !(processorIdentifier == rhs.processorIdentifier))
       return false;
+    if (__isset.skipFSWrites != rhs.__isset.skipFSWrites)
+      return false;
+    else if (__isset.skipFSWrites && !(skipFSWrites == rhs.skipFSWrites))
+      return false;
     return true;
   }
   bool operator != (const CreateTableRequest &rhs) const {
@@ -17003,7 +17021,7 @@ void swap(CreateTableRequest &a, CreateTableRequest &b);
 std::ostream& operator<<(std::ostream& out, const CreateTableRequest& obj);
 
 typedef struct _CreateDatabaseRequest__isset {
-  _CreateDatabaseRequest__isset() : description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false), type(false), dataConnectorName(false) {}
+  _CreateDatabaseRequest__isset() : description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false), type(false), dataConnectorName(false), skipFSWrites(true), database(false) {}
   bool description :1;
   bool locationUri :1;
   bool parameters :1;
@@ -17015,6 +17033,8 @@ typedef struct _CreateDatabaseRequest__isset {
   bool managedLocationUri :1;
   bool type :1;
   bool dataConnectorName :1;
+  bool skipFSWrites :1;
+  bool database :1;
 } _CreateDatabaseRequest__isset;
 
 class CreateDatabaseRequest : public virtual ::apache::thrift::TBase {
@@ -17032,7 +17052,8 @@ class CreateDatabaseRequest : public virtual ::apache::thrift::TBase {
                           createTime(0),
                           managedLocationUri(),
                           type(),
-                          dataConnectorName() {
+                          dataConnectorName(),
+                          skipFSWrites(false) {
   }
 
   virtual ~CreateDatabaseRequest() noexcept;
@@ -17052,6 +17073,8 @@ class CreateDatabaseRequest : public virtual ::apache::thrift::TBase {
   std::string managedLocationUri;
   std::string type;
   std::string dataConnectorName;
+  bool skipFSWrites;
+  Database database;
 
   _CreateDatabaseRequest__isset __isset;
 
@@ -17078,6 +17101,10 @@ class CreateDatabaseRequest : public virtual ::apache::thrift::TBase {
   void __set_type(const std::string& val);
 
   void __set_dataConnectorName(const std::string& val);
+
+  void __set_skipFSWrites(const bool val);
+
+  void __set_database(const Database& val);
 
   bool operator == (const CreateDatabaseRequest & rhs) const
   {
@@ -17126,6 +17153,14 @@ class CreateDatabaseRequest : public virtual ::apache::thrift::TBase {
     if (__isset.dataConnectorName != rhs.__isset.dataConnectorName)
       return false;
     else if (__isset.dataConnectorName && !(dataConnectorName == rhs.dataConnectorName))
+      return false;
+    if (__isset.skipFSWrites != rhs.__isset.skipFSWrites)
+      return false;
+    else if (__isset.skipFSWrites && !(skipFSWrites == rhs.skipFSWrites))
+      return false;
+    if (__isset.database != rhs.__isset.database)
+      return false;
+    else if (__isset.database && !(database == rhs.database))
       return false;
     return true;
   }

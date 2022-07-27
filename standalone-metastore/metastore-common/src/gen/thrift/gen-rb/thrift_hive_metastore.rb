@@ -144,6 +144,23 @@ module ThriftHiveMetastore
       return
     end
 
+    def create_database_req(req)
+      send_create_database_req(req)
+      recv_create_database_req()
+    end
+
+    def send_create_database_req(req)
+      send_message('create_database_req', Create_database_req_args, :req => req)
+    end
+
+    def recv_create_database_req()
+      result = receive_message(Create_database_req_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
     def get_database(name)
       send_get_database(name)
       return recv_get_database()
@@ -4606,6 +4623,21 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'create_database', seqid)
     end
 
+    def process_create_database_req(seqid, iprot, oprot)
+      args = read_args(iprot, Create_database_req_args)
+      result = Create_database_req_result.new()
+      begin
+        @handler.create_database_req(args.req)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'create_database_req', seqid)
+    end
+
     def process_get_database(seqid, iprot, oprot)
       args = read_args(iprot, Get_database_args)
       result = Get_database_result.new()
@@ -8121,6 +8153,42 @@ module ThriftHiveMetastore
   end
 
   class Create_database_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_database_req_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::CreateDatabaseRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_database_req_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
     O2 = 2
