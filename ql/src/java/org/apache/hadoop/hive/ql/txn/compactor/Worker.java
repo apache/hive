@@ -603,7 +603,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
   private void markFailed(CompactionInfo ci, String errorMessage) {
     if (ci == null) {
-      LOG.warn("CompactionInfo client was null. Could not mark failed: {}", ci);
+      LOG.warn("CompactionInfo client was null. Could not mark failed");
       return;
     }
     if (ci != null && StringUtils.isNotBlank(errorMessage)) {
