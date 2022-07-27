@@ -105,6 +105,10 @@ public class serdeConstants {
 
   public static final java.lang.String LIST_PARTITION_COLUMN_COMMENTS = "partition.columns.comments";
 
+  public static final java.lang.String AS_OF_VERSION = "as.of.version";
+
+  public static final java.lang.String AS_OF_TIMESTAMP = "as.of.timestamp";
+
   public static final java.lang.String TIMESTAMP_FORMATS = "timestamp.formats";
 
   public static final java.lang.String COLUMN_NAME_DELIMITER = "column.name.delimiter";

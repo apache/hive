@@ -45,6 +45,12 @@ public class HiveIcebergStorageHandlerTestUtils {
           optional(3, "last_name", Types.StringType.get(), "This is last name")
   );
 
+  static final Schema CUSTOMER_SCHEMA_WITHOUT_COMMENTS = new Schema(
+      optional(1, "customer_id", Types.LongType.get()),
+      optional(2, "first_name", Types.StringType.get()),
+      optional(3, "last_name", Types.StringType.get())
+  );
+
   static final Schema CUSTOMER_SCHEMA_WITH_UPPERCASE = new Schema(
           optional(1, "CustomER_Id", Types.LongType.get()),
           optional(2, "First_name", Types.StringType.get()),

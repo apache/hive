@@ -29,6 +29,7 @@ import javax.security.auth.login.LoginException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -71,17 +72,18 @@ public class HiveMetaStoreUtils {
    *
    */
   static public Deserializer getDeserializer(Configuration conf,
-      org.apache.hadoop.hive.metastore.api.Table table, String metaTable, boolean skipConfError) throws
+      org.apache.hadoop.hive.metastore.api.Table table, String metaTable, String asOfVersion, String asOfTimestamp,
+      boolean skipConfError) throws
       MetaException {
     String lib = table.getSd().getSerdeInfo().getSerializationLib();
     if (lib == null) {
       return null;
     }
-    return getDeserializer(conf, table, metaTable, skipConfError, lib);
+    return getDeserializer(conf, table, metaTable, asOfVersion, asOfTimestamp, skipConfError, lib);
   }
 
   public static Deserializer getDeserializer(Configuration conf, org.apache.hadoop.hive.metastore.api.Table table,
-      String metaTable, boolean skipConfError, String lib) throws MetaException {
+      String metaTable, String asOfVersion, String asOfTimestamp, boolean skipConfError, String lib) throws MetaException {
     AbstractSerDe deserializer;
     try {
       deserializer = ReflectionUtil.newInstance(conf.getClassByName(lib).asSubclass(AbstractSerDe.class), conf);
@@ -93,6 +95,12 @@ public class HiveMetaStoreUtils {
       Properties properties = MetaStoreUtils.getTableMetadata(table);
       if (metaTable != null) {
         properties.put("metaTable", metaTable);
+      }
+
+      if (asOfVersion != null) {
+        properties.put(serdeConstants.AS_OF_VERSION, asOfVersion);
+      } else if (asOfTimestamp != null) {
+        properties.put(serdeConstants.AS_OF_TIMESTAMP, asOfTimestamp);
       }
       deserializer.initialize(conf, properties, null);
     } catch (SerDeException e) {

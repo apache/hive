@@ -66,6 +66,8 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $LIST_PARTITION_COLUMN_TYPES;
     static protected $LIST_COLUMN_COMMENTS;
     static protected $LIST_PARTITION_COLUMN_COMMENTS;
+    static protected $AS_OF_VERSION;
+    static protected $AS_OF_TIMESTAMP;
     static protected $TIMESTAMP_FORMATS;
     static protected $COLUMN_NAME_DELIMITER;
     static protected $PrimitiveTypes;
@@ -310,6 +312,16 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_LIST_PARTITION_COLUMN_COMMENTS()
     {
         return "partition.columns.comments";
+    }
+
+    protected static function init_AS_OF_VERSION()
+    {
+        return "as.of.version";
+    }
+
+    protected static function init_AS_OF_TIMESTAMP()
+    {
+        return "as.of.timestamp";
     }
 
     protected static function init_TIMESTAMP_FORMATS()

@@ -71,6 +71,7 @@ import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvide
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.stats.Partish;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -108,6 +109,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.SerializationUtil;
+import org.apache.iceberg.util.SnapshotUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -760,7 +762,16 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   static void overlayTableProperties(Configuration configuration, TableDesc tableDesc, Map<String, String> map) {
     Properties props = tableDesc.getProperties();
     Table table = IcebergTableUtil.getTable(configuration, props);
-    String schemaJson = SchemaParser.toJson(table.schema());
+    String schemaJson;
+    if (props.containsKey(serdeConstants.AS_OF_VERSION)) {
+      schemaJson = SchemaParser.toJson(SnapshotUtil.schemaFor(table,
+          Long.valueOf(props.getProperty(serdeConstants.AS_OF_VERSION))));
+    } else if (props.containsKey(serdeConstants.AS_OF_TIMESTAMP)) {
+      schemaJson = SchemaParser.toJson(SnapshotUtil.schemaFor(table, null,
+          Long.valueOf(props.getProperty(serdeConstants.AS_OF_TIMESTAMP))));
+    } else {
+      schemaJson = SchemaParser.toJson(table.schema());
+    }
 
     Maps.fromProperties(props).entrySet().stream()
         .filter(entry -> !map.containsKey(entry.getKey())) // map overrides tableDesc properties
@@ -779,7 +790,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
     // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
     // the serialization utils fail to serialize this character
-    map.remove("columns.comments");
+    map.remove(serdeConstants.LIST_COLUMN_COMMENTS);
 
     // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
     // this is an exception to the interface documentation, but it's a safe operation to add this property
@@ -868,6 +879,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    *   <li>querying metadata tables</li>
    *   <li>fileformat is set to ORC, and table schema has time type column</li>
    *   <li>fileformat is set to PARQUET, and table schema has a list type column, that has a complex type element</li>
+   *   <li>fileformat is set to PARQUET, and it is a time travel query</li>
    * </ul>
    * @param tableProps table properties, must be not null
    */
@@ -877,9 +889,26 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
         (tableProps.containsKey("metaTable") && isValidMetadataTable(tableProps.getProperty("metaTable"))) ||
         hasOrcTimeInSchema(tableProps, tableSchema) ||
-        !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema)) {
+        !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema) ||
+        isParquetTimeTravel(tableProps)) {
       conf.setBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname, false);
     }
+  }
+
+  /**
+   * Vectorized time travel reads on Parquet file format is not supported.
+   * @param tableProps iceberg table properties
+   * @return
+   */
+  private static boolean isParquetTimeTravel(Properties tableProps) {
+    if (!FileFormat.PARQUET.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
+      return false;
+    }
+
+    return (tableProps.containsKey(serdeConstants.AS_OF_VERSION) &&
+        tableProps.getProperty(serdeConstants.AS_OF_VERSION) != null) ||
+        (tableProps.containsKey(serdeConstants.AS_OF_TIMESTAMP) &&
+            tableProps.getProperty(serdeConstants.AS_OF_TIMESTAMP) != null);
   }
 
   /**

@@ -44,6 +44,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLTransientException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -103,6 +104,8 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -762,8 +765,20 @@ public final class Utilities {
     if (tbl.getMetaTable() != null) {
       props.put("metaTable", tbl.getMetaTable());
     }
+    if (tbl.getAsOfVersion() != null) {
+      props.put(serdeConstants.AS_OF_VERSION, tbl.getAsOfVersion());
+    } else if (tbl.getAsOfTimestamp() != null) {
+      props.put(serdeConstants.AS_OF_TIMESTAMP, Long.toString(convertTimeStampToMillis(tbl.getAsOfTimestamp())));
+    }
     return (new TableDesc(tbl.getInputFormatClass(), tbl
         .getOutputFormatClass(), props));
+  }
+
+  public static long convertTimeStampToMillis(String timestamp) {
+    ZoneId zoneId = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
+        SessionState.get().getConf().getLocalTimeZone();
+    TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(timestamp), zoneId);
+    return time.toEpochMilli();
   }
 
   // column names and column types are all delimited by comma

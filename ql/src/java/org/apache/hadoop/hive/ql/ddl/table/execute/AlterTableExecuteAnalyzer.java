@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -72,10 +73,8 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
       ASTNode child = (ASTNode) command.getChild(1);
 
       if (child.getType() == HiveParser.StringLiteral) {
-        ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
-            .getLocalTimeZone();
-        TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(child.getText()), timeZone);
-        spec = new AlterTableExecuteSpec(ROLLBACK, new RollbackSpec(TIME, time.toEpochMilli()));
+        spec = new AlterTableExecuteSpec(ROLLBACK,
+            new RollbackSpec(TIME, Utilities.convertTimeStampToMillis(child.getText())));
       } else {
         spec = new AlterTableExecuteSpec(ROLLBACK, new RollbackSpec(VERSION,
             Long.valueOf(child.getText())));
@@ -86,10 +85,8 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
       // the second child must be the rollback parameter
       ASTNode child = (ASTNode) command.getChild(1);
 
-      ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
-          .getLocalTimeZone();
-      TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(child.getText()), timeZone);
-      spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(time.toEpochMilli()));
+      spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT,
+          new ExpireSnapshotsSpec(Utilities.convertTimeStampToMillis(child.getText())));
       desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
     }
 

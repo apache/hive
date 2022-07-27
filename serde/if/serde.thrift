@@ -77,6 +77,8 @@ const string LIST_PARTITION_COLUMNS = "partition.columns";
 const string LIST_PARTITION_COLUMN_TYPES = "partition.columns.types";
 const string LIST_COLUMN_COMMENTS = "columns.comments";
 const string LIST_PARTITION_COLUMN_COMMENTS = "partition.columns.comments";
+const string AS_OF_VERSION = "as.of.version";
+const string AS_OF_TIMESTAMP = "as.of.timestamp";
 
 const string TIMESTAMP_FORMATS = "timestamp.formats";
 const string COLUMN_NAME_DELIMITER = "column.name.delimiter";

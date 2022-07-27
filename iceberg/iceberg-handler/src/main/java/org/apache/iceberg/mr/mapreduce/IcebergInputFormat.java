@@ -125,6 +125,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       scan = scan.option(TableProperties.SPLIT_SIZE, String.valueOf(splitSize));
     }
 
+    conf.set(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(scan.schema()));
+
     // In case of LLAP-based execution we ask Iceberg not to combine multiple fileScanTasks into one split.
     // This is so that cache affinity can work, and each file(split) is executed/cached on always the same LLAP daemon.
     MapWork mapWork = LlapHiveUtils.findMapWork((JobConf) conf);
@@ -486,12 +488,15 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       }
 
       String[] selectedColumns = InputFormatConfig.selectedColumns(conf);
+      Schema schema = InputFormatConfig.tableSchema(conf);
       if (selectedColumns == null) {
-        return table.schema();
+        return schema == null ? table.schema() : schema;
       }
 
-      readSchema = caseSensitive ? table.schema().select(selectedColumns) :
-          table.schema().caseInsensitiveSelect(selectedColumns);
+      readSchema = caseSensitive ?
+          schema == null ? table.schema().select(selectedColumns) : schema.select(selectedColumns) :
+          schema == null ? table.schema().caseInsensitiveSelect(selectedColumns) :
+              schema.caseInsensitiveSelect(selectedColumns);
 
       if (InputFormatConfig.fetchVirtualColumns(conf)) {
         return IcebergAcidUtil.createFileReadSchemaWithVirtualColums(readSchema.columns(), table);

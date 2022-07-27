@@ -103,6 +103,10 @@ LIST_COLUMN_COMMENTS = %q"columns.comments"
 
 LIST_PARTITION_COLUMN_COMMENTS = %q"partition.columns.comments"
 
+AS_OF_VERSION = %q"as.of.version"
+
+AS_OF_TIMESTAMP = %q"as.of.timestamp"
+
 TIMESTAMP_FORMATS = %q"timestamp.formats"
 
 COLUMN_NAME_DELIMITER = %q"column.name.delimiter"

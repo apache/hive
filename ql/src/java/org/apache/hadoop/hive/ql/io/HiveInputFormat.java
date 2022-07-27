@@ -984,11 +984,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   protected static void pushAsOf(Configuration jobConf, TableScanOperator ts) {
     TableScanDesc scanDesc = ts.getConf();
     if (scanDesc.getAsOfTimestamp() != null) {
-      ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
-          SessionState.get().getConf().getLocalTimeZone();
-      TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(scanDesc.getAsOfTimestamp()), timeZone);
-
-      jobConf.set(TableScanDesc.AS_OF_TIMESTAMP, Long.toString(time.toEpochMilli()));
+      jobConf.set(TableScanDesc.AS_OF_TIMESTAMP,
+          Long.toString(Utilities.convertTimeStampToMillis(scanDesc.getAsOfTimestamp())));
     }
 
     if (scanDesc.getAsOfVersion() != null) {

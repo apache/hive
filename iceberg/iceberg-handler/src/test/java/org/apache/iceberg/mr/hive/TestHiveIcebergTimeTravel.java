@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.List;
 import org.apache.iceberg.HistoryEntry;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.catalog.TableIdentifier;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -150,5 +151,63 @@ public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngi
         "WHERE sv.first_name=tv.first_name");
 
     Assert.assertEquals(8, rows.size());
+  }
+
+  @Test
+  public void testAsOfWithJoinsAndSchemaEvolution() throws IOException, InterruptedException {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    Table customers = testTables.createTableWithVersions(shell, identifier.name(),
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA_WITHOUT_COMMENTS, fileFormat,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
+
+    // add a new column
+    shell.executeStatement(String.format("ALTER TABLE %s ADD COLUMNS (nickname string)",
+        identifier.name()));
+    // add some test data with the new column
+    shell.executeStatement(
+        String.format("INSERT INTO %s VALUES (11, 'Tony', 'Stark', 'IronMan')",
+            identifier.name()));
+    // drop the 'first_name' column
+    shell.executeStatement(
+        String.format("ALTER TABLE %s REPLACE COLUMNS (customer_id bigint, last_name string, nickname string)",
+            identifier.name()));
+    customers.refresh();
+    // add some test date after the dropped column
+    shell.executeStatement(
+        String.format("INSERT INTO %s VALUES (12, 'Rogers', 'Captain America')", identifier.name()));
+
+    // select on latest table version
+    List<Object[]> latestRows = shell.executeStatement(String.format("SELECT * FROM %s", identifier.name()));
+    Assert.assertEquals(6, latestRows.size());
+    Assert.assertEquals(3, latestRows.get(0).length);
+
+    // select on table version 2
+    List<Object[]> version2Rows = shell.executeStatement(
+        String.format("SELECT * FROM %s FOR SYSTEM_TIME AS OF '%s'", identifier.name(),
+            timestampAfterSnapshot(customers, 2)));
+    Assert.assertEquals(5, version2Rows.size());
+    Assert.assertEquals(4, version2Rows.get(0).length);
+
+    // select on table version 1
+    List<Object[]> version1Rows = shell.executeStatement(
+        String.format("SELECT * FROM %s FOR SYSTEM_VERSION AS OF %s", identifier.name(),
+            customers.history().get(1).snapshotId()));
+    Assert.assertEquals(4, version1Rows.size());
+    Assert.assertEquals(3, version1Rows.get(0).length);
+
+    // select on table version 0
+    List<Object[]> version0Rows = shell.executeStatement(
+        String.format("SELECT * FROM %s FOR SYSTEM_VERSION AS OF %s", identifier.name(),
+            customers.history().get(0).snapshotId()));
+    Assert.assertEquals(3, version0Rows.size());
+    Assert.assertEquals(3, version0Rows.get(0).length);
+
+    List<Object[]> joinRows = shell.executeStatement(String.format(
+        "SELECT sv.nickname, lv.customer_id FROM %s FOR SYSTEM_TIME AS OF '%s' sv, " +
+            "%s lv WHERE sv.last_name = lv.last_name", identifier.name(),
+        timestampAfterSnapshot(customers, 2), identifier.name()));
+
+    Assert.assertEquals(5, joinRows.size());
+    Assert.assertEquals(2, joinRows.get(0).length);
   }
 }

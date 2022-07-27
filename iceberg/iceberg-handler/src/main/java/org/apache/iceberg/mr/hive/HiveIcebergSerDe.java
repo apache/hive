@@ -60,6 +60,7 @@ import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.util.SnapshotUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,8 +106,21 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     } else {
       try {
         Table table = IcebergTableUtil.getTable(configuration, serDeProperties);
-        // always prefer the original table schema if there is one
-        this.tableSchema = table.schema();
+        // we store the "as of" information in serdeproperties and not in a session conf because we want to make sure
+        // that this information is attached to the table and not to the query itself.
+        if (serDeProperties.containsKey(serdeConstants.AS_OF_VERSION)) {
+          this.tableSchema = SnapshotUtil.schemaFor(table,
+              Long.valueOf(serDeProperties.getProperty(serdeConstants.AS_OF_VERSION)));
+          serDeProperties.remove(serdeConstants.AS_OF_VERSION);
+        } else if (serDeProperties.containsKey(serdeConstants.AS_OF_TIMESTAMP)) {
+          this.tableSchema = SnapshotUtil.schemaFor(table, null,
+              Long.valueOf(serDeProperties.getProperty(serdeConstants.AS_OF_TIMESTAMP)));
+          serDeProperties.remove(serdeConstants.AS_OF_TIMESTAMP);
+        } else {
+          // is missing from properties, use the original schema
+          this.tableSchema = table.schema();
+        }
+
         this.partitionColumns = table.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
         LOG.info("Using schema from existing table {}", SchemaParser.toJson(tableSchema));
       } catch (Exception e) {

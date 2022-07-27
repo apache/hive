@@ -286,7 +286,7 @@ public class StatsUtils {
 
       long numErasureCodedFiles = getErasureCodedFiles(table);
 
-      if (needColStats && !metaTable) {
+      if (needColStats && !metaTable && table.getAsOfVersion() == null && table.getAsOfTimestamp() == null) {
         colStats = getTableColumnStats(table, schema, neededColumns, colStatsCache, fetchColStats);
         if (estimateStats) {
           estimateStatsForMissingCols(neededColumns, colStats, table, conf, nr, schema);

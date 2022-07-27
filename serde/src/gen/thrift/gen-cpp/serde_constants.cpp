@@ -107,6 +107,10 @@ serdeConstants::serdeConstants() {
 
   LIST_PARTITION_COLUMN_COMMENTS = "partition.columns.comments";
 
+  AS_OF_VERSION = "as.of.version";
+
+  AS_OF_TIMESTAMP = "as.of.timestamp";
+
   TIMESTAMP_FORMATS = "timestamp.formats";
 
   COLUMN_NAME_DELIMITER = "column.name.delimiter";
