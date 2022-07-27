@@ -106,7 +106,7 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
   }
 
   protected void writeFileEntry(Table table, Partition ptn, String file, Context withinContext)
-          throws IOException, LoginException, MetaException, HiveFatalException {
+          throws IOException, LoginException, HiveFatalException {
     HiveConf hiveConf = withinContext.hiveConf;
     String distCpDoAsUser = hiveConf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
     if (!Utils.shouldDumpMetaDataOnly(withinContext.hiveConf)) {

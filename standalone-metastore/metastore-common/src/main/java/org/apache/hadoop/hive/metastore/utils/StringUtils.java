@@ -98,7 +98,9 @@ public class StringUtils {
    * Make a string representation of the exception.
    * @param e The exception to stringify
    * @return A string with exception name and call stack.
+   * @deprecated
    */
+  @Deprecated
   public static String stringifyException(Throwable e) {
     StringWriter stm = new StringWriter();
     PrintWriter wrt = new PrintWriter(stm);

@@ -987,7 +987,8 @@ public class ObjectStore implements RawStore, Configurable {
       pm.deletePersistent(db);
       success = commitTransaction();
     } catch (Exception e) {
-      throw new MetaException(e.getMessage() + " " + org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+      LOG.error("Failed to drop database", e);
+      throw new MetaException(e.getMessage());
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -1195,7 +1196,8 @@ public class ObjectStore implements RawStore, Configurable {
       pm.deletePersistent(mdb);
       success = commitTransaction();
     } catch (Exception e) {
-      throw new MetaException(e.getMessage() + " " + org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+      LOG.error("Failed to drop data connector", e);
+      throw new MetaException(e.getMessage());
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -3247,7 +3249,8 @@ public class ObjectStore implements RawStore, Configurable {
         try {
           return convertToParts(listMPartitions(catName, dbName, tblName, maxParts));
         } catch (Exception e) {
-          throw new MetaException(e.getMessage() + " " + org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+          LOG.error("Failed to convert to parts", e);
+          throw new MetaException(e.getMessage());
         }
       }
     }.run(false);
