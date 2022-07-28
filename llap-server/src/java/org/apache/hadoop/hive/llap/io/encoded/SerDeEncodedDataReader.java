@@ -56,7 +56,6 @@ import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.LlapSerDeDataBuf
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.StripeData;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
-import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer.SerDeStripeMetadata;
 import org.apache.hadoop.hive.llap.io.decode.OrcEncodedDataConsumer;
@@ -224,7 +223,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
     fs = split.getPath().getFileSystem(daemonConf);
     PartitionDesc partitionDesc = LlapHiveUtils.partitionDescForPath(split.getPath(), parts);
-    fileKey = determineCacheKey(fs, split, partitionDesc);
+    fileKey = determineCacheKey(fs, split, partitionDesc, daemonConf);
     cacheTag = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE)
         ? LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), true, partitionDesc) : null;
     this.sourceInputFormat = sourceInputFormat;
@@ -1729,13 +1728,14 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     return true;
   }
 
-  private static Object determineCacheKey(FileSystem fs, FileSplit split, PartitionDesc partitionDesc)
+  private static Object determineCacheKey(FileSystem fs, FileSplit split, PartitionDesc partitionDesc,
+      Configuration daemonConf)
       throws IOException {
     /* TODO: support this optionally? this is not OrcSplit, but we could add a custom split.
       Object fileKey = ((OrcSplit)split).getFileKey();
       if (fileKey != null) return fileKey; */
     LlapIoImpl.LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
-    Object fileId = LlapProxy.getIo().createFileIdUsingFS(fs, split.getPath());
+    Object fileId = LlapHiveUtils.createFileIdUsingFS(fs, split.getPath(), daemonConf);
     return SchemaAwareCacheKey.buildCacheKey(fileId, LlapHiveUtils.getSchemaHash(partitionDesc));
   }
 

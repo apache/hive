@@ -116,16 +116,4 @@ public interface LlapIo<T> {
    */
   void loadDataIntoCache(LlapDaemonProtocolProtos.CacheEntryList metadata);
 
-  /**
-   * Determines the fileID for the given path using the FileSystem type provided while considering daemon configuration.
-   * Invokes HdfsUtils.getFileId(), the resulting file ID can be of types Long (inode) or SyntheticFileId depending
-   * on the FS type and the actual daemon configuration.
-   * Can be costly on cloud file systems.
-   * @param fs FileSystem type
-   * @param path Path associated to this file
-   * @return the generated fileID, can be null in special cases (e.g. conf disallows synthetic ID on a non-HDFS FS)
-   * @throws IOException
-   */
-  Object createFileIdUsingFS(FileSystem fs, Path path) throws IOException;
-
 }

@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.cache.PathCache;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
-import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.SchemaEvolutionFactory;
@@ -230,7 +229,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     // 1. Get file metadata from cache, or create the reader and read it.
     // Don't cache the filesystem object for now; Tez closes it and FS cache will fix all that
     fsSupplier = getFsSupplier(split.getPath(), jobConf);
-    fileKey = determineFileId(fsSupplier, split);
+    fileKey = determineFileId(fsSupplier, split, daemonConf);
     // Note: this makes a Tez-TR thread access the ORC file's tail (so this IO op is not handled by IO threads)
     fileMetadata = getFileFooterFromCacheOrDisk();
     final TypeDescription fileSchema = fileMetadata.getSchema();
@@ -500,7 +499,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     return true;
   }
 
-  private static Object determineFileId(Supplier<FileSystem> fsSupplier, FileSplit split) throws IOException {
+  private static Object determineFileId(Supplier<FileSystem> fsSupplier, FileSplit split, Configuration daemonConf)
+      throws IOException {
 
     if (split instanceof OrcSplit) {
       Object fileKey = ((OrcSplit)split).getFileKey();
@@ -509,7 +509,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       }
     }
     LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
-    return LlapProxy.getIo().createFileIdUsingFS(fsSupplier.get(), split.getPath());
+    return LlapHiveUtils.createFileIdUsingFS(fsSupplier.get(), split.getPath(), daemonConf);
   }
 
   /**
@@ -580,7 +580,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       Configuration daemonConf, MetadataCache metadataCache, Object fileKey) throws IOException {
     Supplier<FileSystem> fsSupplier = getFsSupplier(path, jobConf);
     if (fileKey == null) {
-      fileKey = LlapProxy.getIo().createFileIdUsingFS(fsSupplier.get(), path);
+      fileKey = LlapHiveUtils.createFileIdUsingFS(fsSupplier.get(), path, daemonConf);
     }
 
     if(fileKey == null || metadataCache == null) {

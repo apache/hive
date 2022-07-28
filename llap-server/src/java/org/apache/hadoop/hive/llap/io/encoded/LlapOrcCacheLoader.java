@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
-import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedOrcFile;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReader;
@@ -77,7 +77,7 @@ public class LlapOrcCacheLoader implements AutoCloseable {
 
   public void init() throws IOException {
     fsSupplier = getFsSupplier(path, daemonConf);
-    Object fileKey = LlapProxy.getIo().createFileIdUsingFS(fsSupplier.get(), path);
+    Object fileKey = LlapHiveUtils.createFileIdUsingFS(fsSupplier.get(), path, daemonConf);
     if(!fileKey.equals(this.fileKey)) {
       throw new IOException("File key mismatch.");
     }

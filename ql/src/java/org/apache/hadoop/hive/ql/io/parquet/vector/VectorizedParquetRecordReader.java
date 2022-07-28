@@ -150,7 +150,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       if (metadataCache != null) {
         cacheKey = SyntheticFileId.fromJobConf(conf);
         if (cacheKey == null) {
-          cacheKey = LlapProxy.getIo().createFileIdUsingFS(filePath.getFileSystem(conf), filePath);
+          cacheKey = LlapHiveUtils.createFileIdUsingFS(filePath.getFileSystem(conf), filePath, cacheConf);
         }
         // createFileIdUsingFS() might yield to null in certain configurations
         if (cacheKey != null) {
