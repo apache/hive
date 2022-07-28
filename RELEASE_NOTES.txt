@@ -2149,7 +2149,6 @@ Release Notes - Hive - Version 2.3.0
 
 ** Test
     * [HIVE-16288] - Add blobstore tests for ORC and RCFILE file formats
-    * [HIVE-16415] - Add tests covering single inserts of zero rows
 
 
 
