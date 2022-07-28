@@ -128,6 +128,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   static final protected Logger LOG = LoggerFactory.getLogger("hive.metastore");
 
+  private String currentCatalog;
+
   public HiveMetaStoreClient(HiveConf conf) throws MetaException {
     this(conf, null, true);
   }
@@ -138,6 +140,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   public HiveMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded)
     throws MetaException {
+
+    this.currentCatalog = getDefaultCatalog(conf);
 
     this.hookLoader = hookLoader;
     if (conf == null) {
@@ -607,7 +611,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public Partition add_partition(Partition new_part, EnvironmentContext envContext)
       throws InvalidObjectException, AlreadyExistsException, MetaException,
       TException {
-    if (!new_part.isSetCatName() && isCatalogEnabled(conf)) new_part.setCatName(getDefaultCatalog(conf));
+    if (!new_part.isSetCatName() && isCatalogEnabled(conf)) new_part.setCatName(getCurrentCatalog());
     Partition p = client.add_partition_with_environment_context(new_part, envContext);
     return fastpath ? p : deepCopy(p);
   }
@@ -625,7 +629,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       throws InvalidObjectException, AlreadyExistsException, MetaException,
       TException {
     if (isCatalogEnabled(conf) && new_parts != null && !new_parts.isEmpty() && !new_parts.get(0).isSetCatName()) {
-      final String defaultCat = getDefaultCatalog(conf);
+      final String defaultCat = getCurrentCatalog();
       for(Partition p: new_parts) {
         p.setCatName(defaultCat);
       }
@@ -645,7 +649,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         part.getDbName(), part.getTableName(), parts, ifNotExists);
 
     if(isCatalogEnabled(conf)) {
-      final String defaultCat = getDefaultCatalog(conf);
+      final String defaultCat = getCurrentCatalog();
       req.setCatName(defaultCat);
       // Make sure all of the partitions have the catalog set as well
       for(Partition p: parts) {
@@ -660,7 +664,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public int add_partitions_pspec(PartitionSpecProxy partitionSpec) throws TException {
-    if (isCatalogEnabled(conf) && partitionSpec.getCatName() == null) partitionSpec.setCatName(getDefaultCatalog(conf));
+    if (isCatalogEnabled(conf) && partitionSpec.getCatName() == null) partitionSpec.setCatName(getCurrentCatalog());
     return client.add_partitions_pspec(partitionSpec.toPartitionSpec());
   }
 
@@ -755,7 +759,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void createDatabase(Database db)
       throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
-    if (!db.isSetCatalogName() && isCatalogEnabled(conf)) db.setCatalogName(getDefaultCatalog(conf));
+    if (!db.isSetCatalogName() && isCatalogEnabled(conf)) db.setCatalogName(getCurrentCatalog());
     client.create_database(db);
   }
 
@@ -769,7 +773,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void createTable(Table tbl) throws AlreadyExistsException,
       InvalidObjectException, MetaException, NoSuchObjectException, TException {
-    if (!tbl.isSetCatName() && isCatalogEnabled(conf)) tbl.setCatName(getDefaultCatalog(conf));
+    if (!tbl.isSetCatName() && isCatalogEnabled(conf)) tbl.setCatName(getCurrentCatalog());
     createTable(tbl, null);
   }
 
@@ -999,7 +1003,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     rps.setExprs(exprs);
     DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
     if(isCatalogEnabled(conf)) {
-      req.setCatName(getDefaultCatalog(conf));
+      req.setCatName(getCurrentCatalog());
     }
     req.setDeleteData(options.deleteData);
     req.setNeedResult(options.returnResults);
@@ -1356,7 +1360,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public PartitionValuesResponse listPartitionValues(PartitionValuesRequest request)
       throws MetaException, TException, NoSuchObjectException {
-    if (!request.isSetCatName() && isCatalogEnabled(conf)) request.setCatName(getDefaultCatalog(conf));
+    if (!request.isSetCatName() && isCatalogEnabled(conf)) request.setCatName(getCurrentCatalog());
     return client.get_partition_values(request);
   }
 
@@ -1553,7 +1557,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public void alter_partition(String dbName, String tblName, Partition newPart, EnvironmentContext environmentContext)
       throws InvalidOperationException, MetaException, TException {
     if (isCatalogEnabled(conf) && !newPart.isSetCatName()) {
-      newPart.setCatName(getDefaultCatalog(conf));
+      newPart.setCatName(getCurrentCatalog());
     }
     String dbNameWithCatalog = prependCatalogToDbName(dbName, conf);
     if (environmentContext == null) {
@@ -1573,7 +1577,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public void alter_partitions(String dbName, String tblName, List<Partition> newParts, EnvironmentContext environmentContext)
   throws InvalidOperationException, MetaException, TException {
     if (isCatalogEnabled(conf)) {
-      final String defaultCat = getDefaultCatalog(conf);
+      final String defaultCat = getCurrentCatalog();
       for(Partition p: newParts) {
         if (!p.isSetCatName()) p.setCatName(defaultCat);
       }
@@ -2605,5 +2609,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     CacheFileMetadataResult result = client.cache_file_metadata(req);
     return result.isIsSupported();
+  }
+
+  public void setCurrentCatalog(String catalogName) {
+    this.currentCatalog = catalogName;
+  }
+
+  public String getCurrentCatalog() {
+    return this.currentCatalog;
   }
 }
