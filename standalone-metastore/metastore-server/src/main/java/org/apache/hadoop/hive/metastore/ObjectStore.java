@@ -27,10 +27,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -249,6 +246,10 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import org.apache.hadoop.hive.metastore.tools.metatool.CatalogSummary;
+import org.apache.hadoop.hive.metastore.tools.metatool.DatabaseSummary;
+import org.apache.hadoop.hive.metastore.tools.metatool.MetadataSummary;
+import org.apache.hadoop.hive.metastore.tools.metatool.TableSummary;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -14863,6 +14864,152 @@ public class ObjectStore implements RawStore, Configurable {
           pm.makePersistent(e);
         }
       }
+    }
+  }
+
+  /**
+   * SQL query which used in updateMetastoreSummary method to create or replace view HMS_SUMMARY.
+   */
+  private static final String CREATE_METASTORE_SUMMARY="CREATE OR REPLACE VIEW HMS_SUMMARY AS SELECT a.TBL_ID," +
+          "a.TBL_NAME,a.OWNER as CTLG,count(j.COLUMN_NAME) as column_count," +
+          "k.partition_key_name as PARTITION_COLUMN,a.TBL_TYPE,a.CREATE_TIME,a.DB_ID,b.`NAME`,a.SD_ID,c.INPUT_FORMAT," +
+          "c.IS_COMPRESSED,c.LOCATION,c.OUTPUT_FORMAT,c.SERDE_ID,d.SLIB," +
+          "e.PARAM_VALUE,max(case q.PARAM_KEY when 'numFiles' then q.PARAM_VALUE else 0 end)NUM_FILES," +
+          "max(case q.PARAM_KEY when 'numRows' then q.PARAM_VALUE else 0 end)NUM_ROWS," +
+          "max(case q.PARAM_KEY when 'totalSize' then q.PARAM_VALUE else 0 end)TOTAL_SIZE FROM TBLS a left JOIN " +
+          "DBS b on a.DB_ID = b.DB_ID left JOIN SDS c on a.SD_ID = c.SD_ID LEFT JOIN SERDES d on c.SERDE_ID = d.SERDE_ID" +
+          " left JOIN (select SERDE_ID,PARAM_KEY,PARAM_VALUE from SERDE_PARAMS where PARAM_KEY = 'field.delim') e " +
+          "on c.SERDE_ID = e.SERDE_ID left JOIN (select SERDE_ID,PARAM_KEY,PARAM_VALUE from SERDE_PARAMS " +
+          "where PARAM_KEY = 'serialization.format') f on c.SERDE_ID = f.SERDE_ID " +
+          "left join (select TBL_ID,PARAM_KEY,PARAM_VALUE from TABLE_PARAMS where PARAM_KEY = 'comment' ) g on a.TBL_ID = g.TBL_ID " +
+          "LEFT JOIN (select TBL_ID,PARAM_KEY,PARAM_VALUE from TABLE_PARAMS where PARAM_KEY = 'transient_lastDdlTime') h on a.TBL_ID = h.TBL_ID " +
+          "left JOIN COLUMNS_V2 j on a.TBL_ID = j.CD_ID Left JOIN TABLE_PARAMS q on a.TBL_ID = q.TBL_ID " +
+          "left JOIN(select TBL_ID,group_concat(PKEY_NAME) as partition_key_name from PARTITION_KEYS group by TBL_ID) k " +
+          "on a.TBL_ID = k.TBL_ID group by a.TBL_ID, k.partition_key_name";
+
+  /**
+   * create or replace a view called HMS summary which stores the info we need
+   * @param statement
+   * @throws SQLException
+   */
+  public static void updateMetastoreSummary(Statement statement) throws SQLException {
+    statement.execute(CREATE_METASTORE_SUMMARY);
+  }
+
+  /**
+   * helper method of getMetadataSummary. Extracting the format of the file from the long string.
+   * @param fileFormat - fileFormat. A long String which indicates the type of the file.
+   * @return String A short String which indicates the type of the file.
+   */
+  private static String checkFileFormat(String fileFormat) {
+    String lowerCaseFileFormat = null;
+    if(fileFormat != null) {
+      lowerCaseFileFormat = fileFormat.toLowerCase();
+    }
+
+    if(lowerCaseFileFormat == null) return fileFormat;
+
+    if(lowerCaseFileFormat.contains("text")) {
+      fileFormat = "text";
+    } else if (lowerCaseFileFormat.contains("parquet")) {
+      fileFormat = "parquet";
+    } else if(lowerCaseFileFormat.contains("orc")) {
+      fileFormat = "orc";
+    } else if(lowerCaseFileFormat.contains("avro")) {
+      fileFormat = "avro";
+    } else if(lowerCaseFileFormat.contains("json")) {
+      fileFormat = "json";
+    } else if (lowerCaseFileFormat.contains("hbase")) {
+      fileFormat = "hbase";
+    } else if(lowerCaseFileFormat.contains("jdbc")) {
+      fileFormat = "jdbc";
+    } else if(lowerCaseFileFormat.contains("iceberg")) {
+      fileFormat = "iceberg";
+    }
+    return fileFormat;
+  }
+
+  /**
+   * Using resultSet to read the HMS_SUMMARY table.
+   * @param stmt
+   * @return MetadataSummary
+   * @throws SQLException
+   */
+  public static MetadataSummary getMetadataSummary(Statement stmt) throws SQLException {
+    String query = "select * from HMS_SUMMARY";
+    List<CatalogSummary> ctlgSummary = new ArrayList<>();
+    //stores the database name and the catalog name information
+    List<List<String>> nameOfDatabase = new ArrayList<>();
+    //stores the catalog name information
+    List<String> nameOfCatalog = new ArrayList<>();
+
+    try (ResultSet rs = stmt.executeQuery(query)) {
+      while(rs.next()) {
+        String table_name = rs.getString("TBL_NAME");
+        String db_name = rs.getString("NAME");
+        String cat_name = rs.getString("CTLG");
+        int column_count = rs.getInt("column_count");
+        String table_type = rs.getString("TBL_TYPE");
+        String file_type = rs.getString("OUTPUT_FORMAT");
+        file_type = checkFileFormat(file_type);
+        String compression_type = rs.getString("IS_COMPRESSED");
+        if(compression_type.equals("0")) compression_type = "None";
+        String partition_column = rs.getString("PARTITION_COLUMN");
+        int partition_column_count = 0;
+        if(partition_column != null) {
+          partition_column_count++;
+        }
+
+        long size_bytes = rs.getLong("TOTAL_SIZE");
+        long size_numRows = rs.getLong("NUM_ROWS");
+        long size_numFiles = rs.getLong("NUM_FILES");
+        TableSummary tableSummary = new TableSummary(table_name, db_name, cat_name, column_count,
+                partition_column_count, size_bytes, size_numRows, size_numFiles, table_type,
+                file_type, compression_type);
+        List<String> currDatabaseName = new ArrayList<>();
+        currDatabaseName.add(db_name);
+        currDatabaseName.add(cat_name);
+
+        //check if our current database has already been included in the metadataSummary.
+        if(!nameOfDatabase.contains(currDatabaseName)) {
+          nameOfDatabase.add(currDatabaseName);
+          List<TableSummary> addTableSummary = new ArrayList<>();
+          addTableSummary.add(tableSummary);
+          DatabaseSummary addDatabaseSummary = new DatabaseSummary(db_name, cat_name, addTableSummary);
+          //check if our current catalog has already been included in the metadataSummary.
+          if(!nameOfCatalog.contains(cat_name)) {
+            nameOfCatalog.add(cat_name);
+            List<DatabaseSummary> addDatabaseSummaries = new ArrayList<>();
+            addDatabaseSummaries.add(addDatabaseSummary);
+            CatalogSummary addCatalogSummary = new CatalogSummary(cat_name, addDatabaseSummaries);
+            ctlgSummary.add(addCatalogSummary);
+          } else {
+            for(CatalogSummary ctlg: ctlgSummary) {
+              if(ctlg.getCat_name().equals(cat_name)) {
+                List<DatabaseSummary> replaceDS = ctlg.getDatabase_names();
+                replaceDS.add(addDatabaseSummary);
+                CatalogSummary newCtlg = new CatalogSummary(cat_name, replaceDS);
+                ctlgSummary.remove(ctlg);
+                ctlgSummary.add(newCtlg);
+              }
+            }
+          }
+        } else {
+          for(CatalogSummary ctlg: ctlgSummary) {
+            List<DatabaseSummary> thisDS = ctlg.getDatabase_names();
+            for(DatabaseSummary ds: thisDS) {
+              if(ds.getDb_name().equals(db_name) && ctlg.getCat_name().equals(cat_name)) {
+                List<TableSummary> newTs = ds.getTable_names();
+                newTs.add(tableSummary);
+              }
+            }
+          }
+        }
+      }
+      MetadataSummary res = new MetadataSummary(ctlgSummary);
+      return res;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
   }
 }

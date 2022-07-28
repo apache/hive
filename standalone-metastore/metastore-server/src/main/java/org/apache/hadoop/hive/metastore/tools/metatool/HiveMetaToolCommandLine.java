@@ -36,26 +36,33 @@ class HiveMetaToolCommandLine {
   private static final Logger LOGGER = LoggerFactory.getLogger(HiveMetaToolCommandLine.class.getName());
 
   @SuppressWarnings("static-access")
+  private static final Option METADATA_SUMMARY = OptionBuilder
+          .withArgName("output-format")
+          .hasArgs()
+          .withDescription("print the summary of metadata in selected format")
+          .create("metadataSummary");
+
+  @SuppressWarnings("static-access")
   private static final Option LIST_FS_ROOT = OptionBuilder
-      .withDescription("print the current FS root locations")
-      .create("listFSRoot");
+          .withDescription("print the current FS root locations")
+          .create("listFSRoot");
 
   @SuppressWarnings("static-access")
   private static final Option EXECUTE_JDOQL = OptionBuilder
-      .withArgName("query-string")
-      .hasArgs()
-      .withDescription("execute the given JDOQL query")
-      .create("executeJDOQL");
+          .withArgName("query-string")
+          .hasArgs()
+          .withDescription("execute the given JDOQL query")
+          .create("executeJDOQL");
 
   @SuppressWarnings("static-access")
   private static final Option UPDATE_LOCATION = OptionBuilder
-      .withArgName("new-loc> " + "<old-loc")
-      .hasArgs(2)
-      .withDescription("Update FS root location in the metastore to new location.Both new-loc and old-loc should " +
-          "be valid URIs with valid host names and schemes. When run with the dryRun option changes are displayed " +
-          "but are not persisted. When run with the serdepropKey/tablePropKey option updateLocation looks for the " +
-          "serde-prop-key/table-prop-key that is specified and updates its value if found.")
-      .create("updateLocation");
+          .withArgName("new-loc> " + "<old-loc")
+          .hasArgs(2)
+          .withDescription("Update FS root location in the metastore to new location.Both new-loc and old-loc should " +
+                  "be valid URIs with valid host names and schemes. When run with the dryRun option changes are displayed " +
+                  "but are not persisted. When run with the serdepropKey/tablePropKey option updateLocation looks for the " +
+                  "serde-prop-key/table-prop-key that is specified and updates its value if found.")
+          .create("updateLocation");
 
   @SuppressWarnings("static-access")
   private static final Option LIST_EXT_TBL_LOCS = OptionBuilder
@@ -64,7 +71,7 @@ class HiveMetaToolCommandLine {
           .withDescription("Generates a file containing a list of directories which cover external table data locations " +
                   "for the specified database. A database name or pattern must be specified, on which the tool will be run." +
                   "The output is generated at the specified location."
-                  )
+          )
           .create("listExtTblLocs");
 
   @SuppressWarnings("static-access")
@@ -78,34 +85,35 @@ class HiveMetaToolCommandLine {
           .create("diffExtTblLocs");
 
   private static final Option DRY_RUN = OptionBuilder
-      .withDescription("Perform a dry run of updateLocation changes.When run with the dryRun option updateLocation " +
-          "changes are displayed but not persisted. dryRun is valid only with the updateLocation option.")
-      .create("dryRun");
+          .withDescription("Perform a dry run of updateLocation changes.When run with the dryRun option updateLocation " +
+                  "changes are displayed but not persisted. dryRun is valid only with the updateLocation option.")
+          .create("dryRun");
 
   @SuppressWarnings("static-access")
   private static final Option SERDE_PROP_KEY = OptionBuilder
-      .withArgName("serde-prop-key")
-      .hasArgs()
-      .withValueSeparator()
-      .withDescription("Specify the key for serde property to be updated. serdePropKey option is valid only with " +
-          "updateLocation option.")
-      .create("serdePropKey");
+          .withArgName("serde-prop-key")
+          .hasArgs()
+          .withValueSeparator()
+          .withDescription("Specify the key for serde property to be updated. serdePropKey option is valid only with " +
+                  "updateLocation option.")
+          .create("serdePropKey");
 
   @SuppressWarnings("static-access")
   private static final Option TABLE_PROP_KEY = OptionBuilder
-      .withArgName("table-prop-key")
-      .hasArg()
-      .withValueSeparator()
-      .withDescription("Specify the key for table property to be updated. tablePropKey option is valid only with " +
-          "updateLocation option.")
-      .create("tablePropKey");
+          .withArgName("table-prop-key")
+          .hasArg()
+          .withValueSeparator()
+          .withDescription("Specify the key for table property to be updated. tablePropKey option is valid only with " +
+                  "updateLocation option.")
+          .create("tablePropKey");
 
   @SuppressWarnings("static-access")
   private static final Option HELP = OptionBuilder
-      .withLongOpt("help")
-      .withDescription("Print help information")
-      .withArgName("help")
-      .create('h');
+          .withLongOpt("help")
+          .withDescription("Print help information")
+          .withArgName("help")
+          .create('h');
+
 
   private static final Options OPTIONS = new Options();
   static {
@@ -118,6 +126,7 @@ class HiveMetaToolCommandLine {
     OPTIONS.addOption(SERDE_PROP_KEY);
     OPTIONS.addOption(TABLE_PROP_KEY);
     OPTIONS.addOption(HELP);
+    OPTIONS.addOption(METADATA_SUMMARY);
   }
 
   private boolean listFSRoot;
@@ -129,6 +138,7 @@ class HiveMetaToolCommandLine {
   private String serdePropKey;
   private String tablePropKey;
   private boolean help;
+  private String metadataSummary;
 
   public static HiveMetaToolCommandLine parseArguments(String[] args) {
     HiveMetaToolCommandLine cl = null;
@@ -166,17 +176,19 @@ class HiveMetaToolCommandLine {
     serdePropKey = cl.getOptionValue(SERDE_PROP_KEY.getOpt());
     tablePropKey = cl.getOptionValue(TABLE_PROP_KEY.getOpt());
     help = cl.hasOption(HELP.getOpt());
+    metadataSummary = cl.getOptionValue(METADATA_SUMMARY.getOpt());
 
     int commandCount = (isListFSRoot() ? 1 : 0) + (isExecuteJDOQL() ? 1 : 0) + (isUpdateLocation() ? 1 : 0) +
-          (isListExtTblLocs() ? 1 : 0) + (isDiffExtTblLocs() ? 1 : 0);
+            (isListExtTblLocs() ? 1 : 0) + (isDiffExtTblLocs() ? 1 : 0) + (isMetadataSummary() ? 1 : 0);
+
     if (commandCount != 1) {
       throw new IllegalArgumentException("exactly one of -listFSRoot, -executeJDOQL, -updateLocation, " +
-              "-listExtTblLocs, -diffExtTblLocs must be set");
+              "-listExtTblLocs, -diffExtTblLocs, -metadataSummary must be set");
     }
 
     if (updateLocationParams != null && updateLocationParams.length != 2) {
       throw new IllegalArgumentException("HiveMetaTool:updateLocation takes in 2 arguments but was passed " +
-          updateLocationParams.length + " arguments");
+              updateLocationParams.length + " arguments");
     }
 
     if (listExtTblLocsParams != null && listExtTblLocsParams.length != 2) {
@@ -191,7 +203,7 @@ class HiveMetaToolCommandLine {
 
     if ((dryRun || serdePropKey != null || tablePropKey != null) && !isUpdateLocation()) {
       throw new IllegalArgumentException("-dryRun, -serdePropKey, -tablePropKey may be used only for the " +
-          "-updateLocation command");
+              "-updateLocation command");
     }
   }
 
@@ -210,14 +222,15 @@ class HiveMetaToolCommandLine {
 
   private void printArguments() {
     LOGGER.info("Hive Meta Tool is running with the following parsed arguments: \n" +
-        "\tlistFSRoot    : " + listFSRoot + "\n" +
-        "\tjdoqlQuery    : " + jdoqlQuery + "\n" +
-        "\tupdateLocation: " + Arrays.toString(updateLocationParams) + "\n" +
-        "\tlistExtTblLocs: " + Arrays.toString(listExtTblLocsParams) + "\n" +
-        "\tdiffExtTblLocs: " + Arrays.toString(diffExtTblLocsParams) + "\n" +
-        "\tdryRun        : " + dryRun + "\n" +
-        "\tserdePropKey  : " + serdePropKey + "\n" +
-        "\ttablePropKey  : " + tablePropKey);
+            "\tlistFSRoot    : " + listFSRoot + "\n" +
+            "\tjdoqlQuery    : " + jdoqlQuery + "\n" +
+            "\tupdateLocation: " + Arrays.toString(updateLocationParams) + "\n" +
+            "\tlistExtTblLocs: " + Arrays.toString(listExtTblLocsParams) + "\n" +
+            "\tdiffExtTblLocs: " + Arrays.toString(diffExtTblLocsParams) + "\n" +
+            "\tdryRun        : " + dryRun + "\n" +
+            "\tserdePropKey  : " + serdePropKey + "\n" +
+            "\ttablePropKey  : " + tablePropKey + "\n" +
+            "\tmetadataSummary : " + metadataSummary);
   }
 
   boolean isListFSRoot() {
@@ -236,6 +249,13 @@ class HiveMetaToolCommandLine {
     return updateLocationParams != null;
   }
 
+  Boolean isMetadataSummary() {
+    return metadataSummary != null;
+  }
+
+  String getMetadataSummaryFormat() {
+    return metadataSummary;
+  }
   boolean isListExtTblLocs() {
     return listExtTblLocsParams != null;
   }

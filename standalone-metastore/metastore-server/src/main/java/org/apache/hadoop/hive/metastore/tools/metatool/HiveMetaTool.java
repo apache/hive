@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
  * - list the file system root
  * - execute JDOQL against the metastore using DataNucleus
  * - perform HA name node upgrade
+ * - summarize the data in HMS
  */
 public final class HiveMetaTool {
   private static final Logger LOGGER = LoggerFactory.getLogger(HiveMetaTool.class.getName());
@@ -38,11 +39,10 @@ public final class HiveMetaTool {
 
   public static void main(String[] args) {
     HiveMetaToolCommandLine cl = HiveMetaToolCommandLine.parseArguments(args);
-
     ObjectStore objectStore = new ObjectStore();
     objectStore.setConf(MetastoreConf.newMetastoreConf());
-
     MetaToolTask task = null;
+
     try {
       if (cl.isListFSRoot()) {
         task = new MetaToolTaskListFSRoot();
@@ -54,9 +54,12 @@ public final class HiveMetaTool {
         task = new MetaToolTaskListExtTblLocs();
       } else if (cl.isDiffExtTblLocs()) {
         task = new MetaToolTaskDiffExtTblLocs();
+      } else if (cl.isMetadataSummary()) {
+        task = new MetaToolTaskMetadataSummary();
       } else {
         throw new IllegalArgumentException("No task was specified!");
       }
+
 
       task.setObjectStore(objectStore);
       task.setCommandLine(cl);
