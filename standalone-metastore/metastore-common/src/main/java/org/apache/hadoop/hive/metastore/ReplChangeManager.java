@@ -205,6 +205,7 @@ public class ReplChangeManager {
         inited = true;
       }
     } catch (IOException e) {
+      LOG.error("Failed to created ReplChangeManager", e);
       throw new MetaException(e.getMessage());
     }
   }
