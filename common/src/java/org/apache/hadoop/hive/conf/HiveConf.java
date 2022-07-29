@@ -6156,6 +6156,9 @@ public class HiveConf extends Configuration {
 
   public static String getVar(Configuration conf, ConfVars var) {
     assert (var.valClass == String.class) : var.varname;
+    if (conf == null) {
+      return var.defaultStrVal;
+    }
     return var.altName != null ? conf.get(var.varname, conf.get(var.altName, var.defaultStrVal))
       : conf.get(var.varname, var.defaultStrVal);
   }

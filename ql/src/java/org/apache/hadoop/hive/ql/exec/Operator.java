@@ -478,7 +478,10 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public String getCounterName(Counter counter, Configuration hconf) {
-    String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
+    String context = "";
+    if (hconf != null) {
+      context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
+    }
     if (StringUtils.isNotEmpty(context)) {
       context = "_" + context.replace(" ", "_");
     }
@@ -674,6 +677,13 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       LOG.debug("Not all parent operators are closed. Not closing.");
       return;
     }
+
+    // if the operator has not been initialized, there is no need to close
+    if (!this.rootInitializeCalled) {
+      LOG.debug("No need to close operator {}", this);
+      return;
+    }
+
 
     // set state as CLOSE as long as all parents are closed
     // state == CLOSE doesn't mean all children are also in state CLOSE
