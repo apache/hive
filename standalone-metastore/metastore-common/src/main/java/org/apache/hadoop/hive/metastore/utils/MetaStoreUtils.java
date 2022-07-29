@@ -799,29 +799,31 @@ public class MetaStoreUtils {
       }
     }
 
-    String partString = StringUtils.EMPTY;
-    String partStringSep = StringUtils.EMPTY;
-    String partTypesString = StringUtils.EMPTY;
-    String partTypesStringSep = StringUtils.EMPTY;
-    for (FieldSchema partKey : partitionKeys) {
-      partString = partString.concat(partStringSep);
-      partString = partString.concat(partKey.getName());
-      partTypesString = partTypesString.concat(partTypesStringSep);
-      partTypesString = partTypesString.concat(partKey.getType());
-      if (partStringSep.length() == 0) {
-        partStringSep = "/";
-        partTypesStringSep = ":";
+    if (partitionKeys != null) {
+      String partString = StringUtils.EMPTY;
+      String partStringSep = StringUtils.EMPTY;
+      String partTypesString = StringUtils.EMPTY;
+      String partTypesStringSep = StringUtils.EMPTY;
+      for (FieldSchema partKey : partitionKeys) {
+        partString = partString.concat(partStringSep);
+        partString = partString.concat(partKey.getName());
+        partTypesString = partTypesString.concat(partTypesStringSep);
+        partTypesString = partTypesString.concat(partKey.getType());
+        if (partStringSep.length() == 0) {
+          partStringSep = "/";
+          partTypesStringSep = ":";
+        }
       }
-    }
-    if (partString.length() > 0) {
-      schema
-          .setProperty(
-              org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS,
-              partString);
-      schema
-          .setProperty(
-              org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES,
-              partTypesString);
+      if (partString.length() > 0) {
+        schema
+            .setProperty(
+                org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS,
+                partString);
+        schema
+            .setProperty(
+                org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMN_TYPES,
+                partTypesString);
+      }
     }
 
     if (parameters != null) {
