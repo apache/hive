@@ -404,4 +404,9 @@
   <name>hive.server2.operation.log.purgePolicy.timeToLive</name>
   <value>5s</value>
 </property>
+
+<property>
+  <name>hive.txn.xlock.ctas</name>
+  <value>false</value>
+</property>
 </configuration>
