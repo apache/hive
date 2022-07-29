@@ -29,8 +29,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
@@ -42,10 +40,8 @@ import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.TxnType;;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -57,7 +53,6 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
@@ -82,9 +77,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.IF_PURGE;
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
 
 /**
  * An implementation of HiveTxnManager that stores the transactions in the metastore database.
@@ -493,27 +485,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     stopHeartbeat();
   }
 
-  private void cleanupOutputDir(Context ctx) throws MetaException {
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.TXN_CTAS_X_LOCK)) {
-      Table destinationTable = ctx.getDestinationTable();
-      if (destinationTable != null) {
-        try {
-          CompactionRequest rqst = new CompactionRequest(
-                  destinationTable.getDbName(), destinationTable.getTableName(), CompactionType.MAJOR);
-          rqst.setRunas(TxnUtils.findUserToRunAs(destinationTable.getSd().getLocation(),
-                  destinationTable.getTTable(), conf));
-
-          rqst.putToProperties(META_TABLE_LOCATION, destinationTable.getSd().getLocation());
-          rqst.putToProperties(IF_PURGE, Boolean.toString(true));
-          TxnStore txnHandler = TxnUtils.getTxnStore(conf);
-          txnHandler.submitForCleanup(rqst, destinationTable.getTTable().getWriteId(), getCurrentTxnId());
-        } catch (InterruptedException | IOException e) {
-          throw new MetaException("Unable to submit cleanup operation of directory written by CTAS due to: " + e.getMessage());
-        }
-      }
-    }
-  }
-
   private void resetTxnInfo() {
     txnId = 0;
     stmtId = -1;
@@ -625,16 +596,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     } finally {
       resetTxnInfo();
     }
-  }
-
-  @Override
-  public void rollbackTxn(Context ctx) throws LockException {
-    try {
-      cleanupOutputDir(ctx);
-    } catch (TException e) {
-      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
-    }
-    rollbackTxn();
   }
 
   @Override

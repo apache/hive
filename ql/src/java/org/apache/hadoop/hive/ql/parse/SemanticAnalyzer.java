@@ -7853,9 +7853,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      if (!isNonNativeTable && AcidUtils.isTransactionalTable(destinationTable) && qb.isCTAS()) {
-        ctx.setDestinationTable(destinationTable);
+      // Logic written for setting destination table which might be used for cleanup.
+      if (qb.isCTAS() && AcidUtils.isTransactionalTable(destinationTable) && !isNonNativeTable && tblDesc != null) {
+        if (isDirectInsert) {
+          ctx.setDestinationTable(destinationTable);
+        } else {
+          // Get the destination location when direct insert is disabled.
+          boolean createTableUseSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+                  || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
+                  && tblDesc.getLocation() == null;
+          Path finalPath = getCtasLocation(tblDesc);
+          if (createTableUseSuffix) {
+            long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
+            String suffix = AcidUtils.getPathSuffix(txnId);
+            finalPath = new Path(finalPath.toString() + suffix);
+          }
+
+          // Do not manipulate destinationTable instance here.
+          // Use a new Table instance to set the final data location.
+          Table table = new Table(destinationTable.getTTable().deepCopy());
+          table.setDataLocation(finalPath);
+          ctx.setDestinationTable(table);
+        }
       }
+
       break;
     }
     default:

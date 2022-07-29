@@ -163,17 +163,6 @@ public interface HiveTxnManager {
    */
   void rollbackTxn() throws LockException;
 
- /**
-  * Abort the current transaction.  This will release all locks obtained in
-  * {@link #acquireLocks(org.apache.hadoop.hive.ql.QueryPlan,
-  * org.apache.hadoop.hive.ql.Context, java.lang.String)}. It also does additional
-  * operations by making use of context of the current query.
-  * @param ctx - Context for this query.
-  * @throws LockException if there is no current transaction or the
-  * transaction has already been committed or aborted.
-  */
-  void rollbackTxn(Context ctx) throws LockException;
-
   /**
    * Send a heartbeat to the transaction management storage so other Hive
    * clients know that the transaction and locks held by this client are

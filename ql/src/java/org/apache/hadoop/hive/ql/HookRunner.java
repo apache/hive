@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ddl.table.create.CtasQueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -56,6 +57,7 @@ public class HookRunner {
   HookRunner(HiveConf conf, SessionState.LogHelper console) {
     this.conf = conf;
     this.hooks = new HiveHooks(conf, console);
+    addNecessaryHooks();
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
       addLifeTimeHook(new MetricsQueryLifeTimeHook());
     }
@@ -293,6 +295,10 @@ public class HookRunner {
 
   public void addSemanticAnalyzerHook(HiveSemanticAnalyzerHook hook) {
     hooks.addHook(SEMANTIC_ANALYZER_HOOK, hook);
+  }
+
+  private void addNecessaryHooks() {
+    addLifeTimeHook(new CtasQueryLifeTimeHook());
   }
 
 }

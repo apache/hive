@@ -3085,11 +3085,36 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
   }
 
   @Test
-  public void testFailureScenarioCleanupCTAS() throws Exception {
+  public void testFailureScenariosCleanupCTAS() throws Exception {
+    boolean[] booleans = {true, false};
+    for (boolean var1 : booleans) {
+      for (boolean var2 : booleans) {
+        for (boolean var3 : booleans) {
+          failureScenarioCleanupCTAS(var1, var2, var3);
+        }
+      }
+    }
+  }
+
+  public void failureScenarioCleanupCTAS(boolean isDirectInsertEnabled,
+                                         boolean isLocklessReadsEnabled,
+                                         boolean isLocationUsed) throws Exception {
+    String tableName = "atable";
+
+    //Set configurations
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_ACID_DIRECT_INSERT_ENABLED, isDirectInsertEnabled);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, isLocklessReadsEnabled);
     hiveConf.setBoolVar(HiveConf.ConfVars.TXN_CTAS_X_LOCK, true);
     hiveConf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
-    d.run("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
-    d.compileAndRespond("create table atable stored as orc tblproperties ('transactional'='true') as select * from " + Table.ACIDTBL);
+
+    // Add a '1' at the end of table name for custom location.
+    String querylocation = (isLocationUsed) ? " location '" + getWarehouseDir() + "/" + tableName + "1'" : "";
+
+    d.run("insert into " + Table.ACIDTBL + "(a,b) values (3,4)");
+    d.run("drop table if exists " + tableName);
+    d.compileAndRespond("create table " + tableName + " stored as orc" + querylocation +
+            " tblproperties ('transactional'='true') as select * from " + Table.ACIDTBL);
+    long txnId = d.getQueryState().getTxnManager().getCurrentTxnId();
     DriverContext driverContext = d.getDriverContext();
     traverseTasksRecursively(driverContext.getPlan().getRootTasks());
     int assertError = 0;
@@ -3105,23 +3130,25 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(assertError, 1);
 
     FileSystem fs = FileSystem.get(hiveConf);
-    FileStatus[] fileStatuses = fs.globStatus(new Path(getWarehouseDir() + "/atable/*"));
+    String assertLocation = (isLocationUsed) ? getWarehouseDir() + "/" + tableName + "1" :
+            ((isLocklessReadsEnabled) ? getWarehouseDir() + "/" + tableName + AcidUtils.getPathSuffix(txnId)
+                    : getWarehouseDir() + "/" + tableName);
+
+    FileStatus[] fileStatuses = fs.globStatus(new Path(assertLocation + "/*"));
     for (FileStatus fileStatus : fileStatuses) {
       Assert.assertFalse(fileStatus.getPath().getName().startsWith(AcidUtils.DELTA_PREFIX));
     }
   }
 
-  public void traverseTasksRecursively(List<Task<?>> tasks) throws Exception {
+  public void traverseTasksRecursively(List<Task<?>> tasks) {
     for (int i = 0;i < tasks.size();i++) {
       Task<?> task = tasks.get(i);
       if (task instanceof DDLTask) {
         DDLDesc ddlDesc = ((DDLTask) task).getWork().getDDLDesc();
         if (ddlDesc instanceof CreateTableDesc) {
           CreateTableDesc createTableDesc = (CreateTableDesc) ddlDesc;
-          createTableDesc.setTblProps(null);
-          createTableDesc.setOutputFormat(null);
+          // Make query fail by setting columns as null in the variable.
           createTableDesc.setCols(null);
-          createTableDesc.setInputFormat(null);
         }
       }
       if (task.getNumChild() != 0) {

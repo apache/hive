@@ -240,7 +240,7 @@ public class TestDbTxnManager {
     assertEquals(2, txnsInfo.getTxn_high_water_mark());
     assertEquals(2, txnsInfo.getOpen_txns().size());
     Assert.assertEquals(TxnState.ABORTED, txnsInfo.getOpen_txns().get(1).getState());
-    txnMgr.rollbackTxn(ctx);//this is idempotent
+    txnMgr.rollbackTxn();//this is idempotent
   }
 
   @Ignore("This seems useless now that we have a txn for everything")
@@ -347,7 +347,7 @@ public class TestDbTxnManager {
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(1,
         TestTxnDbUtil.countLockComponents(conf, ((DbLockManager.DbHiveLock) locks.get(0)).lockId));
-    txnMgr.rollbackTxn(ctx);
+    txnMgr.rollbackTxn();
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }
@@ -362,7 +362,7 @@ public class TestDbTxnManager {
     Assert.assertEquals(1, locks.size());
     Assert.assertEquals(1,
         TestTxnDbUtil.countLockComponents(conf, ((DbLockManager.DbHiveLock) locks.get(0)).lockId));
-    txnMgr.rollbackTxn(ctx);
+    txnMgr.rollbackTxn();
     locks = txnMgr.getLockManager().getLocks(false, false);
     Assert.assertEquals(0, locks.size());
   }
@@ -390,7 +390,7 @@ public class TestDbTxnManager {
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertNull(locks);
-    txnMgr.rollbackTxn(ctx);
+    txnMgr.rollbackTxn();
   }
 
   @Test

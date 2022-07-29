@@ -213,16 +213,16 @@ public class Context {
     this.replPolicy = replPolicy;
   }
 
+  public String getReplPolicy() {
+    return this.replPolicy;
+  }
+
   public Table getDestinationTable() {
     return destinationTable;
   }
 
   public void setDestinationTable(Table table) {
     this.destinationTable = table;
-  }
-
-  public String getReplPolicy() {
-    return this.replPolicy;
   }
 
   /**

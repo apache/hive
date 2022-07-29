@@ -257,7 +257,7 @@ public class Driver implements IDriver {
           if (driverContext.isOutdatedTxn()) {
             // Later transaction invalidated the snapshot, a new transaction is required
             LOG.info("Snapshot is outdated, re-initiating transaction ...");
-            driverContext.getTxnManager().rollbackTxn(getContext());
+            driverContext.getTxnManager().rollbackTxn();
 
             String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
             driverContext.getTxnManager().openTxn(context, userFromUGI, driverContext.getTxnType());
