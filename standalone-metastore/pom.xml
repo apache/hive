@@ -106,7 +106,7 @@
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <pac4j-core.version>4.5.5</pac4j-core.version>
     <nimbus-jose-jwt.version>9.20</nimbus-jose-jwt.version>
-    <jetty.version>9.3.27.v20190418</jetty.version>
+    <jetty.version>9.4.40.v20210413</jetty.version>
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>

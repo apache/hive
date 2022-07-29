@@ -408,7 +408,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       thread.setName("Metastore-HttpHandler-Pool: Thread-" + thread.getId());
       return thread;
     });
-    ExecutorThreadPool threadPool = new ExecutorThreadPool(executorService);
+    ExecutorThreadPool threadPool = new ExecutorThreadPool((ThreadPoolExecutor) executorService);
     // HTTP Server
     org.eclipse.jetty.server.Server server = new Server(threadPool);
     server.setStopAtShutdown(true);
