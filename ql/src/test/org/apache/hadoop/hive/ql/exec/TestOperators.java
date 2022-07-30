@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorSelectDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -693,6 +694,13 @@ public class TestOperators {
       }
     }
     return r;
+  }
+
+  @Test
+  public void testCloseOperator() throws HiveException {
+      System.out.println("Testing Close Operator");
+      Operator<FileSinkDesc> op = OperatorFactory.get(new CompilationOpContext(), FileSinkDesc.class);
+      op.close(false);
   }
 
 }
