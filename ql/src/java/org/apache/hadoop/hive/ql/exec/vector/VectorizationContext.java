@@ -839,6 +839,20 @@ import com.google.common.annotations.VisibleForTesting;
       markedScratchColumns = Arrays.copyOf(scratchColumnTrackWasUsed, scratchColumnTrackWasUsed.length);
     }
 
+    public String toString() {
+      StringBuilder builder = new StringBuilder();
+      builder.append(String.format(
+          "OutputColumnManager: initialOutputCol: %d, outputColCount: %d, usedOutputColumns#: %d"
+              + ", reuseScratchColumns: %s, output cols:",
+          initialOutputCol, outputColCount, usedOutputColumns.size(), reuseScratchColumns));
+      for (int i = 0; i < outputColCount; i++) {
+        builder.append(String.format(
+            "\n%d (%d): used: %s, scratchVectorTypeName: %s" + ", physicalVariation: %s, trackWasUsed: %s", i,
+            i + initialOutputCol, usedOutputColumns.contains(i), scratchVectorTypeNames[i],
+            scratchDataTypePhysicalVariations[i], scratchColumnTrackWasUsed[i]));
+      }
+      return builder.toString();
+    }
   }
 
   public int allocateScratchColumn(TypeInfo typeInfo) throws HiveException {
@@ -2407,7 +2421,7 @@ import com.google.common.annotations.VisibleForTesting;
     } else if (udf instanceof GenericUDFToString) {
       ve = getCastToString(childExpr, returnType);
     } else if (udf instanceof GenericUDFToDecimal) {
-      ve = getCastToDecimal(childExpr, returnType);
+      ve = getCastToDecimal(childExpr, mode, returnType);
     } else if (udf instanceof GenericUDFToChar) {
       ve = getCastToChar(childExpr, returnType);
     } else if (udf instanceof GenericUDFToVarchar) {
@@ -2461,7 +2475,9 @@ import com.google.common.annotations.VisibleForTesting;
       return;
     }
     for (VectorExpression v : vectorChildren) {
-      if (!(v instanceof IdentityExpression)) {
+      if (!(v instanceof IdentityExpression
+            // it's not safe to reuse ConstantVectorExpression's output as a scratch column, see HIVE-26408
+            || v instanceof ConstantVectorExpression)) {
         ocm.freeOutputColumn(v.getOutputColumnNum());
       }
     }
@@ -3232,8 +3248,8 @@ import com.google.common.annotations.VisibleForTesting;
     return null;
   }
 
-  private VectorExpression getCastToDecimal(List<ExprNodeDesc> childExpr, TypeInfo returnType)
-      throws HiveException {
+  private VectorExpression getCastToDecimal(List<ExprNodeDesc> childExpr, VectorExpressionDescriptor.Mode mode,
+      TypeInfo returnType) throws HiveException {
     ExprNodeDesc child = childExpr.get(0);
     String inputType = childExpr.get(0).getTypeString();
     if (child instanceof ExprNodeConstantDesc) {
@@ -3278,7 +3294,18 @@ import com.google.common.annotations.VisibleForTesting;
         int colIndex = getInputColumnIndex((ExprNodeColumnDesc) child);
         DataTypePhysicalVariation dataTypePhysicalVariation = getDataTypePhysicalVariation(colIndex);
         if (dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
-
+          // try to scale up the expression so we can match the return type scale
+          if (tryDecimal64Cast && ((DecimalTypeInfo)returnType).precision() <= 18) {
+            List<ExprNodeDesc> children = new ArrayList<>();
+            int scaleDiff = ((DecimalTypeInfo)returnType).scale() - ((DecimalTypeInfo)childExpr.get(0).getTypeInfo()).scale();
+            ExprNodeDesc newConstant = new ExprNodeConstantDesc(new DecimalTypeInfo(scaleDiff, 0),
+                HiveDecimal.create(POWEROFTENTABLE[scaleDiff]));
+            children.add(child);
+            children.add(newConstant);
+            ExprNodeGenericFuncDesc newScaledExpr = new ExprNodeGenericFuncDesc(returnType,
+                new GenericUDFOPScaleUpDecimal64(), " ScaleUp ", children);
+            return getVectorExpression(newScaledExpr, mode);
+          }
           // Do Decimal64 conversion instead.
           return createDecimal64ToDecimalConversion(colIndex, returnType);
         } else {

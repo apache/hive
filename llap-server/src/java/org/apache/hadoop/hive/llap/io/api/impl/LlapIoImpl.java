@@ -36,7 +36,9 @@ import org.apache.hadoop.hive.llap.cache.LlapCacheHydration;
 import org.apache.hadoop.hive.llap.cache.MemoryLimitedPathCache;
 import org.apache.hadoop.hive.llap.cache.PathCache;
 import org.apache.hadoop.hive.llap.cache.ProactiveEvictingCachePolicy;
+import org.apache.hadoop.hive.llap.daemon.impl.LlapPooledIOThread;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -237,14 +239,16 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
     executor = new StatsRecordingThreadPool(numThreads, numThreads, 0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(),
-        new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true).build());
+        new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-%d").setDaemon(true)
+            .setThreadFactory(r -> new LlapPooledIOThread(r)).build());
     tracePool = IoTrace.createTracePool(conf);
     if (isEncodeEnabled) {
       int encodePoolMultiplier = HiveConf.getIntVar(conf, ConfVars.LLAP_IO_ENCODE_THREADPOOL_MULTIPLIER);
       int encodeThreads = numThreads * encodePoolMultiplier;
       encodeExecutor = new StatsRecordingThreadPool(encodeThreads, encodeThreads, 0L, TimeUnit.MILLISECONDS,
           new LinkedBlockingQueue<Runnable>(),
-          new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-OrcEncode-%d").setDaemon(true).build());
+          new ThreadFactoryBuilder().setNameFormat("IO-Elevator-Thread-OrcEncode-%d").setDaemon(true)
+              .setThreadFactory(r -> new LlapPooledIOThread(r)).build());
     } else {
       encodeExecutor = null;
     }

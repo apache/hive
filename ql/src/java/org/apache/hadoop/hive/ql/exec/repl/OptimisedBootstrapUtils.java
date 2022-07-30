@@ -29,6 +29,11 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
+import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
+import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
+import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -68,6 +73,9 @@ public class OptimisedBootstrapUtils {
   /** table diff directory when complete */
   public static final String TABLE_DIFF_COMPLETE_DIRECTORY = "table_diff_complete";
 
+  /** abort Txns file which contains all the txns that needs to be aborted on new source cluster(initial target)*/
+  public static final String ABORT_TXNS_FILE = "abort_txns";
+
   /** event ack file which contains the event id till which the cluster was last loaded. */
   public static final String EVENT_ACK_FILE = "event_ack";
 
@@ -88,6 +96,63 @@ public class OptimisedBootstrapUtils {
   public static boolean checkFileExists(Path dumpPath, HiveConf conf, String fileName) throws IOException {
     FileSystem fs = dumpPath.getFileSystem(conf);
     return fs.exists(new Path(dumpPath, fileName));
+  }
+
+  public static void prepareAbortTxnsFile(List<NotificationEvent> notificationEvents, Set<Long> allOpenTxns,
+                                          Path dumpPath, HiveConf conf) throws SemanticException {
+    if (notificationEvents.size() == 0) {
+      return;
+    }
+    Set<Long> txnsOpenedPostCurrEventId = new HashSet<>();
+    MessageDeserializer deserializer = ReplUtils.getEventDeserializer(notificationEvents.get(0));
+    for (NotificationEvent event: notificationEvents) {
+      switch (event.getEventType()) {
+        case MessageBuilder.OPEN_TXN_EVENT:
+          OpenTxnMessage openTxnMessage = deserializer.getOpenTxnMessage(event.getMessage());
+          txnsOpenedPostCurrEventId.addAll(openTxnMessage.getTxnIds());
+          allOpenTxns.removeAll(openTxnMessage.getTxnIds());
+          break;
+        case MessageBuilder.ABORT_TXN_EVENT:
+          AbortTxnMessage abortTxnMessage = deserializer.getAbortTxnMessage(event.getMessage());
+          if (!txnsOpenedPostCurrEventId.contains(abortTxnMessage.getTxnId())) {
+            allOpenTxns.add(abortTxnMessage.getTxnId());
+          }
+          break;
+        case MessageBuilder.COMMIT_TXN_EVENT:
+          CommitTxnMessage commitTxnMessage = deserializer.getCommitTxnMessage(event.getMessage());
+          if (!txnsOpenedPostCurrEventId.contains(commitTxnMessage.getTxnId())) {
+            allOpenTxns.add(commitTxnMessage.getTxnId());
+          }
+          break;
+      }
+    }
+    if (!allOpenTxns.isEmpty()) {
+      Utils.writeOutput(flattenListToString(allOpenTxns), new Path(dumpPath, ABORT_TXNS_FILE), conf);
+    }
+  }
+
+  public static List<Long> getTxnIdFromAbortTxnsFile(Path dumpPath, HiveConf conf) throws IOException {
+    String input;
+    Path abortTxnFile = new Path(dumpPath, ABORT_TXNS_FILE);
+    FileSystem fs = abortTxnFile.getFileSystem(conf);
+    try (FSDataInputStream stream = fs.open(abortTxnFile);) {
+      input = IOUtils.toString(stream, Charset.defaultCharset());
+    }
+    return unflattenListFromString(input);
+  }
+
+  private static String flattenListToString(Set<Long> list) {
+    return list.stream()
+            .map(Object::toString)
+            .collect(Collectors.joining(FILE_ENTRY_SEPARATOR));
+  }
+
+  private static List<Long> unflattenListFromString(String input) {
+    List<Long> ret = new ArrayList<>();
+    for (String val : input.replaceAll(System.lineSeparator(), "").trim().split(FILE_ENTRY_SEPARATOR)) {
+      ret.add(Long.parseLong(val));
+    }
+    return ret;
   }
 
   /**
@@ -201,19 +266,17 @@ public class OptimisedBootstrapUtils {
   }
 
   /**
-   * Prepares the table diff file, with tables modified post the specified event id.
-   * @param eventId the event id after which tables should be modified
+   * Returns list of notificationEvents starting from eventId that are related to the database.
+   * @param eventId Starting eventId
    * @param hiveDb the hive object
    * @param work the load work
-   * @param conf hive configuration
    * @throws Exception
    */
-  public static void prepareTableDiffFile(Long eventId, Hive hiveDb, ReplLoadWork work, HiveConf conf)
-      throws Exception {
-    // Get the notification events.
+  public static List<NotificationEvent> getListOfNotificationEvents(Long eventId, Hive hiveDb,
+                                                                    ReplLoadWork work) throws Exception {
     List<NotificationEvent> notificationEvents =
-        hiveDb.getMSC().getNextNotification(eventId - 1, -1, new DatabaseAndTableFilter(work.dbNameToLoadIn, null))
-            .getEvents();
+        hiveDb.getMSC().getNextNotification(eventId - 1, -1,
+            new DatabaseAndTableFilter(work.dbNameToLoadIn, null)).getEvents();
 
     // Check the first eventId fetched is the same as what we fed, to ensure the events post that hasn't expired.
     if (notificationEvents.get(0).getEventId() != eventId) {
@@ -222,6 +285,19 @@ public class OptimisedBootstrapUtils {
     // Remove the first one, it is already loaded, we fetched it to confirm the notification events post that haven't
     // expired.
     notificationEvents.remove(0);
+    return notificationEvents;
+  }
+
+  /**
+   * Prepares the table diff file, with tables modified post the specified event id.
+   * @param notificationEvents Events that can possibly contain table DDL/DML metadata.
+   * @param hiveDb the hive object
+   * @param work the load work
+   * @param conf hive configuration
+   * @throws Exception
+   */
+  public static void prepareTableDiffFile(List<NotificationEvent> notificationEvents, Hive hiveDb,
+                                          ReplLoadWork work, HiveConf conf) throws Exception {
     HashSet<String> modifiedTables = new HashSet<>();
     for (NotificationEvent event : notificationEvents) {
       String tableName = event.getTableName();

@@ -176,7 +176,8 @@ public class IncrementalLoadTasksBuilder {
       taskChainTail = updateIncPendTask;
 
       Map<String, String> dbProps = new HashMap<>();
-      dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(), String.valueOf(lastReplayedEvent));
+      dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(),
+              String.valueOf((lastReplayedEvent == null) ? eventTo : lastReplayedEvent));
       ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps, dumpDirectory,
               metricCollector, shouldFailover);
       Task<?> barrierTask = TaskFactory.get(replStateLogWork, conf);

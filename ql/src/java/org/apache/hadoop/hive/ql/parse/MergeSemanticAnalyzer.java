@@ -18,15 +18,14 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.antlr.runtime.TokenRewriteStream;
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -35,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -48,73 +48,25 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * they are actually inserts) and then doing some patch up to make them work as merges instead.
  */
 public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
+  private int numWhenMatchedUpdateClauses;
+  private int numWhenMatchedDeleteClauses;
+
   MergeSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
 
   @Override
-  public void analyze(ASTNode tree) throws SemanticException {
-    if (tree.getToken().getType() != HiveParser.TOK_MERGE) {
-      throw new RuntimeException("Asked to parse token " + tree.getName() + " in " +
-          "MergeSemanticAnalyzer");
-    }
-    ctx.setOperation(Context.Operation.MERGE);
-    analyzeMerge(tree);
+  protected ASTNode getTargetTableNode(ASTNode tree) {
+    return (ASTNode)tree.getChild(0);
   }
 
-  private static final String INDENT = "  ";
-
-  private IdentifierQuoter quotedIdentifierHelper;
-
-  /**
-   * This allows us to take an arbitrary ASTNode and turn it back into SQL that produced it.
-   * Since HiveLexer.g is written such that it strips away any ` (back ticks) around
-   * quoted identifiers we need to add those back to generated SQL.
-   * Additionally, the parser only produces tokens of type Identifier and never
-   * QuotedIdentifier (HIVE-6013).  So here we just quote all identifiers.
-   * (') around String literals are retained w/o issues
-   */
-  private static class IdentifierQuoter {
-    private final TokenRewriteStream trs;
-    private final IdentityHashMap<ASTNode, ASTNode> visitedNodes = new IdentityHashMap<>();
-
-    IdentifierQuoter(TokenRewriteStream trs) {
-      this.trs = trs;
-      if (trs == null) {
-        throw new IllegalArgumentException("Must have a TokenRewriteStream");
-      }
+  @Override
+  public void analyze(ASTNode tree, Table targetTable, ASTNode tableNameNode) throws SemanticException {
+    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable);
+    if (nonNativeAcid) {
+      throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
     }
-
-    private void visit(ASTNode n) {
-      if (n.getType() == HiveParser.Identifier) {
-        if (visitedNodes.containsKey(n)) {
-          /**
-           * Since we are modifying the stream, it's not idempotent.  Ideally, the caller would take
-           * care to only quote Identifiers in each subtree once, but this makes it safe
-           */
-          return;
-        }
-        visitedNodes.put(n, n);
-        trs.insertBefore(n.getToken(), "`");
-        trs.insertAfter(n.getToken(), "`");
-      }
-      if (n.getChildCount() <= 0) {
-        return;
-      }
-      for (Node c : n.getChildren()) {
-        visit((ASTNode)c);
-      }
-    }
-  }
-
-  /**
-   * This allows us to take an arbitrary ASTNode and turn it back into SQL that produced it without
-   * needing to understand what it is (except for QuotedIdentifiers).
-   */
-  private String getMatchedText(ASTNode n) {
-    quotedIdentifierHelper.visit(n);
-    return ctx.getTokenRewriteStream().toString(n.getTokenStartIndex(),
-      n.getTokenStopIndex() + 1).trim();
+    analyzeMerge(tree, targetTable, tableNameNode);
   }
 
   /**
@@ -129,8 +81,8 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
    *
    * @throws SemanticException
    */
-  private void analyzeMerge(ASTNode tree) throws SemanticException {
-    quotedIdentifierHelper = new IdentifierQuoter(ctx.getTokenRewriteStream());
+  protected void analyzeMerge(ASTNode tree, Table targetTable, ASTNode targetNameNode)
+          throws SemanticException {
     /*
      * See org.apache.hadoop.hive.ql.parse.TestMergeStatement for some examples of the merge AST
       For example, given:
@@ -167,9 +119,14 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
      source is empty?  This should be a runtime error - maybe not the outer side of ROJ is empty => the join produces 0
      rows. If supporting WHEN NOT MATCHED BY SOURCE, then this should be a runtime error
     */
-    ASTNode target = (ASTNode)tree.getChild(0);
+    if (tree.getToken().getType() != HiveParser.TOK_MERGE) {
+      throw new RuntimeException("Asked to parse token " + tree.getName() + " in " +
+              "MergeSemanticAnalyzer");
+    }
+
+    ctx.setOperation(Context.Operation.MERGE);
     ASTNode source = (ASTNode)tree.getChild(1);
-    String targetName = getSimpleTableName(target);
+    String targetName = getSimpleTableName(targetNameNode);
     String sourceName = getSimpleTableName(source);
     ASTNode onClause = (ASTNode) tree.getChild(2);
     String onClauseAsText = getMatchedText(onClause);
@@ -182,17 +139,21 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       hasHint = true;
       whenClauseBegins++;
     }
-    Table targetTable = getTargetTable(target);
-    validateTargetTable(targetTable);
     List<ASTNode> whenClauses = findWhenClauses(tree, whenClauseBegins);
 
-    StringBuilder rewrittenQueryStr = new StringBuilder("FROM\n");
+    StringBuilder rewrittenQueryStr = createRewrittenQueryStrBuilder();
+    rewrittenQueryStr.append("(SELECT ");
+    String subQueryAlias = isAliased(targetNameNode) ? targetName : targetTable.getTTable().getTableName();
+    ColumnAppender columnAppender = getColumnAppender(subQueryAlias);
+    columnAppender.appendAcidSelectColumns(rewrittenQueryStr, Context.Operation.UPDATE);
 
-    rewrittenQueryStr.append(INDENT).append(getFullTableNameForSQL(target));
-    if (isAliased(target)) {
-      rewrittenQueryStr.append(" ").append(targetName);
-    }
+    rewrittenQueryStr.deleteCharAt(rewrittenQueryStr.length() - 1); // remove last ','
+    addColsToSelect(targetTable.getCols(), rewrittenQueryStr);
+    addColsToSelect(targetTable.getPartCols(), rewrittenQueryStr);
+    rewrittenQueryStr.append(" FROM ").append(getFullTableNameForSQL(targetNameNode)).append(") ");
+    rewrittenQueryStr.append(subQueryAlias);
     rewrittenQueryStr.append('\n');
+
     rewrittenQueryStr.append(INDENT).append(chooseJoinType(whenClauses)).append("\n");
     if (source.getType() == HiveParser.TOK_SUBQUERY) {
       //this includes the mandatory alias
@@ -211,8 +172,6 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     if (hasHint) {
       hintStr = " /*+ " + qHint.getText() + " */ ";
     }
-    final boolean splitUpdateEarly =
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE);
     /**
      * We allow at most 2 WHEN MATCHED clause, in which case 1 must be Update the other Delete
      * If we have both update and delete, the 1st one (in SQL code) must have "AND <extra predicate>"
@@ -220,22 +179,22 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
      * Update and Delete may be in any order.  (Insert is always last)
      */
     String extraPredicate = null;
-    int numWhenMatchedUpdateClauses = 0, numWhenMatchedDeleteClauses = 0;
     int numInsertClauses = 0;
+    numWhenMatchedUpdateClauses = 0;
+    numWhenMatchedDeleteClauses = 0;
     boolean hintProcessed = false;
     for (ASTNode whenClause : whenClauses) {
       switch (getWhenClauseOperation(whenClause).getType()) {
       case HiveParser.TOK_INSERT:
         numInsertClauses++;
-        handleInsert(whenClause, rewrittenQueryStr, target, onClause,
+        handleInsert(whenClause, rewrittenQueryStr, targetNameNode, onClause,
             targetTable, targetName, onClauseAsText, hintProcessed ? null : hintStr);
         hintProcessed = true;
         break;
       case HiveParser.TOK_UPDATE:
         numWhenMatchedUpdateClauses++;
-        String s = handleUpdate(whenClause, rewrittenQueryStr, target,
-            onClauseAsText, targetTable, extraPredicate, hintProcessed ? null : hintStr,
-            splitUpdateEarly);
+        String s = handleUpdate(whenClause, rewrittenQueryStr, targetNameNode,
+            onClauseAsText, targetTable, extraPredicate, hintProcessed ? null : hintStr, columnAppender);
         hintProcessed = true;
         if (numWhenMatchedUpdateClauses + numWhenMatchedDeleteClauses == 1) {
           extraPredicate = s; //i.e. it's the 1st WHEN MATCHED
@@ -243,8 +202,8 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
         break;
       case HiveParser.TOK_DELETE:
         numWhenMatchedDeleteClauses++;
-        String s1 = handleDelete(whenClause, rewrittenQueryStr, target,
-            onClauseAsText, targetTable, extraPredicate, hintProcessed ? null : hintStr, false);
+        String s1 = handleDelete(whenClause, rewrittenQueryStr,
+            onClauseAsText, extraPredicate, hintProcessed ? null : hintStr, columnAppender);
         hintProcessed = true;
         if (numWhenMatchedUpdateClauses + numWhenMatchedDeleteClauses == 1) {
           extraPredicate = s1; //i.e. it's the 1st WHEN MATCHED
@@ -266,41 +225,30 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ctx.getCmd());
     }
 
-    boolean validating = handleCardinalityViolation(rewrittenQueryStr, target, onClauseAsText, targetTable,
-        numWhenMatchedDeleteClauses == 0 && numWhenMatchedUpdateClauses == 0);
+    boolean validating = handleCardinalityViolation(rewrittenQueryStr, targetNameNode, onClauseAsText, targetTable,
+        numWhenMatchedDeleteClauses == 0 && numWhenMatchedUpdateClauses == 0, columnAppender);
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
     rewrittenCtx.setOperation(Context.Operation.MERGE);
 
     //set dest name mapping on new context; 1st child is TOK_FROM
-    for (int insClauseIdx = 1, whenClauseIdx = 0;
+    int insClauseIdx = 1;
+    for (int whenClauseIdx = 0;
         insClauseIdx < rewrittenTree.getChildCount() - (validating ? 1 : 0/*skip cardinality violation clause*/);
-        insClauseIdx++, whenClauseIdx++) {
+        whenClauseIdx++) {
       //we've added Insert clauses in order or WHEN items in whenClauses
       switch (getWhenClauseOperation(whenClauses.get(whenClauseIdx)).getType()) {
       case HiveParser.TOK_INSERT:
         rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.INSERT);
+        ++insClauseIdx;
         break;
       case HiveParser.TOK_UPDATE:
-        if(!splitUpdateEarly) {
-          rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.UPDATE);
-        } else {
-        /* With 2 branches for the update, the 1st branch is the INSERT part
-          and the next one is the DELETE.  WriteSet tracking treats 2 concurrent DELETES
-          as in conflict so Lost Update is still prevented since the delete event lands in the
-          partition/bucket where the original version of the row was so any concurrent update/delete
-          of the same row will land in the same partition/bucket.
-
-          If the insert part lands in a different partition, it should not conflict with another
-          Update of that partition since that update by definition cannot be of the same row.
-          If we ever enforce unique constraints we may have to have I+I be in conflict*/
-          rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.INSERT);
-          rewrittenCtx.addDestNamePrefix(++insClauseIdx, Context.DestClausePrefix.DELETE);
-        }
+        insClauseIdx += addDestNamePrefixOfUpdate(insClauseIdx, rewrittenCtx);
         break;
       case HiveParser.TOK_DELETE:
         rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.DELETE);
+        ++insClauseIdx;
         break;
       default:
         assert false;
@@ -311,13 +259,19 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       rewrittenCtx.addDestNamePrefix(rewrittenTree.getChildCount() - 1, Context.DestClausePrefix.INSERT);
     }
 
-    try {
-      useSuper = true;
-      super.analyze(rewrittenTree, rewrittenCtx);
-    } finally {
-      useSuper = false;
-    }
+    analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
     updateOutputs(targetTable);
+  }
+
+  /**
+   * This sets the destination name prefix for update clause.
+   * @param insClauseIdx index of insert clause in the rewritten multi-insert represents the merge update clause.
+   * @param rewrittenCtx the {@link Context} stores the prefixes
+   * @return the number of prefixes set.
+   */
+  protected int addDestNamePrefixOfUpdate(int insClauseIdx, Context rewrittenCtx) {
+    rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.UPDATE);
+    return 1;
   }
 
   /**
@@ -341,7 +295,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
    * @return true if another Insert clause was added
    */
   private boolean handleCardinalityViolation(StringBuilder rewrittenQueryStr, ASTNode target,
-      String onClauseAsString, Table targetTable, boolean onlyHaveWhenNotMatchedClause)
+      String onClauseAsString, Table targetTable, boolean onlyHaveWhenNotMatchedClause, ColumnAppender columnAppender)
               throws SemanticException {
     if (!conf.getBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK)) {
       LOG.info("Merge statement cardinality violation check is disabled: " +
@@ -355,15 +309,16 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     //this is a tmp table and thus Session scoped and acid requires SQL statement to be serial in a
     // given session, i.e. the name can be fixed across all invocations
     String tableName = "merge_tmp_table";
+    List<String> sortKeys = columnAppender.getSortKeys();
     rewrittenQueryStr.append("INSERT INTO ").append(tableName)
       .append("\n  SELECT cardinality_violation(")
-      .append(getSimpleTableName(target)).append(".ROW__ID");
-    addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
+      .append(StringUtils.join(sortKeys, ","));
+    addColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
 
     rewrittenQueryStr.append(")\n WHERE ").append(onClauseAsString)
-      .append(" GROUP BY ").append(getSimpleTableName(target)).append(".ROW__ID");
+      .append(" GROUP BY ").append(StringUtils.join(sortKeys, ","));
 
-    addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
+    addColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
 
     rewrittenQueryStr.append(" HAVING count(*) > 1");
     //say table T has partition p, we are generating
@@ -397,21 +352,13 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
    * @param deleteExtraPredicate - see notes at caller
    */
   private String handleUpdate(ASTNode whenMatchedUpdateClause, StringBuilder rewrittenQueryStr, ASTNode target,
-      String onClauseAsString, Table targetTable, String deleteExtraPredicate, String hintStr, boolean splitUpdateEarly)
+                              String onClauseAsString, Table targetTable, String deleteExtraPredicate, String hintStr,
+                              ColumnAppender columnAppender)
       throws SemanticException {
     assert whenMatchedUpdateClause.getType() == HiveParser.TOK_MATCHED;
     assert getWhenClauseOperation(whenMatchedUpdateClause).getType() == HiveParser.TOK_UPDATE;
     String targetName = getSimpleTableName(target);
-    rewrittenQueryStr.append("INSERT INTO ").append(getFullTableNameForSQL(target));
-    addPartitionColsToInsert(targetTable.getPartCols(), rewrittenQueryStr);
-    rewrittenQueryStr.append("    -- update clause").append(splitUpdateEarly ? "(insert part)": "")
-        .append("\n SELECT ");
-    if (hintStr != null) {
-      rewrittenQueryStr.append(hintStr);
-    }
-    if(!splitUpdateEarly) {
-      rewrittenQueryStr.append(targetName).append(".ROW__ID, ");
-    }
+    List<String> values = new ArrayList<>(targetTable.getCols().size());
 
     ASTNode setClause = (ASTNode)getWhenClauseOperation(whenMatchedUpdateClause).getChild(0);
     //columns being updated -> update expressions; "setRCols" (last param) is null because we use actual expressions
@@ -424,11 +371,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     //names
     List<FieldSchema> nonPartCols = targetTable.getCols();
     Map<String, String> colNameToDefaultConstraint = getColNameToDefaultValueMap(targetTable);
-    for(int i = 0; i < nonPartCols.size(); i++) {
-      FieldSchema fs = nonPartCols.get(i);
-      if(i > 0) {
-        rewrittenQueryStr.append(", ");
-      }
+    for (FieldSchema fs : nonPartCols) {
       String name = fs.getName();
       if (setColsExprs.containsKey(name)) {
         ASTNode setColExpr = setColsExprs.get(name);
@@ -444,23 +387,48 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
         String rhsExp = getMatchedText(setColsExprs.get(name));
         //"set a=5, b=8" - rhsExp picks up the next char (e.g. ',') from the token stream
         switch (rhsExp.charAt(rhsExp.length() - 1)) {
-        case ',':
-        case '\n':
-          rhsExp = rhsExp.substring(0, rhsExp.length() - 1);
-          break;
-        default:
-          //do nothing
+          case ',':
+          case '\n':
+            rhsExp = rhsExp.substring(0, rhsExp.length() - 1);
+            break;
+          default:
+            //do nothing
         }
 
-        rewrittenQueryStr.append(rhsExp);
+        values.add(rhsExp);
       } else {
-        rewrittenQueryStr.append(getSimpleTableName(target))
-          .append(".")
-          .append(HiveUtils.unparseIdentifier(name, this.conf));
+        values.add(targetName + "." + HiveUtils.unparseIdentifier(name, this.conf));
       }
     }
-    addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
-    rewrittenQueryStr.append("\n   WHERE ").append(onClauseAsString);
+    addPartitionColsAsValues(targetTable.getPartCols(), targetName, values);
+
+    String extraPredicate = handleUpdate(whenMatchedUpdateClause, rewrittenQueryStr, onClauseAsString,
+            deleteExtraPredicate, hintStr, columnAppender, targetName, values);
+
+    setUpAccessControlInfoForUpdate(targetTable, setColsExprs);
+    return extraPredicate;
+  }
+
+  protected String handleUpdate(ASTNode whenMatchedUpdateClause, StringBuilder rewrittenQueryStr,
+                                String onClauseAsString, String deleteExtraPredicate, String hintStr,
+                                ColumnAppender columnAppender, String targetName, List<String> values) {
+    values.add(0, targetName + ".ROW__ID");
+
+    rewrittenQueryStr.append("    -- update clause").append("\n");
+    appendInsertBranch(rewrittenQueryStr, hintStr, values);
+
+    String extraPredicate = addWhereClauseOfUpdate(
+            rewrittenQueryStr, onClauseAsString, whenMatchedUpdateClause, deleteExtraPredicate);
+
+    appendSortBy(rewrittenQueryStr, Collections.singletonList(targetName + ".ROW__ID "));
+    rewrittenQueryStr.append("\n");
+
+    return extraPredicate;
+  }
+
+  protected String addWhereClauseOfUpdate(StringBuilder rewrittenQueryStr, String onClauseAsString,
+                                          ASTNode whenMatchedUpdateClause, String deleteExtraPredicate) {
+    rewrittenQueryStr.append(INDENT).append("WHERE ").append(onClauseAsString);
     String extraPredicate = getWhenClausePredicate(whenMatchedUpdateClause);
     if (extraPredicate != null) {
       //we have WHEN MATCHED AND <boolean expr> THEN DELETE
@@ -468,25 +436,6 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
     if (deleteExtraPredicate != null) {
       rewrittenQueryStr.append(" AND NOT(").append(deleteExtraPredicate).append(")");
-    }
-    if(!splitUpdateEarly) {
-      rewrittenQueryStr.append("\n SORT BY ");
-      rewrittenQueryStr.append(targetName).append(".ROW__ID ");
-    }
-    rewrittenQueryStr.append("\n");
-
-    setUpAccessControlInfoForUpdate(targetTable, setColsExprs);
-    //we don't deal with columns on RHS of SET expression since the whole expr is part of the
-    //rewritten SQL statement and is thus handled by SemanticAnalyzer.  Nor do we have to
-    //figure which cols on RHS are from source and which from target
-
-    if(splitUpdateEarly) {
-      /**
-       * this is part of the WHEN MATCHED UPDATE, so we ignore any 'extra predicate' generated
-       * by this call to handleDelete()
-       */
-      handleDelete(whenMatchedUpdateClause, rewrittenQueryStr, target, onClauseAsString,
-          targetTable, deleteExtraPredicate, hintStr, true);
     }
 
     return extraPredicate;
@@ -496,29 +445,15 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
    * @param onClauseAsString - because there is no clone() and we need to use in multiple places
    * @param updateExtraPredicate - see notes at caller
    */
-  private String handleDelete(ASTNode whenMatchedDeleteClause, StringBuilder rewrittenQueryStr,
-      ASTNode target, String onClauseAsString, Table targetTable, String updateExtraPredicate,
-      String hintStr, boolean splitUpdateEarly) throws SemanticException {
+  protected String handleDelete(ASTNode whenMatchedDeleteClause, StringBuilder rewrittenQueryStr,
+      String onClauseAsString, String updateExtraPredicate,
+      String hintStr, ColumnAppender columnAppender) {
     assert whenMatchedDeleteClause.getType() == HiveParser.TOK_MATCHED;
-    assert (splitUpdateEarly &&
-        getWhenClauseOperation(whenMatchedDeleteClause).getType() == HiveParser.TOK_UPDATE) ||
-        getWhenClauseOperation(whenMatchedDeleteClause).getType() == HiveParser.TOK_DELETE;
-    List<FieldSchema> partCols = targetTable.getPartCols();
-    String targetName = getSimpleTableName(target);
-    rewrittenQueryStr.append("INSERT INTO ").append(getFullTableNameForSQL(target));
-    addPartitionColsToInsert(partCols, rewrittenQueryStr);
 
-    if(splitUpdateEarly) {
-      rewrittenQueryStr.append("    -- update clause (delete part)\n SELECT ");
-    } else {
-      rewrittenQueryStr.append("    -- delete clause\n SELECT ");
-    }
-    if (hintStr != null) {
-      rewrittenQueryStr.append(hintStr);
-    }
-    rewrittenQueryStr.append(targetName).append(".ROW__ID ");
-    addPartitionColsToSelect(partCols, rewrittenQueryStr, target);
-    rewrittenQueryStr.append("\n   WHERE ").append(onClauseAsString);
+    List<String> deleteValues = columnAppender.getDeleteValues(Context.Operation.DELETE);
+    appendInsertBranch(rewrittenQueryStr, hintStr, deleteValues);
+
+    rewrittenQueryStr.append(INDENT).append("WHERE ").append(onClauseAsString);
     String extraPredicate = getWhenClausePredicate(whenMatchedDeleteClause);
     if (extraPredicate != null) {
       //we have WHEN MATCHED AND <boolean expr> THEN DELETE
@@ -527,27 +462,14 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     if (updateExtraPredicate != null) {
       rewrittenQueryStr.append(" AND NOT(").append(updateExtraPredicate).append(")");
     }
-    rewrittenQueryStr.append("\n SORT BY ");
-    rewrittenQueryStr.append(targetName).append(".ROW__ID \n");
+    List<String> sortKeys = columnAppender.getSortKeys();
+    rewrittenQueryStr.append("\n").append(INDENT);
+    appendSortBy(rewrittenQueryStr, sortKeys);
     return extraPredicate;
   }
 
   private static String addParseInfo(ASTNode n) {
     return " at " + ASTErrorUtils.renderPosition(n);
-  }
-
-  private boolean isAliased(ASTNode n) {
-    switch (n.getType()) {
-    case HiveParser.TOK_TABREF:
-      return findTabRefIdxs(n)[0] != 0;
-    case HiveParser.TOK_TABNAME:
-      return false;
-    case HiveParser.TOK_SUBQUERY:
-      assert n.getChildCount() > 1 : "Expected Derived Table to be aliased";
-      return true;
-    default:
-      throw raiseWrongType("TOK_TABREF|TOK_TABNAME", n);
-    }
   }
 
   /**
@@ -570,7 +492,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     return whenClauses;
   }
 
-  private ASTNode getWhenClauseOperation(ASTNode whenClause) {
+  protected ASTNode getWhenClauseOperation(ASTNode whenClause) {
     if (!(whenClause.getType() == HiveParser.TOK_MATCHED || whenClause.getType() == HiveParser.TOK_NOT_MATCHED)) {
       throw  raiseWrongType("Expected TOK_MATCHED|TOK_NOT_MATCHED", whenClause);
     }
@@ -796,5 +718,15 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
       }
       return sb.toString();
     }
+  }
+
+  @Override
+  protected boolean allowOutputMultipleTimes() {
+    return conf.getBoolVar(HiveConf.ConfVars.SPLIT_UPDATE) || conf.getBoolVar(HiveConf.ConfVars.MERGE_SPLIT_UPDATE);
+  }
+
+  @Override
+  protected boolean enableColumnStatsCollecting() {
+    return numWhenMatchedUpdateClauses == 0 && numWhenMatchedDeleteClauses == 0;
   }
 }

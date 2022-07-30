@@ -197,17 +197,14 @@ public interface TxnStore extends Configurable {
   /**
    * Get invalidation info for the materialization. Currently, the materialization information
    * only contains information about whether there was update/delete operations on the source
-   * tables and were any of the insert-only source tables compacted used by the materialization
-   * since it was created.
+   * tables used by the materialization since it was created.
    * @param cm creation metadata for the materialization
+   * @param validTxnList valid transaction list for snapshot taken for current query
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  Materialization getMaterializationInvalidationInfo(final CreationMetadata cm)
-          throws MetaException;
-
-  @RetrySemantics.Idempotent
-  Materialization getMaterializationInvalidationInfo(final CreationMetadata cm, String validTxnList)
+  Materialization getMaterializationInvalidationInfo(
+          final CreationMetadata cm, final String validTxnList)
           throws MetaException;
 
   @RetrySemantics.ReadOnly
@@ -402,6 +399,10 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.Idempotent
   void cleanupRecords(HiveObjectType type, Database db, Table table, 
       Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException;
+
+  @RetrySemantics.Idempotent
+  void cleanupRecords(HiveObjectType type, Database db, Table table,
+      Iterator<Partition> partitionIterator, long txnId) throws MetaException;
 
   @RetrySemantics.Idempotent
   void onRename(String oldCatName, String oldDbName, String oldTabName, String oldPartName,

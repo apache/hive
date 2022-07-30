@@ -51,7 +51,6 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
-import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.orc.VectorizedReadUtils;
 import org.apache.iceberg.parquet.ParquetSchemaUtil;
@@ -72,11 +71,10 @@ public class HiveVectorizedReader {
 
   }
 
-  public static <D> CloseableIterable<D> reader(InputFile inputFile, FileScanTask task, Map<Integer, ?> idToConstant,
+  public static <D> CloseableIterable<D> reader(Path path, FileScanTask task, Map<Integer, ?> idToConstant,
       TaskAttemptContext context) {
     // Tweaks on jobConf here are relevant for this task only, so we need to copy it first as context's conf is reused..
-    JobConf job = new JobConf((JobConf) context.getConfiguration());
-    Path path = new Path(inputFile.location());
+    JobConf job = new JobConf(context.getConfiguration());
     FileFormat format = task.file().format();
     Reporter reporter = ((MapredIcebergInputFormat.CompatibilityTaskAttemptContextImpl) context).getLegacyReporter();
 
@@ -131,7 +129,7 @@ public class HiveVectorizedReader {
 
       switch (format) {
         case ORC:
-          recordReader = orcRecordReader(job, reporter, task, inputFile, path, start, length, readColumnIds, fileId);
+          recordReader = orcRecordReader(job, reporter, task, path, start, length, readColumnIds, fileId);
           break;
 
         case PARQUET:
@@ -144,12 +142,12 @@ public class HiveVectorizedReader {
       return createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues);
 
     } catch (IOException ioe) {
-      throw new RuntimeException("Error creating vectorized record reader for " + inputFile, ioe);
+      throw new RuntimeException("Error creating vectorized record reader for " + path, ioe);
     }
   }
 
   private static RecordReader<NullWritable, VectorizedRowBatch> orcRecordReader(JobConf job, Reporter reporter,
-      FileScanTask task, InputFile inputFile, Path path, long start, long length, List<Integer> readColumnIds,
+      FileScanTask task, Path path, long start, long length, List<Integer> readColumnIds,
       SyntheticFileId fileId) throws IOException {
     RecordReader<NullWritable, VectorizedRowBatch> recordReader = null;
 
@@ -159,7 +157,7 @@ public class HiveVectorizedReader {
 
     // Metadata information has to be passed along in the OrcSplit. Without specifying this, the vectorized
     // reader will assume that the ORC file ends at the task's start + length, and might fail reading the tail..
-    ByteBuffer serializedOrcTail = VectorizedReadUtils.getSerializedOrcTail(inputFile, fileId, job);
+    ByteBuffer serializedOrcTail = VectorizedReadUtils.getSerializedOrcTail(path, fileId, job);
     OrcTail orcTail = VectorizedReadUtils.deserializeToOrcTail(serializedOrcTail);
 
     VectorizedReadUtils.handleIcebergProjection(task, job,

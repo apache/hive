@@ -22,11 +22,16 @@ import java.util.Properties;
 import com.google.common.base.Preconditions;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.FieldNode;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.SchemaInference;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
@@ -39,7 +44,23 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
+import org.apache.parquet.hadoop.metadata.FileMetaData;
+import org.apache.parquet.hadoop.util.HadoopInputFile;
+import org.apache.parquet.schema.GroupType;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.DateLogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.DecimalLogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.IntLogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.ListLogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.MapLogicalTypeAnnotation;
+import org.apache.parquet.schema.LogicalTypeAnnotation.StringLogicalTypeAnnotation;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.PrimitiveType;
+import org.apache.parquet.schema.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A ParquetHiveSerDe for Hive (with the deprecated package mapred). Parquet
@@ -48,7 +69,9 @@ import org.apache.parquet.hadoop.ParquetOutputFormat;
  */
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
         ParquetOutputFormat.COMPRESSION})
-public class ParquetHiveSerDe extends AbstractSerDe {
+public class ParquetHiveSerDe extends AbstractSerDe implements SchemaInference {
+  private static final Logger LOG = LoggerFactory.getLogger(ParquetHiveSerDe.class);
+
   public static final Text MAP_KEY = new Text("key");
   public static final Text MAP_VALUE = new Text("value");
   public static final Text MAP = new Text("map");
@@ -57,6 +80,7 @@ public class ParquetHiveSerDe extends AbstractSerDe {
 
   // Map precision to the number bytes needed for binary conversion.
   public static final int PRECISION_TO_BYTE_COUNT[] = new int[38];
+
   static {
     for (int prec = 1; prec <= 38; prec++) {
       // Estimated number of bytes needed.
@@ -82,8 +106,8 @@ public class ParquetHiveSerDe extends AbstractSerDe {
         (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(getColumnNames(), getColumnTypes());
     StructTypeInfo prunedTypeInfo = null;
     if (this.configuration.isPresent()) {
-      String rawPrunedColumnPaths =
-          this.configuration.get().get(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
+      Configuration conf = this.configuration.get();
+      String rawPrunedColumnPaths = conf.get(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
       if (rawPrunedColumnPaths != null) {
         List<String> prunedColumnPaths = processRawPrunedPaths(rawPrunedColumnPaths);
         prunedTypeInfo = pruneFromPaths(completeTypeInfo, prunedColumnPaths);
@@ -233,5 +257,177 @@ public class ParquetHiveSerDe extends AbstractSerDe {
       }
       return (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(newNames, newTypes);
     }
+  }
+
+  // ReadSchema interface implementation
+  private String convertGroupType(GroupType group, boolean inferBinaryAsString) throws SerDeException {
+    boolean first = true;
+    StringBuilder sb = new StringBuilder(serdeConstants.STRUCT_TYPE_NAME + "<");
+    for (Type field: group.getFields()) {
+      if (first) {
+        first = false;
+      } else {
+        sb.append(",");
+      }
+      // fieldName:typeName
+      sb.append(field.getName()).append(":").append(convertParquetTypeToFieldType(field, inferBinaryAsString));
+    }
+    sb.append(">");
+    // struct<fieldName1:int, fieldName2:map<string : int>, etc
+    return sb.toString();
+  }
+
+  private String convertPrimitiveType(PrimitiveType primitive, boolean inferBinaryAsString) throws SerDeException {
+    switch (primitive.getPrimitiveTypeName()) {
+      case INT96:
+        return serdeConstants.TIMESTAMP_TYPE_NAME;
+      case INT32:
+        return serdeConstants.INT_TYPE_NAME;
+      case INT64:
+        return serdeConstants.BIGINT_TYPE_NAME;
+      case BOOLEAN:
+        return serdeConstants.BOOLEAN_TYPE_NAME;
+      case FLOAT:
+        return serdeConstants.FLOAT_TYPE_NAME;
+      case DOUBLE:
+        return serdeConstants.DOUBLE_TYPE_NAME;
+      case BINARY:
+        if (inferBinaryAsString) {
+          return serdeConstants.STRING_TYPE_NAME;
+        } else {
+          return serdeConstants.BINARY_TYPE_NAME;
+        }
+      default:
+        throw new SerDeException(ErrorMsg.PARQUET_UNHANDLED_TYPE.getErrorCodedMsg(primitive.getPrimitiveTypeName().name()));
+    }
+  }
+
+  private String convertParquetIntLogicalType(Type parquetType) throws SerDeException {
+    IntLogicalTypeAnnotation intLogicalType = (IntLogicalTypeAnnotation) parquetType.getLogicalTypeAnnotation();
+    PrimitiveType primitiveType = parquetType.asPrimitiveType();
+    // check to see if primitive type handling is implemented
+    switch (primitiveType.getPrimitiveTypeName()) {
+      case INT32:
+      case INT64:
+      break;
+      default:
+      throw new SerDeException(ErrorMsg.PARQUET_UNHANDLED_TYPE.getErrorCodedMsg(intLogicalType.toString()));
+    }
+
+    if (!intLogicalType.isSigned()) {
+      // signed types are not supported
+      throw new SerDeException(ErrorMsg.PARQUET_UNHANDLED_TYPE.getErrorCodedMsg(intLogicalType.toString()));
+    }
+
+    switch (intLogicalType.getBitWidth()) {
+      case 8: return serdeConstants.TINYINT_TYPE_NAME;
+      case 16: return serdeConstants.SMALLINT_TYPE_NAME;
+      case 32: return serdeConstants.INT_TYPE_NAME;
+      case 64: return serdeConstants.BIGINT_TYPE_NAME;
+    }
+
+    throw new SerDeException(ErrorMsg.PARQUET_UNHANDLED_TYPE.getErrorCodedMsg(intLogicalType.toString()));
+  }
+
+  private String createMapType(String keyType, String valueType) {
+    // examples: map<string, int>, map<string : struct<i : int>>
+    return serdeConstants.MAP_TYPE_NAME + "<" + keyType + "," + valueType + ">";
+  }
+
+  private String convertParquetMapLogicalTypeAnnotation(Type parquetType, boolean inferBinaryAsString)
+          throws SerDeException {
+    MapLogicalTypeAnnotation mType = (MapLogicalTypeAnnotation) parquetType.getLogicalTypeAnnotation();
+    GroupType gType = parquetType.asGroupType();
+    Type innerField = gType.getType(0);
+    GroupType innerGroup = innerField.asGroupType();
+    Type key = innerGroup.getType(0);
+    Type value = innerGroup.getType(1);
+    return createMapType(convertParquetTypeToFieldType(key, inferBinaryAsString),
+            convertParquetTypeToFieldType(value, inferBinaryAsString));
+  }
+
+  private String createArrayType(String fieldType) {
+    // examples: array<int>, array<struct<i:int>>, array<map<string : int>>
+    return serdeConstants.LIST_TYPE_NAME + "<" + fieldType + ">";
+  }
+
+  private String convertParquetListLogicalTypeAnnotation(Type parquetType, boolean inferBinaryAsString)
+          throws SerDeException {
+    ListLogicalTypeAnnotation mType = (ListLogicalTypeAnnotation) parquetType.getLogicalTypeAnnotation();
+    GroupType gType = parquetType.asGroupType();
+    Type innerField = gType.getType(0);
+    if (innerField.isPrimitive() || innerField.getOriginalType() != null) {
+      return createArrayType(convertParquetTypeToFieldType(innerField, inferBinaryAsString));
+    }
+
+    GroupType innerGroup = innerField.asGroupType();
+    if (innerGroup.getFieldCount() != 1) {
+      return createArrayType(convertGroupType(innerGroup, inferBinaryAsString));
+    }
+
+    return createArrayType(convertParquetTypeToFieldType(innerGroup.getType(0), inferBinaryAsString));
+  }
+
+  private String createDecimalType(int precision, int scale) {
+    // example: decimal(10, 4)
+    return serdeConstants.DECIMAL_TYPE_NAME + "(" + precision + "," + scale + ")";
+  }
+
+  private String convertLogicalType(Type type, boolean inferBinaryAsString) throws SerDeException {
+    LogicalTypeAnnotation lType = type.getLogicalTypeAnnotation();
+    if (lType instanceof IntLogicalTypeAnnotation) {
+      return convertParquetIntLogicalType(type);
+    } else if (lType instanceof StringLogicalTypeAnnotation) {
+      return serdeConstants.STRING_TYPE_NAME;
+    } else if (lType instanceof DecimalLogicalTypeAnnotation) {
+      DecimalLogicalTypeAnnotation dType = (DecimalLogicalTypeAnnotation) lType;
+      return createDecimalType(dType.getPrecision(), dType.getScale());
+    } else if (lType instanceof MapLogicalTypeAnnotation) {
+      return convertParquetMapLogicalTypeAnnotation(type, inferBinaryAsString);
+    } else if (lType instanceof ListLogicalTypeAnnotation) {
+      return convertParquetListLogicalTypeAnnotation(type, inferBinaryAsString);
+    } else if (lType instanceof DateLogicalTypeAnnotation) {
+      // assuming 32 bit int
+      return serdeConstants.DATE_TYPE_NAME;
+    }
+    throw new SerDeException(ErrorMsg.PARQUET_UNHANDLED_TYPE.getErrorCodedMsg(lType.toString()));
+  }
+
+  private String convertParquetTypeToFieldType(Type type, boolean inferBinaryAsString) throws SerDeException {
+    if (type.getLogicalTypeAnnotation() != null) {
+      return convertLogicalType(type, inferBinaryAsString);
+    } else if (type.isPrimitive()) {
+      return convertPrimitiveType(type.asPrimitiveType(), inferBinaryAsString);
+    }
+    return convertGroupType(type.asGroupType(), inferBinaryAsString);
+  }
+
+  private FieldSchema convertParquetTypeToFieldSchema(Type type, boolean inferBinaryAsString) throws SerDeException {
+    String columnName = type.getName();
+    String typeName = convertParquetTypeToFieldType(type, inferBinaryAsString);
+    return new FieldSchema(columnName, typeName, "Inferred from Parquet file.");
+  }
+
+  public List<FieldSchema> readSchema(Configuration conf, String file) throws SerDeException {
+      FileMetaData metadata;
+      try {
+        HadoopInputFile inputFile = HadoopInputFile.fromPath(new Path(file), conf);
+        ParquetFileReader reader = ParquetFileReader.open(inputFile);
+        metadata = reader.getFileMetaData();
+      } catch (Exception e) {
+        throw new SerDeException(ErrorMsg.PARQUET_FOOTER_ERROR.getErrorCodedMsg(), e);
+      }
+
+      MessageType msg = metadata.getSchema();
+      List<FieldSchema> schema = new ArrayList<>();
+      String inferBinaryAsStringValue = conf.get(HiveConf.ConfVars.HIVE_PARQUET_INFER_BINARY_AS.varname);
+      boolean inferBinaryAsString = "string".equalsIgnoreCase(inferBinaryAsStringValue);
+
+      for (Type field: msg.getFields()) {
+        FieldSchema fieldSchema = convertParquetTypeToFieldSchema(field, inferBinaryAsString);
+        schema.add(fieldSchema);
+        LOG.debug("Inferred field schema {}", fieldSchema);
+      }
+      return schema;
   }
 }

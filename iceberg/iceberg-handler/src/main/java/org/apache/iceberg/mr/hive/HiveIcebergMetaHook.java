@@ -48,7 +48,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -108,7 +108,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   static final EnumSet<AlterTableType> SUPPORTED_ALTER_OPS = EnumSet.of(
       AlterTableType.ADDCOLS, AlterTableType.REPLACE_COLUMNS, AlterTableType.RENAME_COLUMN,
       AlterTableType.ADDPROPS, AlterTableType.DROPPROPS, AlterTableType.SETPARTITIONSPEC,
-      AlterTableType.UPDATE_COLUMNS);
+      AlterTableType.UPDATE_COLUMNS, AlterTableType.SETPARTITIONSPEC, AlterTableType.EXECUTE);
   private static final List<String> MIGRATION_ALLOWED_SOURCE_FORMATS = ImmutableList.of(
       FileFormat.PARQUET.name().toLowerCase(),
       FileFormat.ORC.name().toLowerCase(),
@@ -268,8 +268,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   @Override
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
-    setupAlterOperationType(hmsTable, context);
     catalogProperties = getCatalogProperties(hmsTable);
+    setupAlterOperationType(hmsTable, context);
     try {
       icebergTable = IcebergTableUtil.getTable(conf, catalogProperties);
     } catch (NoSuchTableException nte) {
@@ -296,7 +296,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         if (hmsTable.isSetPartitionKeys() && !hmsTable.getPartitionKeys().isEmpty()) {
           db.dropPartitions(hmsTable.getDbName(), hmsTable.getTableName(), EMPTY_FILTER, DROP_OPTIONS);
 
-          List<PartitionTransformSpec> spec = PartitionTransform.getPartitionTransformSpec(hmsTable.getPartitionKeys());
+          List<TransformSpec> spec = PartitionTransform.getPartitionTransformSpec(hmsTable.getPartitionKeys());
           if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec)) {
             throw new MetaException("Query state attached to Session state must be not null. " +
                 "Partition transform metadata cannot be saved.");
@@ -499,6 +499,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         throw new MetaException(
             "Unsupported ALTER TABLE operation type on Iceberg table " + tableName + ", must be one of: " +
                 SUPPORTED_ALTER_OPS);
+      }
+
+      if (currentAlterTableOp != AlterTableType.ADDPROPS && Catalogs.hiveCatalog(conf, catalogProperties)) {
+        context.getProperties().put(SKIP_METASTORE_ALTER, "true");
       }
     }
   }

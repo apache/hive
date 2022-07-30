@@ -202,8 +202,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
       TableScanOperator ts = (TableScanOperator)aliasToWork.get(alias);
       // push down projections
-      ColumnProjectionUtils.appendReadColumns(
-          jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
+      ColumnProjectionUtils.appendReadColumns(jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns(),
+              ts.getNeededNestedColumnPaths(), ts.conf.hasVirtualCols());
       // push down filters and as of information
       HiveInputFormat.pushFiltersAndAsOf(jobClone, ts, null);
 

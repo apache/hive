@@ -211,6 +211,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -223,7 +224,6 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -963,9 +963,6 @@ public class Hive {
       throws HiveException, NoSuchObjectException {
     try {
       getMSC().dropDataConnector(name, ifNotExists, checkReferences);
-    } catch (NoSuchObjectException e) {
-      if (!ifNotExists)
-        throw e;
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -1309,7 +1306,8 @@ public class Hive {
           boolean createTableUseSuffix = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
             || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
 
-          if (createTableUseSuffix) {
+          if (createTableUseSuffix 
+                && (tbl.getSd().getLocation() == null || tbl.getSd().getLocation().isEmpty())) {
             tbl.setProperty(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
           }
           tTbl.setTxnId(ss.getTxnMgr().getCurrentTxnId());
@@ -1375,11 +1373,7 @@ public class Hive {
   }
 
   public void dropTable(Table table, boolean ifPurge) throws HiveException {
-    boolean tableWithSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
-        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
-      && AcidUtils.isTransactionalTable(table)
-      && Boolean.parseBoolean(table.getProperty(SOFT_DELETE_TABLE));
-    
+    boolean tableWithSuffix = AcidUtils.isTableSoftDeleteEnabled(table, conf);
     long txnId = Optional.ofNullable(SessionState.get())
       .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
     table.getTTable().setTxnId(txnId);
@@ -2086,7 +2080,7 @@ public class Hive {
               // Obtain additional information if we should try incremental rewriting / rebuild
               // We will not try partial rewriting if there were update/delete/compaction operations on source tables
               Materialization invalidationInfo = getMSC().getMaterializationInvalidationInfo(
-                  materializedViewTable.getMVMetadata().creationMetadata);
+                  materializedViewTable.getMVMetadata().creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
               if (invalidationInfo == null || invalidationInfo.isSourceTablesUpdateDeleteModified() ||
                   invalidationInfo.isSourceTablesCompacted()) {
                 // We ignore (as it did not meet the requirements), but we do not need to update it in the
@@ -2183,7 +2177,8 @@ public class Hive {
           } else {
             // Obtain additional information if we should try incremental rewriting / rebuild
             // We will not try partial rewriting if there were update/delete/compaction operations on source tables
-            invalidationInfo = getMSC().getMaterializationInvalidationInfo(metadata.creationMetadata);
+            invalidationInfo = getMSC().getMaterializationInvalidationInfo(
+                    metadata.creationMetadata, conf.get(ValidTxnList.VALID_TXNS_KEY));
             ignore = invalidationInfo == null || invalidationInfo.isSourceTablesCompacted();
           }
           if (ignore) {
@@ -6502,6 +6497,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
       HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
       return storageHandler == null ? null : storageHandler.getStorageHandlerInfo(table.getTTable());
     } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void alterTableExecuteOperation(Table table, AlterTableExecuteSpec executeSpec) throws HiveException {
+    try {
+      HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
+      storageHandler.executeOperation(table, executeSpec);
+    } catch (MetaException e) {
       throw new HiveException(e);
     }
   }

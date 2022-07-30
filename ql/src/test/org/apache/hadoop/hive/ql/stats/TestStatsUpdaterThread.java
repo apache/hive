@@ -568,7 +568,6 @@ public class TestStatsUpdaterThread {
     String dbName = ss.getCurrentDatabase();
     executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.TARGET_OF_REPLICATION + "'='true')");
     StatsUpdaterThread su = createUpdater();
-    su.startWorkers();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
@@ -597,11 +596,18 @@ public class TestStatsUpdaterThread {
 
     assertFalse(su.runOneIteration());
     Assert.assertEquals(0, su.getQueueLength());
-    verifyStatsUpToDate(tblWOStats, Lists.newArrayList("i"), msClient, false);
+
+    //Check that StatsUpdaterThread enqueues the tables for database with repl.background.enable as true.
+    executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.REPL_ENABLE_BACKGROUND_THREAD + "'='true')");
+    assertTrue(su.runOneIteration());
+    Assert.assertEquals(2, su.getQueueLength());
+    drainWorkQueue(su, 2);
+    verifyStatsUpToDate(tblWOStats, Lists.newArrayList("i"), msClient, true);
     verifyStatsUpToDate(tblWithStats, Lists.newArrayList("i"), msClient, true);
-    verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, false);
+    verifyPartStatsUpToDate(3, 1, msClient, ptnTblWOStats, true);
     verifyPartStatsUpToDate(3, 1, msClient, ptnTblWithStats, true);
 
+    executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.REPL_ENABLE_BACKGROUND_THREAD + "'='')");
     executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.TARGET_OF_REPLICATION + "'='')");
     executeQuery("drop table " + tblWOStats);
     executeQuery("drop table " + tblWithStats);

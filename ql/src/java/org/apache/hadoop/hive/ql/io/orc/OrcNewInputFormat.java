@@ -54,7 +54,7 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
     return new OrcRecordReader(OrcFile.createReader(path,
                                                    OrcFile.readerOptions(conf)),
         ShimLoader.getHadoopShims().getConfiguration(context),
-        fileSplit.getStart(), fileSplit.getLength());
+        fileSplit.getStart(), fileSplit.getLength(), inputSplit);
   }
 
   private static class OrcRecordReader
@@ -65,12 +65,15 @@ public class OrcNewInputFormat extends InputFormat<NullWritable, OrcStruct>{
     private float progress = 0.0f;
 
     OrcRecordReader(Reader file, Configuration conf,
-                    long offset, long length) throws IOException {
-      List<OrcProto.Type> types = file.getTypes();
-      numColumns = (types.size() == 0) ? 0 : types.get(0).getSubtypesCount();
+                    long offset, long length, InputSplit inputSplit) throws IOException {
+      numColumns = file.getSchema().getChildren().size();
       value = new OrcStruct(numColumns);
-      this.reader = OrcInputFormat.createReaderFromFile(file, conf, offset,
-          length);
+      if (inputSplit instanceof OrcNewSplit) {
+        this.reader = OrcInputFormat.createReaderFromFile(file, conf, offset,
+                length, ((OrcNewSplit)inputSplit).isOriginal());
+      } else {
+        this.reader = OrcInputFormat.createReaderFromFile(file, conf, offset, length);
+      }
     }
 
     @Override

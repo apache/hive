@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Assert;
@@ -226,6 +227,27 @@ public class TestValueBoundaryScanner {
 
     Assert.assertFalse(scanner.isEqual(null, w2));
     Assert.assertFalse(scanner.isEqual(w1, null));
+
+    Assert.assertTrue(scanner.isEqual(null, null));
+  }
+
+  @Test
+  public void testBooleanEquals() {
+    PTFExpressionDef argDef = new PTFExpressionDef();
+    argDef.setOI(PrimitiveObjectInspectorFactory.writableBooleanObjectInspector);
+
+    BooleanValueBoundaryScanner scanner =
+        new BooleanValueBoundaryScanner(null, null, new OrderExpressionDef(argDef), false);
+    BooleanWritable b1 = new BooleanWritable(true);
+    BooleanWritable b2 =  new BooleanWritable(false);
+
+    Assert.assertTrue(scanner.isEqual(b1, b1));
+
+    Assert.assertFalse(scanner.isEqual(b1, b2));
+    Assert.assertFalse(scanner.isEqual(b2, b1));
+
+    Assert.assertFalse(scanner.isEqual(null, b2));
+    Assert.assertFalse(scanner.isEqual(b1, null));
 
     Assert.assertTrue(scanner.isEqual(null, null));
   }

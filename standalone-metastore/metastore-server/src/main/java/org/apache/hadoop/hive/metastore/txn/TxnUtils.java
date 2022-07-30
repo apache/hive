@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
 
 public class TxnUtils {
@@ -177,6 +178,11 @@ public class TxnUtils {
                     equals(parameters.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
   }
 
+  public static boolean isTableSoftDeleteEnabled(Table table, boolean isSoftDelete) {
+    return isSoftDelete && TxnUtils.isTransactionalTable(table)
+      && Boolean.parseBoolean(table.getParameters().get(SOFT_DELETE_TABLE));
+  }
+  
   /**
    * Should produce the result as &lt;dbName&gt;.&lt;tableName&gt;.
    */

@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -110,12 +110,12 @@ class TextDescTableFormatter extends DescTableFormatter {
     if (table.isNonNative() && table.getStorageHandler() != null &&
         table.getStorageHandler().supportsPartitionTransform()) {
 
-      List<PartitionTransformSpec> partSpecs = table.getStorageHandler().getPartitionTransformSpec(table);
+      List<TransformSpec> partSpecs = table.getStorageHandler().getPartitionTransformSpec(table);
       if (partSpecs != null && !partSpecs.isEmpty()) {
         TextMetaDataTable metaDataTable = new TextMetaDataTable();
         partitionTransformOutput += LINE_DELIM + "# Partition Transform Information" + LINE_DELIM + "# ";
         metaDataTable.addRow(DescTableDesc.PARTITION_TRANSFORM_SPEC_SCHEMA.split("#")[0].split(","));
-        for (PartitionTransformSpec spec : partSpecs) {
+        for (TransformSpec spec : partSpecs) {
           String[] row = new String[2];
           row[0] = spec.getColumnName();
           if (spec.getTransformType() != null) {
@@ -199,7 +199,7 @@ class TextDescTableFormatter extends DescTableFormatter {
       throws IOException, UnsupportedEncodingException {
     String formattedTableInfo = null;
     if (partition != null) {
-      formattedTableInfo = getPartitionInformation(partition);
+      formattedTableInfo = getPartitionInformation(table, partition);
     } else {
       formattedTableInfo = getTableInformation(table, isOutputPadded);
     }
@@ -216,7 +216,7 @@ class TextDescTableFormatter extends DescTableFormatter {
     getTableMetaDataInformation(tableInfo, table, isOutputPadded);
 
     tableInfo.append(LINE_DELIM).append("# Storage Information").append(LINE_DELIM);
-    getStorageDescriptorInfo(tableInfo, table.getTTable().getSd());
+    getStorageDescriptorInfo(tableInfo, table, table.getTTable().getSd());
 
     if (table.isView() || table.isMaterializedView()) {
       String viewInfoTitle = "# " + (table.isView() ? "" : "Materialized ") + "View Information";
@@ -227,14 +227,14 @@ class TextDescTableFormatter extends DescTableFormatter {
     return tableInfo.toString();
   }
 
-  private String getPartitionInformation(Partition partition) {
+  private String getPartitionInformation(Table table, Partition partition) {
     StringBuilder tableInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
     tableInfo.append(LINE_DELIM).append("# Detailed Partition Information").append(LINE_DELIM);
     getPartitionMetaDataInformation(tableInfo, partition);
 
     if (partition.getTable().getTableType() != TableType.VIRTUAL_VIEW) {
       tableInfo.append(LINE_DELIM).append("# Storage Information").append(LINE_DELIM);
-      getStorageDescriptorInfo(tableInfo, partition.getTPartition().getSd());
+      getStorageDescriptorInfo(tableInfo, table, partition.getTPartition().getSd());
     }
 
     return tableInfo.toString();
@@ -267,14 +267,25 @@ class TextDescTableFormatter extends DescTableFormatter {
     }
   }
 
-  private void getStorageDescriptorInfo(StringBuilder tableInfo, StorageDescriptor storageDesc) {
+  private void getStorageDescriptorInfo(StringBuilder tableInfo, Table table, StorageDescriptor storageDesc) {
     formatOutput("SerDe Library:", storageDesc.getSerdeInfo().getSerializationLib(), tableInfo);
     formatOutput("InputFormat:", storageDesc.getInputFormat(), tableInfo);
     formatOutput("OutputFormat:", storageDesc.getOutputFormat(), tableInfo);
     formatOutput("Compressed:", storageDesc.isCompressed() ? "Yes" : "No", tableInfo);
-    formatOutput("Num Buckets:", String.valueOf(storageDesc.getNumBuckets()), tableInfo);
-    formatOutput("Bucket Columns:", storageDesc.getBucketCols().toString(), tableInfo);
-    formatOutput("Sort Columns:", storageDesc.getSortCols().toString(), tableInfo);
+    if (!table.isNonNative() || table.getStorageHandler() == null ||
+        !table.getStorageHandler().supportsPartitionTransform()) {
+      // The Iceberg partition transform already contains the bucketing information, and these are not relevant there
+      formatOutput("Num Buckets:", String.valueOf(storageDesc.getNumBuckets()), tableInfo);
+      formatOutput("Bucket Columns:", storageDesc.getBucketCols().toString(), tableInfo);
+    }
+
+    String sortColumnsInfo;
+    if (table.isNonNative() && table.getStorageHandler() != null && table.getStorageHandler().supportsSortColumns()) {
+      sortColumnsInfo = table.getStorageHandler().sortColumns(table).toString();
+    } else {
+      sortColumnsInfo = storageDesc.getSortCols().toString();
+    }
+    formatOutput("Sort Columns:", sortColumnsInfo, tableInfo);
 
     if (storageDesc.isStoredAsSubDirectories()) {
       formatOutput("Stored As SubDirectories:", "Yes", tableInfo);

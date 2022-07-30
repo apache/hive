@@ -388,6 +388,7 @@ public class TestHCatMultiOutputFormat {
     conf.set("_hive.hdfs.session.path", "path");
     conf.set("_hive.local.session.path", "path");
     task.initialize(queryState, null, null, new org.apache.hadoop.hive.ql.Context(conf));
+    task.execute();
     task.fetch(temp);
     for (String str : temp) {
       results.add(str.replace("\t", ","));

@@ -59,6 +59,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public boolean tooManyAborts = false;
   public boolean hasOldAbort = false;
   public long retryRetention = 0;
+  public long nextTxnId = 0;
+  public long txnId = 0;
+  public long commitTime = 0;
 
   /**
    * The highest write id that the compaction job will pay attention to.
@@ -202,6 +205,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.initiatorId = rs.getString(17);
     fullCi.initiatorVersion = rs.getString(18);
     fullCi.retryRetention = rs.getLong(19);
+    fullCi.nextTxnId = rs.getLong(20);
+    fullCi.txnId = rs.getLong(21);
+    fullCi.commitTime = rs.getLong(22);
     return fullCi;
   }
   static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException, MetaException {
@@ -224,6 +230,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     pStmt.setString(17, ci.workerVersion);
     pStmt.setString(18, ci.initiatorId);
     pStmt.setString(19, ci.initiatorVersion);
+    pStmt.setLong(20, ci.nextTxnId);
+    pStmt.setLong(21, ci.txnId);
+    pStmt.setLong(22, ci.commitTime);
   }
 
   public static CompactionInfo compactionStructToInfo(CompactionInfoStruct cr) {

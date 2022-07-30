@@ -88,7 +88,6 @@ public class GenericUDFFromUnixTime extends GenericUDF {
     if (timeZone == null) {
       timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
               .getLocalTimeZone();
-      FORMATTER.withZone(timeZone);
     }
 
     return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -99,7 +98,6 @@ public class GenericUDFFromUnixTime extends GenericUDF {
     if (context != null) {
       String timeZoneStr = HiveConf.getVar(context.getJobConf(), HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE);
       timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
-      FORMATTER.withZone(timeZone);
     }
   }
 

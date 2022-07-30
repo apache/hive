@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -72,7 +73,7 @@ public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Co
         .tableName(tableName)
         .attemptID(taskAttemptID)
         .poolSize(poolSize)
-        .operation(HiveIcebergStorageHandler.operation(jc, tableName))
+        .operation(HiveCustomStorageHandlerUtils.getWriteOperation(jc, tableName))
         .build();
   }
 }

@@ -61,6 +61,7 @@ PREHOOK: Input: default@target
 PREHOOK: Input: default@target@p=1/q=2
 PREHOOK: Input: default@target@p=1/q=3
 PREHOOK: Input: default@target@p=2/q=2
+PREHOOK: Output: default@target
 PREHOOK: Output: default@target@p=1/q=2
 PREHOOK: Output: default@target@p=1/q=3
 PREHOOK: Output: default@target@p=2/q=2
@@ -71,6 +72,7 @@ POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=1/q=2
 POSTHOOK: Input: default@target@p=1/q=3
 POSTHOOK: Input: default@target@p=2/q=2
+POSTHOOK: Output: default@target
 POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=3
 POSTHOOK: Output: default@target@p=2/q=2
@@ -82,11 +84,13 @@ default.target.p=2/q=2 -> SHARED_READ
 default.target.p=2/q=2 -> EXCL_WRITE
 default.target.p=1/q=3 -> EXCL_WRITE
 default.target.p=1/q=2 -> EXCL_WRITE
+default.target -> SHARED_READ
 PREHOOK: query: explain locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
 PREHOOK: Input: default@target
 PREHOOK: Input: default@target@p=2/q=2
+PREHOOK: Output: default@source
 PREHOOK: Output: default@source
 POSTHOOK: query: explain locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
 POSTHOOK: type: QUERY
@@ -94,14 +98,17 @@ POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@source
+POSTHOOK: Output: default@source
 LOCK INFORMATION:
 default.target.p=2/q=2 -> SHARED_READ
 default.source -> EXCL_WRITE
+default.source -> SHARED_READ
 PREHOOK: query: explain formatted locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
 PREHOOK: Input: default@target
 PREHOOK: Input: default@target@p=2/q=2
+PREHOOK: Output: default@source
 PREHOOK: Output: default@source
 POSTHOOK: query: explain formatted locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
 POSTHOOK: type: QUERY
@@ -109,7 +116,8 @@ POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@source
-{"LOCK INFORMATION:":"[default.target.p=2/q=2 -> SHARED_READ, default.source -> EXCL_WRITE]"}
+POSTHOOK: Output: default@source
+{"LOCK INFORMATION:":"[default.target.p=2/q=2 -> SHARED_READ, default.source -> EXCL_WRITE, default.source -> SHARED_READ]"}
 PREHOOK: query: explain locks merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
@@ -150,6 +158,7 @@ PREHOOK: Input: default@target
 PREHOOK: Input: default@target@p=1/q=2
 PREHOOK: Input: default@target@p=1/q=3
 PREHOOK: Input: default@target@p=2/q=2
+PREHOOK: Output: default@target
 PREHOOK: Output: default@target@p=1/q=2
 PREHOOK: Output: default@target@p=1/q=3
 PREHOOK: Output: default@target@p=2/q=2
@@ -160,6 +169,7 @@ POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=1/q=2
 POSTHOOK: Input: default@target@p=1/q=3
 POSTHOOK: Input: default@target@p=2/q=2
+POSTHOOK: Output: default@target
 POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=3
 POSTHOOK: Output: default@target@p=2/q=2
@@ -171,11 +181,13 @@ default.target.p=2/q=2 -> SHARED_READ
 default.target.p=2/q=2 -> SHARED_WRITE
 default.target.p=1/q=3 -> SHARED_WRITE
 default.target.p=1/q=2 -> SHARED_WRITE
+default.target -> SHARED_WRITE
 PREHOOK: query: explain locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
 PREHOOK: Input: default@target
 PREHOOK: Input: default@target@p=2/q=2
+PREHOOK: Output: default@source
 PREHOOK: Output: default@source
 POSTHOOK: query: explain locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
 POSTHOOK: type: QUERY
@@ -183,8 +195,10 @@ POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@source
+POSTHOOK: Output: default@source
 LOCK INFORMATION:
 default.target.p=2/q=2 -> SHARED_READ
+default.source -> SHARED_WRITE
 default.source -> SHARED_WRITE
 PREHOOK: query: explain formatted locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
 PREHOOK: type: QUERY
@@ -192,13 +206,15 @@ PREHOOK: Input: default@source
 PREHOOK: Input: default@target
 PREHOOK: Input: default@target@p=2/q=2
 PREHOOK: Output: default@source
+PREHOOK: Output: default@source
 POSTHOOK: query: explain formatted locks update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@source
-{"LOCK INFORMATION:":"[default.target.p=2/q=2 -> SHARED_READ, default.source -> SHARED_WRITE]"}
+POSTHOOK: Output: default@source
+{"LOCK INFORMATION:":"[default.target.p=2/q=2 -> SHARED_READ, default.source -> SHARED_WRITE, default.source -> SHARED_WRITE]"}
 PREHOOK: query: explain locks merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source

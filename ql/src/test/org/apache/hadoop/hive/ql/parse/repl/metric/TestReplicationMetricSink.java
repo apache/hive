@@ -88,6 +88,7 @@ public class TestReplicationMetricSink {
     return deserializer.deSerializeGenericString(msg);
   }
 
+  @org.junit.Ignore("HIVE-26262")
   @Test
   public void testSuccessBootstrapDumpMetrics() throws Exception {
     ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector(
@@ -313,6 +314,7 @@ public class TestReplicationMetricSink {
     }
   }
 
+  @org.junit.Ignore("HIVE-26262")
   @Test
   public void testReplStatsInMetrics() throws HiveException, InterruptedException, TException {
     int origRMProgress = ReplStatsTracker.RM_PROGRESS_LENGTH;

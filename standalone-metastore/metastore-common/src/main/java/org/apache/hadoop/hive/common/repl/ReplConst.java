@@ -55,6 +55,11 @@ public class ReplConst {
   public static final String REPL_INCOMPATIBLE = "repl.incompatible";
 
   /**
+   * Database level prop to enable background threads for the database irrespective of other replication props.
+   * */
+  public static final String REPL_ENABLE_BACKGROUND_THREAD = "repl.background.enable";
+
+  /**
    * Tracks the event id with respect to the target cluster.
    */
   public static final String REPL_TARGET_DATABASE_PROPERTY = "repl.target.last.id";

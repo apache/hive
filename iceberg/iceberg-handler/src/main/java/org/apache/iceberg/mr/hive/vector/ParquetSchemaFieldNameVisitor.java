@@ -82,7 +82,9 @@ class ParquetSchemaFieldNameVisitor extends TypeWithSchemaVisitor<Type> {
 
     if (!isMessageType) {
       GroupType groupType = new GroupType(Type.Repetition.REPEATED, fieldNames.peek(), types);
-      typesById.put(struct.getId().intValue(), groupType);
+      if (struct.getId() != null) {
+        typesById.put(struct.getId().intValue(), groupType);
+      }
       return groupType;
     } else {
       return new MessageType("table", types);
@@ -98,19 +100,25 @@ class ParquetSchemaFieldNameVisitor extends TypeWithSchemaVisitor<Type> {
   @Override
   public Type primitive(org.apache.iceberg.types.Type.PrimitiveType expected,
       PrimitiveType primitive) {
-    typesById.put(primitive.getId().intValue(), primitive);
+    if (primitive.getId() != null) {
+      typesById.put(primitive.getId().intValue(), primitive);
+    }
     return primitive;
   }
 
   @Override
   public Type list(Types.ListType iList, GroupType array, Type element) {
-    typesById.put(array.getId().intValue(), array);
+    if (array.getId() != null) {
+      typesById.put(array.getId().intValue(), array);
+    }
     return array;
   }
 
   @Override
   public Type map(Types.MapType iMap, GroupType map, Type key, Type value) {
-    typesById.put(map.getId().intValue(), map);
+    if (map.getId() != null) {
+      typesById.put(map.getId().intValue(), map);
+    }
     return map;
   }
 

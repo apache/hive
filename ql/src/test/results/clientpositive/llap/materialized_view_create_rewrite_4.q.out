@@ -1122,10 +1122,16 @@ PREHOOK: query: UPDATE cmv_basetable_2_n2 SET a=2 WHERE a=1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_2_n2
 PREHOOK: Output: default@cmv_basetable_2_n2
+PREHOOK: Output: default@cmv_basetable_2_n2
 POSTHOOK: query: UPDATE cmv_basetable_2_n2 SET a=2 WHERE a=1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_2_n2
 POSTHOOK: Output: default@cmv_basetable_2_n2
+POSTHOOK: Output: default@cmv_basetable_2_n2
+POSTHOOK: Lineage: cmv_basetable_2_n2.a SIMPLE []
+POSTHOOK: Lineage: cmv_basetable_2_n2.b SIMPLE [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:b, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: cmv_basetable_2_n2.c SIMPLE [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
+POSTHOOK: Lineage: cmv_basetable_2_n2.d SIMPLE [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:d, type:int, comment:null), ]
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view_n5 REBUILD
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD

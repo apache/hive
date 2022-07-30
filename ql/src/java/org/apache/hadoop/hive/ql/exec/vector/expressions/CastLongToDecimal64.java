@@ -180,4 +180,9 @@ public class CastLongToDecimal64 extends VectorExpression {
             VectorExpressionDescriptor.InputExpressionType.COLUMN);
     return b.build();
   }
+
+  @Override
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return false;
+  }
 }

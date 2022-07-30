@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import java.util.stream.Collectors;
+
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -32,7 +33,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 
 /**
  * A subclass of the {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer} that just handles
@@ -48,28 +48,33 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     super(queryState);
   }
 
-  protected void analyze(ASTNode tree) throws SemanticException {
+  @Override
+  protected ASTNode getTargetTableNode(ASTNode tree) {
+    // The first child should be the table we are updating / deleting from
+    ASTNode tabName = (ASTNode)tree.getChild(0);
+    assert tabName.getToken().getType() == HiveParser.TOK_TABNAME :
+            "Expected tablename as first child of " + operation + " but found " + tabName.getName();
+    return tabName;
+  }
+
+  protected void analyze(ASTNode tree, Table table, ASTNode tabNameNode) throws SemanticException {
     switch (tree.getToken().getType()) {
     case HiveParser.TOK_DELETE_FROM:
-      analyzeDelete(tree);
+      operation = Context.Operation.DELETE;
+      reparseAndSuperAnalyze(tree, table, tabNameNode);
       break;
     case HiveParser.TOK_UPDATE_TABLE:
-      analyzeUpdate(tree);
+      boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(table);
+      if (nonNativeAcid) {
+        throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
+      }
+      operation = Context.Operation.UPDATE;
+      reparseAndSuperAnalyze(tree, table, tabNameNode);
       break;
     default:
       throw new RuntimeException("Asked to parse token " + tree.getName() + " in " +
           "UpdateDeleteSemanticAnalyzer");
     }
-  }
-
-  private void analyzeUpdate(ASTNode tree) throws SemanticException {
-    operation = Context.Operation.UPDATE;
-    reparseAndSuperAnalyze(tree);
-  }
-
-  private void analyzeDelete(ASTNode tree) throws SemanticException {
-    operation = Context.Operation.DELETE;
-    reparseAndSuperAnalyze(tree);
   }
 
   /**
@@ -91,38 +96,19 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
    * The sort by clause is put in there so that records come out in the right order to enable
    * merge on read.
    */
-  private void reparseAndSuperAnalyze(ASTNode tree) throws SemanticException {
+  private void reparseAndSuperAnalyze(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
     List<? extends Node> children = tree.getChildren();
-
-    // The first child should be the table we are updating / deleting from
-    ASTNode tabName = (ASTNode)children.get(0);
-    assert tabName.getToken().getType() == HiveParser.TOK_TABNAME :
-        "Expected tablename as first child of " + operation + " but found " + tabName.getName();
-    Table mTable = getTargetTable(tabName);
-    validateTxnManager(mTable);
-    validateTargetTable(mTable);
-
-    // save the operation type into the query state
-    SessionStateUtil.addResource(conf, Context.Operation.class.getSimpleName(), operation.name());
 
     StringBuilder rewrittenQueryStr = new StringBuilder();
     rewrittenQueryStr.append("insert into table ");
-    rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
+    rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
     addPartitionColsToInsert(mTable.getPartCols(), rewrittenQueryStr);
 
-    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
-    int columnOffset;
-    if (nonNativeAcid) {
-      List<FieldSchema> acidColumns = mTable.getStorageHandler().acidSelectColumns(mTable, operation);
-      String selectCols = acidColumns.stream()
-          .map(fieldSchema -> HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf))
-          .collect(Collectors.joining(","));
-      rewrittenQueryStr.append(" select ").append(selectCols);
-      columnOffset = acidColumns.size();
-    } else {
-      rewrittenQueryStr.append(" select ROW__ID");
-      columnOffset = 1;
-    }
+    ColumnAppender columnAppender = getColumnAppender(null);
+    int columnOffset = columnAppender.getDeleteValues(operation).size();
+    rewrittenQueryStr.append(" select ");
+    columnAppender.appendAcidSelectColumns(rewrittenQueryStr, operation);
+    rewrittenQueryStr.setLength(rewrittenQueryStr.length() - 1);
 
     Map<Integer, ASTNode> setColExprs = null;
     Map<String, ASTNode> setCols = null;
@@ -152,9 +138,8 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       }
     }
 
-    addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr, null);
     rewrittenQueryStr.append(" from ");
-    rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
+    rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
 
     ASTNode where = null;
     int whereIndex = deleting() ? 1 : 2;
@@ -165,15 +150,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
 
     // Add a sort by clause so that the row ids come out in the correct order
-    if (nonNativeAcid) {
-      List<FieldSchema> sortColumns = mTable.getStorageHandler().acidSortColumns(mTable, operation);
-      if (!sortColumns.isEmpty()) {
-        String sortCols = sortColumns.stream().map(FieldSchema::getName).collect(Collectors.joining(","));
-        rewrittenQueryStr.append(" sort by ").append(sortCols).append(" ");
-      }
-    } else {
-      rewrittenQueryStr.append(" sort by ROW__ID ");
-    }
+    appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
 
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
@@ -222,34 +199,13 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       }
     }
 
-    // Patch up the projection list for updates, putting back the original set expressions.
     if (updating() && setColExprs != null) {
-      // Walk through the projection list and replace the column names with the
-      // expressions from the original update.  Under the TOK_SELECT (see above) the structure
-      // looks like:
-      // TOK_SELECT -> TOK_SELEXPR -> expr
-      //           \-> TOK_SELEXPR -> expr ...
-      ASTNode rewrittenSelect = (ASTNode)rewrittenInsert.getChildren().get(1);
-      assert rewrittenSelect.getToken().getType() == HiveParser.TOK_SELECT :
-          "Expected TOK_SELECT as second child of TOK_INSERT but found " +
-              rewrittenSelect.getName();
-      for (Map.Entry<Integer, ASTNode> entry : setColExprs.entrySet()) {
-        ASTNode selExpr = (ASTNode)rewrittenSelect.getChildren().get(entry.getKey());
-        assert selExpr.getToken().getType() == HiveParser.TOK_SELEXPR :
-            "Expected child of TOK_SELECT to be TOK_SELEXPR but was " + selExpr.getName();
-        // Now, change it's child
-        selExpr.setChild(0, entry.getValue());
-      }
+      patchProjectionForUpdate(rewrittenInsert, setColExprs);
     }
 
-    try {
-      useSuper = true;
-      // Note: this will overwrite this.ctx with rewrittenCtx
-      rewrittenCtx.setEnableUnparse(false);
-      super.analyze(rewrittenTree, rewrittenCtx);
-    } finally {
-      useSuper = false;
-    }
+    // Note: this will overwrite this.ctx with rewrittenCtx
+    rewrittenCtx.setEnableUnparse(false);
+    analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
 
     updateOutputs(mTable);
 
@@ -267,16 +223,15 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
   }
 
-  private void validateTxnManager(Table mTable) throws SemanticException {
-    if (!AcidUtils.acidTableWithoutTransactions(mTable) && !getTxnMgr().supportsAcid()) {
-      throw new SemanticException(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getMsg());
-    }
-  }
-
   private boolean updating() {
     return operation == Context.Operation.UPDATE;
   }
   private boolean deleting() {
     return operation == Context.Operation.DELETE;
+  }
+
+  @Override
+  protected boolean enableColumnStatsCollecting() {
+    return false;
   }
 }

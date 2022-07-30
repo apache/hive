@@ -63,6 +63,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uap
 PREHOOK: Input: default@acid_uap@ds=today
 PREHOOK: Input: default@acid_uap@ds=tomorrow
+PREHOOK: Output: default@acid_uap
 PREHOOK: Output: default@acid_uap@ds=today
 PREHOOK: Output: default@acid_uap@ds=tomorrow
 POSTHOOK: query: update acid_uap set b = 'fred'
@@ -70,8 +71,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uap
 POSTHOOK: Input: default@acid_uap@ds=today
 POSTHOOK: Input: default@acid_uap@ds=tomorrow
+POSTHOOK: Output: default@acid_uap
+POSTHOOK: Output: default@acid_uap@ds=today
 POSTHOOK: Output: default@acid_uap@ds=today
 POSTHOOK: Output: default@acid_uap@ds=tomorrow
+POSTHOOK: Output: default@acid_uap@ds=tomorrow
+POSTHOOK: Lineage: acid_uap PARTITION(ds=today).a SIMPLE [(acid_uap)acid_uap.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_uap PARTITION(ds=today).b EXPRESSION []
+POSTHOOK: Lineage: acid_uap PARTITION(ds=tomorrow).a SIMPLE [(acid_uap)acid_uap.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_uap PARTITION(ds=tomorrow).b EXPRESSION []
 PREHOOK: query: select a,b,ds from acid_uap order by a,b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uap

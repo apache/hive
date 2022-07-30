@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.session;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.hadoop.conf.Configuration;
@@ -74,12 +75,10 @@ public class SessionStateUtil {
   /**
    * @param conf Configuration object used for getting the query state, should contain the query id
    * @param tableName Name of the table for which the commit info should be retrieved
-   * @return the CommitInfo, or empty Optional if not present
+   * @return the CommitInfo map. Key: jobId, Value: {@link CommitInfo}, or empty Optional if not present
    */
-  public static Optional<CommitInfo> getCommitInfo(Configuration conf, String tableName) {
-    return getResource(conf, COMMIT_INFO_PREFIX + tableName)
-        .filter(o -> o instanceof CommitInfo)
-        .map(o -> (CommitInfo) o);
+  public static Optional<Map<String, CommitInfo>> getCommitInfo(Configuration conf, String tableName) {
+    return getResource(conf, COMMIT_INFO_PREFIX + tableName).map(o -> (Map<String, CommitInfo>)o);
   }
 
   /**
@@ -92,11 +91,22 @@ public class SessionStateUtil {
    */
   public static boolean addCommitInfo(Configuration conf, String tableName, String jobId, int taskNum,
                                          Map<String, String> additionalProps) {
+
     CommitInfo commitInfo = new CommitInfo()
-        .withJobID(jobId)
-        .withTaskNum(taskNum)
-        .withProps(additionalProps);
-    return addResource(conf, COMMIT_INFO_PREFIX + tableName, commitInfo);
+            .withJobID(jobId)
+            .withTaskNum(taskNum)
+            .withProps(additionalProps);
+
+    Optional<Map<String, CommitInfo>> commitInfoMap = getCommitInfo(conf, tableName);
+    if (commitInfoMap.isPresent()) {
+      commitInfoMap.get().put(jobId, commitInfo);
+      return true;
+    }
+
+    Map<String, CommitInfo> newCommitInfoMap = new HashMap<>();
+    newCommitInfoMap.put(jobId, commitInfo);
+
+    return addResource(conf, COMMIT_INFO_PREFIX + tableName, newCommitInfoMap);
   }
 
   private static Optional<QueryState> getQueryState(Configuration conf) {

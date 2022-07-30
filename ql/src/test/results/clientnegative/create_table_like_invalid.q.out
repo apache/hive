@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10434]: CREATE TABLE LIKE FILE is not supported by the 'AVRO' file format

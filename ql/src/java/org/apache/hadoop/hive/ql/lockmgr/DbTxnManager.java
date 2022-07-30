@@ -418,8 +418,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LOG.debug("No locks needed for queryId=" + queryId);
       return null;
     }
+
     List<LockComponent> lockComponents = AcidUtils.makeLockComponents(plan.getOutputs(), plan.getInputs(),
         ctx.getOperation(), conf);
+    rqstBuilder.setExclusiveCTAS(AcidUtils.isExclusiveCTAS(plan.getOutputs(), conf));
     lockComponents.addAll(getGlobalLocks(ctx.getConf()));
 
     //It's possible there's nothing to lock even if we have w/r entities.
@@ -448,9 +450,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       }
       LockComponentBuilder compBuilder = new LockComponentBuilder();
       compBuilder.setExclusive();
-      compBuilder.setOperationType(DataOperationType.UPDATE);
+      compBuilder.setOperationType(DataOperationType.NO_TXN);
       compBuilder.setDbName(GLOBAL_LOCKS);
       compBuilder.setTableName(lockName);
+
       globalLocks.add(compBuilder.build());
       LOG.debug("Adding global lock: " + lockName);
     }

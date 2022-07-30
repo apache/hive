@@ -36,10 +36,17 @@ PREHOOK: query: update sequential_update set mtime = current_timestamp, seq=1, p
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sequential_update
 PREHOOK: Output: default@sequential_update
+PREHOOK: Output: default@sequential_update
 POSTHOOK: query: update sequential_update set mtime = current_timestamp, seq=1, prev_writeid = ROW__ID.writeId, prev_dirname = regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sequential_update
 POSTHOOK: Output: default@sequential_update
+POSTHOOK: Output: default@sequential_update
+POSTHOOK: Lineage: sequential_update.ctime SIMPLE [(sequential_update)sequential_update.FieldSchema(name:ctime, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: sequential_update.mtime SIMPLE []
+POSTHOOK: Lineage: sequential_update.prev_dirname EXPRESSION [(sequential_update)sequential_update.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: sequential_update.prev_writeid EXPRESSION [(sequential_update)sequential_update.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: sequential_update.seq EXPRESSION []
 PREHOOK: query: select distinct IF(seq==1, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sequential_update
@@ -48,7 +55,7 @@ POSTHOOK: query: select distinct IF(seq==1, 'LOOKS OKAY', 'BROKEN'), regexp_extr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sequential_update
 #### A masked pattern was here ####
-LOOKS OKAY	delta_0000002_0000002_0000
+LOOKS OKAY	delta_0000002_0000002_0001
 PREHOOK: query: insert overwrite table sequential_update values(current_timestamp, 0, current_timestamp, 0, '')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -66,10 +73,17 @@ PREHOOK: query: update sequential_update set mtime = current_timestamp, seq=1, p
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sequential_update
 PREHOOK: Output: default@sequential_update
+PREHOOK: Output: default@sequential_update
 POSTHOOK: query: update sequential_update set mtime = current_timestamp, seq=1, prev_writeid = ROW__ID.writeId, prev_dirname = regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sequential_update
 POSTHOOK: Output: default@sequential_update
+POSTHOOK: Output: default@sequential_update
+POSTHOOK: Lineage: sequential_update.ctime SIMPLE [(sequential_update)sequential_update.FieldSchema(name:ctime, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: sequential_update.mtime SIMPLE []
+POSTHOOK: Lineage: sequential_update.prev_dirname EXPRESSION [(sequential_update)sequential_update.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: sequential_update.prev_writeid EXPRESSION [(sequential_update)sequential_update.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: sequential_update.seq EXPRESSION []
 PREHOOK: query: select distinct IF(seq==1, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sequential_update
@@ -78,7 +92,7 @@ POSTHOOK: query: select distinct IF(seq==1, 'LOOKS OKAY', 'BROKEN'), regexp_extr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sequential_update
 #### A masked pattern was here ####
-LOOKS OKAY	delta_0000004_0000004_0000
+LOOKS OKAY	delta_0000004_0000004_0001
 PREHOOK: query: alter table sequential_update compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: query: alter table sequential_update compact 'major'
@@ -91,7 +105,7 @@ POSTHOOK: query: select distinct IF(seq==1, 'LOOKS OKAY', 'BROKEN'), regexp_extr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sequential_update
 #### A masked pattern was here ####
-LOOKS OKAY	delta_0000004_0000004_0000
+LOOKS OKAY	delta_0000004_0000004_0001
 PREHOOK: query: insert overwrite table sequential_update values(current_timestamp, 0, current_timestamp, 0, ''), (current_timestamp, 2, current_timestamp, 2, '')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -186,6 +200,7 @@ PREHOOK: Input: default@orc_test_txn
 PREHOOK: Input: default@orc_test_txn@year=2016
 PREHOOK: Input: default@orc_test_txn@year=2017
 PREHOOK: Input: default@orc_test_txn@year=2018
+PREHOOK: Output: default@orc_test_txn
 PREHOOK: Output: default@orc_test_txn@year=2016
 PREHOOK: Output: default@orc_test_txn@year=2017
 PREHOOK: Output: default@orc_test_txn@year=2018
@@ -195,9 +210,22 @@ POSTHOOK: Input: default@orc_test_txn
 POSTHOOK: Input: default@orc_test_txn@year=2016
 POSTHOOK: Input: default@orc_test_txn@year=2017
 POSTHOOK: Input: default@orc_test_txn@year=2018
+POSTHOOK: Output: default@orc_test_txn
+POSTHOOK: Output: default@orc_test_txn@year=2016
 POSTHOOK: Output: default@orc_test_txn@year=2016
 POSTHOOK: Output: default@orc_test_txn@year=2017
+POSTHOOK: Output: default@orc_test_txn@year=2017
 POSTHOOK: Output: default@orc_test_txn@year=2018
+POSTHOOK: Output: default@orc_test_txn@year=2018
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2016).dept SIMPLE [(orc_test_txn)orc_test_txn.FieldSchema(name:dept, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2016).id SIMPLE []
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2016).name SIMPLE [(orc_test_txn)orc_test_txn.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2017).dept SIMPLE [(orc_test_txn)orc_test_txn.FieldSchema(name:dept, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2017).id SIMPLE []
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2017).name SIMPLE [(orc_test_txn)orc_test_txn.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2018).dept SIMPLE [(orc_test_txn)orc_test_txn.FieldSchema(name:dept, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2018).id SIMPLE []
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2018).name SIMPLE [(orc_test_txn)orc_test_txn.FieldSchema(name:name, type:string, comment:null), ]
 PREHOOK: query: select distinct IF(id==1, 'LOOKS OKAY', 'BROKEN') from orc_test_txn
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_test_txn

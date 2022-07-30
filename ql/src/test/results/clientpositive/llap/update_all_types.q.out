@@ -120,6 +120,7 @@ PREHOOK: query: update acid_uat set
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uat
 PREHOOK: Output: default@acid_uat
+PREHOOK: Output: default@acid_uat
 POSTHOOK: query: update acid_uat set
     ti = 1,
     si = 2,
@@ -138,6 +139,21 @@ POSTHOOK: query: update acid_uat set
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uat
 POSTHOOK: Output: default@acid_uat
+POSTHOOK: Output: default@acid_uat
+POSTHOOK: Lineage: acid_uat.b SIMPLE []
+POSTHOOK: Lineage: acid_uat.bi EXPRESSION []
+POSTHOOK: Lineage: acid_uat.ch EXPRESSION []
+POSTHOOK: Lineage: acid_uat.d EXPRESSION []
+POSTHOOK: Lineage: acid_uat.de EXPRESSION []
+POSTHOOK: Lineage: acid_uat.dt EXPRESSION []
+POSTHOOK: Lineage: acid_uat.f EXPRESSION []
+POSTHOOK: Lineage: acid_uat.i SIMPLE [(acid_uat)acid_uat.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_uat.j SIMPLE []
+POSTHOOK: Lineage: acid_uat.s SIMPLE []
+POSTHOOK: Lineage: acid_uat.si EXPRESSION []
+POSTHOOK: Lineage: acid_uat.t EXPRESSION []
+POSTHOOK: Lineage: acid_uat.ti EXPRESSION []
+POSTHOOK: Lineage: acid_uat.vc EXPRESSION []
 PREHOOK: query: select * from acid_uat order by i
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uat
@@ -164,6 +180,7 @@ PREHOOK: query: update acid_uat set
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uat
 PREHOOK: Output: default@acid_uat
+PREHOOK: Output: default@acid_uat
 POSTHOOK: query: update acid_uat set
   ti = ti * 2,
   si = cast(f as int),
@@ -172,6 +189,21 @@ POSTHOOK: query: update acid_uat set
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uat
 POSTHOOK: Output: default@acid_uat
+POSTHOOK: Output: default@acid_uat
+POSTHOOK: Lineage: acid_uat.b SIMPLE [(acid_uat)acid_uat.FieldSchema(name:b, type:boolean, comment:null), ]
+POSTHOOK: Lineage: acid_uat.bi SIMPLE [(acid_uat)acid_uat.FieldSchema(name:bi, type:bigint, comment:null), ]
+POSTHOOK: Lineage: acid_uat.ch SIMPLE [(acid_uat)acid_uat.FieldSchema(name:ch, type:char(36), comment:null), ]
+POSTHOOK: Lineage: acid_uat.d EXPRESSION [(acid_uat)acid_uat.FieldSchema(name:de, type:decimal(5,2), comment:null), ]
+POSTHOOK: Lineage: acid_uat.de SIMPLE [(acid_uat)acid_uat.FieldSchema(name:de, type:decimal(5,2), comment:null), ]
+POSTHOOK: Lineage: acid_uat.dt SIMPLE [(acid_uat)acid_uat.FieldSchema(name:dt, type:date, comment:null), ]
+POSTHOOK: Lineage: acid_uat.f SIMPLE [(acid_uat)acid_uat.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: acid_uat.i SIMPLE [(acid_uat)acid_uat.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_uat.j SIMPLE [(acid_uat)acid_uat.FieldSchema(name:j, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_uat.s SIMPLE []
+POSTHOOK: Lineage: acid_uat.si EXPRESSION [(acid_uat)acid_uat.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: acid_uat.t SIMPLE [(acid_uat)acid_uat.FieldSchema(name:t, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: acid_uat.ti EXPRESSION [(acid_uat)acid_uat.FieldSchema(name:ti, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: acid_uat.vc SIMPLE [(acid_uat)acid_uat.FieldSchema(name:vc, type:varchar(128), comment:null), ]
 PREHOOK: query: select * from acid_uat order by i
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uat

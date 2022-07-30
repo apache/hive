@@ -19,15 +19,21 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
+import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
@@ -40,12 +46,18 @@ public class IcebergAcidUtil {
 
   private static final Types.NestedField PARTITION_STRUCT_META_COL = null; // placeholder value in the map
   private static final Map<Types.NestedField, Integer> FILE_READ_META_COLS = Maps.newLinkedHashMap();
+  private static final Map<String, Types.NestedField> VIRTUAL_COLS_TO_META_COLS = Maps.newLinkedHashMap();
 
   static {
     FILE_READ_META_COLS.put(MetadataColumns.SPEC_ID, 0);
     FILE_READ_META_COLS.put(PARTITION_STRUCT_META_COL, 1);
     FILE_READ_META_COLS.put(MetadataColumns.FILE_PATH, 2);
     FILE_READ_META_COLS.put(MetadataColumns.ROW_POSITION, 3);
+
+    VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.PARTITION_SPEC_ID.getName(), MetadataColumns.SPEC_ID);
+    VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.PARTITION_HASH.getName(), PARTITION_STRUCT_META_COL);
+    VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.FILE_PATH.getName(), MetadataColumns.FILE_PATH);
+    VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.ROW_POSITION.getName(), MetadataColumns.ROW_POSITION);
   }
 
   private static final Types.NestedField PARTITION_HASH_META_COL = Types.NestedField.required(
@@ -62,9 +74,9 @@ public class IcebergAcidUtil {
   /**
    * @param dataCols The columns of the original file read schema
    * @param table The table object - it is used for populating the partition struct meta column
-   * @return The schema for reading files, extended with metadata columns needed for deletes
+   * @return The schema for reading files, extended with metadata columns
    */
-  public static Schema createFileReadSchemaForDelete(List<Types.NestedField> dataCols, Table table) {
+  public static Schema createFileReadSchemaWithVirtualColums(List<Types.NestedField> dataCols, Table table) {
     List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + FILE_READ_META_COLS.size());
     FILE_READ_META_COLS.forEach((metaCol, index) -> {
       if (metaCol == PARTITION_STRUCT_META_COL) {
@@ -200,5 +212,51 @@ public class IcebergAcidUtil {
       partHash = Objects.hash(partFields);
     }
     return partHash;
+  }
+
+  public static void copyFields(GenericRecord source, int start, int len, GenericRecord target) {
+    for (int sourceIdx = start, targetIdx = 0; targetIdx < len; ++sourceIdx, ++targetIdx) {
+      target.set(targetIdx, source.get(sourceIdx));
+    }
+  }
+
+  public static class VirtualColumnAwareIterator<T> implements CloseableIterator<T> {
+
+    private final CloseableIterator<T> currentIterator;
+
+    private GenericRecord current;
+    private final Schema expectedSchema;
+    private final Configuration conf;
+
+    public VirtualColumnAwareIterator(CloseableIterator<T> currentIterator, Schema expectedSchema, Configuration conf) {
+      this.currentIterator = currentIterator;
+      this.expectedSchema = expectedSchema;
+      this.conf = conf;
+      current = GenericRecord.create(
+          new Schema(expectedSchema.columns().subList(4, expectedSchema.columns().size())));
+    }
+
+    @Override
+    public void close() throws IOException {
+      currentIterator.close();
+    }
+
+    @Override
+    public boolean hasNext() {
+      return currentIterator.hasNext();
+    }
+
+    @Override
+    public T next() {
+      T next = currentIterator.next();
+      GenericRecord rec = (GenericRecord) next;
+      PositionDeleteInfo.setIntoConf(conf,
+          IcebergAcidUtil.parseSpecId(rec),
+          IcebergAcidUtil.computePartitionHash(rec),
+          IcebergAcidUtil.parseFilePath(rec),
+          IcebergAcidUtil.parseFilePosition(rec));
+      IcebergAcidUtil.copyFields(rec, FILE_READ_META_COLS.size(), current.size(), current);
+      return (T) current;
+    }
   }
 }

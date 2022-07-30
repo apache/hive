@@ -63,6 +63,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uwp
 PREHOOK: Input: default@acid_uwp@ds=today
 PREHOOK: Input: default@acid_uwp@ds=tomorrow
+PREHOOK: Output: default@acid_uwp
 PREHOOK: Output: default@acid_uwp@ds=today
 PREHOOK: Output: default@acid_uwp@ds=tomorrow
 POSTHOOK: query: update acid_uwp set b = 'fred' where b = 'k17Am8uPHWk02cEf1jet'
@@ -70,8 +71,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uwp
 POSTHOOK: Input: default@acid_uwp@ds=today
 POSTHOOK: Input: default@acid_uwp@ds=tomorrow
+POSTHOOK: Output: default@acid_uwp
+POSTHOOK: Output: default@acid_uwp@ds=today
 POSTHOOK: Output: default@acid_uwp@ds=today
 POSTHOOK: Output: default@acid_uwp@ds=tomorrow
+POSTHOOK: Lineage: acid_uwp PARTITION(ds=today).a SIMPLE [(acid_uwp)acid_uwp.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_uwp PARTITION(ds=today).b EXPRESSION []
 PREHOOK: query: select * from acid_uwp order by a, ds, b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uwp

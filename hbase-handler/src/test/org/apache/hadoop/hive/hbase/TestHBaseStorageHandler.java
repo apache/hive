@@ -101,8 +101,17 @@ public class TestHBaseStorageHandler {
     serdeParams.put("hbase.zookeeper.property.clientPort", "8765");
     serdeParams.put("hbase.table.name", "my#tbl");
     serdeParams.put("hbase.columns.mapping", "myco#lumns");
+
+    // default configuration
     URI uri = checkURIForAuth(createMockTable(serdeParams));
     Assert.assertEquals("hbase://testhost:8765/my%23tbl/myco%23lumns", uri.toString());
+
+    // full URL encoding turned on
+    serdeParams.put("hbase.columns.mapping", "myco#lumn\ns");
+    HiveConf hiveConf = new HiveConf();
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SECURITY_HBASE_URLENCODE_AUTHORIZATION_URI, true);
+    uri = checkURIForAuth(createMockTable(serdeParams), new JobConf(hiveConf));
+    Assert.assertEquals("hbase://testhost:8765/my%23tbl/myco%23lumn%0As", uri.toString());
   }
 
   private TableDesc getHBaseTableDesc() {
@@ -117,8 +126,12 @@ public class TestHBaseStorageHandler {
   }
 
   private static URI checkURIForAuth(Table table) throws URISyntaxException {
+    return checkURIForAuth(table, new JobConf(new HiveConf()));
+  }
+
+  private static URI checkURIForAuth(Table table, JobConf jobConf) throws URISyntaxException {
     HBaseStorageHandler hbaseStorageHandler = new HBaseStorageHandler();
-    hbaseStorageHandler.setConf(new JobConf(new HiveConf()));
+    hbaseStorageHandler.setConf(jobConf);
     return hbaseStorageHandler.getURIForAuth(table);
   }
 

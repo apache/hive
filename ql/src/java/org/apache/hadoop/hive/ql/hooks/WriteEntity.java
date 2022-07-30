@@ -51,6 +51,7 @@ public class WriteEntity extends Entity implements Serializable {
     INSERT_OVERWRITE,
     UPDATE,
     DELETE,
+    CTAS,
     PATH_WRITE, // Write to a URI, no locking done for this
   };
 
@@ -206,49 +207,85 @@ public class WriteEntity extends Entity implements Serializable {
    */
   public static WriteType determineAlterTableWriteType(AlterTableType op, Table table, HiveConf conf) {
     switch (op) {
-    case CLUSTERED_BY:
-    case NOT_SORTED:
-    case NOT_CLUSTERED:
-    case SET_FILE_FORMAT:
-    case SET_SERDE:
-    case DROPPROPS:
-    case ARCHIVE:
-    case UNARCHIVE:
-    case ALTERLOCATION:
-    case DROPPARTITION:
-    case RENAMEPARTITION:
-    case SKEWED_BY:
-    case SET_SKEWED_LOCATION:
-    case INTO_BUCKETS:
-    case ALTERPARTITION:
-    case TRUNCATE:
-    case MERGEFILES:
-    case OWNER:
-      return WriteType.DDL_EXCLUSIVE;
-
-    case ADDCOLS:
-    case REPLACE_COLUMNS:
-    case RENAME_COLUMN:
-    case ADD_CONSTRAINT: 
-    case DROP_CONSTRAINT:
-    case RENAME:
-      return AcidUtils.isLocklessReadsEnabled(table, conf) ? 
-          WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE;
-
-    case ADDPARTITION:
-    case SET_SERDE_PROPS:
-    case ADDPROPS:
-    case UPDATESTATS:
-      return WriteType.DDL_SHARED;
-
-    case COMPACT:
-    case TOUCH:
-      return WriteType.DDL_NO_LOCK;
-
-    default:
-      throw new RuntimeException("Unknown operation " + op.toString());
+      case ARCHIVE:
+      case UNARCHIVE:
+        // Archiving methods are currently disabled
+      case ALTERLOCATION:
+        // alter table {table_name} [partition ({partition_spec})] set location "{new_location}"
+      case DROPPARTITION:
+        // Not used, @see org.apache.hadoop.hive.ql.ddl.table.partition.drop.AlterTableDropPartitionAnalyzer
+        // alter table {table_name} drop [if exists] partition ({partition_spec}) [, partition ({partition_spec}), ...] [purge]
+      case RENAMEPARTITION:
+        // Not used, @see org.apache.hadoop.hive.ql.ddl.table.partition.rename.AlterTableRenamePartitionAnalyzer
+        // alter table {table_name} partition {partition_spec} rename to partition {partition_spec}
+      case SKEWED_BY:
+        // Not used, @see org.apache.hadoop.hive.ql.ddl.table.storage.skewed.AlterTableSkewedByAnalyzer
+        // alter table {table_name} skewed by (col_name1, col_name2, ...)
+        //   on ([(col_name1_value, col_name2_value, ...) [, (col_name1_value, col_name2_value), ...] [stored as directories]
+      case SET_SKEWED_LOCATION: 
+        // alter table {table_name} set skewed location (col_name1="location1" [, col_name2="location2", ...] )
+      case INTO_BUCKETS:
+        // Not used, @see org.apache.hadoop.hive.ql.ddl.table.storage.cluster.AlterTableIntoBucketsAnalyzer
+        // alter table {table_name} [partition ({partition_spec})] into {bucket_number} buckets
+      case ALTERPARTITION:
+        // Not used: @see org.apache.hadoop.hive.ql.ddl.table.partition.alter.AlterTableAlterPartitionAnalyzer
+        // alter table {table_name} partition column ({column_name} {column_type})
+      case TRUNCATE:
+        // truncate table {table_name} [partition ({partition_spec})] columns ({column_spec})
+        // Also @see org.apache.hadoop.hive.ql.ddl.table.misc.truncate.TruncateTableAnalyzer
+      case MERGEFILES:
+        // alter table {table_name} [partition (partition_key = 'partition_value' [, ...])] concatenate
+        // Also @see org.apache.hadoop.hive.ql.ddl.table.storage.concatenate.AlterTableConcatenateAnalyzer
+        if (AcidUtils.isLocklessReadsEnabled(table, conf)) {
+          throw new UnsupportedOperationException(op.name());
+        } else {
+          return WriteType.DDL_EXCLUSIVE;
+        }
+        
+      case CLUSTERED_BY:
+        // alter table {table_name} clustered by (col_name, col_name, ...) [sorted by (col_name, ...)] 
+        //    into {num_buckets} buckets;
+      case NOT_SORTED:
+      case NOT_CLUSTERED:
+      case SET_FILE_FORMAT:
+        // alter table {table_name} [partition ({partition_spec})] set fileformat {file_format}
+      case SET_SERDE:
+        // alter table {table_name} [PARTITION ({partition_spec})] set serde '{serde_class_name}'  
+      case ADDCOLS:
+      case REPLACE_COLUMNS:
+        // alter table {table_name} [partition ({partition_spec})] add/replace columns ({col_name} {data_type})
+      case RENAME_COLUMN:
+        // alter table {table_name} [partition ({partition_spec})] change column {column_name} {column_name} {data_type}
+      case ADD_CONSTRAINT:
+      case DROP_CONSTRAINT:
+      case OWNER:
+      case RENAME:
+        // alter table {table_name} rename to {new_table_name}
+      case DROPPROPS:  
+        return AcidUtils.isLocklessReadsEnabled(table, conf) ? 
+            WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE;
+  
+      case ADDPARTITION:
+        // Not used: @see org.apache.hadoop.hive.ql.ddl.table.partition.add.AbstractAddPartitionAnalyzer
+        // alter table {table_name} add [if not exists] partition ({partition_spec}) [location '{location}']
+        //   [, partition ({partition_spec}) [location '{location}'], ...];
+      case SET_SERDE_PROPS:
+      case ADDPROPS:
+      case UPDATESTATS:
+        return WriteType.DDL_SHARED;
+  
+      case COMPACT:
+        // alter table {table_name} [partition (partition_key = 'partition_value' [, ...])] 
+        //    compact 'compaction_type'[and wait] [with overwrite tblproperties ("property"="value" [, ...])];
+      case TOUCH:
+        // alter table {table_name} touch [partition ({partition_spec})]
+        return WriteType.DDL_NO_LOCK;
+  
+      default:
+        throw new RuntimeException("Unknown operation " + op.toString());
     }
   }
+  
   public boolean isDynamicPartitionWrite() {
     return isDynamicPartitionWrite;
   }

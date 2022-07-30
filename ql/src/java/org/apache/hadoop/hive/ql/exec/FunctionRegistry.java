@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.ql.udf.esri.ST_GeomFromText;
 import org.apache.hadoop.hive.ql.udf.esri.ST_GeomFromWKB;
 import org.apache.hadoop.hive.ql.udf.esri.ST_GeometryN;
 import org.apache.hadoop.hive.ql.udf.esri.ST_GeometryProcessing;
+import org.apache.hadoop.hive.ql.udf.esri.ST_GeometryType;
 import org.apache.hadoop.hive.ql.udf.esri.ST_InteriorRingN;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Intersection;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Intersects;
@@ -708,6 +709,7 @@ public final class FunctionRegistry {
     system.registerFunction("ST_GeomFromShape", ST_GeomFromShape.class);
     system.registerFunction("ST_GeomFromText", ST_GeomFromText.class);
     system.registerFunction("ST_GeomFromWKB", ST_GeomFromWKB.class);
+    system.registerFunction("ST_GeometryType", ST_GeometryType.class);
     system.registerFunction("ST_InteriorRingN", ST_InteriorRingN.class);
     system.registerFunction("ST_Intersection", ST_Intersection.class);
     system.registerFunction("ST_Intersects", ST_Intersects.class);

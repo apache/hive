@@ -73,6 +73,7 @@ alterTableStatementSuffix
     | partitionSpec alterTblPartitionStatementSuffix[true] -> alterTblPartitionStatementSuffix partitionSpec
     | alterStatementSuffixSetOwner
     | alterStatementSuffixSetPartSpec
+    | alterStatementSuffixExecute
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -450,6 +451,15 @@ alterStatementSuffixSetPartSpec
 @after { gParent.popMsg(state); }
     : KW_SET KW_PARTITION KW_SPEC LPAREN (spec = partitionTransformSpec) RPAREN
     -> ^(TOK_ALTERTABLE_SETPARTSPEC $spec)
+    ;
+
+alterStatementSuffixExecute
+@init { gParent.pushMsg("alter table execute", state); }
+@after { gParent.popMsg(state); }
+    : KW_EXECUTE KW_ROLLBACK LPAREN (rollbackParam=(StringLiteral | Number)) RPAREN
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_ROLLBACK $rollbackParam)
+    | KW_EXECUTE KW_EXPIRE_SNAPSHOTS LPAREN (expireParam=StringLiteral) RPAREN
+    -> ^(TOK_ALTERTABLE_EXECUTE KW_EXPIRE_SNAPSHOTS $expireParam)
     ;
 
 fileFormat

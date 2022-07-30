@@ -22,6 +22,10 @@ create external table t1_ctas as select * from t1;
 
 select * from t1_ctas order by key;
 
+create external table t1_ctas_part partitioned by (key) as select * from t1;
+
+select * from t1_ctas_part order by key;
+
 -- try CTAS with empty external table.
 
 create external table t2 (key int, value string);

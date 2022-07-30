@@ -35,6 +35,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -42,9 +43,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
@@ -82,6 +85,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import static java.util.Arrays.asList;
+import static org.apache.commons.collections.CollectionUtils.isEqualCollection;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
 
 /**
@@ -114,11 +119,28 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_TRUNCATE_USE_BASE, false);
+    
+    MetastoreConf.setClass(hiveConf, MetastoreConf.ConfVars.FILTER_HOOK,
+      DummyMetaStoreFilterHookImpl.class, MetaStoreFilterHook.class);
 
     HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL, 
       new Path(getWarehouseDir(), "ext").toUri().getPath());
   }
 
+  public static class DummyMetaStoreFilterHookImpl extends DefaultMetaStoreFilterHookImpl {
+    private static boolean blockResults = false;
+    
+    public DummyMetaStoreFilterHookImpl(Configuration conf) {
+      super(conf);
+    }
+    @Override
+    public List<String> filterTableNames(String catName, String dbName, List<String> tableList) {
+      if (blockResults) {
+        return new ArrayList<>();
+      }
+      return tableList;
+    }
+  }
 
   /**
    * tests that a failing Insert Overwrite (which creates a new base_x) is properly marked as
@@ -1606,7 +1628,15 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   }
 
   @Test
+  public void testDropWithBaseAndRecreateOnePartition() throws Exception {
+    dropWithBaseOnePartition(true);
+  }
+  @Test
   public void testDropWithBaseOnePartition() throws Exception {
+    dropWithBaseOnePartition(false);
+  }
+  
+  private void dropWithBaseOnePartition(boolean reCreate) throws Exception {
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition (p='a') values (1,2),(3,4)");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition (p='b') values (5,5),(4,4)");
 
@@ -1617,18 +1647,14 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     FileStatus[] stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=b"),
         AcidUtils.baseFileFilter);
     if (1 != stat.length) {
-      Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
+      Assert.fail("Expecting 1 base and found " + Arrays.toString(stat));
     }
     String name = stat[0].getPath().getName();
     Assert.assertEquals("base_0000003", name);
-    stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase() + "/p=a"),
-        AcidUtils.baseFileFilter);
-    if (0 != stat.length) {
-      Assert.fail("Expecting no base and found " + stat.length + " files " + Arrays.toString(stat));
-    }
     
     List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLPART);
     Assert.assertEquals(2, r.size());
+    Assert.assertTrue(isEqualCollection(r, asList("1\t2\ta", "3\t4\ta")));
     
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
@@ -1636,13 +1662,20 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
     Assert.assertTrue(resp.getCompacts().stream().anyMatch(
         ci -> TxnStore.CLEANING_RESPONSE.equals(ci.getState()) && "p=b".equals(ci.getPartitionname())));
-    
+    if (reCreate) {
+      runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition (p='b') values (3,3)");
+    }
     runCleaner(hiveConf);
-
+    
     stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString().toLowerCase()),
         path -> path.getName().equals("p=b"));
-    if (0 != stat.length) {
-      Assert.fail("Expecting partition data to be removed from FS");
+    if ((reCreate ? 1 : 0) != stat.length) {
+      Assert.fail("Partition data was " + (reCreate ? "" : "not") + " removed from FS");
+    }
+    if (reCreate) {
+      r = runStatementOnDriver("select * from " + Table.ACIDTBLPART);
+      Assert.assertEquals(3, r.size());
+      Assert.assertTrue(isEqualCollection(r, asList("1\t2\ta", "3\t4\ta", "3\t3\tb")));
     }
   }
 
@@ -1662,7 +1695,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] stat;
 
-    for (char p : Arrays.asList('a', 'b')) {
+    for (char p : asList('a', 'b')) {
       String partName = "p1=a/p2=a/p3=" + p;
       Assert.assertTrue(resp.getCompacts().stream().anyMatch(
           ci -> TxnStore.CLEANING_RESPONSE.equals(ci.getState()) && partName.equals(ci.getPartitionname())));
@@ -1686,11 +1719,11 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     
     runCleaner(hiveConf);
 
-    for (char p : Arrays.asList('a', 'b')) {
+    for (char p : asList('a', 'b')) {
       stat = fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLNESTEDPART.toString().toLowerCase() + "/p1=a/p2=a"),
           path -> path.getName().equals("p3=" + p));
       if (0 != stat.length) {
-        Assert.fail("Expecting partition data to be removed from FS");
+        Assert.fail("Partition data was not removed from FS");
       }
     }
   }
@@ -1700,9 +1733,15 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     MetastoreConf.setLongVar(hiveConf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX, 1);
     dropDatabaseCascadeNonBlocking();
   }
-  
+
   @Test
   public void testDropDatabaseCascadePerDbNonBlocking() throws Exception {
+    dropDatabaseCascadeNonBlocking();
+  }
+  
+  @Test
+  public void testDropDatabaseCascadePerDbNonBlockingFilterTableNames() throws Exception {
+    DummyMetaStoreFilterHookImpl.blockResults = true;
     dropDatabaseCascadeNonBlocking();
   }
   
@@ -1777,6 +1816,14 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     stat = fs.listStatus(new Path(getWarehouseDir(), "2"),
       t -> t.getName().equals("data"));
     Assert.assertEquals(0, stat.length);
+
+    runCleaner(hiveConf);
+
+    stat = fs.listStatus(new Path(getWarehouseDir(), database + ".db"),
+      t -> t.getName().matches("(mv_)?" + tableName + "2" + SOFT_DELETE_TABLE_PATTERN));
+    if (stat.length != 0) {
+      Assert.fail("Table data was not removed from FS");
+    }
   }
   
   @Test
@@ -1784,7 +1831,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     String tableName = "tab_acid";
     runStatementOnDriver("drop table if exists " + tableName);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, true);
-    
+
     runStatementOnDriver("create table " + tableName + "(a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("insert into " + tableName + " values(1,2),(3,4)");
     runStatementOnDriver("drop table " + tableName);
@@ -1833,7 +1880,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     String tableName = "tab_acid";
     runStatementOnDriver("drop table if exists " + tableName);
     
-    for (boolean enabled : Arrays.asList(false, true)) {
+    for (boolean enabled : asList(false, true)) {
       HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, enabled);
       runStatementOnDriver("create table " + tableName + "(a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
       runStatementOnDriver("insert into " + tableName + " values(1,2),(3,4)");
@@ -1922,7 +1969,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     String mviewName = "mv_" + tableName;
     runStatementOnDriver("drop materialized view if exists " + mviewName);
 
-    for (boolean enabled : Arrays.asList(false, true)) {
+    for (boolean enabled : asList(false, true)) {
       runStatementOnDriver("drop table if exists " + tableName);
       HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, enabled);
       
@@ -2044,5 +2091,30 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     if (0 != stat.length) {
       Assert.fail("Expecting partition data to be removed from FS");
     }
+  }
+
+  @Test
+  public void testIsRawFormatFile() throws Exception {
+    dropTable(new String[]{"file_formats"});
+    
+    runStatementOnDriver("CREATE TABLE `file_formats`(`id` int, `name` string) " +
+      " ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' " +
+      "WITH SERDEPROPERTIES ( " +
+      " 'field.delim'='|', " +
+      " 'line.delim'='\n'," +
+      " 'serialization.format'='|')  " +
+      "STORED AS " +
+      " INPUTFORMAT " +
+      "   'org.apache.hadoop.mapred.TextInputFormat' " +
+      " OUTPUTFORMAT " +
+      "   'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat' " +
+      "TBLPROPERTIES ( " +
+      " 'transactional'='true'," +
+      " 'transactional_properties'='insert_only')");
+    
+    runStatementOnDriver("insert into file_formats (id, name) values (1, 'Avro'),(2, 'Parquet'),(3, 'ORC')");
+    
+    List<String> res = runStatementOnDriver("select * from file_formats");
+    Assert.assertEquals(3, res.size());
   }
 }

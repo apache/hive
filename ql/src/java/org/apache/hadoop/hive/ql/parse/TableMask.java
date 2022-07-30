@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
@@ -110,7 +111,7 @@ public class TableMask {
     return false;
   }
 
-  public String create(HivePrivilegeObject privObject, MaskAndFilterInfo maskAndFilterInfo) {
+  public String create(HivePrivilegeObject privObject, MaskAndFilterInfo maskAndFilterInfo) throws SemanticException {
     boolean doColumnMasking = false;
     StringBuilder sb = new StringBuilder();
     sb.append("(SELECT ");
@@ -126,9 +127,14 @@ public class TableMask {
           firstOne = false;
         }
         String colName = privObject.getColumns().get(index);
+        String colType = colTypes.get(index);
         if (!expr.equals(colName)) {
+          if (colType.contains("<")) {
+            throw new SemanticException(ErrorMsg.MASKING_COMPLEX_TYPE_NOT_SUPPORTED,
+                expr, colName, colType);
+          }
           // CAST(expr AS COLTYPE) AS COLNAME
-          sb.append("CAST(" + expr + " AS " + colTypes.get(index) + ") AS "
+          sb.append("CAST(" + expr + " AS " + colType + ") AS "
               + HiveUtils.unparseIdentifier(colName, conf));
           doColumnMasking = true;
         } else {
@@ -180,5 +186,4 @@ public class TableMask {
   public void setNeedsRewrite(boolean needsRewrite) {
     this.needsRewrite = needsRewrite;
   }
-
 }

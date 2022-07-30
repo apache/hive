@@ -86,6 +86,7 @@ TOK_CUBE_GROUPBY;
 TOK_GROUPING_SETS;
 TOK_GROUPING_SETS_EXPRESSION;
 TOK_HAVING;
+TOK_QUALIFY;
 TOK_ORDERBY;
 TOK_NULLS_FIRST;
 TOK_NULLS_LAST;
@@ -160,6 +161,7 @@ TOK_CREATEDATABASE;
 TOK_CREATEDATACONNECTOR;
 TOK_CREATETABLE;
 TOK_TRUNCATETABLE;
+TOK_LIKEFILE;
 TOK_LIKETABLE;
 TOK_DATACONNECTOR;
 TOK_DATACONNECTORCOMMENT;
@@ -214,6 +216,7 @@ TOK_ALTERTABLE_ADDCONSTRAINT;
 TOK_ALTERTABLE_UPDATECOLUMNS;
 TOK_ALTERTABLE_OWNER;
 TOK_ALTERTABLE_SETPARTSPEC;
+TOK_ALTERTABLE_EXECUTE;
 TOK_MSCK;
 TOK_SHOWDATABASES;
 TOK_SHOWDATACONNECTORS;
@@ -2599,8 +2602,9 @@ atomSelectStatement
    g=groupByClause?
    h=havingClause?
    win=window_clause?
+   q=qualifyClause?
    -> ^(TOK_QUERY $f? ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
-                     $s $w? $g? $h? $win?))
+                     $s $w? $g? $h? $win? $q?))
    |
    LPAREN! selectStatement RPAREN!
    |
@@ -2717,13 +2721,14 @@ body
    groupByClause?
    havingClause?
    window_clause?
+   qualifyClause?
    orderByClause?
    clusterByClause?
    distributeByClause?
    sortByClause?
    limitClause? -> ^(TOK_INSERT insertClause
                      selectClause lateralView? whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? window_clause? limitClause?)
+                     distributeByClause? sortByClause? window_clause? qualifyClause? limitClause?)
    |
    selectClause
    lateralView?
@@ -2731,13 +2736,14 @@ body
    groupByClause?
    havingClause?
    window_clause?
+   qualifyClause?
    orderByClause?
    clusterByClause?
    distributeByClause?
    sortByClause?
    limitClause? -> ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
                      selectClause lateralView? whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? window_clause? limitClause?)
+                     distributeByClause? sortByClause? window_clause? qualifyClause? limitClause?)
    ;
 
 insertClause

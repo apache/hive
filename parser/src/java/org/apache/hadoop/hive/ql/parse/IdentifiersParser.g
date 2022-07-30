@@ -146,6 +146,13 @@ havingClause
     KW_HAVING havingCondition -> ^(TOK_HAVING havingCondition)
     ;
 
+qualifyClause
+@init { gParent.pushMsg("qualify clause", state); }
+@after { gParent.popMsg(state); }
+    :
+    KW_QUALIFY expression -> ^(TOK_QUALIFY expression)
+    ;
+
 havingCondition
 @init { gParent.pushMsg("having condition", state); }
 @after { gParent.popMsg(state); }
@@ -968,6 +975,7 @@ nonReserved
     | KW_TRIM
     | KW_SPEC
     | KW_SYSTEM_TIME | KW_SYSTEM_VERSION
+    | KW_EXPIRE_SNAPSHOTS
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

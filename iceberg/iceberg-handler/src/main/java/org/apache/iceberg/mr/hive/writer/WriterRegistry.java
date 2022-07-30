@@ -19,26 +19,33 @@
 
 package org.apache.iceberg.mr.hive.writer;
 
+import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.mapred.TaskAttemptID;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 
 public class WriterRegistry {
-  private static final Map<TaskAttemptID, Map<String, HiveIcebergWriter>> writers = Maps.newConcurrentMap();
+  private static final Map<TaskAttemptID, Map<String, List<HiveIcebergWriter>>> writers = Maps.newConcurrentMap();
 
   private WriterRegistry() {
   }
 
-  public static Map<String, HiveIcebergWriter> removeWriters(TaskAttemptID taskAttemptID) {
+  public static Map<String, List<HiveIcebergWriter>> removeWriters(TaskAttemptID taskAttemptID) {
     return writers.remove(taskAttemptID);
   }
 
   public static void registerWriter(TaskAttemptID taskAttemptID, String tableName, HiveIcebergWriter writer) {
     writers.putIfAbsent(taskAttemptID, Maps.newConcurrentMap());
-    writers.get(taskAttemptID).put(tableName, writer);
+
+    Map<String, List<HiveIcebergWriter>> writersOfTableMap = writers.get(taskAttemptID);
+    writersOfTableMap.putIfAbsent(tableName, Lists.newArrayList());
+
+    List<HiveIcebergWriter> writerList = writersOfTableMap.get(tableName);
+    writerList.add(writer);
   }
 
-  public static Map<String, HiveIcebergWriter> writers(TaskAttemptID taskAttemptID) {
+  public static Map<String, List<HiveIcebergWriter>> writers(TaskAttemptID taskAttemptID) {
     return writers.get(taskAttemptID);
   }
 }

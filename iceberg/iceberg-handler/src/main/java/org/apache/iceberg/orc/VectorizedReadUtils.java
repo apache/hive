@@ -43,8 +43,6 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.expressions.Binder;
 import org.apache.iceberg.expressions.Expression;
-import org.apache.iceberg.hadoop.HadoopInputFile;
-import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mapping.MappingUtil;
 import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.slf4j.Logger;
@@ -64,12 +62,12 @@ public class VectorizedReadUtils {
   /**
    * Opens the ORC inputFile and reads the metadata information to construct a byte buffer with OrcTail content.
    * Note that org.apache.orc (aka Hive bundled) ORC is used, as it is the older version compared to Iceberg's ORC.
-   * @param inputFile - the original ORC file - this needs to be accessed to retrieve the original schema for mapping
+   * @param path - the original ORC file - this needs to be accessed to retrieve the original schema for mapping
    * @param job - JobConf instance to adjust
    * @param fileId - FileID for the input file, serves as cache key in an LLAP setup
    * @throws IOException - errors relating to accessing the ORC file
    */
-  public static ByteBuffer getSerializedOrcTail(InputFile inputFile, SyntheticFileId fileId, JobConf job)
+  public static ByteBuffer getSerializedOrcTail(Path path, SyntheticFileId fileId, JobConf job)
       throws IOException {
 
     ByteBuffer result = null;
@@ -77,7 +75,6 @@ public class VectorizedReadUtils {
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
         LlapProxy.getIo() != null) {
       MapWork mapWork = LlapHiveUtils.findMapWork(job);
-      Path path = new Path(inputFile.location());
       PartitionDesc partitionDesc = LlapHiveUtils.partitionDescForPath(path, mapWork.getPathToPartitionInfo());
 
       // Note: Since Hive doesn't know about partition information of Iceberg tables, partitionDesc is only used to
@@ -100,13 +97,10 @@ public class VectorizedReadUtils {
     // Fallback to simple ORC reader file opening method in lack of or failure of LLAP.
     if (result == null) {
       org.apache.orc.OrcFile.ReaderOptions readerOptions =
-          org.apache.orc.OrcFile.readerOptions(job).useUTCTimestamp(true);
-      if (inputFile instanceof HadoopInputFile) {
-        readerOptions.filesystem(((HadoopInputFile) inputFile).getFileSystem());
-      }
+          org.apache.orc.OrcFile.readerOptions(job).useUTCTimestamp(true).filesystem(path.getFileSystem(job));
 
       try (org.apache.orc.impl.ReaderImpl orcFileReader =
-               (org.apache.orc.impl.ReaderImpl) OrcFile.createReader(new Path(inputFile.location()), readerOptions)) {
+               (org.apache.orc.impl.ReaderImpl) OrcFile.createReader(path, readerOptions)) {
         return orcFileReader.getSerializedFileFooter();
       }
     }

@@ -152,8 +152,11 @@ public class TestReplicationOnHDFSEncryptedZones {
               .run("select value from encrypted_table")
               .verifyResults(new String[] { "value1", "value2" });
       Assert.fail("Src EZKey shouldn't be present on target");
-    } catch (IOException e) {
-      Assert.assertTrue(e.getCause().getMessage().contains("KeyVersion name 'test_key@0' does not exist"));
+    } catch (Throwable e) {
+      while (e.getCause() != null) {
+        e = e.getCause();
+      }
+      Assert.assertTrue(e.getMessage().contains("KeyVersion name 'test_key@0' does not exist"));
     }
 
     //read should pass without raw-byte distcp

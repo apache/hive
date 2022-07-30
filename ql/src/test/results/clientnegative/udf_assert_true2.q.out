@@ -48,4 +48,4 @@ POSTHOOK: query: SELECT 1 + ASSERT_TRUE(x < 2) FROM src LATERAL VIEW EXPLODE(ARR
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-Failed with exception java.io.IOException:org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
+Failed with exception org.apache.hadoop.hive.ql.metadata.HiveException:ASSERT_TRUE(): assertion failed.

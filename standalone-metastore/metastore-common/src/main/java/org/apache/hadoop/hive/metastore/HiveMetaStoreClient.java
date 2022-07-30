@@ -562,17 +562,23 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (hook != null) {
       hook.preAlterTable(new_tbl, envContext);
     }
-    AlterTableRequest req = new AlterTableRequest(dbName, tbl_name, new_tbl);
-    req.setCatName(catName);
-    req.setValidWriteIdList(validWriteIds);
-    req.setEnvironmentContext(envContext);
-    if (processorCapabilities != null) {
-      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-      req.setProcessorIdentifier(processorIdentifier);
-    }
     boolean success = false;
     try {
-      client.alter_table_req(req);
+      boolean skipAlter = envContext != null && envContext.getProperties() != null &&
+              Boolean.valueOf(envContext.getProperties().getOrDefault(HiveMetaHook.SKIP_METASTORE_ALTER, "false"));
+      if (!skipAlter) {
+        AlterTableRequest req = new AlterTableRequest(dbName, tbl_name, new_tbl);
+        req.setCatName(catName);
+        req.setValidWriteIdList(validWriteIds);
+        req.setEnvironmentContext(envContext);
+        if (processorCapabilities != null) {
+          req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+          req.setProcessorIdentifier(processorIdentifier);
+        }
+
+        client.alter_table_req(req);
+      }
+
       if (hook != null) {
         hook.commitAlterTable(new_tbl, envContext);
       }
@@ -1614,11 +1620,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       List<String> materializedViews = getTables(req.getName(), ".*", TableType.MATERIALIZED_VIEW);
       for (String table : materializedViews) {
         // First we delete the materialized views
-        Table mview = getTable(getDefaultCatalog(conf), req.getName(), table);
+        Table materializedView = getTable(getDefaultCatalog(conf), req.getName(), table);
         boolean isSoftDelete = req.isSoftDelete() && Boolean.parseBoolean(
-          mview.getParameters().getOrDefault(SOFT_DELETE_TABLE, "false"));
-        mview.setTxnId(req.getTxnId());
-        dropTable(mview, req.isDeleteData() && !isSoftDelete, true, false);
+          materializedView.getParameters().get(SOFT_DELETE_TABLE));
+        materializedView.setTxnId(req.getTxnId());
+        dropTable(materializedView, req.isDeleteData() && !isSoftDelete, true, false);
       }
 
       /**
@@ -1675,11 +1681,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           hook.preDropTable(table);
         }
         boolean isSoftDelete = req.isSoftDelete() && Boolean.parseBoolean(
-          table.getParameters().getOrDefault(SOFT_DELETE_TABLE, "false"));
+          table.getParameters().get(SOFT_DELETE_TABLE));
         EnvironmentContext context = null;
         if (req.isSetTxnId()) {
           context = new EnvironmentContext();
-          context.putToProperties("txnId", String.valueOf(req.getTxnId()));
+          context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
           req.setDeleteManagedDir(false);
         }
         client.drop_table_with_environment_context(dbNameWithCatalog, table.getTableName(), 
@@ -1878,11 +1884,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     if (options.writeId != null) {
       context = Optional.ofNullable(context).orElse(new EnvironmentContext());
-      context.putToProperties("writeId", options.writeId.toString());
+      context.putToProperties(hive_metastoreConstants.WRITE_ID, options.writeId.toString());
     }
     if (options.txnId != null) {
       context = Optional.ofNullable(context).orElse(new EnvironmentContext());
-      context.putToProperties("txnId", options.txnId.toString());
+      context.putToProperties(hive_metastoreConstants.TXN_ID, options.txnId.toString());
     }
     req.setEnvironmentContext(context);
     
@@ -1910,7 +1916,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     if (tbl.isSetTxnId()) {
       context = Optional.ofNullable(context).orElse(new EnvironmentContext());
-      context.putToProperties("txnId", String.valueOf(tbl.getTxnId()));
+      context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(tbl.getTxnId()));
     }
     String catName = Optional.ofNullable(tbl.getCatName()).orElse(getDefaultCatalog(conf));
 
@@ -2704,13 +2710,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
   }
 
-  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
-      throws MetaException, InvalidOperationException, UnknownDBException, TException {
-    return client.get_materialization_invalidation_info(cm, null);
-  }
-
+  @Override
   public Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
-      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+          throws MetaException, InvalidOperationException, UnknownDBException, TException {
     return client.get_materialization_invalidation_info(cm, validTxnList);
   }
 

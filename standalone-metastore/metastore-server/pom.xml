@@ -277,6 +277,21 @@
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-util</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlet</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
     <!-- test scope dependencies -->
     <dependency>
       <groupId>junit</groupId>
@@ -440,11 +455,6 @@
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${maven.surefire.plugin.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-antrun-plugin</artifactId>
           <dependencies>
             <dependency>
@@ -550,37 +560,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <reuseForks>false</reuseForks>
-          <argLine>-Xmx2048m</argLine>
-          <failIfNoTests>false</failIfNoTests>
-          <systemPropertyVariables>
-            <log4j.debug>true</log4j.debug>
-            <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
-            <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
-            <hive.in.test>true</hive.in.test>
-            <derby.version>${derby.version}</derby.version>
-            <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
-          </systemPropertyVariables>
-          <additionalClasspathElements>
-            <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
-          </additionalClasspathElements>
-          <skipITs>${skipITests}</skipITs>
-          <!-- set this to false to run these tests -->
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

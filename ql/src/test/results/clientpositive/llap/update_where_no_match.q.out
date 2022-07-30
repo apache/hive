@@ -38,10 +38,14 @@ PREHOOK: query: update acid_wnm set b = 'fred' where b = 'nosuchvalue'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_wnm
 PREHOOK: Output: default@acid_wnm
+PREHOOK: Output: default@acid_wnm
 POSTHOOK: query: update acid_wnm set b = 'fred' where b = 'nosuchvalue'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_wnm
 POSTHOOK: Output: default@acid_wnm
+POSTHOOK: Output: default@acid_wnm
+POSTHOOK: Lineage: acid_wnm.a SIMPLE [(acid_wnm)acid_wnm.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_wnm.b EXPRESSION []
 PREHOOK: query: select * from acid_wnm order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_wnm

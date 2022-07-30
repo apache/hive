@@ -35,7 +35,8 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -346,6 +347,25 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
+   * Check if the underlying storage handler implementation supports sort columns.
+   * @return true if the storage handler can support it
+   */
+  default boolean supportsSortColumns() {
+    return false;
+  }
+
+  /**
+   * Collect the columns that are used to sort the content of the data files
+   * @param table the table which is being sorted
+   * @return the list of columns that are used during data sorting
+   */
+  default List<FieldSchema> sortColumns(org.apache.hadoop.hive.ql.metadata.Table table) {
+    Preconditions.checkState(supportsSortColumns(), "Should only be called for table formats where data sorting " +
+        "is supported");
+    return Collections.emptyList();
+  }
+
+  /**
    * Check if the underlying storage handler implementation support partition transformations.
    * @return true if the storage handler can support it
    */
@@ -359,7 +379,7 @@ public interface HiveStorageHandler extends Configurable {
    * @param table the HMS table, must be non-null
    * @return partition transform specification, can be null.
    */
-  default List<PartitionTransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table table) {
+  default List<TransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table table) {
     return null;
   }
 
@@ -371,7 +391,8 @@ public interface HiveStorageHandler extends Configurable {
    * @return the created DP context object, null if DP context / sorting is not required
    * @throws SemanticException
    */
-  default DynamicPartitionCtx createDPContext(HiveConf conf, org.apache.hadoop.hive.ql.metadata.Table table)
+  default DynamicPartitionCtx createDPContext(
+          HiveConf conf, org.apache.hadoop.hive.ql.metadata.Table table, Operation writeOperation)
       throws SemanticException {
     Preconditions.checkState(alwaysUnpartitioned(), "Should only be called for table formats where partitioning " +
         "is not handled by Hive but the table format itself. See alwaysUnpartitioned() method.");
@@ -460,5 +481,12 @@ public interface HiveStorageHandler extends Configurable {
    * @throws SemanticException if the sink operation is not allowed
    */
   default void validateSinkDesc(FileSinkDesc sinkDesc) throws SemanticException {
+  }
+
+  /**
+   * Execute an operation on storage handler level
+   * @param executeSpec operation specification
+   */
+  default void executeOperation(org.apache.hadoop.hive.ql.metadata.Table table, AlterTableExecuteSpec executeSpec) {
   }
 }

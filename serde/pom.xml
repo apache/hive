@@ -221,6 +221,12 @@
       <version>${slf4j.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.esri.geometry</groupId>
+      <artifactId>esri-geometry-api</artifactId>
+      <scope>compile</scope>
+      <version>${esri.version}</version>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

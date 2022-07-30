@@ -436,4 +436,14 @@ public abstract class VectorExpression implements Serializable {
     }
     return sb.toString();
   }
+
+  /**
+   * By default vector expressions do not handle decimal64 types and should be
+   * converted into Decimal types if its output cannot handle Decimal64. Decimal64
+   * that only deal with Decimal64 types cannot handle conversions so they should
+   * override this method and return false.
+   */
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return getOutputDataTypePhysicalVariation() == DataTypePhysicalVariation.NONE;
+  }
 }

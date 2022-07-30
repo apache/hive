@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverterPostProc;
 import org.apache.hadoop.hive.ql.optimizer.correlation.CorrelationOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
@@ -109,9 +110,10 @@ public class Optimizer {
     }
 
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION) &&
-            !pctx.getContext().isCboSucceeded()) {
+        (!pctx.getContext().isCboSucceeded() || pctx.getContext().getOperation() == Context.Operation.MERGE)) {
       // We run constant propagation twice because after predicate pushdown, filter expressions
       // are combined and may become eligible for reduction (like is not null filter).
+      // CBO can not handle merge statements and some constraint check can be evaluated by constant propagation
       transformations.add(new ConstantPropagate());
     }
 

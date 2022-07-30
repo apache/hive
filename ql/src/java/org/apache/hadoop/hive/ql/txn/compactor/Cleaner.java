@@ -482,16 +482,21 @@ public class Cleaner extends MetaStoreCompactorThread {
   }
 
   private List<Path> remove(String location, CompactionInfo ci, List<Path> paths, boolean ifPurge, FileSystem fs)
-      throws NoSuchObjectException, MetaException, IOException {
+      throws MetaException, IOException {
     List<Path> deleted = new ArrayList<>();
     if (paths.size() < 1) {
       return deleted;
     }
     LOG.info(idWatermark(ci) + " About to remove " + paths.size() +
       " obsolete directories from " + location + ". " + getDebugInfo(paths));
-    Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
-    boolean needCmRecycle = ReplChangeManager.isSourceOfReplication(db);
-    
+    boolean needCmRecycle;
+    try {
+      Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
+      needCmRecycle = ReplChangeManager.isSourceOfReplication(db);
+    } catch (NoSuchObjectException ex) {
+      // can not drop a database which is a source of replication
+      needCmRecycle = false;
+    }
     for (Path dead : paths) {
       LOG.debug("Going to delete path " + dead.toString());
       if (needCmRecycle) {

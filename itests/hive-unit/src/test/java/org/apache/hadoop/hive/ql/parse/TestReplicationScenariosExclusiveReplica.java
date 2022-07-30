@@ -19,10 +19,17 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -31,6 +38,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import javax.annotation.Nullable;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -39,7 +47,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,11 +54,21 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.EVENT_ACK_FILE;
+import static org.apache.hadoop.hive.ql.exec.repl.OptimisedBootstrapUtils.getEventIdFromFile;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test replication scenarios with staging on replica.
  */
 public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcrossInstances {
+
+  String extraPrimaryDb;
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -68,11 +85,284 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   @Before
   public void setup() throws Throwable {
     super.setup();
+    extraPrimaryDb = "extra_" + primaryDbName;
   }
 
   @After
   public void tearDown() throws Throwable {
     super.tearDown();
+  }
+
+  @Test
+  public void testTargetEventIdGenerationAfterFirstIncrementalInOptFailover() throws Throwable {
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+
+    // Do a bootstrap cycle(A->B)
+    primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    // Add some table & do an incremental dump.
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+            .run("create external table table1 (id int)")
+            .run("insert into table table1 values (100)")
+            .run("create  table table1_managed (name string)")
+            .run("insert into table table1_managed values ('ABC')")
+            .dump(primaryDbName, withClause);
+
+    // Do an incremental load
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    // Get the latest notification from the notification log for the target database, just after replication.
+    CurrentNotificationEventId notificationIdAfterRepl = replica.getCurrentNotificationEventId();
+
+    // Check the tables are there post incremental load.
+    replica.run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("select id from table1")
+            .verifyResult("100")
+            .run("select name from table1_managed")
+            .verifyResult("ABC")
+            .verifyReplTargetProperty(replicatedDbName);
+
+    // Do some modifications on the source cluster, so we have some entries in the table diff.
+    primary.run("use " + primaryDbName)
+            .run("create table table2_managed (id string)")
+            .run("insert into table table1_managed values ('SDC')")
+            .run("insert into table table2_managed values ('A'),('B'),('C')");
+
+
+    // Do some modifications in another database to have unrelated events as well after the last load, which should
+    // get filtered.
+
+    primary.run("create database " + extraPrimaryDb)
+            .run("use " + extraPrimaryDb)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (15),(1),(96)")
+            .run("create  table t1_managed (id string)")
+            .run("insert into table t1_managed values ('SA'),('PS')");
+
+    // Do some modifications on the target database.
+    replica.run("use " + replicatedDbName)
+            .run("alter database "+ replicatedDbName + " set DBPROPERTIES ('key1'='value1')")
+            .run("alter database "+ replicatedDbName + " set DBPROPERTIES ('key2'='value2')");
+
+    // Validate the current replication id on original target has changed now.
+    assertNotEquals(replica.getCurrentNotificationEventId().getEventId(), notificationIdAfterRepl.getEventId());
+
+    // Prepare for reverse replication.
+    DistributedFileSystem replicaFs = replica.miniDFSCluster.getFileSystem();
+    Path newReplDir = new Path(replica.repldDir + "reverse1");
+    replicaFs.mkdirs(newReplDir);
+    withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+
+    tuple = replica.dump(replicatedDbName);
+
+    // Check event ack file should get created.
+    assertTrue(new Path(tuple.dumpLocation, EVENT_ACK_FILE).toString() + " doesn't exist",
+            replicaFs.exists(new Path(tuple.dumpLocation, EVENT_ACK_FILE)));
+
+    // Get the target event id.
+    NotificationEventResponse nl = new HiveMetaStoreClient(replica.hiveConf)
+            .getNextNotification(Long.parseLong(getEventIdFromFile(new Path(tuple.dumpLocation), conf)[1]), -1,
+                    new DatabaseAndTableFilter(replicatedDbName, null));
+
+    // There should be 2 events, two custom alter operations.
+    assertEquals(2, nl.getEvents().size());
+  }
+
+  @Test
+  public void testTargetEventIdGenerationInOptmisedFailover() throws Throwable {
+    // Do a a cycle of bootstrap dump & load.
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+
+    // Do a bootstrap cycle(A->B)
+    primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    // Add some table & do the first incremental dump.
+    primary.run("use " + primaryDbName)
+            .run("create external table tablei1 (id int)")
+            .run("create external table tablei2 (id int)")
+            .run("create table tablem1 (id int)")
+            .run("create table tablem2 (id int)")
+            .run("insert into table tablei1 values(1),(2),(3),(4)")
+            .run("insert into table tablei2 values(10),(20),(30),(40)")
+            .run("insert into table tablem1 values(5),(10),(15),(20)")
+            .run("insert into table tablem2 values(6),(12),(18),(24)")
+            .dump(primaryDbName, withClause);
+
+    // Do the incremental load, and check everything is intact.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use "+ replicatedDbName)
+            .run("select id from tablei1")
+            .verifyResults(new String[]{"1","2","3","4"})
+            .run("select id from tablei2")
+            .verifyResults(new String[]{"10","20","30","40"})
+            .run("select id from tablem1")
+            .verifyResults(new String[]{"5","10","15","20"})
+            .run("select id from tablem2")
+            .verifyResults(new String[]{"6","12","18","24"});
+
+    // Do some modifications & call for the second cycle of incremental dump & load.
+    WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
+            .run("create external table table1 (id int)")
+            .run("insert into table table1 values (25),(35),(82)")
+            .run("create  table table1_managed (name string)")
+            .run("insert into table table1_managed values ('CAD'),('DAS'),('MSA')")
+            .run("insert into table tablei1 values(15),(62),(25),(62)")
+            .run("insert into table tablei2 values(10),(22),(11),(22)")
+            .run("insert into table tablem1 values(5),(10),(15),(20)")
+            .run("alter table table1 set TBLPROPERTIES('comment'='abc')")
+            .dump(primaryDbName, withClause);
+
+    // Do an incremental load
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    // Get the latest notification from the notification log for the target database, just after replication.
+    CurrentNotificationEventId notificationIdAfterRepl = replica.getCurrentNotificationEventId();
+
+    // Check the tables are there post incremental load.
+    replica.run("repl status " + replicatedDbName)
+            .verifyResult(tuple.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("select id from table1")
+            .verifyResults(new String[]{"25", "35", "82"})
+            .run("select name from table1_managed")
+            .verifyResults(new String[]{"CAD", "DAS", "MSA"})
+            .verifyReplTargetProperty(replicatedDbName);
+
+    // Do some modifications on the source cluster, so we have some entries in the table diff.
+    primary.run("use " + primaryDbName)
+            .run("create table table2_managed (id string)")
+            .run("insert into table table1_managed values ('AAA'),('BBB')")
+            .run("insert into table table2_managed values ('A1'),('B1'),('C2')");
+
+
+    // Do some modifications in another database to have unrelated events as well after the last load, which should
+    // get filtered.
+
+    primary.run("create database " + extraPrimaryDb)
+            .run("use " + extraPrimaryDb)
+            .run("create external table table1 (id int)")
+            .run("insert into table table1 values (15),(1),(96)")
+            .run("create  table table1_managed (id string)")
+            .run("insert into table table1_managed values ('SAA'),('PSA')");
+
+    // Do some modifications on the target database.
+    replica.run("use " + replicatedDbName)
+            .run("alter database "+ replicatedDbName + " set DBPROPERTIES ('repl1'='value1')")
+            .run("alter database "+ replicatedDbName + " set DBPROPERTIES ('repl2'='value2')");
+
+    // Validate the current replication id on original target has changed now.
+    assertNotEquals(replica.getCurrentNotificationEventId().getEventId(), notificationIdAfterRepl.getEventId());
+
+    // Prepare for reverse replication.
+    DistributedFileSystem replicaFs = replica.miniDFSCluster.getFileSystem();
+    Path newReplDir = new Path(replica.repldDir + "reverse01");
+    replicaFs.mkdirs(newReplDir);
+    withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+
+    tuple = replica.dump(replicatedDbName, withClause);
+
+    // Check event ack file should get created.
+    assertTrue(new Path(tuple.dumpLocation, EVENT_ACK_FILE).toString() + " doesn't exist",
+            replicaFs.exists(new Path(tuple.dumpLocation, EVENT_ACK_FILE)));
+
+    // Get the target event id.
+    NotificationEventResponse nl = new HiveMetaStoreClient(replica.hiveConf)
+            .getNextNotification(Long.parseLong(getEventIdFromFile(new Path(tuple.dumpLocation), conf)[1]), 10,
+                    new DatabaseAndTableFilter(replicatedDbName, null));
+
+    assertEquals(0, nl.getEventsSize());
+  }
+
+  @Test
+  public void testTargetEventIdWithNotificationsExpiredInOptimisedFailover() throws Throwable {
+    // Do a a cycle of bootstrap dump & load.
+    List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
+    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+
+    // Do a bootstrap cycle(A->B)
+    primary.dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    // Add some table & do the first incremental dump.
+    primary.run("use " + primaryDbName)
+            .run("create external table tablei1 (id int)")
+            .run("create table tablem1 (id int)")
+            .run("insert into table tablei1 values(1),(2),(3),(4)")
+            .run("insert into table tablem1 values(5),(10),(15),(20)")
+            .dump(primaryDbName, withClause);
+
+    // Do the incremental load, and check everything is intact.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use "+ replicatedDbName)
+            .run("select id from tablei1")
+            .verifyResults(new String[]{"1","2","3","4"})
+            .run("select id from tablem1")
+            .verifyResults(new String[]{"5","10","15","20"});
+
+    // Explicitly make the notification logs.
+    // Get the latest notification from the notification log for the target database, just after replication.
+    CurrentNotificationEventId notificationIdAfterRepl = replica.getCurrentNotificationEventId();
+    // Inject a behaviour where some events missing from notification_log table.
+    // This ensures the incremental dump doesn't get all events for replication.
+    InjectableBehaviourObjectStore.BehaviourInjection<NotificationEventResponse, NotificationEventResponse>
+            eventIdSkipper =
+            new InjectableBehaviourObjectStore.BehaviourInjection<NotificationEventResponse, NotificationEventResponse>() {
+
+              @Nullable
+              @Override
+              public NotificationEventResponse apply(@Nullable NotificationEventResponse eventIdList) {
+                if (null != eventIdList) {
+                  List<NotificationEvent> eventIds = eventIdList.getEvents();
+                  List<NotificationEvent> outEventIds = new ArrayList<>();
+                  for (NotificationEvent event : eventIds) {
+                    // Skip the last db event.
+                    if (event.getDbName().equalsIgnoreCase(replicatedDbName)) {
+                      injectionPathCalled = true;
+                      continue;
+                    }
+                    outEventIds.add(event);
+                  }
+
+                  // Return the new list
+                  return new NotificationEventResponse(outEventIds);
+                } else {
+                  return null;
+                }
+              }
+            };
+
+    try {
+      InjectableBehaviourObjectStore.setGetNextNotificationBehaviour(eventIdSkipper);
+
+      // Prepare for reverse replication.
+      DistributedFileSystem replicaFs = replica.miniDFSCluster.getFileSystem();
+      Path newReplDir = new Path(replica.repldDir + "reverse01");
+      replicaFs.mkdirs(newReplDir);
+      withClause = ReplicationTestUtils.includeExternalTableClause(true);
+      withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+
+      try {
+        replica.dump(replicatedDbName, withClause);
+        fail("Expected the dump to fail since the notification event is missing.");
+      } catch (Exception e) {
+        // Expected due to missing notification log entry.
+      }
+
+      // Check if there is a non-recoverable error or not.
+      Path nonRecoverablePath =
+              TestReplicationScenarios.getNonRecoverablePath(newReplDir, replicatedDbName, replica.hiveConf);
+      assertTrue(replicaFs.exists(nonRecoverablePath));
+    } finally {
+      InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour();  // reset the behaviour
+    }
   }
 
   @Test

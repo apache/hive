@@ -39,6 +39,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@parquet_thrift_array_of_primitives
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@temp_parquet_thrift_array_of_primitives
+POSTHOOK: Lineage: temp_parquet_thrift_array_of_primitives.list_of_ints SIMPLE [(parquet_thrift_array_of_primitives)parquet_thrift_array_of_primitives.FieldSchema(name:list_of_ints, type:array<int>, comment:null), ]
 PREHOOK: query: SELECT * FROM temp_parquet_thrift_array_of_primitives
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_parquet_thrift_array_of_primitives

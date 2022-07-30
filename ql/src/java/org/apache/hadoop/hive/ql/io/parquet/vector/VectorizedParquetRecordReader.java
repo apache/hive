@@ -37,27 +37,24 @@ import org.apache.hadoop.hive.ql.io.BucketIdentifier;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
-import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileSplit;
+import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.parquet.ParquetRuntimeException;
 import org.apache.parquet.bytes.BytesUtils;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.page.PageReadStore;
-import org.apache.parquet.filter2.compat.FilterCompat;
 import org.apache.parquet.format.converter.ParquetMetadataConverter.MetadataFilter;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetFileWriter;
@@ -83,15 +80,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
 import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
-import static org.apache.parquet.filter2.compat.RowGroupFilter.filterRowGroups;
 import static org.apache.parquet.format.converter.ParquetMetadataConverter.NO_FILTER;
-import static org.apache.parquet.format.converter.ParquetMetadataConverter.range;
-import static org.apache.parquet.hadoop.ParquetInputFormat.getFilter;
 
 /**
  * This reader is used to read a batch of record from inputsplit, part of the code is referred
@@ -111,7 +104,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private Object[] partitionValues;
   private Path cacheFsPath;
   private static final int MAP_DEFINITION_LEVEL_MAX = 3;
-  private Map<Path, PartitionDesc> parts;
   private final boolean isReadCacheOnly;
 
   /**
@@ -138,32 +130,53 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private ZoneId writerTimezone;
   private final BucketIdentifier bucketIdentifier;
 
-  public VectorizedParquetRecordReader(
-      org.apache.hadoop.mapred.InputSplit oldInputSplit, JobConf conf) {
+  // LLAP cache integration
+  // TODO: also support fileKey in splits, like OrcSplit does
+  private Object cacheKey = null;
+  private CacheTag cacheTag = null;
+
+  public VectorizedParquetRecordReader(InputSplit oldInputSplit, JobConf conf) throws IOException {
     this(oldInputSplit, conf, null, null, null);
   }
 
   public VectorizedParquetRecordReader(
-      org.apache.hadoop.mapred.InputSplit oldInputSplit, JobConf conf,
-      FileMetadataCache metadataCache, DataCache dataCache, Configuration cacheConf) {
+      InputSplit oldInputSplit, JobConf conf,
+      FileMetadataCache metadataCache, DataCache dataCache, Configuration cacheConf)
+      throws IOException {
+    super(conf, oldInputSplit);
     try {
       this.metadataCache = metadataCache;
       this.cache = dataCache;
       this.cacheConf = cacheConf;
-      serDeStats = new SerDeStats();
-      projectionPusher = new ProjectionPusher();
+
+      if (metadataCache != null) {
+        cacheKey = HdfsUtils.getFileId(filePath.getFileSystem(conf), filePath,
+            HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),
+            HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID),
+            !HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_IO_USE_FILEID_PATH));
+        // HdfsUtils.getFileId might yield to null in certain configurations
+        if (cacheKey != null) {
+          cacheTag = cacheTagOfParquetFile(filePath, cacheConf, conf);
+          // If we are going to use cache, change the path to depend on file ID for extra consistency.
+          if (cacheKey instanceof Long && HiveConf.getBoolVar(
+              cacheConf, ConfVars.LLAP_IO_USE_FILEID_PATH)) {
+            filePath = HdfsUtils.getFileIdPath(filePath, (long)cacheKey);
+          }
+        }
+      }
+
+      setupMetadataAndParquetSplit(conf);
+
       colsToInclude = ColumnProjectionUtils.getReadColumnIDs(conf);
       //initialize the rowbatchContext
-      jobConf = conf;
       isReadCacheOnly = HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY);
       rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
-      ParquetInputSplit inputSplit = getSplit(oldInputSplit, conf);
-      if (inputSplit != null) {
-        initialize(inputSplit, conf);
+
+      if (parquetInputSplit != null) {
+        initialize(parquetInputSplit, conf);
       }
-      FileSplit fileSplit = (FileSplit) oldInputSplit;
       initPartitionValues(fileSplit, conf);
-      bucketIdentifier = BucketIdentifier.from(conf, fileSplit.getPath());
+      bucketIdentifier = BucketIdentifier.from(conf, filePath);
     } catch (Throwable e) {
       LOG.error("Failed to create the vectorized reader due to exception " + e);
       throw new RuntimeException(e);
@@ -180,26 +193,20 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
      }
   }
 
+  @Override
+  protected ParquetMetadata getParquetMetadata(Path path, JobConf conf) throws IOException {
+    return readSplitFooter(conf, filePath, cacheKey, NO_FILTER, cacheTag);
+  }
+
   @SuppressWarnings("deprecation")
   public void initialize(
-    InputSplit oldSplit,
+      ParquetInputSplit split,
     JobConf configuration) throws IOException, InterruptedException, HiveException {
-    // the oldSplit may be null during the split phase
-    if (oldSplit == null) {
-      return;
-    }
-    ParquetMetadata footer;
+
     List<BlockMetaData> blocks;
 
-    MapWork mapWork = LlapHiveUtils.findMapWork(jobConf);
-    if (mapWork != null) {
-      parts = mapWork.getPathToPartitionInfo();
-    }
-
-    ParquetInputSplit split = (ParquetInputSplit) oldSplit;
     boolean indexAccess =
       configuration.getBoolean(DataWritableReadSupport.PARQUET_COLUMN_INDEX_ACCESS, false);
-    this.file = split.getPath();
     long[] rowGroupOffsets = split.getRowGroupOffsets();
 
     String columnNames = configuration.get(IOConstants.COLUMNS);
@@ -207,83 +214,46 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
     columnTypesList = DataWritableReadSupport.getColumnTypes(columnTypes);
 
-    // if task.side.metadata is set, rowGroupOffsets is null
-    Object cacheKey = null;
-    CacheTag cacheTag = null;
-    // TODO: also support fileKey in splits, like OrcSplit does
-    if (metadataCache != null) {
-      if (cacheKey == null) {
-        cacheKey = HdfsUtils.getFileId(file.getFileSystem(configuration), file,
-          HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),
-          HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID),
-          !HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_IO_USE_FILEID_PATH));
+    Set<Long> offsets = new HashSet<>();
+    for (long offset : rowGroupOffsets) {
+      offsets.add(offset);
+    }
+    blocks = new ArrayList<>();
+    for (BlockMetaData block : parquetMetadata.getBlocks()) {
+      if (offsets.contains(block.getStartingPos())) {
+        blocks.add(block);
       }
     }
-    if (cacheKey != null) {
-      if (HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_TRACK_CACHE_USAGE)) {
-        PartitionDesc partitionDesc = LlapHiveUtils.partitionDescForPath(split.getPath(), parts);
-        cacheTag = LlapHiveUtils.getDbAndTableNameForMetrics(file, true, partitionDesc);
+    // verify we found them all
+    if (blocks.size() != rowGroupOffsets.length) {
+      long[] foundRowGroupOffsets = new long[parquetMetadata.getBlocks().size()];
+      for (int i = 0; i < foundRowGroupOffsets.length; i++) {
+        foundRowGroupOffsets[i] = parquetMetadata.getBlocks().get(i).getStartingPos();
       }
-      // If we are going to use cache, change the path to depend on file ID for extra consistency.
-      FileSystem fs = file.getFileSystem(configuration);
-      if (cacheKey instanceof Long && HiveConf.getBoolVar(
-          cacheConf, ConfVars.LLAP_IO_USE_FILEID_PATH)) {
-        file = HdfsUtils.getFileIdPath(file, (long)cacheKey);
-      }
-    }
-
-    if (rowGroupOffsets == null) {
-      //TODO check whether rowGroupOffSets can be null
-      // then we need to apply the predicate push down filter
-      footer = readSplitFooter(
-          configuration, file, cacheKey, range(split.getStart(), split.getEnd()), cacheTag);
-      MessageType fileSchema = footer.getFileMetaData().getSchema();
-      FilterCompat.Filter filter = getFilter(configuration);
-      blocks = filterRowGroups(filter, footer.getBlocks(), fileSchema);
-    } else {
-      // otherwise we find the row groups that were selected on the client
-      footer = readSplitFooter(configuration, file, cacheKey, NO_FILTER, cacheTag);
-      Set<Long> offsets = new HashSet<>();
-      for (long offset : rowGroupOffsets) {
-        offsets.add(offset);
-      }
-      blocks = new ArrayList<>();
-      for (BlockMetaData block : footer.getBlocks()) {
-        if (offsets.contains(block.getStartingPos())) {
-          blocks.add(block);
-        }
-      }
-      // verify we found them all
-      if (blocks.size() != rowGroupOffsets.length) {
-        long[] foundRowGroupOffsets = new long[footer.getBlocks().size()];
-        for (int i = 0; i < foundRowGroupOffsets.length; i++) {
-          foundRowGroupOffsets[i] = footer.getBlocks().get(i).getStartingPos();
-        }
-        // this should never happen.
-        // provide a good error message in case there's a bug
-        throw new IllegalStateException(
-          "All the offsets listed in the split should be found in the file."
-            + " expected: " + Arrays.toString(rowGroupOffsets)
-            + " found: " + blocks
-            + " out of: " + Arrays.toString(foundRowGroupOffsets)
-            + " in range " + split.getStart() + ", " + split.getEnd());
-      }
+      // this should never happen.
+      // provide a good error message in case there's a bug
+      throw new IllegalStateException(
+        "All the offsets listed in the split should be found in the file."
+          + " expected: " + Arrays.toString(rowGroupOffsets)
+          + " found: " + blocks
+          + " out of: " + Arrays.toString(foundRowGroupOffsets)
+          + " in range " + split.getStart() + ", " + split.getEnd());
     }
 
     for (BlockMetaData block : blocks) {
       this.totalRowCount += block.getRowCount();
     }
-    this.fileSchema = footer.getFileMetaData().getSchema();
+    this.fileSchema = parquetMetadata.getFileMetaData().getSchema();
     this.writerTimezone = DataWritableReadSupport
-        .getWriterTimeZoneId(footer.getFileMetaData().getKeyValueMetaData());
+        .getWriterTimeZoneId(parquetMetadata.getFileMetaData().getKeyValueMetaData());
 
     colsToInclude = ColumnProjectionUtils.getReadColumnIDs(configuration);
     requestedSchema = DataWritableReadSupport
       .getRequestedSchema(indexAccess, columnNamesList, columnTypesList, fileSchema, configuration);
 
-    Path path = wrapPathForCache(file, cacheKey, configuration, blocks, cacheTag);
+    Path path = wrapPathForCache(filePath, cacheKey, configuration, blocks, cacheTag);
     this.reader = new ParquetFileReader(
-      configuration, footer.getFileMetaData(), path, blocks, requestedSchema.getColumns());
+      configuration, parquetMetadata.getFileMetaData(), path, blocks, requestedSchema.getColumns());
   }
 
   private Path wrapPathForCache(Path path, Object fileKey, JobConf configuration,
@@ -360,11 +330,20 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
         return HadoopStreams.wrap(fs.open(file));
       }
       @Override
-      public long getLength() throws IOException {
+      public long getLength() {
         return stat.getLen();
       }
     };
     return ParquetFileReader.readFooter(inputFile, filter);
+  }
+
+  private static CacheTag cacheTagOfParquetFile(Path path, Configuration cacheConf, JobConf jobConf) {
+    MapWork mapWork = LlapHiveUtils.findMapWork(jobConf);
+    if (!HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_TRACK_CACHE_USAGE) || mapWork == null) {
+      return null;
+    }
+    PartitionDesc partitionDesc = LlapHiveUtils.partitionDescForPath(path, mapWork.getPathToPartitionInfo());
+    return LlapHiveUtils.getDbAndTableNameForMetrics(path, true, partitionDesc);
   }
 
 

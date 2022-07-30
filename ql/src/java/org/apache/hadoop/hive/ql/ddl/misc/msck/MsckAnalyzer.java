@@ -87,7 +87,8 @@ public class MsckAnalyzer extends AbstractFunctionAnalyzer {
     }
 
     if (repair && AcidUtils.isTransactionalTable(table)) {
-      outputs.add(new WriteEntity(table, WriteType.DDL_EXCLUSIVE));
+      outputs.add(new WriteEntity(table, AcidUtils.isLocklessReadsEnabled(table, conf) ? 
+          WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE));
     } else {
       outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_SHARED));
     }

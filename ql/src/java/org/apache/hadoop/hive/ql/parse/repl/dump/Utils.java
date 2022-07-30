@@ -235,7 +235,7 @@ public class Utils {
     return false;
   }
 
-  public static Iterable<String> matchesDb(Hive db, String dbPattern) throws HiveException {
+  public static List<String> matchesDb(Hive db, String dbPattern) throws HiveException {
     if (dbPattern == null) {
       return db.getAllDatabases();
     } else {

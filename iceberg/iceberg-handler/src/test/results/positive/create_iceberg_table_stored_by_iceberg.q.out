@@ -45,8 +45,6 @@ SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe
 InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
-Num Buckets:        	0                   	 
-Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
 PREHOOK: query: DROP TABLE ice_t
 PREHOOK: type: DROPTABLE

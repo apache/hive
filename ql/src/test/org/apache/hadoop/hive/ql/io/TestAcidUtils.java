@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io;
 
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils.AcidOperationalProperties;
@@ -42,7 +44,9 @@ import org.apache.hadoop.hive.ql.io.orc.TestInputOutputFormat.MockFile;
 import org.apache.hadoop.hive.ql.io.orc.TestInputOutputFormat.MockFileSystem;
 import org.apache.hadoop.hive.ql.io.orc.TestInputOutputFormat.MockPath;
 import org.apache.hadoop.hive.ql.io.orc.TestOrcRawRecordMerger;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestAcidUtils {
@@ -687,5 +691,23 @@ public class TestAcidUtils {
    */
   @Test
   public void testGetLogicalLength() throws Exception {
+  }
+  
+  @Test
+  public void testTableIsSoftDeleteCompliant(){
+    Table table = new Table("dummy", "test_acid");
+    table.setTableType(TableType.MANAGED_TABLE);
+    
+    HiveConf conf = new HiveConf();
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, true);
+    
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+    parameters.put(SOFT_DELETE_TABLE, "true");
+    table.setParameters(parameters);
+    Assert.assertTrue(AcidUtils.isTableSoftDeleteEnabled(table, conf));
+
+    parameters.remove(SOFT_DELETE_TABLE);
+    Assert.assertFalse(AcidUtils.isTableSoftDeleteEnabled(table, conf));
   }
 }

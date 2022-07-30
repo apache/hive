@@ -384,6 +384,8 @@ public enum ErrorMsg {
   MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES(10288,
       "Querying directly materialized view contents is not supported since we detected {0}.{1} " +
           "used by materialized view has row masking/column filtering enabled", true),
+  MASKING_COMPLEX_TYPE_NOT_SUPPORTED(10289,
+      "Masking complex types is not supported, found a masking expression {0} over column {1}:{2}", true),
 
   UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten merge/update or " +
       "delete query"),
@@ -478,7 +480,11 @@ public enum ErrorMsg {
   INVALID_METADATA_TABLE_NAME(10430, "Invalid metadata table name {0}.", true),
   METADATA_TABLE_NOT_SUPPORTED(10431, "Metadata tables are not supported for table {0}.", true),
   COMPACTION_REFUSED(10432, "Compaction request for {0}.{1}{2} is refused, details: {3}.", true),
-
+  CBO_IS_REQUIRED(10433,
+          "The following functionality requires CBO (" + HiveConf.ConfVars.HIVE_CBO_ENABLED.varname + "): {0}", true),
+  CTLF_UNSUPPORTED_FORMAT(10434, "CREATE TABLE LIKE FILE is not supported by the ''{0}'' file format", true),
+  NON_NATIVE_ACID_UPDATE(10435, "Update and Merge into non-native ACID table is only supported when " +
+          HiveConf.ConfVars.SPLIT_UPDATE.varname + " is true."),
 
   //========================== 20000 range starts here ========================//
 
@@ -512,6 +518,12 @@ public enum ErrorMsg {
   REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH(20016, "File is missing from both source and cm path."),
   REPL_EXTERNAL_SERVICE_CONNECTION_ERROR(20017, "Failed to connect to {0} service. Error code {1}.",true),
   CLIENT_POLLING_OPSTATUS_INTERRUPTED(20018, "Interrupted while polling on the operation status", "70100"),
+
+  CTLF_FAILED_INFERENCE(20019, "Failed to infer schema:"),
+  CTLF_CLASS_NOT_FOUND(20020, "Failed to find SerDe class ({0}) for ''{1}''", true),
+  CTLF_MISSING_STORAGE_FORMAT_DESCRIPTOR(20021, "Failed to find StorageFormatDescriptor for file format ''{0}''", true),
+  PARQUET_FOOTER_ERROR(20022, "Failed to read parquet footer:"),
+  PARQUET_UNHANDLED_TYPE(20023, "Unhandled type {0}", true),
 
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),
@@ -577,6 +589,8 @@ public enum ErrorMsg {
 
   REPL_FILE_SYSTEM_OPERATION_RETRY(30047, "Replication file system operation retry expired. Error {0}",
     true),
+  REPL_SOURCE_DATABASE_NOT_FOUND(30048, "Cannot dump database {0} as it does not exist",
+          true),
 
   //========================== 40000 range starts here ========================//
 

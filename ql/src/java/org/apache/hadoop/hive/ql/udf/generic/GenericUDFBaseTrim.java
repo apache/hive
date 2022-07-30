@@ -71,6 +71,7 @@ public abstract class GenericUDFBaseTrim extends GenericUDF {
       case STRING:
       case CHAR:
       case VARCHAR:
+      case VOID:
         break;
       default:
         throw new UDFArgumentException(udfName + " takes only STRING/CHAR/VARCHAR types. Found "
