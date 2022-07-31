@@ -700,7 +700,7 @@ public class TestOperators {
   public void testCloseOperator() throws HiveException {
       System.out.println("Testing Close Operator");
       Operator<FileSinkDesc> op = OperatorFactory.get(new CompilationOpContext(), FileSinkDesc.class);
-      op.close(false); 
+      op.close(false);
   }
 
 }
