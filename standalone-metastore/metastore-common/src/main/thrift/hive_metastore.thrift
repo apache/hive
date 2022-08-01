@@ -2028,7 +2028,7 @@ struct CreateTableRequest {
    8: optional list<SQLCheckConstraint> checkConstraints,
    9: optional list<string> processorCapabilities,
    10: optional string processorIdentifier,
-   // use boolean skipFSWrites to decide whether create directory in file system or not
+   // HIVE-26012: use boolean skipFSWrites to decide whether create directory in file system or not
    11: optional bool skipFSWrites=false
 }
 

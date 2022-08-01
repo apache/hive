@@ -1404,6 +1404,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
+  @Override
   public void create_database_req(final CreateDatabaseRequest req)
           throws AlreadyExistsException, InvalidObjectException, MetaException {
     Database db = req.getDatabase();
@@ -2432,7 +2433,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           }
         }
       } else {
-        LOG.warn("Because skipFSWrites is true, skip the creation of directories for tables.");
+        LOG.info("Because skipFSWrites is true, skip the creation of directories for tables.");
       }
       if (MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) &&
           !MetaStoreUtils.isView(tbl)) {
@@ -4013,7 +4014,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           madeDir = true;
         }
       } else {
-        LOG.warn("Because skipFSWrites is true, skip creating directories for partitions.");
+        LOG.info("Because skipFSWrites is true, skip creating directories for partitions.");
       }
 
       // set create time
