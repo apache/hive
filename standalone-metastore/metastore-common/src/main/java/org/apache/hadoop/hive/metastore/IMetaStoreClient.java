@@ -3483,10 +3483,12 @@ public interface IMetaStoreClient {
    * useful for CTAS when the query fails after write and before creation of table.
    * @return Status of whether the request was successfully submitted. True indicates
    * the request was successfully submitted and false indicates failure of request submitted.
+   * @param rqst Request containing the table directory which needs to be cleaned up.
+   * @param highestWriteId The highest write ID that was used while writing the table directory.
+   * @param txnId The transaction ID of the query.
    * @throws TException
    */
-  boolean submitForCleanup(String dbname, String tableName, CompactionType type,
-                           String location, String owner, long highestWriteId,
+  boolean submitForCleanup(CompactionRequest rqst, long highestWriteId,
                            long txnId) throws TException;
 
   /**

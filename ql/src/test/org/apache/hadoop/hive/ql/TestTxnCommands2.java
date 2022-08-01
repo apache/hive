@@ -3090,13 +3090,16 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     for (boolean var1 : booleans) {
       for (boolean var2 : booleans) {
         for (boolean var3 : booleans) {
-          failureScenarioCleanupCTAS(var1, var2, var3);
+          for (boolean var4 : booleans) {
+            failureScenarioCleanupCTAS(var1, var2, var3, var4);
+          }
         }
       }
     }
   }
 
-  public void failureScenarioCleanupCTAS(boolean isDirectInsertEnabled,
+  public void failureScenarioCleanupCTAS(boolean isPartitioned,
+                                         boolean isDirectInsertEnabled,
                                          boolean isLocklessReadsEnabled,
                                          boolean isLocationUsed) throws Exception {
     String tableName = "atable";
@@ -3109,10 +3112,11 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
     // Add a '1' at the end of table name for custom location.
     String querylocation = (isLocationUsed) ? " location '" + getWarehouseDir() + "/" + tableName + "1'" : "";
+    String queryPartitions = (isPartitioned) ? " partitioned by (a)" : "";
 
     d.run("insert into " + Table.ACIDTBL + "(a,b) values (3,4)");
     d.run("drop table if exists " + tableName);
-    d.compileAndRespond("create table " + tableName + " stored as orc" + querylocation +
+    d.compileAndRespond("create table " + tableName + queryPartitions + " stored as orc" + querylocation +
             " tblproperties ('transactional'='true') as select * from " + Table.ACIDTBL);
     long txnId = d.getQueryState().getTxnManager().getCurrentTxnId();
     DriverContext driverContext = d.getDriverContext();

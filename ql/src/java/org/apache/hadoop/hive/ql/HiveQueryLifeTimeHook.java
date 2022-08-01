@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
@@ -27,10 +29,14 @@ import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
+
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.IF_PURGE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
 
 public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
 
@@ -62,17 +68,25 @@ public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
     HiveConf conf = ctx.getHiveConf();
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.TXN_CTAS_X_LOCK)) {
       PrivateHookContext pCtx = (PrivateHookContext) ctx.getHookContext();
-      Table table = pCtx.getContext().getDestinationTable();
-      if (table != null) {
+      Table table = ctx.getHookContext().getQueryPlan().getAcidSinks().iterator().next().getTable();
+      boolean isCTAS = ctx.getHookContext().getQueryState().getCommandType()
+              .equals(HiveOperation.CREATETABLE_AS_SELECT.toString());
+      Path destinationPath = pCtx.getContext().getDestinationPath();
+
+      if (destinationPath != null && table != null && isCTAS) {
         LOG.info("Performing cleanup as part of rollback: {}", table.getFullTableName().toString());
         try {
-          boolean success = Hive.get(conf).getMSC().submitForCleanup(table.getDbName(), table.getTableName(),
-                  CompactionType.MAJOR, table.getDataLocation().toString(),
-                  TxnUtils.findUserToRunAs(table.getDataLocation().toString(), table.getTTable(), conf),
-                  table.getTTable().getWriteId(),
+          CompactionRequest rqst = new CompactionRequest(table.getDbName(), table.getTableName(),
+                  CompactionType.MAJOR);
+          rqst.setRunas(TxnUtils.findUserToRunAs(destinationPath.toString(), table.getTTable(), conf));
+          rqst.putToProperties(META_TABLE_LOCATION, destinationPath.toString());
+          rqst.putToProperties(IF_PURGE, Boolean.toString(true));
+          boolean success = Hive.get(conf).getMSC().submitForCleanup(rqst, table.getTTable().getWriteId(),
                   pCtx.getQueryState().getTxnManager().getCurrentTxnId());
           if (success) {
             LOG.info("The cleanup request has been submitted");
+          } else {
+            LOG.info("The cleanup request has not been submitted");
           }
         } catch (HiveException | IOException | InterruptedException | TException e) {
           throw new RuntimeException("Not able to submit cleanup operation of directory written by CTAS due to: ", e);
