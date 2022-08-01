@@ -1031,30 +1031,22 @@ public class TestWorker extends CompactorTest {
 
   @Test
   public void testDoesntGatherStatsIfCompactionFails() throws Exception {
-    try (
-      MockedStatic<Worker.StatsUpdater> statsUpdater = Mockito.mockStatic(Worker.StatsUpdater.class)) {
+    Table t = newTable("default", "mtwb", false);
 
-      Table t = newTable("default", "mtwb", false);
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
 
-      addBaseFile(t, null, 20L, 20);
-      addDeltaFile(t, null, 21L, 22L, 2);
-      addDeltaFile(t, null, 23L, 24L, 2);
+    burnThroughTransactions("default", "mtwb", 25);
 
-      burnThroughTransactions("default", "mtwb", 25);
+    txnHandler.compact(new CompactionRequest("default", "mtwb", CompactionType.MINOR));
 
-      CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MINOR);
-      String initiatorVersion = "INITIATOR_VERSION";
-      rqst.setInitiatorVersion(initiatorVersion);
-      txnHandler.compact(rqst);
+    Worker worker = Mockito.spy(new Worker());
+    doThrow(new RuntimeException()).when(worker).getMrCompactor();
+    worker.setConf(conf);
+    worker.init(new AtomicBoolean(true));
 
-      Worker worker = Mockito.spy(new Worker());
-
-      doThrow(new RuntimeException()).when(worker).getMrCompactor();
-
-      worker.setConf(conf);
-      String workerVersion = "WORKER_VERSION";
-      doReturn(workerVersion).when(worker).getRuntimeVersion();
-      worker.init(new AtomicBoolean(true));
+    try (MockedStatic<Worker.StatsUpdater> statsUpdater = Mockito.mockStatic(Worker.StatsUpdater.class)) {
       worker.findNextCompactionAndExecute(true, true);
 
       statsUpdater.verify(times(0), () -> Worker.StatsUpdater.gatherStats(any(), any(), any(), any()));
