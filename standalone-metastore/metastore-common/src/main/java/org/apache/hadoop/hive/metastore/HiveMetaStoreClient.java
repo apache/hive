@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.IF_PURGE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
@@ -4187,6 +4189,24 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     response.setCompacts(FilterUtils.filterCompactionsIfEnabled(isClientFilterEnabled,
             filterHook, getDefaultCatalog(conf), response.getCompacts()));
     return response;
+  }
+
+  @Override
+  public boolean submitForCleanup(String dbname, String tableName, CompactionType type,
+                                  String location, String owner, long highestWriteId,
+                                  long txnId) throws TException {
+    CompactionRequest cr = new CompactionRequest();
+    if (dbname == null) {
+      cr.setDbname(DEFAULT_DATABASE_NAME);
+    } else {
+      cr.setDbname(dbname);
+    }
+    cr.setTablename(tableName);
+    cr.setType(type);
+    cr.setRunas(owner);
+    cr.putToProperties(META_TABLE_LOCATION, location);
+    cr.putToProperties(IF_PURGE, Boolean.toString(true));
+    return client.submit_for_cleanup(cr, highestWriteId, txnId);
   }
 
   @Override

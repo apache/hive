@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.callEmbeddedMetastore;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.IF_PURGE;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 import java.io.IOException;
@@ -2670,6 +2672,24 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public ShowCompactResponse showCompactions() throws TException {
     return client.show_compact(new ShowCompactRequest());
+  }
+
+  @Override
+  public boolean submitForCleanup(String dbname, String tableName, CompactionType type,
+                                  String location, String owner, long highestWriteId,
+                                  long txnId) throws TException {
+    CompactionRequest cr = new CompactionRequest();
+    if (dbname == null) {
+      cr.setDbname(DEFAULT_DATABASE_NAME);
+    } else {
+      cr.setDbname(dbname);
+    }
+    cr.setTablename(tableName);
+    cr.setType(type);
+    cr.setRunas(owner);
+    cr.putToProperties(META_TABLE_LOCATION, location);
+    cr.putToProperties(IF_PURGE, Boolean.toString(true));
+    return client.submit_for_cleanup(cr, highestWriteId, txnId);
   }
 
   @Override

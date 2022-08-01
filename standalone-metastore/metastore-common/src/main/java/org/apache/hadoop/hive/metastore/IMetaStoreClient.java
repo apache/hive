@@ -3479,6 +3479,17 @@ public interface IMetaStoreClient {
   ShowCompactResponse showCompactions() throws TException;
 
   /**
+   * Submit a request for performing cleanup of output directory. This is particularly
+   * useful for CTAS when the query fails after write and before creation of table.
+   * @return Status of whether the request was successfully submitted. True indicates
+   * the request was successfully submitted and false indicates failure of request submitted.
+   * @throws TException
+   */
+  boolean submitForCleanup(String dbname, String tableName, CompactionType type,
+                           String location, String owner, long highestWriteId,
+                           long txnId) throws TException;
+
+  /**
    * Get one latest record of SUCCEEDED or READY_FOR_CLEANING compaction for a table/partition.
    * No checking is done on the dbname, tablename, or partitionname to make sure they refer to valid objects.
    * Is is assumed to be done by the caller.
