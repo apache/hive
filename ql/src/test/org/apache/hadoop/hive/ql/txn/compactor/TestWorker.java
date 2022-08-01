@@ -42,9 +42,11 @@ import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +76,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.powermock.api.mockito.PowerMockito.doThrow;
 
 /**
  * Tests for the worker thread and its MR jobs.
@@ -1024,6 +1027,38 @@ public class TestWorker extends CompactorTest {
     worker.findNextCompactionAndExecute(true, true);
 
     verify(msc, times(0)).markFailed(any());
+  }
+
+  @Test
+  public void testDoesntGatherStatsIfCompactionFails() throws Exception {
+    try (
+      MockedStatic<Worker.StatsUpdater> statsUpdater = Mockito.mockStatic(Worker.StatsUpdater.class)) {
+
+      Table t = newTable("default", "mtwb", false);
+
+      addBaseFile(t, null, 20L, 20);
+      addDeltaFile(t, null, 21L, 22L, 2);
+      addDeltaFile(t, null, 23L, 24L, 2);
+
+      burnThroughTransactions("default", "mtwb", 25);
+
+      CompactionRequest rqst = new CompactionRequest("default", "mtwb", CompactionType.MINOR);
+      String initiatorVersion = "INITIATOR_VERSION";
+      rqst.setInitiatorVersion(initiatorVersion);
+      txnHandler.compact(rqst);
+
+      Worker worker = Mockito.spy(new Worker());
+
+      doThrow(new RuntimeException()).when(worker).getMrCompactor();
+
+      worker.setConf(conf);
+      String workerVersion = "WORKER_VERSION";
+      doReturn(workerVersion).when(worker).getRuntimeVersion();
+      worker.init(new AtomicBoolean(true));
+      worker.findNextCompactionAndExecute(true, true);
+
+      statsUpdater.verify(times(0), () -> Worker.StatsUpdater.gatherStats(any(), any(), any(), any()));
+    }
   }
 
   @Test

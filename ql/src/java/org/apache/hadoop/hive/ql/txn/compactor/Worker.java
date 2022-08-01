@@ -480,6 +480,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         final CompactionType ctype = ci.type;
         markFailed(ci, e.getMessage());
 
+        computeStats = false;
+
         if (runJobAsSelf(ci.runAs)) {
           cleanupResultDirs(sd, tblValidWriteIds, ctype, dir);
         } else {
