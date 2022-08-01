@@ -104,7 +104,7 @@ public class JdbcStorageHandler implements HiveStorageHandler {
     DatabaseType dbType = DatabaseType.valueOf(
       tableProperties.get(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
     String host_url = DatabaseType.METASTORE == dbType ?
-      "internal:metastore://" : tableProperties.get(Constants.JDBC_URL);
+      "jdbc:metastore://" : tableProperties.get(Constants.JDBC_URL);
     String table_name = tableProperties.get(Constants.JDBC_TABLE);
     return new URI(host_url+"/"+table_name);
   }
