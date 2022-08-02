@@ -31,6 +31,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -76,6 +78,9 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.rules.ExpectedException;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mockito;
@@ -3082,21 +3087,14 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
   }
 
-  @Test
-  public void testFailureScenariosCleanupCTAS() throws Exception {
-    boolean[] booleans = {true, false};
-    for (boolean var1 : booleans) {
-      for (boolean var2 : booleans) {
-        for (boolean var3 : booleans) {
-          for (boolean var4 : booleans) {
-            failureScenarioCleanupCTAS(var1, var2, var3, var4);
-          }
-        }
-      }
-    }
+  public static Stream<Arguments> generateBooleanArgs() {
+    return IntStream.range(0, 1 << 4).mapToObj(i ->
+            Arguments.of((i & 1) != 0, ((i >>> 1) & 1) != 0, ((i >>> 2) & 1) != 0, ((i >>> 3) & 1) != 0));
   }
 
-  public void failureScenarioCleanupCTAS(boolean isPartitioned,
+  @ParameterizedTest
+  @MethodSource("generateBooleanArgs")
+  public void testFailureScenariosCleanupCTAS(boolean isPartitioned,
                                          boolean isDirectInsertEnabled,
                                          boolean isLocklessReadsEnabled,
                                          boolean isLocationUsed) throws Exception {
@@ -3116,8 +3114,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     d.compileAndRespond("create table " + tableName + queryPartitions + " stored as orc" + querylocation +
             " tblproperties ('transactional'='true') as select * from " + Table.ACIDTBL);
     long txnId = d.getQueryState().getTxnManager().getCurrentTxnId();
-    DriverContext driverContext = d.getDriverContext();
-    mockTasksRecursively(driverContext.getPlan().getRootTasks());
+    mockTasksRecursively(d.getPlan().getRootTasks());
     int assertError = 0;
     try {
       d.run();

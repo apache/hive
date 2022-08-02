@@ -66,33 +66,35 @@ public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
 
   private void checkAndRollbackCTAS(QueryLifeTimeHookContext ctx) {
     HiveConf conf = ctx.getHiveConf();
-    PrivateHookContext pCtx = (PrivateHookContext) ctx.getHookContext();
     QueryPlan queryPlan = ctx.getHookContext().getQueryPlan();
-    if (queryPlan.getAcidSinks() != null && queryPlan.getAcidSinks().size() > 0) {
-      FileSinkDesc fileSinkDesc = queryPlan.getAcidSinks().iterator().next();
-      Table table = fileSinkDesc.getTable();
-      long writeId = fileSinkDesc.getTableWriteId();
-      boolean isCTAS = ctx.getHookContext().getQueryPlan().getQueryProperties().isCTAS();
-      Path destinationPath = pCtx.getContext().getLocation();
+    boolean isCTAS = queryPlan.getQueryProperties().isCTAS();
+    if (isCTAS) {
+      PrivateHookContext pCtx = (PrivateHookContext) ctx.getHookContext();
+      if (queryPlan.getAcidSinks() != null && queryPlan.getAcidSinks().size() > 0) {
+        FileSinkDesc fileSinkDesc = queryPlan.getAcidSinks().iterator().next();
+        Table table = fileSinkDesc.getTable();
+        long writeId = fileSinkDesc.getTableWriteId();
+        Path destinationPath = pCtx.getContext().getLocation();
 
-      if (destinationPath != null && table != null && isCTAS &&
-              HiveConf.getBoolVar(conf, HiveConf.ConfVars.TXN_CTAS_X_LOCK)) {
-        LOG.info("Performing cleanup as part of rollback: {}", table.getFullTableName().toString());
-        try {
-          CompactionRequest rqst = new CompactionRequest(table.getDbName(), table.getTableName(),
-                  CompactionType.MAJOR);
-          rqst.setRunas(TxnUtils.findUserToRunAs(destinationPath.toString(), table.getTTable(), conf));
-          rqst.putToProperties(META_TABLE_LOCATION, destinationPath.toString());
-          rqst.putToProperties(IF_PURGE, Boolean.toString(true));
-          boolean success = Hive.get(conf).getMSC().submitForCleanup(rqst, writeId,
-                  pCtx.getQueryState().getTxnManager().getCurrentTxnId());
-          if (success) {
-            LOG.info("The cleanup request has been submitted");
-          } else {
-            LOG.info("The cleanup request has not been submitted");
+        if (destinationPath != null && table != null &&
+                HiveConf.getBoolVar(conf, HiveConf.ConfVars.TXN_CTAS_X_LOCK)) {
+          LOG.info("Performing cleanup as part of rollback: {}", table.getFullTableName().toString());
+          try {
+            CompactionRequest rqst = new CompactionRequest(table.getDbName(), table.getTableName(),
+                    CompactionType.MAJOR);
+            rqst.setRunas(TxnUtils.findUserToRunAs(destinationPath.toString(), table.getTTable(), conf));
+            rqst.putToProperties(META_TABLE_LOCATION, destinationPath.toString());
+            rqst.putToProperties(IF_PURGE, Boolean.toString(true));
+            boolean success = Hive.get(conf).getMSC().submitForCleanup(rqst, writeId,
+                    pCtx.getQueryState().getTxnManager().getCurrentTxnId());
+            if (success) {
+              LOG.info("The cleanup request has been submitted");
+            } else {
+              LOG.info("The cleanup request has not been submitted");
+            }
+          } catch (HiveException | IOException | InterruptedException | TException e) {
+            throw new RuntimeException("Not able to submit cleanup operation of directory written by CTAS due to: ", e);
           }
-        } catch (HiveException | IOException | InterruptedException | TException e) {
-          throw new RuntimeException("Not able to submit cleanup operation of directory written by CTAS due to: ", e);
         }
       }
     }

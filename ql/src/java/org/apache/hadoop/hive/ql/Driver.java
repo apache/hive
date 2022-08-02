@@ -905,11 +905,6 @@ public class Driver implements IDriver {
     return driverContext.getQueryDisplay();
   }
 
-  @VisibleForTesting
-  DriverContext getDriverContext() {
-    return driverContext;
-  }
-
   /**
    * Set the HS2 operation handle's guid string.
    * @param operationId base64 encoded guid string
