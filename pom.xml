@@ -58,7 +58,7 @@
     <module>testutils</module>
     <module>packaging</module>
     <module>standalone-metastore</module>
-    <module>upgrade-acid</module>
+    <!--module>upgrade-acid</module-->
     <module>kafka-handler</module>
   </modules>
   <properties>
