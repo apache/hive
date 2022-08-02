@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,14 +66,17 @@ public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
 
   private void checkAndRollbackCTAS(QueryLifeTimeHookContext ctx) {
     HiveConf conf = ctx.getHiveConf();
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.TXN_CTAS_X_LOCK)) {
-      PrivateHookContext pCtx = (PrivateHookContext) ctx.getHookContext();
-      Table table = ctx.getHookContext().getQueryPlan().getAcidSinks().iterator().next().getTable();
-      boolean isCTAS = ctx.getHookContext().getQueryState().getCommandType()
-              .equals(HiveOperation.CREATETABLE_AS_SELECT.toString());
-      Path destinationPath = pCtx.getContext().getDestinationPath();
+    PrivateHookContext pCtx = (PrivateHookContext) ctx.getHookContext();
+    QueryPlan queryPlan = ctx.getHookContext().getQueryPlan();
+    if (queryPlan.getAcidSinks() != null && queryPlan.getAcidSinks().size() > 0) {
+      FileSinkDesc fileSinkDesc = queryPlan.getAcidSinks().iterator().next();
+      Table table = fileSinkDesc.getTable();
+      long writeId = fileSinkDesc.getTableWriteId();
+      boolean isCTAS = ctx.getHookContext().getQueryPlan().getQueryProperties().isCTAS();
+      Path destinationPath = pCtx.getContext().getLocation();
 
-      if (destinationPath != null && table != null && isCTAS) {
+      if (destinationPath != null && table != null && isCTAS &&
+              HiveConf.getBoolVar(conf, HiveConf.ConfVars.TXN_CTAS_X_LOCK)) {
         LOG.info("Performing cleanup as part of rollback: {}", table.getFullTableName().toString());
         try {
           CompactionRequest rqst = new CompactionRequest(table.getDbName(), table.getTableName(),
@@ -81,7 +84,7 @@ public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
           rqst.setRunas(TxnUtils.findUserToRunAs(destinationPath.toString(), table.getTTable(), conf));
           rqst.putToProperties(META_TABLE_LOCATION, destinationPath.toString());
           rqst.putToProperties(IF_PURGE, Boolean.toString(true));
-          boolean success = Hive.get(conf).getMSC().submitForCleanup(rqst, table.getTTable().getWriteId(),
+          boolean success = Hive.get(conf).getMSC().submitForCleanup(rqst, writeId,
                   pCtx.getQueryState().getTxnManager().getCurrentTxnId());
           if (success) {
             LOG.info("The cleanup request has been submitted");

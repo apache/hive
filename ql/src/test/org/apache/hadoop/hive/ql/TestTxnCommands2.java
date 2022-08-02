@@ -56,9 +56,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLTask;
-import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -3108,7 +3106,6 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_ACID_DIRECT_INSERT_ENABLED, isDirectInsertEnabled);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, isLocklessReadsEnabled);
     hiveConf.setBoolVar(HiveConf.ConfVars.TXN_CTAS_X_LOCK, true);
-    hiveConf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
 
     // Add a '1' at the end of table name for custom location.
     String querylocation = (isLocationUsed) ? " location '" + getWarehouseDir() + "/" + tableName + "1'" : "";
@@ -3120,7 +3117,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
             " tblproperties ('transactional'='true') as select * from " + Table.ACIDTBL);
     long txnId = d.getQueryState().getTxnManager().getCurrentTxnId();
     DriverContext driverContext = d.getDriverContext();
-    traverseTasksRecursively(driverContext.getPlan().getRootTasks());
+    mockTasksRecursively(driverContext.getPlan().getRootTasks());
     int assertError = 0;
     try {
       d.run();
@@ -3128,7 +3125,6 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
       assertError = 1;
     }
 
-    runInitiator(hiveConf);
     runCleaner(hiveConf);
 
     Assert.assertEquals(assertError, 1);
@@ -3144,19 +3140,16 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     }
   }
 
-  public void traverseTasksRecursively(List<Task<?>> tasks) {
+  public void mockTasksRecursively(List<Task<?>> tasks) {
     for (int i = 0;i < tasks.size();i++) {
       Task<?> task = tasks.get(i);
       if (task instanceof DDLTask) {
-        DDLDesc ddlDesc = ((DDLTask) task).getWork().getDDLDesc();
-        if (ddlDesc instanceof CreateTableDesc) {
-          CreateTableDesc createTableDesc = (CreateTableDesc) ddlDesc;
-          // Make query fail by setting columns as null in the variable.
-          createTableDesc.setCols(null);
-        }
+        DDLTask ddltask = Mockito.spy(new DDLTask());
+        Mockito.doThrow(new RuntimeException()).when(ddltask).execute();
+        tasks.set(i, ddltask);
       }
       if (task.getNumChild() != 0) {
-        traverseTasksRecursively(task.getChildTasks());
+        mockTasksRecursively(task.getChildTasks());
       }
     }
   }

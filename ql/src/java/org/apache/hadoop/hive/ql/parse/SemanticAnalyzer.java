@@ -7621,13 +7621,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               tblDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
             }
             // Set the location in context for possible rollback.
-            ctx.setDestinationPath(destinationPath);
+            ctx.setLocation(destinationPath);
             // Setting the location so that metadata transformers
             // does not change the location later while creating the table.
             tblDesc.setLocation(destinationPath.toString());
           } else {
             // Set the location in context for possible rollback.
-            ctx.setDestinationPath(getCtasLocation(tblDesc, createTableUseSuffix));
+            ctx.setLocation(getCtasLocation(tblDesc, createTableUseSuffix));
           }
         }
         try {
@@ -7985,16 +7985,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Path getCtasLocation(CreateTableDesc tblDesc, boolean createTableWithSuffix) throws SemanticException {
-    Path destinationPath = getCtasLocationWithoutSuffix(tblDesc);
-    if (createTableWithSuffix) {
-      long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
-      String suffix = AcidUtils.getPathSuffix(txnId);
-      destinationPath = new Path(destinationPath.toString() + suffix);
-    }
-    return destinationPath;
-  }
-
-  private Path getCtasLocationWithoutSuffix(CreateTableDesc tblDesc) throws SemanticException {
     Path location;
     try {
       String protoName = tblDesc.getDbTableName();
@@ -8015,7 +8005,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         location = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
       }
-      tbl.getSd().setLocation(location.toString());
+
+      if (createTableWithSuffix) {
+        long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
+        String suffix = AcidUtils.getPathSuffix(txnId);
+        location = new Path(location.toString() + suffix);
+      }
 
       return location;
     } catch (HiveException | MetaException e) {

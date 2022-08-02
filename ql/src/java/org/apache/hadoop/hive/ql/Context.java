@@ -191,7 +191,7 @@ public class Context {
 
   private List<Pair<String, String>> parsedTables = new ArrayList<>();
 
-  private Path destinationPath;
+  private Path location;
 
   public void setOperation(Operation operation) {
     this.operation = operation;
@@ -217,12 +217,12 @@ public class Context {
     return this.replPolicy;
   }
 
-  public Path getDestinationPath() {
-    return destinationPath;
+  public Path getLocation() {
+    return location;
   }
 
-  public void setDestinationPath(Path path) {
-    this.destinationPath = path;
+  public void setLocation(Path location) {
+    this.location = location;
   }
 
   /**
