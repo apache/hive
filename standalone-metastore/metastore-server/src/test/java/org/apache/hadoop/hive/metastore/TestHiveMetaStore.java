@@ -3685,11 +3685,7 @@ public abstract class TestHiveMetaStore {
   }
 
   @Test
-
-  public void testIfFSWritesIsSkipped() throws Throwable {
-    skipFSWritesTester();
-  }
-  private void skipFSWritesTester() throws Throwable {
+  public void testIfFSWritesIsSkippedForDatabase() throws Throwable {
     // create a database, check if the directory is created or not
     // with true, the directory is not created
     // with false, the directory is created
@@ -3704,8 +3700,12 @@ public abstract class TestHiveMetaStore {
 
       CreateDatabaseRequest req = new CreateDatabaseRequest();
       req.setSkipFSWrites(true);
-      Database db = req.getDatabase();
-      db.setName(TEST_DB1_NAME);
+      Database db = new DatabaseBuilder()
+              .setName(TEST_DB1_NAME)
+              .setLocation(dbLocation)
+              .setManagedLocation(mgdLocation)
+              .build(conf);
+      req.setDatabase(db);
       client.createDatabase(req);
 
       Path dbPath = new Path(db.getLocationUri());
@@ -3715,10 +3715,70 @@ public abstract class TestHiveMetaStore {
       assertTrue("Database's managed location is not skipped", fs.exists(new Path(mgdLocation)));
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testIfFSWritesIsSkipped() failed.");
+      System.err.println("testIfFSWritesIsSkippedForDatabase() failed.");
       throw e;
     }
   }
 
+  @Test
+  public void testIfFSWritesIsSkippedForTable() throws Throwable {
+    // create a database, check if the directory is created or not
+    // with true, the directory is not created
+    // with false, the directory is created
+    try {
+      // clear up any existing databases
+      silentDropDatabase(TEST_DB1_NAME);
+      String tableName1 = "test_table1";
+      String tableName2 = "test_table2";
 
+      String dbLocation =
+              MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/testdb1.db";
+      String mgdLocation =
+              MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/testdb1.db";
+
+      Database db = new DatabaseBuilder()
+              .setName(TEST_DB1_NAME)
+              .setLocation(dbLocation)
+              .setManagedLocation(mgdLocation)
+              .build(conf);
+
+      Table tbl1 = new TableBuilder()
+              .setDbName(TEST_DB1_NAME)
+              .setTableName(tableName1)
+              .addCol("name", ColumnType.STRING_TYPE_NAME)
+              .addCol("income", ColumnType.INT_TYPE_NAME)
+              .addTableParam("EXTERNAL", "TRUE")
+              .create(client, conf);
+
+      Table tbl2 = new TableBuilder()
+              .setDbName(TEST_DB1_NAME)
+              .setTableName(tableName2)
+              .addCol("name", ColumnType.STRING_TYPE_NAME)
+              .addCol("income", ColumnType.INT_TYPE_NAME)
+              .addTableParam("EXTERNAL", "TRUE")
+              .create(client, conf);
+
+      CreateTableRequest tblReq1 = new CreateTableRequest();
+      tblReq1.setTable(tbl1);
+      tblReq1.setSkipFSWrites(true);
+      String tbl1Location =
+              MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/testdb1.db/test_table1";
+
+      CreateTableRequest tblReq2 = new CreateTableRequest();
+      tblReq2.setTable(tbl2);
+      tblReq2.setSkipFSWrites(false);
+      String tbl2Location =
+              MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/testdb1.db/test_table2";
+
+      Path dbPath = new Path(db.getLocationUri());
+      FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), conf);
+      assertFalse("Table1's file system directory is skipped", fs.exists(new Path(tbl1Location)));
+      fs = FileSystem.get(new Path(mgdLocation).toUri(), conf);
+      assertTrue("Table2's file system directory is not skipped", fs.exists(new Path(tbl2Location)));
+    } catch (Throwable e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testIfFSWritesIsSkippedForTable() failed.");
+      throw e;
+    }
+  }
 }
