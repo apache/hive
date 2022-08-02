@@ -3088,8 +3088,10 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
   }
 
   public static Stream<Arguments> generateBooleanArgs() {
-    return IntStream.range(0, 1 << 4).mapToObj(i ->
-            Arguments.of((i & 1) != 0, ((i >>> 1) & 1) != 0, ((i >>> 2) & 1) != 0, ((i >>> 3) & 1) != 0));
+    // Generates the required boolean input for the 20 test cases
+    return IntStream.concat(IntStream.range(0, 16), IntStream.range(24, 28)).mapToObj(i ->
+            Arguments.of((i & 1) == 0, ((i >>> 1) & 1) == 0, ((i >>> 2) & 1) == 0,
+                    ((i >>> 3) & 1) == 0, ((i >>> 4) & 1) == 0));
   }
 
   @ParameterizedTest
@@ -3097,13 +3099,14 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
   public void testFailureScenariosCleanupCTAS(boolean isPartitioned,
                                          boolean isDirectInsertEnabled,
                                          boolean isLocklessReadsEnabled,
-                                         boolean isLocationUsed) throws Exception {
+                                         boolean isLocationUsed,
+                                         boolean isExclusiveCtas) throws Exception {
     String tableName = "atable";
 
     //Set configurations
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_ACID_DIRECT_INSERT_ENABLED, isDirectInsertEnabled);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, isLocklessReadsEnabled);
-    hiveConf.setBoolVar(HiveConf.ConfVars.TXN_CTAS_X_LOCK, true);
+    hiveConf.setBoolVar(HiveConf.ConfVars.TXN_CTAS_X_LOCK, isExclusiveCtas);
 
     // Add a '1' at the end of table name for custom location.
     String querylocation = (isLocationUsed) ? " location '" + getWarehouseDir() + "/" + tableName + "1'" : "";

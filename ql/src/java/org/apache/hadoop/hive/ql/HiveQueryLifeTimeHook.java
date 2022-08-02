@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -27,14 +28,12 @@ import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
 import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.IOException;
 
+import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.IF_PURGE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
 
@@ -68,31 +67,33 @@ public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
     HiveConf conf = ctx.getHiveConf();
     QueryPlan queryPlan = ctx.getHookContext().getQueryPlan();
     boolean isCTAS = queryPlan.getQueryProperties().isCTAS();
-    if (isCTAS) {
-      PrivateHookContext pCtx = (PrivateHookContext) ctx.getHookContext();
-      if (queryPlan.getAcidSinks() != null && queryPlan.getAcidSinks().size() > 0) {
+
+    PrivateHookContext pCtx = (PrivateHookContext) ctx.getHookContext();
+    Path tblPath = pCtx.getContext().getLocation();
+
+    if (isCTAS && tblPath != null) {
+      boolean isSoftDeleteEnabled = tblPath.getName().matches("(.*)" + SOFT_DELETE_TABLE_PATTERN);
+
+      if ((HiveConf.getBoolVar(conf, HiveConf.ConfVars.TXN_CTAS_X_LOCK) || isSoftDeleteEnabled)
+              && CollectionUtils.isNotEmpty(queryPlan.getAcidSinks())) {
+
         FileSinkDesc fileSinkDesc = queryPlan.getAcidSinks().iterator().next();
         Table table = fileSinkDesc.getTable();
         long writeId = fileSinkDesc.getTableWriteId();
-        Path destinationPath = pCtx.getContext().getLocation();
 
-        if (destinationPath != null && table != null &&
-                HiveConf.getBoolVar(conf, HiveConf.ConfVars.TXN_CTAS_X_LOCK)) {
+        if (table != null) {
           LOG.info("Performing cleanup as part of rollback: {}", table.getFullTableName().toString());
           try {
-            CompactionRequest rqst = new CompactionRequest(table.getDbName(), table.getTableName(),
-                    CompactionType.MAJOR);
-            rqst.setRunas(TxnUtils.findUserToRunAs(destinationPath.toString(), table.getTTable(), conf));
-            rqst.putToProperties(META_TABLE_LOCATION, destinationPath.toString());
+            CompactionRequest rqst = new CompactionRequest(table.getDbName(), table.getTableName(), CompactionType.MAJOR);
+            rqst.setRunas(TxnUtils.findUserToRunAs(tblPath.toString(), table.getTTable(), conf));
+            rqst.putToProperties(META_TABLE_LOCATION, tblPath.toString());
             rqst.putToProperties(IF_PURGE, Boolean.toString(true));
             boolean success = Hive.get(conf).getMSC().submitForCleanup(rqst, writeId,
                     pCtx.getQueryState().getTxnManager().getCurrentTxnId());
             if (success) {
               LOG.info("The cleanup request has been submitted");
-            } else {
-              LOG.info("The cleanup request has not been submitted");
             }
-          } catch (HiveException | IOException | InterruptedException | TException e) {
+          } catch (Exception e) {
             throw new RuntimeException("Not able to submit cleanup operation of directory written by CTAS due to: ", e);
           }
         }
