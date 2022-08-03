@@ -508,7 +508,7 @@ public class GenTezWork implements SemanticNodeProcessor {
   private static int indexOf(ArrayStack<Node> stack, Node node) {
     final int size = stack.size();
     for (int i = 0; i < size; i++) {
-      if (stack.get(i) == node) {
+      if (stack.get(i).equals(node)) {
         return i;
       }
     }
