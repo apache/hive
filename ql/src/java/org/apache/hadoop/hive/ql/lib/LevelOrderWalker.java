@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -121,9 +122,9 @@ public class LevelOrderWalker extends DefaultGraphWalker {
       }
 
       opStack.clear();
-      final MyArrayStack<Node> myArrayStack = new MyArrayStack<>();
-      myArrayStack.push(nd);
-      walk(nd, 0, myArrayStack);
+      final InnerArrayDeque<Node> opDeque = new InnerArrayDeque<>();
+      opDeque.push(nd);
+      walk(nd, 0, opDeque);
       if (nodeOutput != null && getDispatchedList().contains(nd)) {
         nodeOutput.put(nd, retMap.get(nd));
       }
@@ -136,34 +137,50 @@ public class LevelOrderWalker extends DefaultGraphWalker {
    *
    * @param nd current operator in the ancestor tree
    * @param level how many level of ancestors included in the stack
-   * @param stack operator stack
+   * @param opDeque operator deque
    * @throws SemanticException
    */
   @SuppressWarnings("unchecked")
-  private void walk(Node nd, int level, MyArrayStack<Node> stack)
+  private void walk(Node nd, int level, InnerArrayDeque<Node> opDeque)
       throws SemanticException {
     List<Operator<? extends OperatorDesc>> parents =
         ((Operator<? extends OperatorDesc>) nd).getParentOperators();
 
     if (level >= numLevels || CollectionUtils.isEmpty(parents)) {
-      dispatch(stack.peek(), stack);
+      dispatch(opDeque.peek(), opDeque);
       return;
     }
 
     for (Node parent : parents) {
-      stack.add(0, parent);
-      walk(parent, level + 1, stack);
-      stack.remove(0);
+      opDeque.reversedPush(parent);
+      walk(parent, level + 1, opDeque);
+      opDeque.reversedPop();
     }
   }
 
-  private static class MyArrayStack<E> extends ArrayStack<E> {
-    public void add(int index, E element) {
-      list.add(index, element);
+  /**
+   * LevelOrderWalker uses reversed push/pop, which are unintended accesses of java.util.Stack.
+   * InnerArrayDeque provides double-ended queue. It provides reversed push/pop at the start,
+   * while the ArrayStack provides push/pop at the end.
+   * @param <E>
+   */
+  private static class InnerArrayDeque<E> extends ArrayStack<E> {
+    /**
+     * Inverse of {@link Stack#push(Object)}. It adds element at the start,
+     * while {@link Stack#push(Object)} adds at the end.
+     * @see Stack#push(Object)
+     */
+    public void reversedPush(E element) {
+      list.add(0, element);
     }
 
-    public E remove(int index) {
-      return list.remove(index);
+    /**
+     * Inverse of {@link Stack#pop()}. It removes element at the start, while
+     * {@link Stack#pop()} removes at the end.
+     * @see Stack#pop()
+     */
+    public E reversedPop() {
+      return list.remove(0);
     }
   }
 }
