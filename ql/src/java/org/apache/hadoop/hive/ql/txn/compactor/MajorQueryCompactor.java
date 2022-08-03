@@ -61,7 +61,8 @@ final class MajorQueryCompactor extends QueryCompactor {
     List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName);
     List<String> dropQueries = getDropQueries(tmpTableName);
     runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
-        Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries);
+        Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries,
+            table.getParameters());
   }
 
   @Override

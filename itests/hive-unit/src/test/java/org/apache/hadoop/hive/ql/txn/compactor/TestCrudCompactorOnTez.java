@@ -2251,12 +2251,12 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     hiveConf.set(ValidTxnList.VALID_TXNS_KEY, "8:9223372036854775807::");
 
     // Check for default case.
-    qc.runCompactionQueries(hiveConf, null, sdMock, null, ciMock, null, emptyQueries, emptyQueries, emptyQueries);
+    qc.runCompactionQueries(hiveConf, null, sdMock, null, ciMock, null, emptyQueries, emptyQueries, emptyQueries, null);
     Assert.assertEquals("all", hiveConf.getVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT));
 
     // Check for case where  hive.llap.io.etl.skip.format is explicitly set to none - as to always use cache.
     hiveConf.setVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT, "none");
-    qc.runCompactionQueries(hiveConf, null, sdMock, null, ciMock, null, emptyQueries, emptyQueries, emptyQueries);
+    qc.runCompactionQueries(hiveConf, null, sdMock, null, ciMock, null, emptyQueries, emptyQueries, emptyQueries, null);
     Assert.assertEquals("none", hiveConf.getVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT));
   }
 
@@ -2416,4 +2416,144 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals(expectedData, actualData);
   }
 
+  @Test
+  public void testCompactionWithCreateTableProps() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    String tmpFolder = folder.newFolder().getAbsolutePath();
+    conf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder);
+
+    String dbName = "default";
+    String tblName = "comp_with_create_tblprops_test";
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    TestDataProvider testDP = new TestDataProvider();
+
+    // Create test table
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(col1 array<struct<arr_col1:int, `timestamp`:string>>)" +
+            "STORED AS ORC TBLPROPERTIES('transactional'='true', 'compactor.tez.task.resource.memory.mb'='8000')", driver);
+
+    // Insert test data into test table
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+            " SELECT ARRAY(NAMED_STRUCT('arr_col1',1,'timestamp','2022-07-05 21:51:20.371'))",driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+            " SELECT ARRAY(NAMED_STRUCT('arr_col1',2,'timestamp','2022-07-06 21:51:20.371'))",driver);
+
+    // Get all data before compaction is run
+    List<String> expectedData = testDP.getAllData(tblName);
+
+    // Initiate a compaction request.
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
+    CompactionResponse resp = txnHandler.compact(rqst);
+
+    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
+    // Run major compaction and cleaner
+    runWorker(conf);
+    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, StringUtils.EMPTY);
+
+    CompactorTestUtil.runCleaner(conf);
+
+    //Check if the compaction succeeds
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals("Expecting 1 rows and found " + compacts.size(), 1, compacts.size());
+    Assert.assertEquals("Expecting compaction state 'succeeded' and found:" + compacts.get(0).getState(),
+            "succeeded", compacts.get(0).getState());
+
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+
+    FileSystem fs = FileSystem.get(conf);
+    FileStatus[] fileStatus = fs.listStatus(new Path(table.getSd().getLocation()));
+    for(FileStatus file: fileStatus) {
+      Assert.assertTrue(file.getPath().getName().startsWith(AcidUtils.BASE_PREFIX));
+    }
+
+    // Verify all contents
+    List<String> actualData = testDP.getAllData(tblName);
+    Assert.assertEquals(expectedData, actualData);
+
+    ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+    HiveHookEvents.HiveHookEventProto event = reader.readEvent();
+    while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
+      event = reader.readEvent();
+    }
+    Assert.assertNotNull(event);
+
+    for (org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry mapFieldEntry: event.getOtherInfoList()) {
+      if (mapFieldEntry.getKey().equalsIgnoreCase("CONF")) {
+        Assert.assertTrue(mapFieldEntry.getValue().contains("\"tez.task.resource.memory.mb\":\"8000\""));
+      }
+    }
+  }
+
+  @Test
+  public void testCompactionWithAlterTableProps() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    String tmpFolder = folder.newFolder().getAbsolutePath();
+    conf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder);
+
+    String dbName = "default";
+    String tblName = "comp_with_alter_tblprops_test";
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    TestDataProvider testDP = new TestDataProvider();
+
+    // Create test table
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(col1 array<struct<arr_col1:int, `timestamp`:string>>)" +
+            "STORED AS ORC TBLPROPERTIES('transactional'='true', 'compactor.tez.task.resource.memory.mb'='8000')", driver);
+
+    // Insert test data into test table
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+            " SELECT ARRAY(NAMED_STRUCT('arr_col1',1,'timestamp','2022-07-05 21:51:20.371'))",driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+            " SELECT ARRAY(NAMED_STRUCT('arr_col1',2,'timestamp','2022-07-05 21:51:20.371'))",driver);
+
+    executeStatementOnDriver("ALTER TABLE " + tblName + " COMPACT 'major' WITH OVERWRITE TBLPROPERTIES " +
+            "('compactor.tez.task.resource.memory.mb'='5000')", driver);
+
+    // Get all data before compaction is run
+    List<String> expectedData = testDP.getAllData(tblName);
+
+    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, HiveProtoLoggingHook.class.getName());
+    // Run major compaction and cleaner
+    runWorker(conf);
+    conf.setVar(HiveConf.ConfVars.PREEXECHOOKS, StringUtils.EMPTY);
+
+    CompactorTestUtil.runCleaner(conf);
+
+    //Check if the compaction succeeds
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals("Expecting 1 rows and found " + compacts.size(), 1, compacts.size());
+    Assert.assertEquals("Expecting compaction state 'succeeded' and found:" + compacts.get(0).getState(),
+            "succeeded", compacts.get(0).getState());
+
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+
+    FileSystem fs = FileSystem.get(conf);
+    FileStatus[] fileStatus = fs.listStatus(new Path(table.getSd().getLocation()));
+    for(FileStatus file: fileStatus) {
+      Assert.assertTrue(file.getPath().getName().startsWith(AcidUtils.BASE_PREFIX));
+    }
+
+    // Verify all contents
+    List<String> actualData = testDP.getAllData(tblName);
+    Assert.assertEquals(expectedData, actualData);
+
+    ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+    HiveHookEvents.HiveHookEventProto event = reader.readEvent();
+    while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
+      event = reader.readEvent();
+    }
+    Assert.assertNotNull(event);
+
+    for (org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry mapFieldEntry: event.getOtherInfoList()) {
+      if (mapFieldEntry.getKey().equalsIgnoreCase("CONF")) {
+        Assert.assertTrue(mapFieldEntry.getValue().contains("\"tez.task.resource.memory.mb\":\"5000\""));
+      }
+    }
+  }
 }
