@@ -3706,6 +3706,7 @@ public abstract class TestHiveMetaStore {
               .setManagedLocation(mgdLocation)
               .build(conf);
       req.setDatabase(db);
+      req.setDatabaseName(TEST_DB1_NAME);
       client.createDatabase(req);
 
       Path dbPath = new Path(db.getLocationUri());
