@@ -7575,6 +7575,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Map<String, String> tblProps = null;
       CreateTableDesc tblDesc = qb.getTableDesc();
       CreateMaterializedViewDesc viewDesc = qb.getViewDesc();
+      boolean createTableUseSuffix = false;
       if (tblDesc != null) {
         fieldSchemas = new ArrayList<>();
         partitionColumns = new ArrayList<>();
@@ -7584,6 +7585,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         destTableIsMaterialization = tblDesc.isMaterialization();
         tableName = TableName.fromString(tblDesc.getDbTableName(), null, tblDesc.getDatabaseName());
         tblProps = tblDesc.getTblProps();
+        // Add suffix only when required confs are present
+        // and user has not specified a location to the table.
+        createTableUseSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+                || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
+                && tblDesc.getLocation() == null;
       } else if (viewDesc != null) {
         fieldSchemas = new ArrayList<>();
         partitionColumns = new ArrayList<>();
@@ -7610,24 +7616,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           destTableIsFullAcid = AcidUtils.isFullAcidTable(tblProps);
           acidOperation = getAcidType(dest);
           isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOperation);
-
-          // Add suffix only when required confs are present
-          // and user has not specified a location to the table.
-          boolean createTableUseSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
-                  || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
-                  && tblDesc.getLocation() == null;
           if (isDirectInsert || isMmTable) {
-            destinationPath = getCtasLocation(tblDesc);
-            // Property SOFT_DELETE_TABLE needs to be added to indicate that suffixing is used.
+            destinationPath = getCtasLocation(tblDesc, createTableUseSuffix);
             if (createTableUseSuffix) {
-              long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
-              String suffix = AcidUtils.getPathSuffix(txnId);
-              destinationPath = new Path(destinationPath.toString() + suffix);
               tblDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
             }
+            // Set the location in context for possible rollback.
+            ctx.setLocation(destinationPath);
             // Setting the location so that metadata transformers
             // does not change the location later while creating the table.
             tblDesc.setLocation(destinationPath.toString());
+          } else {
+            // Set the location in context for possible rollback.
+            ctx.setLocation(getCtasLocation(tblDesc, createTableUseSuffix));
           }
         }
         try {
@@ -7984,7 +7985,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return true;
   }
 
-  private Path getCtasLocation(CreateTableDesc tblDesc) throws SemanticException {
+  private Path getCtasLocation(CreateTableDesc tblDesc, boolean createTableWithSuffix) throws SemanticException {
     Path location;
     try {
       String protoName = tblDesc.getDbTableName();
@@ -8005,7 +8006,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         location = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
       }
-      tbl.getSd().setLocation(location.toString());
+
+      if (createTableWithSuffix) {
+        long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
+        String suffix = AcidUtils.getPathSuffix(txnId);
+        location = new Path(location.toString() + suffix);
+      }
 
       return location;
     } catch (HiveException | MetaException e) {

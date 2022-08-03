@@ -215,6 +215,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void compact(CompactionRequest rqst)')
     print('  CompactionResponse compact2(CompactionRequest rqst)')
     print('  ShowCompactResponse show_compact(ShowCompactRequest rqst)')
+    print('  bool submit_for_cleanup(CompactionRequest o1, i64 o2, i64 o3)')
     print('  void add_dynamic_partitions(AddDynamicPartitions rqst)')
     print('  OptionalCompactionInfoStruct find_next_compact(string workerId)')
     print('  OptionalCompactionInfoStruct find_next_compact2(FindNextCompactRequest rqst)')
@@ -1531,6 +1532,12 @@ elif cmd == 'show_compact':
         print('show_compact requires 1 args')
         sys.exit(1)
     pp.pprint(client.show_compact(eval(args[0]),))
+
+elif cmd == 'submit_for_cleanup':
+    if len(args) != 3:
+        print('submit_for_cleanup requires 3 args')
+        sys.exit(1)
+    pp.pprint(client.submit_for_cleanup(eval(args[0]), eval(args[1]), eval(args[2]),))
 
 elif cmd == 'add_dynamic_partitions':
     if len(args) != 1:

@@ -53,6 +53,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +95,7 @@ public abstract class TxnCommandsBaseForTests {
   }
 
   @Before
+  @BeforeEach
   public void setUp() throws Exception {
     setUpInternal();
 
@@ -162,6 +165,7 @@ public abstract class TxnCommandsBaseForTests {
     }
   }
   @After
+  @AfterEach
   public void tearDown() throws Exception {
     try {
       if (d != null) {
