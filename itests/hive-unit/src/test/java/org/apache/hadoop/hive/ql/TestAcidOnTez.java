@@ -1008,6 +1008,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree  ~/dev/hiverwgit/itests/h
     conf.set("tez.am.resource.memory.mb", "128");
     conf.set("tez.am.dag.scheduler.class", "org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled");
     conf.setBoolean("tez.local.mode", true);
+    conf.setBoolean("tez.local.mode.without.network", true);
     conf.set("fs.defaultFS", "file:///");
     conf.setBoolean("tez.runtime.optimize.local.fetch", true);
     conf.set("tez.staging-dir", TEST_DATA_DIR);
