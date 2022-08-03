@@ -11,7 +11,8 @@ LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE encrypted
 SELECT * FROM encrypted_table_n0;
 
 -- Test loading data from the hdfs filesystem;
-dfs -copyFromLocal ../../data/files/kv1.txt hdfs:///tmp/kv1.txt;
+dfs -mkdir hdfs:///tmp;
+dfs -copyFromLocal -f ../../data/files/kv1.txt hdfs:///tmp/kv1.txt;
 LOAD DATA INPATH '/tmp/kv1.txt' OVERWRITE INTO TABLE encrypted_table_n0;
 SELECT * FROM encrypted_table_n0;
 

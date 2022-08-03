@@ -409,4 +409,20 @@
   <name>hive.txn.xlock.ctas</name>
   <value>false</value>
 </property>
+
+  <property>
+    <!-- Set large for tests. This acts as an artifical LIMIT. See HIVE-24484 for details -->
+    <name>hive.server2.thrift.resultset.max.fetch.size</name>
+    <value>1000000</value>
+  </property>
+
+  <property>
+    <name>hive.server2.webui.max.threads</name>
+    <value>4</value>
+  </property>
+
+  <property>
+    <name>hive.async.cleanup.service.thread.count</name>
+    <value>4</value>
+  </property>
 </configuration>

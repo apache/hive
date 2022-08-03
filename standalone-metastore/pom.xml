@@ -75,7 +75,7 @@
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>19.0</guava.version>
-    <hadoop.version>3.1.0</hadoop.version>
+    <hadoop.version>3.3.1</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
     <jackson.version>2.12.7</jackson.version>
     <javolution.version>5.5.1</javolution.version>
@@ -106,7 +106,7 @@
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <pac4j-core.version>4.5.5</pac4j-core.version>
     <nimbus-jose-jwt.version>9.20</nimbus-jose-jwt.version>
-    <jetty.version>9.3.27.v20190418</jetty.version>
+    <jetty.version>9.4.40.v20210413</jetty.version>
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
@@ -240,6 +240,10 @@
         <artifactId>hadoop-mapreduce-client-core</artifactId>
         <version>${hadoop.version}</version>
         <exclusions>
+          <exclusion>
+            <groupId>org.jline</groupId>
+            <artifactId>jline</artifactId>
+          </exclusion>
           <exclusion>
             <groupId>io.netty</groupId>
             <artifactId>netty</artifactId>
