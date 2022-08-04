@@ -9442,18 +9442,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // backtrack can be null when input is script operator
       ExprNodeDesc exprBack = ExprNodeDescUtils.backtrack(expr, dummy, parent);
-      int kindex;
-      if (exprBack == null) {
-        kindex = -1;
-      } else if (ExprNodeDescUtils.isConstant(exprBack)) {
-        kindex = reduceKeysBack.indexOf(exprBack);
-        addJoinKeyToRowScema(outputRR, index, i, colInfo, nm, nm2, kindex);
-        continue;
-      } else {
-        int startIdx = 0;
-        while ((kindex = ExprNodeDescUtils.indexOf(exprBack, reduceKeysBack, startIdx)) != -1) {
+      if (exprBack != null) {
+        if (ExprNodeDescUtils.isConstant(exprBack)) {
+          int kindex = reduceKeysBack.indexOf(exprBack);
           addJoinKeyToRowScema(outputRR, index, i, colInfo, nm, nm2, kindex);
-          startIdx = kindex + 1;
+        } else {
+          int startIdx = 0;
+          int kindex;
+          // joinKey may present multiple times, add the duplicates to the schema with different internal name
+          //      join        LU_CUSTOMER        a16
+          //      on         (a15.CUSTOMER_ID = a16.CUSTOMER_ID and pa11.CUSTOMER_ID = a16.CUSTOMER_ID)
+          while ((kindex = ExprNodeDescUtils.indexOf(exprBack, reduceKeysBack, startIdx)) != -1) {
+            addJoinKeyToRowScema(outputRR, index, i, colInfo, nm, nm2, kindex);
+            startIdx = kindex + 1;
+          }
         }
         continue;
       }
