@@ -87,10 +87,7 @@
     <log4j2.version>2.17.1</log4j2.version>
     <mockito-core.version>3.3.3</mockito-core.version>
     <orc.version>1.6.9</orc.version>
-    <!-- com.google repo will be used except on Aarch64 platform. -->
-    <protobuf.group>com.google.protobuf</protobuf.group>
-    <protobuf.version>2.6.1</protobuf.version>
-    <protobuf-exc.version>2.6.1</protobuf-exc.version>
+    <protobuf.version>3.21.1</protobuf.version>
     <sqlline.version>1.9.0</sqlline.version>
     <jline.version>2.14.6</jline.version>
     <ST4.version>4.0.4</ST4.version>
@@ -557,20 +554,6 @@
     </plugins>
   </build>
   <profiles>
-    <!-- use com.github.os72 on aarch64 platform -->
-    <profile>
-      <id>aarch64</id>
-      <properties>
-        <protobuf.group>com.github.os72</protobuf.group>
-        <protobuf-exc.version>2.6.1-build3</protobuf-exc.version>
-      </properties>
-      <activation>
-        <os>
-          <family>linux</family>
-          <arch>aarch64</arch>
-        </os>
-      </activation>
-    </profile>
     <profile>
       <id>javadoc</id>
       <build>

@@ -27,7 +27,7 @@
     <hive.path.to.root>../..</hive.path.to.root>
     <exclude.tests>None</exclude.tests>
     <!-- Required by Calcite Avatica -->
-    <protobuf.version>3.3.0</protobuf.version>
+    <protobuf.version>3.21.1</protobuf.version>
   </properties>
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
