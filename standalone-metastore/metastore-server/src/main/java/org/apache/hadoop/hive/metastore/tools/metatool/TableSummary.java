@@ -17,33 +17,50 @@
  */
 package org.apache.hadoop.hive.metastore.tools.metatool;
 
+import java.math.BigInteger;
+
 public class TableSummary{
     String table_name;
     String db_name;
     String cat_name;
     int column_count;
     int partition_column_count;
-    long size_bytes;
-    long size_numRows;
-    long size_numFiles;
+    int partition_count;
+    BigInteger size_bytes;
+    BigInteger size_numRows;
+    BigInteger size_numFiles;
     String table_type;
     String file_format;
     String compression_type;
 
-    public TableSummary(String table_name, String db_name, String cat_name, int column_count,
-                        int partition_column_count, long size_bytes, long size_numRows, long size_numFiles,
-                        String table_type, String file_format, String compression_type) {
+
+    public TableSummary(String cat_name, String db_name, String table_name, int column_count,
+                        int partition_column_count, int partition_count, BigInteger size_bytes, BigInteger size_numRows,
+                        BigInteger size_numFiles, String table_type, String file_format, String compression_type) {
         this.table_name = table_name;
         this.db_name = db_name;
         this.cat_name = cat_name;
         this.column_count = column_count;
         this.partition_column_count = partition_column_count;
+        this.partition_count = partition_count;
         this.size_bytes = size_bytes;
         this.size_numRows = size_numRows;
         this.size_numFiles = size_numFiles;
         this.table_type = table_type;
         this.file_format = file_format;
         this.compression_type = compression_type;
+    }
+
+    public TableSummary() {
+
+    }
+
+    public int getPartition_count() {
+        return partition_count;
+    }
+
+    public void setPartition_count(int partition_count) {
+        this.partition_count = partition_count;
     }
 
     public String getTable_name() {
@@ -86,27 +103,27 @@ public class TableSummary{
         this.partition_column_count = partition_column_count;
     }
 
-    public long getSize_bytes() {
+    public BigInteger getSize_bytes() {
         return size_bytes;
     }
 
-    public void setSize_bytes(long size_bytes) {
+    public void setSize_bytes(BigInteger size_bytes) {
         this.size_bytes = size_bytes;
     }
 
-    public long getSize_numRows() {
+    public BigInteger getSize_numRows() {
         return size_numRows;
     }
 
-    public void setSize_numRows(long size_numRows) {
+    public void setSize_numRows(BigInteger size_numRows) {
         this.size_numRows = size_numRows;
     }
 
-    public long getSize_numFiles() {
+    public BigInteger getSize_numFiles() {
         return size_numFiles;
     }
 
-    public void setSize_numFiles(long size_numFiles) {
+    public void setSize_numFiles(BigInteger size_numFiles) {
         this.size_numFiles = size_numFiles;
     }
 
@@ -137,11 +154,12 @@ public class TableSummary{
     @Override
     public String toString() {
         return "TableSummary{" +
-                "table_name='" + table_name + '\'' +
+                "cat_name='" + cat_name + '\'' +
                 ", db_name='" + db_name + '\'' +
-                ", cat_name='" + cat_name + '\'' +
+                ", table_name='" + table_name + '\'' +
                 ", column_count=" + column_count +
                 ", partition_column_count=" + partition_column_count +
+                ", partition_count=" + partition_count +
                 ", size_bytes=" + size_bytes +
                 ", size_numRows=" + size_numRows +
                 ", size_numFiles=" + size_numFiles +

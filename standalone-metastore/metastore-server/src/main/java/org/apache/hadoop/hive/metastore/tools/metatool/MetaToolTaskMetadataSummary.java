@@ -57,6 +57,8 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
         }
         catch(SQLException e) {
             System.out.println(e);
+        } catch (MetaException e) {
+            throw new RuntimeException(e);
         }
     }
 

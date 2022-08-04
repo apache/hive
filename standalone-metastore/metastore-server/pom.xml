@@ -31,6 +31,11 @@
       <version>4.0.0-alpha-2-SNAPSHOT</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-iceberg-catalog</artifactId>
+      <version>4.0.0-alpha-2-SNAPSHOT</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.orc</groupId>
       <artifactId>orc-core</artifactId>
       <exclusions>
@@ -341,6 +346,54 @@
       <artifactId>wiremock-jre8-standalone</artifactId>
       <version>2.32.0</version>
       <scope>test</scope>
+    </dependency>
+      <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-metastore</artifactId>
+          <version>4.0.0-alpha-2-SNAPSHOT</version>
+          <scope>compile</scope>
+      </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-metastore</artifactId>
+      <version>4.0.0-alpha-2-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-metastore</artifactId>
+      <version>4.0.0-alpha-2-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+      <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-metastore</artifactId>
+          <version>4.0.0-alpha-2-SNAPSHOT</version>
+          <scope>compile</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-metastore</artifactId>
+          <version>4.0.0-alpha-2-SNAPSHOT</version>
+          <scope>compile</scope>
+      </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-metastore</artifactId>
+      <version>4.0.0-alpha-2-SNAPSHOT</version>
+      <scope>compile</scope>
+    </dependency>
+      <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-metastore</artifactId>
+          <version>4.0.0-alpha-2-SNAPSHOT</version>
+          <scope>compile</scope>
+      </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-metastore</artifactId>
+      <version>4.0.0-alpha-2-SNAPSHOT</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
   <profiles>
