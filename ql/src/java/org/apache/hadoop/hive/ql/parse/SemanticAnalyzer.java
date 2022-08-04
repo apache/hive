@@ -9447,19 +9447,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         kindex = -1;
       } else if (ExprNodeDescUtils.isConstant(exprBack)) {
         kindex = reduceKeysBack.indexOf(exprBack);
+        addJoinKeyToRowScema(outputRR, index, i, colInfo, nm, nm2, kindex);
+        continue;
       } else {
-        kindex = ExprNodeDescUtils.indexOf(exprBack, reduceKeysBack);
-      }
-      if (kindex >= 0) {
-        ColumnInfo newColInfo = new ColumnInfo(colInfo);
-        String internalColName = Utilities.ReduceField.KEY + ".reducesinkkey" + kindex;
-        newColInfo.setInternalName(internalColName);
-        newColInfo.setTabAlias(nm[0]);
-        outputRR.put(nm[0], nm[1], newColInfo);
-        if (nm2 != null) {
-          outputRR.addMappingOnly(nm2[0], nm2[1], newColInfo);
+        int startIdx = 0;
+        while ((kindex = ExprNodeDescUtils.indexOf(exprBack, reduceKeysBack, startIdx)) != -1) {
+          addJoinKeyToRowScema(outputRR, index, i, colInfo, nm, nm2, kindex);
+          startIdx = kindex + 1;
         }
-        index[i] = kindex;
         continue;
       }
       index[i] = -reduceValues.size() - 1;
@@ -9532,6 +9527,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     rsOp.setColumnExprMap(colExprMap);
     rsOp.setInputAliases(srcs);
     return rsOp;
+  }
+
+  private void addJoinKeyToRowScema(
+      RowResolver outputRR, int[] index, int i, ColumnInfo colInfo, String[] nm, String[] nm2, int kindex) {
+    ColumnInfo newColInfo = new ColumnInfo(colInfo);
+    String internalColName = ReduceField.KEY + ".reducesinkkey" + kindex;
+    newColInfo.setInternalName(internalColName);
+    newColInfo.setTabAlias(nm[0]);
+    outputRR.put(nm[0], nm[1], newColInfo);
+    if (nm2 != null) {
+      outputRR.addMappingOnly(nm2[0], nm2[1], newColInfo);
+    }
+    index[i] = kindex;
   }
 
   private Operator genJoinOperator(QB qb, QBJoinTree joinTree,
