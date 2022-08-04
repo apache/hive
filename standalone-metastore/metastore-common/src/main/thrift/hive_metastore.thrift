@@ -41,7 +41,7 @@ struct Version {
 
 struct FieldSchema {
   1: string name, // name of the field
-  2: string type, // type of the field. primitive types defined above, specify list<TYPE_NAME>, map<TYPE_NAME, TYPE_NAME> for lists & maps
+  2: string type, // type of the field. primitive types defined above, specify array<TYPE_NAME>, map<TYPE_NAME, TYPE_NAME>, struct<FIELD_NAME: FIELD_TYPE, ...> for lists & maps
   3: string comment
 }
 
