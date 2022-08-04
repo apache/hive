@@ -76,7 +76,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-client</artifactId>
+      <artifactId>hbase-shaded-client</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -95,6 +95,10 @@
         <exclusion>
           <groupId>org.glassfish.web</groupId>
           <artifactId>javax.servlet.jsp</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-client</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -198,6 +202,13 @@
       <artifactId>hbase-hadoop-compat</artifactId>
       <version>${hbase.version}</version>
       <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hbase</groupId>
+      <artifactId>hbase-zookeeper</artifactId>
+      <version>${hbase.version}</version>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>

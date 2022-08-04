@@ -207,7 +207,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase-client</artifactId>
+      <artifactId>hbase-shaded-client</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
