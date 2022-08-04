@@ -226,14 +226,28 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
         StatsSetupConst.clearColumnStatsState(tbl.getParameters());
       }
 
+      commitLock.ensureActive();
       try {
         persistTable(tbl, updateHiveTable);
+
+        commitLock.ensureActive();
+
         commitStatus = CommitStatus.SUCCESS;
+      } catch (LockException le) {
+        throw new CommitStateUnknownException(
+                "Failed to heartbeat for hive lock while " +
+                "committing changes. This can lead to a concurrent commit attempt be able to overwrite this commit. " +
+                "Please check the commit history. If you are running into this issue, try reducing " +
+                "iceberg.hive.lock-heartbeat-interval-ms.",
+                le);
       } catch (org.apache.hadoop.hive.metastore.api.AlreadyExistsException e) {
         throw new AlreadyExistsException(e, "Table already exists: %s.%s", database, tableName);
 
       } catch (InvalidObjectException e) {
         throw new ValidationException(e, "Invalid Hive object for %s.%s", database, tableName);
+
+      } catch (CommitFailedException | CommitStateUnknownException e) {
+        throw e;
 
       } catch (Throwable e) {
         if (e.getMessage() != null && e.getMessage().contains("Table/View 'HIVE_LOCKS' does not exist")) {

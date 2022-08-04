@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
@@ -38,6 +39,7 @@ import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.exceptions.CommitFailedException;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
@@ -46,14 +48,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.AdditionalAnswers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
@@ -65,7 +70,7 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
   private static HiveTableOperations spyOps = null;
   private static HiveClientPool spyClientPool = null;
   private static CachedClientPool spyCachedClientPool = null;
-  private static Configuration overriddenHiveConf = new Configuration(hiveConf);
+  private static Configuration overriddenHiveConf;
   private static AtomicReference<IMetaStoreClient> spyClientRef = new AtomicReference<>();
   private static IMetaStoreClient spyClient = null;
   HiveTableOperations ops = null;
@@ -79,10 +84,16 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
   ShowLocksResponse emptyLocks = new ShowLocksResponse(Lists.newArrayList());
 
   @BeforeClass
-  public static void initializeSpies() throws Exception {
+  public static void startMetastore() throws Exception {
+    HiveMetastoreTest.startMetastore(
+        ImmutableMap.of(HiveConf.ConfVars.HIVE_TXN_TIMEOUT.varname, "1s"));
+
+    // start spies
+    overriddenHiveConf = new Configuration(hiveConf);
     overriddenHiveConf.setLong("iceberg.hive.lock-timeout-ms", 6 * 1000);
     overriddenHiveConf.setLong("iceberg.hive.lock-check-min-wait-ms", 50);
     overriddenHiveConf.setLong("iceberg.hive.lock-check-max-wait-ms", 5 * 1000);
+    overriddenHiveConf.setLong("iceberg.hive.lock-heartbeat-interval-ms", 100);
 
     // Set up the spy clients as static variables instead of before every test.
     // The spy clients are reused between methods and closed at the end of all tests in this class.
@@ -148,6 +159,7 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
   public void testLockAcquisitionAtFirstTime() throws TException, InterruptedException {
     doReturn(acquiredLockResponse).when(spyClient).lock(any());
     doNothing().when(spyClient).unlock(eq(dummyLockId));
+    doNothing().when(spyClient).heartbeat(eq(0L), eq(dummyLockId));
 
     spyOps.doCommit(metadataV2, metadataV1);
 
@@ -166,6 +178,7 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
         .when(spyClient)
         .checkLock(eq(dummyLockId));
     doNothing().when(spyClient).unlock(eq(dummyLockId));
+    doNothing().when(spyClient).heartbeat(eq(0L), eq(dummyLockId));
 
     spyOps.doCommit(metadataV2, metadataV1);
 
@@ -438,5 +451,35 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
     verify(spyClient, never()).checkLock(any(Long.class));
     // all threads eventually got their turn
     verify(spyClient, times(numConcurrentCommits)).lock(any(LockRequest.class));
+  }
+
+  @Test
+  public void testLockHeartbeat() throws TException {
+    doReturn(acquiredLockResponse).when(spyClient).lock(any());
+    doAnswer(AdditionalAnswers.answersWithDelay(2000, InvocationOnMock::callRealMethod))
+        .when(spyClient)
+        .getTable(any(), any());
+    doNothing().when(spyClient).heartbeat(eq(0L), eq(dummyLockId));
+
+    spyOps.doCommit(metadataV2, metadataV1);
+
+    verify(spyClient, atLeastOnce()).heartbeat(eq(0L), eq(dummyLockId));
+  }
+
+  @Test
+  public void testLockHeartbeatFailureDuringCommit() throws TException, InterruptedException {
+    doReturn(acquiredLockResponse).when(spyClient).lock(any());
+    doAnswer(AdditionalAnswers.answersWithDelay(2000, InvocationOnMock::callRealMethod))
+        .when(spyOps)
+        .loadHmsTable();
+    doThrow(new TException("Failed to heart beat."))
+        .when(spyClient)
+        .heartbeat(eq(0L), eq(dummyLockId));
+
+    AssertHelpers.assertThrows(
+        "Expected commit failure due to failure in heartbeat.",
+        CommitFailedException.class,
+        "Failed to heartbeat for hive lock. Failed to heart beat.",
+        () -> spyOps.doCommit(metadataV2, metadataV1));
   }
 }

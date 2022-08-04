@@ -25,6 +25,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
@@ -45,6 +48,7 @@ import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTest
 import org.apache.iceberg.relocated.com.google.common.base.MoreObjects;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.iceberg.util.Tasks;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -57,6 +61,7 @@ public class HiveCommitLock {
   private static final String HIVE_ACQUIRE_LOCK_TIMEOUT_MS = "iceberg.hive.lock-timeout-ms";
   private static final String HIVE_LOCK_CHECK_MIN_WAIT_MS = "iceberg.hive.lock-check-min-wait-ms";
   private static final String HIVE_LOCK_CHECK_MAX_WAIT_MS = "iceberg.hive.lock-check-max-wait-ms";
+  private static final String HIVE_LOCK_HEARTBEAT_INTERVAL_MS = "iceberg.hive.lock-heartbeat-interval-ms";
   private static final String HIVE_LOCK_CREATION_TIMEOUT_MS = "iceberg.hive.lock-creation-timeout-ms";
   private static final String HIVE_LOCK_CREATION_MIN_WAIT_MS = "iceberg.hive.lock-creation-min-wait-ms";
   private static final String HIVE_LOCK_CREATION_MAX_WAIT_MS = "iceberg.hive.lock-creation-max-wait-ms";
@@ -67,7 +72,7 @@ public class HiveCommitLock {
   private static final long HIVE_LOCK_CREATION_TIMEOUT_MS_DEFAULT = 3 * 60 * 1000; // 3 minutes
   private static final long HIVE_LOCK_CREATION_MIN_WAIT_MS_DEFAULT = 50; // 50 milliseconds
   private static final long HIVE_LOCK_CREATION_MAX_WAIT_MS_DEFAULT = 5 * 1000; // 5 seconds
-
+  private static final long HIVE_LOCK_HEARTBEAT_INTERVAL_MS_DEFAULT = 4 * 60 * 1000; // 4 minutes
   private static final long HIVE_TABLE_LEVEL_LOCK_EVICT_MS_DEFAULT = TimeUnit.MINUTES.toMillis(10);
 
   private static Cache<String, ReentrantLock> commitLockCache;
@@ -88,13 +93,16 @@ public class HiveCommitLock {
   private final long lockAcquireTimeout;
   private final long lockCheckMinWaitTime;
   private final long lockCheckMaxWaitTime;
+  private final long lockHeartbeatIntervalTime;
   private final long lockCreationTimeout;
   private final long lockCreationMinWaitTime;
   private final long lockCreationMaxWaitTime;
   private final String agentInfo;
+  private final ScheduledExecutorService exitingScheduledExecutorService;
 
   private Optional<Long> hmsLockId = Optional.empty();
   private Optional<ReentrantLock> jvmLock = Optional.empty();
+  private HiveLockHeartbeat heartbeat = null;
 
   public HiveCommitLock(Configuration conf, ClientPool<IMetaStoreClient, TException> metaClients,
       String catalogName, String databaseName, String tableName) {
@@ -111,6 +119,8 @@ public class HiveCommitLock {
         conf.getLong(HIVE_LOCK_CHECK_MIN_WAIT_MS, HIVE_LOCK_CHECK_MIN_WAIT_MS_DEFAULT);
     this.lockCheckMaxWaitTime =
         conf.getLong(HIVE_LOCK_CHECK_MAX_WAIT_MS, HIVE_LOCK_CHECK_MAX_WAIT_MS_DEFAULT);
+    this.lockHeartbeatIntervalTime =
+            conf.getLong(HIVE_LOCK_HEARTBEAT_INTERVAL_MS, HIVE_LOCK_HEARTBEAT_INTERVAL_MS_DEFAULT);
     this.lockCreationTimeout =
             conf.getLong(HIVE_LOCK_CREATION_TIMEOUT_MS, HIVE_LOCK_CREATION_TIMEOUT_MS_DEFAULT);
     this.lockCreationMinWaitTime =
@@ -119,6 +129,12 @@ public class HiveCommitLock {
             conf.getLong(HIVE_LOCK_CREATION_MAX_WAIT_MS, HIVE_LOCK_CREATION_MAX_WAIT_MS_DEFAULT);
     long tableLevelLockCacheEvictionTimeout =
         conf.getLong(HIVE_TABLE_LEVEL_LOCK_EVICT_MS, HIVE_TABLE_LEVEL_LOCK_EVICT_MS_DEFAULT);
+    this.exitingScheduledExecutorService =
+            Executors.newSingleThreadScheduledExecutor(
+                    new ThreadFactoryBuilder()
+                            .setDaemon(true)
+                            .setNameFormat("iceberg-hive-lock-heartbeat-%d")
+                            .build());
     initTableLevelLockCache(tableLevelLockCacheEvictionTimeout);
   }
 
@@ -127,6 +143,11 @@ public class HiveCommitLock {
     // JVM process, which would result in unnecessary and costly HMS lock acquisition requests
     acquireJvmLock();
     acquireLockFromHms();
+
+    // Starting heartbeat for the HMS lock
+    heartbeat =
+            new HiveLockHeartbeat(metaClients, hmsLockId.get(), lockHeartbeatIntervalTime);
+    heartbeat.schedule(exitingScheduledExecutorService);
   }
 
   public void release() {
@@ -260,6 +281,11 @@ public class HiveCommitLock {
 
   @VisibleForTesting
   void doUnlock(long lockId) throws TException, InterruptedException {
+    if (heartbeat != null) {
+      heartbeat.cancel();
+      exitingScheduledExecutorService.shutdown();
+    }
+
     metaClients.run(
         client -> {
           client.unlock(lockId);
@@ -289,6 +315,22 @@ public class HiveCommitLock {
 
   public String getTableName() {
     return tableName;
+  }
+
+  public void ensureActive() {
+    if (heartbeat == null) {
+      throw new LockException("Lock is not active");
+    }
+
+    if (heartbeat.encounteredException != null) {
+      throw new LockException(
+              heartbeat.encounteredException,
+              "Failed to heartbeat for hive lock. %s",
+              heartbeat.encounteredException.getMessage());
+    }
+    if (!heartbeat.active()) {
+      throw new LockException("Hive lock heartbeat thread not active");
+    }
   }
 
   private static class LockInfo {
@@ -417,6 +459,51 @@ public class HiveCommitLock {
   private static class WaitingForHmsLockException extends RuntimeException {
     WaitingForHmsLockException(String message) {
       super(message);
+    }
+  }
+
+  private static class HiveLockHeartbeat implements Runnable {
+    private final ClientPool<IMetaStoreClient, TException> hmsClients;
+    private final long lockId;
+    private final long intervalMs;
+    private ScheduledFuture<?> future;
+    private volatile Exception encounteredException = null;
+
+    HiveLockHeartbeat(
+            ClientPool<IMetaStoreClient, TException> hmsClients, long lockId, long intervalMs) {
+      this.hmsClients = hmsClients;
+      this.lockId = lockId;
+      this.intervalMs = intervalMs;
+      this.future = null;
+    }
+
+    @Override
+    public void run() {
+      try {
+        hmsClients.run(
+            client -> {
+              client.heartbeat(0, lockId);
+              return null;
+            });
+      } catch (TException | InterruptedException e) {
+        this.encounteredException = e;
+        throw new CommitFailedException(e, "Failed to heartbeat for lock: %d", lockId);
+      }
+    }
+
+    public void schedule(ScheduledExecutorService scheduler) {
+      future =
+              scheduler.scheduleAtFixedRate(this, intervalMs / 2, intervalMs, TimeUnit.MILLISECONDS);
+    }
+
+    boolean active() {
+      return future != null && !future.isCancelled();
+    }
+
+    public void cancel() {
+      if (future != null) {
+        future.cancel(false);
+      }
     }
   }
 }
