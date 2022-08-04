@@ -21,7 +21,9 @@ import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,8 +54,10 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
+import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -72,6 +76,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.TxnIdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 
 public class HiveMaterializedViewUtils {
@@ -98,7 +104,22 @@ public class HiveMaterializedViewUtils {
    * materialized view definition uses external tables.
    */
   public static Boolean isOutdatedMaterializedView(
-      String validTxnsList, HiveTxnManager txnMgr,
+          String validTxnsList, HiveTxnManager txnMgr, Hive db,
+          Set<TableName> tablesUsed, Table materializedViewTable) throws HiveException {
+
+    MaterializedViewMetadata mvMetadata = materializedViewTable.getMVMetadata();
+    MaterializationSnapshot snapshot = mvMetadata.getSnapshot();
+
+    if (snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
+      return isOutdatedMaterializedView(snapshot, db, tablesUsed, materializedViewTable);
+    }
+
+    return isOutdatedMaterializedView(
+        snapshot.getValidTxnList(), validTxnsList, txnMgr, tablesUsed, materializedViewTable);
+  }
+
+  private static Boolean isOutdatedMaterializedView(
+      String mvValidTxnListString, String validTxnsList, HiveTxnManager txnMgr,
       Set<TableName> tablesUsed, Table materializedViewTable) throws LockException {
     List<String> tablesUsedNames = tablesUsed.stream()
         .map(tableName -> TableName.getDbTable(tableName.getDb(), tableName.getTable()))
@@ -110,17 +131,14 @@ public class HiveMaterializedViewUtils {
       return null;
     }
 
-    MaterializedViewMetadata mvMetadata = materializedViewTable.getMVMetadata();
     Set<String> storedTablesUsed = materializedViewTable.getMVMetadata().getSourceTableFullNames();
-    if (mvMetadata.getValidTxnList() == null ||
-            mvMetadata.getValidTxnList().isEmpty()) {
+    if (mvValidTxnListString == null || mvValidTxnListString.isEmpty()) {
       LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
               " ignored for rewriting as we could not obtain materialization txn ids");
       return null;
     }
+    ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(mvValidTxnListString);
     boolean ignore = false;
-    ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(
-            mvMetadata.getValidTxnList());
     for (String fullyQualifiedTableName : tablesUsedNames) {
       // Note. If the materialized view does not contain a table that is contained in the query,
       // we do not need to check whether that specific table is outdated or not. If a rewriting
@@ -160,11 +178,95 @@ public class HiveMaterializedViewUtils {
     return false;
   }
 
+  private static Boolean isOutdatedMaterializedView(
+          MaterializationSnapshot snapshot, Hive db,
+          Set<TableName> tablesUsed, Table materializedViewTable) throws HiveException {
+    List<String> tablesUsedNames = tablesUsed.stream()
+        .map(tableName -> TableName.getDbTable(tableName.getDb(), tableName.getTable()))
+        .collect(Collectors.toList());
+
+    // TODO: get current snapshot of source tables
+    Map<String, String> currentSnapshotMap = new HashMap<>(tablesUsedNames.size());
+    for (String tableName : tablesUsedNames) {
+      Table table = db.getTable(tableName);
+      if (table.getStorageHandler() != null) {
+        String sh = table.getStorageHandler().getCurrentSnapshot(table);
+        if (isNotBlank(sh)) {
+          currentSnapshotMap.put(table.getFullyQualifiedName(), sh);
+        } else {
+          LOG.debug(String.format(
+                  "Materialized view %s ignored for rewriting as we could not obtain current snapshot of table %s",
+                  materializedViewTable.getFullyQualifiedName(), tableName));
+          return null;
+        }
+      }
+    }
+
+    Map<String, String> snapshotMap = snapshot.getTableSnapshots();
+    if (snapshotMap == null || snapshotMap.isEmpty()) {
+      LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+              " ignored for rewriting as we could not obtain current snapshot ids");
+      return null;
+    }
+
+    Set<String> storedTablesUsed = materializedViewTable.getMVMetadata().getSourceTableFullNames();
+    boolean ignore = false;
+    for (String fullyQualifiedTableName : tablesUsedNames) {
+      // Note. If the materialized view does not contain a table that is contained in the query,
+      // we do not need to check whether that specific table is outdated or not. If a rewriting
+      // is produced in those cases, it is because that additional table is joined with the
+      // existing tables with an append-columns only join, i.e., PK-FK + not null.
+      if (!storedTablesUsed.contains(fullyQualifiedTableName)) {
+        continue;
+      }
+      String currentTableSnapshot = currentSnapshotMap.get(fullyQualifiedTableName);
+      if (currentTableSnapshot == null) {
+        LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                " ignored for rewriting as it is outdated and cannot be considered for " +
+                " rewriting because it uses non-transactional table " + fullyQualifiedTableName);
+        ignore = true;
+        break;
+      }
+      String storedTableSnapshot = snapshotMap.get(fullyQualifiedTableName);
+      if (storedTableSnapshot == null) {
+        // This should not happen, but we ignore for safety
+        LOG.warn("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                " ignored for rewriting as details about txn ids for table " + fullyQualifiedTableName +
+                " could not be found in " + snapshotMap);
+        ignore = true;
+        break;
+      }
+      if (!currentTableSnapshot.equals(storedTableSnapshot)) {
+        LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                " contents are outdated");
+        return true;
+      }
+    }
+    if (ignore) {
+      return null;
+    }
+
+    return false;
+  }
+
   /**
    * Method to enrich the materialization query contained in the input with
    * its invalidation.
    */
   public static HiveRelOptMaterialization augmentMaterializationWithTimeInformation(
+      HiveRelOptMaterialization materialization, String validTxnsList,
+      MaterializationSnapshot snapshot) throws LockException {
+
+    if (snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
+      // Not supported yet for Iceberg tables
+      return materialization;
+    }
+
+    return augmentMaterializationWithTimeInformation(
+        materialization, validTxnsList, new ValidTxnWriteIdList(snapshot.getValidTxnList()));
+  }
+
+  private static HiveRelOptMaterialization augmentMaterializationWithTimeInformation(
       HiveRelOptMaterialization materialization, String validTxnsList,
       ValidTxnWriteIdList materializationTxnList) throws LockException {
     // Extract tables used by the query which will in turn be used to generate
@@ -402,5 +504,19 @@ public class HiveMaterializedViewUtils {
           null, false, false);
     }
     return newScan;
+  }
+
+  public static Map<String, String> getSnapshotOf(Hive db, Set<TableName> tables) throws HiveException {
+    Map<String, String> snapshot = new HashMap<>(tables.size());
+    for (TableName tableName : tables) {
+      Table table = db.getTable(tableName);
+      if (table.getStorageHandler() != null) {
+        String sh = table.getStorageHandler().getCurrentSnapshot(table);
+        if (isNotBlank(sh)) {
+          snapshot.put(table.getFullyQualifiedName(), sh);
+        }
+      }
+    }
+    return snapshot;
   }
 }

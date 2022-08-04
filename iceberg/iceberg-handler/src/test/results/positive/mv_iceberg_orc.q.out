@@ -1,0 +1,143 @@
+PREHOOK: query: create external table tbl_ice(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_ice
+POSTHOOK: query: create external table tbl_ice(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: insert into tbl_ice values (1, 'one', 50), (2, 'two', 51), (3, 'three', 52), (4, 'four', 53), (5, 'five', 54)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_ice
+POSTHOOK: query: insert into tbl_ice values (1, 'one', 50), (2, 'two', 51), (3, 'three', 52), (4, 'four', 53), (5, 'five', 54)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: select * from tbl_ice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_ice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one	50
+2	two	51
+3	three	52
+4	four	53
+5	five	54
+PREHOOK: query: create materialized view mat1 as
+select b, c from tbl_ice where c > 52
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat1
+POSTHOOK: query: create materialized view mat1 as
+select b, c from tbl_ice where c > 52
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat1
+POSTHOOK: Lineage: mat1.b SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: mat1.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), ]
+PREHOOK: query: select * from mat1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from mat1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+five	54
+four	53
+PREHOOK: query: explain cbo
+select b, c from tbl_ice where c > 52
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select b, c from tbl_ice where c > 52
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+
+PREHOOK: query: insert into tbl_ice values (111, 'one', 55), (333, 'two', 56)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_ice
+POSTHOOK: query: insert into tbl_ice values (111, 'one', 55), (333, 'two', 56)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: explain cbo
+select b, c from tbl_ice where c > 52
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select b, c from tbl_ice where c > 52
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveProject(b=[$1], c=[$2])
+  HiveFilter(condition=[>($2, 52)])
+    HiveTableScan(table=[[default, tbl_ice]], table:alias=[tbl_ice])
+
+PREHOOK: query: explain cbo
+alter materialized view mat1 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: default@mat1
+POSTHOOK: query: explain cbo
+alter materialized view mat1 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: default@mat1
+CBO PLAN:
+HiveProject(b=[$1], c=[$2])
+  HiveFilter(condition=[>($2, 52)])
+    HiveTableScan(table=[[default, tbl_ice]], table:alias=[tbl_ice])
+
+PREHOOK: query: alter materialized view mat1 rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: default@mat1
+POSTHOOK: query: alter materialized view mat1 rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: default@mat1
+POSTHOOK: Lineage: mat1.b SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: mat1.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), ]
+PREHOOK: query: select * from mat1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from mat1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+five	54
+four	53
+one	55
+two	56
+PREHOOK: query: explain cbo
+select b, c from tbl_ice where c > 52
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select b, c from tbl_ice where c > 52
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+

@@ -489,4 +489,8 @@ public interface HiveStorageHandler extends Configurable {
    */
   default void executeOperation(org.apache.hadoop.hive.ql.metadata.Table table, AlterTableExecuteSpec executeSpec) {
   }
+
+  default String getCurrentSnapshot(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return null;
+  }
 }

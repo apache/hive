@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -40,6 +41,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.getSnapshotOf;
 
 /**
  * Operation process of creating a view.
@@ -66,6 +69,7 @@ public class CreateMaterializedViewOperation extends DDLOperation<CreateMaterial
       // We set the signature for the view if it is a materialized view
       if (tbl.isMaterializedView()) {
         Set<SourceTable> sourceTables = new HashSet<>(desc.getTablesUsed().size());
+        Map<String, String> snapshot = getSnapshotOf(context.getDb(), desc.getTablesUsed());
         for (TableName tableName : desc.getTablesUsed()) {
           sourceTables.add(context.getDb().getTable(tableName).createSourceTable());
         }
@@ -74,7 +78,8 @@ public class CreateMaterializedViewOperation extends DDLOperation<CreateMaterial
                 tbl.getDbName(),
                 tbl.getTableName(),
                 sourceTables,
-                context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+                new MaterializationSnapshot(
+                        context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY), snapshot));
         tbl.setMaterializedViewMetadata(metadata);
       }
       context.getDb().createTable(tbl, desc.getIfNotExists());
