@@ -23,9 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.CachingCatalog;
+import org.apache.iceberg.CatalogProperties;
+import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.FileFormat;
@@ -648,5 +651,87 @@ public class TestHiveCatalog extends HiveMetastoreTest {
   private Map<String, String> hmsTableParameters() throws TException {
     org.apache.hadoop.hive.metastore.api.Table hmsTable = metastoreClient.getTable(DB_NAME, "tbl");
     return hmsTable.getParameters();
+  }
+
+  @Test
+  public void testConstructorWarehousePathWithEndSlash() {
+    HiveCatalog catalogWithSlash = new HiveCatalog();
+    String wareHousePath = "s3://bucket/db/tbl";
+
+    catalogWithSlash.initialize(
+        "hive_catalog", ImmutableMap.of(CatalogProperties.WAREHOUSE_LOCATION, wareHousePath + "/"));
+    Assert.assertEquals(
+        "Should have trailing slash stripped",
+        wareHousePath,
+        catalogWithSlash.getConf().get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname));
+  }
+
+  @Test
+  public void testTablePropsDefinedAtCatalogLevel() {
+    Schema schema = new Schema(required(1, "id", Types.IntegerType.get(), "unique ID"));
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+
+    ImmutableMap<String, String> catalogProps =
+        ImmutableMap.of(
+            "table-default.key1", "catalog-default-key1",
+            "table-default.key2", "catalog-default-key2",
+            "table-default.key3", "catalog-default-key3",
+            "table-override.key3", "catalog-override-key3",
+            "table-override.key4", "catalog-override-key4");
+    Catalog hiveCatalog =
+        CatalogUtil.loadCatalog(
+            HiveCatalog.class.getName(),
+            CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE,
+            catalogProps,
+            hiveConf);
+
+    try {
+      Table table =
+          hiveCatalog
+              .buildTable(tableIdent, schema)
+              .withProperty("key2", "table-key2")
+              .withProperty("key3", "table-key3")
+              .withProperty("key5", "table-key5")
+              .create();
+
+      Assert.assertEquals(
+          "Table defaults set for the catalog must be added to the table properties.",
+          "catalog-default-key1",
+          table.properties().get("key1"));
+      Assert.assertEquals(
+          "Table property must override table default properties set at catalog level.",
+          "table-key2",
+          table.properties().get("key2"));
+      Assert.assertEquals(
+          "Table property override set at catalog level must override table default" +
+              " properties set at catalog level and table property specified.",
+          "catalog-override-key3",
+          table.properties().get("key3"));
+      Assert.assertEquals(
+          "Table override not in table props or defaults should be added to table properties",
+          "catalog-override-key4",
+          table.properties().get("key4"));
+      Assert.assertEquals(
+          "Table properties without any catalog level default or override should be added to table" +
+                  " properties.",
+          "table-key5",
+          table.properties().get("key5"));
+    } finally {
+      hiveCatalog.dropTable(tableIdent);
+    }
+  }
+
+  @Test
+  public void testDatabaseLocationWithSlashInWarehouseDir() {
+    Configuration conf = new Configuration();
+    // With a trailing slash
+    conf.set("hive.metastore.warehouse.dir", "s3://bucket/");
+
+    HiveCatalog catalog = new HiveCatalog();
+    catalog.setConf(conf);
+
+    Database database = catalog.convertToDatabase(Namespace.of("database"), ImmutableMap.of());
+
+    Assert.assertEquals("s3://bucket/database.db", database.getLocationUri());
   }
 }

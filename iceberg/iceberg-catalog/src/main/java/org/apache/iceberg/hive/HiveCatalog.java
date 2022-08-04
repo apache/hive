@@ -57,6 +57,7 @@ import org.apache.iceberg.relocated.com.google.common.base.MoreObjects;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.util.LocationUtil;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -465,19 +466,17 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
       throw new RuntimeException("Interrupted during commit", e);
     }
 
-    // Otherwise stick to the {WAREHOUSE_DIR}/{DB_NAME}.db/{TABLE_NAME} path
-    String warehouseLocation = getWarehouseLocation();
-    return String.format(
-        "%s/%s.db/%s",
-        warehouseLocation,
-        tableIdentifier.namespace().levels()[0],
-        tableIdentifier.name());
+    // Otherwise, stick to the {WAREHOUSE_DIR}/{DB_NAME}.db/{TABLE_NAME} path
+    String databaseLocation = databaseLocation(tableIdentifier.namespace().levels()[0]);
+    return String.format("%s/%s", databaseLocation, tableIdentifier.name());
   }
 
-  private String getWarehouseLocation() {
+  private String databaseLocation(String databaseName) {
     String warehouseLocation = conf.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname);
-    Preconditions.checkNotNull(warehouseLocation, "Warehouse location is not set: hive.metastore.warehouse.dir=null");
-    return warehouseLocation;
+    Preconditions.checkNotNull(
+            warehouseLocation, "Warehouse location is not set: hive.metastore.warehouse.dir=null");
+    warehouseLocation = LocationUtil.stripTrailingSlash(warehouseLocation);
+    return String.format("%s/%s.db", warehouseLocation, databaseName);
   }
 
   private String getExternalWarehouseLocation() {
@@ -510,7 +509,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
 
     database.setName(namespace.level(0));
     database.setLocationUri(new Path(getExternalWarehouseLocation(), namespace.level(0)).toString() + ".db");
-    database.setManagedLocationUri(new Path(getWarehouseLocation(), namespace.level(0)).toString() + ".db");
+    database.setLocationUri(databaseLocation(namespace.level(0)));
 
     meta.forEach((key, value) -> {
       if (key.equals("comment")) {
