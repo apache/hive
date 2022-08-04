@@ -3713,9 +3713,10 @@ public abstract class TestHiveMetaStore {
       FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), conf);
       assertFalse("Database's file system directory is skipped", fs.exists(new Path(dbLocation)));
       fs = FileSystem.get(new Path(mgdLocation).toUri(), conf);
-      assertTrue("Database's managed location is not skipped", fs.exists(new Path(mgdLocation)));
+      assertFalse("Database's managed location is not skipped", fs.exists(new Path(mgdLocation)));
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));
+      e.printStackTrace();
       System.err.println("testIfFSWritesIsSkippedForDatabase() failed.");
       throw e;
     }
@@ -3742,13 +3743,13 @@ public abstract class TestHiveMetaStore {
               .setLocation(dbLocation)
               .setManagedLocation(mgdLocation)
               .build(conf);
+      client.createDatabase(db);
 
       Table tbl1 = new TableBuilder()
               .setDbName(TEST_DB1_NAME)
               .setTableName(tableName1)
               .addCol("name", ColumnType.STRING_TYPE_NAME)
               .addCol("income", ColumnType.INT_TYPE_NAME)
-              .addTableParam("EXTERNAL", "TRUE")
               .create(client, conf);
 
       Table tbl2 = new TableBuilder()
@@ -3756,7 +3757,6 @@ public abstract class TestHiveMetaStore {
               .setTableName(tableName2)
               .addCol("name", ColumnType.STRING_TYPE_NAME)
               .addCol("income", ColumnType.INT_TYPE_NAME)
-              .addTableParam("EXTERNAL", "TRUE")
               .create(client, conf);
 
       CreateTableRequest tblReq1 = new CreateTableRequest();
