@@ -71,7 +71,11 @@ public class ExprNodeDescUtils {
   protected static final Logger LOG = LoggerFactory.getLogger(ExprNodeDescUtils.class);
 
   public static int indexOf(ExprNodeDesc origin, List<ExprNodeDesc> sources) {
-    for (int i = 0; i < sources.size(); i++) {
+    return indexOf(origin, sources, 0);
+  }
+
+  public static int indexOf(ExprNodeDesc origin, List<ExprNodeDesc> sources, int startIndex) {
+    for (int i = startIndex; i < sources.size(); i++) {
       if (origin.isSame(sources.get(i))) {
         return i;
       }
