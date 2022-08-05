@@ -9445,19 +9445,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (exprBack != null) {
         if (ExprNodeDescUtils.isConstant(exprBack)) {
           int kindex = reduceKeysBack.indexOf(exprBack);
-          addJoinKeyToRowScema(outputRR, index, i, colInfo, nm, nm2, kindex);
+          if (kindex >= 0) {
+            addJoinKeyToRowScema(outputRR, index, i, colInfo, nm, nm2, kindex);
+            continue;
+          }
         } else {
           int startIdx = 0;
           int kindex;
           // joinKey may present multiple times, add the duplicates to the schema with different internal name
           //      join        LU_CUSTOMER        a16
           //      on         (a15.CUSTOMER_ID = a16.CUSTOMER_ID and pa11.CUSTOMER_ID = a16.CUSTOMER_ID)
-          while ((kindex = ExprNodeDescUtils.indexOf(exprBack, reduceKeysBack, startIdx)) != -1) {
+          while ((kindex = ExprNodeDescUtils.indexOf(exprBack, reduceKeysBack, startIdx)) >= 0) {
             addJoinKeyToRowScema(outputRR, index, i, colInfo, nm, nm2, kindex);
             startIdx = kindex + 1;
           }
+          if (startIdx > 0) {
+            // at least one instance found
+            continue;
+          }
         }
-        continue;
       }
       index[i] = -reduceValues.size() - 1;
       String outputColName = getColumnInternalName(reduceValues.size());
