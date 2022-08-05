@@ -3707,9 +3707,10 @@ public abstract class TestHiveMetaStore {
               .build(conf);
       req.setDatabase(db);
       req.setDatabaseName(TEST_DB1_NAME);
+      req.setLocationUri(dbLocation);
+      req.setManagedLocationUri(mgdLocation);
       client.createDatabase(req);
 
-      Path dbPath = new Path(db.getLocationUri());
       FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), conf);
       assertFalse("Database's file system directory is skipped", fs.exists(new Path(dbLocation)));
       fs = FileSystem.get(new Path(mgdLocation).toUri(), conf);

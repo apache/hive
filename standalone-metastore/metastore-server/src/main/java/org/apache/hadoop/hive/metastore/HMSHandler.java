@@ -1230,14 +1230,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Map<String, String> transactionalListenersResponses = Collections.emptyMap();
     try {
       firePreEvent(new PreCreateDatabaseEvent(db, this));
-      if (!skipFSWrites) {
+
         //reinstate location uri for metastore db.
-        if (skipAuthorization == true) {
+      if (skipAuthorization == true) {
           db.setLocationUri(dbExtPath.toString());
           if (dbMgdPath != null) {
             db.setManagedLocationUri(dbMgdPath.toString());
           }
-        }
+      }
+      if (!skipFSWrites) {
         if (db.getCatalogName() != null && !db.getCatalogName().
                 equals(Warehouse.DEFAULT_CATALOG_NAME)) {
           if (!wh.isDir(dbExtPath)) {
