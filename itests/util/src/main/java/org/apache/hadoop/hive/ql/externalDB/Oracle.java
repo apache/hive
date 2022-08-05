@@ -40,12 +40,12 @@ public class Oracle extends AbstractExternalDB {
 
   @Override
   protected String getDockerImageName() {
-    return "pvargacl/oracle-xe-18.4.0";
+    return "abstractdog/oracle-xe:18.4.0-slim";
   }
 
   @Override
   protected String[] getDockerAdditionalArgs() {
-    return new String[] { "-p", "1521:1521", "-d" };
+    return new String[] { "-p", "1521:1521", "-d", "-e", "ORACLE_PASSWORD=" + getRootPassword() };
   }
 
   @Override
