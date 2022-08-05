@@ -1217,8 +1217,8 @@ public class MetaStoreServerUtils {
       }
       PropertyUtils.setNestedProperty(bean, propertyName, value);
     } catch (Exception e) {
-      throw new MetaException(
-          org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+      LOG.error("Failed to set nested property", e);
+      throw new MetaException(e.getMessage());
     }
   }
 

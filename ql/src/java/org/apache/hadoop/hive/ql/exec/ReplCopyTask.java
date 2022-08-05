@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -189,10 +188,10 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           ReplChangeManager.FileInfo f = ReplChangeManager
               .getFileInfo(new Path(fragments[0]), fragments[1], fragments[2], fragments[3], conf);
           filePaths.add(f);
-        } catch (MetaException e) {
+        } catch (IOException ioe) {
           // issue warning for missing file and throw exception
           LOG.warn("Cannot find {} in source repo or cmroot", fragments[0]);
-          throw new IOException(e.getMessage());
+          throw ioe;
         }
         // Note - we need srcFs rather than fs, because it is possible that the _files lists files
         // which are from a different filesystem than the fs where the _files file itself was loaded
