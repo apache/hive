@@ -74,7 +74,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.doThrow;
 
 /**
  * Tests for the worker thread and its MR jobs.
@@ -1040,7 +1039,7 @@ public class TestWorker extends CompactorTest {
     txnHandler.compact(new CompactionRequest("default", "mtwb", CompactionType.MINOR));
 
     Worker worker = Mockito.spy(new Worker());
-    doThrow(new RuntimeException()).when(worker).getMrCompactor();
+    Mockito.when(worker.getMrCompactor()).thenThrow(RuntimeException.class);
     worker.setConf(conf);
     worker.init(new AtomicBoolean(true));
 
