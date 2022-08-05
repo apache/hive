@@ -1678,6 +1678,16 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
+    def submit_for_cleanup(self, o1, o2, o3):
+        """
+        Parameters:
+         - o1
+         - o2
+         - o3
+
+        """
+        pass
+
     def add_dynamic_partitions(self, rqst):
         """
         Parameters:
@@ -9362,6 +9372,44 @@ class Client(fb303.FacebookService.Client, Iface):
             return result.success
         raise TApplicationException(TApplicationException.MISSING_RESULT, "show_compact failed: unknown result")
 
+    def submit_for_cleanup(self, o1, o2, o3):
+        """
+        Parameters:
+         - o1
+         - o2
+         - o3
+
+        """
+        self.send_submit_for_cleanup(o1, o2, o3)
+        return self.recv_submit_for_cleanup()
+
+    def send_submit_for_cleanup(self, o1, o2, o3):
+        self._oprot.writeMessageBegin('submit_for_cleanup', TMessageType.CALL, self._seqid)
+        args = submit_for_cleanup_args()
+        args.o1 = o1
+        args.o2 = o2
+        args.o3 = o3
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_submit_for_cleanup(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = submit_for_cleanup_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "submit_for_cleanup failed: unknown result")
+
     def add_dynamic_partitions(self, rqst):
         """
         Parameters:
@@ -12265,6 +12313,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["compact"] = Processor.process_compact
         self._processMap["compact2"] = Processor.process_compact2
         self._processMap["show_compact"] = Processor.process_show_compact
+        self._processMap["submit_for_cleanup"] = Processor.process_submit_for_cleanup
         self._processMap["add_dynamic_partitions"] = Processor.process_add_dynamic_partitions
         self._processMap["find_next_compact"] = Processor.process_find_next_compact
         self._processMap["find_next_compact2"] = Processor.process_find_next_compact2
@@ -17877,6 +17926,32 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("show_compact", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_submit_for_cleanup(self, seqid, iprot, oprot):
+        args = submit_for_cleanup_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = submit_for_cleanup_result()
+        try:
+            result.success = self._handler.submit_for_cleanup(args.o1, args.o2, args.o3)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("submit_for_cleanup", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -50189,6 +50264,166 @@ class show_compact_result(object):
 all_structs.append(show_compact_result)
 show_compact_result.thrift_spec = (
     (0, TType.STRUCT, 'success', [ShowCompactResponse, None], None, ),  # 0
+)
+
+
+class submit_for_cleanup_args(object):
+    """
+    Attributes:
+     - o1
+     - o2
+     - o3
+
+    """
+
+
+    def __init__(self, o1=None, o2=None, o3=None,):
+        self.o1 = o1
+        self.o2 = o2
+        self.o3 = o3
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = CompactionRequest()
+                    self.o1.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.o2 = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I64:
+                    self.o3 = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('submit_for_cleanup_args')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.I64, 2)
+            oprot.writeI64(self.o2)
+            oprot.writeFieldEnd()
+        if self.o3 is not None:
+            oprot.writeFieldBegin('o3', TType.I64, 3)
+            oprot.writeI64(self.o3)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(submit_for_cleanup_args)
+submit_for_cleanup_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [CompactionRequest, None], None, ),  # 1
+    (2, TType.I64, 'o2', None, None, ),  # 2
+    (3, TType.I64, 'o3', None, None, ),  # 3
+)
+
+
+class submit_for_cleanup_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+
+    """
+
+
+    def __init__(self, success=None, o1=None,):
+        self.success = success
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.BOOL:
+                    self.success = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('submit_for_cleanup_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.BOOL, 0)
+            oprot.writeBool(self.success)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(submit_for_cleanup_result)
+submit_for_cleanup_result.thrift_spec = (
+    (0, TType.BOOL, 'success', None, None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )
 
 

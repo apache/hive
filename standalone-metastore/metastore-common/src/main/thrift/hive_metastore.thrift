@@ -2963,6 +2963,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void compact(1:CompactionRequest rqst)
   CompactionResponse compact2(1:CompactionRequest rqst)
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
+  bool submit_for_cleanup(1:CompactionRequest o1, 2:i64 o2, 3:i64 o3) throws (1:MetaException o1)
   void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
   // Deprecated, use find_next_compact2()
   OptionalCompactionInfoStruct find_next_compact(1: string workerId) throws(1:MetaException o1)
@@ -3136,6 +3137,7 @@ const string META_TABLE_COLUMN_TYPES   = "columns.types",
 const string BUCKET_FIELD_NAME    = "bucket_field_name",
 const string BUCKET_COUNT         = "bucket_count",
 const string FIELD_TO_DIMENSION   = "field_to_dimension",
+const string IF_PURGE             = "ifPurge",
 const string META_TABLE_NAME      = "name",
 const string META_TABLE_DB        = "db",
 const string META_TABLE_LOCATION  = "location",

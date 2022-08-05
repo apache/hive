@@ -4250,6 +4250,9 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_AUTHENTICATION_JWT_JWKS_URL("hive.server2.authentication.jwt.jwks.url", "",
         "URL of the file from where URLBasedJWKSProvider will try to load JWKS if JWT is enabled for the\n" +
         "authentication mode."),
+    HIVE_SERVER2_AUTHENTICATION_JWT_JWKS_SKIP_SSL_CERT("hive.server2.authentication.jwt.jwks.skip.ssl.cert", false,
+        "When this is enabled, the SSL certificate verification will be skipped.\n" +
+        "This is meant to be used in a testing environment only. Do not use in production."),
 
     // HS2 SAML2.0 configuration
     HIVE_SERVER2_SAML_KEYSTORE_PATH("hive.server2.saml2.keystore.path", "",
@@ -4640,6 +4643,9 @@ public class HiveConf extends Configuration {
             + "numRows,impala_.*chunk.*   comma separated and mixed (handles strings and regexes at the same time)"),
     HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true,
         "Whether to generate the splits locally or in the AM (tez only)"),
+    HIVE_SPLITS_AVAILABLE_SLOTS_CALCULATOR_CLASS("hive.splits.available.slots.calculator.class.name",
+        "org.apache.hadoop.hive.ql.exec.tez.TezAvailableSlotsCalculator",
+        "Class to use for calculating available slots during split generation"),
     HIVE_TEZ_GENERATE_CONSISTENT_SPLITS("hive.tez.input.generate.consistent.splits", true,
         "Whether to generate consistent split locations when generating splits in the AM"),
     HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez(Hadoop 2 only)"),

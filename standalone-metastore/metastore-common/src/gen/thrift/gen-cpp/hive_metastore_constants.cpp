@@ -43,6 +43,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   FIELD_TO_DIMENSION = "field_to_dimension";
 
+  IF_PURGE = "ifPurge";
+
   META_TABLE_NAME = "name";
 
   META_TABLE_DB = "db";

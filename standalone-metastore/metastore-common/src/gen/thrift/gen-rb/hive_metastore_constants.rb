@@ -39,6 +39,8 @@ BUCKET_COUNT = %q"bucket_count"
 
 FIELD_TO_DIMENSION = %q"field_to_dimension"
 
+IF_PURGE = %q"ifPurge"
+
 META_TABLE_NAME = %q"name"
 
 META_TABLE_DB = %q"db"

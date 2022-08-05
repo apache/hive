@@ -2663,6 +2663,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public boolean submitForCleanup(CompactionRequest rqst, long highestWriteId,
+                                  long txnId) throws TException {
+    return client.submit_for_cleanup(rqst, highestWriteId, txnId);
+  }
+
+  @Override
   public GetLatestCommittedCompactionInfoResponse getLatestCommittedCompactionInfo(
       GetLatestCommittedCompactionInfoRequest request)
       throws TException {
