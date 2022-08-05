@@ -312,20 +312,13 @@ public class DagUtils {
 
     Map<String, PartitionDesc> partitions = work.getAliasToPartnInfo();
 
-    for (PartitionDesc partition : partitions.values()) {
+    // We don't need to iterate on all partitions, and check the same TableDesc.
+    PartitionDesc partition = partitions.values().stream().findFirst().orElse(null);
+    if (partition != null) {
       TableDesc tableDesc = partition.getTableDesc();
-      boolean tokenCollected = collectKafkaDelegationTokenForTableDesc(dag, conf, tableDesc);
-      if (tokenCollected) {
+      if (collectKafkaDelegationTokenForTableDesc(dag, conf, tableDesc)) {
         // don't collect delegation token again, if it was already successful
         return;
-      } else {
-        /*
-         * We don't need to iterate on all partitions, and check the same TableDesc:
-         * if partitions[0].getTableDesc() doesn't show a kafka table, let's break the loop quickly.
-         * Note: at this point we cannot return from this method, as fileSinkTableDescs should
-         * be checked too.
-         */
-        break;
       }
     }
 
@@ -339,6 +332,7 @@ public class DagUtils {
 
   /**
    * Tries to collect delegation tokens for kafka in the scope of a TableDesc.
+   * If "security.protocol" is set to "PLAINTEXT", we don't need to collect delegation token at all.
    * @param dag
    * @param conf
    * @param tableDesc
@@ -346,7 +340,13 @@ public class DagUtils {
    */
   private boolean collectKafkaDelegationTokenForTableDesc(DAG dag, JobConf conf, TableDesc tableDesc) {
     String kafkaBrokers = (String) tableDesc.getProperties().get("kafka.bootstrap.servers"); //FIXME: KafkaTableProperties
-    if (kafkaBrokers != null && !kafkaBrokers.isEmpty()) {
+    String consumerSecurityProtocol = (String) tableDesc.getProperties().get(
+        "kafka.consumer." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG);
+    String producerSecurityProtocol = (String) tableDesc.getProperties().get(
+        "kafka.producer." + CommonClientConfigs.SECURITY_PROTOCOL_CONFIG);
+    if (kafkaBrokers != null && !kafkaBrokers.isEmpty() &&
+        !CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL.equalsIgnoreCase(consumerSecurityProtocol) &&
+        !CommonClientConfigs.DEFAULT_SECURITY_PROTOCOL.equalsIgnoreCase(producerSecurityProtocol)) {
       getKafkaDelegationTokenForBrokers(dag, conf, kafkaBrokers);
       return true;
     }
