@@ -42,11 +42,9 @@ import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1030,7 +1028,7 @@ public class TestWorker extends CompactorTest {
   }
 
   @Test
-  public void testDoesntGatherStatsIfCompactionFails() throws Exception {
+  public void testDoesNotGatherStatsIfCompactionFails() throws Exception {
     Table t = newTable("default", "mtwb", false);
 
     addBaseFile(t, null, 20L, 20);
@@ -1046,11 +1044,9 @@ public class TestWorker extends CompactorTest {
     worker.setConf(conf);
     worker.init(new AtomicBoolean(true));
 
-    try (MockedStatic<Worker.StatsUpdater> statsUpdater = Mockito.mockStatic(Worker.StatsUpdater.class)) {
-      worker.findNextCompactionAndExecute(true, true);
+    worker.findNextCompactionAndExecute(true, true);
 
-      statsUpdater.verify(times(0), () -> Worker.StatsUpdater.gatherStats(any(), any(), any(), any()));
-    }
+    Mockito.verify(worker, Mockito.never()).gatherStats(any(), any(), any(), any());
   }
 
   @Test
