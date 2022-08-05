@@ -537,9 +537,9 @@ public class ExprNodeDescUtils {
         if(columnInternalName.startsWith(Utilities.ReduceField.VALUE.toString())) {
           continue;
         }
-        if (source instanceof ExprNodeColumnDesc) {
+        ColumnInfo columnInfo = reduceSinkOp.getSchema().getColumnInfo(columnInternalName);
+        if (source instanceof ExprNodeColumnDesc && columnInfo != null) {
           // The join key is a table column. Create the ExprNodeDesc based on this column.
-          ColumnInfo columnInfo = reduceSinkOp.getSchema().getColumnInfo(columnInternalName);
           return new ExprNodeColumnDesc(columnInfo);
         } else {
           // Join key expression is likely some expression involving functions/operators, so there
