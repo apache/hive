@@ -207,7 +207,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
           DruidStorageHandlerUtils.submitRequest(DruidStorageHandler.getHttpClient(),
               new Request(HttpMethod.GET, new URL(request)));
     } catch (Exception e) {
-      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      throw new IOException(e);
     }
 
     // Retrieve results
@@ -218,7 +218,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
           });
     } catch (Exception e) {
       response.close();
-      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      throw new IOException(e);
     }
     return segmentDescriptors;
   }

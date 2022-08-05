@@ -58,16 +58,12 @@ public class HBaseMetaHook implements HiveMetaHook, Closeable {
     this.hbaseConf = hbaseConf;
   }
 
-  private Admin getHBaseAdmin() throws MetaException {
-    try {
-      if (admin == null) {
-        Connection conn = ConnectionFactory.createConnection(hbaseConf);
-        admin = conn.getAdmin();
-      }
-      return admin;
-    } catch (IOException ioe) {
-      throw new MetaException(StringUtils.stringifyException(ioe));
+  private Admin getHBaseAdmin() throws IOException {
+    if (admin == null) {
+      Connection conn = ConnectionFactory.createConnection(hbaseConf);
+      admin = conn.getAdmin();
     }
+    return admin;
   }
 
   private String getHBaseTableName(Table tbl) {

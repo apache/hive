@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.util.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -254,7 +253,7 @@ public class DruidSerDe extends AbstractSerDe {
           DruidStorageHandlerUtils.submitRequest(DruidStorageHandler.getHttpClient(),
               DruidStorageHandlerUtils.createSmileRequest(address, query));
     } catch (Exception e) {
-      throw new SerDeException(StringUtils.stringifyException(e));
+      throw new SerDeException(e);
     }
 
     // Retrieve results
@@ -267,7 +266,7 @@ public class DruidSerDe extends AbstractSerDe {
           });
     } catch (Exception e) {
       response.close();
-      throw new SerDeException(StringUtils.stringifyException(e));
+      throw new SerDeException(e);
     }
     if (resultsList == null || resultsList.isEmpty()) {
       throw new SerDeException("Connected to Druid but could not retrieve datasource information");

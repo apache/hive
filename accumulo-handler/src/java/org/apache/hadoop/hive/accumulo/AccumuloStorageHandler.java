@@ -369,11 +369,7 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
           tableOpts.create(idxTable);
         }
       }
-    } catch (AccumuloSecurityException e) {
-      throw new MetaException(StringUtils.stringifyException(e));
-    } catch (TableExistsException e) {
-      throw new MetaException(StringUtils.stringifyException(e));
-    } catch (AccumuloException e) {
+    } catch (AccumuloSecurityException | TableExistsException | AccumuloException e) {
       throw new MetaException(StringUtils.stringifyException(e));
     }
   }
@@ -404,11 +400,7 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
             tblOpts.delete(tblName);
           }
         }
-      } catch (AccumuloException e) {
-        throw new MetaException(StringUtils.stringifyException(e));
-      } catch (AccumuloSecurityException e) {
-        throw new MetaException(StringUtils.stringifyException(e));
-      } catch (TableNotFoundException e) {
+      } catch (AccumuloException | AccumuloSecurityException | TableNotFoundException e) {
         throw new MetaException(StringUtils.stringifyException(e));
       }
     }

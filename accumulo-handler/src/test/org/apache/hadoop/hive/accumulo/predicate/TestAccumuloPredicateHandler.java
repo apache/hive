@@ -386,7 +386,7 @@ public class TestAccumuloPredicateHandler {
     } catch (RuntimeException e) {
       assertTrue(e.getMessage().contains("Unexpected residual predicate: field1 is not null"));
     } catch (Exception e) {
-      fail(StringUtils.stringifyException(e));
+      fail(e.getMessage());
     }
   }
 
@@ -423,7 +423,6 @@ public class TestAccumuloPredicateHandler {
       List<IteratorSetting> iterators = handler.getIterators(conf, columnMapper);
       assertEquals(iterators.size(), 0);
     } catch (SerDeException e) {
-      StringUtils.stringifyException(e);
     }
   }
 
@@ -475,7 +474,7 @@ public class TestAccumuloPredicateHandler {
       List<IteratorSetting> iterators = handler.getIterators(conf, columnMapper);
       assertEquals(iterators.size(), 0);
     } catch (Exception e) {
-      fail(StringUtils.stringifyException(e));
+      fail(e.getMessage());
     }
   }
 

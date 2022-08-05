@@ -32,9 +32,6 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * For use in IteratorSetting construction.
@@ -42,7 +39,6 @@ import org.slf4j.LoggerFactory;
  * encapsulates a constant byte [], PrimitiveCompare instance, and CompareOp instance.
  */
 public class PushdownTuple {
-  private static final Logger log = LoggerFactory.getLogger(PushdownTuple.class);
 
   private byte[] constVal;
   private PrimitiveComparison pCompare;
@@ -58,11 +54,10 @@ public class PushdownTuple {
       Writable writable = (Writable) eval.evaluate(null);
       constVal = getConstantAsBytes(writable);
     } catch (ClassCastException cce) {
-      log.info(StringUtils.stringifyException(cce));
-      throw new SerDeException(" Column type mismatch in where clause "
+      throw new SerDeException("Column type mismatch in where clause "
           + sc.getIndexExpr().getExprString() + " found type "
           + sc.getConstantDesc().getTypeString() + " instead of "
-          + sc.getColumnDesc().getTypeString());
+          + sc.getColumnDesc().getTypeString(), cce);
     } catch (HiveException e) {
       throw new SerDeException(e);
     }

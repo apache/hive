@@ -96,7 +96,7 @@ public class QTestDruidSerDe extends DruidSerDe {
           DruidStorageHandlerUtils.JSON_MAPPER.readValue(RESPONSE, new TypeReference<List<SegmentAnalysis>>() {
           });
     } catch (Exception e) {
-      throw new SerDeException(StringUtils.stringifyException(e));
+      throw new SerDeException(e);
     }
     return resultsList.get(0);
   }

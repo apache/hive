@@ -175,15 +175,8 @@ public class HiveAccumuloTableInputFormat implements
       }
 
       return hiveSplits;
-    } catch (AccumuloException e) {
-      log.error("Could not configure AccumuloInputFormat", e);
-      throw new IOException(StringUtils.stringifyException(e));
-    } catch (AccumuloSecurityException e) {
-      log.error("Could not configure AccumuloInputFormat", e);
-      throw new IOException(StringUtils.stringifyException(e));
-    } catch (SerDeException e) {
-      log.error("Could not configure AccumuloInputFormat", e);
-      throw new IOException(StringUtils.stringifyException(e));
+    } catch (AccumuloException | AccumuloSecurityException | SerDeException e) {
+      throw new IOException("Could not configure AccumuloInputFormat", e);
     }
   }
 
@@ -242,7 +235,7 @@ public class HiveAccumuloTableInputFormat implements
 
       return new HiveAccumuloRecordReader(recordReader, iterators.size());
     } catch (SerDeException e) {
-      throw new IOException(StringUtils.stringifyException(e));
+      throw new IOException(e);
     }
   }
 
