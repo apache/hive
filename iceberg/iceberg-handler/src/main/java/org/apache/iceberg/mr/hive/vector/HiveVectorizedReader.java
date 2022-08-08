@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -42,7 +43,9 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hive.iceberg.org.apache.orc.OrcConf;
+import org.apache.hive.iceberg.org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.hive.iceberg.org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.hive.iceberg.org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.hive.iceberg.org.apache.parquet.schema.MessageType;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
@@ -53,6 +56,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.orc.VectorizedReadUtils;
+import org.apache.iceberg.parquet.ParquetFooterInputFromCache;
 import org.apache.iceberg.parquet.ParquetSchemaUtil;
 import org.apache.iceberg.parquet.TypeWithSchemaVisitor;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -125,6 +129,7 @@ public class HiveVectorizedReader {
       // TODO: Iceberg currently does not track the last modification time of a file. Until that's added,
       // we need to set Long.MIN_VALUE as last modification time in the fileId triplet.
       SyntheticFileId fileId = new SyntheticFileId(path, task.file().fileSizeInBytes(), Long.MIN_VALUE);
+      fileId.toJobConf(job);
       RecordReader<NullWritable, VectorizedRowBatch> recordReader = null;
 
       switch (format) {
@@ -133,7 +138,7 @@ public class HiveVectorizedReader {
           break;
 
         case PARQUET:
-          recordReader = parquetRecordReader(job, reporter, task, path, start, length);
+          recordReader = parquetRecordReader(job, reporter, task, path, start, length, fileId);
           break;
         default:
           throw new UnsupportedOperationException("Vectorized Hive reading unimplemented for format: " + format);
@@ -182,11 +187,22 @@ public class HiveVectorizedReader {
   }
 
   private static RecordReader<NullWritable, VectorizedRowBatch> parquetRecordReader(JobConf job, Reporter reporter,
-      FileScanTask task, Path path, long start, long length) throws IOException {
+      FileScanTask task, Path path, long start, long length, SyntheticFileId fileId) throws IOException {
     InputSplit split = new FileSplit(path, start, length, job);
     VectorizedParquetInputFormat inputFormat = new VectorizedParquetInputFormat();
 
-    MessageType fileSchema = ParquetFileReader.readFooter(job, path).getFileMetaData().getSchema();
+    MemoryBufferOrBuffers footerData = null;
+    if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
+        LlapProxy.getIo() != null) {
+      LlapProxy.getIo().initCacheOnlyInputFormat(inputFormat);
+      footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(path, job, fileId);
+    }
+
+    ParquetMetadata parquetMetadata = footerData != null ?
+        ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), ParquetMetadataConverter.NO_FILTER) :
+        ParquetFileReader.readFooter(job, path);
+
+    MessageType fileSchema = parquetMetadata.getFileMetaData().getSchema();
     MessageType typeWithIds = null;
     Schema expectedSchema = task.spec().schema();
 

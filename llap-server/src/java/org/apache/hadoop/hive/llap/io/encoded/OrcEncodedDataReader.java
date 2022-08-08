@@ -499,8 +499,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     return true;
   }
 
-  private static Object determineFileId(Supplier<FileSystem> fsSupplier,
-    FileSplit split, Configuration daemonConf) throws IOException {
+  private static Object determineFileId(Supplier<FileSystem> fsSupplier, FileSplit split, Configuration daemonConf)
+      throws IOException {
 
     if (split instanceof OrcSplit) {
       Object fileKey = ((OrcSplit)split).getFileKey();
@@ -509,17 +509,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       }
     }
     LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
-    return determineFileId(fsSupplier, split.getPath(), daemonConf);
-  }
-
-  static Object determineFileId(Supplier<FileSystem> fsSupplier, Path path, Configuration daemonConf)
-      throws IOException {
-
-    boolean allowSynthetic = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID);
-    boolean checkDefaultFs = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID);
-    boolean forceSynthetic = !HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_USE_FILEID_PATH);
-
-    return HdfsUtils.getFileId(fsSupplier.get(), path, allowSynthetic, checkDefaultFs, forceSynthetic);
+    return LlapHiveUtils.createFileIdUsingFS(fsSupplier.get(), split.getPath(), daemonConf);
   }
 
   /**
@@ -590,7 +580,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       Configuration daemonConf, MetadataCache metadataCache, Object fileKey) throws IOException {
     Supplier<FileSystem> fsSupplier = getFsSupplier(path, jobConf);
     if (fileKey == null) {
-      fileKey = determineFileId(fsSupplier, path, daemonConf);
+      fileKey = LlapHiveUtils.createFileIdUsingFS(fsSupplier.get(), path, daemonConf);
     }
 
     if(fileKey == null || metadataCache == null) {
