@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
@@ -195,5 +196,30 @@ public final class DriverUtils {
       CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
       throw createProcessorException(driverContext, 10, errorMessage, ErrorMsg.findSQLState(e.getMessage()), e);
     }
+  }
+
+  public static void handleException(DriverContext driverContext, Exception e) throws CommandProcessorException {
+    ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
+    String errorMessage = "FAILED: " + e.getClass().getSimpleName();
+    if (error != ErrorMsg.GENERIC_ERROR) {
+      errorMessage += " [Error "  + error.getErrorCode()  + "]:";
+    }
+
+    // HIVE-4889
+    if ((e instanceof IllegalArgumentException) && e.getMessage() == null && e.getCause() != null) {
+      errorMessage += " " + e.getCause().getMessage();
+    } else {
+      errorMessage += " " + e.getMessage();
+    }
+
+    if (error == ErrorMsg.TXNMGR_NOT_ACID) {
+      errorMessage += ". Failed command: " + driverContext.getQueryString();
+    }
+
+    if (!(e instanceof ReCompileException)) {
+      CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
+    }
+    throw DriverUtils.createProcessorException(driverContext, error.getErrorCode(), errorMessage, error.getSQLState(),
+        e);
   }
 }

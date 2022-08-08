@@ -511,13 +511,17 @@ public class Driver implements IDriver {
   }
 
   private void prepareForCompile(boolean resetTaskIds) throws CommandProcessorException {
-    driverTxnHandler.createTxnManager();
-    DriverState.setDriverState(driverState);
-    prepareContext();
-    setQueryId();
+    try {
+      driverTxnHandler.createTxnManager();
+      DriverState.setDriverState(driverState);
+      prepareContext();
+      setQueryId();
 
-    if (resetTaskIds) {
-      TaskFactory.resetId();
+      if (resetTaskIds) {
+        TaskFactory.resetId();
+      }
+    } catch (Exception e) {
+      DriverUtils.handleException(driverContext, e);
     }
   }
 

@@ -54,11 +54,9 @@ import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
-import org.apache.hadoop.hive.ql.reexec.ReCompileException;
 import org.apache.hadoop.hive.ql.security.authorization.command.CommandAuthorizer;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +116,7 @@ public class Compiler {
       compileException = e;
       DriverUtils.checkInterrupted(driverState, driverContext, "during query compilation: " + e.getMessage(), null,
           null);
-      handleException(e);
+      DriverUtils.handleException(driverContext, e);
     } finally {
       cleanUp(compileException, parsed, deferClose);
     }
@@ -454,31 +452,6 @@ public class Compiler {
         }
       }
     }
-  }
-
-  private void handleException(Exception e) throws CommandProcessorException {
-    ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
-    String errorMessage = "FAILED: " + e.getClass().getSimpleName();
-    if (error != ErrorMsg.GENERIC_ERROR) {
-      errorMessage += " [Error "  + error.getErrorCode()  + "]:";
-    }
-
-    // HIVE-4889
-    if ((e instanceof IllegalArgumentException) && e.getMessage() == null && e.getCause() != null) {
-      errorMessage += " " + e.getCause().getMessage();
-    } else {
-      errorMessage += " " + e.getMessage();
-    }
-
-    if (error == ErrorMsg.TXNMGR_NOT_ACID) {
-      errorMessage += ". Failed command: " + driverContext.getQueryString();
-    }
-
-    if (!(e instanceof ReCompileException)) {
-      CONSOLE.printError(errorMessage, "\n" + StringUtils.stringifyException(e));
-    }
-    throw DriverUtils.createProcessorException(driverContext, error.getErrorCode(), errorMessage, error.getSQLState(),
-        e);
   }
 
   private void cleanUp(Throwable compileException, boolean parsed, boolean deferClose) {
