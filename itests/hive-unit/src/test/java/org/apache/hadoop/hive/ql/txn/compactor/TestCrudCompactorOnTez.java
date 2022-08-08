@@ -336,7 +336,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
-    Worker.StatsUpdater.gatherStats(ci, conf,
+    Worker.gatherStats(ci, conf,
             System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
 
     //Check basic stats are collected

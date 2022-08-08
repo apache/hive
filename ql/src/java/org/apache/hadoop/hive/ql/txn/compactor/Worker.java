@@ -160,7 +160,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
    * @param compactionQueueName The name of the compaction queue
    */
   @VisibleForTesting
-  protected void gatherStats(CompactionInfo ci, HiveConf conf, String userName, String compactionQueueName) {
+  protected static void gatherStats(CompactionInfo ci, HiveConf conf, String userName, String compactionQueueName) {
     try {
       if (!ci.isMajorCompaction()) {
         return;
