@@ -116,11 +116,11 @@ public class WriterBuilder {
     switch (operation) {
       case DELETE:
         writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
-            deleteFileFormat, io, targetFileSize);
+            io, targetFileSize);
         break;
       case OTHER:
         writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
-            dataFileFormat, io, targetFileSize);
+            io, targetFileSize);
         break;
       default:
         // Update and Merge should be splitted to inserts and deletes
