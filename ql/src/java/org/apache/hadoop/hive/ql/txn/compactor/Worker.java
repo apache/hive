@@ -43,25 +43,20 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
-import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hive.common.util.Ref;
-import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 
-import javax.annotation.concurrent.ThreadSafe;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
@@ -85,6 +80,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private long SLEEP_TIME = 10000;
 
   private String workerName;
+
+  protected StatsUpdater statsUpdater;
 
   // TODO: this doesn't check if compaction is already running (even though Initiator does but we
   //  don't go through Initiator for user initiated compactions)
@@ -142,58 +139,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     this.workerName = getWorkerId();
+    this.statsUpdater = new StatsUpdater();
     setName(workerName);
-  }
-
-  /**
-   * This doesn't throw any exceptions because we don't want the Compaction to appear as failed
-   * if stats gathering fails since this prevents Cleaner from doing it's job and if there are
-   * multiple failures, auto initiated compactions will stop which leads to problems that are
-   * much worse than stale stats.
-   *
-   * todo: longer term we should write something COMPACTION_QUEUE.CQ_META_INFO.  This is a binary
-   * field so need to figure out the msg format and how to surface it in SHOW COMPACTIONS, etc
-   *
-   * @param ci Information about the compaction being run
-   * @param conf The hive configuration object
-   * @param userName The user to run the statistic collection with
-   * @param compactionQueueName The name of the compaction queue
-   */
-  @VisibleForTesting
-  protected static void gatherStats(CompactionInfo ci, HiveConf conf, String userName, String compactionQueueName) {
-    try {
-      if (!ci.isMajorCompaction()) {
-        return;
-      }
-
-      HiveConf statusUpdaterConf = new HiveConf(conf);
-      statusUpdaterConf.unset(ValidTxnList.VALID_TXNS_KEY);
-
-      //e.g. analyze table page_view partition(dt='10/15/2014',country=’US’)
-      // compute statistics for columns viewtime
-      StringBuilder sb = new StringBuilder("analyze table ")
-              .append(StatsUtils.getFullyQualifiedTableName(ci.dbname, ci.tableName));
-      if (ci.partName != null) {
-        sb.append(" partition(");
-        Map<String, String> partitionColumnValues = Warehouse.makeEscSpecFromName(ci.partName);
-        for (Map.Entry<String, String> ent : partitionColumnValues.entrySet()) {
-          sb.append(ent.getKey()).append("='").append(ent.getValue()).append("',");
-        }
-        sb.setLength(sb.length() - 1); //remove trailing ,
-        sb.append(")");
-      }
-      sb.append(" compute statistics");
-      LOG.info(ci + ": running '" + sb + "'");
-      statusUpdaterConf.setVar(HiveConf.ConfVars.METASTOREURIS, "");
-      if (compactionQueueName != null && compactionQueueName.length() > 0) {
-        statusUpdaterConf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);
-      }
-      SessionState sessionState = DriverUtils.setUpSessionState(statusUpdaterConf, userName, true);
-      DriverUtils.runOnDriver(statusUpdaterConf, sessionState, sb.toString(), ci.highestWriteId);
-    } catch (Throwable t) {
-      LOG.error(ci + ": gatherStats(" + ci.dbname + "," + ci.tableName + "," + ci.partName +
-              ") failed due to: " + t.getMessage(), t);
-    }
   }
 
   /**
@@ -513,7 +460,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
 
     if (computeStats) {
-      gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : t1.getOwner(),
+       statsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : t1.getOwner(),
               CompactorUtil.getCompactorJobQueueName(conf, ci, t1));
     }
     return true;

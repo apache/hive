@@ -124,6 +124,8 @@ public class TestCompactor {
   IMetaStoreClient msClient;
   private IDriver driver;
 
+  private StatsUpdater statsUpdater;
+
   @Before
   public void setup() throws Exception {
 
@@ -168,6 +170,8 @@ public class TestCompactor {
       }
     }
     createTestDataFile(BASIC_FILE_NAME, input);
+
+    statsUpdater = new StatsUpdater();
   }
 
   @After
@@ -466,10 +470,10 @@ public class TestCompactor {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=0", CompactionType.MAJOR);
-    Worker.gatherStats(ci, conf,
+    statsUpdater.gatherStats(ci, conf,
             System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
     ci = new CompactionInfo(dbName, tblName, "bkt=1", CompactionType.MAJOR);
-    Worker.gatherStats(ci, conf,
+    statsUpdater.gatherStats(ci, conf,
             System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
 
     //Check basic stats are collected
@@ -563,7 +567,7 @@ public class TestCompactor {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
-    Worker.gatherStats(ci, conf,
+    statsUpdater.gatherStats(ci, conf,
             System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
 
     //Check basic stats are collected

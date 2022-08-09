@@ -1028,6 +1028,8 @@ public class TestWorker extends CompactorTest {
 
   @Test
   public void testDoesNotGatherStatsIfCompactionFails() throws Exception {
+    StatsUpdater statsUpdater = Mockito.spy(StatsUpdater.class);
+
     Table t = newTable("default", "mtwb", false);
 
     addBaseFile(t, null, 20L, 20);
@@ -1042,10 +1044,11 @@ public class TestWorker extends CompactorTest {
     Mockito.when(worker.getMrCompactor()).thenThrow(RuntimeException.class);
     worker.setConf(conf);
     worker.init(new AtomicBoolean(true));
+    worker.statsUpdater = statsUpdater;
 
     worker.findNextCompactionAndExecute(true, true);
 
-    Mockito.verify(worker, Mockito.never()).gatherStats(any(), any(), any(), any());
+    Mockito.verify(statsUpdater, Mockito.never()).gatherStats(any(), any(), any(), any());
   }
 
   @Test
