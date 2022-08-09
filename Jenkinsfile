@@ -103,6 +103,18 @@ df -h
   }
 }
 
+def sonarAnalysis(args) {
+  withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
+      sh """#!/bin/bash -e
+      sw java 11 && . /etc/profile.d/java.sh
+      export MAVEN_OPTS=-Xmx5G
+      mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
+       ${args} \
+       -DskipTests -Dit.skipTests -Dmaven.javadoc.skip
+      """
+  }
+}
+
 def hdbPodTemplate(closure) {
   podTemplate(
   containers: [
@@ -311,40 +323,24 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
                   loadWS();
               }
               stage('Sonar') {
-                  withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
-                      sh """#!/bin/bash -e
-                      sw java 11 && . /etc/profile.d/java.sh
-                      export MAVEN_OPTS=-Xmx5G
-                      mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
-                       -Dsonar.organization=apache \
-                       -Dsonar.projectKey=apache_hive \
-                       -Dsonar.host.url=https://sonarcloud.io \
-                       -Dsonar.branch.name=${CHANGE_BRANCH} \
-                       -DskipTests -Dit.skipTests -Dmaven.javadoc.skip
-                      """
-                 }
+                  OPTS="""-Dsonar.organization=apache \
+                      -Dsonar.projectKey=apache_hive \
+                      -Dsonar.host.url=https://sonarcloud.io \
+                      -Dsonar.branch.name=${CHANGE_BRANCH} \
+                      -DskipTests -Dit.skipTests -Dmaven.javadoc.skip """
+                 sonarAnalysis($OPTS)
               }
           } else if(env.CHANGE_ID) {
               stage('Prepare') {
                   loadWS();
               }
               stage('Sonar') {
-                  withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
-                      sh """#!/bin/bash -e
-                      sw java 11 && . /etc/profile.d/java.sh
-                      export MAVEN_OPTS=-Xmx5G
-                      mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
-                       -Dsonar.organization=apache \
-                       -Dsonar.projectKey=apache_hive \
-                       -Dsonar.host.url=https://sonarcloud.io \
-                       -Dsonar.pullrequest.github.repository=apache/hive \
-                       -Dsonar.pullrequest.key=${CHANGE_ID} \
-                       -Dsonar.pullrequest.branch=${CHANGE_BRANCH} \
-                       -Dsonar.pullrequest.base=${CHANGE_TARGET} \
-                       -Dsonar.pullrequest.provider=GitHub \
-                       -DskipTests -Dit.skipTests -Dmaven.javadoc.skip
-                      """
-                 }
+                  OPTS="""-Dsonar.pullrequest.github.repository=apache/hive \
+                      -Dsonar.pullrequest.key=${CHANGE_ID} \
+                      -Dsonar.pullrequest.branch=${CHANGE_BRANCH} \
+                      -Dsonar.pullrequest.base=${CHANGE_TARGET} \
+                      -Dsonar.pullrequest.provider=GitHub """
+                   sonarAnalysis($OPTS)
               }
           } else {
               echo "Skipping sonar analysis, we only run it on PRs and on the master branch"
