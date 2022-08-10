@@ -33,17 +33,27 @@ public class ShowCompactionsDesc implements DDLDesc, Serializable {
 
   // @formatter:off
   public static final String SCHEMA =
-      "compactionid,dbname,tabname,partname,type,state,workerhost,workerid,enqueuetime,starttime,duration,hadoopjobid,errormessage,initiatorhost,initiatorid#" +
-      "string:string:string:string:string:string:string:string:string:string:string:string:string:string:string";
+      "compactionid,dbname,tabname,partname,type,state,workerhost,workerid,enqueuetime,starttime,duration,hadoopjobid,errormessage,initiatorhost,initiatorid,poolname#" +
+      "string:string:string:string:string:string:string:string:string:string:string:string:string:string:string:string";
   // @formatter:on
 
   private String resFile;
 
-  public ShowCompactionsDesc(Path resFile) {
+  private final String poolName;
+
+
+  public ShowCompactionsDesc(Path resFile, String poolName) {
     this.resFile = resFile.toString();
+    this.poolName = poolName;
   }
 
   public String getResFile() {
     return resFile;
   }
+
+  @Explain(displayName = "pool", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getPoolName() {
+    return poolName;
+  }
+
 }

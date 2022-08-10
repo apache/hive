@@ -62,6 +62,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public long nextTxnId = 0;
   public long txnId = 0;
   public long commitTime = 0;
+  public String poolName;
 
   /**
    * The highest write id that the compaction job will pay attention to.
@@ -208,6 +209,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.nextTxnId = rs.getLong(20);
     fullCi.txnId = rs.getLong(21);
     fullCi.commitTime = rs.getLong(22);
+    fullCi.poolName = rs.getString(23);
     return fullCi;
   }
   static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException, MetaException {
@@ -233,6 +235,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     pStmt.setLong(20, ci.nextTxnId);
     pStmt.setLong(21, ci.txnId);
     pStmt.setLong(22, ci.commitTime);
+    pStmt.setString(23, ci.poolName);
   }
 
   public static CompactionInfo compactionStructToInfo(CompactionInfoStruct cr) {
@@ -270,6 +273,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     if (cr.isSetRetryRetention()) {
       ci.retryRetention = cr.getRetryRetention();
     }
+    if(cr.isSetPoolname()) {
+      ci.poolName = cr.getPoolname();
+    }
     return ci;
   }
 
@@ -290,6 +296,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setErrorMessage(ci.errorMessage);
     cr.setEnqueueTime(ci.enqueueTime);
     cr.setRetryRetention(ci.retryRetention);
+    cr.setPoolname(ci.poolName);
     return cr;
   }
 

@@ -70,6 +70,11 @@ class CompactionRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        9 => array(
+            'var' => 'poolName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -104,6 +109,10 @@ class CompactionRequest
      * @var string
      */
     public $initiatorVersion = null;
+    /**
+     * @var string
+     */
+    public $poolName = null;
 
     public function __construct($vals = null)
     {
@@ -131,6 +140,9 @@ class CompactionRequest
             }
             if (isset($vals['initiatorVersion'])) {
                 $this->initiatorVersion = $vals['initiatorVersion'];
+            }
+            if (isset($vals['poolName'])) {
+                $this->poolName = $vals['poolName'];
             }
         }
     }
@@ -222,6 +234,13 @@ class CompactionRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 9:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->poolName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -282,6 +301,11 @@ class CompactionRequest
         if ($this->initiatorVersion !== null) {
             $xfer += $output->writeFieldBegin('initiatorVersion', TType::STRING, 8);
             $xfer += $output->writeString($this->initiatorVersion);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->poolName !== null) {
+            $xfer += $output->writeFieldBegin('poolName', TType::STRING, 9);
+            $xfer += $output->writeString($this->poolName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

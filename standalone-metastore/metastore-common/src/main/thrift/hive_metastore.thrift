@@ -1275,14 +1275,15 @@ struct HeartbeatTxnRangeResponse {
 }
 
 struct CompactionRequest {
-    1: required string dbname,
-    2: required string tablename,
-    3: optional string partitionname,
-    4: required CompactionType type,
-    5: optional string runas,
+    1: required string dbname
+    2: required string tablename
+    3: optional string partitionname
+    4: required CompactionType type
+    5: optional string runas
     6: optional map<string, string> properties
-    7: optional string initiatorId,
+    7: optional string initiatorId
     8: optional string initiatorVersion
+    9: optional string poolName
 }
 
 struct CompactionInfoStruct {
@@ -1292,16 +1293,17 @@ struct CompactionInfoStruct {
     4: optional string partitionname,
     5: required CompactionType type,
     6: optional string runas,
-    7: optional string properties
-    8: optional bool toomanyaborts
-    9: optional string state
-    10: optional string workerId
-    11: optional i64 start
-    12: optional i64 highestWriteId
-    13: optional string errorMessage
-    14: optional bool hasoldabort
-    15: optional i64 enqueueTime
-    16: optional i64 retryRetention
+    7: optional string properties,
+    8: optional bool toomanyaborts,
+    9: optional string state,
+    10: optional string workerId,
+    11: optional i64 start,
+    12: optional i64 highestWriteId,
+    13: optional string errorMessage,
+    14: optional bool hasoldabort,
+    15: optional i64 enqueueTime,
+    16: optional i64 retryRetention,
+    17: optional string poolname
 }
 
 struct OptionalCompactionInfoStruct {
@@ -1343,6 +1345,7 @@ struct CompactionResponse {
 }
 
 struct ShowCompactRequest {
+    1: optional string poolName
 }
 
 struct ShowCompactResponseElement {
@@ -1365,6 +1368,7 @@ struct ShowCompactResponseElement {
     17: optional string initiatorId,
     18: optional string initiatorVersion,
     19: optional i64 cleanerStart
+    20: optional string poolName
 }
 
 struct ShowCompactResponse {
@@ -1384,7 +1388,8 @@ struct GetLatestCommittedCompactionInfoResponse {
 
 struct FindNextCompactRequest {
     1: optional string workerId,
-    2: optional string workerVersion
+    2: optional string workerVersion,
+    3: optional string poolName
 }
 
 struct AddDynamicPartitions {

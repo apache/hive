@@ -106,6 +106,7 @@ import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
@@ -5811,6 +5812,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                       Map<String, String> tblproperties) throws HiveException {
     compact2(dbname, tableName, partName, compactType, tblproperties);
   }
+
   /**
    * Enqueue a compaction request.  Only 1 compaction for a given resource (db/table/partSpec) can
    * be scheduled/running at any given time.
@@ -5822,12 +5824,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param tblproperties the list of tblproperties to overwrite for this compaction
    * @return id of new request or id already existing request for specified resource
    * @throws HiveException
+   * @deprecated use {@link #compact(CompactionRequest)}
    */
+  @Deprecated
   public CompactionResponse compact2(String dbname, String tableName, String partName, String compactType,
                                      Map<String, String> tblproperties)
       throws HiveException {
-    try {
-      CompactionType cr = null;
+      CompactionType cr;
       if ("major".equalsIgnoreCase(compactType)) {
         cr = CompactionType.MAJOR;
       } else if ("minor".equalsIgnoreCase(compactType)) {
@@ -5835,15 +5838,41 @@ private void constructOneLBLocationMap(FileStatus fSta,
       } else {
         throw new RuntimeException("Unknown compaction type " + compactType);
       }
-      return getMSC().compact2(dbname, tableName, partName, cr, tblproperties);
+      CompactionRequest request = new CompactionRequest(dbname, tableName, cr);
+      request.setPartitionname(partName);
+      request.setProperties(tblproperties);
+      return compact(request);
+  }
+
+  /**
+   * Enqueue a compaction request.  Only 1 compaction for a given resource (db/table/partSpec) can
+   * be scheduled/running at any given time.
+   * @param request The {@link CompactionRequest} object containing the details required to enqueue
+   *                a compaction request.
+   * @throws HiveException
+   */
+  public CompactionResponse compact(CompactionRequest request)
+      throws HiveException {
+    try {
+      return getMSC().compact2(request);
     } catch (Exception e) {
-      LOG.error("Failed compact2", e);
+      LOG.error("Failed compact3", e);
       throw new HiveException(e);
     }
   }
+
   public ShowCompactResponse showCompactions() throws HiveException {
     try {
       return getMSC().showCompactions();
+    } catch (Exception e) {
+      LOG.error("Failed showCompactions", e);
+      throw new HiveException(e);
+    }
+  }
+
+  public ShowCompactResponse showCompactions(String poolName) throws HiveException {
+    try {
+      return getMSC().showCompactions(poolName);
     } catch (Exception e) {
       LOG.error("Failed showCompactions", e);
       throw new HiveException(e);
