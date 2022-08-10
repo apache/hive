@@ -3410,7 +3410,7 @@ service GrpcHiveMetastore {
       (RefreshPrivilegesResponse);
 
   rpc SetUgi(SetUgiRequest) returns (SetUgiResponse);
-  
+
   rpc GetDelegationToken(GetDelegationTokenRequest) returns
       (GetDelegationTokenResponse);
   rpc RenewDelegationToken(RenewDelegationTokenRequest) returns
@@ -3492,7 +3492,7 @@ service GrpcHiveMetastore {
   rpc AddWriteNotificationLogInBatch
       (AddWriteNotificationLogInBatchRequest) returns
       (AddWriteNotificationLogInBatchResponse);
-  
+
   rpc CmRecycle(CmRecycleRequest) returns (CmRecycleResponse);
 
   rpc GetFileMetadataByExpr(GetFileMetadataByExprRequest) returns
@@ -3602,5 +3602,5 @@ service GrpcHiveMetastore {
   rpc DropPackage(DropPackageRequest) returns (DropPackageResponse);
   rpc GetAllWriteEventInfo(GetAllWriteEventInfoRequest) returns
       (GetAllWriteEventInfoResponse);
-} 
+}
 
