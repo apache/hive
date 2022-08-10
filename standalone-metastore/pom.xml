@@ -109,6 +109,8 @@
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
     <thrift.args>-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb
     </thrift.args>
+    <io.grpc.version>1.24.0</io.grpc.version>
+    <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
   </properties>
   <dependencyManagement>
     <dependencies>
