@@ -3715,10 +3715,12 @@ public abstract class TestHiveMetaStore {
       assertFalse("Database's file system directory is skipped", fs.exists(new Path(dbLocation)));
       fs = FileSystem.get(new Path(mgdLocation).toUri(), conf);
       assertFalse("Database's managed location is not skipped", fs.exists(new Path(mgdLocation)));
+      assertTrue("Database's dbLocation has been set", db.getLocationUri().equals(dbLocation));
+      assertTrue("Database's managed location has been set", db.getManagedLocationUri().equals(mgdLocation));
     } catch (Throwable e) {
-      System.err.println(StringUtils.stringifyException(e));
+      LOG.info(StringUtils.stringifyException(e));
       e.printStackTrace();
-      System.err.println("testIfFSWritesIsSkippedForDatabase() failed.");
+      LOG.info("testIfFSWritesIsSkippedForDatabase() failed.");
       throw e;
     }
   }
@@ -3778,8 +3780,8 @@ public abstract class TestHiveMetaStore {
       fs = FileSystem.get(new Path(mgdLocation).toUri(), conf);
       assertTrue("Table2's file system directory is not skipped", fs.exists(new Path(tbl2Location)));
     } catch (Throwable e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testIfFSWritesIsSkippedForTable() failed.");
+      LOG.info(StringUtils.stringifyException(e));
+      LOG.info("testIfFSWritesIsSkippedForTable() failed.");
       throw e;
     }
   }

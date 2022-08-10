@@ -1409,7 +1409,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public void create_database_req(final CreateDatabaseRequest req)
           throws AlreadyExistsException, InvalidObjectException, MetaException {
     Database db = req.getDatabase();
-    boolean skipFSWrites = req.isSkipFSWrites();
     startFunction("create_database_req", ": " + db.toString());
     boolean success = false;
     Exception ex = null;
@@ -1424,19 +1423,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       } catch (NoSuchObjectException e) {
         // expected
       }
-      create_database_core(getMS(), db, skipFSWrites);
+      create_database_core(getMS(), db, req.isSkipFSWrites());
       success = true;
     } catch (Exception e) {
       ex = e;
-      if (e instanceof MetaException) {
-        throw (MetaException) e;
-      } else if (e instanceof InvalidObjectException) {
-        throw (InvalidObjectException) e;
-      } else if (e instanceof AlreadyExistsException) {
-        throw (AlreadyExistsException) e;
-      } else {
-        throw newMetaException(e);
-      }
+      handleException(e).throwIfInstance(MetaException.class, InvalidObjectException.class, AlreadyExistsException.class).defaultMetaException();
     } finally {
       endFunction("create_database_req", success, ex);
     }
