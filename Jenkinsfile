@@ -109,7 +109,7 @@ def sonarAnalysis(args) {
       sw java 11 && . /etc/profile.d/java.sh
       export MAVEN_OPTS=-Xmx5G
       mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
-       ${args} \
+       """+args+""" \
        -DskipTests -Dit.skipTests -Dmaven.javadoc.skip
       """
   }
