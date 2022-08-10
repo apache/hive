@@ -323,24 +323,21 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
                   loadWS();
               }
               stage('Sonar') {
-                  OPTS="""-Dsonar.organization=apache \
-                      -Dsonar.projectKey=apache_hive \
-                      -Dsonar.host.url=https://sonarcloud.io \
-                      -Dsonar.branch.name=${CHANGE_BRANCH} \
-                      -DskipTests -Dit.skipTests -Dmaven.javadoc.skip """
-                 sonarAnalysis($OPTS)
+                  sonarAnalysis("""-Dsonar.organization=apache \
+                                   -Dsonar.projectKey=apache_hive \
+                                   -Dsonar.host.url=https://sonarcloud.io \
+                                   -Dsonar.branch.name=${CHANGE_BRANCH} """)
               }
           } else if(env.CHANGE_ID) {
               stage('Prepare') {
                   loadWS();
               }
               stage('Sonar') {
-                  OPTS="""-Dsonar.pullrequest.github.repository=apache/hive \
-                      -Dsonar.pullrequest.key=${CHANGE_ID} \
-                      -Dsonar.pullrequest.branch=${CHANGE_BRANCH} \
-                      -Dsonar.pullrequest.base=${CHANGE_TARGET} \
-                      -Dsonar.pullrequest.provider=GitHub """
-                   sonarAnalysis($OPTS)
+                  sonarAnalysis("""-Dsonar.pullrequest.github.repository=apache/hive \
+                                   -Dsonar.pullrequest.key=${CHANGE_ID} \
+                                   -Dsonar.pullrequest.branch=${CHANGE_BRANCH} \
+                                   -Dsonar.pullrequest.base=${CHANGE_TARGET} \
+                                   -Dsonar.pullrequest.provider=GitHub """)
               }
           } else {
               echo "Skipping sonar analysis, we only run it on PRs and on the master branch"
