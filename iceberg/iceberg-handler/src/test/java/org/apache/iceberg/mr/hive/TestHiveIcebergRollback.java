@@ -41,10 +41,12 @@ public class TestHiveIcebergRollback extends HiveIcebergStorageHandlerWithEngine
     Table table = testTables.createTableWithVersions(shell, identifier.name(),
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 3);
+    /* TODO: re-add test case when Iceberg issue https://github.com/apache/iceberg/issues/5507 is resolved.
     shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE ROLLBACK('" +
         HiveIcebergTestUtils.timestampAfterSnapshot(table, 2) + "')");
     Assert.assertEquals(5, shell.executeStatement("SELECT * FROM " + identifier.name()).size());
     Assert.assertEquals(3, table.history().size());
+    */
     shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE ROLLBACK('" +
         HiveIcebergTestUtils.timestampAfterSnapshot(table, 1) + "')");
     Assert.assertEquals(4, shell.executeStatement("SELECT * FROM " + identifier.name()).size());
@@ -63,11 +65,13 @@ public class TestHiveIcebergRollback extends HiveIcebergStorageHandlerWithEngine
     Table table = testTables.createTableWithVersions(shell, identifier.name(),
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 3);
+    /* TODO: re-add test case when Iceberg issue https://github.com/apache/iceberg/issues/5507 is resolved.
     shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE ROLLBACK(" +
         table.history().get(2).snapshotId() + ")");
     Assert.assertEquals(5, shell.executeStatement("SELECT * FROM " + identifier.name()).size());
     table.refresh();
     Assert.assertEquals(3, table.history().size());
+     */
     shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE ROLLBACK(" +
         table.history().get(1).snapshotId() + ")");
     Assert.assertEquals(4, shell.executeStatement("SELECT * FROM " + identifier.name()).size());
