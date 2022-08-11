@@ -105,13 +105,16 @@ df -h
 
 def sonarAnalysis(args) {
   withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
+      def mvnCmd = """mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
+      -Dsonar.organization=apache \
+      -Dsonar.projectKey=apache_hive \
+      -Dsonar.host.url=https://sonarcloud.io \
+      """+args+" -DskipTests -Dit.skipTests -Dmaven.javadoc.skip"
+
       sh """#!/bin/bash -e
       sw java 11 && . /etc/profile.d/java.sh
       export MAVEN_OPTS=-Xmx5G
-      mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
-       """+args+""" \
-       -DskipTests -Dit.skipTests -Dmaven.javadoc.skip
-      """
+      """+mvnCmd
   }
 }
 
@@ -323,10 +326,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
                   loadWS();
               }
               stage('Sonar') {
-                  sonarAnalysis("""-Dsonar.organization=apache \
-                                   -Dsonar.projectKey=apache_hive \
-                                   -Dsonar.host.url=https://sonarcloud.io \
-                                   -Dsonar.branch.name=${CHANGE_BRANCH} """)
+                  sonarAnalysis("-Dsonar.branch.name=${CHANGE_BRANCH}")
               }
           } else if(env.CHANGE_ID) {
               stage('Prepare') {
@@ -337,7 +337,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
                                    -Dsonar.pullrequest.key=${CHANGE_ID} \
                                    -Dsonar.pullrequest.branch=${CHANGE_BRANCH} \
                                    -Dsonar.pullrequest.base=${CHANGE_TARGET} \
-                                   -Dsonar.pullrequest.provider=GitHub """)
+                                   -Dsonar.pullrequest.provider=GitHub""")
               }
           } else {
               echo "Skipping sonar analysis, we only run it on PRs and on the master branch"
