@@ -320,27 +320,27 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 90	PLN	18
 100	CZK	12
 110	NULL	NULL
-PREHOOK: query: select * from default.tbl_target_mixed.partitions
+PREHOOK: query: select * from default.tbl_target_mixed.partitions order by `partition`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_target_mixed
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from default.tbl_target_mixed.partitions
+POSTHOOK: query: select * from default.tbl_target_mixed.partitions order by `partition`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_target_mixed
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"ccy":"CZK","c_bucket":2}	1	1	0
-{"ccy":"USD","c_bucket":1}	3	1	0
-{"ccy":null,"c_bucket":null}	2	1	0
-{"ccy":"PLN","c_bucket":2}	1	1	0
-{"ccy":"EUR","c_bucket":1}	2	1	0
 {"ccy":"CZK","c_bucket":1}	1	1	0
-{"ccy":"PLN","c_bucket":0}	2	1	0
-{"ccy":"USD","c_bucket":2}	1	1	0
-{"ccy":"EUR","c_bucket":2}	3	1	0
-{"ccy":"PLN","c_bucket":1}	1	1	0
+{"ccy":"CZK","c_bucket":2}	1	1	0
 {"ccy":"EUR","c_bucket":0}	1	1	0
+{"ccy":"EUR","c_bucket":1}	2	1	0
+{"ccy":"EUR","c_bucket":2}	3	1	0
 {"ccy":"HUF","c_bucket":1}	2	1	0
+{"ccy":"PLN","c_bucket":0}	2	1	0
+{"ccy":"PLN","c_bucket":1}	1	1	0
+{"ccy":"PLN","c_bucket":2}	1	1	0
 {"ccy":"USD","c_bucket":0}	2	1	0
+{"ccy":"USD","c_bucket":1}	3	1	0
+{"ccy":"USD","c_bucket":2}	1	1	0
+{"ccy":null,"c_bucket":null}	2	1	0
 PREHOOK: query: select * from default.tbl_target_mixed.files
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_target_mixed
