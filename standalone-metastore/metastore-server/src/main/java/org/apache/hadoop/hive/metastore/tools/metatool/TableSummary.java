@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.metastore.tools.metatool;
 import java.math.BigInteger;
 
 public class TableSummary{
-    String table_name;
-    String db_name;
     String cat_name;
+    String db_name;
+    String table_name;
     int column_count;
     int partition_column_count;
     int partition_count;
@@ -37,9 +37,9 @@ public class TableSummary{
     public TableSummary(String cat_name, String db_name, String table_name, int column_count,
                         int partition_column_count, int partition_count, BigInteger size_bytes, BigInteger size_numRows,
                         BigInteger size_numFiles, String table_type, String file_format, String compression_type) {
-        this.table_name = table_name;
-        this.db_name = db_name;
         this.cat_name = cat_name;
+        this.db_name = db_name;
+        this.table_name = table_name;
         this.column_count = column_count;
         this.partition_column_count = partition_column_count;
         this.partition_count = partition_count;

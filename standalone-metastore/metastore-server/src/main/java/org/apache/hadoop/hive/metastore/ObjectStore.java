@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_USE_CUSTOM_POOL;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.newMetaException;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 import java.io.IOException;
@@ -34,21 +35,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
@@ -63,7 +51,8 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
-import com.google.common.base.Supplier;
+import org.apache.iceberg.catalog.Namespace;
+import org.apache.iceberg.catalog.*;
 import org.apache.iceberg.hive.HiveCatalog;
 import com.google.common.util.concurrent.Striped;
 import org.apache.commons.collections.CollectionUtils;
@@ -14870,28 +14859,35 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /**
-   * SQL query which used in updateMetastoreSummary method to create or replace view HMS_SUMMARY.
+   * SQL queries which used in updateMetastoreSummary method to create or replace view HMS_SUMMARY.
    */
-  private static final String CREATE_METASTORE_SUMMARY="CREATE OR REPLACE VIEW HMS_SUMMARY AS SELECT a.TBL_ID,a.TBL_NAME,a.OWNER as CTLG,count(j.COLUMN_NAME) as column_count,k.partition_key_name as PARTITION_COLUMN,m.PARTITION_CNT,a.TBL_TYPE,a.CREATE_TIME,a.DB_ID,b.NAME,a.SD_ID,c.INPUT_FORMAT,c.IS_COMPRESSED,c.LOCATION,c.OUTPUT_FORMAT,c.SERDE_ID,d.SLIB,e.PARAM_VALUE,max(case q.PARAM_KEY when 'numFiles' then q.PARAM_VALUE else 0 end)NUM_FILES,max(case q.PARAM_KEY when 'numRows' then q.PARAM_VALUE else 0 end)NUM_ROWS,max(case q.PARAM_KEY when 'totalSize' then q.PARAM_VALUE else 0 end)TOTAL_SIZE FROM TBLS a left JOIN DBS b on a.DB_ID = b.DB_ID left JOIN SDS c on a.SD_ID = c.SD_ID LEFT JOIN SERDES d on c.SERDE_ID = d.SERDE_ID left JOIN (select SERDE_ID,PARAM_KEY,PARAM_VALUE from SERDE_PARAMS where PARAM_KEY = 'field.delim') e on c.SERDE_ID = e.SERDE_ID left JOIN (select SERDE_ID,PARAM_KEY,PARAM_VALUE from SERDE_PARAMS where PARAM_KEY = 'serialization.format') f on c.SERDE_ID = f.SERDE_ID left join (select TBL_ID,PARAM_KEY,PARAM_VALUE from TABLE_PARAMS where PARAM_KEY = 'comment' ) g on a.TBL_ID = g.TBL_ID left join (select TBL_ID,COUNT(PART_ID) as PARTITION_CNT from PARTITIONS) m on a.TBL_ID = m.TBL_ID LEFT JOIN (select TBL_ID,PARAM_KEY,PARAM_VALUE from TABLE_PARAMS where PARAM_KEY = 'transient_lastDdlTime') h on a.TBL_ID = h.TBL_ID left JOIN COLUMNS_V2 j on a.TBL_ID = j.CD_ID Left JOIN TABLE_PARAMS q on a.TBL_ID = q.TBL_ID left JOIN(select TBL_ID,group_concat(PKEY_NAME) as partition_key_name from PARTITION_KEYS group by TBL_ID) k on a.TBL_ID = k.TBL_ID group by a.TBL_ID, k.partition_key_name";
+  private static final String CREATE_PSQL_PARAMS="CREATE OR REPLACE VIEW \"METADATASUMMARY_PARAMS\" AS SELECT a.\"TBL_ID\", q.\"NUM_FILES\", q.\"TOTAL_SIZE\", q.\"NUM_ROWS\" FROM \"TBLS\" a Left join(SELECT \"TBL_ID\",max(CASE WHEN \"PARAM_KEY\"='numRows' THEN \"PARAM_VALUE\"::bigint ELSE 0 END) AS \"NUM_ROWS\", max(CASE WHEN \"PARAM_KEY\"='numFiles' THEN \"PARAM_VALUE\"::bigint ELSE 0 END) AS \"NUM_FILES\", max(CASE WHEN \"PARAM_KEY\"='totalSize' THEN \"PARAM_VALUE\"::bigint ELSE 0 \n" +
+          "END) AS \"TOTAL_SIZE\" FROM \"TABLE_PARAMS\" group by \"TBL_ID\")q on a.\"TBL_ID\" = q.\"TBL_ID\"";
+  private static final String CREATE_PSQL_PARAMS_PART="CREATE OR REPLACE VIEW \"METADATASUMMARY_PARAMS_PART\" AS SELECT y.\"TBL_ID\", SUM(x.\"NUM_ROWS\")AS \"NUM_ROWS\", SUM(x.\"NUM_FILES\") AS \"NUM_FILES\", SUM(x.\"TOTAL_SIZE\") AS \"TOTAL_SIZE\" FROM \"PARTITIONS\" y left JOIN (SELECT \"PART_ID\",max(CASE WHEN \"PARAM_KEY\"='numRows' THEN \"PARAM_VALUE\"::bigint ELSE 0 END) AS \"NUM_ROWS\", max(CASE WHEN \"PARAM_KEY\"='numFiles' THEN \"PARAM_VALUE\"::bigint ELSE 0 END) AS \"NUM_FILES\", max(CASE WHEN \"PARAM_KEY\"='totalSize' THEN \"PARAM_VALUE\"::bigint ELSE 0 END) AS \"TOTAL_SIZE\" FROM \"PARTITION_PARAMS\" group by \"PART_ID\")x ON y.\"PART_ID\"=x.\"PART_ID\" group by y.\"TBL_ID\"";
+  private static final String CREATE_PSQL_PARAMS_UNION="CREATE OR REPLACE VIEW \"METADATASUMMARY_PARAMS_UNION\" AS SELECT a.* from \"METADATASUMMARY_PARAMS\" a where a.\"TBL_ID\" not in (SELECT \"TBL_ID\" from \"METADATASUMMARY_PARAMS_PART\") UNION SELECT b.* from \"METADATASUMMARY_PARAMS_PART\" b";
+  private static final String CREATE_METADATASUMMARY_PSQL="CREATE OR REPLACE VIEW \"METADATASUMMARY_PSQL\" AS SELECT a.\"TBL_ID\", a.\"TBL_NAME\", a.\"OWNER\" as \"CTLG\",a.\"TBL_TYPE\",a.\"CREATE_TIME\",a.\"DB_ID\",a.\"SD_ID\",b.\"NAME\",c.\"INPUT_FORMAT\",c.\"IS_COMPRESSED\",c.\"LOCATION\",c.\"OUTPUT_FORMAT\",c.\"SERDE_ID\",d.\"SLIB\",e.\"PARAM_VALUE\",count(j.\"COLUMN_NAME\") as \"COLUMN_COUNT\",k.\"PARTITION_KEY_NAME\" as \"PARTITION_COLUMN\",m.\"PARTITION_CNT\", q.\"NUM_FILES\", q.\"TOTAL_SIZE\", q.\"NUM_ROWS\" FROM \"TBLS\" a left JOIN \"DBS\" b on a.\"DB_ID\" =b.\"DB_ID\" left JOIN \"SDS\" c on a.\"SD_ID\" = c.\"SD_ID\" LEFT JOIN \"SERDES\" d on c.\"SERDE_ID\" = d.\"SERDE_ID\" left JOIN (select \"SERDE_ID\",\"PARAM_KEY\",\"PARAM_VALUE\" from \"SERDE_PARAMS\" where \"PARAM_KEY\" = 'field.delim') e on c.\"SERDE_ID\" = e.\"SERDE_ID\" left join \"COLUMNS_V2\" j on a.\"TBL_ID\" = j.\"CD_ID\" left JOIN(select \"TBL_ID\",string_agg(\"PKEY_NAME\", ',') as \"PARTITION_KEY_NAME\" from \"PARTITION_KEYS\" group by \"TBL_ID\") k on a.\"TBL_ID\" = k.\"TBL_ID\" left JOIN (select \"SERDE_ID\",\"PARAM_KEY\",\"PARAM_VALUE\" from \"SERDE_PARAMS\" where \"PARAM_KEY\" = 'serialization.format') f on c.\"SERDE_ID\" = f.\"SERDE_ID\" left join (select \"TBL_ID\",\"PARAM_KEY\",\"PARAM_VALUE\" from \"TABLE_PARAMS\" where \"PARAM_KEY\" = 'comment') g on a.\"TBL_ID\" = g.\"TBL_ID\" left JOIN (select \"TBL_ID\", \"PARAM_KEY\",\"PARAM_VALUE\" from \"TABLE_PARAMS\" where \"PARAM_KEY\" = 'transient_lastDdlTime') h on a.\"TBL_ID\" = h.\"TBL_ID\" left join (select\"TBL_ID\",COUNT(\"PART_ID\") as \"PARTITION_CNT\" from \"PARTITIONS\" group by \"TBL_ID\") m on a.\"TBL_ID\" = m.\"TBL_ID\" Left join (select \"TBL_ID\",\"NUM_FILES\"::bigint,\"TOTAL_SIZE\"::bigint,\"NUM_ROWS\"::bigint from \"METADATASUMMARY_PARAMS_UNION\") q on a.\"TBL_ID\" = q.\"TBL_ID\" group by a.\"TBL_ID\",b.\"DB_ID\", c.\"SD_ID\",d.\"SERDE_ID\",e.\"PARAM_VALUE\",k.\"PARTITION_KEY_NAME\",m.\"PARTITION_CNT\",q.\"NUM_FILES\", q.\"TOTAL_SIZE\", q.\"NUM_ROWS\"";
+  private static final String CREATE_SQL_PARAMS="CREATE OR REPLACE VIEW METADATASUMMARY_PARAMS_SQL_TEST1 AS SELECT a.TBL_ID, q.NUM_FILES, q.TOTAL_SIZE, q.NUM_ROWS FROM TBLS a Left join(SELECT TBL_ID,max(CASE WHEN PARAM_KEY='numRows' THEN CAST(PARAM_VALUE AS SIGNED INTEGER) ELSE 0 END) AS NUM_ROWS, max(CASE WHEN PARAM_KEY='numFiles' THEN CAST(PARAM_VALUE AS SIGNED INTEGER) ELSE 0 END) AS NUM_FILES, max(CASE WHEN PARAM_KEY='totalSize' THEN CAST(PARAM_VALUE AS SIGNED INTEGER) ELSE 0 END) AS TOTAL_SIZE FROM TABLE_PARAMS group by TBL_ID)q on a.TBL_ID = q.TBL_ID";
+  private static final String CREATE_SQL_PARAMS_PART="CREATE OR REPLACE VIEW METADATASUMMARY_PARAMS_PART_SQL AS SELECT y.TBL_ID, SUM(x.NUM_ROWS)AS NUM_ROWS, SUM(x.NUM_FILES) AS NUM_FILES, SUM(x.TOTAL_SIZE) AS TOTAL_SIZE FROM PARTITIONS y left JOIN (SELECT PART_ID,max(CASE WHEN PARAM_KEY='numRows' THEN CAST(PARAM_VALUE AS SIGNED INTEGER) ELSE 0 END) AS NUM_ROWS, max(CASE WHEN PARAM_KEY='numFiles' THEN CAST(PARAM_VALUE AS SIGNED INTEGER) ELSE 0 END) AS NUM_FILES, max(CASE WHEN PARAM_KEY='totalSize' THEN CAST(PARAM_VALUE AS SIGNED INTEGER) ELSE 0 END) AS TOTAL_SIZE FROM PARTITION_PARAMS group by PART_ID)x ON y.PART_ID=x.PART_ID group by y.TBL_ID";
+  private static final String CREATE_SQL_PARAMS_UNION="CREATE OR REPLACE VIEW METADATASUMMARY_PARAMS_UNION AS SELECT a.* from METADATASUMMARY_PARAMS_SQL_TEST1 a where a.TBL_ID not in (SELECT TBL_ID from METADATASUMMARY_PARAMS_PART_SQL) UNION SELECT b.* from METADATASUMMARY_PARAMS_PART_SQL b";
+  private static final String CREATE_METADATASUMMARY_SQL="CREATE OR REPLACE VIEW METADATASUMMARY_SQL AS SELECT a.TBL_ID, a.TBL_NAME, a.OWNER as CTLG, a.TBL_TYPE, a.CREATE_TIME, a.DB_ID, a.SD_ID, b.NAME, c.INPUT_FORMAT, c.IS_COMPRESSED, c.LOCATION, c.OUTPUT_FORMAT,c.SERDE_ID, d.SLIB, e.PARAM_VALUE, count(j.COLUMN_NAME) as COLUMN_COUNT,k.PARTITION_KEY_NAME as PARTITION_COLUMN,m.PARTITION_CNT, CAST(q.NUM_FILES AS SIGNED INTEGER),CAST(q.TOTAL_SIZE AS SIGNED INTEGER),CAST(q.NUM_ROWS AS SIGNED INTEGER) FROM TBLS a left JOIN DBS b on a.DB_ID =b.DB_ID left JOIN SDS c on a.SD_ID = c.SD_ID LEFT JOIN SERDES d on c.SERDE_ID = d.SERDE_ID left JOIN (select SERDE_ID,PARAM_KEY,PARAM_VALUE from SERDE_PARAMS where PARAM_KEY = 'field.delim') e on c.SERDE_ID = e.SERDE_ID left join COLUMNS_V2 j on a.TBL_ID = j.CD_ID left JOIN(select TBL_ID,GROUP_CONCAT(PKEY_NAME, ',') as PARTITION_KEY_NAME from PARTITION_KEYS group by TBL_ID) k on a.TBL_ID = k.TBL_ID left JOIN (select SERDE_ID,PARAM_KEY,PARAM_VALUE from SERDE_PARAMS where PARAM_KEY = 'serialization.format') f on c.SERDE_ID = f.SERDE_ID left join (select TBL_ID,PARAM_KEY,PARAM_VALUE from TABLE_PARAMS where PARAM_KEY = 'comment') g on a.TBL_ID = g.TBL_ID left JOIN (select TBL_ID, PARAM_KEY,PARAM_VALUE from TABLE_PARAMS where PARAM_KEY = 'transient_lastDdlTime') h on a.TBL_ID = h.TBL_ID left join (select TBL_ID,COUNT(PART_ID) as PARTITION_CNT from PARTITIONS group by TBL_ID) m on a.TBL_ID = m.TBL_ID Left join (select TBL_ID, NUM_FILES, TOTAL_SIZE, NUM_ROWS from METADATASUMMARY_PARAMS_UNION) q on a.TBL_ID = q.TBL_ID group by a.TBL_ID,b.DB_ID, c.SD_ID, d.SERDE_ID, e.PARAM_VALUE, k.PARTITION_KEY_NAME, m.PARTITION_CNT,q.NUM_FILES, q.TOTAL_SIZE, q.NUM_ROWS";
 
-  private static final String CREATE_METASTORE_SUMMARY_PSQL="CREATE OR REPLACE VIEW \"HMS_SUMMARY_PSQL\" AS SELECT a.\"TBL_ID\", a.\"TBL_NAME\", a.\"OWNER\" as \"CTLG\",a.\"TBL_TYPE\",a.\"CREATE_TIME\",a.\"DB_ID\",a.\"SD_ID\",b.\"NAME\",c.\"INPUT_FORMAT\",c.\"IS_COMPRESSED\",c.\"LOCATION\",c.\"OUTPUT_FORMAT\",c.\"SERDE_ID\",d.\"SLIB\",e.\"PARAM_VALUE\",count(j.\"COLUMN_NAME\") as \"COLUMN_COUNT\",k.\"PARTITION_KEY_NAME\" as \"PARTITION_COLUMN\",m.\"PARTITION_CNT\", q.\"NUM_FILES\", q.\"TOTAL_SIZE\", q.\"NUM_ROWS\" FROM \"TBLS\" a left JOIN \"DBS\" b on a.\"DB_ID\" =b.\"DB_ID\" left JOIN \"SDS\" c on a.\"SD_ID\" = c.\"SD_ID\" LEFT JOIN \"SERDES\" d on c.\"SERDE_ID\" = d.\"SERDE_ID\" left JOIN (select \"SERDE_ID\",\"PARAM_KEY\",\"PARAM_VALUE\" from \"SERDE_PARAMS\" where \"PARAM_KEY\" = 'field.delim') e on c.\"SERDE_ID\" = e.\"SERDE_ID\" left join \"COLUMNS_V2\" j on a.\"TBL_ID\" = j.\"CD_ID\" left JOIN(select \"TBL_ID\",string_agg(\"PKEY_NAME\", ',') as \"PARTITION_KEY_NAME\" from \"PARTITION_KEYS\" group by \"TBL_ID\") k on a.\"TBL_ID\" = k.\"TBL_ID\" left JOIN (select \"SERDE_ID\",\"PARAM_KEY\",\"PARAM_VALUE\" from \"SERDE_PARAMS\" where \"PARAM_KEY\" = 'serialization.format') f on c.\"SERDE_ID\" = f.\"SERDE_ID\" left join (select \"TBL_ID\",\"PARAM_KEY\",\"PARAM_VALUE\" from \"TABLE_PARAMS\" where \"PARAM_KEY\" = 'comment') g on a.\"TBL_ID\" = g.\"TBL_ID\" left JOIN (select \"TBL_ID\", \"PARAM_KEY\",\"PARAM_VALUE\" from \"TABLE_PARAMS\" where \"PARAM_KEY\" = 'transient_lastDdlTime') h on a.\"TBL_ID\" = h.\"TBL_ID\" left join (select\"TBL_ID\",COUNT(\"PART_ID\") as \"PARTITION_CNT\" from \"PARTITIONS\" group by \"TBL_ID\") m on a.\"TBL_ID\" = m.\"TBL_ID\" Left join(SELECT \"TBL_ID\",(CASE WHEN \"PARAM_KEY\"='numRows' THEN \"PARAM_VALUE\"::bigint ELSE 0 END) AS \"NUM_ROWS\", (CASE WHEN \"PARAM_KEY\"='numFiles' THEN \"PARAM_VALUE\"::bigint ELSE 0 END) AS \"NUM_FILES\", (CASE WHEN \"PARAM_KEY\"='totalSize' THEN \"PARAM_VALUE\"::bigint ELSE 0 END) AS \"TOTAL_SIZE\" FROM \"TABLE_PARAMS\") q on a.\"TBL_ID\" = q.\"TBL_ID\" group by a.\"TBL_ID\",b.\"DB_ID\", c.\"SD_ID\",d.\"SERDE_ID\",e.\"PARAM_VALUE\",k.\"PARTITION_KEY_NAME\",m.\"PARTITION_CNT\",q.\"NUM_FILES\", q.\"TOTAL_SIZE\", q.\"NUM_ROWS\";\n";
   /**
    * create or replace a view called HMS summary which stores the info we need
    * @param
    * @throws SQLException
    */
   public static void updateMetastoreSummary(Statement stmt) throws SQLException, MetaException {
-    System.out.println("updateMetastoreSummary line 14881-17");
-
     if(sqlGenerator.getDbProduct().isDERBY() || sqlGenerator.getDbProduct().isMYSQL()) {
-      System.out.println("sqlGenerator.getDbProduct().isDERBY() || sqlGenerator.getDbProduct().isMYSQL()");
-      stmt.execute(CREATE_METASTORE_SUMMARY);
+      stmt.execute(CREATE_SQL_PARAMS);
+      stmt.execute(CREATE_SQL_PARAMS_PART);
+      stmt.execute(CREATE_SQL_PARAMS_UNION);
+      stmt.execute(CREATE_METADATASUMMARY_SQL);
     } else if(sqlGenerator.getDbProduct().isPOSTGRES()){
-      System.out.println("else");
-      stmt.execute(CREATE_METASTORE_SUMMARY_PSQL);
-      System.out.println("execute successful");
+      stmt.execute(CREATE_PSQL_PARAMS);
+      stmt.execute(CREATE_PSQL_PARAMS_PART);
+      stmt.execute(CREATE_PSQL_PARAMS_UNION);
+      stmt.execute(CREATE_METADATASUMMARY_PSQL);
     }
-    System.out.println("line14889");
   }
 
   /**
@@ -14905,10 +14901,10 @@ public class ObjectStore implements RawStore, Configurable {
       lowerCaseFileFormat = fileFormat.toLowerCase();
     }
 
-    if(lowerCaseFileFormat == null) return fileFormat;
+    if(lowerCaseFileFormat == null) return "Null";
 
-    if(lowerCaseFileFormat.contains("text")) {
-      fileFormat = "text";
+    if(lowerCaseFileFormat.contains("iceberg")) {
+      fileFormat = "iceberg";
     } else if (lowerCaseFileFormat.contains("parquet")) {
       fileFormat = "parquet";
     } else if(lowerCaseFileFormat.contains("orc")) {
@@ -14921,25 +14917,17 @@ public class ObjectStore implements RawStore, Configurable {
       fileFormat = "hbase";
     } else if(lowerCaseFileFormat.contains("jdbc")) {
       fileFormat = "jdbc";
-    } else if(lowerCaseFileFormat.contains("iceberg")) {
-      fileFormat = "iceberg";
+    } else if(lowerCaseFileFormat.contains("kudu")) {
+      fileFormat = "kudu";
+    }else if(lowerCaseFileFormat.contains("text")) {
+      fileFormat = "text";
+    } else if(lowerCaseFileFormat.contains("sequence")) {
+      fileFormat = "sequence";
+    } else if(lowerCaseFileFormat.contains("passthrough")) {
+      fileFormat = "passthrough";
     }
     return fileFormat;
   }
-
-//  private void icebergCheck() {
-//    HiveCatalog catalog = new HiveCatalog();
-//    Configuration hiveConf = MetastoreConf.newMetastoreConf();
-//
-//    catalog.setConf(hiveConf);
-//    Map <String, String> properties = new HashMap<String, String>();
-////    properties.put("warehouse", "...");
-//    //Hive metastore URI
-//    properties.put("uri", "ccycloud.naveen-hms.root.hwx.site");
-//    catalog.initialize("hive", properties);
-//    catalog.listTables()
-//
-//  }
 
   /**
    * Using resultSet to read the HMS_SUMMARY table.
@@ -14950,52 +14938,32 @@ public class ObjectStore implements RawStore, Configurable {
   public static MetadataSummary getMetadataSummary(Statement stmt) throws SQLException {
     String query = null;
     if(sqlGenerator.getDbProduct().isDERBY() || sqlGenerator.getDbProduct().isMYSQL()) {
-      System.out.println("getmetadataSummary: sqlGenerator.getDbProduct().isDERBY() || sqlGenerator.getDbProduct().isMYSQL()");
-      query = "select * from HMS_SUMMARY";
+      query = "select * from METADATASUMMARY_SQL";
     } else if(sqlGenerator.getDbProduct().isPOSTGRES()){
-      System.out.println("postgres");
-      query = "select * from \"HMS_SUMMARY_PSQL\"";
+      query = "select * from \"METADATASUMMARY_PSQL\"";
     }
-    System.out.println("line14958");
     List<CatalogSummary> ctlgSummary = new ArrayList<>();
     //stores the database name and the catalog name information
-    List<List<String>> nameOfDatabase = new ArrayList<>();
+    HashSet<List<String>> nameOfDatabase = new HashSet<>();
     //stores the catalog name information
-    List<String> nameOfCatalog = new ArrayList<>();
-
-//    ExecutorService executor = Executors.newSingleThreadExecutor();
+    HashSet<String> nameOfCatalog = new HashSet<>();
 
     try {
       ResultSet rs = null;
-      System.out.println("14974");
       try {
-
-//      FutureTask<Boolean> future = new FutureTask<Boolean>(new Callable<Boolean>() {
-//        @Override
-//        public Boolean call() throws Exception {
-//          return rs.next();
-//        }
-//      });
-        System.out.println("14983");
+        stmt.setFetchSize(0);
         rs = stmt.executeQuery(query);
         while (rs.next()) {
           String table_name = rs.getString("TBL_NAME");
-          System.out.println("table_name: " + table_name);
           String db_name = rs.getString("NAME");
-          System.out.println("db: " + db_name);
           String cat_name = rs.getString("CTLG");
-          System.out.println("cat: " + cat_name);
+          if(cat_name == null) cat_name = "null";
           int column_count = rs.getInt("column_count");
-          System.out.println("col_count: " + column_count);
           String table_type = rs.getString("TBL_TYPE");
-          System.out.println("table_type: " + table_type);
           String file_type = rs.getString("OUTPUT_FORMAT");
-          System.out.println("file_type_bef: " + file_type);
           if (file_type != null) file_type = checkFileFormat(file_type);
-          System.out.println("file_type: " + file_type);
           String compression_type = rs.getString("IS_COMPRESSED");
-          if (compression_type.equals("0")) compression_type = "None";
-          System.out.println("compression: " + compression_type);
+          if (compression_type.equals("0") || compression_type.equals("f")) compression_type = "None";
           String partition_column = rs.getString("PARTITION_COLUMN");
           int partition_column_count = 0;
           if (partition_column != null) {
@@ -15005,91 +14973,101 @@ public class ObjectStore implements RawStore, Configurable {
             }
             partition_column_count++;
           }
-          System.out.println("partition_col_count: " + partition_column_count);
           Integer partition_count = rs.getInt("PARTITION_CNT");
           if (partition_count == null) {
             partition_count = 0;
           }
-          System.out.println("partition_count" + partition_count);
+
           BigInteger size_bytes_p = BigInteger.valueOf(rs.getLong("TOTAL_SIZE"));
-          System.out.println("totalsize: " + size_bytes_p);
           BigInteger size_numRows_p = BigInteger.valueOf(rs.getLong("NUM_ROWS"));
-          System.out.println("numRows: " + size_numRows_p);
           BigInteger size_numFiles_p = BigInteger.valueOf(rs.getLong("NUM_FILES"));
-          System.out.println("size_numFile: " + size_numFiles_p);
+
           TableSummary tableSummary = new TableSummary(cat_name, db_name, table_name, column_count,
                   partition_column_count, partition_count, size_bytes_p, size_numRows_p, size_numFiles_p, table_type,
                   file_type, compression_type);
-          System.out.println("TABLESUMMARY: " + tableSummary);
+
           List<String> currDatabaseName = new ArrayList<>();
           currDatabaseName.add(db_name);
           currDatabaseName.add(cat_name);
 
           //check if our current database has already been included in the metadataSummary.
           if (!nameOfDatabase.contains(currDatabaseName)) {
-            System.out.println("!nameOfDatabase.contains(currDatabaseName)");
             nameOfDatabase.add(currDatabaseName);
             List<TableSummary> addTableSummary = new ArrayList<>();
             addTableSummary.add(tableSummary);
-            DatabaseSummary addDatabaseSummary = new DatabaseSummary(db_name, cat_name, addTableSummary);
+            DatabaseSummary addDatabaseSummary = new DatabaseSummary(cat_name, db_name, addTableSummary);
             //check if our current catalog has already been included in the metadataSummary.
             if (!nameOfCatalog.contains(cat_name)) {
-              System.out.println("!nameOfCatalog.contains(cat_name)");
               nameOfCatalog.add(cat_name);
               List<DatabaseSummary> addDatabaseSummaries = new ArrayList<>();
               addDatabaseSummaries.add(addDatabaseSummary);
               CatalogSummary addCatalogSummary = new CatalogSummary(cat_name, addDatabaseSummaries);
               ctlgSummary.add(addCatalogSummary);
             } else {
-              System.out.println("else");
-              for (CatalogSummary ctlg : ctlgSummary) {
-                System.out.println("catalog: " + ctlg.getCat_name());
+              ListIterator<CatalogSummary> catalogSummaryListIterator = ctlgSummary.listIterator();
+              List<CatalogSummary> to_remove = new ArrayList<>();
+              List<CatalogSummary> to_add = new ArrayList<>();
+              while(catalogSummaryListIterator.hasNext()) {
+                CatalogSummary ctlg = catalogSummaryListIterator.next();
                 if (ctlg.getCat_name().equals(cat_name)) {
-                  System.out.println("ctlg.getCat_name().equals(cat_name)");
                   List<DatabaseSummary> replaceDS = ctlg.getDatabase_names();
                   replaceDS.add(addDatabaseSummary);
-                  System.out.println("replaceDS: " + replaceDS);
                   CatalogSummary newCtlg = new CatalogSummary(cat_name, replaceDS);
-                  System.out.println("newCTLG: " + newCtlg);
-                  ctlgSummary.remove(ctlg);
-                  System.out.println("remove successfully");
-                  ctlgSummary.add(newCtlg);
-                  System.out.println("15040");
+                  to_add.add(newCtlg);
+                  to_remove.add(ctlg);
                 }
               }
+              ctlgSummary.remove(to_remove.get(0));
+              ctlgSummary.add(to_add.get(0));
             }
           } else {
-            System.out.println("else");
+            List<DatabaseSummary> to_remove = new ArrayList<>();
+            List<DatabaseSummary> to_add = new ArrayList<>();
+            List<CatalogSummary> to_remove_c = new ArrayList<>();
+            List<CatalogSummary> to_add_c = new ArrayList<>();
             for (CatalogSummary ctlg : ctlgSummary) {
               List<DatabaseSummary> thisDS = ctlg.getDatabase_names();
-              for (DatabaseSummary ds : thisDS) {
+              ListIterator<DatabaseSummary> databaseSummaryListIterator = thisDS.listIterator();;
+              while(databaseSummaryListIterator.hasNext()) {
+                DatabaseSummary ds = databaseSummaryListIterator.next();
                 if (ds.getDb_name().equals(db_name) && ctlg.getCat_name().equals(cat_name)) {
+                  to_remove.add(ds);
                   List<TableSummary> newTs = ds.getTable_names();
                   newTs.add(tableSummary);
+                  DatabaseSummary newDatabaseSummary = new DatabaseSummary(cat_name, db_name, newTs);
+                  to_add.add(newDatabaseSummary);
+                  to_add_c.add(ctlg);
+                  to_remove_c.add(ctlg);
                 }
               }
             }
+            CatalogSummary adjCatalogSummary = to_remove_c.get(0);
+            List<DatabaseSummary> currDS = adjCatalogSummary.getDatabase_names();
+            currDS.remove(to_remove.get(0));
+            currDS.add(to_add.get(0));
+            ctlgSummary.remove(to_remove_c.get(0));
+            ctlgSummary.add(adjCatalogSummary);
           }
         }
       } catch (SQLException e) {
-        System.out.println("Exception: " + e);
+        System.out.println("SQL Exception: " + e);
         throw new RuntimeException(e);
-      } finally {
+      } catch (Exception e) {
+        System.out.println("Exception: " + e);
+      } finally{
         if (rs != null) {
-          System.out.println("rs != null");
           rs.close();
         }
         if (stmt != null) {
-          System.out.println("stmt != null");
           stmt.close();
         }
       }
+      rs.close();
     } catch (SQLException e) {
-      System.out.println("Error: " + e);
+      System.out.println("SQL Exception: " + e);
     }
-    System.out.println("finish rs.next");
+    stmt.close();
     MetadataSummary res = new MetadataSummary(ctlgSummary);
-    System.out.println("res: " + res);
     return res;
   }
 }

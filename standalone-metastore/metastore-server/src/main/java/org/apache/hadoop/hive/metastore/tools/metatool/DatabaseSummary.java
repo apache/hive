@@ -22,14 +22,13 @@ import java.util.*;
 
 
 public class DatabaseSummary {
-
-    String db_name;
     String cat_name;
+    String db_name;
     List<TableSummary> table_names;
 
-    public DatabaseSummary(String db_name, String cat_name, List<TableSummary> table_names) {
-        this.db_name = db_name;
+    public DatabaseSummary(String cat_name, String db_name, List<TableSummary> table_names) {
         this.cat_name = cat_name;
+        this.db_name = db_name;
         this.table_names = table_names;
     }
 
@@ -60,8 +59,8 @@ public class DatabaseSummary {
     @Override
     public String toString() {
         return "DatabaseSummary{" +
-                "db_name='" + db_name + '\'' +
-                ", cat_name='" + cat_name + '\'' +
+                "cat_name='" + cat_name + '\'' +
+                ", db_name='" + db_name + '\'' +
                 ", table_names=" + table_names +
                 '}';
     }

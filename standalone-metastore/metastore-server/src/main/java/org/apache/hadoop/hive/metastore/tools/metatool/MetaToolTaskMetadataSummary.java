@@ -46,6 +46,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
             JDOConnection jdoConn = pm.getDataStoreConnection();
             Statement stmt = ((Connection) jdoConn.getNativeConnection()).createStatement();
             ObjectStore.updateMetastoreSummary(stmt);
+
             MetadataSummary metadataSummary = ObjectStore.getMetadataSummary(stmt);
             if(query.toLowerCase().trim().equals("-json")) {
                 exportInJson(metadataSummary);
@@ -58,6 +59,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
         catch(SQLException e) {
             System.out.println(e);
         } catch (MetaException e) {
+            System.out.println(e);
             throw new RuntimeException(e);
         }
     }
@@ -110,7 +112,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
 
         }
         System.out.println("----    ----    ----    ----    ----    ----    ----    ----    ----    ----    ----    ----    ----Table Summary----    ----    ----    ----    ----    -----     ----    ----    ----    -----    ");
-        System.out.printf("%10s %28s %35s %10s %20s %15s %10s %10s %10s %10s %15s", "cat_name", "db_name", "table_name", "column_count",
+        System.out.printf("%10s %20s %50s %10s %20s %15s %10s %10s %10s %10s %15s", "cat_name", "db_name", "table_name", "column_count",
                 "table_type", "file_format", "compression_type", "num_rows", "size_bytes", "num_files", "partition_col_count");
         System.out.println();
         System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
@@ -119,7 +121,7 @@ public class MetaToolTaskMetadataSummary extends MetaToolTask {
             for(DatabaseSummary dbs: databaseSummaries) {
                 List<TableSummary> tableSummaries = dbs.getTable_names();
                 for(TableSummary tbs: tableSummaries) {
-                    System.out.format("%10s %28s %35s %10d %20s %15s %10s %10s %10s %10s %15s", tbs.getCat_name(), tbs.getDb_name(),
+                    System.out.format("%10s %20s %50s %10d %20s %15s %10s %10s %10s %10s %15s", tbs.getCat_name(), tbs.getDb_name(),
                             tbs.getTable_name(), tbs.getColumn_count(), tbs.getTable_type(), tbs.getFile_format(),
                             tbs.getCompression_type(), tbs.getSize_numRows(), tbs.getSize_bytes(),
                             tbs.getSize_numFiles(), tbs.getPartition_column_count());
