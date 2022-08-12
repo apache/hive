@@ -37,6 +37,8 @@ import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATT
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.IF_PURGE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
 
+import java.util.Optional;
+
 public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveQueryLifeTimeHook.class);
@@ -66,7 +68,8 @@ public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
   private void checkAndRollbackCTAS(QueryLifeTimeHookContext ctx) {
     HiveConf conf = ctx.getHiveConf();
     QueryPlan queryPlan = ctx.getHookContext().getQueryPlan();
-    boolean isCTAS = queryPlan.getQueryProperties().isCTAS();
+    boolean isCTAS = Optional.ofNullable(queryPlan.getQueryProperties())
+        .map(queryProps -> queryProps.isCTAS()).orElse(false);
 
     PrivateHookContext pCtx = (PrivateHookContext) ctx.getHookContext();
     Path tblPath = pCtx.getContext().getLocation();
