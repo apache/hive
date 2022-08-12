@@ -1,4 +1,4 @@
-  /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,8 +19,10 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -37,6 +39,7 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -44,9 +47,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
@@ -57,6 +63,11 @@ import static org.powermock.api.mockito.PowerMockito.whenNew;
 public class TestReplDumpTask {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplDumpTask.class);
+
+  private static final String HS2_CREDSTORE_PATH =
+      Constants.HIVE_REPL_CLOUD_KEYSTORE_TYPE + "://file/path/to/hiveserver2/creds.localjceks";
+  private static final String HDFS_CREDSTORE_PATH =
+      Constants.HIVE_REPL_CLOUD_KEYSTORE_TYPE + "://hdfs@source.com:8020/hive-replication/creds.jceks";
 
   @Mock
   private Hive hive;
@@ -155,4 +166,42 @@ public class TestReplDumpTask {
       Utils.resetDbBootstrapDumpState(same(hive), eq("default"), eq(dbRandomKey));
     }
   }
+
+  @Test
+  public void testHS2KeystoreSchemeNotUpdatedIfNotCloud() throws IOException {
+    when(conf.get(Constants.HIVE_REPL_CLOUD_CREDENTIAL_PROVIDER_PATH)).thenReturn(null);
+    when(conf.get(Constants.HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG)).thenReturn(HS2_CREDSTORE_PATH);
+
+    ReplDumpTask replDumpTask = createReplDumpTask(conf);
+    replDumpTask.execute();
+
+    verify(conf, never()).set(any(), any());
+  }
+
+  @Test
+  public void testHS2KeystoreSchemeUpdatedIfCloud() throws IOException {
+    when(conf.get(Constants.HIVE_REPL_CLOUD_CREDENTIAL_PROVIDER_PATH)).thenReturn(HDFS_CREDSTORE_PATH);
+    when(conf.get(Constants.HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG)).thenReturn(HS2_CREDSTORE_PATH);
+
+    ReplDumpTask replDumpTask = createReplDumpTask(conf);
+    replDumpTask.execute();
+
+    String updatedHs2CredstorePath = HS2_CREDSTORE_PATH.replaceFirst(
+        Constants.HIVE_REPL_CLOUD_KEYSTORE_TYPE, Constants.HIVE_REPL_CLOUD_SCHEME_NAME
+    );
+    verify(conf).set(Constants.HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG, updatedHs2CredstorePath);
+    verify(conf, never()).set(eq(Constants.HIVE_REPL_CLOUD_CREDENTIAL_PROVIDER_PATH), any());
+  }
+
+  private ReplDumpTask createReplDumpTask(HiveConf conf) throws IOException {
+    ReplDumpWork work = mock(ReplDumpWork.class);
+    when(work.dataCopyIteratorsInitialized()).thenReturn(true);
+    List<String> externalTblCopyPaths = Collections.singletonList("/path/to/external/tbl/copy");
+    when(work.getExternalTblCopyPathIterator()).thenReturn(externalTblCopyPaths.iterator());
+    Task<?> task = mock(Task.class);
+    List<Task<?>> tasks = Collections.singletonList(task);
+    when(work.externalTableCopyTasks(any(), any())).thenReturn(tasks);
+    return new ReplDumpTask(conf, work);
+  }
+
 }

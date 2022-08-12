@@ -60,7 +60,7 @@ public class TestHiveCredentialProviders {
    * Dirty hack to set the environment variables using reflection code. This method is for testing
    * purposes only and should not be used elsewhere
    */
-  private final static void setEnv(Map<String, String> newenv) throws Exception {
+  public static void setEnv(Map<String, String> newenv) throws Exception {
     Class[] classes = Collections.class.getDeclaredClasses();
     Map<String, String> env = System.getenv();
     for (Class cl : classes) {

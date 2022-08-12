@@ -70,6 +70,7 @@ public class Constants {
 
   public static final String HIVE_SERVER2_JOB_CREDSTORE_PASSWORD_ENVVAR = "HIVE_JOB_CREDSTORE_PASSWORD";
   public static final String HADOOP_CREDENTIAL_PASSWORD_ENVVAR = "HADOOP_CREDSTORE_PASSWORD";
+  public static final String HADOOP_CREDENTIAL_PASSWORD_DEFAULT = "none";
   public static final String HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG = "hadoop.security.credential.provider.path";
 
   public static final String MATERIALIZED_VIEW_REWRITING_TIME_WINDOW = "rewriting.time.window";
@@ -93,4 +94,13 @@ public class Constants {
   public static final String INSERT_ONLY_FETCH_BUCKET_ID = "insertonly.fetch.bucketid";
 
   public static final String ERROR_MESSAGE_NO_DETAILS_AVAILABLE = "No detailed message available";
+
+  public static final String HIVE_REPL_CLOUD_SCHEME_NAME = "hiverepljceks";
+  public static final String HIVE_REPL_CLOUD_CREDENTIAL_PROVIDER_PATH =
+                                                  "hive.repl.cloud.credential.provider.path";
+  public static final String HIVE_REPL_CLOUD_CREDENTIAL_PROVIDER_PASSWORD =
+                                                  "hive.repl.cloud.credential.provider.password";
+  public static final String HIVE_REPL_CLOUD_KEYSTORE_TYPE = "jceks";
+  public static final String HIVE_REPL_CLOUD_ALGORITHM = "AES";
+
 }

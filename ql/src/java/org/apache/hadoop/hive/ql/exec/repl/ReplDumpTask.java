@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -177,6 +178,16 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
   }
 
+  @VisibleForTesting
+  public ReplDumpTask() {
+  }
+
+  @VisibleForTesting
+  public ReplDumpTask(HiveConf conf, ReplDumpWork work) {
+    this.conf = conf;
+    this.work = work;
+  }
+
   private Logger LOG = LoggerFactory.getLogger(ReplDumpTask.class);
 
   @Override
@@ -188,6 +199,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   public int execute() {
     try {
       SecurityUtils.reloginExpiringKeytabUser();
+      updateHS2KeystoreSchemeIfCloud();
       if (work.dataCopyIteratorsInitialized()) {
         initiateDataCopyTasks();
       } else {
@@ -315,6 +327,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       }
       throw e;
     } catch (Exception e) {
+      LOG.error("replication failed with exception", e);
       setException(e);
       int errorCode;
       if (e instanceof SnapshotException) {
@@ -332,6 +345,21 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       }
     }
     return 0;
+  }
+
+  private void updateHS2KeystoreSchemeIfCloud() {
+    if (isCloud()) {
+      String hs2KeystorePath = conf.get(Constants.HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG);
+      int schemeSeparatorIdx = hs2KeystorePath.indexOf("://");
+      hs2KeystorePath = Constants.HIVE_REPL_CLOUD_SCHEME_NAME +
+                        hs2KeystorePath.substring(schemeSeparatorIdx);
+      conf.set(Constants.HADOOP_CREDENTIAL_PROVIDER_PATH_CONFIG, hs2KeystorePath);
+    }
+  }
+
+  private boolean isCloud() {
+    String cloudReplKeystorePath = conf.get(Constants.HIVE_REPL_CLOUD_CREDENTIAL_PROVIDER_PATH);
+    return cloudReplKeystorePath != null;
   }
 
   private void abortReplCreatedTxnsPriorToFailover(Path dumpPath, HiveConf conf) throws LockException, IOException {
