@@ -56,7 +56,22 @@ public class AlterDataConnectorEvent extends HiveMetaStoreAuthorizableEvent {
   }
 
   private List<HivePrivilegeObject> getInputHObjs() {
-    return Collections.emptyList();
+    LOG.debug("==> AlterDataConnectorEvent.getInputHObjs()");
+
+    List<HivePrivilegeObject> ret = new ArrayList<>();
+    PreAlterDataConnectorEvent event = (PreAlterDataConnectorEvent) preEventContext;
+    DataConnector connector = event.getOldDataConnector();
+
+    if (connector != null) {
+      ret.add(getHivePrivilegeObject(connector));
+
+      COMMAND_STR = buildCommandString(COMMAND_STR, connector);
+
+      LOG.debug("<== AlterDataConnectorEvent.getInputHObjs(): ret={}", ret);
+    }
+
+    return ret;
+
   }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
