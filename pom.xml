@@ -127,7 +127,7 @@
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
     <druid.version>0.17.1</druid.version>
     <esri.version>2.2.4</esri.version>
-    <flatbuffers.version>1.6.0.1</flatbuffers.version>
+    <flatbuffers.version>1.9.0</flatbuffers.version>
     <guava.version>19.0</guava.version>
     <groovy.version>2.4.21</groovy.version>
     <h2database.version>2.1.210</h2database.version>
