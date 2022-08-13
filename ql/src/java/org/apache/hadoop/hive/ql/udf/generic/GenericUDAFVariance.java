@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.util.StringUtils;
 
 /**
  * Compute the variance. This class is extended by: GenericUDAFVarianceSample
@@ -327,10 +326,7 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
         } catch (NumberFormatException e) {
           if (!warned) {
             warned = true;
-            LOG.warn(getClass().getSimpleName() + " "
-                + StringUtils.stringifyException(e));
-            LOG.warn(getClass().getSimpleName()
-                + " ignoring similar exceptions.");
+            LOG.warn("{}: ignoring similar exceptions", getClass().getSimpleName(), e);
           }
         }
       }

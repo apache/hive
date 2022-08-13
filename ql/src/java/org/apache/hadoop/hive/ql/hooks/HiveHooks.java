@@ -22,7 +22,6 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,8 +78,7 @@ public class HiveHooks {
           }
         }
       } catch(Exception e) {
-        String message = "Error loading hooks(" + confVar + "): " + HiveStringUtils.stringifyException(e);
-        throw new RuntimeException(message, e);
+        throw new RuntimeException("Error loading hooks(" + confVar + ")", e);
       }
     }
   }

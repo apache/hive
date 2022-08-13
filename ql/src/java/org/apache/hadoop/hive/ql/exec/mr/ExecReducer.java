@@ -43,7 +43,6 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reducer;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -213,19 +212,15 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         try {
           reducer.process(row, tag);
         } catch (Exception e) {
-          String rowString = null;
           try {
-            rowString = SerDeUtils.getJSONString(row, rowObjectInspector[tag]);
+            final String rowString = SerDeUtils.getJSONString(row, rowObjectInspector[tag]);
+            // Log the contents of the row that caused exception so that it's available for debugging. But
+            // when exposed through an error message it can leak sensitive information, even to the
+            // client application.
+            LOG.trace("Hive Runtime Error while processing row (tag={}) {}", tag, rowString);
           } catch (Exception e2) {
-            rowString = "[Error getting row data with exception " +
-                  StringUtils.stringifyException(e2) + " ]";
+            LOG.trace("Error getting row data (tag={})", tag, e2);
           }
-
-          // Log the contents of the row that caused exception so that it's available for debugging. But
-          // when exposed through an error message it can leak sensitive information, even to the
-          // client application.
-          LOG.trace("Hive Runtime Error while processing row (tag="
-              + tag + ") " + rowString);
           throw new HiveException("Hive Runtime Error while processing row", e);
         }
       }

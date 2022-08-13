@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
 
 import java.io.IOException;
@@ -168,8 +167,7 @@ public class Cleaner extends MetaStoreCompactorThread {
             CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
           }
         } catch (Throwable t) {
-          LOG.error("Caught an exception in the main loop of compactor cleaner, " +
-              StringUtils.stringifyException(t));
+          LOG.error("Caught an exception in the main loop of compactor cleaner", t);
         } finally {
           if (handle != null) {
             handle.releaseLocks();
@@ -187,8 +185,7 @@ public class Cleaner extends MetaStoreCompactorThread {
         LOG.debug("Cleaner thread finished one loop.");
       } while (!stop.get());
     } catch (InterruptedException ie) {
-      LOG.error("Compactor cleaner thread interrupted, exiting " +
-        StringUtils.stringifyException(ie));
+      LOG.error("Compactor cleaner thread interrupted, exiting", ie);
     } finally {
       if (cleanerExecutor != null) {
         this.cleanerExecutor.shutdownNow();
@@ -280,8 +277,7 @@ public class Cleaner extends MetaStoreCompactorThread {
         LOG.warn("No files were removed. Leaving queue entry " + ci + " in ready for cleaning state.");
       }
     } catch (Exception e) {
-      LOG.error("Caught exception when cleaning, unable to complete cleaning of " + ci + " " +
-          StringUtils.stringifyException(e));
+      LOG.error("Caught exception when cleaning, unable to complete cleaning of {}", ci, e);
       ci.errorMessage = e.getMessage();
       if (metricsEnabled) {
         Metrics.getOrCreateCounter(MetricsConstants.COMPACTION_CLEANER_FAILURE_COUNTER).inc();

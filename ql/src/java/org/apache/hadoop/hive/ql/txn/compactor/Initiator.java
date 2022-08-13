@@ -56,7 +56,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDirectory;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -206,8 +205,7 @@ public class Initiator extends MetaStoreCompactorThread {
           // Check for timed out remote workers.
           recoverFailedCompactions(true);
         } catch (Throwable t) {
-          LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
-              StringUtils.stringifyException(t));
+          LOG.error("Initiator loop caught unexpected exception this time through the loop", t);
         } finally {
           if (handle != null) {
             handle.releaseLocks(startedAt);
@@ -227,8 +225,7 @@ public class Initiator extends MetaStoreCompactorThread {
         LOG.info("Initiator thread finished one loop.");
       } while (!stop.get());
     } catch (Throwable t) {
-      LOG.error("Caught an exception in the main loop of compactor initiator, exiting " +
-          StringUtils.stringifyException(t));
+      LOG.error("Caught an exception in the main loop of compactor initiator, exiting", t);
     } finally {
       if (compactionExecutor != null) {
         this.compactionExecutor.shutdownNow();

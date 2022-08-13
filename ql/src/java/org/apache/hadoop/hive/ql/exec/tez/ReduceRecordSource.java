@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.tez.runtime.api.Reader;
 import org.apache.tez.runtime.library.api.KeyValueReader;
 import org.apache.tez.runtime.library.api.KeyValuesReader;
@@ -301,15 +300,13 @@ public class ReduceRecordSource implements RecordSource {
         groupIterator.next(); // push first record of group
       }
       return true;
-    } catch (Throwable e) {
+    } catch (OutOfMemoryError oom) {
       abort = true;
-      if (e instanceof OutOfMemoryError) {
-        // Don't create a new object if we are already out of memory
-        throw (OutOfMemoryError) e;
-      } else {
-        l4j.error(StringUtils.stringifyException(e));
-        throw new RuntimeException(e);
-      }
+      // Do not create a new object if we are already out of memory
+      throw oom;
+    } catch (Throwable t) {
+      abort = true;
+      throw new RuntimeException(t);
     }
   }
 
@@ -373,8 +370,7 @@ public class ReduceRecordSource implements RecordSource {
         try {
           rowString = SerDeUtils.getJSONString(row, rowObjectInspector);
         } catch (Exception e2) {
-          rowString = "[Error getting row data with exception "
-              + StringUtils.stringifyException(e2) + " ]";
+          l4j.trace("Error getting row data (tag={})", tag, e2);
         }
 
         // Log the contents of the row that caused exception so that it's available for debugging. But
@@ -398,15 +394,12 @@ public class ReduceRecordSource implements RecordSource {
 
       processVectorGroup(keyWritable, valueWritables, tag);
       return true;
-    } catch (Throwable e) {
+    } catch (OutOfMemoryError oom) {
       abort = true;
-      if (e instanceof OutOfMemoryError) {
-        // Don't create a new object if we are already out of memory
-        throw (OutOfMemoryError) e;
-      } else {
-        l4j.error(StringUtils.stringifyException(e));
-        throw new RuntimeException(e);
-      }
+      // Do not create a new object if we are already out of memory
+      throw oom;
+    } catch (Throwable t) {
+      throw new RuntimeException(t);
     }
   }
 
@@ -502,8 +495,7 @@ public class ReduceRecordSource implements RecordSource {
       try {
         rowString = batch.toString();
       } catch (Exception e2) {
-        rowString = "[Error getting row data with exception "
-            + StringUtils.stringifyException(e2) + " ]";
+        l4j.error("Error getting row data (tag={})", tag, e2);
       }
       l4j.error("Hive Runtime Error while processing vector batch (tag=" + tag
               + ") (vectorizedVertexNum " + vectorizedVertexNum + ") " + rowString, e);

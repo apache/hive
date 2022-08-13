@@ -286,11 +286,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       } catch (NumberFormatException e) {
         if (!warned) {
           warned = true;
-          LOG.warn(getClass().getSimpleName() + " "
-              + StringUtils.stringifyException(e));
-          LOG
-          .warn(getClass().getSimpleName()
-              + " ignoring similar exceptions.");
+          LOG.warn("{}: ignoring similar exceptions", getClass().getSimpleName(), e);
         }
       }
     }
@@ -431,11 +427,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       } catch (NumberFormatException e) {
         if (!warned) {
           warned = true;
-          LOG.warn(getClass().getSimpleName() + " "
-              + StringUtils.stringifyException(e));
-          LOG
-          .warn(getClass().getSimpleName()
-              + " ignoring similar exceptions.");
+          LOG.warn("{}: ignoring similar exceptions", getClass().getSimpleName(), e);
         }
       }
     }
@@ -563,8 +555,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       } catch (NumberFormatException e) {
         if (!warned) {
           warned = true;
-          LOG.warn(getClass().getSimpleName() + " "
-              + StringUtils.stringifyException(e));
+          LOG.warn("{}", getClass().getSimpleName(), e);
         }
       }
     }

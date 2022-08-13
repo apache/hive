@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hive.common.util.HiveStringUtils;
 
 import static org.apache.hadoop.hive.ql.hooks.HookContext.HookType.*;
 
@@ -197,7 +196,7 @@ public class HookRunner {
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
-      throw new HiveException("Error while invoking PreAnalyzeHooks:" + HiveStringUtils.stringifyException(e), e);
+      throw new HiveException("Error while invoking PreAnalyzeHooks", e);
     }
   }
 
@@ -215,7 +214,7 @@ public class HookRunner {
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
-      throw new HiveException("Error while invoking PostAnalyzeHooks:" + HiveStringUtils.stringifyException(e), e);
+      throw new HiveException("Error while invoking PostAnalyzeHooks", e);
     }
 
   }
@@ -228,7 +227,7 @@ public class HookRunner {
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
-      throw new HiveException("Error while invoking PreDriverHooks:" + HiveStringUtils.stringifyException(e), e);
+      throw new HiveException("Error while invoking PreDriverHooks", e);
     }
   }
 
@@ -240,7 +239,7 @@ public class HookRunner {
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
-      throw new HiveException("Error while invoking PostDriverHooks:" + HiveStringUtils.stringifyException(e), e);
+      throw new HiveException("Error while invoking PostDriverHooks", e);
     }
   }
 
@@ -272,7 +271,7 @@ public class HookRunner {
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
-      throw new HiveException("Error while invoking " + prefix + " hooks: " + HiveStringUtils.stringifyException(e), e);
+      throw new HiveException("Error while invoking " + prefix + " hooks", e);
     }
   }
 

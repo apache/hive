@@ -645,8 +645,7 @@ public class FetchOperator implements Serializable {
       this.iterPartDesc = null;
       this.iterSplits = Collections.emptyIterator();
     } catch (Exception e) {
-      throw new HiveException("Failed with exception " + e.getMessage()
-          + StringUtils.stringifyException(e));
+      throw new HiveException("Failed to clear Fetch Context", e);
     }
   }
 
@@ -701,8 +700,7 @@ public class FetchOperator implements Serializable {
           tableOI, tableOI, null, false);
       return getPartitionedRowOI(convertedOI);
     } catch (Exception e) {
-      throw new HiveException("Failed with exception " + e.getMessage()
-          + StringUtils.stringifyException(e));
+      throw new HiveException("Failed Setup Output Object Inspector", e);
     }
   }
 

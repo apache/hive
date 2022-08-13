@@ -43,7 +43,6 @@ import org.apache.hadoop.mapred.MapReduceBase;
 import org.apache.hadoop.mapred.Mapper;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,15 +146,13 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         // startGroup/endGroup for a mapper
         mo.process((Writable)value);
       }
+    } catch (OutOfMemoryError oom) {
+      // Do not create a new object if we are already out of memory
+      abort = true;
+      throw oom;
     } catch (Throwable e) {
       abort = true;
-      if (e instanceof OutOfMemoryError) {
-        // Don't create a new object if we are already out of memory
-        throw (OutOfMemoryError) e;
-      } else {
-        l4j.error(StringUtils.stringifyException(e));
-        throw new RuntimeException(e);
-      }
+      throw new RuntimeException(e);
     }
   }
 
