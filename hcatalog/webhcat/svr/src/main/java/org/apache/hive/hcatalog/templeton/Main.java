@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 
+import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
+import org.apache.hadoop.security.authentication.server.KerberosAuthenticationHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -257,6 +259,18 @@ public class Main {
   public FilterHolder makeAuthFilter() throws IOException {
     FilterHolder authFilter = new FilterHolder(AuthFilter.class);
     UserNameHandler.allowAnonymous(authFilter);
+
+    // compatible with Hadoop 3.3.x.
+    // https://issues.apache.org/jira/browse/HIVE-24083
+    String confPrefix = "dfs.web.authentication";
+    authFilter.setInitParameter(AuthenticationFilter.CONFIG_PREFIX, confPrefix);
+    authFilter.setInitParameter(confPrefix + "." + AuthenticationFilter.COOKIE_PATH, "/");
+    authFilter.setInitParameter(confPrefix + "." + AuthenticationFilter.AUTH_TYPE,
+            UserGroupInformation.isSecurityEnabled() ?
+            KerberosAuthenticationHandler.TYPE :
+            PseudoAuthenticationHandler.TYPE);
+
+
     if (UserGroupInformation.isSecurityEnabled()) {
       //http://hadoop.apache.org/docs/r1.1.1/api/org/apache/hadoop/security/authentication/server/AuthenticationFilter.html
       authFilter.setInitParameter("dfs.web.authentication.signature.secret",
