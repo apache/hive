@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.util.StringUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -84,9 +83,7 @@ public class TestHmsServerAuthorization {
     try {
       return new HiveMetaStoreClient(metaStoreConf);
     } catch (Throwable e) {
-      System.err.println("Unable to open the metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw new Exception(e);
+      throw new Exception("Unable to close metastore", e);
     }
   }
 

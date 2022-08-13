@@ -39,7 +39,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.util.StringUtils;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -159,9 +158,7 @@ public class TestFilterHooks {
     try {
       return new HiveMetaStoreClient(metaStoreConf);
     } catch (Throwable e) {
-      System.err.println("Unable to open the metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw new Exception(e);
+      throw new Exception("Unable to open the metastore", e);
     }
   }
 

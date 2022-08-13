@@ -63,9 +63,7 @@ public class TestHiveMetaStoreTimeout {
     try {
       client.close();
     } catch (Throwable e) {
-      System.err.println("Unable to close metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw e;
+      throw new Exception("Unable to close metastore", e);
     }
   }
 

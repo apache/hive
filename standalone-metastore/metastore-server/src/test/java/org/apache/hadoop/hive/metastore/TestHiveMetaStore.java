@@ -475,9 +475,7 @@ public abstract class TestHiveMetaStore {
       client.dropDatabase(dbName);
 
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testPartition() failed.");
-      throw e;
+      throw new Exception("testPartition() failed", e);
     }
   }
 
@@ -1019,9 +1017,7 @@ public abstract class TestHiveMetaStore {
 
       client.dropDatabase(dbName);
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testPartition() failed.");
-      throw e;
+      throw new Exception("testPartition() failed", e);
     }
   }
 
@@ -1128,9 +1124,7 @@ public abstract class TestHiveMetaStore {
 
       client.dropDatabase(dbName);
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testRenamePartition() failed.");
-      throw e;
+      throw new Exception("testRenamePartition() failed", e);
     }
   }
 
@@ -1178,9 +1172,7 @@ public abstract class TestHiveMetaStore {
       silentDropDatabase(TEST_DB1_NAME);
       silentDropDatabase(TEST_DB2_NAME);
     } catch (Throwable e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testDatabase() failed.");
-      throw e;
+      throw new Exception("testDatabase() failed", e);
     }
   }
 
@@ -1293,9 +1285,7 @@ public abstract class TestHiveMetaStore {
           objectNotExist);
 
     } catch (Throwable e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testDatabaseLocation() failed.");
-      throw e;
+      throw new Exception("testDatabaseLocation() failed", e);
     }
   }
 
@@ -1340,9 +1330,7 @@ public abstract class TestHiveMetaStore {
       fs = FileSystem.get(new Path(mgdLocation).toUri(), conf);
       assertFalse("Database's managed location not deleted", fs.exists(new Path(mgdLocation)));
     } catch (Throwable e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testDatabaseLocationOnDrop() failed.");
-      throw e;
+      throw new Exception("testDatabaseLocationOnDrop() failed", e);
     }
   }
 
@@ -1371,9 +1359,7 @@ public abstract class TestHiveMetaStore {
       }
       assertTrue("Expected NoSuchObjectException", exceptionThrown);
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testSimpleTypeApi() failed.");
-      throw e;
+      throw new Exception("testSimpleTypeApi() failed", e);
     }
   }
 
@@ -1435,9 +1421,7 @@ public abstract class TestHiveMetaStore {
       }
       assertTrue("Expected NoSuchObjectException", exceptionThrown);
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testComplexTypeApi() failed.");
-      throw e;
+      throw new Exception("testComplexTypeApi() failed", e);
     }
   }
 
@@ -1624,9 +1608,7 @@ public abstract class TestHiveMetaStore {
       client.dropType(typeName);
       client.dropDatabase(dbName);
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testSimpleTable() failed.");
-      throw e;
+      throw new Exception("testSimpleTable() failed", e);
     }
   }
 
@@ -1850,9 +1832,7 @@ public abstract class TestHiveMetaStore {
      assertTrue(client.getPartitionColumnStatistics(dbName, tblName,
            Lists.newArrayList(partName), Lists.newArrayList(colName[1]), ENGINE).isEmpty());
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testColumnStatistics() failed.");
-      throw e;
+      throw new Exception("testColumnStatistics() failed", e);
     } finally {
       cleanUp(dbName, tblName, typeName);
     }
@@ -2072,9 +2052,7 @@ public abstract class TestHiveMetaStore {
       assertTrue("Should not have succeeded in altering column", failed);
 
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testSimpleTable() failed.");
-      throw e;
+      throw new Exception("testSimpleTable() failed", e);
     } finally {
       silentDropDatabase(dbName);
     }
@@ -2154,9 +2132,7 @@ public abstract class TestHiveMetaStore {
         assertTrue(fieldSchemasFull.contains(fs));
       }
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testComplexTable() failed.");
-      throw e;
+      throw new Exception("testComplexTable() failed", e);
     } finally {
       client.dropTable(dbName, tblName);
       boolean ret = client.dropType(typeName);
@@ -2208,9 +2184,7 @@ public abstract class TestHiveMetaStore {
           db.getLocationUri(), path.getParent().toString());
 
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testTableDatabase() failed.");
-      throw e;
+      throw new Exception("testTableDatabase() failed", e);
     } finally {
       silentDropDatabase(dbName);
     }
@@ -2773,9 +2747,7 @@ public abstract class TestHiveMetaStore {
       client.dropTable(dbName, tableName3);
       client.dropDatabase(dbName);
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testTableFilter() failed.");
-      throw e;
+      throw new Exception("testTableFilter() failed", e);
     }
   }
 
@@ -2847,9 +2819,7 @@ public abstract class TestHiveMetaStore {
           tbl3.getTableName(), renameTblName);
 
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testConcurrentMetastores() failed.");
-      throw e;
+      throw new Exception("testConcurrentMetastores() failed", e);
     } finally {
       silentDropDatabase(dbName);
     }
@@ -2926,9 +2896,7 @@ public abstract class TestHiveMetaStore {
       allFunctions = response.getFunctions();
       assertEquals(0, allFunctions.size());
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testConcurrentMetastores() failed.");
-      throw e;
+      throw new Exception("testConcurrentMetastores() failed", e);
     } finally {
       silentDropDatabase(dbName);
     }
@@ -2974,9 +2942,7 @@ public abstract class TestHiveMetaStore {
 
       client.dropFunction(dbName, funcName);
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testConcurrentMetastores() failed.");
-      throw e;
+      throw new Exception("testConcurrentMetastores() failed", e);
     } finally {
       silentDropDatabase(dbName);
     }
@@ -3407,9 +3373,7 @@ public abstract class TestHiveMetaStore {
       assertTrue(exceptionFound);
 
     } catch (Exception e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testValidateTableCols() failed.");
-      throw e;
+      throw new Exception("testValidateTableCols() failed", e);
     }
   }
 
@@ -3654,9 +3618,7 @@ public abstract class TestHiveMetaStore {
       connectors = client.getAllDataConnectorNames();
       assertEquals("Number of dataconnectors returned is not as expected", 0, connectors.size());
     } catch (Throwable e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testDataConnector() failed.");
-      throw e;
+      throw new Exception("testDataConnector() failed", e);
     }
   }
 
@@ -3700,9 +3662,7 @@ public abstract class TestHiveMetaStore {
       client.dropDatabase(db_name);
       client.dropDatabase(db2);
     } catch (Throwable e) {
-      System.err.println(StringUtils.stringifyException(e));
-      System.err.println("testRemoteDatabase() failed.");
-      throw e;
+      throw new Exception("testRemoteDatabase() failed", e);
     }
   }
 

@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.ThrowingTxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -70,9 +69,7 @@ public class TestMetaStoreAcidCleanup {
       client.dropDatabase(dbName);
       client.close();
     } catch (Throwable e) {
-      System.err.println("Unable to close metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw e;
+      throw new Exception("Unable to close metastore", e);
     }
   }
 

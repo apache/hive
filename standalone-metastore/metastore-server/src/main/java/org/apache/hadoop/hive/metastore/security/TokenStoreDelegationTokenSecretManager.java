@@ -303,8 +303,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
               rollMasterKeyExt();
               lastMasterKeyUpdate = now;
             } catch (IOException e) {
-              LOGGER.error("Master key updating failed. "
-                  + StringUtils.stringifyException(e));
+              LOGGER.error("Master key updating failed", e);
             }
           }
           if (lastTokenCacheCleanup + tokenRemoverScanInterval < now) {

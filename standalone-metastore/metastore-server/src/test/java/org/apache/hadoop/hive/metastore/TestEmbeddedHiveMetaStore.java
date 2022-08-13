@@ -43,9 +43,7 @@ public class TestEmbeddedHiveMetaStore extends TestHiveMetaStore {
     try {
       return new HiveMetaStoreClient(conf);
     } catch (Throwable e) {
-      System.err.println("Unable to open the metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw new Exception(e);
+      throw new Exception("Unable to open the metastore", e);
     }
   }
 }
