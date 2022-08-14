@@ -263,26 +263,27 @@ public class Main {
     // compatible with Hadoop 3.3.x.
     // https://issues.apache.org/jira/browse/HIVE-24083
     String confPrefix = "dfs.web.authentication";
+    String prefix = confPrefix + ".";
     authFilter.setInitParameter(AuthenticationFilter.CONFIG_PREFIX, confPrefix);
-    authFilter.setInitParameter(confPrefix + "." + AuthenticationFilter.COOKIE_PATH, "/");
-    authFilter.setInitParameter(confPrefix + "." + AuthenticationFilter.AUTH_TYPE,
-            UserGroupInformation.isSecurityEnabled() ?
-            KerberosAuthenticationHandler.TYPE :
-            PseudoAuthenticationHandler.TYPE);
-
+    authFilter.setInitParameter(prefix + AuthenticationFilter.COOKIE_PATH, "/");
 
     if (UserGroupInformation.isSecurityEnabled()) {
+      authFilter.setInitParameter(prefix + AuthenticationFilter.AUTH_TYPE, KerberosAuthenticationHandler.TYPE);
+
       //http://hadoop.apache.org/docs/r1.1.1/api/org/apache/hadoop/security/authentication/server/AuthenticationFilter.html
-      authFilter.setInitParameter("dfs.web.authentication.signature.secret",
-        conf.kerberosSecret());
+      authFilter.setInitParameter(prefix + AuthenticationFilter.SIGNATURE_SECRET, conf.kerberosSecret());
+
       //https://svn.apache.org/repos/asf/hadoop/common/branches/branch-1.2/src/packages/templates/conf/hdfs-site.xml
       String serverPrincipal = SecurityUtil.getServerPrincipal(conf.kerberosPrincipal(), "0.0.0.0");
-      authFilter.setInitParameter("dfs.web.authentication.kerberos.principal",
-        serverPrincipal);
+
+      authFilter.setInitParameter(prefix + KerberosAuthenticationHandler.PRINCIPAL, serverPrincipal);
+
       //http://https://svn.apache.org/repos/asf/hadoop/common/branches/branch-1.2/src/packages/templates/conf/hdfs-site.xml
-      authFilter.setInitParameter("dfs.web.authentication.kerberos.keytab",
-        conf.kerberosKeytab());
+      authFilter.setInitParameter(prefix + KerberosAuthenticationHandler.KEYTAB, conf.kerberosKeytab());
+    } else {
+      authFilter.setInitParameter(prefix + AuthenticationFilter.AUTH_TYPE, PseudoAuthenticationHandler.TYPE);
     }
+
     return authFilter;
   }
 
