@@ -110,7 +110,7 @@ public class FilterUtils {
       List<String> connectorNames) throws MetaException {
 
     if (isFilterEnabled) {
-      return filterHook.filterDatabases(connectorNames); // TODO add a new ATZ call
+      return filterHook.filterDataConnectors(connectorNames);
     }
     return connectorNames;
   }
