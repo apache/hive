@@ -3717,8 +3717,8 @@ public abstract class TestHiveMetaStore {
       assertFalse("Database's managed location is not skipped", fs.exists(new Path(mgdLocation)));
       dbLocation = "file:" + dbLocation.substring(7);
       mgdLocation = "file:" + mgdLocation.substring(7);
-      assertTrue("Database's dbLocation has been set", db.getLocationUri().equals(dbLocation));
-      assertTrue("Database's managed location has been set", db.getManagedLocationUri().equals(mgdLocation));
+      assertFalse("Database's dbLocation has been set", db.getLocationUri().equals(dbLocation));
+      assertFalse("Database's managed location has been set", db.getManagedLocationUri().equals(mgdLocation));
 
       String tableName = "test_table";
       Table table = new TableBuilder()
