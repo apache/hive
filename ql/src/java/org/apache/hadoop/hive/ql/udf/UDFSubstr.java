@@ -74,7 +74,8 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
     // If an unsupported value is seen, we don't want to return a string
     // that doesn't match what the user expects, so we return NULL (still
     // unexpected, of course, but probably better than a bad string).
-    if (longPos > Integer.MAX_VALUE || longLen > Integer.MAX_VALUE) {
+    if (longPos > Integer.MAX_VALUE || longLen > Integer.MAX_VALUE ||
+        longPos < Integer.MIN_VALUE || longLen < Integer.MIN_VALUE) {
       return null;
     }
 
@@ -154,7 +155,8 @@ public class UDFSubstr extends UDF implements StatEstimatorProvider {
     // If an unsupported value is seen, we don't want to return a string
     // that doesn't match what the user expects, so we return NULL (still
     // unexpected, of course, but probably better than a bad string).
-    if (longPos > Integer.MAX_VALUE || longLen > Integer.MAX_VALUE) {
+    if (longPos > Integer.MAX_VALUE || longLen > Integer.MAX_VALUE ||
+        longPos < Integer.MIN_VALUE || longLen < Integer.MIN_VALUE) {
       return null;
     }
 
