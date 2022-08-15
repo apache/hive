@@ -31,6 +31,7 @@ public class MetricsConstants {
   public static final String COMPACTION_CLEANER_CYCLE_DURATION = "compaction_cleaner_cycle_duration";
   public static final String COMPACTION_CLEANER_FAILURE_COUNTER = "compaction_cleaner_failure_counter";
   public static final String COMPACTION_WORKER_CYCLE = "compaction_worker_cycle";
+  public static final String COMPACTION_POOLS_ITEM_COUNT = "compaction_pools_item_count";
 
   public static final String OLDEST_OPEN_REPL_TXN_ID = "oldest_open_repl_txn_id";
   public static final String OLDEST_OPEN_NON_REPL_TXN_ID = "oldest_open_non_repl_txn_id";
