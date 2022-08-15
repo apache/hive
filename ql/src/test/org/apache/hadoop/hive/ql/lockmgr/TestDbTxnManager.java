@@ -536,7 +536,6 @@ public class TestDbTxnManager {
     nextInput = 1;
     readEntities = new HashSet<ReadEntity>();
     writeEntities = new HashSet<WriteEntity>();
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.ACID_HOUSEKEEPER_SERVICE_START, 0, TimeUnit.SECONDS);
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, 10, TimeUnit.SECONDS);
     houseKeeperService = new AcidHouseKeeperService();
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT, 30, TimeUnit.SECONDS);
