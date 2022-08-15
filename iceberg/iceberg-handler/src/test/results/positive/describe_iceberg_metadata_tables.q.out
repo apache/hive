@@ -97,6 +97,7 @@ PREHOOK: Input: default@ice_meta_desc
 POSTHOOK: query: describe default.ice_meta_desc.manifests
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
+content             	int                 	                    
 path                	string              	                    
 length              	bigint              	                    
 partition_spec_id   	int                 	                    
@@ -104,6 +105,9 @@ added_snapshot_id   	bigint
 added_data_files_count	int                 	                    
 existing_data_files_count	int                 	                    
 deleted_data_files_count	int                 	                    
+added_delete_files_count	int                 	                    
+existing_delete_files_count	int                 	                    
+deleted_delete_files_count	int                 	                    
 partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	                    
 PREHOOK: query: describe default.ice_meta_desc.snapshots
 PREHOOK: type: DESCTABLE
@@ -131,6 +135,7 @@ PREHOOK: Input: default@ice_meta_desc
 POSTHOOK: query: describe default.ice_meta_desc.all_manifests
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
+content             	int                 	                    
 path                	string              	                    
 length              	bigint              	                    
 partition_spec_id   	int                 	                    
@@ -138,7 +143,11 @@ added_snapshot_id   	bigint
 added_data_files_count	int                 	                    
 existing_data_files_count	int                 	                    
 deleted_data_files_count	int                 	                    
+added_delete_files_count	int                 	                    
+existing_delete_files_count	int                 	                    
+deleted_delete_files_count	int                 	                    
 partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	                    
+reference_snapshot_id	bigint              	                    
 PREHOOK: query: describe default.ice_meta_desc.all_data_files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -221,6 +230,7 @@ POSTHOOK: query: describe formatted default.ice_meta_desc.manifests
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
+content             	int                 	                    
 path                	string              	                    
 length              	bigint              	                    
 partition_spec_id   	int                 	                    
@@ -228,6 +238,9 @@ added_snapshot_id   	bigint
 added_data_files_count	int                 	                    
 existing_data_files_count	int                 	                    
 deleted_data_files_count	int                 	                    
+added_delete_files_count	int                 	                    
+existing_delete_files_count	int                 	                    
+deleted_delete_files_count	int                 	                    
 partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	                    
 PREHOOK: query: describe formatted default.ice_meta_desc.snapshots
 PREHOOK: type: DESCTABLE
@@ -258,6 +271,7 @@ POSTHOOK: query: describe formatted default.ice_meta_desc.all_manifests
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
 # col_name            	data_type           	comment             
+content             	int                 	                    
 path                	string              	                    
 length              	bigint              	                    
 partition_spec_id   	int                 	                    
@@ -265,7 +279,11 @@ added_snapshot_id   	bigint
 added_data_files_count	int                 	                    
 existing_data_files_count	int                 	                    
 deleted_data_files_count	int                 	                    
+added_delete_files_count	int                 	                    
+existing_delete_files_count	int                 	                    
+deleted_delete_files_count	int                 	                    
 partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	                    
+reference_snapshot_id	bigint              	                    
 PREHOOK: query: describe formatted default.ice_meta_desc.all_data_files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -346,6 +364,7 @@ PREHOOK: Input: default@ice_meta_desc
 POSTHOOK: query: describe extended default.ice_meta_desc.manifests
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
+content             	int                 	                    
 path                	string              	                    
 length              	bigint              	                    
 partition_spec_id   	int                 	                    
@@ -353,6 +372,9 @@ added_snapshot_id   	bigint
 added_data_files_count	int                 	                    
 existing_data_files_count	int                 	                    
 deleted_data_files_count	int                 	                    
+added_delete_files_count	int                 	                    
+existing_delete_files_count	int                 	                    
+deleted_delete_files_count	int                 	                    
 partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	                    
 PREHOOK: query: describe extended default.ice_meta_desc.snapshots
 PREHOOK: type: DESCTABLE
@@ -380,6 +402,7 @@ PREHOOK: Input: default@ice_meta_desc
 POSTHOOK: query: describe extended default.ice_meta_desc.all_manifests
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_meta_desc
+content             	int                 	                    
 path                	string              	                    
 length              	bigint              	                    
 partition_spec_id   	int                 	                    
@@ -387,7 +410,11 @@ added_snapshot_id   	bigint
 added_data_files_count	int                 	                    
 existing_data_files_count	int                 	                    
 deleted_data_files_count	int                 	                    
+added_delete_files_count	int                 	                    
+existing_delete_files_count	int                 	                    
+deleted_delete_files_count	int                 	                    
 partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	                    
+reference_snapshot_id	bigint              	                    
 PREHOOK: query: describe extended default.ice_meta_desc.all_data_files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
