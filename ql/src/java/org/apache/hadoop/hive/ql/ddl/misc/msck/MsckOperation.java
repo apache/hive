@@ -43,7 +43,7 @@ import org.apache.thrift.TException;
  * Operation process of metastore check.
  *
  * MetastoreCheck, see if the data in the metastore matches what is on the dfs. Current version checks for tables
- * and partitions that are either missing on disk on in the metastore.
+ * and partitions that are either missing on disk or in the metastore.
  */
 public class MsckOperation extends DDLOperation<MsckDesc> {
   public MsckOperation(DDLOperationContext context, MsckDesc desc) {
