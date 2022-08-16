@@ -3718,13 +3718,14 @@ public abstract class TestHiveMetaStore {
 
       CreateTableRequest tblReq = new CreateTableRequest();
       tblReq.setSkipFSWrites(true);
-      String tableName = "test_table";
+      String tableName = "test_table_skip_directory";
       Table table = new TableBuilder()
               .setDbName(TEST_DB1_NAME)
               .setTableName(tableName)
               .addCol("name", ColumnType.STRING_TYPE_NAME)
               .addCol("income", ColumnType.INT_TYPE_NAME)
-              .create(client, conf);
+              .build(conf);
+      table.getSd().setLocation(tblLocation);
       tblReq.setTable(table);
       client.createTable(tblReq);
 
