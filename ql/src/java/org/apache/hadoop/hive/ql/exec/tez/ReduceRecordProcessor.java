@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.slf4j.Logger;
@@ -106,11 +107,11 @@ public class ReduceRecordProcessor extends RecordProcessor {
 
     MapredContext.init(false, new JobConf(jconf));
     List<LogicalInput> shuffleInputs = getShuffleInputs(inputs);
-    // TODO HIVE-14042. Move to using a loop and a timed wait once TEZ-3302 is fixed.
     checkAbortCondition();
     if (shuffleInputs != null) {
       LOG.info("Waiting for ShuffleInputs to become ready");
-      processorContext.waitForAllInputsReady(new ArrayList<Input>(shuffleInputs));
+      long timeout = HiveConf.getTimeVar(jconf, HiveConf.ConfVars.HiVE_TEZ_REDUCE_INPUTS_READY_TIMEOUT, TimeUnit.MILLISECONDS);
+      processorContext.waitForAllInputsReady(new ArrayList<Input>(shuffleInputs), timeout);
     }
 
     connectOps.clear();

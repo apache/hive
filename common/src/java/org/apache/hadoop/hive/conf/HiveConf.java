@@ -4818,6 +4818,8 @@ public class HiveConf extends Configuration {
     TEZ_SIMPLE_CUSTOM_EDGE_TINY_BUFFER_SIZE_MB("hive.tez.unordered.output.buffer.size.mb", -1,
         "When we have an operation that does not need a large buffer, we use this buffer size for simple custom edge.\n" +
         "Value is an integer. Default value is -1, which means that we will estimate this value from operators in the plan."),
+    HiVE_TEZ_REDUCE_INPUTS_READY_TIMEOUT("hive.tez.reduce.inputs.ready.timeout", "-1ms", new TimeValidator(TimeUnit.MILLISECONDS),
+            "Timeout for tez reduce task during waiting for all inputs ready. Setting it to -1 or other negative number disables the timeout."),
     // The default is different on the client and server, so it's null here.
     LLAP_IO_ENABLED("hive.llap.io.enabled", null, "Whether the LLAP IO layer is enabled."),
     LLAP_IO_CACHE_ONLY("hive.llap.io.cache.only", false, "Whether the query should read from cache only. If set to " +
