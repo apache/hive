@@ -64,14 +64,11 @@ public class AlterDataConnectorEvent extends HiveMetaStoreAuthorizableEvent {
 
     if (connector != null) {
       ret.add(getHivePrivilegeObject(connector));
-
       COMMAND_STR = buildCommandString(COMMAND_STR, connector);
-
       LOG.debug("<== AlterDataConnectorEvent.getInputHObjs(): ret={}", ret);
     }
 
     return ret;
-
   }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
@@ -83,14 +80,11 @@ public class AlterDataConnectorEvent extends HiveMetaStoreAuthorizableEvent {
 
     if (connector != null) {
       ret.add(getHivePrivilegeObject(connector));
-
       COMMAND_STR = buildCommandString(COMMAND_STR, connector);
-
       LOG.debug("<== AlterDataConnectorEvent.getOutputHObjs(): ret={}", ret);
     }
 
     return ret;
-
   }
 
   private String buildCommandString(String cmdStr, DataConnector connector) {

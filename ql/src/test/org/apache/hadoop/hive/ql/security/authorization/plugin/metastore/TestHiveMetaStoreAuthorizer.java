@@ -364,7 +364,7 @@ public class TestHiveMetaStoreAuthorizer {
   }
 
   @Test
-  public void testR_CreateDataConnector_unAuthorizedUser() throws Exception {
+  public void testR_CreateDataConnector_unAuthorizedUser() {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
     try {
       DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
@@ -383,7 +383,9 @@ public class TestHiveMetaStoreAuthorizer {
       DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
       hmsHandler.create_dataconnector(connector);
     } catch (Exception e) {
-      // No Exception for create database for authorized user
+      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      System.err.println("testS_CreateDataConnector_authorizedUser() failed.");
+      throw e;
     }
   }
 
@@ -398,7 +400,9 @@ public class TestHiveMetaStoreAuthorizer {
       hmsHandler.create_dataconnector(connector);
       hmsHandler.alter_dataconnector(dcName, newConnector);
     } catch (Exception e) {
-      // No Exception for create table for authorized user
+      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      System.err.println("testT_AlterDataConnector_AuthorizedUser() failed.");
+      throw e;
     }
   }
 
@@ -408,7 +412,9 @@ public class TestHiveMetaStoreAuthorizer {
     try {
       hmsHandler.drop_dataconnector(dcName, true, true);
     } catch (Exception e) {
-      // No Exception for dropDatabase for authorized user
+      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      System.err.println("testU_DropDataConnector_authorizedUser() failed.");
+      throw e;
     }
   }
 }
