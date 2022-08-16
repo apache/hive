@@ -42,6 +42,7 @@ import java.io.File;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /*
 Test whether HiveAuthorizer for MetaStore operation is trigger and HiveMetaStoreAuthzInfo is created by HiveMetaStoreAuthorizer
@@ -377,20 +378,18 @@ public class TestHiveMetaStoreAuthorizer {
   }
 
   @Test
-  public void testS_CreateDataConnector_authorizedUser() throws Exception {
+  public void testS_CreateDataConnector_authorizedUser() {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
     try {
       DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
       hmsHandler.create_dataconnector(connector);
     } catch (Exception e) {
-      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
-      System.err.println("testS_CreateDataConnector_authorizedUser() failed.");
-      throw e;
+      fail("testS_CreateDataConnector_authorizedUser() failed with " + e);
     }
   }
 
   @Test
-  public void testT_AlterDataConnector_AuthorizedUser() throws Exception {
+  public void testT_AlterDataConnector_AuthorizedUser() {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
     try {
       DataConnector connector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3306/hive");
@@ -400,21 +399,17 @@ public class TestHiveMetaStoreAuthorizer {
       hmsHandler.create_dataconnector(connector);
       hmsHandler.alter_dataconnector(dcName, newConnector);
     } catch (Exception e) {
-      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
-      System.err.println("testT_AlterDataConnector_AuthorizedUser() failed.");
-      throw e;
+      fail("testT_AlterDataConnector_AuthorizedUser() failed with " + e);
     }
   }
 
   @Test
-  public void testU_DropDataConnector_authorizedUser() throws Exception {
+  public void testU_DropDataConnector_authorizedUser() {
     UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
     try {
       hmsHandler.drop_dataconnector(dcName, true, true);
     } catch (Exception e) {
-      System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
-      System.err.println("testU_DropDataConnector_authorizedUser() failed.");
-      throw e;
+      fail("testU_DropDataConnector_authorizedUser() failed with " + e);
     }
   }
 }
