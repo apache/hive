@@ -3687,8 +3687,8 @@ public abstract class TestHiveMetaStore {
   @Test
   public void testIfFSWritesIsSkippedForDatabase() throws Throwable {
     // create a database, check if the directory is created or not
-    // with true, the directory is not created
-    // with false, the directory is created
+    // with skipFSWrites is true, the directory is not created
+    // with skipFSWrites is false, the directory is created
     try {
       // clear up any existing databases
       silentDropDatabase(TEST_DB1_NAME);
@@ -3711,15 +3711,13 @@ public abstract class TestHiveMetaStore {
       req.setManagedLocationUri(mgdLocation);
       client.createDatabase(req);
 
-      FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), conf);
-      assertFalse("Database's file system directory is skipped", fs.exists(new Path(dbLocation)));
-      fs = FileSystem.get(new Path(mgdLocation).toUri(), conf);
-      assertFalse("Database's managed location is not skipped", fs.exists(new Path(mgdLocation)));
-      dbLocation = "file:" + dbLocation.substring(7);
-      mgdLocation = "file:" + mgdLocation.substring(7);
-      assertFalse("Database's dbLocation has been set", db.getLocationUri().equals(dbLocation));
-      assertFalse("Database's managed location has been set", db.getManagedLocationUri().equals(mgdLocation));
+      String tblLocation =
+              MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/testdb1.db/test_table";
+      String tblmgdLocation =
+              MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/testdb1.db/test_table";
 
+      CreateTableRequest tblReq = new CreateTableRequest();
+      tblReq.setSkipFSWrites(true);
       String tableName = "test_table";
       Table table = new TableBuilder()
               .setDbName(TEST_DB1_NAME)
@@ -3727,18 +3725,21 @@ public abstract class TestHiveMetaStore {
               .addCol("name", ColumnType.STRING_TYPE_NAME)
               .addCol("income", ColumnType.INT_TYPE_NAME)
               .create(client, conf);
-
-      CreateTableRequest tblReq = new CreateTableRequest();
       tblReq.setTable(table);
-      tblReq.setSkipFSWrites(true);
-      String tblLocation =
-              MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/testdb1.db/test_table";
-      String tblmgdLocation =
-              MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/testdb1.db/test_table";
-      fs = FileSystem.get(new Path(dbLocation).toUri(), conf);
+      client.createTable(tblReq);
+
+      FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), conf);
+      assertFalse("Database's file system directory is skipped", fs.exists(new Path(dbLocation)));
       assertFalse("Table's file system directory is skipped", fs.exists(new Path(tblLocation)));
+
       fs = FileSystem.get(new Path(mgdLocation).toUri(), conf);
-      assertTrue("Table's file system directory is skipped", fs.exists(new Path(tblmgdLocation)));
+      assertFalse("Database's managed location directory is skipped", fs.exists(new Path(mgdLocation)));
+      assertFalse("Table's managed location directory is skipped", fs.exists(new Path(tblmgdLocation)));
+
+      String dbLocationUri = "file:" + dbLocation.substring(7);
+      String mgdLocationUri = "file:" + mgdLocation.substring(7);
+      assertTrue("Database's dbLocation has been set", db.getLocationUri().equals(dbLocationUri));
+      assertTrue("Database's managed location has been set", db.getManagedLocationUri().equals(mgdLocationUri));
     } catch (Throwable e) {
       LOG.info(StringUtils.stringifyException(e));
       e.printStackTrace();
