@@ -81,7 +81,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
   private String workerName;
 
-  protected StatsUpdater statsUpdater;
+  StatsUpdater statsUpdater = new StatsUpdater();
 
   // TODO: this doesn't check if compaction is already running (even though Initiator does but we
   //  don't go through Initiator for user initiated compactions)
@@ -139,7 +139,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     this.workerName = getWorkerId();
-    this.statsUpdater = new StatsUpdater();
     setName(workerName);
   }
 

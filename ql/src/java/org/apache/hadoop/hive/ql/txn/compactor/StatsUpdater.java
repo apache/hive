@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-final public class StatsUpdater {
+public final class StatsUpdater {
     private static final Logger LOG = LoggerFactory.getLogger(StatsUpdater.class);
     /**
      * This doesn't throw any exceptions because we don't want the Compaction to appear as failed
