@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -132,6 +133,16 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   private AlterTableType currentAlterTableOp;
   private boolean createHMSTableInHook = false;
 
+  private enum FileFormat {
+    ORC("orc"), PARQUET("parquet"), AVRO("avro");
+
+    private final String label;
+
+    FileFormat(String label) {
+      this.label = label;
+    }
+  }
+
   public HiveIcebergMetaHook(Configuration conf) {
     this.conf = conf;
   }
@@ -188,6 +199,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     if (hmsTable.getParameters().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
       createHMSTableInHook = true;
     }
+
+    assertFileFormat(catalogProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
   }
 
   @Override
@@ -201,6 +214,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       if (Catalogs.hiveCatalog(conf, catalogProperties)) {
         catalogProperties.put(TableProperties.ENGINE_HIVE_ENABLED, true);
       }
+
+      setFileFormat(catalogProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
 
       String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
       if (metadataLocation != null) {
@@ -403,7 +418,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       catalogProperties = getCatalogProperties(hmsTable);
       catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(preAlterTableProperties.schema));
       catalogProperties.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(preAlterTableProperties.spec));
-      setFileFormat();
+      setFileFormat(preAlterTableProperties.format);
       if (Catalogs.hiveCatalog(conf, catalogProperties)) {
         catalogProperties.put(TableProperties.ENGINE_HIVE_ENABLED, true);
       }
@@ -507,15 +522,26 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
-  private void setFileFormat() {
-    String format = preAlterTableProperties.format.toLowerCase();
-    if (format.contains("orc")) {
-      catalogProperties.put(TableProperties.DEFAULT_FILE_FORMAT, "orc");
-    } else if (format.contains("parquet")) {
-      catalogProperties.put(TableProperties.DEFAULT_FILE_FORMAT, "parquet");
-    } else if (format.contains("avro")) {
-      catalogProperties.put(TableProperties.DEFAULT_FILE_FORMAT, "avro");
+  private void setFileFormat(String format) {
+    if (format == null) {
+      return;
     }
+
+    String lowerCaseFormat = format.toLowerCase();
+    for (FileFormat fileFormat : FileFormat.values()) {
+      if (lowerCaseFormat.contains(fileFormat.label)) {
+        catalogProperties.put(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.label);
+      }
+    }
+  }
+
+  private void assertFileFormat(String format) {
+    if (format == null) {
+      return;
+    }
+    String lowerCaseFormat = format.toLowerCase();
+    Preconditions.checkArgument(Arrays.stream(FileFormat.values()).anyMatch(v -> lowerCaseFormat.contains(v.label)),
+        String.format("Unsupported fileformat %s", format));
   }
 
   private void setCommonHmsTablePropertiesForIceberg(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
