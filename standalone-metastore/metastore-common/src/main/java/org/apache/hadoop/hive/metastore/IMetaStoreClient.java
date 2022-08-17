@@ -3241,7 +3241,7 @@ public interface IMetaStoreClient {
    * @param txnId id of transaction to which the allocated write ID to be associated.
    * @param dbName name of DB in which the table belongs.
    * @param tableName table to which the write ID to be allocated
-   * @param shouldReallocate should we reallocate already mapped writeId (if true) or reuse (if false)
+   * @param reallocate should we reallocate already mapped writeId (if true) or reuse (if false)
    * @throws TException
    */
   long allocateTableWriteId(long txnId, String dbName, String tableName, boolean reallocate) throws TException;
