@@ -91,10 +91,10 @@ public class TestHiveMetaStoreAuthorizer {
     // Create the 'hive' catalog with new warehouse directory
     HMSHandler.createDefaultCatalog(rawStore, new Warehouse(conf));
     try {
+      hmsHandler.drop_dataconnector(dcName, true ,true);
       hmsHandler.drop_table(dbName, tblName, true);
       hmsHandler.drop_database(dbName, true, false);
       hmsHandler.drop_catalog(new DropCatalogRequest(catalogName));
-      hmsHandler.drop_dataconnector(dcName, true ,true);
       FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     } catch (Exception e) {
       // NoSuchObjectException will be ignored if the step objects are not there
@@ -396,7 +396,6 @@ public class TestHiveMetaStoreAuthorizer {
       hmsHandler.create_dataconnector(connector);
 
       DataConnector newConnector = new DataConnector(dcName, "mysql", "jdbc:mysql://localhost:3308/hive");
-      hmsHandler.create_dataconnector(connector);
       hmsHandler.alter_dataconnector(dcName, newConnector);
     } catch (Exception e) {
       fail("testT_AlterDataConnector_AuthorizedUser() failed with " + e);
