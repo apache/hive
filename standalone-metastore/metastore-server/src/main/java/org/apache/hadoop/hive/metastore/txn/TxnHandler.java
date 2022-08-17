@@ -2123,6 +2123,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     List<Long> txnIds;
     String dbName = rqst.getDbName().toLowerCase();
     String tblName = rqst.getTableName().toLowerCase();
+    boolean shouldReallocate = rqst.isReallocate();
     try {
       Connection dbConn = null;
       PreparedStatement pStmt = null;
@@ -2180,33 +2181,46 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         List<String> queries = new ArrayList<>();
         StringBuilder prefix = new StringBuilder();
         StringBuilder suffix = new StringBuilder();
-
-        // Traverse the TXN_TO_WRITE_ID to see if any of the input txns already have allocated a
-        // write id for the same db.table. If yes, then need to reuse it else have to allocate new one
-        // The write id would have been already allocated in case of multi-statement txns where
-        // first write on a table will allocate write id and rest of the writes should re-use it.
-        prefix.append("SELECT \"T2W_TXNID\", \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" WHERE")
-              .append(" \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND ");
-        TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
-                txnIds, "\"T2W_TXNID\"", false, false);
-
-        long allocatedTxnsCount = 0;
         long writeId;
+        int allocatedTxnsCount = 0;
         List<String> params = Arrays.asList(dbName, tblName);
-        for (String query : queries) {
-          pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
-          LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">",
-                  quoteString(dbName), quoteString(tblName));
-          rs = pStmt.executeQuery();
-          while (rs.next()) {
-            // If table write ID is already allocated for the given transaction, then just use it
-            long txnId = rs.getLong(1);
-            writeId = rs.getLong(2);
-            txnToWriteIds.add(new TxnToWriteId(txnId, writeId));
-            allocatedTxnsCount++;
-            LOG.info("Reused already allocated writeID: " + writeId + " for txnId: " + txnId);
+        if (shouldReallocate) {
+          // during query recompilation after lock acquistion, it is important to realloc new writeIds
+          // to ensure writeIds are committed in increasing order.
+          prefix.append("DELETE FROM \"TXN_TO_WRITE_ID\" WHERE")
+                .append(" \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND ");
+          TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
+              txnIds, "\"T2W_TXNID\"", false, false);
+          for (String query : queries) {
+            pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+            LOG.debug("Going to execute delete <" + query.replaceAll("\\?", "{}") + ">",
+                quoteString(dbName), quoteString(tblName));
+            int numRowsDeleted = pStmt.executeUpdate();
+            LOG.info("Removed {} prior writeIds during reallocation", numRowsDeleted);
+            closeStmt(pStmt);
           }
-          closeStmt(pStmt);
+        } else {
+          // Traverse the TXN_TO_WRITE_ID to see if any of the input txns already have allocated a
+          // write id for the same db.table. If yes, then need to reuse it else have to allocate new one
+          // The write id would have been already allocated in case of multi-statement txns where
+          // first write on a table will allocate write id and rest of the writes should re-use it.
+          prefix.append("SELECT \"T2W_TXNID\", \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" WHERE")
+                .append(" \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND ");
+          for (String query : queries) {
+            pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
+            LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">",
+                quoteString(dbName), quoteString(tblName));
+            rs = pStmt.executeQuery();
+            while (rs.next()) {
+              // If table write ID is already allocated for the given transaction, then just use it
+              long txnId = rs.getLong(1);
+              writeId = rs.getLong(2);
+              txnToWriteIds.add(new TxnToWriteId(txnId, writeId));
+              allocatedTxnsCount++;
+              LOG.info("Reused already allocated writeID: {} for txnId: {}", writeId, txnId);
+            }
+            closeStmt(pStmt);
+          }
         }
 
         // Batch allocation should always happen atomically. Either write ids for all txns is allocated or none.

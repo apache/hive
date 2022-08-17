@@ -23849,6 +23849,11 @@ void AllocateTableWriteIdsRequest::__set_srcTxnToWriteIdList(const std::vector<T
   this->srcTxnToWriteIdList = val;
 __isset.srcTxnToWriteIdList = true;
 }
+
+void AllocateTableWriteIdsRequest::__set_reallocate(const bool val) {
+  this->reallocate = val;
+__isset.reallocate = true;
+}
 std::ostream& operator<<(std::ostream& out, const AllocateTableWriteIdsRequest& obj)
 {
   obj.printTo(out);
@@ -23943,6 +23948,14 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->reallocate);
+          this->__isset.reallocate = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -24003,6 +24016,11 @@ uint32_t AllocateTableWriteIdsRequest::write(::apache::thrift::protocol::TProtoc
     }
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.reallocate) {
+    xfer += oprot->writeFieldBegin("reallocate", ::apache::thrift::protocol::T_BOOL, 6);
+    xfer += oprot->writeBool(this->reallocate);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -24015,6 +24033,7 @@ void swap(AllocateTableWriteIdsRequest &a, AllocateTableWriteIdsRequest &b) {
   swap(a.txnIds, b.txnIds);
   swap(a.replPolicy, b.replPolicy);
   swap(a.srcTxnToWriteIdList, b.srcTxnToWriteIdList);
+  swap(a.reallocate, b.reallocate);
   swap(a.__isset, b.__isset);
 }
 
@@ -24024,6 +24043,7 @@ AllocateTableWriteIdsRequest::AllocateTableWriteIdsRequest(const AllocateTableWr
   txnIds = other897.txnIds;
   replPolicy = other897.replPolicy;
   srcTxnToWriteIdList = other897.srcTxnToWriteIdList;
+  reallocate = other897.reallocate;
   __isset = other897.__isset;
 }
 AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const AllocateTableWriteIdsRequest& other898) {
@@ -24032,6 +24052,7 @@ AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const Allo
   txnIds = other898.txnIds;
   replPolicy = other898.replPolicy;
   srcTxnToWriteIdList = other898.srcTxnToWriteIdList;
+  reallocate = other898.reallocate;
   __isset = other898.__isset;
   return *this;
 }
@@ -24043,6 +24064,7 @@ void AllocateTableWriteIdsRequest::printTo(std::ostream& out) const {
   out << ", " << "txnIds="; (__isset.txnIds ? (out << to_string(txnIds)) : (out << "<null>"));
   out << ", " << "replPolicy="; (__isset.replPolicy ? (out << to_string(replPolicy)) : (out << "<null>"));
   out << ", " << "srcTxnToWriteIdList="; (__isset.srcTxnToWriteIdList ? (out << to_string(srcTxnToWriteIdList)) : (out << "<null>"));
+  out << ", " << "reallocate="; (__isset.reallocate ? (out << to_string(reallocate)) : (out << "<null>"));
   out << ")";
 }
 

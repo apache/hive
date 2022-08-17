@@ -13651,16 +13651,18 @@ class AllocateTableWriteIdsRequest(object):
      - txnIds
      - replPolicy
      - srcTxnToWriteIdList
+     - reallocate
 
     """
 
 
-    def __init__(self, dbName=None, tableName=None, txnIds=None, replPolicy=None, srcTxnToWriteIdList=None,):
+    def __init__(self, dbName=None, tableName=None, txnIds=None, replPolicy=None, srcTxnToWriteIdList=None, reallocate=False,):
         self.dbName = dbName
         self.tableName = tableName
         self.txnIds = txnIds
         self.replPolicy = replPolicy
         self.srcTxnToWriteIdList = srcTxnToWriteIdList
+        self.reallocate = reallocate
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -13707,6 +13709,11 @@ class AllocateTableWriteIdsRequest(object):
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.BOOL:
+                    self.reallocate = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -13742,6 +13749,10 @@ class AllocateTableWriteIdsRequest(object):
             for iter715 in self.srcTxnToWriteIdList:
                 iter715.write(oprot)
             oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.reallocate is not None:
+            oprot.writeFieldBegin('reallocate', TType.BOOL, 6)
+            oprot.writeBool(self.reallocate)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -30797,6 +30808,7 @@ AllocateTableWriteIdsRequest.thrift_spec = (
     (3, TType.LIST, 'txnIds', (TType.I64, None, False), None, ),  # 3
     (4, TType.STRING, 'replPolicy', 'UTF8', None, ),  # 4
     (5, TType.LIST, 'srcTxnToWriteIdList', (TType.STRUCT, [TxnToWriteId, None], False), None, ),  # 5
+    (6, TType.BOOL, 'reallocate', None, False, ),  # 6
 )
 all_structs.append(AllocateTableWriteIdsResponse)
 AllocateTableWriteIdsResponse.thrift_spec = (

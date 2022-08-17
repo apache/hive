@@ -3237,6 +3237,16 @@ public interface IMetaStoreClient {
   long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException;
 
   /**
+   * Allocate a per table write ID and associate it with the given transaction.
+   * @param txnId id of transaction to which the allocated write ID to be associated.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the write ID to be allocated
+   * @param shouldReallocate should we reallocate already mapped writeId (if true) or reuse (if false)
+   * @throws TException
+   */
+  long allocateTableWriteId(long txnId, String dbName, String tableName, boolean reallocate) throws TException;
+
+  /**
    * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
    * @param validWriteIdList Snapshot of writeid list when the table/partition is dumped.
    * @param dbName Database name

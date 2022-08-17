@@ -1166,6 +1166,9 @@ struct AllocateTableWriteIdsRequest {
     4: optional string replPolicy,
     // The list is assumed to be sorted by both txnids and write ids. The write id list is assumed to be contiguous.
     5: optional list<TxnToWriteId> srcTxnToWriteIdList,
+    // If false, reuse previously allocate writeIds for txnIds. If true, remove older txnId to writeIds mappings
+    // and regenerate (this is useful during re-compilation when we need to ensure writeIds are regenerated)
+    6: optional bool reallocate = false;
 }
 
 struct AllocateTableWriteIdsResponse {
