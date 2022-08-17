@@ -2206,6 +2206,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           // first write on a table will allocate write id and rest of the writes should re-use it.
           prefix.append("SELECT \"T2W_TXNID\", \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" WHERE")
                 .append(" \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND ");
+          TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
+              txnIds, "\"T2W_TXNID\"", false, false);
           for (String query : queries) {
             pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
             LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">",
