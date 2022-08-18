@@ -3264,6 +3264,37 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(resData, stringifyValues(actualData));
   }
 
+  @Test
+  public void testCompactionOutputDirectoryNamesOnPartitions() throws Exception {
+    String p1 = "p=p1";
+    String p2 = "p=p2";
+    String expectedDelta1 = p1 + "/delta_0000001_0000002_v0000021";
+    String expectedDelta2 = p2 + "/delta_0000003_0000004_v0000022";
+
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p1') (a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p1') (a,b) values(3,4)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p2') (a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p2') (a,b) values(3,4)");
+
+    compactPartition(Table.ACIDTBLPART.name().toLowerCase(), CompactionType.MINOR, p1);
+    compactPartition(Table.ACIDTBLPART.name().toLowerCase(), CompactionType.MINOR, p2);
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    String tablePath = getWarehouseDir() + "/" + Table.ACIDTBLPART.name().toLowerCase() + "/";
+
+    Assert.assertTrue(fs.exists(new Path(tablePath + expectedDelta1)));
+    Assert.assertTrue(fs.exists(new Path(tablePath + expectedDelta2)));
+  }
+
+  private void compactPartition(String table, CompactionType type, String partition)
+      throws Exception {
+    CompactionRequest compactionRequest = new CompactionRequest("default", table, type);
+    compactionRequest.setPartitionname(partition);
+    txnHandler.compact(compactionRequest);
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+  }
+
   /**
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order
