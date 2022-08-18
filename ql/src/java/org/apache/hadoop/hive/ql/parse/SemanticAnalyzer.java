@@ -13907,6 +13907,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     case CTLT: // create table like <tbl_name>
 
+      if (handler != null && !handler.supportsCTLT()) {
+        throw new SemanticException(ErrorMsg.CTLT_FOR_NON_NATIVE_TABLE, qualifiedTabName.getTable());
+      }
       tblProps = validateAndAddDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization, isTemporary,
 

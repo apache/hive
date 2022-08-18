@@ -740,6 +740,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return SchemaParser.fromJson(config.get(InputFormatConfig.TABLE_SCHEMA));
   }
 
+  @Override
+  public boolean supportsCTLT() {
+    return false;
+  }
+
   /**
    * Stores the serializable table data in the configuration.
    * Currently the following is handled:

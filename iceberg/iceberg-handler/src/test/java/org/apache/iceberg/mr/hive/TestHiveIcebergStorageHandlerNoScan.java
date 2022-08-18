@@ -1576,6 +1576,16 @@ public class TestHiveIcebergStorageHandlerNoScan {
         });
   }
 
+  @Test
+  public void testCTLT() {
+    shell.executeStatement("CREATE TABLE source(a int)");
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "Unsupported operation",
+        () -> {
+          shell.executeStatement("CREATE TABLE dest LIKE source STORED BY ICEBERG");
+        });
+  }
+
   /**
    * Checks that the new schema has newintcol and newstring col columns on both HMS and Iceberg sides
    * @throws Exception - any test error

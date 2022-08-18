@@ -489,4 +489,12 @@ public interface HiveStorageHandler extends Configurable {
    */
   default void executeOperation(org.apache.hadoop.hive.ql.metadata.Table table, AlterTableExecuteSpec executeSpec) {
   }
+
+  /**
+   * Specifies whether the table supports CREATE TABLE ... LIKE operations.
+   * @return
+   */
+  default boolean supportsCTLT() {
+    return true;
+  }
 }

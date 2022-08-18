@@ -486,6 +486,8 @@ public enum ErrorMsg {
   NON_NATIVE_ACID_UPDATE(10435, "Update and Merge into non-native ACID table is only supported when " +
           HiveConf.ConfVars.SPLIT_UPDATE.varname + " is true."),
 
+  CTLT_FOR_NON_NATIVE_TABLE(10436, "Unsupported operation for non-native table. {0} cannot be created using CTLT syntax.", true),
+
   //========================== 20000 range starts here ========================//
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
