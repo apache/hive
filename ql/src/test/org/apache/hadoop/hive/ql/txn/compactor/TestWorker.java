@@ -1044,7 +1044,7 @@ public class TestWorker extends CompactorTest {
     Mockito.when(worker.getMrCompactor()).thenThrow(RuntimeException.class);
     worker.setConf(conf);
     worker.init(new AtomicBoolean(true));
-    worker.statsUpdater = statsUpdater;
+    Worker.statsUpdater = statsUpdater;
 
     worker.findNextCompactionAndExecute(true, true);
 
