@@ -3690,7 +3690,7 @@ public abstract class TestHiveMetaStore {
     // with skipFSWrites is true, the directory is not created
     // with skipFSWrites is false, the directory is created
     try {
-      // clear up any existing databases
+      // clear up any existing databases and tables
       silentDropDatabase(TEST_DB1_NAME);
 
       String dbLocation =
@@ -3715,6 +3715,7 @@ public abstract class TestHiveMetaStore {
               MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/testdb1.db/test_table";
       String tblmgdLocation =
               MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/testdb1.db/test_table";
+      // to do: table location
 
       CreateTableRequest tblReq = new CreateTableRequest();
       tblReq.setSkipFSWrites(true);
@@ -3737,10 +3738,10 @@ public abstract class TestHiveMetaStore {
       assertFalse("Database's managed location directory is skipped", fs.exists(new Path(mgdLocation)));
       assertFalse("Table's managed location directory is skipped", fs.exists(new Path(tblmgdLocation)));
 
-      String dbLocationUri = "file:" + dbLocation.substring(7);
-      String mgdLocationUri = "file:" + mgdLocation.substring(7);
-      assertTrue("Database's dbLocation has been set", db.getLocationUri().equals(dbLocationUri));
-      assertTrue("Database's managed location has been set", db.getManagedLocationUri().equals(mgdLocationUri));
+      String dbLocationUri = dbLocation.substring(7);
+      String mgdLocationUri = mgdLocation.substring(7);
+      assertTrue("Database's dbLocation has been set", db.getLocationUri().contains(dbLocationUri));
+      assertTrue("Database's managed location has been set", db.getManagedLocationUri().contains(mgdLocationUri));
     } catch (Throwable e) {
       LOG.info(StringUtils.stringifyException(e));
       e.printStackTrace();
@@ -3755,7 +3756,7 @@ public abstract class TestHiveMetaStore {
     // with true, the directory is not created
     // with false, the directory is created
     try {
-      // clear up any existing databases
+      // clear up any existing databases and tables
       silentDropDatabase(TEST_DB1_NAME);
       String tableName1 = "test_table1";
       String tableName2 = "test_table2";
