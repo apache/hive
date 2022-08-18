@@ -3711,6 +3711,22 @@ public abstract class TestHiveMetaStore {
       req.setManagedLocationUri(mgdLocation);
       client.createDatabase(req);
 
+      String customizedDbLocation = "file:///Users/hzhu/upstream/hive/testdb2.db";
+      String customizedMgdLocation = "file:///Users/hzhu/upstream/hive/standalone-metastore/testdb2.db";
+
+      CreateDatabaseRequest req2 = new CreateDatabaseRequest();
+      req2.setSkipFSWrites(true);
+      Database db2 = new DatabaseBuilder()
+              .setName(TEST_DB2_NAME)
+              .setLocation(customizedDbLocation)
+              .setManagedLocation(customizedMgdLocation)
+              .build(conf);
+      req2.setDatabase(db2);
+      req2.setDatabaseName(TEST_DB2_NAME);
+      req2.setLocationUri(customizedDbLocation);
+      req2.setManagedLocationUri(customizedMgdLocation);
+      client.createDatabase(req2);
+
       String tblLocation =
               MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/testdb1.db/test_table";
       String tblmgdLocation =
@@ -3737,6 +3753,11 @@ public abstract class TestHiveMetaStore {
       fs = FileSystem.get(new Path(mgdLocation).toUri(), conf);
       assertFalse("Database's managed location directory is skipped", fs.exists(new Path(mgdLocation)));
       assertFalse("Table's managed location directory is skipped", fs.exists(new Path(tblmgdLocation)));
+
+      FileSystem fs2 = FileSystem.get(new Path(customizedDbLocation).toUri(), conf);
+      assertFalse("Database's file system directory is skipped", fs2.exists(new Path(customizedDbLocation)));
+      fs2 = FileSystem.get(new Path(customizedMgdLocation).toUri(), conf);
+      assertFalse("Database's managed location directory is skipped", fs2.exists(new Path(customizedMgdLocation)));
 
       String dbLocationUri = dbLocation.substring(7);
       String mgdLocationUri = mgdLocation.substring(7);
