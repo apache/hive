@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
+import static org.apache.hadoop.hive.common.FileUtils.HIDDEN_FILES_PATH_FILTER;
 import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
 import static org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
 
@@ -46,6 +47,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.hadoop.hive.common.FileUtils;
 
 import com.google.common.base.Strings;
 import com.google.common.base.Preconditions;
@@ -230,14 +233,6 @@ public class AcidUtils {
   public static final Pattern ORIGINAL_PATTERN_COPY =
     Pattern.compile("[0-9]+_[0-9]+" + COPY_KEYWORD + "[0-9]+");
 
-  public static final PathFilter hiddenFileFilter = new PathFilter(){
-    @Override
-    public boolean accept(Path p){
-      String name = p.getName();
-      return !name.startsWith("_") && !name.startsWith(".");
-    }
-  };
-
   public static final PathFilter acidHiddenFileFilter = new PathFilter() {
     @Override
     public boolean accept(Path p) {
@@ -250,7 +245,7 @@ public class AcidUtils {
       if (name.startsWith(OrcAcidVersion.ACID_FORMAT)) {
         return true;
       }
-      return !name.startsWith("_") && !name.startsWith(".");
+      return HIDDEN_FILES_PATH_FILTER.accept(p);
     }
   };
 
@@ -983,7 +978,7 @@ public class AcidUtils {
     public List<HdfsFileStatusWithId> getFiles(FileSystem fs, Ref<Boolean> useFileIds) throws IOException {
       // If the list was not populated before, do it now
       if (files == null && fs != null) {
-        files = HdfsUtils.listFileStatusWithId(fs, baseDirPath, useFileIds, false, AcidUtils.hiddenFileFilter);
+        files = HdfsUtils.listFileStatusWithId(fs, baseDirPath, useFileIds, false, HIDDEN_FILES_PATH_FILTER);
       }
       return files;
     }
@@ -1338,7 +1333,7 @@ public class AcidUtils {
     FileSystem fs = fileSystem == null ? candidateDirectory.getFileSystem(conf) : fileSystem;
     AcidDirectory directory = new AcidDirectory(candidateDirectory, fs, useFileIds);
 
-    List<HdfsFileStatusWithId> childrenWithId = HdfsUtils.tryListLocatedHdfsStatus(useFileIds, fs, candidateDirectory, hiddenFileFilter);
+    List<HdfsFileStatusWithId> childrenWithId = HdfsUtils.tryListLocatedHdfsStatus(useFileIds, fs, candidateDirectory, HIDDEN_FILES_PATH_FILTER);
 
     if (childrenWithId != null) {
       for (HdfsFileStatusWithId child : childrenWithId) {
@@ -1500,25 +1495,23 @@ public class AcidUtils {
           throws IOException {
     Map<Path, HdfsDirSnapshot> dirToSnapshots = new HashMap<>();
     Deque<RemoteIterator<FileStatus>> stack = new ArrayDeque<>();
-    stack.push(fs.listStatusIterator(path));
+    stack.push(FileUtils.listStatusIterator(fs, path, acidHiddenFileFilter));
     while (!stack.isEmpty()) {
       RemoteIterator<FileStatus> itr = stack.pop();
       while (itr.hasNext()) {
         FileStatus fStatus = itr.next();
         Path fPath = fStatus.getPath();
-        if (acidHiddenFileFilter.accept(fPath)) {
-          if (baseFileFilter.accept(fPath) ||
-                  deltaFileFilter.accept(fPath) ||
-                  deleteEventDeltaDirFilter.accept(fPath)) {
-            addToSnapshoot(dirToSnapshots, fPath);
+        if (baseFileFilter.accept(fPath) ||
+                deltaFileFilter.accept(fPath) ||
+                deleteEventDeltaDirFilter.accept(fPath)) {
+          addToSnapshoot(dirToSnapshots, fPath);
+        } else {
+          if (fStatus.isDirectory()) {
+            stack.push(FileUtils.listStatusIterator(fs, fPath, acidHiddenFileFilter));
           } else {
-            if (fStatus.isDirectory()) {
-              stack.push(fs.listStatusIterator(fPath));
-            } else {
-              // Found an original file
-              HdfsDirSnapshot hdfsDirSnapshot = addToSnapshoot(dirToSnapshots, fPath.getParent());
-              hdfsDirSnapshot.addFile(fStatus);
-            }
+            // Found an original file
+            HdfsDirSnapshot hdfsDirSnapshot = addToSnapshoot(dirToSnapshots, fPath.getParent());
+            hdfsDirSnapshot.addFile(fStatus);
           }
         }
       }
@@ -1538,34 +1531,32 @@ public class AcidUtils {
   public static Map<Path, HdfsDirSnapshot> getHdfsDirSnapshots(final FileSystem fs, final Path path)
       throws IOException {
     Map<Path, HdfsDirSnapshot> dirToSnapshots = new HashMap<>();
-    RemoteIterator<LocatedFileStatus> itr = fs.listFiles(path, true);
+    RemoteIterator<LocatedFileStatus> itr = FileUtils.listFiles(fs, path, true, acidHiddenFileFilter);
     while (itr.hasNext()) {
       FileStatus fStatus = itr.next();
       Path fPath = fStatus.getPath();
-      if (acidHiddenFileFilter.accept(fPath)) {
-        if (fStatus.isDirectory() && acidTempDirFilter.accept(fPath)) {
-          addToSnapshoot(dirToSnapshots, fPath);
-        } else {
-          Path parentDirPath = fPath.getParent();
-          if (acidTempDirFilter.accept(parentDirPath)) {
-            while (isChildOfDelta(parentDirPath, path)) {
-              // Some cases there are other directory layers between the delta and the datafiles
-              // (export-import mm table, insert with union all to mm table, skewed tables).
-              // But it does not matter for the AcidState, we just need the deltas and the data files
-              // So build the snapshot with the files inside the delta directory
-              parentDirPath = parentDirPath.getParent();
-            }
-            HdfsDirSnapshot dirSnapshot = addToSnapshoot(dirToSnapshots, parentDirPath);
-            // We're not filtering out the metadata file and acid format file,
-            // as they represent parts of a valid snapshot
-            // We're not using the cached values downstream, but we can potentially optimize more in a follow-up task
-            if (fStatus.getPath().toString().contains(MetaDataFile.METADATA_FILE)) {
-              dirSnapshot.addMetadataFile(fStatus);
-            } else if (fStatus.getPath().toString().contains(OrcAcidVersion.ACID_FORMAT)) {
-              dirSnapshot.addOrcAcidFormatFile(fStatus);
-            } else {
-              dirSnapshot.addFile(fStatus);
-            }
+      if (fStatus.isDirectory() && acidTempDirFilter.accept(fPath)) {
+        addToSnapshoot(dirToSnapshots, fPath);
+      } else {
+        Path parentDirPath = fPath.getParent();
+        if (acidTempDirFilter.accept(parentDirPath)) {
+          while (isChildOfDelta(parentDirPath, path)) {
+            // Some cases there are other directory layers between the delta and the datafiles
+            // (export-import mm table, insert with union all to mm table, skewed tables).
+            // But it does not matter for the AcidState, we just need the deltas and the data files
+            // So build the snapshot with the files inside the delta directory
+            parentDirPath = parentDirPath.getParent();
+          }
+          HdfsDirSnapshot dirSnapshot = addToSnapshoot(dirToSnapshots, parentDirPath);
+          // We're not filtering out the metadata file and acid format file,
+          // as they represent parts of a valid snapshot
+          // We're not using the cached values downstream, but we can potentially optimize more in a follow-up task
+          if (fStatus.getPath().toString().contains(MetaDataFile.METADATA_FILE)) {
+            dirSnapshot.addMetadataFile(fStatus);
+          } else if (fStatus.getPath().toString().contains(OrcAcidVersion.ACID_FORMAT)) {
+            dirSnapshot.addOrcAcidFormatFile(fStatus);
+          } else {
+            dirSnapshot.addFile(fStatus);
           }
         }
       }

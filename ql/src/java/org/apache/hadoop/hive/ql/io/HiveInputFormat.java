@@ -696,7 +696,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     // We need to iterate to detect original directories, that are supported in MM but not ACID.
     boolean hasOriginalFiles = false, hasAcidDirs = false;
     List<Path> originalDirectories = new ArrayList<>();
-    for (FileStatus file : fs.listStatus(dir, AcidUtils.hiddenFileFilter)) {
+    for (FileStatus file : fs.listStatus(dir, FileUtils.HIDDEN_FILES_PATH_FILTER)) {
       Path currDir = file.getPath();
       Utilities.FILE_OP_LOGGER.trace("Checking {} for being an input", currDir);
       if (!file.isDirectory()) {

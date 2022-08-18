@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.functional.RemoteIterators;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
@@ -1333,5 +1334,17 @@ public final class FileUtils {
     } catch (IOException e) {
       LOG.debug("Unable to delete {}", path, e);
     }
+  }
+
+  public static RemoteIterator<FileStatus> listStatusIterator(FileSystem fs, Path path, PathFilter filter)
+        throws IOException {
+    return RemoteIterators.filteringRemoteIterator(fs.listStatusIterator(path),
+        status -> filter.accept(status.getPath()));
+  }
+
+  public static RemoteIterator<LocatedFileStatus> listFiles(FileSystem fs, Path path, boolean recursive, PathFilter filter)
+        throws IOException {
+    return RemoteIterators.filteringRemoteIterator(fs.listFiles(path, recursive),
+        status -> filter.accept(status.getPath()));
   }
 }

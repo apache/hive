@@ -33,16 +33,22 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.HadoopShims;
 
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.common.util.MockFileSystem;
+import org.apache.hive.common.util.MockFileSystem.MockFile;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -280,5 +286,30 @@ public class TestFileUtils {
     childPath = new Path("/user/hive/database1/table/dir/subdir");
     relativePath = FileUtils.makeRelative(parentPath, childPath);
     assertEquals(childPath.toString(), relativePath.toString());
+  }
+
+  @Test
+  public void testListStatusIterator() throws Exception {
+    MockFileSystem fs = new MockFileSystem(new HiveConf(),
+        new MockFile("mock:/tmp/.staging", 500, new byte[0]),
+        new MockFile("mock:/tmp/_dummy", 500, new byte[0]),
+        new MockFile("mock:/tmp/dummy", 500, new byte[0]));
+    Path path = new MockFileSystem.MockPath(fs, "/tmp");
+    
+    RemoteIterator<FileStatus> it = FileUtils.listStatusIterator(fs, path, FileUtils.HIDDEN_FILES_PATH_FILTER);
+    assertEquals(1, assertExpectedFilePaths(it, Collections.singletonList("mock:/tmp/dummy")));
+    
+    RemoteIterator<LocatedFileStatus> itr = FileUtils.listFiles(fs, path, true, FileUtils.HIDDEN_FILES_PATH_FILTER);
+    assertEquals(1, assertExpectedFilePaths(itr, Collections.singletonList("mock:/tmp/dummy")));
+  }
+
+  private int assertExpectedFilePaths(RemoteIterator<? extends FileStatus> lfs, List<String> expectedPaths)
+      throws Exception {
+    int count = 0;
+    while (lfs.hasNext()) {
+      assertTrue(expectedPaths.contains(lfs.next().getPath().toString()));
+      count++;
+    }
+    return count;
   }
 }
