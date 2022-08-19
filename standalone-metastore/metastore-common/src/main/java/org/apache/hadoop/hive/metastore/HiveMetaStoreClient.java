@@ -4067,7 +4067,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return allocateTableWriteIdsBatch(txnIds, dbName, tableName, false);
   }
 
-  public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName,
+  private List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName,
       boolean shouldRealloc) throws TException {
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
     rqst.setTxnIds(txnIds);
