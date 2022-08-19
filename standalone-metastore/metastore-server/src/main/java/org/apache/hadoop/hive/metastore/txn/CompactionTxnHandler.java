@@ -117,7 +117,7 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.ReadOnly
   public Set<CompactionInfo> findPotentialCompactions(int abortedThreshold,
-      long abortedTimeThreshold, long checkInterval) throws MetaException {
+      long abortedTimeThreshold, long lastChecked) throws MetaException {
     Connection dbConn = null;
     Set<CompactionInfo> response = new HashSet<>();
     Statement stmt = null;
@@ -126,6 +126,9 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
         stmt = dbConn.createStatement();
+
+        long startedAt = System.currentTimeMillis();
+        long checkInterval = (lastChecked <= 0) ? lastChecked : (startedAt - lastChecked + 500) / 1000;
 
         // Check for completed transactions
         final String s = "SELECT DISTINCT \"TC\".\"CTC_DATABASE\", \"TC\".\"CTC_TABLE\", \"TC\".\"CTC_PARTITION\" " +
@@ -194,7 +197,7 @@ class CompactionTxnHandler extends TxnHandler {
       return response;
     }
     catch (RetryException e) {
-      return findPotentialCompactions(abortedThreshold, abortedTimeThreshold, checkInterval);
+      return findPotentialCompactions(abortedThreshold, abortedTimeThreshold, lastChecked);
     }
   }
 

@@ -120,6 +120,7 @@ public class Initiator extends MetaStoreCompactorThread {
         long startedAt = -1;
         long prevStart;
         TxnStore.MutexAPI.LockHandle handle = null;
+        boolean exceptionally = false;
 
         // Wrap the inner parts of the loop in a catch throwable so that any errors in the loop
         // don't doom the entire thread.
@@ -127,7 +128,6 @@ public class Initiator extends MetaStoreCompactorThread {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Initiator.name());
           startedAt = System.currentTimeMillis();
           prevStart = handle.getLastUpdateTime();
-          long compactionInterval = (prevStart <= 0) ? prevStart : (startedAt - prevStart) / 1000;
 
           if (metricsEnabled) {
             perfLogger.perfLogBegin(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
@@ -153,7 +153,7 @@ public class Initiator extends MetaStoreCompactorThread {
           Set<String> skipTables = Sets.newConcurrentHashSet();
 
           Set<CompactionInfo> potentials = compactionExecutor.submit(() ->
-            txnHandler.findPotentialCompactions(abortedThreshold, abortedTimeThreshold, compactionInterval)
+            txnHandler.findPotentialCompactions(abortedThreshold, abortedTimeThreshold, prevStart)
               .parallelStream()
               .filter(ci -> isEligibleForCompaction(ci, currentCompactions, skipDBs, skipTables))
               .collect(Collectors.toSet())).get();
@@ -208,9 +208,10 @@ public class Initiator extends MetaStoreCompactorThread {
         } catch (Throwable t) {
           LOG.error("Initiator loop caught unexpected exception this time through the loop: " +
               StringUtils.stringifyException(t));
+          exceptionally = true;
         } finally {
           if (handle != null) {
-            handle.releaseLocks(startedAt);
+            if (!exceptionally) handle.releaseLocks(startedAt); else handle.releaseLocks();
           }
           if (metricsEnabled) {
             perfLogger.perfLogEnd(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
