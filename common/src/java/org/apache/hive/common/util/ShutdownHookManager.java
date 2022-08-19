@@ -63,7 +63,7 @@ public class ShutdownHookManager {
   }
 
   /**
-   * Adds shutdown hook with default timeout (30s)
+   * Adds shutdown hook with a priority and default timeout (30s)
    * @param shutdownHook shutdown hook
    * @param priority priority of the shutdownHook
    */
@@ -72,8 +72,8 @@ public class ShutdownHookManager {
   }
 
   /**
-   * Adds a server's graceful shutdown hook with the highest priority,
-   * so the hook runs earlier all other kinds of hooks.
+   * Adds a server's graceful shutdown hook with the highest priority
+   * and the given timeout, so the hook runs earlier than other kinds of hooks.
    * @param shutdownHook shutdown hook
    * @param timeout timeout of the shutdownHook
    */

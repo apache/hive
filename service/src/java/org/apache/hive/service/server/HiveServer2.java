@@ -441,7 +441,7 @@ public class HiveServer2 extends CompositeService {
     // Add a shutdown hook for catching SIGTERM & SIGINT
     long timeout = HiveConf.getTimeVar(getHiveConf(),
         HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.SECONDS);
-    // extra time for releasing the resources
+    // Add extra time for releasing the resources
     ShutdownHookManager.addGracefulShutDownHook(() -> graceful_stop(), timeout + 30);
   }
 
