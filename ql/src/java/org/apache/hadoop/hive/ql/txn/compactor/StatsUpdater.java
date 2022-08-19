@@ -46,7 +46,7 @@ public final class StatsUpdater {
      * @param userName The user to run the statistic collection with
      * @param compactionQueueName The name of the compaction queue
      */
-    void gatherStats(CompactionInfo ci, HiveConf conf, String userName, String compactionQueueName) {
+    public void gatherStats(CompactionInfo ci, HiveConf conf, String userName, String compactionQueueName) {
         try {
             if (!ci.isMajorCompaction()) {
                 return;

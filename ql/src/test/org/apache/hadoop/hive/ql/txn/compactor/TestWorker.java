@@ -1028,7 +1028,7 @@ public class TestWorker extends CompactorTest {
 
   @Test
   public void testDoesNotGatherStatsIfCompactionFails() throws Exception {
-    StatsUpdater statsUpdater = Mockito.spy(StatsUpdater.class);
+    StatsUpdater statsUpdater = Mockito.mock(StatsUpdater.class);
 
     Table t = newTable("default", "mtwb", false);
 

@@ -124,7 +124,7 @@ public class TestCompactor {
   IMetaStoreClient msClient;
   private IDriver driver;
 
-  private StatsUpdater statsUpdater;
+  private StatsUpdater statsUpdater = new StatsUpdater();
 
   @Before
   public void setup() throws Exception {
@@ -170,8 +170,6 @@ public class TestCompactor {
       }
     }
     createTestDataFile(BASIC_FILE_NAME, input);
-
-    statsUpdater = new StatsUpdater();
   }
 
   @After
