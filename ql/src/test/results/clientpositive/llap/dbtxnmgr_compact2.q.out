@@ -43,6 +43,7 @@ STAGE PLANS:
   Stage: Stage-0
     Compact
       compaction type: minor
+      table name: default.T1_n105
       partition spec:
         ds yesterday
       table name: default.T1_n105

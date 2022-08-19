@@ -831,6 +831,11 @@ STAGE PLANS:
   Stage: Stage-0
     Compact
       compaction type: major
+      table name: default.over10k_orc_bucketed_n0
+      properties:
+        compactor.hive.tez.container.size 500
+        compactor.mapreduce.map.memory.mb 500
+        compactor.mapreduce.reduce.memory.mb 500
       properties:
         compactor.hive.tez.container.size 500
         compactor.mapreduce.map.memory.mb 500
