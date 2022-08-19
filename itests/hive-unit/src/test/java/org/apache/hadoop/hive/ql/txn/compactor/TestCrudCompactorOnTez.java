@@ -1484,8 +1484,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     String tableName = "testMinorCompaction";
     executeStatementOnDriver("drop table if exists " + tableName, driver);
     executeStatementOnDriver(
-        "CREATE TABLE " + tableName + "(a INT, b STRING) " + " STORED AS ORC  TBLPROPERTIES ('transactional'='true')",
-        driver);
+            "CREATE TABLE " + tableName + "(a INT, b STRING, c int, d int, e int, f int, j int, i int) " +
+                    " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
     CompactorTestUtil.runStreamingAPI(conf, dbName, tableName, Lists
         .newArrayList(new CompactorTestUtil.StreamingConnectionOption(false, false),
             new CompactorTestUtil.StreamingConnectionOption(true, false),
@@ -2349,6 +2349,71 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals(1, fileStatuses.length);
     String baseName = fileStatuses[0].getPath().getName();
     Assert.assertEquals("base_10000000_v0000009", baseName);
+  }
+
+  @Test
+  public void testCompactionShouldNotFailOnStructField() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    String dbName = "default";
+    String tblName = "compaction_hive_26374";
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    TestDataProvider testDP = new TestDataProvider();
+
+    // Create test table
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(col1 array<struct<arr_col1:int, `timestamp`:string>>)" +
+            "STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
+
+    // Insert test data into test table
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+            " SELECT ARRAY(NAMED_STRUCT('arr_col1',1,'timestamp','2022-07-05 21:51:20.371'))",driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+            " SELECT ARRAY(NAMED_STRUCT('arr_col1',2,'timestamp','2022-07-05 21:51:20.371'))",driver);
+
+    // Find the location of the table
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+    FileSystem fs = FileSystem.get(conf);
+    // Verify deltas (delta_0000001_0000001_0000, delta_0000002_0000002_0000) are present
+    Assert.assertEquals("Delta directories does not match before compaction",
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000"),
+            CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
+
+    // Get all data before compaction is run
+    List<String> expectedData = testDP.getAllData(tblName);
+
+    //Do a compaction directly and wait for it to finish
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
+    CompactionResponse resp = txnHandler.compact(rqst);
+    runWorker(conf);
+
+    CompactorTestUtil.runCleaner(conf);
+
+    //Check if the compaction succeed
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals("Expecting 1 rows and found " + compacts.size(), 1, compacts.size());
+    Assert.assertEquals("Expecting compaction state 'succeeded' and found:" + compacts.get(0).getState(),
+            "succeeded", compacts.get(0).getState());
+    // Should contain only one base directory now
+    FileStatus[] status = fs.listStatus(new Path(table.getSd().getLocation()));
+    int inputFileCount = 0;
+    for(FileStatus file: status) {
+      inputFileCount++;
+    }
+    Assert.assertEquals("Expecting 1 file and found "+ inputFileCount, 1, inputFileCount);
+
+    // Check bucket file name
+    List<String> baseDir = CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null);
+    List<String> expectedBucketFiles = Arrays.asList("bucket_00000");
+    Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
+            CompactorTestUtil
+                    .getBucketFileNames(fs, table, null, baseDir.get(0)));
+
+    // Verify all contents
+    List<String> actualData = testDP.getAllData(tblName);
+    Assert.assertEquals(expectedData, actualData);
   }
 
 }

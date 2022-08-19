@@ -540,4 +540,9 @@ public class ReplUtils {
     int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
     return errorCode > ErrorMsg.GENERIC_ERROR.getErrorCode();
   }
+
+  // True if REPL DUMP should do transaction optimization
+  public static boolean filterTransactionOperations(HiveConf conf) {
+    return (conf.getBoolVar(HiveConf.ConfVars.REPL_FILTER_TRANSACTIONS));
+  }
 }

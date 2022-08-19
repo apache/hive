@@ -24,11 +24,13 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -47,6 +49,7 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -54,8 +57,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -77,17 +80,19 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
 import org.apache.hadoop.mapred.JobID;
-import org.apache.hadoop.mapred.JobStatus;
-import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.ManifestFile;
+import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.SnapshotSummary;
+import org.apache.iceberg.SortDirection;
+import org.apache.iceberg.SortField;
+import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
@@ -100,6 +105,7 @@ import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.SerializationUtil;
 import org.slf4j.Logger;
@@ -330,27 +336,35 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public List<PartitionTransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+  public List<TransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
-    return table.spec().fields().stream().map(f -> {
-      PartitionTransformSpec spec = new PartitionTransformSpec();
-      spec.setColumnName(table.schema().findColumnName(f.sourceId()));
-      // right now the only way to fetch the transform type and its params is through the toString() call
-      String transformName = f.transform().toString().toUpperCase();
-      // if the transform name contains '[' it means it has some config params
-      if (transformName.contains("[")) {
-        spec.setTransformType(PartitionTransformSpec.TransformType
-            .valueOf(transformName.substring(0, transformName.indexOf("["))));
-        spec.setTransformParam(Optional.of(Integer
-            .valueOf(transformName.substring(transformName.indexOf("[") + 1, transformName.indexOf("]")))));
-      } else {
-        spec.setTransformType(PartitionTransformSpec.TransformType.valueOf(transformName));
-        spec.setTransformParam(Optional.empty());
-      }
+    return table.spec().fields().stream().map(f ->
+      getTransformSpec(table, f.transform().toString().toUpperCase(), f.sourceId())
+    ).collect(Collectors.toList());
+  }
 
-      return spec;
-    }).collect(Collectors.toList());
+  private List<TransformSpec> getSortTransformSpec(Table table) {
+    return table.sortOrder().fields().stream().map(s ->
+      getTransformSpec(table, s.transform().toString().toUpperCase(), s.sourceId())
+    ).collect(Collectors.toList());
+  }
+
+  private TransformSpec getTransformSpec(Table table, String transformName, int sourceId) {
+    TransformSpec spec = new TransformSpec();
+    spec.setColumnName(table.schema().findColumnName(sourceId));
+    // if the transform name contains '[' it means it has some config params
+    if (transformName.contains("[")) {
+      spec.setTransformType(TransformSpec.TransformType
+          .valueOf(transformName.substring(0, transformName.indexOf("["))));
+      spec.setTransformParam(Optional.of(Integer
+          .valueOf(transformName.substring(transformName.indexOf("[") + 1, transformName.indexOf("]")))));
+    } else {
+      spec.setTransformType(TransformSpec.TransformType.valueOf(transformName));
+      spec.setTransformParam(Optional.empty());
+    }
+
+    return spec;
   }
 
   @Override
@@ -365,12 +379,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
-    if (table.spec().isUnpartitioned()) {
-      return null;
-    }
-
-    // Iceberg currently doesn't have publicly accessible partition transform information, hence use above string parse
-    List<PartitionTransformSpec> partitionTransformSpecs = getPartitionTransformSpec(hmsTable);
 
     DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(Maps.newLinkedHashMap(),
         hiveConf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
@@ -378,6 +386,39 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExprs = Lists.newLinkedList();
     dpCtx.setCustomSortExpressions(customSortExprs);
 
+    if (table.spec().isPartitioned()) {
+      addCustomSortExpr(table, hmsTable, writeOperation, customSortExprs, getPartitionTransformSpec(hmsTable));
+    }
+
+    SortOrder sortOrder = table.sortOrder();
+    if (sortOrder.isSorted()) {
+      List<Integer> customSortPositions = Lists.newLinkedList();
+      List<Integer> customSortOrder = Lists.newLinkedList();
+      dpCtx.setCustomSortOrder(customSortOrder);
+      List<Integer> customSortNullOrder = Lists.newLinkedList();
+      dpCtx.setCustomSortNullOrder(customSortNullOrder);
+      for (SortField sortField : sortOrder.fields()) {
+        int pos = 0;
+        for (Types.NestedField field : table.schema().columns()) {
+          if (sortField.sourceId() == field.fieldId()) {
+            customSortPositions.add(pos);
+            customSortOrder.add(sortField.direction() == SortDirection.ASC ? 1 : 0);
+            customSortNullOrder.add(sortField.nullOrder() == NullOrder.NULLS_FIRST ? 0 : 1);
+            break;
+          }
+          pos++;
+        }
+      }
+
+      addCustomSortExpr(table, hmsTable, writeOperation, customSortExprs, getSortTransformSpec(table));
+    }
+
+    return dpCtx;
+  }
+
+  private void addCustomSortExpr(Table table,  org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      Operation writeOperation, List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExprs,
+      List<TransformSpec> transformSpecs) {
     Map<String, Integer> fieldOrderMap = Maps.newHashMap();
     List<Types.NestedField> fields = table.schema().columns();
     for (int i = 0; i < fields.size(); ++i) {
@@ -385,16 +426,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
 
     int offset = acidSelectColumns(hmsTable, writeOperation).size();
-    for (PartitionTransformSpec spec : partitionTransformSpecs) {
+
+    for (TransformSpec spec : transformSpecs) {
       int order = fieldOrderMap.get(spec.getColumnName());
-      if (PartitionTransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {
+      if (TransformSpec.TransformType.BUCKET.equals(spec.getTransformType())) {
         customSortExprs.add(BUCKET_SORT_EXPR.apply(order + offset, spec.getTransformParam().get()));
       } else {
         customSortExprs.add(cols -> cols.get(order + offset).clone());
       }
     }
-
-    return dpCtx;
   }
 
   @Override
@@ -411,24 +451,28 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
     Configuration configuration = SessionState.getSessionConf();
-    Optional<JobContext> jobContext = generateJobContext(configuration, tableName, overwrite);
-    if (jobContext.isPresent()) {
-      OutputCommitter committer = new HiveIcebergOutputCommitter();
+    List<JobContext> jobContextList = generateJobContext(configuration, tableName, overwrite);
+    if (jobContextList.isEmpty()) {
+      return;
+    }
+
+    HiveIcebergOutputCommitter committer = new HiveIcebergOutputCommitter();
+    try {
+      committer.commitJobs(jobContextList);
+    } catch (Throwable e) {
+      String ids = jobContextList
+          .stream().map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(", "));
+      // Aborting the job if the commit has failed
+      LOG.error("Error while trying to commit job: {}, starting rollback changes for table: {}",
+          ids, tableName, e);
       try {
-        committer.commitJob(jobContext.get());
-      } catch (Throwable e) {
-        // Aborting the job if the commit has failed
-        LOG.error("Error while trying to commit job: {}, starting rollback changes for table: {}",
-            jobContext.get().getJobID(), tableName, e);
-        try {
-          committer.abortJob(jobContext.get(), JobStatus.State.FAILED);
-        } catch (IOException ioe) {
-          LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", ioe);
-          // no throwing here because the original exception should be propagated
-        }
-        throw new HiveException(
-            "Error committing job: " + jobContext.get().getJobID() + " for table: " + tableName, e);
+        committer.abortJobs(jobContextList);
+      } catch (IOException ioe) {
+        LOG.error("Error while trying to abort failed job. There might be uncleaned data files.", ioe);
+        // no throwing here because the original exception should be propagated
       }
+      throw new HiveException(
+          "Error committing job: " + ids + " for table: " + tableName, e);
     }
   }
 
@@ -454,10 +498,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
   @Override
   public void executeOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable, AlterTableExecuteSpec executeSpec) {
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     switch (executeSpec.getOperationType()) {
       case ROLLBACK:
-        TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
-        Table icebergTable = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
         LOG.info("Executing rollback operation on iceberg table. If you would like to revert rollback you could " +
               "try altering the metadata location to the current metadata location by executing the following query:" +
               "ALTER TABLE {}.{} SET TBLPROPERTIES('metadata_location'='{}'). This operation is supported for Hive " +
@@ -466,6 +510,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         AlterTableExecuteSpec.RollbackSpec rollbackSpec =
             (AlterTableExecuteSpec.RollbackSpec) executeSpec.getOperationParams();
         IcebergTableUtil.rollback(icebergTable, rollbackSpec.getRollbackType(), rollbackSpec.getParam());
+        break;
+      case EXPIRE_SNAPSHOT:
+        LOG.info("Executing expire snapshots operation on iceberg table {}.{}", hmsTable.getDbName(),
+            hmsTable.getTableName());
+        AlterTableExecuteSpec.ExpireSnapshotsSpec expireSnapshotsSpec =
+            (AlterTableExecuteSpec.ExpireSnapshotsSpec) executeSpec.getOperationParams();
+        icebergTable.expireSnapshots().expireOlderThan(expireSnapshotsSpec.getTimestampMillis()).commit();
         break;
       default:
         throw new UnsupportedOperationException(
@@ -557,6 +608,26 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
   }
 
+  @Override
+  public boolean supportsSortColumns() {
+    return true;
+  }
+
+  @Override
+  public List<FieldSchema> sortColumns(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    if (table.sortOrder().isUnsorted()) {
+      return Collections.emptyList();
+    }
+
+    Schema schema = table.schema();
+    return table.sortOrder().fields().stream().map(s -> new FieldSchema(schema.findColumnName(s.sourceId()),
+        schema.findType(s.sourceId()).toString(),
+        String.format("Transform: %s, Sort direction: %s, Null sort order: %s",
+        s.transform().toString(), s.direction().name(), s.nullOrder().name()))).collect(Collectors.toList());
+  }
+
   private void setCommonJobConf(JobConf jobConf) {
     jobConf.set("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
   }
@@ -646,8 +717,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * @param config The configuration used to get the data from
    * @return The collection of the table names as returned by TableDesc.getTableName()
    */
-  public static Collection<String> outputTables(Configuration config) {
-    return TABLE_NAME_SPLITTER.splitToList(config.get(InputFormatConfig.OUTPUT_TABLES));
+  public static Set<String> outputTables(Configuration config) {
+    return Sets.newHashSet(TABLE_NAME_SPLITTER.split(config.get(InputFormatConfig.OUTPUT_TABLES)));
   }
 
   /**
@@ -806,7 +877,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
         (tableProps.containsKey("metaTable") && isValidMetadataTable(tableProps.getProperty("metaTable"))) ||
         hasOrcTimeInSchema(tableProps, tableSchema) ||
-        !hasParquetListColumnSupport(tableProps, tableSchema)) {
+        !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema)) {
       conf.setBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname, false);
     }
   }
@@ -827,20 +898,21 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   /**
-   * Vectorized reads of parquet files from columns with list type is only supported if the element is a primitive type
-   * check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details
+   * Vectorized reads of parquet files from columns with list or map type is only supported if the nested types are of
+   * primitive type category
+   * check {@link VectorizedParquetRecordReader#checkListColumnSupport} for details on nested types under lists
    * @param tableProps iceberg table properties
    * @param tableSchema iceberg table schema
    * @return
    */
-  private static boolean hasParquetListColumnSupport(Properties tableProps, Schema tableSchema) {
+  private static boolean hasParquetNestedTypeWithinListOrMap(Properties tableProps, Schema tableSchema) {
     if (!FileFormat.PARQUET.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT))) {
       return true;
     }
 
     for (Types.NestedField field : tableSchema.columns()) {
-      if (field.type().isListType()) {
-        for (Types.NestedField nestedField : field.type().asListType().fields()) {
+      if (field.type().isListType() || field.type().isMapType()) {
+        for (Types.NestedField nestedField : field.type().asNestedType().fields()) {
           if (!nestedField.type().isPrimitiveType()) {
             return false;
           }
@@ -852,29 +924,35 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   /**
-   * Generates a JobContext for the OutputCommitter for the specific table.
+   * Generates {@link JobContext}s for the OutputCommitter for the specific table.
    * @param configuration The configuration used for as a base of the JobConf
    * @param tableName The name of the table we are planning to commit
    * @param overwrite If we have to overwrite the existing table or just add the new data
-   * @return The generated JobContext
+   * @return The generated Optional JobContext list or empty if not presents.
    */
-  private Optional<JobContext> generateJobContext(Configuration configuration, String tableName, boolean overwrite) {
+  private List<JobContext> generateJobContext(Configuration configuration, String tableName,
+      boolean overwrite) {
     JobConf jobConf = new JobConf(configuration);
-    Optional<SessionStateUtil.CommitInfo> commitInfo = SessionStateUtil.getCommitInfo(jobConf, tableName);
-    if (commitInfo.isPresent()) {
-      JobID jobID = JobID.forName(commitInfo.get().getJobIdStr());
-      commitInfo.get().getProps().forEach(jobConf::set);
-      jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
+    Optional<Map<String, SessionStateUtil.CommitInfo>> commitInfoMap =
+        SessionStateUtil.getCommitInfo(jobConf, tableName);
+    if (commitInfoMap.isPresent()) {
+      List<JobContext> jobContextList = Lists.newLinkedList();
+      for (SessionStateUtil.CommitInfo commitInfo : commitInfoMap.get().values()) {
+        JobID jobID = JobID.forName(commitInfo.getJobIdStr());
+        commitInfo.getProps().forEach(jobConf::set);
+        jobConf.setBoolean(InputFormatConfig.IS_OVERWRITE, overwrite);
 
-      // we should only commit this current table because
-      // for multi-table inserts, this hook method will be called sequentially for each target table
-      jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
+        // we should only commit this current table because
+        // for multi-table inserts, this hook method will be called sequentially for each target table
+        jobConf.set(InputFormatConfig.OUTPUT_TABLES, tableName);
 
-      return Optional.of(new JobContextImpl(jobConf, jobID, null));
+        jobContextList.add(new JobContextImpl(jobConf, jobID, null));
+      }
+      return jobContextList;
     } else {
       // most likely empty write scenario
       LOG.debug("Unable to find commit information in query state for table: {}", tableName);
-      return Optional.empty();
+      return Collections.emptyList();
     }
   }
 

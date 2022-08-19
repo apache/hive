@@ -975,6 +975,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("show_compact\n");
   }
 
+  bool submit_for_cleanup(const CompactionRequest& o1, const int64_t o2, const int64_t o3) {
+    // Your implementation goes here
+    printf("submit_for_cleanup\n");
+  }
+
   void add_dynamic_partitions(const AddDynamicPartitions& rqst) {
     // Your implementation goes here
     printf("add_dynamic_partitions\n");

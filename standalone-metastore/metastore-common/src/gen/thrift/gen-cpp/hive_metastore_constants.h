@@ -31,6 +31,7 @@ class hive_metastoreConstants {
   std::string BUCKET_FIELD_NAME;
   std::string BUCKET_COUNT;
   std::string FIELD_TO_DIMENSION;
+  std::string IF_PURGE;
   std::string META_TABLE_NAME;
   std::string META_TABLE_DB;
   std::string META_TABLE_LOCATION;

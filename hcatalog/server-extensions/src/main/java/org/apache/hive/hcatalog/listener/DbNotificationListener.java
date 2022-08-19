@@ -666,7 +666,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       return;
     }
     AbortTxnMessage msg =
-        MessageBuilder.getInstance().buildAbortTxnMessage(abortTxnEvent.getTxnId());
+        MessageBuilder.getInstance().buildAbortTxnMessage(abortTxnEvent.getTxnId(), abortTxnEvent.getDbsUpdated());
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ABORT_TXN.toString(),
             msgEncoder.getSerializer().serialize(msg));

@@ -199,7 +199,8 @@ public class TestReplicationScenarios {
       hconf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), metastoreUri);
       return;
     }
-
+    // Disable auth so the call should succeed
+    MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     hconf.set(MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS.getHiveName(),
         DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
     hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
@@ -207,6 +208,7 @@ public class TestReplicationScenarios {
     hconf.setVar(HiveConf.ConfVars.REPLCMDIR, TEST_PATH + "/cmroot/");
     proxySettingName = "hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts";
     hconf.set(proxySettingName, "*");
+    MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     hconf.setVar(HiveConf.ConfVars.REPLDIR,TEST_PATH + "/hrepl/");
     hconf.set(MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES.getHiveName(), "3");
     hconf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
@@ -247,9 +249,10 @@ public class TestReplicationScenarios {
     hconfMirrorServer.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
     MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer, true);
     hconfMirror = new HiveConf(hconf);
+    MetastoreConf.setBoolVar(hconfMirror, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+    hconfMirrorServer.set(proxySettingName, "*");
     String thriftUri = MetastoreConf.getVar(hconfMirrorServer, MetastoreConf.ConfVars.THRIFT_URIS);
     MetastoreConf.setVar(hconfMirror, MetastoreConf.ConfVars.THRIFT_URIS, thriftUri);
-
     driverMirror = DriverFactory.newDriver(hconfMirror);
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 
@@ -4188,27 +4191,32 @@ public class TestReplicationScenarios {
     NotificationEventResponse rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize());
     // Test various scenarios
-    // Remove the proxy privilege and the auth should fail (in reality the proxy setting should not be changed on the fly)
-    hconf.unset(proxySettingName);
-    // Need to explicitly update ProxyUsers
-    ProxyUsers.refreshSuperUserGroupsConfiguration(hconf);
-    // Verify if the auth should fail
-    Exception ex = null;
+    // Remove the proxy privilege by reseting proxy configuration to default value.
+    // The auth should fail (in reality the proxy setting should not be changed on the fly)
+    // Pretty hacky: Affects both instances of HMS
+    ProxyUsers.refreshSuperUserGroupsConfiguration();
     try {
+      hconf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, false);
+      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
       rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
+      Assert.fail("Get Next Nofitication should have failed due to no proxy auth");
     } catch (TException e) {
-      ex = e;
+      // Expected to throw an Exception - keep going
     }
-    assertNotNull(ex);
     // Disable auth so the call should succeed
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+    MetastoreConf.setBoolVar(hconfMirror, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     try {
       rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
       assertEquals(1, rsp.getEventsSize());
     } finally {
       // Restore the settings
-      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
+      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+      hconf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, true);
       hconf.set(proxySettingName, "*");
+
+      // Restore Proxy configurations to test values
+      // Pretty hacky: Applies one setting to both instances of HMS
       ProxyUsers.refreshSuperUserGroupsConfiguration(hconf);
     }
   }

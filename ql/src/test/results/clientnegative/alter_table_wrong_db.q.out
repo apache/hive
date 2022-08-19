@@ -18,8 +18,4 @@ POSTHOOK: query: create table rename1(a int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: bad_rename1@rename1
 POSTHOOK: Output: database:bad_rename1
-PREHOOK: query: alter table bad_rename1.rename1 rename to bad_db_notexists.rename1
-PREHOOK: type: ALTERTABLE_RENAME
-PREHOOK: Input: bad_rename1@rename1
-PREHOOK: Output: bad_rename1@rename1
-FAILED: Execution Error, return code 40013 from org.apache.hadoop.hive.ql.ddl.DDLTask. Unable to alter table. Unable to change partition or table. Object database hive.bad_db_notexists does not exist. Check metastore logs for detailed stack.
+FAILED: SemanticException [Error 10072]: Database does not exist: bad_db_notexists

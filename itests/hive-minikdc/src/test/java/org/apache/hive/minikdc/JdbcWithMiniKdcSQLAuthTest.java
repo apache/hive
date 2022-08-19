@@ -59,6 +59,7 @@ public abstract class JdbcWithMiniKdcSQLAuthTest {
     hiveConf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
+    hiveConf.setBoolVar(ConfVars.HIVEFETCHTASKCACHING, false);
 
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);
     miniHS2.start(new HashMap<String, String>());

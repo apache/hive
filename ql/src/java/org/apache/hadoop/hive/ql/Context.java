@@ -191,6 +191,8 @@ public class Context {
 
   private List<Pair<String, String>> parsedTables = new ArrayList<>();
 
+  private Path location;
+
   public void setOperation(Operation operation) {
     this.operation = operation;
   }
@@ -213,6 +215,14 @@ public class Context {
 
   public String getReplPolicy() {
     return this.replPolicy;
+  }
+
+  public Path getLocation() {
+    return location;
+  }
+
+  public void setLocation(Path location) {
+    this.location = location;
   }
 
   /**

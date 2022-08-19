@@ -52,6 +52,8 @@ public interface HiveMetaHook {
   String PROPERTIES_SEPARATOR = "'";
   String MIGRATE_HIVE_TO_ICEBERG = "migrate_hive_to_iceberg";
   String INITIALIZE_ROLLBACK_MIGRATION = "initialize_rollback_migration";
+  // if this flag is set to true, the HMS call from HiveMetaStoreClient#alter_table() will be skipped
+  String SKIP_METASTORE_ALTER = "skip_metastore_alter";
 
   /**
    * Called before a new table definition is added to the metastore

@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -27,7 +25,6 @@ import java.util.Set;
 
 import java.util.stream.Collectors;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -36,7 +33,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 
 /**
  * A subclass of the {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer} that just handles
@@ -64,31 +60,21 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
   protected void analyze(ASTNode tree, Table table, ASTNode tabNameNode) throws SemanticException {
     switch (tree.getToken().getType()) {
     case HiveParser.TOK_DELETE_FROM:
-      analyzeDelete(tree, table, tabNameNode);
+      operation = Context.Operation.DELETE;
+      reparseAndSuperAnalyze(tree, table, tabNameNode);
       break;
     case HiveParser.TOK_UPDATE_TABLE:
-      analyzeUpdate(tree, table, tabNameNode);
+      boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(table);
+      if (nonNativeAcid) {
+        throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
+      }
+      operation = Context.Operation.UPDATE;
+      reparseAndSuperAnalyze(tree, table, tabNameNode);
       break;
     default:
       throw new RuntimeException("Asked to parse token " + tree.getName() + " in " +
           "UpdateDeleteSemanticAnalyzer");
     }
-  }
-
-  private void analyzeUpdate(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
-    operation = Context.Operation.UPDATE;
-    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
-
-    if (HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.SPLIT_UPDATE) && !nonNativeAcid) {
-      analyzeSplitUpdate(tree, mTable, tabNameNode);
-    } else {
-      reparseAndSuperAnalyze(tree, mTable, tabNameNode);
-    }
-  }
-
-  private void analyzeDelete(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
-    operation = Context.Operation.DELETE;
-    reparseAndSuperAnalyze(tree, mTable, tabNameNode);
   }
 
   /**
@@ -113,27 +99,16 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
   private void reparseAndSuperAnalyze(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
     List<? extends Node> children = tree.getChildren();
 
-    // save the operation type into the query state
-    SessionStateUtil.addResource(conf, Context.Operation.class.getSimpleName(), operation.name());
-
     StringBuilder rewrittenQueryStr = new StringBuilder();
     rewrittenQueryStr.append("insert into table ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
     addPartitionColsToInsert(mTable.getPartCols(), rewrittenQueryStr);
 
-    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(mTable);
-    int columnOffset;
-    if (nonNativeAcid) {
-      List<FieldSchema> acidColumns = mTable.getStorageHandler().acidSelectColumns(mTable, operation);
-      String selectCols = acidColumns.stream()
-          .map(fieldSchema -> HiveUtils.unparseIdentifier(fieldSchema.getName(), this.conf))
-          .collect(Collectors.joining(","));
-      rewrittenQueryStr.append(" select ").append(selectCols);
-      columnOffset = acidColumns.size();
-    } else {
-      rewrittenQueryStr.append(" select ROW__ID");
-      columnOffset = 1;
-    }
+    ColumnAppender columnAppender = getColumnAppender(null);
+    int columnOffset = columnAppender.getDeleteValues(operation).size();
+    rewrittenQueryStr.append(" select ");
+    columnAppender.appendAcidSelectColumns(rewrittenQueryStr, operation);
+    rewrittenQueryStr.setLength(rewrittenQueryStr.length() - 1);
 
     Map<Integer, ASTNode> setColExprs = null;
     Map<String, ASTNode> setCols = null;
@@ -163,7 +138,6 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       }
     }
 
-    addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr);
     rewrittenQueryStr.append(" from ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabNameNode));
 
@@ -176,15 +150,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
 
     // Add a sort by clause so that the row ids come out in the correct order
-    if (nonNativeAcid) {
-      List<FieldSchema> sortColumns = mTable.getStorageHandler().acidSortColumns(mTable, operation);
-      if (!sortColumns.isEmpty()) {
-        String sortCols = sortColumns.stream().map(FieldSchema::getName).collect(Collectors.joining(","));
-        rewrittenQueryStr.append(" sort by ").append(sortCols).append(" ");
-      }
-    } else {
-      rewrittenQueryStr.append(" sort by ROW__ID ");
-    }
+    appendSortBy(rewrittenQueryStr, columnAppender.getSortKeys());
 
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
@@ -257,107 +223,6 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
     }
   }
 
-  private void analyzeSplitUpdate(ASTNode tree, Table mTable, ASTNode tabNameNode) throws SemanticException {
-    operation = Context.Operation.UPDATE;
-
-    List<? extends Node> children = tree.getChildren();
-
-    ASTNode where = null;
-    int whereIndex = 2;
-    if (children.size() > whereIndex) {
-      where = (ASTNode) children.get(whereIndex);
-      assert where.getToken().getType() == HiveParser.TOK_WHERE :
-              "Expected where clause, but found " + where.getName();
-    }
-
-    Set<String> setRCols = new LinkedHashSet<>();
-//    TOK_UPDATE_TABLE
-//            TOK_TABNAME
-//               ...
-//            TOK_SET_COLUMNS_CLAUSE <- The set list from update should be the second child (index 1)
-    assert children.size() >= 2 : "Expected update token to have at least two children";
-    ASTNode setClause = (ASTNode) children.get(1);
-    Map<String, ASTNode> setCols = collectSetColumnsAndExpressions(setClause, setRCols, mTable);
-    Map<Integer, ASTNode> setColExprs = new HashMap<>(setClause.getChildCount());
-
-    List<FieldSchema> nonPartCols = mTable.getCols();
-    Map<String, String> colNameToDefaultConstraint = getColNameToDefaultValueMap(mTable);
-    List<String> values = new ArrayList<>(mTable.getCols().size());
-    StringBuilder rewrittenQueryStr = createRewrittenQueryStrBuilder();
-    rewrittenQueryStr.append("(SELECT ROW__ID");
-    for (int i = 0; i < nonPartCols.size(); i++) {
-      rewrittenQueryStr.append(',');
-      String name = nonPartCols.get(i).getName();
-      ASTNode setCol = setCols.get(name);
-      String identifier = HiveUtils.unparseIdentifier(name, this.conf);
-
-      if (setCol != null) {
-        if (setCol.getType() == HiveParser.TOK_TABLE_OR_COL &&
-                setCol.getChildCount() == 1 && setCol.getChild(0).getType() == HiveParser.TOK_DEFAULT_VALUE) {
-          rewrittenQueryStr.append(colNameToDefaultConstraint.get(name));
-        } else {
-          rewrittenQueryStr.append(identifier);
-          // This is one of the columns we're setting, record it's position so we can come back
-          // later and patch it up. 0th is ROW_ID
-          setColExprs.put(i + 1, setCol);
-        }
-      } else {
-        rewrittenQueryStr.append(identifier);
-      }
-      rewrittenQueryStr.append(" AS ");
-      rewrittenQueryStr.append(identifier);
-
-      values.add("s." + identifier);
-    }
-    addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr);
-    addPartitionColsAsValues(mTable.getPartCols(), "s", values);
-    rewrittenQueryStr.append(" FROM ").append(getFullTableNameForSQL(tabNameNode)).append(") s\n");
-
-    appendInsertBranch(rewrittenQueryStr, null, values);
-    appendDeleteBranch(rewrittenQueryStr, null, "s", Collections.singletonList("s.ROW__ID "));
-
-    appendSortBy(rewrittenQueryStr, Collections.singletonList("s.ROW__ID "));
-
-    ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
-    Context rewrittenCtx = rr.rewrittenCtx;
-    ASTNode rewrittenTree = rr.rewrittenTree;
-
-    ASTNode rewrittenInsert = new ASTSearcher().simpleBreadthFirstSearch(
-            rewrittenTree, HiveParser.TOK_FROM, HiveParser.TOK_SUBQUERY, HiveParser.TOK_INSERT);
-
-    rewrittenCtx.setOperation(Context.Operation.UPDATE);
-    rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.INSERT);
-    rewrittenCtx.addDeleteOfUpdateDestNamePrefix(2, Context.DestClausePrefix.DELETE);
-
-    if (where != null) {
-      rewrittenInsert.addChild(where);
-    }
-
-    patchProjectionForUpdate(rewrittenInsert, setColExprs);
-
-    try {
-      useSuper = true;
-      // Note: this will overwrite this.ctx with rewrittenCtx
-      rewrittenCtx.setEnableUnparse(false);
-      super.analyze(rewrittenTree, rewrittenCtx);
-    } finally {
-      useSuper = false;
-    }
-
-    updateOutputs(mTable);
-
-    setUpAccessControlInfoForUpdate(mTable, setCols);
-
-    // Add the setRCols to the input list
-    if (columnAccessInfo == null) { //assuming this means we are not doing Auth
-      return;
-    }
-
-    for (String colName : setRCols) {
-      columnAccessInfo.add(Table.getCompleteName(mTable.getDbName(), mTable.getTableName()), colName);
-    }
-  }
-
   private boolean updating() {
     return operation == Context.Operation.UPDATE;
   }
@@ -366,7 +231,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
   }
 
   @Override
-  protected boolean allowOutputMultipleTimes() {
-    return conf.getBoolVar(HiveConf.ConfVars.SPLIT_UPDATE);
+  protected boolean enableColumnStatsCollecting() {
+    return false;
   }
 }

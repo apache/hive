@@ -266,6 +266,7 @@ public class TestJdbcDriver2 {
 
     Statement stmt =  con.createStatement();
     stmt.execute("set " + ConfVars.SPLIT_UPDATE.varname + "=" + splitUpdateEarly);
+    stmt.execute("set " + ConfVars.MERGE_SPLIT_UPDATE.varname + "=" + splitUpdateEarly);
     stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
     stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
         "=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
@@ -2814,11 +2815,12 @@ public class TestJdbcDriver2 {
     String sql = "select count(*) from " + tableName;
 
     // Verify the fetched log (from the beginning of log file)
-    HiveStatement stmt = (HiveStatement)con.createStatement();
-    assertNotNull("Statement is null", stmt);
-    stmt.executeQuery(sql);
-    List<String> logs = stmt.getQueryLog(false, 10000);
-    stmt.close();
+    List<String> logs;
+    try (HiveStatement stmt = (HiveStatement) con.createStatement()) {
+      assertNotNull("Statement is null", stmt);
+      stmt.executeQuery(sql);
+      logs = stmt.getQueryLog(false, 200000);
+    }
     verifyFetchedLog(logs, expectedLogs);
 
     // Verify the fetched log (incrementally)
@@ -3009,8 +3011,7 @@ public class TestJdbcDriver2 {
     }
     String accumulatedLogs = stringBuilder.toString();
     for (String expectedLog : expectedLogs) {
-      LOG.info("Checking match for " + expectedLog);
-      assertTrue(accumulatedLogs.contains(expectedLog));
+      assertTrue("Failed to find match for " + expectedLog, accumulatedLogs.contains(expectedLog));
     }
   }
 

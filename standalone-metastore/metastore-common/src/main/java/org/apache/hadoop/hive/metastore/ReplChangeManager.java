@@ -205,7 +205,8 @@ public class ReplChangeManager {
         inited = true;
       }
     } catch (IOException e) {
-      throw new MetaException(StringUtils.stringifyException(e));
+      LOG.error("Failed to created ReplChangeManager", e);
+      throw new MetaException(e.getMessage());
     }
   }
 
@@ -378,32 +379,28 @@ public class ReplChangeManager {
    * @return Corresponding FileInfo object
    */
   public static FileInfo getFileInfo(Path src, String checksumString, String srcCMRootURI, String subDir,
-                                     Configuration conf) throws MetaException {
+      Configuration conf) throws IOException {
+    FileSystem srcFs = src.getFileSystem(conf);
+    if (checksumString == null) {
+      return new FileInfo(srcFs, src, subDir);
+    }
+
+    Path cmPath = getCMPath(conf, src.getName(), checksumString, srcCMRootURI);
+    if (!srcFs.exists(src)) {
+      return new FileInfo(srcFs, src, cmPath, checksumString, false, subDir);
+    }
+
+    String currentChecksumString;
     try {
-      FileSystem srcFs = src.getFileSystem(conf);
-      if (checksumString == null) {
-        return new FileInfo(srcFs, src, subDir);
-      }
-
-      Path cmPath = getCMPath(conf, src.getName(), checksumString, srcCMRootURI);
-      if (!srcFs.exists(src)) {
-        return new FileInfo(srcFs, src, cmPath, checksumString, false, subDir);
-      }
-
-      String currentChecksumString;
-      try {
-        currentChecksumString = checksumFor(src, srcFs);
-      } catch (IOException ex) {
-        // If the file is missing or getting modified, then refer CM path
-        return new FileInfo(srcFs, src, cmPath, checksumString, false, subDir);
-      }
-      if ((currentChecksumString == null) || checksumString.equals(currentChecksumString)) {
-        return new FileInfo(srcFs, src, cmPath, checksumString, true, subDir);
-      } else {
-        return new FileInfo(srcFs, src, cmPath, checksumString, false, subDir);
-      }
-    } catch (IOException e) {
-      throw new MetaException(StringUtils.stringifyException(e));
+      currentChecksumString = checksumFor(src, srcFs);
+    } catch (IOException ex) {
+      // If the file is missing or getting modified, then refer CM path
+      return new FileInfo(srcFs, src, cmPath, checksumString, false, subDir);
+    }
+    if ((currentChecksumString == null) || checksumString.equals(currentChecksumString)) {
+      return new FileInfo(srcFs, src, cmPath, checksumString, true, subDir);
+    } else {
+      return new FileInfo(srcFs, src, cmPath, checksumString, false, subDir);
     }
   }
 

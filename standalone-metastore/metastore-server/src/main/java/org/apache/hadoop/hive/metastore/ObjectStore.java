@@ -987,7 +987,8 @@ public class ObjectStore implements RawStore, Configurable {
       pm.deletePersistent(db);
       success = commitTransaction();
     } catch (Exception e) {
-      throw new MetaException(e.getMessage() + " " + org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+      LOG.error("Failed to drop database", e);
+      throw new MetaException(e.getMessage());
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -1195,7 +1196,8 @@ public class ObjectStore implements RawStore, Configurable {
       pm.deletePersistent(mdb);
       success = commitTransaction();
     } catch (Exception e) {
-      throw new MetaException(e.getMessage() + " " + org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+      LOG.error("Failed to drop data connector", e);
+      throw new MetaException(e.getMessage());
     } finally {
       rollbackAndCleanup(success, null);
     }
@@ -2527,19 +2529,51 @@ public class ObjectStore implements RawStore, Configurable {
     }
     assert !m.isSetMaterializationTime();
     Set<MMVSource> tablesUsed = new HashSet<>();
-    for (SourceTable sourceTable : m.getSourceTables()) {
-      Table table = sourceTable.getTable();
-      MTable mtbl = getMTable(m.getCatName(), table.getDbName(), table.getTableName(), false).mtbl;
-      MMVSource source = new MMVSource();
-      source.setTable(mtbl);
-      source.setInsertedCount(sourceTable.getInsertedCount());
-      source.setUpdatedCount(sourceTable.getUpdatedCount());
-      source.setDeletedCount(sourceTable.getDeletedCount());
-      tablesUsed.add(source);
+    if (m.isSetSourceTables()) {
+      for (SourceTable sourceTable : m.getSourceTables()) {
+        tablesUsed.add(convertToSourceTable(m.getCatName(), sourceTable));
+      }
+    } else {
+      for (String fullyQualifiedName : m.getTablesUsed()) {
+        tablesUsed.add(convertToSourceTable(m.getCatName(), fullyQualifiedName));
+      }
     }
     return new MCreationMetadata(normalizeIdentifier(m.getCatName()),
             normalizeIdentifier(m.getDbName()), normalizeIdentifier(m.getTblName()),
-        tablesUsed, m.getValidTxnList(), System.currentTimeMillis());
+            tablesUsed, m.getValidTxnList(), System.currentTimeMillis());
+  }
+
+  private MMVSource convertToSourceTable(String catalog, SourceTable sourceTable) {
+    Table table = sourceTable.getTable();
+    MTable mtbl = getMTable(catalog, table.getDbName(), table.getTableName(), false).mtbl;
+    MMVSource source = new MMVSource();
+    source.setTable(mtbl);
+    source.setInsertedCount(sourceTable.getInsertedCount());
+    source.setUpdatedCount(sourceTable.getUpdatedCount());
+    source.setDeletedCount(sourceTable.getDeletedCount());
+    return source;
+  }
+
+  /**
+   * This method resets the stats to 0 and supports only backward compatibility with clients does not
+   * send {@link SourceTable} instances.
+   *
+   * Use {@link ObjectStore#convertToSourceTable(String, SourceTable)} instead.
+   *
+   * @param catalog Catalog name where source table is located
+   * @param fullyQualifiedTableName fully qualified name of source table
+   * @return {@link MMVSource} instance represents this source table.
+   */
+  @Deprecated
+  private MMVSource convertToSourceTable(String catalog, String fullyQualifiedTableName) {
+    String[] names = fullyQualifiedTableName.split("\\.");
+    MTable mtbl = getMTable(catalog, names[0], names[1], false).mtbl;
+    MMVSource source = new MMVSource();
+    source.setTable(mtbl);
+    source.setInsertedCount(0L);
+    source.setUpdatedCount(0L);
+    source.setDeletedCount(0L);
+    return source;
   }
 
   private CreationMetadata convertToCreationMetadata(MCreationMetadata s) throws MetaException {
@@ -3215,7 +3249,8 @@ public class ObjectStore implements RawStore, Configurable {
         try {
           return convertToParts(listMPartitions(catName, dbName, tblName, maxParts));
         } catch (Exception e) {
-          throw new MetaException(e.getMessage() + " " + org.apache.hadoop.hive.metastore.utils.StringUtils.stringifyException(e));
+          LOG.error("Failed to convert to parts", e);
+          throw new MetaException(e.getMessage());
         }
       }
     }.run(false);

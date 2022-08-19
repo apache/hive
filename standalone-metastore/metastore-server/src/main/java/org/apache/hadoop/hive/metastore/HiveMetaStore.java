@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
@@ -63,8 +62,10 @@ import org.apache.thrift.transport.TTransportFactory;
 
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -91,7 +92,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
 /**
  * TODO:pc remove application logic to a separate interface.
  */
@@ -398,16 +400,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Server thread pool
     // Start with minWorkerThreads, expand till maxWorkerThreads and reject
     // subsequent requests
-    final String threadPoolNamePrefix = "HiveMetastore-HttpHandler-Pool";
-    ExecutorService executorService = new ThreadPoolExecutor(
-        minWorkerThreads, maxWorkerThreads, 60, TimeUnit.SECONDS,
-        new SynchronousQueue<>(), new ThreadFactory() {
-      @Override
-      public Thread newThread(@NotNull Runnable r) {
-        Thread newThread = new Thread(r);
-        newThread.setName(threadPoolNamePrefix + ": Thread-" + newThread.getId());
-        return newThread;
-      }
+    // TODO: Add a config for keepAlive time of threads ?
+    ExecutorService executorService = new ThreadPoolExecutor(minWorkerThreads, maxWorkerThreads, 60L,
+        TimeUnit.SECONDS, new SynchronousQueue<>(), r -> {
+      Thread thread = new Thread(r);
+      thread.setDaemon(true);
+      thread.setName("Metastore-HttpHandler-Pool: Thread-" + thread.getId());
+      return thread;
     });
     ExecutorThreadPool threadPool = new ExecutorThreadPool((ThreadPoolExecutor) executorService);
     // HTTP Server
@@ -492,11 +491,30 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // Tons of stuff skipped as compared the HS2.
     // Sesions, XSRF, Compression, path configuration, etc.
     constraintHttpMethods(context, false);
-    server.setHandler(context);
 
     context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
-
-
+    // adding a listener on servlet request so as to clean up
+    // rawStore when http request is completed
+    context.addEventListener(new ServletRequestListener() {
+      @Override
+      public void requestDestroyed(ServletRequestEvent servletRequestEvent) {
+        Request baseRequest = Request.getBaseRequest(servletRequestEvent.getServletRequest());
+        HttpChannel channel = baseRequest.getHttpChannel();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("request: " + baseRequest + " destroyed " + ", http channel: " + channel);
+        }
+        HMSHandler.cleanupHandlerContext();
+      }
+      @Override
+      public void requestInitialized(ServletRequestEvent servletRequestEvent) {
+        Request baseRequest = Request.getBaseRequest(servletRequestEvent.getServletRequest());
+        HttpChannel channel = baseRequest.getHttpChannel();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("request: " + baseRequest + " initialized " + ", http channel: " + channel);
+        }
+      }
+    });
+    server.setHandler(context);
     return new ThriftServer() {
       @Override
       public void start() throws Throwable {

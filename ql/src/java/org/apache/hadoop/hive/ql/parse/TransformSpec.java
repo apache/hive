@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.Optional;
 
-public class PartitionTransformSpec {
+public class TransformSpec {
 
   public enum TransformType {
     IDENTITY, YEAR, MONTH, DAY, HOUR, TRUNCATE, BUCKET, VOID
@@ -29,10 +29,10 @@ public class PartitionTransformSpec {
   private TransformType transformType;
   private Optional<Integer> transformParam;
 
-  public PartitionTransformSpec() {
+  public TransformSpec() {
   }
 
-  public PartitionTransformSpec(String columnName, TransformType transformType, Optional<Integer> transformParam) {
+  public TransformSpec(String columnName, TransformType transformType, Optional<Integer> transformParam) {
     this.columnName = columnName;
     this.transformType = transformType;
     this.transformParam = transformParam;

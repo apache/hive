@@ -21,7 +21,6 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.List;
-import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.HistoryEntry;
 import org.apache.iceberg.Table;
 import org.junit.Assert;
@@ -50,10 +49,14 @@ public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngi
 
     Assert.assertEquals(4, rows.size());
 
-    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
-        "java.lang.IllegalArgumentException: Cannot find a snapshot older than 1970-01-01", () -> {
-        shell.executeStatement("SELECT * FROM customers FOR SYSTEM_TIME AS OF '1970-01-01 00:00:00'");
-        });
+    try {
+      shell.executeStatement("SELECT * FROM customers FOR SYSTEM_TIME AS OF '1970-01-01 00:00:00'");
+    } catch (Throwable e) {
+      while (e.getCause() != null) {
+        e = e.getCause();
+      }
+      Assert.assertTrue(e.getMessage().contains("Cannot find a snapshot older than 1970-01-01"));
+    }
   }
 
   @Test
@@ -73,10 +76,14 @@ public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngi
 
     Assert.assertEquals(4, rows.size());
 
-    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
-        "Cannot find snapshot with ID 1234", () -> {
-          shell.executeStatement("SELECT * FROM customers FOR SYSTEM_VERSION AS OF 1234");
-        });
+    try {
+      shell.executeStatement("SELECT * FROM customers FOR SYSTEM_VERSION AS OF 1234");
+    } catch (Throwable e) {
+      while (e.getCause() != null) {
+        e = e.getCause();
+      }
+      Assert.assertTrue(e.getMessage().contains("Cannot find snapshot with ID 1234"));
+    }
   }
 
   @Test

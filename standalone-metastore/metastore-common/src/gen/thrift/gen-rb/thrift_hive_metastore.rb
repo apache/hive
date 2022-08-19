@@ -3201,6 +3201,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'show_compact failed: unknown result')
     end
 
+    def submit_for_cleanup(o1, o2, o3)
+      send_submit_for_cleanup(o1, o2, o3)
+      return recv_submit_for_cleanup()
+    end
+
+    def send_submit_for_cleanup(o1, o2, o3)
+      send_message('submit_for_cleanup', Submit_for_cleanup_args, :o1 => o1, :o2 => o2, :o3 => o3)
+    end
+
+    def recv_submit_for_cleanup()
+      result = receive_message(Submit_for_cleanup_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'submit_for_cleanup failed: unknown result')
+    end
+
     def add_dynamic_partitions(rqst)
       send_add_dynamic_partitions(rqst)
       recv_add_dynamic_partitions()
@@ -6917,6 +6933,17 @@ module ThriftHiveMetastore
       result = Show_compact_result.new()
       result.success = @handler.show_compact(args.rqst)
       write_result(result, oprot, 'show_compact', seqid)
+    end
+
+    def process_submit_for_cleanup(seqid, iprot, oprot)
+      args = read_args(iprot, Submit_for_cleanup_args)
+      result = Submit_for_cleanup_result.new()
+      begin
+        result.success = @handler.submit_for_cleanup(args.o1, args.o2, args.o3)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'submit_for_cleanup', seqid)
     end
 
     def process_add_dynamic_partitions(seqid, iprot, oprot)
@@ -14947,6 +14974,44 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ShowCompactResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Submit_for_cleanup_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::CompactionRequest},
+      O2 => {:type => ::Thrift::Types::I64, :name => 'o2'},
+      O3 => {:type => ::Thrift::Types::I64, :name => 'o3'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Submit_for_cleanup_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

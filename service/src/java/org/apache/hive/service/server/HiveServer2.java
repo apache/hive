@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
+import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
@@ -438,7 +439,7 @@ public class HiveServer2 extends CompositeService {
     }
 
     // Add a shutdown hook for catching SIGTERM & SIGINT
-    ShutdownHookManager.addShutdownHook(() -> hiveServer2.stop());
+    ShutdownHookManager.addShutdownHook(() -> graceful_stop());
   }
 
   private void logCompactionParameters(HiveConf hiveConf) {
@@ -895,6 +896,54 @@ public class HiveServer2 extends CompositeService {
     }
   }
 
+  /**
+   * Decommission HiveServer2. As a consequence, SessionManager stops
+   * opening new sessions, OperationManager refuses running new queries and
+   * HiveServer2 deregisters itself from Zookeeper if service discovery is enabled,
+   * but the decommissioning has no effect on the current running queries.
+   */
+  public synchronized void decommission() {
+    LOG.info("Decommissioning HiveServer2");
+    // Remove this server instance from ZooKeeper if dynamic service discovery is set
+    if (zooKeeperHelper != null && !isDeregisteredWithZooKeeper()) {
+      try {
+        zooKeeperHelper.removeServerInstanceFromZooKeeper();
+      } catch (Exception e) {
+        LOG.error("Error removing znode for this HiveServer2 instance from ZooKeeper.", e);
+      }
+    }
+    super.decommission();
+  }
+
+  public synchronized void graceful_stop() {
+    try {
+      decommission();
+      long maxTimeForWait = HiveConf.getTimeVar(getHiveConf(),
+          HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS);
+
+      long timeout = maxTimeForWait, startTime = System.currentTimeMillis();
+      try {
+        // The service should be started before when reaches here, as decommissioning would throw
+        // IllegalStateException otherwise, so both cliService and sessionManager should not be null.
+        while (timeout > 0 && !getCliService().getSessionManager().getOperations().isEmpty()) {
+          // For gracefully stopping, sleeping some time while looping does not bring much overhead,
+          // that is, at most 100ms are wasted for waiting for OperationManager to be done,
+          // and this code path will only be executed when HS2 is being terminated.
+          Thread.sleep(Math.min(100, timeout));
+          timeout = maxTimeForWait + startTime - System.currentTimeMillis();
+        }
+      } catch (InterruptedException e) {
+        LOG.warn("Interrupted while waiting for all live operations to be done");
+        Thread.currentThread().interrupt();
+      }
+      LOG.info("Spent {}ms waiting for live operations to be done, current live operations: {}"
+          , System.currentTimeMillis() - startTime
+          , getCliService().getSessionManager().getOperations().size());
+    } finally {
+      stop();
+    }
+  }
+
   @Override
   public synchronized void stop() {
     LOG.info("Shutting down HiveServer2");
@@ -1168,7 +1217,6 @@ public class HiveServer2 extends CompositeService {
 
       // Logger debug message from "oproc" after log4j initialize properly
       LOG.debug(oproc.getDebugMessage().toString());
-
       // Call the executor which will execute the appropriate command based on the parsed options
       oprocResponse.getServerOptionsExecutor().execute();
     } catch (LogInitializationException e) {
@@ -1221,6 +1269,22 @@ public class HiveServer2 extends CompositeService {
         .withLongOpt("failover")
         .withDescription("Manually failover Active HS2 instance to passive standby mode")
         .create());
+      // --graceful_stop
+      options.addOption(OptionBuilder
+        .hasArgs(1)
+        .isRequired(false)
+        .withArgName("pid")
+        .withLongOpt("graceful_stop")
+        .withDescription("Gracefully stopping HS2 instance of" +
+            " 'pid'(default: $HIVE_CONF_DIR/hiveserver2.pid) in 'timeout'(default:1800) seconds.")
+        .create());
+      // --getHiveConf <key>
+      options.addOption(OptionBuilder
+        .hasArg(true)
+        .withArgName("key")
+        .withLongOpt("getHiveConf")
+        .withDescription("Get the value of key from HiveConf")
+        .create());
       options.addOption(new Option("H", "help", false, "Print help information"));
     }
 
@@ -1267,6 +1331,21 @@ public class HiveServer2 extends CompositeService {
           return new ServerOptionsProcessorResponse(new FailoverHS2InstanceExecutor(
             commandLine.getOptionValue("failover")
           ));
+        }
+
+        // Process --getHiveConf
+        if (commandLine.hasOption("getHiveConf")) {
+          return new ServerOptionsProcessorResponse(() -> {
+            String key = commandLine.getOptionValue("getHiveConf");
+            HiveConf hiveConf = new HiveConf();
+            HiveConf.ConfVars confVars = HiveConf.getConfVars(key);
+            String value = hiveConf.get(key);
+            if (confVars != null && confVars.getValidator() instanceof Validator.TimeValidator) {
+              Validator.TimeValidator validator = (Validator.TimeValidator) confVars.getValidator();
+              value = HiveConf.getTimeVar(hiveConf, confVars, validator.getTimeUnit()) + "";
+            }
+            System.out.println(key + "=" + value);
+          });
         }
       } catch (ParseException e) {
         // Error out & exit - we were not able to parse the args successfully

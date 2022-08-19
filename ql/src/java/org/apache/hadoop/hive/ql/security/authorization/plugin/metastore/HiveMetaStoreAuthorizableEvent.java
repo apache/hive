@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -69,6 +70,12 @@ public abstract class HiveMetaStoreAuthorizableEvent {
 
   protected HivePrivilegeObject getHivePrivilegeObjectLocalUri(String uri) {
     return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.LOCAL_URI, null, uri);
+  }
+
+  protected HivePrivilegeObject getHivePrivilegeObject(DataConnector connector) {
+    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATACONNECTOR, null,
+        connector.getName(), null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
+        connector.getOwnerName(), connector.getOwnerType());
   }
 
 }

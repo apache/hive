@@ -104,6 +104,29 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     super();
   }
 
+  private boolean moveFilesUsingManifestFile(FileSystem fs, Path sourcePath, Path targetPath)
+          throws HiveException, IOException {
+    if (work.isCTAS() && BlobStorageUtils.isBlobStorageFileSystem(conf, fs)) {
+      if (fs.exists(new Path(sourcePath, BLOB_MANIFEST_FILE))) {
+        LOG.debug("Attempting to copy using the paths available in {}", new Path(sourcePath, BLOB_MANIFEST_FILE));
+        ArrayList<String> filesKept;
+        try (FSDataInputStream inStream = fs.open(new Path(sourcePath, BLOB_MANIFEST_FILE))) {
+          String paths = IOUtils.toString(inStream, Charset.defaultCharset());
+          filesKept = new ArrayList(Arrays.asList(paths.split(System.lineSeparator())));
+        }
+        // Remove the first entry from the list, it is the source path.
+        Path srcPath = new Path(filesKept.remove(0));
+        LOG.info("Copying files {} from {} to {}", filesKept, srcPath, targetPath);
+        // Do the move using the filesKept now directly to the target dir.
+        Utilities.moveSpecifiedFilesInParallel(conf, fs, srcPath, targetPath, new HashSet<>(filesKept));
+        return true;
+      }
+      // Fallback case, in any case the _blob_files_kept isn't created, we can do the normal logic. The file won't
+      // be created in case of empty source table as well
+    }
+    return false;
+  }
+
   private void moveFile(Path sourcePath, Path targetPath, boolean isDfsDir)
       throws HiveException {
     try {
@@ -117,25 +140,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
       FileSystem fs = sourcePath.getFileSystem(conf);
 
-      if (work.isCTAS() && BlobStorageUtils.isBlobStorageFileSystem(conf, fs)) {
-        if (fs.exists(new Path(sourcePath, BLOB_MANIFEST_FILE))) {
-          LOG.debug("Attempting to copy using the paths available in {}", new Path(sourcePath, BLOB_MANIFEST_FILE));
-          ArrayList<String> filesKept;
-          try (FSDataInputStream inStream = fs.open(new Path(sourcePath, BLOB_MANIFEST_FILE))) {
-            String paths = IOUtils.toString(inStream, Charset.defaultCharset());
-            filesKept = new ArrayList(Arrays.asList(paths.split(System.lineSeparator())));
-          }
-          // Remove the first entry from the list, it is the source path.
-          Path srcPath = new Path(filesKept.remove(0));
-          LOG.info("Copying files {} from {} to {}", filesKept, srcPath, targetPath);
-          // Do the move using the filesKept now directly to the target dir.
-          Utilities.moveSpecifiedFilesInParallel(conf, fs, srcPath, targetPath, new HashSet<>(filesKept));
-          perfLogger.perfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
-          return;
-        }
-        // Fallback case, in any case the _blob_files_kept isn't created, we can do the normal logic. The file won't
-        // be created in case of empty source table as well
+      // if _blob_files_kept is present, use it to move the files. Else fall back to normal case.
+      if (moveFilesUsingManifestFile(fs, sourcePath, targetPath)) {
+        perfLogger.perfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
+        return;
       }
+
       if (isDfsDir) {
         moveFileInDfs (sourcePath, targetPath, conf);
       } else {
@@ -470,6 +480,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           // deal with dynamic partitions
           DynamicPartitionCtx dpCtx = tbd.getDPCtx();
           if (dpCtx != null && dpCtx.getNumDPCols() > 0) { // dynamic partitions
+            // if _blob_files_kept is present, use it to move the files to the target path
+            // before loading the partitions.
+            moveFilesUsingManifestFile(tbd.getSourcePath().getFileSystem(conf),
+                    tbd.getSourcePath(), dpCtx.getRootPath());
             dc = handleDynParts(db, table, tbd, ti, dpCtx);
           } else { // static partitions
             dc = handleStaticParts(db, table, tbd, ti);

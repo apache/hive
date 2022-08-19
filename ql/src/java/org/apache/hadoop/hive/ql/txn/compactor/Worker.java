@@ -18,9 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.util.concurrent.ScheduledExecutorService;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -28,7 +26,6 @@ import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
@@ -69,7 +66,6 @@ import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -201,36 +197,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       } catch (Throwable t) {
         LOG.error(ci + ": gatherStats(" + ci.dbname + "," + ci.tableName + "," + ci.partName +
                       ") failed due to: " + t.getMessage(), t);
-      }
-    }
-  }
-
-  static final class CompactionHeartbeater implements Runnable {
-    static final private Logger LOG = LoggerFactory.getLogger(CompactionHeartbeater.class);
-    private final CompactionTxn compactionTxn;
-    private final String tableName;
-    private final HiveConf conf;
-
-    public CompactionHeartbeater(CompactionTxn compactionTxn, String tableName, HiveConf conf) {
-      this.tableName = Objects.requireNonNull(tableName);
-      this.compactionTxn = Objects.requireNonNull(compactionTxn);
-      this.conf = Objects.requireNonNull(conf);
-    }
-
-    @Override
-    public void run() {
-      LOG.debug("Heartbeating compaction transaction id {} for table: {}", compactionTxn, tableName);
-      IMetaStoreClient msc = null;
-      try {
-        // Create a metastore client for each thread since it is not thread safe
-        msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
-        msc.heartbeat(compactionTxn.getTxnId(), compactionTxn.getLockId());
-      } catch (Exception e) {
-          LOG.error("Error while heartbeating transaction id {} for table: {}", compactionTxn, tableName, e);
-      } finally {
-        if (msc != null) {
-          msc.close();
-        }
       }
     }
   }
@@ -508,7 +474,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
         AcidMetricService.updateMetricsFromWorker(ci.dbname, ci.tableName, ci.partName, ci.type,
             dir.getCurrentDirectories().size(), dir.getDeleteDeltas().size(), conf, msc);
-
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
             ". Marking failed to avoid repeated failures", e);
@@ -535,7 +500,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     } catch (TException | IOException t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
+
       markFailed(ci, t.getMessage());
+
       if (msc != null) {
         msc.close();
         msc = null;
@@ -547,6 +514,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         perfLogger.perfLogEnd(CLASS_NAME, workerMetric);
       }
     }
+
     if (computeStats) {
       StatsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : t1.getOwner(),
               CompactorUtil.getCompactorJobQueueName(conf, ci, t1));
@@ -634,6 +602,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   }
 
   private void markFailed(CompactionInfo ci, String errorMessage) {
+    if (ci == null) {
+      LOG.warn("CompactionInfo client was null. Could not mark failed");
+      return;
+    }
     if (ci != null && StringUtils.isNotBlank(errorMessage)) {
       ci.errorMessage = errorMessage;
     }
@@ -669,13 +641,12 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   /**
    * Keep track of the compaction's transaction and its operations.
    */
-  private class CompactionTxn implements AutoCloseable {
+  class CompactionTxn implements AutoCloseable {
     private long txnId = 0;
     private long lockId = 0;
 
     private TxnStatus status = TxnStatus.UNKNOWN;
-    private boolean succeessfulCompaction = false;
-    private ScheduledExecutorService heartbeatExecutor;
+    private boolean successfulCompaction = false;
 
     /**
      * Try to open a new txn.
@@ -692,25 +663,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
             + "}, status {" + res.getState() + "}, reason {" + res.getErrorMessage() + "}");
       }
       lockId = res.getLockid();
-      heartbeatExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
-                .setPriority(Thread.MIN_PRIORITY)
-                .setDaemon(true)
-                .setNameFormat("CompactionTxnHeartbeater-" + txnId)
-                .build());
-      long txnTimeout = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
-      heartbeatExecutor.scheduleAtFixedRate(
-              new CompactionHeartbeater(this, TxnUtils.getFullTableName(ci.dbname, ci.tableName), conf),
-              txnTimeout / 4,
-              txnTimeout / 2,
-              TimeUnit.MILLISECONDS
-      );
+      CompactionHeartbeatService.getInstance(conf).startHeartbeat(txnId, lockId, TxnUtils.getFullTableName(ci.dbname, ci.tableName));
     }
 
     /**
      * Mark compaction as successful. This means the txn will be committed; otherwise it will be aborted.
      */
     void wasSuccessful() {
-      this.succeessfulCompaction = true;
+      this.successfulCompaction = true;
     }
 
     /**
@@ -718,10 +678,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
      * @throws Exception
      */
     @Override public void close() throws Exception {
-      //the transaction is about to close, we can stop heartbeating regardless of it's state
-      shutdownHeartbeater();
-      if (status != TxnStatus.UNKNOWN) {
-        if (succeessfulCompaction) {
+      if (status == TxnStatus.UNKNOWN) {
+        return;
+      }
+      try {
+        //the transaction is about to close, we can stop heartbeating regardless of it's state
+        CompactionHeartbeatService.getInstance(conf).stopHeartbeat(txnId);
+      } finally {
+        if (successfulCompaction) {
           commit();
         } else {
           abort();
@@ -729,27 +693,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     }
 
-    private void shutdownHeartbeater() {
-      if (heartbeatExecutor != null) {
-        heartbeatExecutor.shutdownNow();
-        try {
-          if (!heartbeatExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
-            LOG.warn("Heartbeating for transaction {} did not stop in 5 seconds, do not wait any longer.", this);
-          }
-        } catch (InterruptedException ex) {
-          //Caller thread was interrupted while waiting for heartbeater to terminate.
-          //Nothing to do, just restore the interrupted state.
-          Thread.currentThread().interrupt();
-        }
-      }
-    }
-
     long getTxnId() {
       return txnId;
-    }
-
-    long getLockId() {
-      return lockId;
     }
 
     @Override public String toString() {

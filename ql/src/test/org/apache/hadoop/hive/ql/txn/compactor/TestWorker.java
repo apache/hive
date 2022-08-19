@@ -25,9 +25,12 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
@@ -67,7 +70,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PATTERN;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * Tests for the worker thread and its MR jobs.
@@ -1006,6 +1012,18 @@ public class TestWorker extends CompactorTest {
     Assert.assertEquals(initiatorVersion, compacts.get(0).getInitiatorVersion());
     Assert.assertEquals(workerVersion, compacts.get(0).getWorkerVersion());
 
+  }
+
+  @Test
+  public void testFindNextCompactThrowsTException() throws Exception {
+    Worker worker = Mockito.spy(new Worker());
+    IMetaStoreClient msc = Mockito.mock(IMetaStoreClient.class);
+    Mockito.when(msc.findNextCompact(Mockito.any(FindNextCompactRequest.class))).thenThrow(MetaException.class);
+    worker.msc = msc;
+
+    worker.findNextCompactionAndExecute(true, true);
+
+    verify(msc, times(0)).markFailed(any());
   }
 
   @Test

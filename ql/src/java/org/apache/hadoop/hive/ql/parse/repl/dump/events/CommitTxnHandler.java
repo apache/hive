@@ -159,6 +159,13 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
       List<WriteEventInfo> writeEventInfoList = null;
       if (replicatingAcidEvents) {
         writeEventInfoList = getAllWriteEventInfo(withinContext);
+
+        if (ReplUtils.filterTransactionOperations(withinContext.hiveConf)
+           && (writeEventInfoList == null || writeEventInfoList.size() == 0)) {
+          // If optimizing transactions, no need to dump this one
+          // if there were no write events.
+          return;
+        }
       }
 
       int numEntry = (writeEventInfoList != null ? writeEventInfoList.size() : 0);

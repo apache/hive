@@ -1467,6 +1467,14 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function show_compact(\metastore\ShowCompactRequest $rqst);
     /**
+     * @param \metastore\CompactionRequest $o1
+     * @param int $o2
+     * @param int $o3
+     * @return bool
+     * @throws \metastore\MetaException
+     */
+    public function submit_for_cleanup(\metastore\CompactionRequest $o1, $o2, $o3);
+    /**
      * @param \metastore\AddDynamicPartitions $rqst
      * @throws \metastore\NoSuchTxnException
      * @throws \metastore\TxnAbortedException

@@ -2237,6 +2237,9 @@ public class HiveConf extends Configuration {
         "Whether to use former Java date/time APIs to convert between timezones when writing timestamps in " +
         "Parquet files. Once data are written to the file the effect is permanent (also reflected in the metadata)." +
         "Changing the value of this property affects only new data written to the file."),
+    HIVE_PARQUET_INFER_BINARY_AS("hive.parquet.infer.binary.as", "binary", new StringSet("binary", "string"),
+        "This setting controls what the parquet binary type gets inferred as by CREATE TABLE LIKE FILE. This is helpful " +
+        "since some systems specify the parquet schema for strings as binary."),
     HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION("hive.avro.timestamp.skip.conversion", false,
         "Some older Hive implementations (pre-3.1) wrote Avro timestamps in a UTC-normalized" +
         "manner, while from version 3.1 until now Hive wrote time zone agnostic timestamps. " +
@@ -3503,6 +3506,10 @@ public class HiveConf extends Configuration {
         "1. minimal : SELECT STAR, FILTER on partition columns, LIMIT only\n" +
         "2. more    : SELECT, FILTER, LIMIT only (support TABLESAMPLE and virtual columns)"
     ),
+    HIVEFETCHTASKCACHING("hive.fetch.task.caching", true,
+        "Enabling the caching of the result of fetch tasks eliminates the chance of running into a failing read." +
+            " On the other hand, if enabled, the hive.fetch.task.conversion.threshold must be adjusted accordingly. That" +
+            " is 1GB by default which must be lowered in case of enabled caching to prevent the consumption of too much memory."),
     HIVEFETCHTASKCONVERSIONTHRESHOLD("hive.fetch.task.conversion.threshold", 1073741824L,
         "Input threshold for applying hive.fetch.task.conversion. If target table is native, input length\n" +
         "is calculated by summation of file lengths. If it's not native, storage handler for the table\n" +
@@ -3652,6 +3659,10 @@ public class HiveConf extends Configuration {
         "org.apache.hive.hcatalog.api.repl.exim.EximReplicationTaskFactory",
         "Parameter that can be used to override which ReplicationTaskFactory will be\n" +
         "used to instantiate ReplicationTask events. Override for third party repl plugins"),
+    REPL_FILTER_TRANSACTIONS("hive.repl.filter.transactions", false,
+            "Enable transaction event filtering to save dump space.\n" +
+                    "When true, transactions are implicitly opened during REPL DUMP.\n" +
+                    "The default setting is false"),
     HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS("hive.mapper.cannot.span.multiple.partitions", false, ""),
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false,
         "should rework the mapred work or not.\n" +
@@ -4239,6 +4250,9 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_AUTHENTICATION_JWT_JWKS_URL("hive.server2.authentication.jwt.jwks.url", "",
         "URL of the file from where URLBasedJWKSProvider will try to load JWKS if JWT is enabled for the\n" +
         "authentication mode."),
+    HIVE_SERVER2_AUTHENTICATION_JWT_JWKS_SKIP_SSL_CERT("hive.server2.authentication.jwt.jwks.skip.ssl.cert", false,
+        "When this is enabled, the SSL certificate verification will be skipped.\n" +
+        "This is meant to be used in a testing environment only. Do not use in production."),
 
     // HS2 SAML2.0 configuration
     HIVE_SERVER2_SAML_KEYSTORE_PATH("hive.server2.saml2.keystore.path", "",
@@ -4396,6 +4410,10 @@ public class HiveConf extends Configuration {
         "If set, this configuration property should provide a comma-separated list of URLs that indicates the type and " +
         "location of providers to be used by hadoop credential provider API. It provides HiveServer2 the ability to provide job-specific " +
         "credential providers for jobs run using Tez, MR execution engines."),
+    HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT("hive.server2.graceful.stop.timeout", "1800s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Maximum time waiting for the current live operations being finished before shutting down HiveServer2 gracefully.\n" +
+        "  With value less than or equal to 0, it does not check for the operations regardless of state to shut down HiveServer2."),
     HIVE_MOVE_FILES_THREAD_COUNT("hive.mv.files.thread", 15, new  SizeValidator(0L, true, 1024L, true), "Number of threads"
          + " used to move files in move task. Set it to 0 to disable multi-threaded file moves. This parameter is also used by"
          + " MSCK to check tables."),
@@ -4629,6 +4647,9 @@ public class HiveConf extends Configuration {
             + "numRows,impala_.*chunk.*   comma separated and mixed (handles strings and regexes at the same time)"),
     HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true,
         "Whether to generate the splits locally or in the AM (tez only)"),
+    HIVE_SPLITS_AVAILABLE_SLOTS_CALCULATOR_CLASS("hive.splits.available.slots.calculator.class.name",
+        "org.apache.hadoop.hive.ql.exec.tez.TezAvailableSlotsCalculator",
+        "Class to use for calculating available slots during split generation"),
     HIVE_TEZ_GENERATE_CONSISTENT_SPLITS("hive.tez.input.generate.consistent.splits", true,
         "Whether to generate consistent split locations when generating splits in the AM"),
     HIVE_PREWARM_ENABLED("hive.prewarm.enabled", false, "Enables container prewarm for Tez(Hadoop 2 only)"),
@@ -4678,7 +4699,7 @@ public class HiveConf extends Configuration {
     HIVE_ACID_DIRECT_INSERT_ENABLED("hive.acid.direct.insert.enabled", true,
         "Enable writing the data files directly to the table's final destination instead of the staging directory."
         + "This optimization only applies on INSERT operations on ACID tables."),
-    TXN_CTAS_X_LOCK("hive.txn.xlock.ctas", false,
+    TXN_CTAS_X_LOCK("hive.txn.xlock.ctas", true,
         "Enables exclusive locking for CTAS operations."),
     // role names are case-insensitive
     USERS_IN_ADMIN_ROLE("hive.users.in.admin.role", "", false,
@@ -5448,6 +5469,7 @@ public class HiveConf extends Configuration {
             "hive.server2.authentication.ldap.groupClassKey," +
             "hive.server2.authentication.ldap.customLDAPQuery," +
             "hive.server2.service.users," +
+            "hive.server2.graceful.stop.timeout," +
             "hive.privilege.synchronizer," +
             "hive.privilege.synchronizer.interval," +
             "hive.query.max.length," +

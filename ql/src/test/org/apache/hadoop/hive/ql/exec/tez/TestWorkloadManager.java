@@ -1260,6 +1260,7 @@ public class TestWorkloadManager {
     assertEquals("B", sessionA4.getPoolName());
   }
 
+  @org.junit.Ignore("HIVE-26364")
   @Test(timeout=10000)
   public void testAsyncSessionInitFailures() throws Exception {
     final HiveConf conf = createConf();

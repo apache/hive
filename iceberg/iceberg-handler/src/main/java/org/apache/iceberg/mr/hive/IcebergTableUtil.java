@@ -25,7 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.PartitionSpec;
@@ -77,8 +77,12 @@ public class IcebergTableUtil {
   static Table getTable(Configuration configuration, Properties properties) {
     String metaTable = properties.getProperty("metaTable");
     String tableName = properties.getProperty(Catalogs.NAME);
+    String location = properties.getProperty(Catalogs.LOCATION);
     if (metaTable != null) {
+      // HiveCatalog, HadoopCatalog uses NAME to identify the metadata table
       properties.setProperty(Catalogs.NAME, tableName + "." + metaTable);
+      // HadoopTable uses LOCATION to identify the metadata table
+      properties.setProperty(Catalogs.LOCATION, location + "#" + metaTable);
     }
 
     String tableIdentifier = properties.getProperty(Catalogs.NAME);
@@ -94,15 +98,15 @@ public class IcebergTableUtil {
 
   /**
    * Create {@link PartitionSpec} based on the partition information stored in
-   * {@link PartitionTransformSpec}.
+   * {@link TransformSpec}.
    * @param configuration a Hadoop configuration
    * @param schema iceberg table schema
    * @return iceberg partition spec, always non-null
    */
   public static PartitionSpec spec(Configuration configuration, Schema schema) {
-    List<PartitionTransformSpec> partitionTransformSpecList = SessionStateUtil
+    List<TransformSpec> partitionTransformSpecList = SessionStateUtil
             .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
-        .map(o -> (List<PartitionTransformSpec>) o).orElseGet(() -> null);
+        .map(o -> (List<TransformSpec>) o).orElseGet(() -> null);
 
     if (partitionTransformSpecList == null) {
       LOG.debug("Iceberg partition transform spec is not found in QueryState.");
@@ -150,9 +154,9 @@ public class IcebergTableUtil {
     UpdatePartitionSpec updatePartitionSpec = table.updateSpec().caseSensitive(false);
     table.spec().fields().forEach(field -> updatePartitionSpec.removeField(field.name()));
 
-    List<PartitionTransformSpec> partitionTransformSpecList = SessionStateUtil
+    List<TransformSpec> partitionTransformSpecList = SessionStateUtil
         .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
-        .map(o -> (List<PartitionTransformSpec>) o).orElseGet(() -> null);
+        .map(o -> (List<TransformSpec>) o).orElseGet(() -> null);
 
     partitionTransformSpecList.forEach(spec -> {
       switch (spec.getTransformType()) {

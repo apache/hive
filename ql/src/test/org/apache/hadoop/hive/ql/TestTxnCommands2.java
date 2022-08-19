@@ -29,9 +29,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -56,6 +61,8 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.ql.ddl.DDLTask;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
@@ -63,6 +70,11 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionContext;
+import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
+import org.apache.hadoop.hive.ql.schq.MockScheduledQueryService;
+import org.apache.hadoop.hive.ql.schq.TestScheduledQueryService;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorMR;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.apache.hadoop.io.Writable;
@@ -70,11 +82,18 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.orc.OrcFile;
 import org.apache.orc.Reader;
 import org.apache.orc.TypeDescription;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.rules.ExpectedException;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -3080,6 +3099,73 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
   }
 
+  public static Stream<Arguments> generateBooleanArgs() {
+    // Generates the required boolean input for the 20 test cases
+    return IntStream.concat(IntStream.range(0, 16), IntStream.range(24, 28)).mapToObj(i ->
+            Arguments.of((i & 1) == 0, ((i >>> 1) & 1) == 0, ((i >>> 2) & 1) == 0,
+                    ((i >>> 3) & 1) == 0, ((i >>> 4) & 1) == 0));
+  }
+
+  @ParameterizedTest
+  @MethodSource("generateBooleanArgs")
+  public void testFailureScenariosCleanupCTAS(boolean isPartitioned,
+                                         boolean isDirectInsertEnabled,
+                                         boolean isLocklessReadsEnabled,
+                                         boolean isLocationUsed,
+                                         boolean isExclusiveCtas) throws Exception {
+    String tableName = "atable";
+
+    //Set configurations
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_ACID_DIRECT_INSERT_ENABLED, isDirectInsertEnabled);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, isLocklessReadsEnabled);
+    hiveConf.setBoolVar(HiveConf.ConfVars.TXN_CTAS_X_LOCK, isExclusiveCtas);
+
+    // Add a '1' at the end of table name for custom location.
+    String querylocation = (isLocationUsed) ? " location '" + getWarehouseDir() + "/" + tableName + "1'" : "";
+    String queryPartitions = (isPartitioned) ? " partitioned by (a)" : "";
+
+    d.run("insert into " + Table.ACIDTBL + "(a,b) values (3,4)");
+    d.run("drop table if exists " + tableName);
+    d.compileAndRespond("create table " + tableName + queryPartitions + " stored as orc" + querylocation +
+            " tblproperties ('transactional'='true') as select * from " + Table.ACIDTBL);
+    long txnId = d.getQueryState().getTxnManager().getCurrentTxnId();
+    mockTasksRecursively(d.getPlan().getRootTasks());
+    int assertError = 0;
+    try {
+      d.run();
+    } catch (Exception e) {
+      assertError = 1;
+    }
+
+    runCleaner(hiveConf);
+
+    Assert.assertEquals(assertError, 1);
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    String assertLocation = (isLocationUsed) ? getWarehouseDir() + "/" + tableName + "1" :
+            ((isLocklessReadsEnabled) ? getWarehouseDir() + "/" + tableName + AcidUtils.getPathSuffix(txnId)
+                    : getWarehouseDir() + "/" + tableName);
+
+    FileStatus[] fileStatuses = fs.globStatus(new Path(assertLocation + "/*"));
+    for (FileStatus fileStatus : fileStatuses) {
+      Assert.assertFalse(fileStatus.getPath().getName().startsWith(AcidUtils.DELTA_PREFIX));
+    }
+  }
+
+  public void mockTasksRecursively(List<Task<?>> tasks) {
+    for (int i = 0;i < tasks.size();i++) {
+      Task<?> task = tasks.get(i);
+      if (task instanceof DDLTask) {
+        DDLTask ddltask = Mockito.spy(new DDLTask());
+        Mockito.doThrow(new RuntimeException()).when(ddltask).execute();
+        tasks.set(i, ddltask);
+      }
+      if (task.getNumChild() != 0) {
+        mockTasksRecursively(task.getChildTasks());
+      }
+    }
+  }
+
   /**
    * This tests that delete_delta_x_y dirs will be not produced during minor compaction if no input delete events.
    * See HIVE-20941.
@@ -3103,6 +3189,79 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     for(FileStatus fileStatus : fileStatuses) {
       Assert.assertFalse(fileStatus.getPath().getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX));
     }
+  }
+
+  @Test
+  public void testNoTxnComponentsForScheduledQueries() throws Exception {
+    String tableName = "scheduledquerytable";
+    int[][] tableData = {{1, 2},{3, 4}};
+    runStatementOnDriver("create table " + tableName + " (a int, b int) stored as orc tblproperties ('transactional'='true')");
+
+    int noOfTimesScheduledQueryExecuted = 4;
+
+    // Logic for executing scheduled queries multiple times.
+    for (int index = 0;index < noOfTimesScheduledQueryExecuted;index++) {
+      ExecutorService executor =
+              Executors.newCachedThreadPool(new ThreadFactoryBuilder().setDaemon(true)
+                      .setNameFormat("Scheduled queries for transactional tables").build());
+
+      // Mock service which initialises the query for execution.
+      MockScheduledQueryService qService = new
+              MockScheduledQueryService("insert into " + tableName + " (a,b) " + makeValuesClause(tableData));
+      ScheduledQueryExecutionContext ctx = new ScheduledQueryExecutionContext(executor, hiveConf, qService);
+
+      // Start the scheduled query execution.
+      try (ScheduledQueryExecutionService sQ = ScheduledQueryExecutionService.startScheduledQueryExecutorService(ctx)) {
+        // Wait for the scheduled query to finish. Hopefully 30 seconds should be more than enough.
+        SessionState.getConsole().logInfo("Waiting for query execution to finish ...");
+        synchronized (qService.notifier) {
+          qService.notifier.wait(30000);
+        }
+        SessionState.getConsole().logInfo("Done waiting for query execution!");
+      }
+
+      assertThat(qService.lastProgressInfo.isSetExecutorQueryId(), is(true));
+      assertThat(qService.lastProgressInfo.getExecutorQueryId(),
+              Matchers.containsString(ctx.executorHostName + "/"));
+    }
+
+    // Check whether the table has delta files corresponding to the number of scheduled executions.
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] fileStatuses = fs.globStatus(new Path(getWarehouseDir() + "/" + tableName + "/*"));
+    Assert.assertEquals(fileStatuses.length, noOfTimesScheduledQueryExecuted);
+    for(FileStatus fileStatus : fileStatuses) {
+      Assert.assertTrue(fileStatus.getPath().getName().startsWith(AcidUtils.DELTA_PREFIX));
+    }
+
+    // Check whether the COMPLETED_TXN_COMPONENTS table has records with
+    // '__global_locks' database and associate writeId corresponding to the
+    // number of scheduled executions.
+    Assert.assertEquals(TestTxnDbUtil.countQueryAgent(hiveConf,
+            "select count(*) from completed_txn_components" +
+            " where ctc_database='__global_locks'"),
+            0);
+
+    // Compact the table which has inserts from the scheduled query.
+    runStatementOnDriver("alter table " + tableName + " compact 'major'");
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+
+    // Run AcidHouseKeeperService to cleanup the COMPLETED_TXN_COMPONENTS.
+    MetastoreTaskThread houseKeeper = new AcidHouseKeeperService();
+    houseKeeper.setConf(hiveConf);
+    houseKeeper.run();
+
+    // Check whether the table is compacted.
+    fileStatuses = fs.globStatus(new Path(getWarehouseDir() + "/" + tableName + "/*"));
+    Assert.assertEquals(fileStatuses.length, 1);
+    for(FileStatus fileStatus : fileStatuses) {
+      Assert.assertTrue(fileStatus.getPath().getName().startsWith(AcidUtils.BASE_PREFIX));
+    }
+
+    // Check whether the data in the table is correct.
+    int[][] actualData = {{1,2}, {1,2}, {1,2}, {1,2}, {3,4}, {3,4}, {3,4}, {3,4}};
+    List<String> resData = runStatementOnDriver("select a,b from " + tableName + " order by a");
+    Assert.assertEquals(resData, stringifyValues(actualData));
   }
 
   /**

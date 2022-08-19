@@ -22,7 +22,6 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
@@ -135,7 +134,7 @@ public class HiveSchemaTool extends MetastoreSchemaTool {
         .create("metaDbType");
     additionalGroup.addOption(metaDbTypeOpt);
     System.setProperty(MetastoreConf.ConfVars.SCHEMA_VERIFICATION.getVarname(), "true");
-    System.exit(tool.run(System.getenv("HIVE_HOME"), args, additionalGroup,
-        new HiveConf(HiveSchemaTool.class)));
+    System.exit(tool.run(findHomeDir(), args, additionalGroup,
+        MetastoreConf.newMetastoreConf()));
   }
 }

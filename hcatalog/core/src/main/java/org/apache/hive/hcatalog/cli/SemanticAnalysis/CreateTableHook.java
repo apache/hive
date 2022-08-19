@@ -64,16 +64,13 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
     // Analyze and create tbl properties object
     int numCh = ast.getChildCount();
 
-    tableName = BaseSemanticAnalyzer.getUnescapedName((ASTNode) ast
-      .getChild(0));
-    boolean likeTable = false;
+    tableName = BaseSemanticAnalyzer.getUnescapedName((ASTNode) ast.getChild(0));
     StorageFormat format = new StorageFormat(context.getConf());
 
     for (int num = 1; num < numCh; num++) {
       ASTNode child = (ASTNode) ast.getChild(num);
       if (format.fillStorageFormat(child)) {
-        if (org.apache.commons.lang3.StringUtils
-            .isNotEmpty(format.getStorageHandler())) {
+        if (StringUtils.isNotEmpty(format.getStorageHandler())) {
             return ast;
         }
         continue;
@@ -86,10 +83,6 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
             "Select is not a valid operation.");
 
       case HiveParser.TOK_ALTERTABLE_BUCKETS:
-        break;
-
-      case HiveParser.TOK_LIKETABLE:
-        likeTable = true;
         break;
 
       case HiveParser.TOK_IFNOTEXISTS:
@@ -119,11 +112,6 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
         }
         break;
       }
-    }
-
-    if (!likeTable && (format.getInputFormat() == null || format.getOutputFormat() == null)) {
-      throw new SemanticException(
-        "STORED AS specification is either incomplete or incorrect.");
     }
 
     return ast;

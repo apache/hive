@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DeleteFile;
-import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.GenericRecord;
@@ -44,10 +43,10 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
   private final GenericRecord rowDataTemplate;
 
   HiveIcebergDeleteWriter(Schema schema, Map<Integer, PartitionSpec> specs,
-      FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileFormat fileFormat, FileIO io,
+      FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io,
       long targetFileSize) {
     super(schema, specs, io,
-        new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, fileFormat, targetFileSize));
+        new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, targetFileSize));
     rowDataTemplate = GenericRecord.create(schema);
   }
 

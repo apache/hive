@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import static org.apache.hadoop.hive.ql.hooks.Entity.Type.PARTITION;
+import static org.apache.hadoop.hive.ql.hooks.Entity.Type.TABLE;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERDATABASE;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERDATABASE_OWNER;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERPARTITION_BUCKETNUM;
@@ -487,7 +489,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     private List<String> getTablesFromEntitySet(Set<? extends Entity> entities) {
       List<String> tableNames = new ArrayList<>();
       for (Entity entity : entities) {
-        if (entity.getType() == Entity.Type.TABLE) {
+        if (entity.getType() == TABLE || entity.getType() == PARTITION) {
           tableNames.add(entity.getTable().getDbName() + "." + entity.getTable().getTableName());
         }
       }

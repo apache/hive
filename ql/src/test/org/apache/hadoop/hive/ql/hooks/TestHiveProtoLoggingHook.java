@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.hooks;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +33,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
@@ -43,6 +47,8 @@ import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.HiveHookEventProto;
 import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
@@ -121,6 +127,16 @@ public class TestHiveProtoLoggingHook {
     assertOtherInfo(event, OtherInfoType.HIVE_ADDRESS, "hive_addr");
     assertOtherInfo(event, OtherInfoType.CONF, null);
     assertOtherInfo(event, OtherInfoType.QUERY, null);
+  }
+
+  @Test
+  public void testNonPartionedTable() throws Exception {
+    testTablesWritten(new WriteEntity(newTable(false), WriteEntity.WriteType.INSERT), false);
+  }
+
+  @Test
+  public void testPartitionedTable() throws Exception {
+    testTablesWritten(addPartitionOutput(newTable(true), WriteEntity.WriteType.INSERT), true);
   }
 
   @Test
@@ -322,4 +338,63 @@ public class TestHiveProtoLoggingHook {
       Assert.assertEquals(value, val);
     }
   }
+
+  private void testTablesWritten(WriteEntity we, boolean isPartitioned) throws Exception {
+    String query = isPartitioned ?
+            "insert into test_partition partition(dt = '20220102', lable = 'test1') values('20220103', 'banana');" :
+            "insert into default.testTable1 values('ab')";
+    HashSet<WriteEntity> tableWritten = new HashSet<>();
+    tableWritten.add(we);
+    QueryState state = new QueryState.Builder().withHiveConf(conf).build();
+    @SuppressWarnings("serial")
+    QueryPlan queryPlan = new QueryPlan(HiveOperation.QUERY) {
+    };
+    queryPlan.setQueryId("test_queryId");
+    queryPlan.setQueryStartTime(1234L);
+    queryPlan.setQueryString(query);
+    queryPlan.setRootTasks(new ArrayList<>());
+    queryPlan.setInputs(new HashSet<>());
+    queryPlan.setOutputs(tableWritten);
+    PerfLogger perf = PerfLogger.getPerfLogger(conf, true);
+    HookContext ctx = new HookContext(queryPlan, state, null, "test_user", "192.168.10.11",
+            "hive_addr", "test_op_id", "test_session_id", "test_thread_id", true, perf, null);
+
+    ctx.setHookType(HookType.PRE_EXEC_HOOK);
+    EventLogger evtLogger = new EventLogger(conf, SystemClock.getInstance());
+    evtLogger.handle(ctx);
+    evtLogger.shutdown();
+
+    HiveHookEventProto event = loadEvent(conf, tmpFolder);
+
+    Assert.assertEquals(EventType.QUERY_SUBMITTED.name(), event.getEventType());
+    Assert.assertEquals(we.getTable().getFullyQualifiedName(), event.getTablesWritten(0));
+  }
+
+  private Table newTable(boolean isPartitioned) {
+    Table t = new Table("default", "testTable");
+    if (isPartitioned) {
+      FieldSchema fs = new FieldSchema();
+      fs.setName("version");
+      fs.setType("String");
+      List<FieldSchema> partCols = new ArrayList<FieldSchema>(1);
+      partCols.add(fs);
+      t.setPartCols(partCols);
+    }
+    Map<String, String> tblProps = t.getParameters();
+    if (tblProps == null) {
+      tblProps = new HashMap<>();
+    }
+    tblProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
+    t.setParameters(tblProps);
+    return t;
+  }
+
+  private WriteEntity addPartitionOutput(Table t, WriteEntity.WriteType writeType) throws Exception {
+    Map<String, String> partSpec = new HashMap<String, String>();
+    partSpec.put("version", Integer.toString(1));
+    Partition p = new Partition(t, partSpec, new Path("/dev/null"));
+    WriteEntity we = new WriteEntity(p, writeType);
+    return we;
+  }
+
 }

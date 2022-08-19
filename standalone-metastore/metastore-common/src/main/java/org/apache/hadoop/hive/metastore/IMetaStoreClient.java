@@ -808,15 +808,8 @@ public interface IMetaStoreClient {
   /**
    * Returns the invalidation information for the materialized views given as input.
    */
-  Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
-      throws MetaException, InvalidOperationException, UnknownDBException, TException;
-
-  @Deprecated
-  /**
-   * Use {@link IMetaStoreClient#getMaterializationInvalidationInfo(CreationMetadata)} instead.
-   */
   Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
-      throws MetaException, InvalidOperationException, UnknownDBException, TException;
+          throws MetaException, InvalidOperationException, UnknownDBException, TException;
 
   /**
    * Updates the creation metadata for the materialized view.
@@ -3477,6 +3470,19 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   ShowCompactResponse showCompactions() throws TException;
+
+  /**
+   * Submit a request for performing cleanup of output directory. This is particularly
+   * useful for CTAS when the query fails after write and before creation of table.
+   * @return Status of whether the request was successfully submitted. True indicates
+   * the request was successfully submitted and false indicates failure of request submitted.
+   * @param rqst Request containing the table directory which needs to be cleaned up.
+   * @param highestWriteId The highest write ID that was used while writing the table directory.
+   * @param txnId The transaction ID of the query.
+   * @throws TException
+   */
+  boolean submitForCleanup(CompactionRequest rqst, long highestWriteId,
+                           long txnId) throws TException;
 
   /**
    * Get one latest record of SUCCEEDED or READY_FOR_CLEANING compaction for a table/partition.

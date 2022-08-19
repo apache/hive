@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.DatabaseFilterContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.filtercontext.TableFilterContext;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -230,6 +231,11 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   public final List<String> filterPartitionNames(String s, String s1, String s2, List<String> list)
       throws MetaException {
     return list;
+  }
+
+  @Override
+  public List<String> filterDataConnectors(List<String> dcList) throws MetaException {
+    return dcList;
   }
 
   private List<String> filterDatabaseObjects(HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo) throws MetaException {
@@ -428,6 +434,15 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
         case DROP_FUNCTION:
           authzEvent = new DropFunctionEvent(preEventContext);
           break;
+        case CREATE_DATACONNECTOR:
+          authzEvent = new CreateDataConnectorEvent(preEventContext);
+          break;
+        case ALTER_DATACONNECTOR:
+          authzEvent = new AlterDataConnectorEvent(preEventContext);
+          break;
+        case DROP_DATACONNECTOR:
+          authzEvent = new DropDataConnectorEvent(preEventContext);
+          break;
         case AUTHORIZATION_API_CALL:
         case READ_ISCHEMA:
         case CREATE_ISCHEMA:
@@ -489,6 +504,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   boolean isSuperUser(String userName) {
     Configuration conf      = getConf();
     String        ipAddress = HMSHandler.getIPAddress();
+    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
     return (MetaStoreServerUtils.checkUserHasHostProxyPrivileges(userName, conf, ipAddress));
   }
 

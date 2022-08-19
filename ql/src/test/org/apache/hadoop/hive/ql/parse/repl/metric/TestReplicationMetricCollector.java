@@ -45,7 +45,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareOnlyThisForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -59,13 +62,19 @@ import static org.junit.Assert.assertTrue;
 /**
  * Unit Test class for In Memory Replication Metric Collection.
  */
-@RunWith(MockitoJUnitRunner.class)
+
+@PowerMockIgnore({ "javax.*", "com.sun.*", "org.w3c.*" })
+@PrepareOnlyThisForTest({MetricSink.class})
+@RunWith(PowerMockRunner.class)
 public class TestReplicationMetricCollector {
 
   HiveConf conf;
 
   @Mock
   private FailoverMetaData fmd;
+
+  @Mock
+  private MetricSink metricSinkInstance;
 
   @Before
   public void setup() throws Exception {
@@ -75,6 +84,12 @@ public class TestReplicationMetricCollector {
     MetricCollector.getInstance().init(conf);
     Mockito.when(fmd.getFailoverEventId()).thenReturn(10L);
     Mockito.when(fmd.getFilePath()).thenReturn("dummyDir");
+    disableBackgroundThreads();
+  }
+
+  private void disableBackgroundThreads() {
+    PowerMockito.mockStatic(MetricSink.class);
+    Mockito.when(MetricSink.getInstance()).thenReturn(metricSinkInstance);
   }
 
   @After

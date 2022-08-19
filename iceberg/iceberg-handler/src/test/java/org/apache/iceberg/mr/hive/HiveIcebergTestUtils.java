@@ -261,8 +261,17 @@ public class HiveIcebergTestUtils {
     sortedActual.sort(Comparator.comparingInt(record -> record.get(sortBy).hashCode()));
 
     Assert.assertEquals(sortedExpected.size(), sortedActual.size());
-    for (int i = 0; i < sortedExpected.size(); ++i) {
-      assertEquals(sortedExpected.get(i), sortedActual.get(i));
+    validateData(sortedExpected, sortedActual);
+  }
+
+  /**
+   * Validates whether the 2 sets of records are the same.
+   * @param expected The expected list of Records
+   * @param actual The actual list of Records
+   */
+  public static void validateData(List<Record> expected, List<Record> actual) {
+    for (int i = 0; i < expected.size(); ++i) {
+      assertEquals(expected.get(i), actual.get(i));
     }
   }
 

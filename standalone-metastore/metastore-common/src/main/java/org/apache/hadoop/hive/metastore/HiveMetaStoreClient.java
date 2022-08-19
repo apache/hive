@@ -562,17 +562,23 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (hook != null) {
       hook.preAlterTable(new_tbl, envContext);
     }
-    AlterTableRequest req = new AlterTableRequest(dbName, tbl_name, new_tbl);
-    req.setCatName(catName);
-    req.setValidWriteIdList(validWriteIds);
-    req.setEnvironmentContext(envContext);
-    if (processorCapabilities != null) {
-      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-      req.setProcessorIdentifier(processorIdentifier);
-    }
     boolean success = false;
     try {
-      client.alter_table_req(req);
+      boolean skipAlter = envContext != null && envContext.getProperties() != null &&
+              Boolean.valueOf(envContext.getProperties().getOrDefault(HiveMetaHook.SKIP_METASTORE_ALTER, "false"));
+      if (!skipAlter) {
+        AlterTableRequest req = new AlterTableRequest(dbName, tbl_name, new_tbl);
+        req.setCatName(catName);
+        req.setValidWriteIdList(validWriteIds);
+        req.setEnvironmentContext(envContext);
+        if (processorCapabilities != null) {
+          req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+          req.setProcessorIdentifier(processorIdentifier);
+        }
+
+        client.alter_table_req(req);
+      }
+
       if (hook != null) {
         hook.commitAlterTable(new_tbl, envContext);
       }
@@ -1336,7 +1342,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    */
   @Override
   public List<String> getAllDataConnectorNames() throws MetaException, TException {
-    return client.get_dataconnectors();
+    List<String> connectorNames = client.get_dataconnectors();
+    return FilterUtils.filterDataConnectorsIfEnabled(isClientFilterEnabled, filterHook, connectorNames);
   }
 
   /**
@@ -2704,13 +2711,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
   }
 
-  public Materialization getMaterializationInvalidationInfo(CreationMetadata cm)
-      throws MetaException, InvalidOperationException, UnknownDBException, TException {
-    return client.get_materialization_invalidation_info(cm, null);
-  }
-
+  @Override
   public Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
-      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+          throws MetaException, InvalidOperationException, UnknownDBException, TException {
     return client.get_materialization_invalidation_info(cm, validTxnList);
   }
 
@@ -4187,6 +4190,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     response.setCompacts(FilterUtils.filterCompactionsIfEnabled(isClientFilterEnabled,
             filterHook, getDefaultCatalog(conf), response.getCompacts()));
     return response;
+  }
+
+  @Override
+  public boolean submitForCleanup(CompactionRequest rqst, long highestWriteId,
+                                  long txnId) throws TException {
+    return client.submit_for_cleanup(rqst, highestWriteId, txnId);
   }
 
   @Override

@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExpireSnapshotsSpec;
+import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -40,6 +42,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import java.time.ZoneId;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.EXPIRE_SNAPSHOT;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.ROLLBACK;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec.RollbackType.TIME;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec.RollbackType.VERSION;
@@ -72,11 +75,21 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
         ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
             .getLocalTimeZone();
         TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(child.getText()), timeZone);
-        spec = new AlterTableExecuteSpec(ROLLBACK, new AlterTableExecuteSpec.RollbackSpec(TIME, time.toEpochMilli()));
+        spec = new AlterTableExecuteSpec(ROLLBACK, new RollbackSpec(TIME, time.toEpochMilli()));
       } else {
-        spec = new AlterTableExecuteSpec(ROLLBACK, new AlterTableExecuteSpec.RollbackSpec(VERSION,
+        spec = new AlterTableExecuteSpec(ROLLBACK, new RollbackSpec(VERSION,
             Long.valueOf(child.getText())));
       }
+      desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+    } else if (HiveParser.KW_EXPIRE_SNAPSHOTS == executeCommandType.getType()) {
+      AlterTableExecuteSpec<AlterTableExecuteSpec.ExpireSnapshotsSpec> spec;
+      // the second child must be the rollback parameter
+      ASTNode child = (ASTNode) command.getChild(1);
+
+      ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
+          .getLocalTimeZone();
+      TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(child.getText()), timeZone);
+      spec = new AlterTableExecuteSpec(EXPIRE_SNAPSHOT, new ExpireSnapshotsSpec(time.toEpochMilli()));
       desc = new AlterTableExecuteDesc(tableName, partitionSpec, spec);
     }
 

@@ -325,4 +325,9 @@
     We want we keep the stats in Hive sessions.
   </description>
 </property>
+
+<property>
+  <name>hive.txn.xlock.ctas</name>
+  <value>false</value>
+</property>
 </configuration>

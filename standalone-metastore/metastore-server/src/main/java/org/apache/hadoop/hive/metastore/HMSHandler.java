@@ -124,6 +124,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMEN
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTLT;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -293,7 +294,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public HMSHandler(String name, Configuration conf) {
     super(name);
     this.conf = conf;
-    isInTest = MetastoreConf.getBoolVar(this.conf, ConfVars.HIVE_IN_TEST);
+    isInTest = MetastoreConf.getBoolVar(this.conf, HIVE_IN_TEST);
     if (threadPool == null) {
       synchronized (HMSHandler.class) {
         if (threadPool == null) {
@@ -1925,7 +1926,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       } catch (NoSuchObjectException e) {
         // expected
       }
-
+      firePreEvent(new PreCreateDataConnectorEvent(connector, this));
       if (testTimeoutEnabled) {
         try {
           Thread.sleep(testTimeoutValue);
@@ -1993,7 +1994,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new MetaException("Could not alter dataconnector \"" + dcName +
             "\". Could not retrieve old definition.");
       }
-      // firePreEvent(new PreAlterDatabaseEvent(oldDC, newDC, this));
+      firePreEvent(new PreAlterDataConnectorEvent(oldDC, newDC, this));
 
       ms.openTransaction();
       ms.alterDataConnector(dcName, newDC);
@@ -2067,7 +2068,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       // TODO find DBs with references to this connector
       // if any existing references and checkReferences=true, do not drop
 
-      // firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
+      firePreEvent(new PreDropDataConnectorEvent(connector, this));
 
       if (!ms.dropDataConnector(dcName)) {
         throw new MetaException("Unable to drop dataconnector " + dcName);
@@ -3848,10 +3849,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public Materialization get_materialization_invalidation_info(final CreationMetadata cm, String validTxnList) throws MetaException {
-    if (validTxnList == null) {
-      return getTxnHandler().getMaterializationInvalidationInfo(cm);
-    }
+  public Materialization get_materialization_invalidation_info(final CreationMetadata cm, final String validTxnList) throws MetaException {
     return getTxnHandler().getMaterializationInvalidationInfo(cm, validTxnList);
   }
 
@@ -8704,6 +8702,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     getTxnHandler().abortTxn(rqst);
     boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
     if (listeners != null && !listeners.isEmpty() && !isHiveReplTxn) {
+      // Not adding dbsUpdated to AbortTxnEvent because
+      // only DbNotificationListener cares about it, and this is already
+      // handled with transactional listeners in TxnHandler.
       MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ABORT_TXN,
           new AbortTxnEvent(rqst.getTxnid(), this));
     }
@@ -8714,6 +8715,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     getTxnHandler().abortTxns(rqst);
     if (listeners != null && !listeners.isEmpty()) {
       for (Long txnId : rqst.getTxn_ids()) {
+        // See above abort_txn() note about not adding dbsUpdated.
         MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ABORT_TXN,
             new AbortTxnEvent(txnId, this));
       }
@@ -9038,6 +9040,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     response.setCompacts(FilterUtils.filterCompactionsIfEnabled(isServerFilterEnabled,
         filterHook, getDefaultCatalog(conf), response.getCompacts()));
     return response;
+  }
+
+  @Override
+  public boolean submit_for_cleanup(CompactionRequest rqst, long highestWriteId, long txnId)
+      throws TException {
+    return getTxnHandler().submitForCleanup(rqst, highestWriteId, txnId);
   }
 
   @Override
@@ -9372,7 +9380,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private void authorizeProxyPrivilege() throws TException {
     // Skip the auth in embedded mode or if the auth is disabled
     if (!HiveMetaStore.isMetaStoreRemote() ||
-        !MetastoreConf.getBoolVar(conf, ConfVars.EVENT_DB_NOTIFICATION_API_AUTH)) {
+        !MetastoreConf.getBoolVar(conf, ConfVars.EVENT_DB_NOTIFICATION_API_AUTH) || conf.getBoolean(HIVE_IN_TEST.getVarname(),
+        false)) {
       return;
     }
     String user = null;

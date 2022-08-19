@@ -217,6 +217,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void compact(const CompactionRequest& rqst) = 0;
   virtual void compact2(CompactionResponse& _return, const CompactionRequest& rqst) = 0;
   virtual void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) = 0;
+  virtual bool submit_for_cleanup(const CompactionRequest& o1, const int64_t o2, const int64_t o3) = 0;
   virtual void add_dynamic_partitions(const AddDynamicPartitions& rqst) = 0;
   virtual void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId) = 0;
   virtual void find_next_compact2(OptionalCompactionInfoStruct& _return, const FindNextCompactRequest& rqst) = 0;
@@ -925,6 +926,10 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   }
   void show_compact(ShowCompactResponse& /* _return */, const ShowCompactRequest& /* rqst */) override {
     return;
+  }
+  bool submit_for_cleanup(const CompactionRequest& /* o1 */, const int64_t /* o2 */, const int64_t /* o3 */) override {
+    bool _return = false;
+    return _return;
   }
   void add_dynamic_partitions(const AddDynamicPartitions& /* rqst */) override {
     return;
@@ -25012,6 +25017,135 @@ class ThriftHiveMetastore_show_compact_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_submit_for_cleanup_args__isset {
+  _ThriftHiveMetastore_submit_for_cleanup_args__isset() : o1(false), o2(false), o3(false) {}
+  bool o1 :1;
+  bool o2 :1;
+  bool o3 :1;
+} _ThriftHiveMetastore_submit_for_cleanup_args__isset;
+
+class ThriftHiveMetastore_submit_for_cleanup_args {
+ public:
+
+  ThriftHiveMetastore_submit_for_cleanup_args(const ThriftHiveMetastore_submit_for_cleanup_args&);
+  ThriftHiveMetastore_submit_for_cleanup_args& operator=(const ThriftHiveMetastore_submit_for_cleanup_args&);
+  ThriftHiveMetastore_submit_for_cleanup_args() noexcept
+                                              : o2(0),
+                                                o3(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_submit_for_cleanup_args() noexcept;
+  CompactionRequest o1;
+  int64_t o2;
+  int64_t o3;
+
+  _ThriftHiveMetastore_submit_for_cleanup_args__isset __isset;
+
+  void __set_o1(const CompactionRequest& val);
+
+  void __set_o2(const int64_t val);
+
+  void __set_o3(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_submit_for_cleanup_args & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_submit_for_cleanup_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_submit_for_cleanup_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_submit_for_cleanup_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_submit_for_cleanup_pargs() noexcept;
+  const CompactionRequest* o1;
+  const int64_t* o2;
+  const int64_t* o3;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_submit_for_cleanup_result__isset {
+  _ThriftHiveMetastore_submit_for_cleanup_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_submit_for_cleanup_result__isset;
+
+class ThriftHiveMetastore_submit_for_cleanup_result {
+ public:
+
+  ThriftHiveMetastore_submit_for_cleanup_result(const ThriftHiveMetastore_submit_for_cleanup_result&);
+  ThriftHiveMetastore_submit_for_cleanup_result& operator=(const ThriftHiveMetastore_submit_for_cleanup_result&);
+  ThriftHiveMetastore_submit_for_cleanup_result() noexcept
+                                                : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_submit_for_cleanup_result() noexcept;
+  bool success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_submit_for_cleanup_result__isset __isset;
+
+  void __set_success(const bool val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_submit_for_cleanup_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_submit_for_cleanup_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_submit_for_cleanup_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_submit_for_cleanup_presult__isset {
+  _ThriftHiveMetastore_submit_for_cleanup_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_submit_for_cleanup_presult__isset;
+
+class ThriftHiveMetastore_submit_for_cleanup_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_submit_for_cleanup_presult() noexcept;
+  bool* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_submit_for_cleanup_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_add_dynamic_partitions_args__isset {
   _ThriftHiveMetastore_add_dynamic_partitions_args__isset() : rqst(false) {}
   bool rqst :1;
@@ -34545,6 +34679,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) override;
   void send_show_compact(const ShowCompactRequest& rqst);
   void recv_show_compact(ShowCompactResponse& _return);
+  bool submit_for_cleanup(const CompactionRequest& o1, const int64_t o2, const int64_t o3) override;
+  void send_submit_for_cleanup(const CompactionRequest& o1, const int64_t o2, const int64_t o3);
+  bool recv_submit_for_cleanup();
   void add_dynamic_partitions(const AddDynamicPartitions& rqst) override;
   void send_add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void recv_add_dynamic_partitions();
@@ -34983,6 +35120,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_compact2(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_show_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_submit_for_cleanup(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_dynamic_partitions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_find_next_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_find_next_compact2(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -35257,6 +35395,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["compact"] = &ThriftHiveMetastoreProcessor::process_compact;
     processMap_["compact2"] = &ThriftHiveMetastoreProcessor::process_compact2;
     processMap_["show_compact"] = &ThriftHiveMetastoreProcessor::process_show_compact;
+    processMap_["submit_for_cleanup"] = &ThriftHiveMetastoreProcessor::process_submit_for_cleanup;
     processMap_["add_dynamic_partitions"] = &ThriftHiveMetastoreProcessor::process_add_dynamic_partitions;
     processMap_["find_next_compact"] = &ThriftHiveMetastoreProcessor::process_find_next_compact;
     processMap_["find_next_compact2"] = &ThriftHiveMetastoreProcessor::process_find_next_compact2;
@@ -37201,6 +37340,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  bool submit_for_cleanup(const CompactionRequest& o1, const int64_t o2, const int64_t o3) override {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->submit_for_cleanup(o1, o2, o3);
+    }
+    return ifaces_[i]->submit_for_cleanup(o1, o2, o3);
+  }
+
   void add_dynamic_partitions(const AddDynamicPartitions& rqst) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -38553,6 +38701,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) override;
   int32_t send_show_compact(const ShowCompactRequest& rqst);
   void recv_show_compact(ShowCompactResponse& _return, const int32_t seqid);
+  bool submit_for_cleanup(const CompactionRequest& o1, const int64_t o2, const int64_t o3) override;
+  int32_t send_submit_for_cleanup(const CompactionRequest& o1, const int64_t o2, const int64_t o3);
+  bool recv_submit_for_cleanup(const int32_t seqid);
   void add_dynamic_partitions(const AddDynamicPartitions& rqst) override;
   int32_t send_add_dynamic_partitions(const AddDynamicPartitions& rqst);
   void recv_add_dynamic_partitions(const int32_t seqid);
