@@ -1926,7 +1926,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       } catch (NoSuchObjectException e) {
         // expected
       }
-
+      firePreEvent(new PreCreateDataConnectorEvent(connector, this));
       if (testTimeoutEnabled) {
         try {
           Thread.sleep(testTimeoutValue);
@@ -1994,7 +1994,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new MetaException("Could not alter dataconnector \"" + dcName +
             "\". Could not retrieve old definition.");
       }
-      // firePreEvent(new PreAlterDatabaseEvent(oldDC, newDC, this));
+      firePreEvent(new PreAlterDataConnectorEvent(oldDC, newDC, this));
 
       ms.openTransaction();
       ms.alterDataConnector(dcName, newDC);
@@ -2068,7 +2068,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       // TODO find DBs with references to this connector
       // if any existing references and checkReferences=true, do not drop
 
-      // firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
+      firePreEvent(new PreDropDataConnectorEvent(connector, this));
 
       if (!ms.dropDataConnector(dcName)) {
         throw new MetaException("Unable to drop dataconnector " + dcName);
