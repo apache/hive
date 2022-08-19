@@ -3718,4 +3718,3 @@ public abstract class TestHiveMetaStore {
     client.dropDataConnector("no_such_data_connector", true, false);
   }
 }
-tgre
