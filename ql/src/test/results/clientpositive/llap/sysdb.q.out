@@ -773,6 +773,7 @@ scheduled_executions	scheduled_execution_id
 scheduled_executions	scheduled_query_id
 scheduled_executions	start_time
 scheduled_executions	start_time
+scheduled_executions	start_time_since_epoch
 scheduled_executions	state
 scheduled_executions	state
 scheduled_queries	active_execution_id
