@@ -35,6 +35,9 @@ import org.reflections.Reflections;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
+import org.reflections.util.FilterBuilder;
 
 /**
  * Manages the DDL command analyzers.
@@ -65,10 +68,12 @@ public final class DDLSemanticAnalyzerFactory {
       new HashMap<>();
 
   static {
-    Set<Class<? extends BaseSemanticAnalyzer>> analyzerClasses1 =
-        new Reflections(DDL_ROOT).getSubTypesOf(BaseSemanticAnalyzer.class);
-    Set<Class<? extends CalcitePlanner>> analyzerClasses2 =
-        new Reflections(DDL_ROOT).getSubTypesOf(CalcitePlanner.class);
+    Set<Class<? extends BaseSemanticAnalyzer>> analyzerClasses1 = new Reflections(
+        new ConfigurationBuilder().filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix(DDL_ROOT)))
+            .setUrls(ClasspathHelper.forPackage(DDL_ROOT))).getSubTypesOf(BaseSemanticAnalyzer.class);
+    Set<Class<? extends CalcitePlanner>> analyzerClasses2 = new Reflections(
+        new ConfigurationBuilder().filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix(DDL_ROOT)))
+            .setUrls(ClasspathHelper.forPackage(DDL_ROOT))).getSubTypesOf(CalcitePlanner.class);
     Set<Class<? extends BaseSemanticAnalyzer>> analyzerClasses = Sets.union(analyzerClasses1, analyzerClasses2);
     for (Class<? extends BaseSemanticAnalyzer> analyzerClass : analyzerClasses) {
       if (Modifier.isAbstract(analyzerClass.getModifiers())) {
