@@ -55,3 +55,4 @@ LICENSE
 ^testutils/ptest2/src/test/resources/
 ^\.github/
 ^\Qql/src/test/resources/hsmm/hsmm_cfg_01.yaml\E$
+^\Qserde/pom.xml\E$

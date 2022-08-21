@@ -1,5 +1,4 @@
 AAAAABJRU
-aarry
 abcd
 abcde
 abcdef
@@ -40,7 +39,6 @@ bais
 baoi
 baos
 BArray
-basedir
 bdoi
 bdw
 bigint
@@ -195,7 +193,6 @@ isset
 itest
 ith
 JAGRAFESS
-javabean
 Javadoc
 javax
 jdbc
@@ -276,7 +273,6 @@ outputmp
 outputstream
 params
 php
-plugin
 png
 println
 prj
@@ -365,7 +361,6 @@ TFrozen
 threebytes
 Throwable
 timelabel
-timestamplocal
 TIMESTAMPLOCALTZ
 timestamptz
 timezone
@@ -442,11 +437,7 @@ writables
 www
 XDh
 xfer
-xml
-xmlns
-xsi
 yadda
 yes'okay
-yyyy
 YYYYMMDD
 zid
