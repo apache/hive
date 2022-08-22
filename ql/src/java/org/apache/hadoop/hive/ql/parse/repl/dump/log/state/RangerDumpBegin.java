@@ -17,11 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.log.state;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.apache.hive.common.util.SuppressFBWarnings;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * RangerDumpBegin.
