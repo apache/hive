@@ -14046,7 +14046,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       t.setSerdeParam(serdeMap.getKey(), serdeMap.getValue());
     }
     WriteType lockType = tblProps != null && Boolean.parseBoolean(tblProps.get(TABLE_IS_CTAS))
-        && AcidUtils.isExclusiveCTASEnabled(conf) ?
+        && AcidUtils.isExclusiveCTASEnabled(conf)
+        // iceberg CTAS has it's own locking mechanism, therefore we should exclude them
+        && (t.getStorageHandler() == null || !t.getStorageHandler().directInsertCTAS()) ?
       WriteType.CTAS : WriteType.DDL_NO_LOCK;
     
     outputs.add(new WriteEntity(t, lockType));
