@@ -30,6 +30,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
+/**
+ *  Updates table/partition statistics.
+ *  Intended to run after a successful compaction.
+ */
 public final class StatsUpdater {
     private static final Logger LOG = LoggerFactory.getLogger(StatsUpdater.class);
     /**
