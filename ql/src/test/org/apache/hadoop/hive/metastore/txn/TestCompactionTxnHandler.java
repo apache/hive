@@ -50,6 +50,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -770,13 +771,15 @@ public class TestCompactionTxnHandler {
     assertTrue(sawMyTable);
     assertTrue(sawYourTable);
 
-    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
+    potentials = txnHandler.findPotentialCompactions(100, -1, 
+      Instant.now().minusSeconds(1).toEpochMilli());
     assertEquals(2, potentials.size());
 
     //simulate auto-compaction interval
     TimeUnit.SECONDS.sleep(2);
 
-    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
+    potentials = txnHandler.findPotentialCompactions(100, -1, 
+      Instant.now().minusSeconds(1).toEpochMilli());
     assertEquals(0, potentials.size());
 
     //simulate prev failed compaction
@@ -785,7 +788,8 @@ public class TestCompactionTxnHandler {
     CompactionInfo ci = txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION));
     txnHandler.markFailed(ci);
 
-    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
+    potentials = txnHandler.findPotentialCompactions(100, -1, 
+      Instant.now().minusSeconds(1).toEpochMilli());
     assertEquals(1, potentials.size());
   }
 
