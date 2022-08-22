@@ -60,26 +60,27 @@ public class TestReplStateLogTimeFormat {
       }
     }
     assertTrue(
-            String.format("Class %s has a time field which is not annotated with " +
-                            "@JsonSerialize(using = ReplUtils.TimeSerializer.class) " +
-                            "Please annotate the time field with it or add it to appropriate exempted set above",
-                    replState.getClass().getName()),
-            isAnnotationSet
-    );
+      String.format(
+        "Class %s has a time field which is not annotated with @JsonSerialize(using = ReplUtils.TimeSerializer.class) " +
+        "Please annotate the time field with it or add it to appropriate exempted set above",
+        replState.getClass().getName()),
+        isAnnotationSet
+      );
   }
 
   private void verifyUTCString(ReplState replState) throws Exception {
     ObjectMapper objectMapper = new ObjectMapper();
     String json = objectMapper.writeValueAsString(replState);
     assertTrue(
-            String.format("Expected UTC string %s not found in serialized representation of %s",
-                    UTCString, replState.getClass().getName()),
-            json.contains(UTCString)
+      String.format(
+        "Expected UTC string %s not found in serialized representation of %s",
+        UTCString, replState.getClass().getName()),
+      json.contains(UTCString)
     );
   }
 
 
-  private void testTimeFormat(String packagePath, Set<Class<? extends ReplState>> EXEMPTED_CLASS) throws Exception {
+  private void verifyTimeFormat(String packagePath, Set<Class<? extends ReplState>> EXEMPTED_CLASS) throws Exception {
     Set<Class<? extends ReplState>> replStateLogClasses
             = new Reflections(packagePath).getSubTypesOf(ReplState.class);
     for (Class<? extends ReplState> cls : replStateLogClasses) {
@@ -93,9 +94,9 @@ public class TestReplStateLogTimeFormat {
   }
 
   @Test
-  public void test() throws Exception {
-    testTimeFormat("org.apache.hadoop.hive.ql.parse.repl.dump.log.state", DUMP_LOG_EXEMPTED_CLASSES);
-    testTimeFormat("org.apache.hadoop.hive.ql.parse.repl.load.log.state", LOAD_LOG_EXEMPTED_CLASSES);
+  public void testReplLogTimeFormat() throws Exception {
+    verifyTimeFormat("org.apache.hadoop.hive.ql.parse.repl.dump.log.state", DUMP_LOG_EXEMPTED_CLASSES);
+    verifyTimeFormat("org.apache.hadoop.hive.ql.parse.repl.load.log.state", LOAD_LOG_EXEMPTED_CLASSES);
   }
 
   @Test(expected = AssertionError.class)
