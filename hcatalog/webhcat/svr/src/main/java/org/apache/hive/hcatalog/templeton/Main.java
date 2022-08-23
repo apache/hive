@@ -249,7 +249,7 @@ public class Main {
     low.setLowResourcesIdleTimeout(10000);
     server.addBean(low);
 
-    server.addConnector(createChannelConnector());
+    server.setConnectors(new Connector[]{ createChannelConnector(server) });
 
     // Start the server
     server.start();
@@ -276,7 +276,7 @@ public class Main {
    Create a channel connector for "http/https" requests.
    */
 
-  private Connector createChannelConnector() {
+  private Connector createChannelConnector(Server server) {
     ServerConnector connector;
     final HttpConfiguration httpConf = new HttpConfiguration();
     httpConf.setRequestHeaderSize(1024 * 64);
