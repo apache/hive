@@ -441,8 +441,8 @@ public class HiveServer2 extends CompositeService {
     // Add a shutdown hook for catching SIGTERM & SIGINT
     long timeout = HiveConf.getTimeVar(getHiveConf(),
         HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.SECONDS);
-    // Add extra time for releasing the resources
-    ShutdownHookManager.addGracefulShutDownHook(() -> graceful_stop(), timeout + 30);
+    // Extra time for releasing the resources if timeout sets to 0
+    ShutdownHookManager.addGracefulShutDownHook(() -> graceful_stop(),  timeout == 0 ? 30 : timeout);
   }
 
   private void logCompactionParameters(HiveConf hiveConf) {
@@ -924,7 +924,8 @@ public class HiveServer2 extends CompositeService {
       long maxTimeForWait = HiveConf.getTimeVar(getHiveConf(),
           HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS);
 
-      long timeout = maxTimeForWait, startTime = System.currentTimeMillis();
+      // Need 30s for calling stop to release server's resources
+      long timeout = maxTimeForWait - 30000, startTime = System.currentTimeMillis();
       try {
         // The service should be started before when reaches here, as decommissioning would throw
         // IllegalStateException otherwise, so both cliService and sessionManager should not be null.

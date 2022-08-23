@@ -4412,8 +4412,9 @@ public class HiveConf extends Configuration {
         "credential providers for jobs run using Tez, MR execution engines."),
     HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT("hive.server2.graceful.stop.timeout", "1800s",
         new TimeValidator(TimeUnit.SECONDS),
-        "Maximum time waiting for the current live operations being finished before shutting down HiveServer2 gracefully.\n" +
-        "  With value less than or equal to 0, it does not check for the operations regardless of state to shut down HiveServer2."),
+        "Maximum time waiting for live queries being finished and stopping HiveServer2. "
+         + "With value not greater than 30s(the overhead to stop HiveServer2), it will not wait for the live queries to be done, "
+         + "instead call stop directly to shutdown HiveServer2 gracefully"),
     HIVE_MOVE_FILES_THREAD_COUNT("hive.mv.files.thread", 15, new  SizeValidator(0L, true, 1024L, true), "Number of threads"
          + " used to move files in move task. Set it to 0 to disable multi-threaded file moves. This parameter is also used by"
          + " MSCK to check tables."),

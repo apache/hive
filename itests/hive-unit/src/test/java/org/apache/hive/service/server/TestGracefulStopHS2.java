@@ -20,7 +20,6 @@ package org.apache.hive.service.server;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
-import org.apache.hive.service.Service;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.junit.AfterClass;
@@ -53,7 +52,7 @@ public class TestGracefulStopHS2 {
       conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
       conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
       conf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
-      conf.setTimeVar(HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, 40, TimeUnit.SECONDS);
+      conf.setTimeVar(HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, 60, TimeUnit.SECONDS);
       MiniHS2.Builder builder = new MiniHS2.Builder().withConf(conf).cleanupLocalDirOnStartup(false);
       miniHS2 = builder.build();
       miniHS2.start(new HashMap<>());
