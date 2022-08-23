@@ -61,11 +61,11 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
 
   @Test public void testMmMinorCompactionNotPartitionedWithoutBuckets() throws Exception {
     conf.setVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE, CUSTOM_COMPACTION_QUEUE);
-    String tmpFolder = folder.newFolder().getAbsolutePath();
     conf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder);
 
     String dbName = "default";
     String tableName = "testMmMinorCompaction";
+    String dbTableName = dbName + "." + tableName;
     // Create test table
     TestDataProvider testDataProvider = new TestCrudCompactorOnTez.TestDataProvider();
     testDataProvider.createMmTable(tableName, false, false);

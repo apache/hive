@@ -368,11 +368,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, true);
 
     conf.setVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE, CUSTOM_COMPACTION_QUEUE);
-    String tmpFolder = folder.newFolder().getAbsolutePath();
     conf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder);
 
     String dbName = "default";
     String tblName = "testMajorCompaction";
+    String dbTableName = dbName + "." + tblName;
     TestDataProvider testDataProvider = new TestDataProvider();
     testDataProvider.createFullAcidTable(tblName, false, false);
     testDataProvider.insertTestData(tblName);
@@ -434,11 +434,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         new String[] { AcidUtils.BASE_PREFIX});
     conf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, originalEnableVersionFile);
 
-    ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
-    HiveHookEvents.HiveHookEventProto event = reader.readEvent();
-    while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
-      event = reader.readEvent();
-    }
+    HiveHookEvents.HiveHookEventProto event = getRelatedTezEvent(dbTableName);
     Assert.assertNotNull(event);
     Assert.assertEquals(event.getQueue(), CUSTOM_COMPACTION_QUEUE);
   }
@@ -2419,11 +2415,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   @Test
   public void testCompactionWithCreateTableProps() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
-    String tmpFolder = folder.newFolder().getAbsolutePath();
     conf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder);
 
     String dbName = "default";
     String tblName = "comp_with_create_tblprops_test";
+    String dbTableName = dbName + "." + tblName;
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     TestDataProvider testDP = new TestDataProvider();
@@ -2473,11 +2469,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> actualData = testDP.getAllData(tblName);
     Assert.assertEquals(expectedData, actualData);
 
-    ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
-    HiveHookEvents.HiveHookEventProto event = reader.readEvent();
-    while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
-      event = reader.readEvent();
-    }
+    HiveHookEvents.HiveHookEventProto event = getRelatedTezEvent(dbTableName);
     Assert.assertNotNull(event);
 
     for (org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry mapFieldEntry: event.getOtherInfoList()) {
@@ -2490,11 +2482,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   @Test
   public void testCompactionWithAlterTableProps() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
-    String tmpFolder = folder.newFolder().getAbsolutePath();
     conf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder);
 
     String dbName = "default";
     String tblName = "comp_with_alter_tblprops_test";
+    String dbTableName = dbName + "." + tblName;
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     TestDataProvider testDP = new TestDataProvider();
@@ -2543,11 +2535,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> actualData = testDP.getAllData(tblName);
     Assert.assertEquals(expectedData, actualData);
 
-    ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
-    HiveHookEvents.HiveHookEventProto event = reader.readEvent();
-    while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
-      event = reader.readEvent();
-    }
+    HiveHookEvents.HiveHookEventProto event = getRelatedTezEvent(dbTableName);
     Assert.assertNotNull(event);
 
     for (org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents.MapFieldEntry mapFieldEntry: event.getOtherInfoList()) {

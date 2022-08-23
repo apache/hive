@@ -30,12 +30,17 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.ExecutionMode;
+import org.apache.hadoop.hive.ql.hooks.TestHiveProtoLoggingHook;
+import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.tez.dag.history.logging.proto.ProtoMessageReader;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
@@ -68,14 +73,21 @@ public abstract class CompactorOnTezTest {
   protected IDriver driver;
   protected boolean mmCompaction = false;
 
-  @Rule
-  public TemporaryFolder folder = new TemporaryFolder();
+  @ClassRule
+  public static TemporaryFolder folder = new TemporaryFolder();
+
+  public static String tmpFolder;
 
   @Before
   // Note: we create a new conf and driver object before every test
   public void setup() throws Exception {
     HiveConf hiveConf = new HiveConf(this.getClass());
     setupWithConf(hiveConf);
+  }
+
+  @BeforeClass
+  public static void setupClass() throws Exception {
+    tmpFolder = folder.newFolder().getAbsolutePath();
   }
 
   protected void setupWithConf(HiveConf hiveConf) throws Exception {
@@ -155,6 +167,24 @@ public abstract class CompactorOnTezTest {
         expectedSuccessfulCompactions, compacts.size());
     compacts.forEach(
         c -> Assert.assertEquals("Compaction state is not succeeded", "succeeded", c.getState()));
+  }
+
+  protected HiveHookEvents.HiveHookEventProto getRelatedTezEvent(String dbTableName) throws Exception {
+    ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+    HiveHookEvents.HiveHookEventProto event = reader.readEvent();
+    boolean getRelatedEvent = false;
+    while (!getRelatedEvent) {
+      while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
+        event = reader.readEvent();
+      }
+      // Tables read is the table picked for compaction.
+      if (event.getTablesReadCount() > 0 && dbTableName.equalsIgnoreCase(event.getTablesRead(0))) {
+        getRelatedEvent = true;
+      } else {
+        event = reader.readEvent();
+      }
+    }
+    return event;
   }
 
   protected class TestDataProvider {

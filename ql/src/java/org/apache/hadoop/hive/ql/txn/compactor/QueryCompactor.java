@@ -279,19 +279,23 @@ abstract class QueryCompactor {
     }
 
     static void overrideConfProps(HiveConf conf, CompactionInfo ci, Map<String, String> properties) {
-      for (String key : properties.keySet()) {
-        if (key.startsWith(COMPACTOR_PREFIX)) {
-          String property = key.substring(10); // 10 is the length of "compactor." We only keep the rest.
-          conf.set(property, properties.get(key));
+      if (properties != null) {
+        for (String key : properties.keySet()) {
+          if (key.startsWith(COMPACTOR_PREFIX)) {
+            String property = key.substring(COMPACTOR_PREFIX.length()); // 10 is the length of "compactor." We only keep the rest.
+            conf.set(property, properties.get(key));
+          }
         }
       }
 
       // Give preference to properties coming from compaction
       // over table properties
-      for (String key : ci.getPropertiesMap().keySet()) {
-        if (key.startsWith(COMPACTOR_PREFIX)) {
-          String property = key.substring(10);
-          conf.set(property, ci.getPropertiesMap().get(key));
+      if (ci.getPropertiesMap() != null) {
+        for (String key : ci.getPropertiesMap().keySet()) {
+          if (key.startsWith(COMPACTOR_PREFIX)) {
+            String property = key.substring(COMPACTOR_PREFIX.length());
+            conf.set(property, ci.getPropertiesMap().get(key));
+          }
         }
       }
     }
