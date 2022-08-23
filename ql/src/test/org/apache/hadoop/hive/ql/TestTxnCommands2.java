@@ -73,7 +73,6 @@ import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionContext;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.schq.MockScheduledQueryService;
-import org.apache.hadoop.hive.ql.schq.TestScheduledQueryService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorMR;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
@@ -3265,9 +3264,14 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
   }
 
   @Test
-  public void testCompactionOutputDirectoryNamesOnPartitions() throws Exception {
+  public void testCompactionOutputDirectoryNamesOnPartitionsAndOldDeltasDeleted() throws Exception {
     String p1 = "p=p1";
     String p2 = "p=p2";
+    String oldDelta1 = "delta_0000001_0000001_0000";
+    String oldDelta2 = "delta_0000002_0000002_0000";
+    String oldDelta3 = "delta_0000003_0000003_0000";
+    String oldDelta4 = "delta_0000004_0000004_0000";
+
     String expectedDelta1 = p1 + "/delta_0000001_0000002_v0000021";
     String expectedDelta2 = p2 + "/delta_0000003_0000004_v0000022";
 
@@ -3284,6 +3288,11 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
     Assert.assertTrue(fs.exists(new Path(tablePath + expectedDelta1)));
     Assert.assertTrue(fs.exists(new Path(tablePath + expectedDelta2)));
+
+    Assert.assertFalse(fs.exists(new Path(tablePath + oldDelta1)));
+    Assert.assertFalse(fs.exists(new Path(tablePath + oldDelta2)));
+    Assert.assertFalse(fs.exists(new Path(tablePath + oldDelta3)));
+    Assert.assertFalse(fs.exists(new Path(tablePath + oldDelta4)));
   }
 
   private void compactPartition(String table, CompactionType type, String partition)
