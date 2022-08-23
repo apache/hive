@@ -115,7 +115,7 @@ import com.google.common.collect.Lists;
 public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   private final String CLASS_NAME = HiveMetaStoreClient.class.getName();
-  
+
   public static final String MANUALLY_INITIATED_COMPACTION = "manual";
   public static final String TRUNCATE_SKIP_DATA_DELETION = "truncateSkipDataDeletion";
   public static final String RENAME_PARTITION_MAKE_COPY = "renamePartitionMakeCopy";
@@ -1670,7 +1670,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * @param maxBatchSize
    * @throws TException
    */
-  private void dropDatabaseCascadePerTable(DropDatabaseRequest req, List<String> tableList, int maxBatchSize) 
+  private void dropDatabaseCascadePerTable(DropDatabaseRequest req, List<String> tableList, int maxBatchSize)
       throws TException {
     String dbNameWithCatalog = prependCatalogToDbName(req.getCatalogName(), req.getName(), conf);
     for (Table table : new TableIterable(
@@ -1689,7 +1689,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
           req.setDeleteManagedDir(false);
         }
-        client.drop_table_with_environment_context(dbNameWithCatalog, table.getTableName(), 
+        client.drop_table_with_environment_context(dbNameWithCatalog, table.getTableName(),
             req.isDeleteData() && !isSoftDelete, context);
         if (hook != null) {
           hook.commitDropTable(table, req.isDeleteData());
@@ -1877,7 +1877,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setDeleteData(options.deleteData);
     req.setNeedResult(options.returnResults);
     req.setIfExists(options.ifExists);
-    
+
     EnvironmentContext context = null;
     if (options.purgeData) {
       LOG.info("Dropped partitions will be purged!");
@@ -1892,7 +1892,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       context.putToProperties(hive_metastoreConstants.TXN_ID, options.txnId.toString());
     }
     req.setEnvironmentContext(context);
-    
+
     return client.drop_partitions_req(req).getPartitions();
   }
 
@@ -1921,7 +1921,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     String catName = Optional.ofNullable(tbl.getCatName()).orElse(getDefaultCatalog(conf));
 
-    dropTable(catName, tbl.getDbName(), tbl.getTableName(), deleteData, 
+    dropTable(catName, tbl.getDbName(), tbl.getTableName(), deleteData,
         ignoreUnknownTbl, context);
   }
 
@@ -2001,7 +2001,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     truncateTableInternal(getDefaultCatalog(conf),
         dbName, tableName, partNames, validWriteIds, writeId, deleteData);
   }
-  
+
   @Override
   public void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId) throws TException {
@@ -4053,14 +4053,25 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException {
-    return allocateTableWriteIdsBatch(Collections.singletonList(txnId), dbName, tableName).get(0).getWriteId();
+    return allocateTableWriteId(txnId, dbName, tableName, false);
   }
 
   @Override
-  public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName)
-          throws TException {
+  public long allocateTableWriteId(long txnId, String dbName, String tableName, boolean shouldRealloc) throws TException {
+    return allocateTableWriteIdsBatch(Collections.singletonList(txnId), dbName, tableName, shouldRealloc).get(0).getWriteId();
+  }
+
+
+  @Override
+  public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName) throws TException {
+    return allocateTableWriteIdsBatch(txnIds, dbName, tableName, false);
+  }
+
+  private List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName,
+      boolean shouldRealloc) throws TException {
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
     rqst.setTxnIds(txnIds);
+    rqst.setReallocate(shouldRealloc);
     return allocateTableWriteIdsBatchIntr(rqst);
   }
 

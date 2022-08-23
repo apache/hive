@@ -348,6 +348,14 @@ public interface HiveTxnManager {
   int getCurrentStmtId();
 
   /**
+   * Reset locally cached information.
+   * This is called before re-compilation after aquiring lock if the transaction is not
+   * outdated. The intent is to clear any cached information such as WriteIds (but not
+   * reseting/rolling back the overall transaction).
+   */
+   void clearCaches();
+
+  /**
    * Acquire the materialization rebuild lock for a given view. We need to specify the fully
    * qualified name of the materialized view and the open transaction ID so we can identify
    * uniquely the lock.

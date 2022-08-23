@@ -55,6 +55,11 @@ class AllocateTableWriteIdsRequest
                 'class' => '\metastore\TxnToWriteId',
                 ),
         ),
+        6 => array(
+            'var' => 'reallocate',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -77,6 +82,10 @@ class AllocateTableWriteIdsRequest
      * @var \metastore\TxnToWriteId[]
      */
     public $srcTxnToWriteIdList = null;
+    /**
+     * @var bool
+     */
+    public $reallocate = false;
 
     public function __construct($vals = null)
     {
@@ -95,6 +104,9 @@ class AllocateTableWriteIdsRequest
             }
             if (isset($vals['srcTxnToWriteIdList'])) {
                 $this->srcTxnToWriteIdList = $vals['srcTxnToWriteIdList'];
+            }
+            if (isset($vals['reallocate'])) {
+                $this->reallocate = $vals['reallocate'];
             }
         }
     }
@@ -172,6 +184,13 @@ class AllocateTableWriteIdsRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 6:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->reallocate);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -223,6 +242,11 @@ class AllocateTableWriteIdsRequest
                 $xfer += $iter716->write($output);
             }
             $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->reallocate !== null) {
+            $xfer += $output->writeFieldBegin('reallocate', TType::BOOL, 6);
+            $xfer += $output->writeBool($this->reallocate);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
