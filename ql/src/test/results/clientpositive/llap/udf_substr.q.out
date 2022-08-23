@@ -199,3 +199,44 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 玩	玩	玩玩玩 abc	玩玩玩
+PREHOOK: query: SELECT
+  substr('ABC', cast(1 as bigint), cast(2 as bigint)),
+  substr('ABC', cast(1 as bigint))
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  substr('ABC', cast(1 as bigint), cast(2 as bigint)),
+  substr('ABC', cast(1 as bigint))
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+AB	ABC
+PREHOOK: query: SELECT
+  substr('ABC', cast(1 as bigint), cast(2147483649 as bigint))
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  substr('ABC', cast(1 as bigint), cast(2147483649 as bigint))
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT
+  substr('ABC', cast(2147483649 as bigint))
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  substr('ABC', cast(2147483649 as bigint))
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL

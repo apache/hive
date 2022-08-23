@@ -76,3 +76,16 @@ SELECT
   substr("abc 玩玩玩 abc", 5),
   substr("abc 玩玩玩 abc", 5, 3)
 FROM src tablesample (1 rows);
+
+SELECT
+  substr('ABC', cast(1 as bigint), cast(2 as bigint)),
+  substr('ABC', cast(1 as bigint))
+FROM src tablesample (1 rows);
+
+SELECT
+  substr('ABC', cast(1 as bigint), cast(2147483649 as bigint))
+FROM src tablesample (1 rows);
+
+SELECT
+  substr('ABC', cast(2147483649 as bigint))
+FROM src tablesample (1 rows);
