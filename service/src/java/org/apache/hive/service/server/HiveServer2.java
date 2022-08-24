@@ -921,11 +921,10 @@ public class HiveServer2 extends CompositeService {
   public synchronized void graceful_stop() {
     try {
       decommission();
+      // Need 30s for stop() to release server's resources
       long maxTimeForWait = HiveConf.getTimeVar(getHiveConf(),
-          HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS);
-
-      // Need 30s for calling stop to release server's resources
-      long timeout = maxTimeForWait - 30000, startTime = System.currentTimeMillis();
+          HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS) - 30000;
+      long timeout = maxTimeForWait, startTime = System.currentTimeMillis();
       try {
         // The service should be started before when reaches here, as decommissioning would throw
         // IllegalStateException otherwise, so both cliService and sessionManager should not be null.
