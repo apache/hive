@@ -57,6 +57,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
@@ -585,10 +586,18 @@ public class HiveMetaStoreChecker {
       if (currentDepth == partColNames.size()) {
         return currentPath;
       }
-      FileStatus[] fileStatuses = fs.listStatus(currentPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
+      List<FileStatus> fileStatuses = new ArrayList<>();
+      RemoteIterator<FileStatus> fileIterator = fs.listStatusIterator(currentPath);
+      while (fileIterator.hasNext()) {
+        FileStatus fileStatus = fileIterator.next();
+        Path filePath = fileStatus.getPath();
+        if (HIDDEN_FILES_PATH_FILTER.accept(filePath)) {
+          fileStatuses.add(fileStatus);
+        }
+      }
       // found no files under a sub-directory under table base path; it is possible that the table
       // is empty and hence there are no partition sub-directories created under base path
-      if (fileStatuses.length == 0 && currentDepth > 0) {
+      if (fileStatuses.size() == 0 && currentDepth > 0) {
         // since maxDepth is not yet reached, we are missing partition
         // columns in currentPath
         logOrThrowExceptionWithMsg(
