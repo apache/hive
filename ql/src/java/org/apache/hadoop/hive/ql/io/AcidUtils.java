@@ -22,6 +22,7 @@ import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFI
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.common.FileUtils.HIDDEN_FILES_PATH_FILTER;
 import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
+import static org.apache.hadoop.hive.ql.exec.Utilities.tabCode;
 import static org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
 
 import java.io.FileNotFoundException;
@@ -74,6 +75,7 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -82,6 +84,7 @@ import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
@@ -2252,6 +2255,50 @@ public class AcidUtils {
       throw new RuntimeException("Cannot set '"
           + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "' to 'insert_only' without "
           + "setting '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL + "' to 'true'");
+    }
+    return true;
+  }
+
+  public static Boolean isToFullAcid(Table table, Map<String, String> props) {
+    String transactional = props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+
+    if (transactional == null && transactionalProp == null) {
+      // Not affected or the op is not about transactional.
+      return false;
+    } else if (transactional == null && table != null) {
+      transactional = table.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    }
+
+    if (transactionalProp == null) {
+      boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
+      if (isSetToTxn || table == null) return false; // Assume the full ACID table.
+      throw new RuntimeException("Cannot change '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL
+              + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
+    }
+
+    StorageDescriptor sd = table.getSd();
+    return isStorageDescriptorOrc(sd, table.getTableName());
+  }
+
+
+  private static boolean isStorageDescriptorOrc(StorageDescriptor sd, String tblName) {
+    try {
+      Class inputFormatClass = sd.getInputFormat() == null ? null :
+              Class.forName(sd.getInputFormat());
+      Class outputFormatClass = sd.getOutputFormat() == null ? null :
+              Class.forName(sd.getOutputFormat());
+
+      if (inputFormatClass == null || outputFormatClass == null ||
+              !Class.forName(Constants.ACID_INPUT_FORMAT).isAssignableFrom(inputFormatClass) ||
+              !Class.forName(Constants.ACID_OUTPUT_FORMAT).isAssignableFrom(outputFormatClass) ||
+              !(sd.getSortColsSize() <= 0)) {
+        return false;
+      }
+    } catch (ClassNotFoundException e) {
+      LOG.warn("Could not verify InputFormat=" + sd.getInputFormat() + " or OutputFormat=" +
+              sd.getOutputFormat() + "  for " + tblName);
+      return false;
     }
     return true;
   }

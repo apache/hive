@@ -178,6 +178,12 @@ public class TxnUtils {
                     equals(parameters.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
   }
 
+  public static boolean isInsertOnlyTable(Table table) {
+    return TxnUtils.isTransactionalTable(table) &&
+            TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY.equals(table.getParameters()
+                    .get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
+  }
+
   public static boolean isTableSoftDeleteEnabled(Table table, boolean isSoftDelete) {
     return isSoftDelete && TxnUtils.isTransactionalTable(table)
       && Boolean.parseBoolean(table.getParameters().get(SOFT_DELETE_TABLE));
