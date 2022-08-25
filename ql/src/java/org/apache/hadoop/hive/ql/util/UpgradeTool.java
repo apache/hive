@@ -585,32 +585,9 @@ public class UpgradeTool {
     }
   }
   private static boolean canBeMadeAcid(String fullTableName, StorageDescriptor sd) {
-    return isAcidInputOutputFormat(fullTableName, sd) && sd.getSortColsSize() <= 0;
+    return AcidUtils.isAcidInputOutputFormat(fullTableName, sd) && sd.getSortColsSize() <= 0;
   }
-  private static boolean isAcidInputOutputFormat(String fullTableName, StorageDescriptor sd) {
-    try {
-      Class inputFormatClass = sd.getInputFormat() == null ? null :
-          Class.forName(sd.getInputFormat());
-      Class outputFormatClass = sd.getOutputFormat() == null ? null :
-          Class.forName(sd.getOutputFormat());
 
-      if (inputFormatClass != null && outputFormatClass != null &&
-          Class.forName("org.apache.hadoop.hive.ql.io.AcidInputFormat")
-              .isAssignableFrom(inputFormatClass) &&
-          Class.forName("org.apache.hadoop.hive.ql.io.AcidOutputFormat")
-              .isAssignableFrom(outputFormatClass)) {
-        return true;
-      }
-    } catch (ClassNotFoundException e) {
-      //if a table is using some custom I/O format and it's not in the classpath, we won't mark
-      //the table for Acid, but today (Hive 3.1 and earlier) OrcInput/OutputFormat is the only
-      //Acid format
-      LOG.error("Could not determine if " + fullTableName +
-          " can be made Acid due to: " + e.getMessage(), e);
-      return false;
-    }
-    return false;
-  }
   private static void makeConvertTableScript(List<String> alterTableAcid, List<String> alterTableMm,
       String scriptLocation) throws IOException {
     if (alterTableAcid.isEmpty()) {

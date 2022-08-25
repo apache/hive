@@ -1,119 +1,3 @@
-PREHOOK: query: create external table ext(num int, id string) stored as ORC
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:default
-PREHOOK: Output: default@ext
-POSTHOOK: query: create external table ext(num int, id string) stored as ORC
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@ext
-PREHOOK: query: insert into ext values(1,'hi'),(2,'hello')
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@ext
-POSTHOOK: query: insert into ext values(1,'hi'),(2,'hello')
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ext
-POSTHOOK: Lineage: ext.id SCRIPT []
-POSTHOOK: Lineage: ext.num SCRIPT []
-PREHOOK: query: describe formatted ext
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@ext
-POSTHOOK: query: describe formatted ext
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@ext
-# col_name            	data_type           	comment             
-num                 	int                 	                    
-id                  	string              	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-#### A masked pattern was here ####
-Retention:          	0                   	 
-#### A masked pattern was here ####
-Table Type:         	EXTERNAL_TABLE      	 
-Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"num\":\"true\"}}
-	EXTERNAL            	TRUE                
-	bucketing_version   	2                   
-	numFiles            	1                   
-	numRows             	2                   
-	rawDataSize         	182                 
-	totalSize           	310                 
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
-PREHOOK: query: ALTER TABLE ext SET TBLPROPERTIES ('EXTERNAL'='false')
-PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@ext
-PREHOOK: Output: default@ext
-POSTHOOK: query: ALTER TABLE ext SET TBLPROPERTIES ('EXTERNAL'='false')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@ext
-POSTHOOK: Output: default@ext
-PREHOOK: query: ALTER TABLE ext SET TBLPROPERTIES ('transactional'='true')
-PREHOOK: type: ALTERTABLE_PROPERTIES
-PREHOOK: Input: default@ext
-PREHOOK: Output: default@ext
-POSTHOOK: query: ALTER TABLE ext SET TBLPROPERTIES ('transactional'='true')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
-POSTHOOK: Input: default@ext
-POSTHOOK: Output: default@ext
-PREHOOK: query: describe formatted ext
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: default@ext
-POSTHOOK: query: describe formatted ext
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: default@ext
-# col_name            	data_type           	comment             
-num                 	int                 	                    
-id                  	string              	                    
-	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
-#### A masked pattern was here ####
-Retention:          	0                   	 
-#### A masked pattern was here ####
-Table Type:         	MANAGED_TABLE       	 
-Table Parameters:	 	 
-	EXTERNAL            	false               
-	bucketing_version   	2                   
-#### A masked pattern was here ####
-	numFiles            	1                   
-	numRows             	2                   
-	rawDataSize         	182                 
-	totalSize           	310                 
-	transactional       	true                
-	transactional_properties	default             
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-PREHOOK: query: select * from ext
-PREHOOK: type: QUERY
-PREHOOK: Input: default@ext
-#### A masked pattern was here ####
-POSTHOOK: query: select * from ext
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@ext
-#### A masked pattern was here ####
-1	hi
-2	hello
 PREHOOK: query: create table insert_only(col1 Int, col2 String) stored as orc  TBLPROPERTIES ('transactional'='true','transactional_properties'='insert_only')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -230,6 +114,128 @@ PREHOOK: Input: default@insert_only
 POSTHOOK: query: select * from insert_only
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_only
+#### A masked pattern was here ####
+1	hi
+2	hello
+1	hi
+2	hello
+PREHOOK: query: create table insert_only_1(col1 Int, col2 String) stored as orc  TBLPROPERTIES ('transactional'='true','transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_only_1
+POSTHOOK: query: create table insert_only_1(col1 Int, col2 String) stored as orc  TBLPROPERTIES ('transactional'='true','transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@insert_only_1
+PREHOOK: query: insert into insert_only_1 values(1,'hi'),(2,'hello')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@insert_only_1
+POSTHOOK: query: insert into insert_only_1 values(1,'hi'),(2,'hello')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@insert_only_1
+POSTHOOK: Lineage: insert_only_1.col1 SCRIPT []
+POSTHOOK: Lineage: insert_only_1.col2 SCRIPT []
+PREHOOK: query: describe formatted insert_only_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@insert_only_1
+POSTHOOK: query: describe formatted insert_only_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@insert_only_1
+# col_name            	data_type           	comment             
+col1                	int                 	                    
+col2                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	182                 
+	totalSize           	310                 
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: ALTER TABLE insert_only SET TBLPROPERTIES ('transactional_properties'='default')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@insert_only
+PREHOOK: Output: default@insert_only
+POSTHOOK: query: ALTER TABLE insert_only SET TBLPROPERTIES ('transactional_properties'='default')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@insert_only
+POSTHOOK: Output: default@insert_only
+PREHOOK: query: describe formatted insert_only_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@insert_only_1
+POSTHOOK: query: describe formatted insert_only_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@insert_only_1
+# col_name            	data_type           	comment             
+col1                	int                 	                    
+col2                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	182                 
+	totalSize           	310                 
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into insert_only_1 values(1,'hi'),(2,'hello')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@insert_only_1
+POSTHOOK: query: insert into insert_only_1 values(1,'hi'),(2,'hello')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@insert_only_1
+POSTHOOK: Lineage: insert_only_1.col1 SCRIPT []
+POSTHOOK: Lineage: insert_only_1.col2 SCRIPT []
+PREHOOK: query: select * from insert_only_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_only_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from insert_only_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_only_1
 #### A masked pattern was here ####
 1	hi
 2	hello

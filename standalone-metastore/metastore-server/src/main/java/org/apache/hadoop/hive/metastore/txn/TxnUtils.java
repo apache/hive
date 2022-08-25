@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
+import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.*;
 
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
@@ -168,19 +169,19 @@ public class TxnUtils {
    */
   public static boolean isAcidTable(Table table) {
     return TxnUtils.isTransactionalTable(table) &&
-      TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY.equals(table.getParameters()
+      DEFAULT_TRANSACTIONAL_PROPERTY.equals(table.getParameters()
       .get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
   }
 
   public static boolean isAcidTable(Map<String, String> parameters) {
     return isTransactionalTable(parameters) &&
-            TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY.
+            DEFAULT_TRANSACTIONAL_PROPERTY.
                     equals(parameters.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
   }
 
   public static boolean isInsertOnlyTable(Table table) {
     return TxnUtils.isTransactionalTable(table) &&
-            TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY.equals(table.getParameters()
+            INSERTONLY_TRANSACTIONAL_PROPERTY.equals(table.getParameters()
                     .get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
   }
 

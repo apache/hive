@@ -2259,48 +2259,39 @@ public class AcidUtils {
     return true;
   }
 
-  public static Boolean isToFullAcid(Table table, Map<String, String> props) {
-    String transactional = props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+  public static Boolean isFromInsertOnlyToFullAcid(Table table, Map<String, String> props) {
     String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-
-    if (transactional == null && transactionalProp == null) {
-      // Not affected or the op is not about transactional.
+    if (!isInsertOnlyTable(table) ||
+            !transactionalProp.equals
+                    (TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY)) {
       return false;
-    } else if (transactional == null && table != null) {
-      transactional = table.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     }
-
-    if (transactionalProp == null) {
-      boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
-      if (isSetToTxn || table == null) return false; // Assume the full ACID table.
-      throw new RuntimeException("Cannot change '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL
-              + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
-    }
-
-    StorageDescriptor sd = table.getSd();
-    return isStorageDescriptorOrc(sd, table.getTableName());
+    return isAcidInputOutputFormat(table.getTableName(), table.getSd());
   }
 
-
-  private static boolean isStorageDescriptorOrc(StorageDescriptor sd, String tblName) {
+  public static boolean isAcidInputOutputFormat(String fullTableName, StorageDescriptor sd) {
     try {
       Class inputFormatClass = sd.getInputFormat() == null ? null :
               Class.forName(sd.getInputFormat());
       Class outputFormatClass = sd.getOutputFormat() == null ? null :
               Class.forName(sd.getOutputFormat());
 
-      if (inputFormatClass == null || outputFormatClass == null ||
-              !Class.forName(Constants.ACID_INPUT_FORMAT).isAssignableFrom(inputFormatClass) ||
-              !Class.forName(Constants.ACID_OUTPUT_FORMAT).isAssignableFrom(outputFormatClass) ||
-              !(sd.getSortColsSize() <= 0)) {
-        return false;
+      if (inputFormatClass != null && outputFormatClass != null &&
+              Class.forName(Constants.ACID_INPUT_FORMAT)
+                      .isAssignableFrom(inputFormatClass) &&
+              Class.forName(Constants.ACID_OUTPUT_FORMAT)
+                      .isAssignableFrom(outputFormatClass)) {
+        return true;
       }
     } catch (ClassNotFoundException e) {
-      LOG.warn("Could not verify InputFormat=" + sd.getInputFormat() + " or OutputFormat=" +
-              sd.getOutputFormat() + "  for " + tblName);
+      //if a table is using some custom I/O format and it's not in the classpath, we won't mark
+      //the table for Acid, but today (Hive 3.1 and earlier) OrcInput/OutputFormat is the only
+      //Acid format
+      LOG.error("Could not determine if " + fullTableName +
+              " can be made Acid due to: " + e.getMessage(), e);
       return false;
     }
-    return true;
+    return false;
   }
 
   public static boolean isRemovedInsertOnlyTable(Set<String> removedSet) {
