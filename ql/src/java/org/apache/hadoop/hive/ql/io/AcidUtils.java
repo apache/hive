@@ -2259,13 +2259,24 @@ public class AcidUtils {
     return true;
   }
 
-  public static Boolean isFromInsertOnlyToFullAcid(Table table, Map<String, String> props) {
+  public static Boolean isToFullAcid(Table table, Map<String, String> props) {
+    String transactional = props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    if (!isInsertOnlyTable(table) ||
-            !transactionalProp.equals
-                    (TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY)) {
+
+    if (transactional == null && transactionalProp == null) {
+      // Not affected or the op is not about transactional.
       return false;
+    } else if (transactional == null && table != null) {
+      transactional = table.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     }
+
+    if (transactionalProp == null) {
+      boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
+      if (isSetToTxn || table == null) return false; // Assume the full ACID table.
+      throw new RuntimeException("Cannot change '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL
+              + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
+    }
+
     return isAcidInputOutputFormat(table.getTableName(), table.getSd());
   }
 

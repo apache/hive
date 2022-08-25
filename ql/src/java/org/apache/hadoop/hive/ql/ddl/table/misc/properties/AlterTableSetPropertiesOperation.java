@@ -65,7 +65,7 @@ public class AlterTableSetPropertiesOperation extends AbstractAlterTableOperatio
     } else {
       boolean isFromMmTable = AcidUtils.isInsertOnlyTable(table.getParameters());
       Boolean isToMmTable = AcidUtils.isToInsertOnlyTable(table, desc.getProps());
-      boolean isToFullAcid = AcidUtils.isFromInsertOnlyToFullAcid(table, desc.getProps());
+      boolean isToFullAcid = AcidUtils.isToFullAcid(table, desc.getProps());
       if (!isFromMmTable && BooleanUtils.isTrue(isToMmTable)) {
         if (!HiveConf.getBoolVar(context.getConf(), ConfVars.HIVE_MM_ALLOW_ORIGINALS)) {
           List<Task<?>> mmTasks = generateAddMmTasks(table, desc.getWriteId());
