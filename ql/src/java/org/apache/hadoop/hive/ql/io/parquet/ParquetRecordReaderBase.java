@@ -123,16 +123,19 @@ public abstract class ParquetRecordReaderBase {
     final List<BlockMetaData> splitGroup = new ArrayList<BlockMetaData>();
     final long splitStart = fileSplit.getStart();
     final long splitLength = fileSplit.getLength();
+    long blockRowCount = 0;
     for (final BlockMetaData block : blocks) {
       final long firstDataPage = block.getColumns().get(0).getFirstDataPageOffset();
       if (firstDataPage >= splitStart && firstDataPage < splitStart + splitLength) {
         splitGroup.add(block);
+        blockRowCount += block.getRowCount();
       }
     }
     if (splitGroup.isEmpty()) {
       LOG.warn("Skipping split, could not find row group in: " + fileSplit);
       return null;
     }
+    LOG.debug("split group size: {}, row count: {}", splitGroup.size(), blockRowCount);
 
     FilterCompat.Filter filter = setFilter(jobConf, fileMetaData.getSchema());
     if (filter != null) {

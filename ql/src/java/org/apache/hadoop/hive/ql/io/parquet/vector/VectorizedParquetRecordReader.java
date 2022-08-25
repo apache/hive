@@ -201,7 +201,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     JobConf configuration) throws IOException, InterruptedException, HiveException {
 
     List<BlockMetaData> blocks;
-
     boolean indexAccess =
       configuration.getBoolean(DataWritableReadSupport.PARQUET_COLUMN_INDEX_ACCESS, false);
     long[] rowGroupOffsets = split.getRowGroupOffsets();
@@ -237,9 +236,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
           + " in range " + split.getStart() + ", " + split.getEnd());
     }
 
-    for (BlockMetaData block : blocks) {
-      this.totalRowCount += block.getRowCount();
-    }
     this.fileSchema = parquetMetadata.getFileMetaData().getSchema();
     this.writerTimezone = DataWritableReadSupport
         .getWriterTimeZoneId(parquetMetadata.getFileMetaData().getKeyValueMetaData());
@@ -248,9 +244,12 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     requestedSchema = DataWritableReadSupport
       .getRequestedSchema(indexAccess, columnNamesList, columnTypesList, fileSchema, configuration);
 
-    Path path = wrapPathForCache(filePath, cacheKey, configuration, blocks, cacheTag);
+    //TODO: For data cache this needs to be fixed and passed to reader.
+    //Path path = wrapPathForCache(filePath, cacheKey, configuration, blocks, cacheTag);
     this.reader = new ParquetFileReader(
-      configuration, parquetMetadata.getFileMetaData(), path, blocks, requestedSchema.getColumns());
+        configuration, parquetMetadata.getFileMetaData(), split.getPath(), blocks, requestedSchema.getColumns());
+    this.totalRowCount = this.reader.getFilteredRecordCount();
+    LOG.debug("totalRowCount: {}", totalRowCount);
   }
 
   private Path wrapPathForCache(Path path, Object fileKey, JobConf configuration,
@@ -400,7 +399,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     if (rowsReturned != totalCountLoadedSoFar) {
       return;
     }
-    PageReadStore pages = reader.readNextRowGroup();
+    PageReadStore pages = reader.readNextFilteredRowGroup();
     if (pages == null) {
       throw new IOException("expecting more rows but reached last block. Read "
         + rowsReturned + " out of " + totalRowCount);
