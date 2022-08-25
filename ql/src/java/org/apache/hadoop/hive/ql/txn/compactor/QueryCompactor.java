@@ -42,7 +42,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Common interface for query based compactions.
@@ -279,25 +280,14 @@ abstract class QueryCompactor {
     }
 
     static void overrideConfProps(HiveConf conf, CompactionInfo ci, Map<String, String> properties) {
-      if (properties != null) {
-        for (String key : properties.keySet()) {
-          if (key.startsWith(COMPACTOR_PREFIX)) {
-            String property = key.substring(COMPACTOR_PREFIX.length()); // 10 is the length of "compactor." We only keep the rest.
-            conf.set(property, properties.get(key));
-          }
-        }
-      }
-
-      // Give preference to properties coming from compaction
-      // over table properties
-      if (ci.getPropertiesMap() != null) {
-        for (String key : ci.getPropertiesMap().keySet()) {
-          if (key.startsWith(COMPACTOR_PREFIX)) {
-            String property = key.substring(COMPACTOR_PREFIX.length());
-            conf.set(property, ci.getPropertiesMap().get(key));
-          }
-        }
-      }
+      Stream.of(properties, ci.properties != null ? new StringableMap(ci.properties) : null)
+              .filter(Objects::nonNull)
+              .flatMap(map -> map.entrySet().stream())
+              .filter(entry -> entry.getKey().startsWith(COMPACTOR_PREFIX))
+              .forEach(entry -> {
+                String property = entry.getKey().substring(COMPACTOR_PREFIX.length());
+                conf.set(property, entry.getValue());
+              });
     }
   }
 }

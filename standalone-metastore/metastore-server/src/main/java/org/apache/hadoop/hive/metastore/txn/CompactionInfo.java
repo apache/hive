@@ -109,13 +109,6 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     properties = propertiesMap.toString();
   }
 
-  public StringableMap getPropertiesMap() {
-    if (propertiesMap == null) {
-      propertiesMap = new StringableMap(properties);
-    }
-    return propertiesMap;
-  }
-
   public String getFullPartitionName() {
     if (fullPartitionName == null) {
       StringBuilder buf = new StringBuilder(dbname);
