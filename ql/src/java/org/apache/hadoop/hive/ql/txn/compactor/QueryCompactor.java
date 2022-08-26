@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -28,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
@@ -280,7 +280,7 @@ abstract class QueryCompactor {
     }
 
     static void overrideConfProps(HiveConf conf, CompactionInfo ci, Map<String, String> properties) {
-      Stream.of(properties, ci.properties != null ? new StringableMap(ci.properties) : null)
+      Stream.of(properties, new StringableMap(ci.properties))
               .filter(Objects::nonNull)
               .flatMap(map -> map.entrySet().stream())
               .filter(entry -> entry.getKey().startsWith(COMPACTOR_PREFIX))
