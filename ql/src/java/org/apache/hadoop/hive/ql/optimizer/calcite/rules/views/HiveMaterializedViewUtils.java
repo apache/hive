@@ -185,7 +185,6 @@ public class HiveMaterializedViewUtils {
         .map(tableName -> TableName.getDbTable(tableName.getDb(), tableName.getTable()))
         .collect(Collectors.toList());
 
-    // TODO: get current snapshot of source tables
     Map<String, String> currentSnapshotMap = new HashMap<>(tablesUsedNames.size());
     for (String tableName : tablesUsedNames) {
       Table table = db.getTable(tableName);
