@@ -429,7 +429,7 @@ public interface TxnStore extends Configurable {
   Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold) throws MetaException;
 
   @RetrySemantics.ReadOnly
-  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold, long checkInterval)
+  Set<CompactionInfo> findPotentialCompactions(int abortedThreshold, long abortedTimeThreshold, long lastChecked)
       throws MetaException;
 
   /**
