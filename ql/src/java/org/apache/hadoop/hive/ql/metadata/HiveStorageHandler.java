@@ -552,4 +552,8 @@ public interface HiveStorageHandler extends Configurable {
   default void prepareAlterTableEnvironmentContext(AbstractAlterTableDesc alterTableDesc,
       EnvironmentContext environmentContext) {
   }
+
+  default Boolean hasDeleteOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String sinceSnapshotText) {
+    return null;
+  }
 }

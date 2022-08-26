@@ -1119,7 +1119,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public void prepareAlterTableEnvironmentContext(AbstractAlterTableDesc alterTableDesc,
       EnvironmentContext environmentContext) {
     if (alterTableDesc instanceof AlterTableSetPropertiesDesc &&
-        alterTableDesc.getProps().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
+            alterTableDesc.getProps().containsKey(BaseMetastoreTableOperations.METADATA_LOCATION_PROP)) {
       // signal manual iceberg metadata location updated by user
       environmentContext.putToProperties(HiveIcebergMetaHook.MANUAL_ICEBERG_METADATA_LOCATION_CHANGE, "true");
     }
@@ -1178,5 +1178,29 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
           .getOrDefault(TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT);
     }
     return COPY_ON_WRITE.equalsIgnoreCase(mode);
+  }
+
+  public Boolean hasDeleteOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String sinceSnapshotText) {
+    SnapshotKey sinceSnapshot = SnapshotKey.fromJson(sinceSnapshotText);
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    boolean foundSince = false;
+    for (Snapshot snapshot: table.snapshots()) {
+      if (!foundSince) {
+        if (snapshot.snapshotId() == sinceSnapshot.snapshotId) {
+          foundSince = true;
+        }
+      } else {
+        if ("delete".equals(snapshot.operation())) {
+          return true;
+        }
+      }
+    }
+
+    if (foundSince) {
+      return false;
+    }
+
+    return null;
   }
 }
