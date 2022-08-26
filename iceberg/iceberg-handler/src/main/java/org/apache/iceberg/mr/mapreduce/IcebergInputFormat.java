@@ -116,6 +116,13 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       scan = scan.useSnapshot(snapshotId);
     }
 
+    if (snapshotId == -1) {
+      long snapshotIntervalFrom = conf.getLong(InputFormatConfig.SNAPSHOT_INTERVAL_FROM, -1);
+      if (snapshotIntervalFrom != -1) {
+        scan = scan.appendsBetween(snapshotIntervalFrom, table.currentSnapshot().snapshotId());
+      }
+    }
+
     long asOfTime = conf.getLong(InputFormatConfig.AS_OF_TIMESTAMP, -1);
     if (asOfTime != -1) {
       scan = scan.asOfTime(asOfTime);
