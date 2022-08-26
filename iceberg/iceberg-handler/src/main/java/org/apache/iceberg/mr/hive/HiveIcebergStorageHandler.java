@@ -19,8 +19,13 @@
 
 package org.apache.iceberg.mr.hive;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringWriter;
+import java.io.UncheckedIOException;
+import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -28,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -89,6 +95,7 @@ import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.SortDirection;
 import org.apache.iceberg.SortField;
@@ -978,9 +985,76 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     }
   }
 
+  private static class SnapshotKey {
+    public static SnapshotKey fromJson(String jsonString) {
+      try {
+        return new ObjectMapper().readValue(jsonString, SnapshotKey.class);
+      } catch (JsonProcessingException e) {
+        // this is not a jsonString, fall back to treating it as ValidTxnWriteIdList
+        throw new RuntimeException(e);
+      }
+    }
+
+    public static SnapshotKey fromSnapshot(Snapshot snapshot) {
+      return new SnapshotKey(snapshot.snapshotId(), snapshot.sequenceNumber());
+    }
+
+    private long snapshotId;
+    private long sequenceNumber;
+
+    private SnapshotKey() {
+
+    }
+
+    private SnapshotKey(long snapshotId, long sequenceNumber) {
+      this.snapshotId = snapshotId;
+      this.sequenceNumber = sequenceNumber;
+    }
+
+    public long getSnapshotId() {
+      return snapshotId;
+    }
+
+    public long getSequenceNumber() {
+      return sequenceNumber;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      SnapshotKey that = (SnapshotKey) o;
+      return snapshotId == that.snapshotId && sequenceNumber == that.sequenceNumber;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(snapshotId, sequenceNumber);
+    }
+
+    public String asJsonString() {
+      try (Writer out = new StringWriter()) {
+        new ObjectMapper().writeValue(out, this);
+        return out.toString();
+      } catch (IOException e) {
+        throw new UncheckedIOException("Unable to convert " + this + " to json", e);
+      }
+    }
+  }
+
   public String getCurrentSnapshot(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
-    return Long.toString(table.currentSnapshot().sequenceNumber());
+    return SnapshotKey.fromSnapshot(table.currentSnapshot()).asJsonString();
+  }
+
+  public boolean isCurrentSnapshot(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String otherSnapshot) {
+    TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
+    Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
+    return SnapshotKey.fromSnapshot(table.currentSnapshot()).equals(SnapshotKey.fromJson(otherSnapshot));
   }
 }
