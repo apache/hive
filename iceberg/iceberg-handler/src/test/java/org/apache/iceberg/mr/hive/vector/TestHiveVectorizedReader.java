@@ -29,6 +29,7 @@ import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.Record;
@@ -76,7 +77,7 @@ public class TestHiveVectorizedReader {
     Assert.assertTrue(location.delete());
 
     Configuration conf = prepareMockJob(SCHEMA, new Path(location.toString()));
-    conf.set(InputFormatConfig.CATALOG, Catalogs.LOCATION);
+    conf.set(CatalogUtil.ICEBERG_CATALOG_TYPE, Catalogs.LOCATION);
     HadoopTables tables = new HadoopTables(conf);
 
     helper = new TestHelper(conf, tables, location.toString(), SCHEMA, null, fileFormat, temp);
