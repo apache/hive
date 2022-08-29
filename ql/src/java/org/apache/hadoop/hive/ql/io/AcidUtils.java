@@ -2277,7 +2277,10 @@ public class AcidUtils {
               + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
     }
 
-    return isAcidInputOutputFormat(table.getTableName(), table.getSd());
+    if (table == null) return false;
+
+    StorageDescriptor sd = table.getSd();
+    return isAcidInputOutputFormat(table.getTableName(), table.getSd()) && sd.getSortColsSize() <= 0;
   }
 
   public static boolean isAcidInputOutputFormat(String fullTableName, StorageDescriptor sd) {
@@ -2288,9 +2291,9 @@ public class AcidUtils {
               Class.forName(sd.getOutputFormat());
 
       if (inputFormatClass != null && outputFormatClass != null &&
-              Class.forName(Constants.ACID_INPUT_FORMAT)
+              Class.forName(Constants.ORC_INPUT_FORMAT)
                       .isAssignableFrom(inputFormatClass) &&
-              Class.forName(Constants.ACID_OUTPUT_FORMAT)
+              Class.forName(Constants.ORC_OUTPUT_FORMAT)
                       .isAssignableFrom(outputFormatClass)) {
         return true;
       }

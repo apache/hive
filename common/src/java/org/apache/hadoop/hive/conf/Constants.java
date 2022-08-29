@@ -94,7 +94,7 @@ public class Constants {
 
   public static final String ERROR_MESSAGE_NO_DETAILS_AVAILABLE = "No detailed message available";
 
-  public static final String ACID_INPUT_FORMAT = "org.apache.hadoop.hive.ql.io.orc.OrcInputFormat";
-  public static final String ACID_OUTPUT_FORMAT = "org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat";
+  public static final String ORC_INPUT_FORMAT = "org.apache.hadoop.hive.ql.io.orc.OrcInputFormat";
+  public static final String ORC_OUTPUT_FORMAT = "org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat";
 
 }
