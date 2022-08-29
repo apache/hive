@@ -169,10 +169,11 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       //initialize the rowbatchContext
       rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
 
+      // Using jobConf as parquet filter gets added to it in getSplit.
       if (parquetInputSplit != null) {
-        initialize(parquetInputSplit, conf);
+        initialize(parquetInputSplit, jobConf);
       }
-      initPartitionValues(fileSplit, conf);
+      initPartitionValues(fileSplit, jobConf);
       bucketIdentifier = BucketIdentifier.from(conf, filePath);
     } catch (Throwable e) {
       LOG.error("Failed to create the vectorized reader due to exception " + e);
