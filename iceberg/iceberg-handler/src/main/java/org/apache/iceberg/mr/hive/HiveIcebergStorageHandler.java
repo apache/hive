@@ -1185,7 +1185,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     boolean foundSince = false;
-    for (Snapshot snapshot: table.snapshots()) {
+    for (Snapshot snapshot : table.snapshots()) {
       if (!foundSince) {
         if (snapshot.snapshotId() == sinceSnapshot.snapshotId) {
           foundSince = true;
