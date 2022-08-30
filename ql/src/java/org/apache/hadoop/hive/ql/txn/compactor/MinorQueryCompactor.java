@@ -69,7 +69,7 @@ final class MinorQueryCompactor extends QueryCompactor {
 
     runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
         Lists.newArrayList(resultDeltaDir, resultDeleteDeltaDir), createQueries,
-        compactionQueries, dropQueries);
+        compactionQueries, dropQueries, table.getParameters());
   }
 
 
