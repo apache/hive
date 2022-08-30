@@ -134,6 +134,7 @@ public class Table implements Serializable {
    * The version of the table. For Iceberg tables this is the snapshotId.
    */
   private String asOfVersion = null;
+  private String versionIntervalFrom = null;
 
   /**
    * The version of the table at the given timestamp. The format will be parsed with
@@ -180,6 +181,7 @@ public class Table implements Serializable {
 
     newTab.setAsOfTimestamp(this.asOfTimestamp);
     newTab.setAsOfVersion(this.asOfVersion);
+    newTab.setVersionIntervalFrom(this.versionIntervalFrom);
 
     newTab.setMetaTable(this.getMetaTable());
     return newTab;
@@ -593,6 +595,9 @@ public class Table implements Serializable {
       return false;
     }
     if (!Objects.equals(asOfVersion, other.asOfVersion)) {
+      return false;
+    }
+    if (!Objects.equals(versionIntervalFrom, other.versionIntervalFrom)) {
       return false;
     }
     return true;
@@ -1325,6 +1330,14 @@ public class Table implements Serializable {
 
   public void setAsOfVersion(String asOfVersion) {
     this.asOfVersion = asOfVersion;
+  }
+
+  public String getVersionIntervalFrom() {
+    return versionIntervalFrom;
+  }
+
+  public void setVersionIntervalFrom(String versionIntervalFrom) {
+    this.versionIntervalFrom = versionIntervalFrom;
   }
 
   public String getAsOfTimestamp() {
