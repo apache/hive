@@ -28,13 +28,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
-import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -79,18 +73,7 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
     }
 
     AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, type, isBlocking, poolName, mapProp);
-//    Table table = getTable(tableName);
-//    WriteEntity.WriteType writeType = null;
-//    if (AcidUtils.isTransactionalTable(table)) {
-//      setAcidDdlDesc(desc);
-//      writeType = WriteType.DDL_EXCLUSIVE;
-//    } else {
-//      writeType = WriteEntity.determineAlterTableWriteType(AlterTableType.COMPACT);
-//    }
-//    inputs.add(new ReadEntity(table));
-//    WriteEntity alterTableOutput = new WriteEntity(table, writeType);
-//    outputs.add(alterTableOutput);
-    addInputsOutputsAlterTable(tableName, null, desc, desc.getType(), false);
+    addInputsOutputsAlterTable(tableName, partitionSpec, desc, desc.getType(), false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 }

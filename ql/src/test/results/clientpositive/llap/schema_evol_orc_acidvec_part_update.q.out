@@ -178,19 +178,19 @@ insert_num	part	a	b	c	d
 PREHOOK: query: alter table partitioned_update_1_n2 partition(part=1) compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@partitioned_update_1_n2
-PREHOOK: Output: default@partitioned_update_1_n2
+PREHOOK: Output: default@partitioned_update_1_n2@part=1
 POSTHOOK: query: alter table partitioned_update_1_n2 partition(part=1) compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@partitioned_update_1_n2
-POSTHOOK: Output: default@partitioned_update_1_n2
+POSTHOOK: Output: default@partitioned_update_1_n2@part=1
 PREHOOK: query: alter table partitioned_update_1_n2 partition(part=2) compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@partitioned_update_1_n2
-PREHOOK: Output: default@partitioned_update_1_n2
+PREHOOK: Output: default@partitioned_update_1_n2@part=2
 POSTHOOK: query: alter table partitioned_update_1_n2 partition(part=2) compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@partitioned_update_1_n2
-POSTHOOK: Output: default@partitioned_update_1_n2
+POSTHOOK: Output: default@partitioned_update_1_n2@part=2
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_update_1_n2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_update_1_n2
@@ -354,19 +354,19 @@ insert_num	part	a	b	c	d
 PREHOOK: query: alter table partitioned_delete_1_n2 partition(part=1) compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@partitioned_delete_1_n2
-PREHOOK: Output: default@partitioned_delete_1_n2
+PREHOOK: Output: default@partitioned_delete_1_n2@part=1
 POSTHOOK: query: alter table partitioned_delete_1_n2 partition(part=1) compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@partitioned_delete_1_n2
-POSTHOOK: Output: default@partitioned_delete_1_n2
+POSTHOOK: Output: default@partitioned_delete_1_n2@part=1
 PREHOOK: query: alter table partitioned_delete_1_n2 partition(part=2) compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@partitioned_delete_1_n2
-PREHOOK: Output: default@partitioned_delete_1_n2
+PREHOOK: Output: default@partitioned_delete_1_n2@part=2
 POSTHOOK: query: alter table partitioned_delete_1_n2 partition(part=2) compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@partitioned_delete_1_n2
-POSTHOOK: Output: default@partitioned_delete_1_n2
+POSTHOOK: Output: default@partitioned_delete_1_n2@part=2
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_1_n2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_delete_1_n2
@@ -527,19 +527,19 @@ insert_num	part	a	b	c	d
 PREHOOK: query: alter table partitioned_delete_2_n2 partition(part=1) compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@partitioned_delete_2_n2
-PREHOOK: Output: default@partitioned_delete_2_n2
+PREHOOK: Output: default@partitioned_delete_2_n2@part=1
 POSTHOOK: query: alter table partitioned_delete_2_n2 partition(part=1) compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@partitioned_delete_2_n2
-POSTHOOK: Output: default@partitioned_delete_2_n2
+POSTHOOK: Output: default@partitioned_delete_2_n2@part=1
 PREHOOK: query: alter table partitioned_delete_2_n2 partition(part=2) compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: Input: default@partitioned_delete_2_n2
-PREHOOK: Output: default@partitioned_delete_2_n2
+PREHOOK: Output: default@partitioned_delete_2_n2@part=2
 POSTHOOK: query: alter table partitioned_delete_2_n2 partition(part=2) compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: Input: default@partitioned_delete_2_n2
-POSTHOOK: Output: default@partitioned_delete_2_n2
+POSTHOOK: Output: default@partitioned_delete_2_n2@part=2
 PREHOOK: query: select insert_num,part,a,b,c,d from partitioned_delete_2_n2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_delete_2_n2

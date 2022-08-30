@@ -76,7 +76,7 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
 
     if (AcidUtils.isTransactionalTable(table)) {
       String poolName = table.getProperty(Constants.HIVE_COMPACTOR_WORKER_POOL);
-      compactAcidTable(tableName, table, partitionSpec, poolName);
+      compactAcidTable(tableName, partitionSpec, poolName);
     } else {
       // non-native and non-managed tables are not supported as MoveTask requires filenames to be in specific format,
       // violating which can cause data loss
@@ -100,15 +100,12 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
     }
   }
 
-  private void compactAcidTable(TableName tableName, Table table, Map<String, String> partitionSpec, String poolName) throws SemanticException {
+  private void compactAcidTable(TableName tableName, Map<String, String> partitionSpec, String poolName) throws SemanticException {
     boolean isBlocking = !HiveConf.getBoolVar(conf, ConfVars.TRANSACTIONAL_CONCATENATE_NOBLOCK, false);
 
     AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, CompactionType.MAJOR.name(), isBlocking,
         poolName, null);
-    WriteEntity.WriteType writeType = WriteEntity.WriteType.DDL_EXCLUSIVE;
-    inputs.add(new ReadEntity(table));
-    WriteEntity alterTableOutput = new WriteEntity(table, writeType);
-    outputs.add(alterTableOutput);
+    addInputsOutputsAlterTable(tableName, partitionSpec, desc, desc.getType(), false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
     setAcidDdlDesc(getTable(tableName), desc);
   }
@@ -193,7 +190,7 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
 
   @SuppressWarnings("rawtypes")
   private Task<?> createMergeTask(TableName tableName, Table table, Map<String, String> partitionSpec, Path oldLocation,
-      ListBucketingCtx lbCtx, Class<? extends InputFormat> inputFormatClass, Path queryTmpDir) {
+      ListBucketingCtx lbCtx, Class<? extends InputFormat> inputFormatClass, Path queryTmpDir) throws SemanticException {
     AlterTableConcatenateDesc desc = new AlterTableConcatenateDesc(tableName, partitionSpec, lbCtx, oldLocation,
         queryTmpDir, inputFormatClass, Utilities.getTableDesc(table));
     DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), desc);
