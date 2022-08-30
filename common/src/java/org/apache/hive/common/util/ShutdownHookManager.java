@@ -41,8 +41,17 @@ public class ShutdownHookManager {
 
   static final private Logger LOG = LoggerFactory.getLogger(ShutdownHookManager.class.getName());
 
+  // The graceful shutdown hook's priority must be higher than other hooks'
+  public static final int GRACEFUL_SHUTDOWN_HOOK_PRIORITY = 1000;
+
+  // The higher the priority the earlier will run. ShutdownHooks with same priority run
+  // in a non-deterministic order.
+  public static final int DEFAULT_SHUTDOWN_HOOK_PRIORITY = FileSystem.SHUTDOWN_HOOK_PRIORITY;
+
+  public static final int DELETE_ON_EXIT_HOOK_PRIORITY = -1;
+
   static {
-    MGR.addShutdownHook(DELETE_ON_EXIT_HOOK, -1);
+    MGR.addShutdownHook(DELETE_ON_EXIT_HOOK, DELETE_ON_EXIT_HOOK_PRIORITY);
   }
 
   /**
@@ -50,7 +59,26 @@ public class ShutdownHookManager {
    * @param shutdownHook - shutdown hook
    */
   public static void addShutdownHook(Runnable shutdownHook) {
-    addShutdownHook(shutdownHook, FileSystem.SHUTDOWN_HOOK_PRIORITY);
+    addShutdownHook(shutdownHook, DEFAULT_SHUTDOWN_HOOK_PRIORITY);
+  }
+
+  /**
+   * Adds shutdown hook with a priority and default timeout (30s)
+   * @param shutdownHook shutdown hook
+   * @param priority priority of the shutdownHook
+   */
+  public static void addShutdownHook(Runnable shutdownHook, int priority) {
+    addShutdownHook(shutdownHook, priority, 30);
+  }
+
+  /**
+   * Adds a server's graceful shutdown hook with the highest priority
+   * and the given timeout, so the hook runs earlier than other kinds of hooks.
+   * @param shutdownHook shutdown hook
+   * @param timeout timeout of the shutdownHook
+   */
+  public static void addGracefulShutDownHook(Runnable shutdownHook, long timeout) {
+    addShutdownHook(shutdownHook, GRACEFUL_SHUTDOWN_HOOK_PRIORITY, timeout);
   }
 
   /**
@@ -60,12 +88,16 @@ public class ShutdownHookManager {
    *
    * @param shutdownHook shutdownHook <code>Runnable</code>
    * @param priority priority of the shutdownHook.
+   * @param timeout timeout of the shutdownHook.
    */
-  public static void addShutdownHook(Runnable shutdownHook, int priority) {
-    if (priority < 0) {
-      throw new IllegalArgumentException("Priority should be greater than or equal to zero");
+  private static void addShutdownHook(Runnable shutdownHook, int priority, long timeout) {
+    if (priority < 0 || priority > GRACEFUL_SHUTDOWN_HOOK_PRIORITY) {
+      throw new IllegalArgumentException("Priority should be ranged between 0 and " +
+          GRACEFUL_SHUTDOWN_HOOK_PRIORITY);
     }
-    MGR.addShutdownHook(shutdownHook, priority, 30, TimeUnit.SECONDS);
+    if (!isShutdownInProgress()) {
+      MGR.addShutdownHook(shutdownHook, priority, timeout, TimeUnit.SECONDS);
+    }
   }
 
   /**
@@ -85,7 +117,7 @@ public class ShutdownHookManager {
    * FALSE otherwise (including when shutdownHook == null)
    */
   public static boolean removeShutdownHook(Runnable shutdownHook) {
-    if (shutdownHook == null) {
+    if (shutdownHook == null || isShutdownInProgress()) {
       return false;
     }
     return MGR.removeShutdownHook(shutdownHook);
