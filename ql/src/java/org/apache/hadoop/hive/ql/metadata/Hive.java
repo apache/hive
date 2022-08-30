@@ -4173,7 +4173,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
       // not the destf or its subdir?
       isOldPathUnderDestf = isSubDir(oldPath, destPath, oldFs, destFs, false);
-      if (isOldPathUnderDestf) {
+      if (isOldPathUnderDestf && oldFs.exists(oldPath)) {
         cleanUpOneDirectoryForReplace(oldPath, oldFs, pathFilter, conf, purge, isNeedRecycle);
       }
     } catch (IOException e) {
