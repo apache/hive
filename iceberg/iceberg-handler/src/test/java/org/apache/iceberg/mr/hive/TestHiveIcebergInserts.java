@@ -153,6 +153,32 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
   }
 
   @Test
+  public void testInsertIntoORCFile() throws IOException {
+    Assume.assumeTrue("Testing the create table ... stored as ORCFILE syntax is enough for a single scenario.",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
+    shell.executeStatement("CREATE TABLE t2(c0 DOUBLE , c1 DOUBLE , c2 DECIMAL) STORED BY " +
+        "ICEBERG STORED AS ORCFILE");
+    shell.executeStatement("INSERT INTO t2(c1, c0) VALUES(0.1803113419993464, 0.9381388537256228)");
+    List<Object[]> results = shell.executeStatement("SELECT * FROM t2");
+    Assert.assertEquals(1, results.size());
+    Assert.assertEquals(0.9381388537256228, results.get(0)[0]);
+    Assert.assertEquals(0.1803113419993464, results.get(0)[1]);
+    Assert.assertEquals(null, results.get(0)[2]);
+  }
+
+
+  @Test
+  public void testStoredByIcebergInTextFile() {
+    Assume.assumeTrue("Testing the create table ... stored as TEXTFILE syntax is enough for a single scenario.",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
+    AssertHelpers.assertThrows("Create table should not work with textfile", IllegalArgumentException.class,
+        "Unsupported fileformat",
+        () ->
+            shell.executeStatement("CREATE TABLE IF NOT EXISTS t2(c0 DOUBLE , c1 DOUBLE , c2 DECIMAL) STORED BY " +
+                "ICEBERG STORED AS TEXTFILE"));
+  }
+
+  @Test
   public void testInsertSupportedTypes() throws IOException {
     for (int i = 0; i < SUPPORTED_TYPES.size(); i++) {
       Type type = SUPPORTED_TYPES.get(i);
