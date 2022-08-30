@@ -524,7 +524,7 @@ public class UpgradeTool {
      * ORC uses table props for settings so things like bucketing, I/O Format, etc should
      * be the same for each partition.
      */
-    boolean canBeMadeAcid = canBeMadeAcid(fullTableName, t.getSd());
+    boolean canBeMadeAcid = AcidUtils.canBeMadeAcid(fullTableName, t.getSd());
     if(t.getPartitionKeysSize() <= 0) {
       if(canBeMadeAcid) {
         convertToAcid.add("ALTER TABLE " + Warehouse.getQualifiedName(t) + " SET TBLPROPERTIES (" +
@@ -584,9 +584,7 @@ public class UpgradeTool {
       }
     }
   }
-  private static boolean canBeMadeAcid(String fullTableName, StorageDescriptor sd) {
-    return AcidUtils.isAcidInputOutputFormat(fullTableName, sd) && sd.getSortColsSize() <= 0;
-  }
+
 
   private static void makeConvertTableScript(List<String> alterTableAcid, List<String> alterTableMm,
       String scriptLocation) throws IOException {

@@ -2260,28 +2260,22 @@ public class AcidUtils {
   }
 
   public static Boolean isToFullAcid(Table table, Map<String, String> props) {
-    String transactional = props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+
     String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
 
-    if (transactional == null && transactionalProp == null) {
-      // Not affected or the op is not about transactional.
-      return false;
-    } else if (transactional == null && table != null) {
-      transactional = table.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    if (table != null && AcidUtils.isTransactionalTable(table)) {
+      if (transactionalProp.equals(TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY)) {
+        return canBeMadeAcid(table.getTableName(), table.getSd());
+      }
     }
-
-    if (transactionalProp == null) {
-      boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
-      if (isSetToTxn || table == null) return false; // Assume the full ACID table.
-      throw new RuntimeException("Cannot change '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL
-              + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
-    }
-
-    if (table == null) return false;
-
-    StorageDescriptor sd = table.getSd();
-    return isAcidInputOutputFormat(table.getTableName(), table.getSd()) && sd.getSortColsSize() <= 0;
+    return false;
   }
+
+
+  public static boolean canBeMadeAcid(String fullTableName, StorageDescriptor sd) {
+    return AcidUtils.isAcidInputOutputFormat(fullTableName, sd) && sd.getSortColsSize() <= 0;
+  }
+
 
   public static boolean isAcidInputOutputFormat(String fullTableName, StorageDescriptor sd) {
     try {
