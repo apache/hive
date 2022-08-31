@@ -346,6 +346,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Concatenate
+      table name: default.orc_merge5a
       partition spec:
         st 80.0
       table name: default.orc_merge5a

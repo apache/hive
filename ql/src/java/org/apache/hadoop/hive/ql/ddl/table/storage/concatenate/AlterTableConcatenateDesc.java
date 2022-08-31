@@ -48,7 +48,7 @@ public class AlterTableConcatenateDesc extends AbstractAlterTableDesc implements
 
   public AlterTableConcatenateDesc(TableName tableName, Map<String, String> partitionSpec, ListBucketingCtx lbCtx,
       Path inputDir, Path outputDir, Class<? extends InputFormat> inputFormatClass, TableDesc tableDesc) throws SemanticException {
-    super(AlterTableType.COMPACT, tableName, partitionSpec, null, false, false, null);
+    super(AlterTableType.MERGEFILES, tableName, partitionSpec, null, false, false, null);
     this.tableName = tableName.getNotEmptyDbTable();
     this.partitionSpec = partitionSpec;
     this.lbCtx = lbCtx;
