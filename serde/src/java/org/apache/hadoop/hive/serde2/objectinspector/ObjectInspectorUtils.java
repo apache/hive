@@ -28,6 +28,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
+import java.util.Comparator;
+
+
 
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
@@ -563,6 +567,11 @@ public final class ObjectInspectorUtils {
         af.add(f[i]);
       }
     }
+    Collections.sort(af,new Comparator<Field>(){
+      public int compare(Field f1, Field f2){
+        return f1.getName().toLowerCase().compareTo(f2.getName().toLowerCase());
+      }
+    });
     Field[] r = new Field[af.size()];
     for (int i = 0; i < af.size(); ++i) {
       r[i] = af.get(i);
