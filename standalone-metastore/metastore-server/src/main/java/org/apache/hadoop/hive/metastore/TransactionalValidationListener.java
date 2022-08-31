@@ -217,7 +217,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
       }
     }
     checkSorted(newTable);
-    if(TxnUtils.isAcidTable(newTable) && !TxnUtils.isTransactionalTable(oldTable)) {
+    if (TxnUtils.isAcidTable(newTable) && !TxnUtils.isTransactionalTable(oldTable)) {
       /* we just made an existing table full acid which wasn't acid before and it passed all checks
       initialize the Write ID sequence so that we can handle assigning ROW_IDs to 'original'
       files already present in the table. Not needed if oldTable is insertOnly.*/
