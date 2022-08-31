@@ -33,7 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -249,7 +249,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertEquals(imported.toString(), "insert_only",
         imported.getParameters().get("transactional_properties"));
     Path importPath = new Path(imported.getSd().getLocation());
-    FileStatus[] stat = fs.listStatus(importPath, AcidUtils.hiddenFileFilter);
+    FileStatus[] stat = fs.listStatus(importPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
     Assert.assertEquals(Arrays.toString(stat), 1, stat.length);
     assertIsDelta(stat[0]);
     List<String> allData = stringifyValues(rows1);
@@ -277,7 +277,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertNull(imported.toString(),
         imported.getParameters().get("transactional_properties"));
     importPath = new Path(imported.getSd().getLocation());
-    stat = fs.listStatus(importPath, AcidUtils.hiddenFileFilter);
+    stat = fs.listStatus(importPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
     allData = stringifyValues(rows2);
     Collections.sort(allData);
     rs = runStatementOnDriver(String.format("select a,b from %s order by a,b", importName));
@@ -746,7 +746,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     queue.add(path);
     while (!queue.isEmpty()) {
       Path next = queue.pollFirst();
-      FileStatus[] stats = fs.listStatus(next, AcidUtils.hiddenFileFilter);
+      FileStatus[] stats = fs.listStatus(next, FileUtils.HIDDEN_FILES_PATH_FILTER);
       for (FileStatus stat : stats) {
         Path child = stat.getPath();
         paths.add(child.toString());

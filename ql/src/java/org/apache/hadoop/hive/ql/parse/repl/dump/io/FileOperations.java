@@ -31,6 +31,7 @@ import javax.security.auth.login.LoginException;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
@@ -130,7 +131,7 @@ public class FileOperations {
         copyOneDataPath(validPath, destPath);
       }
       for (Path dirWithOriginals : dirsWithOriginals) {
-        FileStatus[] files = dataFileSystem.listStatus(dirWithOriginals, AcidUtils.hiddenFileFilter);
+        FileStatus[] files = dataFileSystem.listStatus(dirWithOriginals, FileUtils.HIDDEN_FILES_PATH_FILTER);
         List<Path> srcPaths = new ArrayList<>();
         for (FileStatus fileStatus : files) {
           if (fileStatus.isDirectory()) continue;
