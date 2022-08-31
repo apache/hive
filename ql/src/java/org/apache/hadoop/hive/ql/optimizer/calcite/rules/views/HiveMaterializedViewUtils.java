@@ -238,7 +238,7 @@ public class HiveMaterializedViewUtils {
 
     if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
       // Not supported yet for Iceberg tables
-      return materialization;
+      return augmentMaterializationWithTimeInformation(materialization, snapshot);
     }
 
     String materializationTxnList = snapshot != null ? snapshot.getValidTxnList() : null;
@@ -268,6 +268,21 @@ public class HiveMaterializedViewUtils {
     final RexBuilder rexBuilder = materialization.queryRel.getCluster().getRexBuilder();
     final HepProgramBuilder augmentMaterializationProgram = new HepProgramBuilder()
         .addRuleInstance(new HiveAugmentMaterializationRule(rexBuilder, currentTxnList, materializationTxnList));
+    final HepPlanner augmentMaterializationPlanner = new HepPlanner(
+        augmentMaterializationProgram.build());
+    augmentMaterializationPlanner.setRoot(materialization.queryRel);
+    final RelNode modifiedQueryRel = augmentMaterializationPlanner.findBestExp();
+    return new HiveRelOptMaterialization(materialization.tableRel, modifiedQueryRel,
+        null, materialization.qualifiedTableName, materialization.getScope(), materialization.getRebuildMode(),
+            materialization.getAst());
+  }
+
+  private static HiveRelOptMaterialization augmentMaterializationWithTimeInformation(
+      HiveRelOptMaterialization materialization, MaterializationSnapshot snapshot) throws LockException {
+    // Augment
+    final RexBuilder rexBuilder = materialization.queryRel.getCluster().getRexBuilder();
+    final HepProgramBuilder augmentMaterializationProgram = new HepProgramBuilder()
+        .addRuleInstance(new HiveAugmentIcebergMaterializationRule(rexBuilder, snapshot.getTableSnapshots()));
     final HepPlanner augmentMaterializationPlanner = new HepPlanner(
         augmentMaterializationProgram.build());
     augmentMaterializationPlanner.setRoot(materialization.queryRel);
