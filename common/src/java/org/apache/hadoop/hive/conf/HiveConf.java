@@ -2610,7 +2610,7 @@ public class HiveConf extends Configuration {
         "we are increasing the number of files possibly by a big margin. So, we merge aggressively."),
     HIVEOPTCORRELATION("hive.optimize.correlation", false, "exploit intra-query correlations."),
 
-    HIVE_OPTIMIZE_LIMIT_TRANSPOSE("hive.optimize.limittranspose", false,
+    HIVE_OPTIMIZE_LIMIT_TRANSPOSE("hive.optimize.limittranspose", true,
         "Whether to push a limit through left/right outer join or union. If the value is true and the size of the outer\n" +
         "input is reduced enough (as specified in hive.optimize.limittranspose.reduction), the limit is pushed\n" +
         "to the outer input or union; to remain semantically correct, the limit is kept on top of the join or the union too."),
