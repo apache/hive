@@ -50,7 +50,7 @@ General Info
 
 For the latest information about Hive, please visit out website at:
 
-  http://hive.apache.org/
+http://hive.apache.org/
 
 
 Getting Started
@@ -88,7 +88,8 @@ Java
 Hadoop
 ------
 
-- Hadoop 1.x, 2.x
+- Hadoop 1.x（Hive 1.0,Hive 1.1,Hive 1.2）
+- Hadoop 2.x (Hive 2.x) 
 - Hadoop 3.x (Hive 3.x)
 
 
