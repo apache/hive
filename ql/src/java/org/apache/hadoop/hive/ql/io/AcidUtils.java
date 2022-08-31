@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.io;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.common.FileUtils.HIDDEN_FILES_PATH_FILTER;
+import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY;
+import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
 import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
 
 import static org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
@@ -478,11 +480,7 @@ public class AcidUtils {
    * @return true, if the tblProperties contains {@link AcidUtils#COMPACTOR_TABLE_PROPERTY}
    */
   public static boolean isCompactionTable(Properties tblProperties) {
-    if (tblProperties != null && tblProperties.containsKey(COMPACTOR_TABLE_PROPERTY) && tblProperties
-        .getProperty(COMPACTOR_TABLE_PROPERTY).equalsIgnoreCase("true")) {
-      return true;
-    }
-    return false;
+    return tblProperties != null && isCompactionTable(Maps.fromProperties(tblProperties));
   }
 
   /**
@@ -491,7 +489,7 @@ public class AcidUtils {
    * @return true, if the parameters contains {@link AcidUtils#COMPACTOR_TABLE_PROPERTY}
    */
   public static boolean isCompactionTable(Map<String, String> parameters) {
-    return Boolean.parseBoolean(parameters.getOrDefault(COMPACTOR_TABLE_PROPERTY, "false"));
+    return Boolean.parseBoolean(parameters.get(COMPACTOR_TABLE_PROPERTY));
   }
 
   /**
@@ -1931,11 +1929,7 @@ public class AcidUtils {
   }
 
   public static boolean isTablePropertyTransactional(Properties props) {
-    String resultStr = props.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    if (resultStr == null) {
-      resultStr = props.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
-    }
-    return resultStr != null && resultStr.equalsIgnoreCase("true");
+    return isTablePropertyTransactional(Maps.fromProperties(props));
   }
 
   public static boolean isTablePropertyTransactional(Map<String, String> parameters) {
@@ -1943,17 +1937,8 @@ public class AcidUtils {
     if (resultStr == null) {
       resultStr = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
     }
-    return resultStr != null && resultStr.equalsIgnoreCase("true");
+    return Boolean.parseBoolean(resultStr);
   }
-
-  public static boolean isTablePropertyTransactional(Configuration conf) {
-    String resultStr = conf.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    if (resultStr == null) {
-      resultStr = conf.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
-    }
-    return resultStr != null && resultStr.equalsIgnoreCase("true");
-  }
-
 
   /**
    * @param p - not null
@@ -1971,12 +1956,16 @@ public class AcidUtils {
     return isTransactionalTable(table.getTblProps());
   }
 
+  public static boolean isTransactionalTable(Table table) {
+    return table != null && isTransactionalTable(table.getTTable());
+  }
+
+  public static boolean isTransactionalTable(org.apache.hadoop.hive.metastore.api.Table table) {
+    return table != null && isTransactionalTable(table.getParameters());
+  }
+
   public static boolean isTransactionalTable(Map<String, String> props) {
-    String tableIsTransactional = props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    if (tableIsTransactional == null) {
-      tableIsTransactional = props.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
-    }
-    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+    return isTablePropertyTransactional(props);
   }
 
   public static boolean isTransactionalView(CreateMaterializedViewDesc view) {
@@ -1986,16 +1975,18 @@ public class AcidUtils {
     return isTransactionalTable(view.getTblProps());
   }
 
+  public static boolean isFullAcidTable(CreateTableDesc td) {
+    if (td == null || td.getTblProps() == null) {
+      return false;
+    }
+    return isFullAcidTable(td.getTblProps());
+  }
   /**
    * Should produce the same result as
    * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#isAcidTable(org.apache.hadoop.hive.metastore.api.Table)}
    */
   public static boolean isFullAcidTable(Table table) {
-    return isFullAcidTable(table == null ? null : table.getTTable());
-  }
-
-  public static boolean isTransactionalTable(Table table) {
-    return isTransactionalTable(table == null ? null : table.getTTable());
+    return table != null && isFullAcidTable(table.getTTable());
   }
 
   /**
@@ -2003,29 +1994,11 @@ public class AcidUtils {
    * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#isAcidTable(org.apache.hadoop.hive.metastore.api.Table)}
    */
   public static boolean isFullAcidTable(org.apache.hadoop.hive.metastore.api.Table table) {
-    return isTransactionalTable(table) &&
-        !isInsertOnlyTable(table.getParameters());
+    return table != null && isFullAcidTable(table.getParameters());
   }
 
   public static boolean isFullAcidTable(Map<String, String> params) {
     return isTransactionalTable(params) && !isInsertOnlyTable(params);
-  }
-
-  public static boolean isTransactionalTable(org.apache.hadoop.hive.metastore.api.Table table) {
-    return table != null && table.getParameters() != null &&
-        isTablePropertyTransactional(table.getParameters());
-  }
-
-  public static boolean isFullAcidTable(CreateTableDesc td) {
-    if (td == null || td.getTblProps() == null) {
-      return false;
-    }
-    String tableIsTransactional = td.getTblProps().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    if (tableIsTransactional == null) {
-      tableIsTransactional = td.getTblProps().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
-    }
-    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true") &&
-      !AcidUtils.isInsertOnlyTable(td.getTblProps());
   }
 
   public static boolean isFullAcidScan(Configuration conf) {
@@ -2205,7 +2178,7 @@ public class AcidUtils {
    */
   public static boolean isInsertOnlyTable(Map<String, String> params) {
     String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    return TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(transactionalProp);
+    return INSERTONLY_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(transactionalProp);
   }
 
   public static boolean isInsertOnlyTable(Table table) {
@@ -2238,13 +2211,15 @@ public class AcidUtils {
     if (transactional == null && tbl != null) {
       transactional = tbl.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
     }
-    boolean isSetToTxn = "true".equalsIgnoreCase(transactional);
+    boolean isSetToTxn = Boolean.parseBoolean(transactional);
     if (transactionalProp == null) {
       if (isSetToTxn || tbl == null) return false; // Assume the full ACID table.
       throw new RuntimeException("Cannot change '" + hive_metastoreConstants.TABLE_IS_TRANSACTIONAL
           + "' without '" + hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES + "'");
     }
-    if (!"insert_only".equalsIgnoreCase(transactionalProp)) return false; // Not MM.
+    if (!INSERTONLY_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(transactionalProp)) {
+      return false; // Not MM.
+    }
     if (!isSetToTxn) {
       if (tbl == null) return true; // No table information yet; looks like it could be valid.
       throw new RuntimeException("Cannot set '"
@@ -2258,7 +2233,7 @@ public class AcidUtils {
     if (AcidUtils.isTransactionalTable(table)) {
       String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
       
-      if (TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY.equals(transactionalProp)) {
+      if (DEFAULT_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(transactionalProp)) {
         return canBeMadeAcid(table.getTableName(), table.getSd());
       }
     }
