@@ -83,11 +83,13 @@ public class AlterTableSetPropertiesOperation extends AbstractAlterTableOperatio
             checkMmLb(table);
           }
         }
-      } else if (isFromMmTable && isToFullAcid) {
-        table.getParameters().put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
-                DEFAULT_TRANSACTIONAL_PROPERTY);
-      } else if (isFromMmTable && BooleanUtils.isFalse(isToMmTable)) {
-        throw new HiveException("Cannot convert an ACID table to non-ACID");
+      } else if (isFromMmTable) {
+        if (isToFullAcid) {
+          table.getParameters().put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+            DEFAULT_TRANSACTIONAL_PROPERTY);
+        } else if (BooleanUtils.isFalse(isToMmTable)) {
+          throw new HiveException("Cannot convert an ACID table to non-ACID");
+        }
       }
 
       // Converting to/from external table

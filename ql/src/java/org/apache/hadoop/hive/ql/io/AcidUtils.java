@@ -22,7 +22,7 @@ import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFI
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.common.FileUtils.HIDDEN_FILES_PATH_FILTER;
 import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
-import static org.apache.hadoop.hive.ql.exec.Utilities.tabCode;
+
 import static org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
 
 import java.io.FileNotFoundException;
@@ -56,6 +56,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
@@ -490,7 +491,7 @@ public class AcidUtils {
    * @return true, if the parameters contains {@link AcidUtils#COMPACTOR_TABLE_PROPERTY}
    */
   public static boolean isCompactionTable(Map<String, String> parameters) {
-    return Boolean.valueOf(parameters.getOrDefault(COMPACTOR_TABLE_PROPERTY, "false"));
+    return Boolean.parseBoolean(parameters.getOrDefault(COMPACTOR_TABLE_PROPERTY, "false"));
   }
 
   /**
@@ -2203,22 +2204,16 @@ public class AcidUtils {
    * @return true if table is an INSERT_ONLY table, false otherwise
    */
   public static boolean isInsertOnlyTable(Map<String, String> params) {
-    return isInsertOnlyTable(params, false);
+    String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+    return TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(transactionalProp);
   }
+
   public static boolean isInsertOnlyTable(Table table) {
     return isTransactionalTable(table) && getAcidOperationalProperties(table).isInsertOnly();
   }
-
-  // TODO [MM gap]: CTAS may currently be broken. It used to work. See the old code, and why isCtas isn't used?
-  public static boolean isInsertOnlyTable(Map<String, String> params, boolean isCtas) {
-    String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
-  }
-
+  
   public static boolean isInsertOnlyTable(Properties params) {
-    String transactionalProp = params.getProperty(
-        hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
+    return isInsertOnlyTable(Maps.fromProperties(params));
   }
 
    /**
@@ -2260,46 +2255,36 @@ public class AcidUtils {
   }
 
   public static Boolean isToFullAcid(Table table, Map<String, String> props) {
-
-    String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-
-    if (table != null && AcidUtils.isTransactionalTable(table)) {
-      if (transactionalProp.equals(TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY)) {
+    if (AcidUtils.isTransactionalTable(table)) {
+      String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+      
+      if (TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY.equals(transactionalProp)) {
         return canBeMadeAcid(table.getTableName(), table.getSd());
       }
     }
     return false;
   }
 
-
   public static boolean canBeMadeAcid(String fullTableName, StorageDescriptor sd) {
-    return AcidUtils.isAcidInputOutputFormat(fullTableName, sd) && sd.getSortColsSize() <= 0;
+    return isAcidInputOutputFormat(fullTableName, sd) && sd.getSortColsSize() <= 0;
   }
-
-
-  public static boolean isAcidInputOutputFormat(String fullTableName, StorageDescriptor sd) {
-    try {
-      Class inputFormatClass = sd.getInputFormat() == null ? null :
-              Class.forName(sd.getInputFormat());
-      Class outputFormatClass = sd.getOutputFormat() == null ? null :
-              Class.forName(sd.getOutputFormat());
-
-      if (inputFormatClass != null && outputFormatClass != null &&
-              Class.forName(Constants.ORC_INPUT_FORMAT)
-                      .isAssignableFrom(inputFormatClass) &&
-              Class.forName(Constants.ORC_OUTPUT_FORMAT)
-                      .isAssignableFrom(outputFormatClass)) {
-        return true;
-      }
-    } catch (ClassNotFoundException e) {
-      //if a table is using some custom I/O format and it's not in the classpath, we won't mark
-      //the table for Acid, but today (Hive 3.1 and earlier) OrcInput/OutputFormat is the only
-      //Acid format
-      LOG.error("Could not determine if " + fullTableName +
-              " can be made Acid due to: " + e.getMessage(), e);
+  
+  private static boolean isAcidInputOutputFormat(String fullTableName, StorageDescriptor sd) {
+    if (sd.getInputFormat() == null || sd.getOutputFormat() == null) {
       return false;
     }
-    return false;
+    try {
+      return Class.forName(Constants.ORC_INPUT_FORMAT)
+                  .isAssignableFrom(Class.forName(sd.getInputFormat())) 
+            && Class.forName(Constants.ORC_OUTPUT_FORMAT)
+                  .isAssignableFrom(Class.forName(sd.getOutputFormat()));
+    
+    } catch (ClassNotFoundException e) {
+      //if a table is using some custom I/O format and it's not in the classpath, we won't mark
+      //the table for Acid, but today OrcInput/OutputFormat is the only Acid format
+      LOG.error("Could not determine if " + fullTableName + " can be made Acid due to: " + e.getMessage(), e);
+      return false;
+    }
   }
 
   public static boolean isRemovedInsertOnlyTable(Set<String> removedSet) {
