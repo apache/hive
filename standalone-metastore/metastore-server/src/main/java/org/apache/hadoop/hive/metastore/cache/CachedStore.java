@@ -23,9 +23,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EmptyStackException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -34,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -226,7 +229,6 @@ public class CachedStore implements RawStore, Configurable {
   private static void updateStatsForAlterTable(RawStore rawStore, Table tblBefore, Table tblAfter, String catalogName,
       String dbName, String tableName) throws Exception {
     ColumnStatistics colStats = null;
-    List<String> deletedCols = new ArrayList<>();
     if (tblBefore.isSetPartitionKeys()) {
       List<Partition> parts = sharedCache.listCachedPartitions(catalogName, dbName, tableName, -1);
       for (Partition part : parts) {
@@ -234,8 +236,14 @@ public class CachedStore implements RawStore, Configurable {
       }
     }
 
-    List<ColumnStatistics> multiColumnStats = HiveAlterHandler
-        .alterTableUpdateTableColumnStats(rawStore, tblBefore, tblAfter, null, null, rawStore.getConf(), deletedCols);
+    rawStore.alterTable(catalogName, dbName, tblBefore.getTableName(), tblAfter, null);
+
+    Set<String> deletedCols = new HashSet<>();
+    List<ColumnStatistics> multiColumnStats = HiveAlterHandler.getColumnStats(rawStore, tblBefore);
+    multiColumnStats.forEach(cs ->
+      deletedCols.addAll(HiveAlterHandler.filterColumnStatsForTableColumns(tblBefore.getSd().getCols(), cs)
+          .stream().map(ColumnStatisticsObj::getColName).collect(Collectors.toList())));
+
     if (multiColumnStats.size() > 1) {
       throw new RuntimeException("CachedStore can only be enabled for Hive engine");
     }
