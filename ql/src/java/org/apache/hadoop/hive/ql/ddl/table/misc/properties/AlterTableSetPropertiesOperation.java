@@ -86,7 +86,7 @@ public class AlterTableSetPropertiesOperation extends AbstractAlterTableOperatio
       } else if (isFromMmTable) {
         if (isToFullAcid) {
           table.getParameters().put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
-            DEFAULT_TRANSACTIONAL_PROPERTY);
+                  DEFAULT_TRANSACTIONAL_PROPERTY);
         } else if (BooleanUtils.isFalse(isToMmTable)) {
           throw new HiveException("Cannot convert an ACID table to non-ACID");
         }

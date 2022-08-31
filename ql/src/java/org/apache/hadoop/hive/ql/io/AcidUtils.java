@@ -2232,7 +2232,7 @@ public class AcidUtils {
   public static Boolean isToFullAcid(Table table, Map<String, String> props) {
     if (AcidUtils.isTransactionalTable(table)) {
       String transactionalProp = props.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-      
+
       if (DEFAULT_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(transactionalProp)) {
         return canBeMadeAcid(table.getTableName(), table.getSd());
       }
