@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -54,6 +53,8 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
+import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY;
+import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
 
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
@@ -145,13 +146,7 @@ public class TxnUtils {
    * @return true if table is a transactional table, false otherwise
    */
   public static boolean isTransactionalTable(Table table) {
-    if (table == null) {
-      return false;
-    }
-    Map<String, String> parameters = table.getParameters();
-    if (parameters == null) return false;
-    String tableIsTransactional = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+    return table != null && isTransactionalTable(table.getParameters());
   }
 
   public static boolean isTransactionalTable(Map<String, String> parameters) {
@@ -159,7 +154,7 @@ public class TxnUtils {
       return false;
     }
     String tableIsTransactional = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+    return Boolean.parseBoolean(tableIsTransactional);
   }
 
   /**
@@ -167,15 +162,17 @@ public class TxnUtils {
    * org.apache.hadoop.hive.ql.io.AcidUtils#isAcidTable.
    */
   public static boolean isAcidTable(Table table) {
-    return TxnUtils.isTransactionalTable(table) &&
-      TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY.equals(table.getParameters()
-      .get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
+    return table != null && isAcidTable(table.getParameters());
   }
 
   public static boolean isAcidTable(Map<String, String> parameters) {
-    return isTransactionalTable(parameters) &&
-            TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY.
-                    equals(parameters.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
+    return isTransactionalTable(parameters) && DEFAULT_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(
+        parameters.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
+  }
+
+  public static boolean isInsertOnlyTable(Table table) {
+    return TxnUtils.isTransactionalTable(table) && INSERTONLY_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(
+        table.getParameters().get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
   }
 
   public static boolean isTableSoftDeleteEnabled(Table table, boolean isSoftDelete) {

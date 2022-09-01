@@ -2456,8 +2456,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             }
             try {
               CreateTableDesc tblDesc = qb.getTableDesc();
-              if (tblDesc != null && tblDesc.isTemporary() && AcidUtils
-                  .isInsertOnlyTable(tblDesc.getTblProps(), true)) {
+              if (tblDesc != null && tblDesc.isTemporary() && AcidUtils.isInsertOnlyTable(tblDesc.getTblProps())) {
                 fname = FileUtils.makeQualified(location, conf).toString();
               } else {
                 fname = ctx.getExtTmpPathRelTo(FileUtils.makeQualified(location, conf)).toString();
