@@ -59,7 +59,7 @@ public class CustomQueryFilterFactory implements FilterFactory {
     }
 
     @Override
-    public void apply(DirSearch client, String user) throws AuthenticationException {
+    public void apply(DirSearch client, final String user) throws AuthenticationException {
       List<String> resultList;
       try {
         resultList = client.executeCustomQuery(query);
@@ -74,6 +74,18 @@ public class CustomQueryFilterFactory implements FilterFactory {
             LOG.info("Authentication succeeded based on result set from LDAP query");
             return;
           }
+        }
+
+        // try a generic user search
+        String userSearchQuery = query.replace("{0}", user);
+        try {
+          resultList = client.executeCustomQuery(userSearchQuery);
+        } catch (NamingException e) {
+          throw new AuthenticationException("LDAP Authentication failed for user", e);
+        }
+        if (resultList != null && resultList.size() == 1) {
+          LOG.info("Authentication succeeded based on result from custom user search query");
+          return;
         }
       }
       LOG.info("Authentication failed based on result set from custom LDAP query");
