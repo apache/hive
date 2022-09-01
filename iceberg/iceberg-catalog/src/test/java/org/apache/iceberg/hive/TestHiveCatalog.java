@@ -41,6 +41,7 @@ import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
+import org.apache.iceberg.TableOperations;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.Transaction;
 import org.apache.iceberg.UpdateSchema;
@@ -50,6 +51,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.AlreadyExistsException;
 import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
+import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -438,6 +440,22 @@ public class TestHiveCatalog extends HiveMetastoreTest {
         NoSuchNamespaceException.class, "Namespace does not exist: ", () -> {
           catalog.loadNamespaceMetadata(namespace);
         });
+  }
+
+  @Test
+  public void testDropTableWithoutMetadataFile() {
+    TableIdentifier identifier = TableIdentifier.of(DB_NAME, "tbl");
+    Schema tableSchema =
+        new Schema(Types.StructType.of(required(1, "id", Types.LongType.get())).fields());
+    catalog.createTable(identifier, tableSchema);
+    String metadataFileLocation = catalog.newTableOps(identifier).current().metadataFileLocation();
+    TableOperations ops = catalog.newTableOps(identifier);
+    ops.io().deleteFile(metadataFileLocation);
+    Assert.assertTrue(catalog.dropTable(identifier));
+
+    org.assertj.core.api.Assertions.assertThatThrownBy(() -> catalog.loadTable(identifier))
+        .isInstanceOf(NoSuchTableException.class)
+        .hasMessageContaining("Table does not exist:");
   }
 
   @Test
