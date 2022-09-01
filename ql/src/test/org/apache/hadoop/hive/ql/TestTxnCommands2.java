@@ -3194,6 +3194,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
   @Test
   public void testNoDeltaAfterDeleteAndMinorCompaction() throws Exception {
     String tableName = "test_major_delete_minor";
+
     runStatementOnDriver("drop table if exists " + tableName);
     runStatementOnDriver("create table " + tableName + " (name VARCHAR(50), age TINYINT, num_clicks BIGINT) stored as orc" +
             " tblproperties ('transactional'='true')");
