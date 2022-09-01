@@ -1965,7 +1965,7 @@ public class AcidUtils {
   }
 
   public static boolean isTransactionalTable(Map<String, String> props) {
-    return isTablePropertyTransactional(props);
+    return props != null && isTablePropertyTransactional(props);
   }
 
   public static boolean isTransactionalView(CreateMaterializedViewDesc view) {
