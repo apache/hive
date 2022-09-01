@@ -43,7 +43,9 @@ import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.core.Union;
+import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -70,6 +72,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
@@ -121,7 +124,51 @@ public class ASTConverter {
     return c.convert();
   }
 
+  //    TOK_QUERY
+  //      TOK_INSERT
+  //         TOK_DESTINATION
+  //            TOK_DIR
+  //               TOK_TMP_FILE
+  //         TOK_SELECT
+  //            TOK_SELEXPR
+  //               NULL
+  //               alias0
+  //            ...
+  //            TOK_SELEXPR
+  //               NULL
+  //               aliasn
+  //         TOK_LIMIT
+  //            0
+  //            0
+  private static ASTNode emptyPlan(RelDataType dataType) {
+    ASTBuilder select = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
+    for (int i = 0; i < dataType.getFieldCount(); ++i) {
+      select.add(ASTBuilder.selectExpr(
+              ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node(),
+              dataType.getFieldList().get(i).getName()));
+    }
+
+    ASTNode insert = ASTBuilder.
+            construct(HiveParser.TOK_INSERT, "TOK_INSERT").
+            add(ASTBuilder.destNode()).
+            add(select).
+            add(ASTBuilder.limit(0, 0)).
+            node();
+
+    return ASTBuilder.
+            construct(HiveParser.TOK_QUERY, "TOK_QUERY").
+            add(insert).
+            node();
+  }
+
   private ASTNode convert() throws CalciteSemanticException {
+    if (root instanceof HiveValues) {
+      HiveValues values = (HiveValues) root;
+      if (HiveValues.isEmpty(values)) {
+        select = values;
+        return emptyPlan(values.getRowType());
+      }
+    }
     /*
      * 1. Walk RelNode Graph; note from, where, gBy.. nodes.
      */
@@ -377,8 +424,10 @@ public class ASTConverter {
   private Schema getRowSchema(String tblAlias) {
     if (select instanceof Project) {
       return new Schema((Project) select, tblAlias);
-    } else {
+    } else if (select instanceof TableFunctionScan) {
       return new Schema((TableFunctionScan) select, tblAlias);
+    } else {
+      return new Schema(tblAlias, select.getRowType().getFieldList());
     }
   }
 

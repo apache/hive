@@ -37,6 +37,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.populateProjects;
+
 /**
  * {@link HiveRelShuttle} to propagate rowIsDeleted column to all HiveRelNodes' rowType in the plan.
  * General rule: we expect that the rowIsDeleted column is the last column in the input rowType of the current
@@ -196,19 +198,6 @@ public class HiveRowIsDeletedPropagator extends HiveRelShuttleImpl {
         return rexBuilder.makeInputRef(inputRef.getType(), inputRef.getIndex() + 1);
       }
       return inputRef;
-    }
-  }
-
-  private void populateProjects(RexBuilder rexBuilder, RelDataType inputRowType,
-                                List<RexNode> projects, List<String> projectNames) {
-    populateProjects(rexBuilder, inputRowType, 0, inputRowType.getFieldCount(), projects, projectNames);
-  }
-  private void populateProjects(RexBuilder rexBuilder, RelDataType inputRowType, int offset, int length,
-                                List<RexNode> projects, List<String> projectNames) {
-    for (int i = 0; i < length; ++i) {
-      RelDataTypeField relDataTypeField = inputRowType.getFieldList().get(i);
-      projects.add(rexBuilder.makeInputRef(relDataTypeField.getType(), offset + i));
-      projectNames.add(relDataTypeField.getName());
     }
   }
 }
