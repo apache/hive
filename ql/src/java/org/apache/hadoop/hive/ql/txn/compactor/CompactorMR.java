@@ -801,7 +801,6 @@ public class CompactorMR {
                   writeIdList, split.getBaseDir(), split.getDeltaDirs(), split.getDeltasToAttemptId());
       RecordIdentifier identifier = reader.createKey();
       V value = reader.createValue();
-      getWriter(reporter, reader.getObjectInspector(), split.getBucket());
 
       AcidUtils.AcidOperationalProperties acidOperationalProperties = AcidUtils.getAcidOperationalProperties(jobConf);
 
@@ -817,6 +816,7 @@ public class CompactorMR {
           deleteEventWriter.write(value);
           reporter.progress();
         } else {
+          getWriter(reporter, reader.getObjectInspector(), split.getBucket());
           writer.write(value);
           reporter.progress();
         }

@@ -3192,6 +3192,32 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
   }
 
   @Test
+  public void testNoDeltaAfterDeleteAndMinorCompaction() throws Exception {
+    String tableName = "test_major_delete_minor";
+    runStatementOnDriver("drop table if exists " + tableName);
+    runStatementOnDriver("create table " + tableName + " (name VARCHAR(50), age TINYINT, num_clicks BIGINT) stored as orc" +
+            " tblproperties ('transactional'='true')");
+    runStatementOnDriver("insert into " + tableName + " values ('amy', 35, 12341234)");
+    runStatementOnDriver("insert into " + tableName + " values ('bob', 66, 1234712348712)");
+    runStatementOnDriver("insert into " + tableName + " values ('cal', 21, 431)");
+    runStatementOnDriver("insert into " + tableName + " values ('fse', 28, 8456)");
+    runStatementOnDriver("alter table " + tableName + " compact 'major'");
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+    runStatementOnDriver("delete from " + tableName + " where name='bob'");
+    runStatementOnDriver("delete from " + tableName + " WHERE name='fse'");
+    runStatementOnDriver("alter table " + tableName + " compact 'minor'");
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] fileStatuses = fs.globStatus(new Path(getWarehouseDir() + "/" + tableName + "/*"));
+    for(FileStatus fileStatus : fileStatuses) {
+      Assert.assertFalse(fileStatus.getPath().getName().startsWith(AcidUtils.DELTA_PREFIX));
+    }
+  }
+
+  @Test
   public void testNoTxnComponentsForScheduledQueries() throws Exception {
     String tableName = "scheduledquerytable";
     int[][] tableData = {{1, 2},{3, 4}};
