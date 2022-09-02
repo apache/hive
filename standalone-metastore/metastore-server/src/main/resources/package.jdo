@@ -1031,6 +1031,9 @@
       <field name="bitVector">
         <column name="BIT_VECTOR" jdbc-type="BLOB" allows-null="true"/>
       </field>
+      <field name="freqItems">
+        <column name="FREQ_ITEMS" jdbc-type="BLOB" allows-null="true"/>
+      </field>
       <field name="avgColLen">
         <column name="AVG_COL_LEN" jdbc-type="DOUBLE" allows-null="true"/>
       </field>
