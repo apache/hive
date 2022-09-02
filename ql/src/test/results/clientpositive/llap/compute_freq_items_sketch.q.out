@@ -1,0 +1,115 @@
+PREHOOK: query: CREATE TABLE test (a string, b float)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: CREATE TABLE test (a string, b float)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: INSERT INTO test VALUES ("a", 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: INSERT INTO test VALUES ("a", 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.a SCRIPT []
+POSTHOOK: Lineage: test.b SCRIPT []
+PREHOOK: query: INSERT INTO test VALUES ("b", 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: INSERT INTO test VALUES ("b", 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.a SCRIPT []
+POSTHOOK: Lineage: test.b SCRIPT []
+PREHOOK: query: INSERT INTO test VALUES ("c", 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: INSERT INTO test VALUES ("c", 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.a SCRIPT []
+POSTHOOK: Lineage: test.b SCRIPT []
+PREHOOK: query: INSERT INTO test VALUES ("d", 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: INSERT INTO test VALUES ("d", 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.a SCRIPT []
+POSTHOOK: Lineage: test.b SCRIPT []
+PREHOOK: query: INSERT INTO test VALUES ("e", null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: INSERT INTO test VALUES ("e", null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.a SCRIPT []
+POSTHOOK: Lineage: test.b EXPRESSION []
+PREHOOK: query: ANALYZE TABLE test COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@test
+PREHOOK: Output: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE test COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@test
+POSTHOOK: Output: default@test
+#### A masked pattern was here ####
+PREHOOK: query: ANALYZE TABLE test COMPUTE STATISTICS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Output: default@test
+POSTHOOK: query: ANALYZE TABLE test COMPUTE STATISTICS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+POSTHOOK: Output: default@test
+PREHOOK: query: DESCRIBE EXTENDED test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test
+POSTHOOK: query: DESCRIBE EXTENDED test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test
+a                   	string              	                    
+b                   	float               	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE FORMATTED test a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test
+POSTHOOK: query: DESCRIBE FORMATTED test a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test
+col_name            	a                   
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	5                   
+avg_col_len         	1.0                 
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+freq_items          	FrequentItemsSketch<T>:
+                    	  Stream Length    : 5
+                    	  Max Error Offset : 0
+                    	ReversePurgeItemHashMap
+                    	         Index:     States      Values Keys
+                    	             0:          2           1 a
+                    	             2:          1           1 d
+                    	             4:          1           1 b
+                    	             5:          2           1 e
+                    	             7:          1           1 c
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
