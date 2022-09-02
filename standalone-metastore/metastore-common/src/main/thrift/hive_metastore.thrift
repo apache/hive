@@ -496,7 +496,8 @@ struct StringColumnStatsData {
 2: required double avgColLen,
 3: required i64 numNulls,
 4: required i64 numDVs,
-5: optional binary bitVectors
+5: optional binary bitVectors,
+6: optional binary freqitems
 }
 
 struct BinaryColumnStatsData {
