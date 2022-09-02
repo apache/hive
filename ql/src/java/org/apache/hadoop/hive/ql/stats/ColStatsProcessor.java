@@ -23,7 +23,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -119,6 +121,7 @@ public class ColStatsProcessor implements IStatsProcessor {
         String columnType = colType.get(i);
         PrimitiveTypeInfo typeInfo = (PrimitiveTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(columnType);
         List<ColumnStatsField> columnStatsFields = ColumnStatsType.getColumnStats(typeInfo);
+        columnStatsFields = ColumnStatsType.removeDisabledStatistics(conf, columnStatsFields);
         try {
           ColumnStatisticsObj statObj = ColumnStatisticsObjTranslator.readHiveColumnStatistics(
               columnName, columnType, columnStatsFields, pos, fields, values);
@@ -240,6 +243,7 @@ public class ColStatsProcessor implements IStatsProcessor {
     MAX("max"),
     NDV("numdistinctvalues"),
     BITVECTOR("ndvbitvector"),
+    FREQ_SKETCH("freqitemssketch"),
     MAX_LENGTH("maxlength"),
     AVG_LENGTH("avglength");
 
@@ -290,7 +294,8 @@ public class ColStatsProcessor implements IStatsProcessor {
             ColumnStatsField.AVG_LENGTH,
             ColumnStatsField.COUNT_NULLS,
             ColumnStatsField.NDV,
-            ColumnStatsField.BITVECTOR)),
+            ColumnStatsField.BITVECTOR,
+            ColumnStatsField.FREQ_SKETCH)),
     BINARY(
         ImmutableList.of(
             ColumnStatsField.COLUMN_STATS_TYPE,
@@ -368,6 +373,15 @@ public class ColStatsProcessor implements IStatsProcessor {
     public static List<ColumnStatsField> getColumnStats(PrimitiveTypeInfo typeInfo)
         throws SemanticException {
       return getColumnStatsType(typeInfo).getColumnStats();
+    }
+
+    public static List<ColumnStatsField> removeDisabledStatistics(HiveConf conf, List<ColumnStatsField> columnStatsFields) {
+      if (!HiveStatsUtils.computeFreqItemsSketch(conf)) {
+        return columnStatsFields.stream()
+            .filter(f -> f != ColumnStatsField.FREQ_SKETCH)
+            .collect(Collectors.toList());
+      }
+      return columnStatsFields;
     }
 
   }
