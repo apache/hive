@@ -1,146 +1,176 @@
-PREHOOK: query: CREATE TABLE test (a string, b float)
+PREHOOK: query: CREATE TABLE test (a string, b string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test
-POSTHOOK: query: CREATE TABLE test (a string, b float)
+POSTHOOK: query: CREATE TABLE test (a string, b string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test
-PREHOOK: query: INSERT INTO test VALUES ("a", 1)
+PREHOOK: query: INSERT INTO test VALUES ("a", '1')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("a", 1)
+POSTHOOK: query: INSERT INTO test VALUES ("a", '1')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SCRIPT []
 POSTHOOK: Lineage: test.b SCRIPT []
-PREHOOK: query: INSERT INTO test VALUES ("b", 2)
+PREHOOK: query: INSERT INTO test VALUES ("b", '2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("b", 2)
+POSTHOOK: query: INSERT INTO test VALUES ("b", '2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SCRIPT []
 POSTHOOK: Lineage: test.b SCRIPT []
-PREHOOK: query: INSERT INTO test VALUES ("b", 2)
+PREHOOK: query: INSERT INTO test VALUES ("b", '2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("b", 2)
+POSTHOOK: query: INSERT INTO test VALUES ("b", '2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SCRIPT []
 POSTHOOK: Lineage: test.b SCRIPT []
-PREHOOK: query: INSERT INTO test VALUES ("b", 2)
+PREHOOK: query: INSERT INTO test VALUES ("b", '2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("b", 2)
+POSTHOOK: query: INSERT INTO test VALUES ("b", '2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SCRIPT []
 POSTHOOK: Lineage: test.b SCRIPT []
-PREHOOK: query: INSERT INTO test VALUES ("c", 2)
+PREHOOK: query: INSERT INTO test VALUES ("c", '2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("c", 2)
+POSTHOOK: query: INSERT INTO test VALUES ("c", '2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SCRIPT []
 POSTHOOK: Lineage: test.b SCRIPT []
-PREHOOK: query: INSERT INTO test VALUES ("c", 2)
+PREHOOK: query: INSERT INTO test VALUES ("c", '2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("c", 2)
+POSTHOOK: query: INSERT INTO test VALUES ("c", '2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SCRIPT []
 POSTHOOK: Lineage: test.b SCRIPT []
-PREHOOK: query: INSERT INTO test VALUES ("c", 2)
+PREHOOK: query: INSERT INTO test VALUES ("c", '2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("c", 2)
+POSTHOOK: query: INSERT INTO test VALUES ("c", '2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SCRIPT []
 POSTHOOK: Lineage: test.b SCRIPT []
-PREHOOK: query: INSERT INTO test VALUES ("c", 2)
+PREHOOK: query: INSERT INTO test VALUES ("c", '2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("c", 2)
+POSTHOOK: query: INSERT INTO test VALUES ("c", '2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SCRIPT []
 POSTHOOK: Lineage: test.b SCRIPT []
-PREHOOK: query: INSERT INTO test VALUES ("c", 2)
+PREHOOK: query: INSERT INTO test VALUES ("c", '2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("c", 2)
+POSTHOOK: query: INSERT INTO test VALUES ("c", '2')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SCRIPT []
 POSTHOOK: Lineage: test.b SCRIPT []
-PREHOOK: query: INSERT INTO test VALUES ("c", 2)
+PREHOOK: query: INSERT INTO test VALUES ("d", '4')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("c", 2)
+POSTHOOK: query: INSERT INTO test VALUES ("d", '4')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SCRIPT []
 POSTHOOK: Lineage: test.b SCRIPT []
-PREHOOK: query: INSERT INTO test VALUES ("c", 2)
+PREHOOK: query: INSERT INTO test VALUES ("d", '5')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("c", 2)
+POSTHOOK: query: INSERT INTO test VALUES ("d", '5')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SCRIPT []
 POSTHOOK: Lineage: test.b SCRIPT []
-PREHOOK: query: INSERT INTO test VALUES ("d", 3)
+PREHOOK: query: INSERT INTO test VALUES ("d", '6')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("d", 3)
+POSTHOOK: query: INSERT INTO test VALUES ("d", '6')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SCRIPT []
 POSTHOOK: Lineage: test.b SCRIPT []
-PREHOOK: query: INSERT INTO test VALUES ("e", null)
+PREHOOK: query: INSERT INTO test VALUES ("e", '7')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("e", null)
+POSTHOOK: query: INSERT INTO test VALUES ("e", '7')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SCRIPT []
-POSTHOOK: Lineage: test.b EXPRESSION []
-PREHOOK: query: INSERT INTO test VALUES ("abcdefghijklmnopqrstuvwxyz_12345", 1)
+POSTHOOK: Lineage: test.b SCRIPT []
+PREHOOK: query: INSERT INTO test VALUES ("e", '3')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test
-POSTHOOK: query: INSERT INTO test VALUES ("abcdefghijklmnopqrstuvwxyz_12345", 1)
+POSTHOOK: query: INSERT INTO test VALUES ("e", '3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.a SCRIPT []
+POSTHOOK: Lineage: test.b SCRIPT []
+PREHOOK: query: INSERT INTO test VALUES ("e", '3')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: INSERT INTO test VALUES ("e", '3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.a SCRIPT []
+POSTHOOK: Lineage: test.b SCRIPT []
+PREHOOK: query: INSERT INTO test VALUES ("e", '3')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: INSERT INTO test VALUES ("e", '3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.a SCRIPT []
+POSTHOOK: Lineage: test.b SCRIPT []
+PREHOOK: query: INSERT INTO test VALUES ("abcdefghijklmnopqrstuvwxyz_12345", '1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: INSERT INTO test VALUES ("abcdefghijklmnopqrstuvwxyz_12345", '1')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test
@@ -171,7 +201,7 @@ POSTHOOK: query: DESCRIBE EXTENDED test
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test
 a                   	string              	                    
-b                   	float               	                    
+b                   	string              	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED test a
@@ -186,321 +216,283 @@ min
 max                 	                    
 num_nulls           	0                   
 distinct_count      	6                   
-avg_col_len         	3.2142857142857144  
+avg_col_len         	2.823529411764706   
 max_col_len         	32                  
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
 freq_items          	FrequentItemsSketch<T>:
-                    	  Stream Length    : 14
+                    	  Stream Length    : 17
                     	  Max Error Offset : 0
                     	  Num Active Items : 6
                     	  Current Map Cap  : 6
                     	                  Item          Est
-                    	                       c            7
+                    	                       c            5
+                    	                       e            4
+                    	                       d            3
                     	                       b            3
-                    	                       e            1
-                    	                       d            1
                     	                       a            1
                     	  abcdefghijklmno..12345            1
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
-PREHOOK: query: SELECT * from test where a = 'a' and b > 0
+PREHOOK: query: SELECT * from test where b = '2' and a = 'c'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from test where a = 'a' and b > 0
+POSTHOOK: query: SELECT * from test where b = '2' and a = 'c'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
-a	1.0
-PREHOOK: query: EXPLAIN SELECT * from test where a = 'a' and b > 0
+c	2
+c	2
+c	2
+c	2
+c	2
+PREHOOK: query: -- cost = 0.14, 0.16 Vs w/sketches 0.47 / 0.29
+
+EXPLAIN CBO COST SELECT * from test where b = '2' and a = 'c'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN SELECT * from test where a = 'a' and b > 0
+POSTHOOK: query: -- cost = 0.14, 0.16 Vs w/sketches 0.47 / 0.29
+
+EXPLAIN CBO COST SELECT * from test where b = '2' and a = 'c'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
-STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+CBO PLAN:
+HiveProject($f0=[CAST(_UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], $f1=[CAST(_UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+  HiveFilter(condition=[AND(=($0, _UTF-16LE'c'), =($1, _UTF-16LE'2'))]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    HiveTableScan(table=[[default, test]], table:alias=[test]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
 
-STAGE PLANS:
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        TableScan
-          alias: test
-          filterExpr: ((b > 0.0) and (a = 'a')) (type: boolean)
-          Filter Operator
-            predicate: ((b > 0.0) and (a = 'a')) (type: boolean)
-            Select Operator
-              expressions: 'a' (type: string), b (type: float)
-              outputColumnNames: _col0, _col1
-              ListSink
-
-PREHOOK: query: CREATE TABLE test2 (b float, c string) partitioned by (a string)
+PREHOOK: query: CREATE TABLE test2 (b string, c string) partitioned by (a string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test2
-POSTHOOK: query: CREATE TABLE test2 (b float, c string) partitioned by (a string)
+POSTHOOK: query: CREATE TABLE test2 (b string, c string) partitioned by (a string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test2
-PREHOOK: query: INSERT INTO test2 VALUES (1,"A", "a" )
+PREHOOK: query: INSERT INTO test2 VALUES ('1',"A", "a" )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (1,"A", "a" )
+POSTHOOK: query: INSERT INTO test2 VALUES ('1',"A", "a" )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@a=a
 POSTHOOK: Lineage: test2 PARTITION(a=a).b SCRIPT []
 POSTHOOK: Lineage: test2 PARTITION(a=a).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"B", "a" )
+PREHOOK: query: INSERT INTO test2 VALUES ('2',"B", "a" )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"B", "a" )
+POSTHOOK: query: INSERT INTO test2 VALUES ('2',"B", "a" )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@a=a
 POSTHOOK: Lineage: test2 PARTITION(a=a).b SCRIPT []
 POSTHOOK: Lineage: test2 PARTITION(a=a).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"C", "a" )
+PREHOOK: query: INSERT INTO test2 VALUES ('3',"C", "a" )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"C", "a" )
+POSTHOOK: query: INSERT INTO test2 VALUES ('3',"C", "a" )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@a=a
 POSTHOOK: Lineage: test2 PARTITION(a=a).b SCRIPT []
 POSTHOOK: Lineage: test2 PARTITION(a=a).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"B", "b" )
+PREHOOK: query: INSERT INTO test2 VALUES ('1',"B", "b" )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"B", "b" )
+POSTHOOK: query: INSERT INTO test2 VALUES ('1',"B", "b" )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@a=b
 POSTHOOK: Lineage: test2 PARTITION(a=b).b SCRIPT []
 POSTHOOK: Lineage: test2 PARTITION(a=b).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"B", "b" )
+PREHOOK: query: INSERT INTO test2 VALUES ('2',"B", "b" )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"B", "b" )
+POSTHOOK: query: INSERT INTO test2 VALUES ('2',"B", "b" )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@a=b
 POSTHOOK: Lineage: test2 PARTITION(a=b).b SCRIPT []
 POSTHOOK: Lineage: test2 PARTITION(a=b).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"B", "b" )
+PREHOOK: query: INSERT INTO test2 VALUES ('2',"B", "b" )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"B", "b" )
+POSTHOOK: query: INSERT INTO test2 VALUES ('2',"B", "b" )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@a=b
 POSTHOOK: Lineage: test2 PARTITION(a=b).b SCRIPT []
 POSTHOOK: Lineage: test2 PARTITION(a=b).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"L", "c" )
+PREHOOK: query: INSERT INTO test2 VALUES ('2',"B", "b" )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"L", "c" )
+POSTHOOK: query: INSERT INTO test2 VALUES ('2',"B", "b" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test2
+POSTHOOK: Output: default@test2@a=b
+POSTHOOK: Lineage: test2 PARTITION(a=b).b SCRIPT []
+POSTHOOK: Lineage: test2 PARTITION(a=b).c SCRIPT []
+PREHOOK: query: INSERT INTO test2 VALUES ('2',"I", "b" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test2
+POSTHOOK: query: INSERT INTO test2 VALUES ('2',"I", "b" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test2
+POSTHOOK: Output: default@test2@a=b
+POSTHOOK: Lineage: test2 PARTITION(a=b).b SCRIPT []
+POSTHOOK: Lineage: test2 PARTITION(a=b).c SCRIPT []
+PREHOOK: query: INSERT INTO test2 VALUES ('2',"I", "b" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test2
+POSTHOOK: query: INSERT INTO test2 VALUES ('2',"I", "b" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test2
+POSTHOOK: Output: default@test2@a=b
+POSTHOOK: Lineage: test2 PARTITION(a=b).b SCRIPT []
+POSTHOOK: Lineage: test2 PARTITION(a=b).c SCRIPT []
+PREHOOK: query: INSERT INTO test2 VALUES ('2',"I", "b" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test2
+POSTHOOK: query: INSERT INTO test2 VALUES ('2',"I", "b" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test2
+POSTHOOK: Output: default@test2@a=b
+POSTHOOK: Lineage: test2 PARTITION(a=b).b SCRIPT []
+POSTHOOK: Lineage: test2 PARTITION(a=b).c SCRIPT []
+PREHOOK: query: INSERT INTO test2 VALUES ('2',"I", "b" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test2
+POSTHOOK: query: INSERT INTO test2 VALUES ('2',"I", "b" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test2
+POSTHOOK: Output: default@test2@a=b
+POSTHOOK: Lineage: test2 PARTITION(a=b).b SCRIPT []
+POSTHOOK: Lineage: test2 PARTITION(a=b).c SCRIPT []
+PREHOOK: query: INSERT INTO test2 VALUES ('3',"I", "b" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test2
+POSTHOOK: query: INSERT INTO test2 VALUES ('3',"I", "b" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test2
+POSTHOOK: Output: default@test2@a=b
+POSTHOOK: Lineage: test2 PARTITION(a=b).b SCRIPT []
+POSTHOOK: Lineage: test2 PARTITION(a=b).c SCRIPT []
+PREHOOK: query: INSERT INTO test2 VALUES ('4',"I", "b" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test2
+POSTHOOK: query: INSERT INTO test2 VALUES ('4',"I", "b" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test2
+POSTHOOK: Output: default@test2@a=b
+POSTHOOK: Lineage: test2 PARTITION(a=b).b SCRIPT []
+POSTHOOK: Lineage: test2 PARTITION(a=b).c SCRIPT []
+PREHOOK: query: INSERT INTO test2 VALUES ('5',"I", "b" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test2
+POSTHOOK: query: INSERT INTO test2 VALUES ('5',"I", "b" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test2
+POSTHOOK: Output: default@test2@a=b
+POSTHOOK: Lineage: test2 PARTITION(a=b).b SCRIPT []
+POSTHOOK: Lineage: test2 PARTITION(a=b).c SCRIPT []
+PREHOOK: query: INSERT INTO test2 VALUES ('6',"I", "b" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test2
+POSTHOOK: query: INSERT INTO test2 VALUES ('6',"I", "b" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test2
+POSTHOOK: Output: default@test2@a=b
+POSTHOOK: Lineage: test2 PARTITION(a=b).b SCRIPT []
+POSTHOOK: Lineage: test2 PARTITION(a=b).c SCRIPT []
+PREHOOK: query: INSERT INTO test2 VALUES ('7',"I", "b" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test2
+POSTHOOK: query: INSERT INTO test2 VALUES ('7',"I", "b" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test2
+POSTHOOK: Output: default@test2@a=b
+POSTHOOK: Lineage: test2 PARTITION(a=b).b SCRIPT []
+POSTHOOK: Lineage: test2 PARTITION(a=b).c SCRIPT []
+PREHOOK: query: INSERT INTO test2 VALUES ('8',"I", "c" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test2
+POSTHOOK: query: INSERT INTO test2 VALUES ('8',"I", "c" )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@a=c
 POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
 POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"M", "c" )
+PREHOOK: query: INSERT INTO test2 VALUES ('8',"I", "c" )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"M", "c" )
+POSTHOOK: query: INSERT INTO test2 VALUES ('8',"I", "c" )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@a=c
 POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
 POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"N", "c" )
+PREHOOK: query: INSERT INTO test2 VALUES ('8',"J", "c" )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"N", "c" )
+POSTHOOK: query: INSERT INTO test2 VALUES ('8',"J", "c" )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@a=c
 POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
 POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"O", "c" )
+PREHOOK: query: INSERT INTO test2 VALUES ('8',"K", "c" )
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"O", "c" )
+POSTHOOK: query: INSERT INTO test2 VALUES ('8',"K", "c" )
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test2
 POSTHOOK: Output: default@test2@a=c
 POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
 POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"P", "c" )
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"P", "c" )
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@a=c
-POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
-POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"Q", "c" )
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"Q", "c" )
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@a=c
-POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
-POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"R", "c" )
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"R", "c" )
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@a=c
-POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
-POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"S", "c" )
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"S", "c" )
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@a=c
-POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
-POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"T", "c" )
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"T", "c" )
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@a=c
-POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
-POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"U", "c" )
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"U", "c" )
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@a=c
-POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
-POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"V", "c" )
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"V", "c" )
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@a=c
-POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
-POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"W", "c" )
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"W", "c" )
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@a=c
-POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
-POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"X", "c" )
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"X", "c" )
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@a=c
-POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
-POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"Y", "c" )
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"Y", "c" )
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@a=c
-POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
-POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2,"Z", "c" )
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2,"Z", "c" )
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@a=c
-POSTHOOK: Lineage: test2 PARTITION(a=c).b SCRIPT []
-POSTHOOK: Lineage: test2 PARTITION(a=c).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (1, "abcdefghijklmnopqrstuvwxyz_12345", "a")
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (1, "abcdefghijklmnopqrstuvwxyz_12345", "a")
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@a=a
-POSTHOOK: Lineage: test2 PARTITION(a=a).b SCRIPT []
-POSTHOOK: Lineage: test2 PARTITION(a=a).c SCRIPT []
-PREHOOK: query: INSERT INTO test2 VALUES (2, "abcdefghijklmnopqrstuvwxyz_12345", "a")
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@test2
-POSTHOOK: query: INSERT INTO test2 VALUES (2, "abcdefghijklmnopqrstuvwxyz_12345", "a")
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@test2
-POSTHOOK: Output: default@test2@a=a
-POSTHOOK: Lineage: test2 PARTITION(a=a).b SCRIPT []
-POSTHOOK: Lineage: test2 PARTITION(a=a).c SCRIPT []
 PREHOOK: query: ANALYZE TABLE test2 COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@test2
@@ -549,7 +541,7 @@ PREHOOK: Input: default@test2
 POSTHOOK: query: DESCRIBE EXTENDED test2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test2
-b                   	float               	                    
+b                   	string              	                    
 c                   	string              	                    
 a                   	string              	                    
 	 	 
@@ -569,19 +561,18 @@ data_type           	string
 min                 	                    
 max                 	                    
 num_nulls           	0                   
-distinct_count      	4                   
-avg_col_len         	13.4                
-max_col_len         	32                  
+distinct_count      	3                   
+avg_col_len         	1.0                 
+max_col_len         	1                   
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
 freq_items          	FrequentItemsSketch<T>:
-                    	  Stream Length    : 5
+                    	  Stream Length    : 3
                     	  Max Error Offset : 0
-                    	  Num Active Items : 4
+                    	  Num Active Items : 3
                     	  Current Map Cap  : 6
                     	                  Item          Est
-                    	  abcdefghijklmno..12345            2
                     	                       C            1
                     	                       A            1
                     	                       B            1
@@ -597,29 +588,21 @@ data_type           	string
 min                 	                    
 max                 	                    
 num_nulls           	0                   
-distinct_count      	15                  
+distinct_count      	3                   
 avg_col_len         	1.0                 
 max_col_len         	1                   
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
 freq_items          	FrequentItemsSketch<T>:
-                    	  Stream Length    : 15
+                    	  Stream Length    : 4
                     	  Max Error Offset : 0
-                    	  Num Active Items : 15
-                    	  Current Map Cap  : 24
+                    	  Num Active Items : 3
+                    	  Current Map Cap  : 6
                     	                  Item          Est
-                    	                       U            1
-                    	                       S            1
-                    	                       V            1
-                    	                       Y            1
-                    	                       W            1
-                    	                     ...
-                    	                       M            1
-                    	                       X            1
-                    	                       L            1
-                    	                       Z            1
-                    	                       T            1
+                    	                       I            2
+                    	                       K            1
+                    	                       J            1
 comment             	from deserializer   
 PREHOOK: query: DESCRIBE FORMATTED test2 c
 PREHOOK: type: DESCTABLE
@@ -632,81 +615,448 @@ data_type           	string
 min                 	                    
 max                 	                    
 num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	1.0                 
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+freq_items          	FrequentItemsSketch<T>:
+                    	  Stream Length    : 20
+                    	  Max Error Offset : 0
+                    	  Num Active Items : 6
+                    	  Current Map Cap  : 6
+                    	                  Item          Est
+                    	                       I           11
+                    	                       B            5
+                    	                       J            1
+                    	                       K            1
+                    	                       C            1
+                    	                       A            1
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"c\":\"true\"}}
+PREHOOK: query: SELECT * from test2 where b = '2' and c = 'B'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test2
+PREHOOK: Input: default@test2@a=a
+PREHOOK: Input: default@test2@a=b
+PREHOOK: Input: default@test2@a=c
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from test2 where b = '2' and c = 'B'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test2@a=a
+POSTHOOK: Input: default@test2@a=b
+POSTHOOK: Input: default@test2@a=c
+#### A masked pattern was here ####
+2	B	a
+2	B	b
+2	B	b
+2	B	b
+PREHOOK: query: -- .1 / .142 w/sketches .36 / .22
+
+EXPLAIN CBO COST SELECT * from test2 where b = '2' and c = 'B'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test2
+PREHOOK: Input: default@test2@a=a
+PREHOOK: Input: default@test2@a=b
+PREHOOK: Input: default@test2@a=c
+#### A masked pattern was here ####
+POSTHOOK: query: -- .1 / .142 w/sketches .36 / .22
+
+EXPLAIN CBO COST SELECT * from test2 where b = '2' and c = 'B'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test2
+POSTHOOK: Input: default@test2@a=a
+POSTHOOK: Input: default@test2@a=b
+POSTHOOK: Input: default@test2@a=c
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(b=[CAST(_UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], c=[CAST(_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], a=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+  HiveFilter(condition=[AND(=($1, _UTF-16LE'B'), =($0, _UTF-16LE'2'))]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    HiveTableScan(table=[[default, test2]], table:alias=[test2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+
+PREHOOK: query: CREATE TABLE test3 (b string, c string) partitioned by (a string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test3
+POSTHOOK: query: CREATE TABLE test3 (b string, c string) partitioned by (a string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test3
+PREHOOK: query: INSERT INTO test3 VALUES ('1',"A", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('1',"A", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('2',"B", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('2',"B", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"C", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"C", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"D", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"D", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"E", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"E", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"F", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"F", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"G", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"G", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"H", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"H", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"I", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"I", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"J", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"J", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"K", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"K", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"L", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"L", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"M", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"M", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"N", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"N", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"O", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"O", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"P", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"P", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"Q", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"Q", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"R", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"R", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"abcdefghijklmnopqrstuvwxyz_12345", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"abcdefghijklmnopqrstuvwxyz_12345", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"abcdefghijklmnopqrstuvwxyz_12345", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"abcdefghijklmnopqrstuvwxyz_12345", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"abcdefghijklmnopqrstuvwxyz_12345", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"abcdefghijklmnopqrstuvwxyz_12345", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"abcdefghijklmnopqrstuvwxyz_12345", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"abcdefghijklmnopqrstuvwxyz_12345", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"abcdefghijklmnopqrstuvwxyz_12345", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"abcdefghijklmnopqrstuvwxyz_12345", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: INSERT INTO test3 VALUES ('3',"abcdefghijklmnopqrstuvwxyz_12345", "a" )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test3
+POSTHOOK: query: INSERT INTO test3 VALUES ('3',"abcdefghijklmnopqrstuvwxyz_12345", "a" )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+POSTHOOK: Lineage: test3 PARTITION(a=a).b SCRIPT []
+POSTHOOK: Lineage: test3 PARTITION(a=a).c SCRIPT []
+PREHOOK: query: ANALYZE TABLE test3 COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@test3
+PREHOOK: Input: default@test3@a=a
+PREHOOK: Output: default@test3
+PREHOOK: Output: default@test3@a=a
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE test3 COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@test3
+POSTHOOK: Input: default@test3@a=a
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+#### A masked pattern was here ####
+PREHOOK: query: ANALYZE TABLE test3 COMPUTE STATISTICS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test3
+PREHOOK: Input: default@test3@a=a
+PREHOOK: Output: default@test3
+PREHOOK: Output: default@test3@a=a
+POSTHOOK: query: ANALYZE TABLE test3 COMPUTE STATISTICS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test3
+POSTHOOK: Input: default@test3@a=a
+POSTHOOK: Output: default@test3
+POSTHOOK: Output: default@test3@a=a
+PREHOOK: query: DESCRIBE EXTENDED test3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test3
+POSTHOOK: query: DESCRIBE EXTENDED test3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test3
+b                   	string              	                    
+c                   	string              	                    
+a                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+a                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE FORMATTED test3 partition(a='a') c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test3
+POSTHOOK: query: DESCRIBE FORMATTED test3 partition(a='a') c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test3
+col_name            	c                   
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
 distinct_count      	19                  
-avg_col_len         	13.4                
+avg_col_len         	8.75                
 max_col_len         	32                  
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
 freq_items          	FrequentItemsSketch<T>:
-                    	  Stream Length    : 23
+                    	  Stream Length    : 24
                     	  Max Error Offset : 0
                     	  Num Active Items : 19
                     	  Current Map Cap  : 24
                     	                  Item          Est
-                    	                       B            4
-                    	  abcdefghijklmno..12345            2
-                    	                       U            1
-                    	                       X            1
-                    	                       S            1
+                    	  abcdefghijklmno..12345            6
+                    	                       N            1
+                    	                       G            1
+                    	                       I            1
+                    	                       F            1
                     	                     ...
                     	                       O            1
-                    	                       L            1
-                    	                       Z            1
+                    	                       B            1
                     	                       C            1
-                    	                       T            1
+                    	                       L            1
+                    	                       K            1
+comment             	from deserializer   
+PREHOOK: query: DESCRIBE FORMATTED test3 c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test3
+POSTHOOK: query: DESCRIBE FORMATTED test3 c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test3
+col_name            	c                   
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	19                  
+avg_col_len         	8.75                
+max_col_len         	32                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+freq_items          	FrequentItemsSketch<T>:
+                    	  Stream Length    : 24
+                    	  Max Error Offset : 0
+                    	  Num Active Items : 19
+                    	  Current Map Cap  : 24
+                    	                  Item          Est
+                    	  abcdefghijklmno..12345            6
+                    	                       J            1
+                    	                       G            1
+                    	                       E            1
+                    	                       F            1
+                    	                     ...
+                    	                       M            1
+                    	                       Q            1
+                    	                       L            1
+                    	                       C            1
+                    	                       K            1
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"c\":\"true\"}}
-PREHOOK: query: SELECT * from test2 where a = 'c' and b > 0
-PREHOOK: type: QUERY
-PREHOOK: Input: default@test2
-PREHOOK: Input: default@test2@a=c
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT * from test2 where a = 'c' and b > 0
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test2
-POSTHOOK: Input: default@test2@a=c
-#### A masked pattern was here ####
-2.0	L	c
-2.0	M	c
-2.0	V	c
-2.0	W	c
-2.0	X	c
-2.0	Y	c
-2.0	Z	c
-2.0	N	c
-2.0	O	c
-2.0	P	c
-2.0	Q	c
-2.0	R	c
-2.0	S	c
-2.0	T	c
-2.0	U	c
-PREHOOK: query: EXPLAIN SELECT * from test2 where a = 'c' and b > 0
-PREHOOK: type: QUERY
-PREHOOK: Input: default@test2
-PREHOOK: Input: default@test2@a=c
-#### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN SELECT * from test2 where a = 'c' and b > 0
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test2
-POSTHOOK: Input: default@test2@a=c
-#### A masked pattern was here ####
-STAGE DEPENDENCIES:
-  Stage-0 is a root stage
-
-STAGE PLANS:
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        TableScan
-          alias: test2
-          filterExpr: ((b > 0.0) and (a = 'c')) (type: boolean)
-          Filter Operator
-            predicate: (b > 0.0) (type: boolean)
-            Select Operator
-              expressions: b (type: float), c (type: string), 'c' (type: string)
-              outputColumnNames: _col0, _col1, _col2
-              ListSink
-
