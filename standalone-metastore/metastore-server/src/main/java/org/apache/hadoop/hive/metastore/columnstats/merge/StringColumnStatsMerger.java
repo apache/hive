@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.metastore.columnstats.merge;
 
+import org.apache.hadoop.hive.common.frequencies.FreqItemsEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
@@ -56,6 +57,18 @@ public class StringColumnStatsMerger extends ColumnStatsMerger {
       LOG.debug("Use bitvector to merge column {}'s ndvs of {} and {} to be {}", aggregateColStats.getColName(),
           aggregateData.getNumDVs(), newData.getNumDVs(), ndv);
       aggregateData.setNumDVs(ndv);
+    }
+
+    if (aggregateData.getFreqItemsEstimator() != null && newData.getFreqItemsEstimator() != null) {
+      FreqItemsEstimator oldEst = aggregateData.getFreqItemsEstimator();
+      FreqItemsEstimator newEst = newData.getFreqItemsEstimator();
+      if (oldEst.canMerge(newEst)) {
+        LOG.trace("Merging old sketch {} with new sketch {}...", oldEst.getSketch(), newEst.getSketch());
+        oldEst.mergeEstimators(newEst);
+        aggregateData.setFreqItemsEstimator(oldEst);
+        LOG.trace("Resulting sketch is {}", oldEst.getSketch());
+      }
+      LOG.debug("Merging histograms of column {}", aggregateColStats.getColName());
     }
 
     aggregateColStats.getStatsData().setStringStats(aggregateData);

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.columnstats.cache;
 import java.nio.ByteBuffer;
 
 import org.apache.hadoop.hive.common.frequencies.FreqItemsEstimator;
+import org.apache.hadoop.hive.common.frequencies.FreqItemsEstimatorFactory;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
@@ -200,8 +201,8 @@ public class StringColumnStatsDataInspector extends StringColumnStatsData {
   }
 
   private void updateFreqItemsEstimator() {
-    this.freqItemsEstimator = KllHistogramEstimatorFactory
-        .getKllHistogramEstimator(super.getFreqItems());
+    this.freqItemsEstimator = FreqItemsEstimatorFactory
+        .getFreqItemsEstimator(super.getFreqItems());
     super.unsetFreqItems();
   }
 

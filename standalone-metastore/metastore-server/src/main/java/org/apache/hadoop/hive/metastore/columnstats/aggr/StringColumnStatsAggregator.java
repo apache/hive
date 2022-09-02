@@ -74,9 +74,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
         if (ndvEstimator == null) {
           ndvEstimator = estimator;
         } else {
-          if (ndvEstimator.canMerge(estimator)) {
-            continue;
-          } else {
+          if (!ndvEstimator.canMerge(estimator)) {
             ndvEstimator = null;
             break;
           }
@@ -198,7 +196,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
           adjustedIndexMap, adjustedStatsMap, -1);
     }
     LOG.debug(
-        "Ndv estimatation for {} is {} # of partitions requested: {} # of partitions found: {}",
+        "Ndv estimation for {} is {} # of partitions requested: {} # of partitions found: {}",
         colName, columnStatisticsData.getStringStats().getNumDVs(), partNames.size(),
         colStatsWithSourceInfo.size());
     statsObj.setStatsData(columnStatisticsData);
@@ -209,7 +207,6 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
   public void extrapolate(ColumnStatisticsData extrapolateData, int numParts,
       int numPartsWithStats, Map<String, Double> adjustedIndexMap,
       Map<String, ColumnStatisticsData> adjustedStatsMap, double densityAvg) {
-    int rightBorderInd = numParts;
     StringColumnStatsDataInspector extrapolateStringData =
         new StringColumnStatsDataInspector();
     Map<String, StringColumnStatsData> extractedAdjustedStatsMap = new HashMap<>();
@@ -219,13 +216,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
     List<Map.Entry<String, StringColumnStatsData>> list = new LinkedList<>(
         extractedAdjustedStatsMap.entrySet());
     // get the avgLen
-    Collections.sort(list, new Comparator<Map.Entry<String, StringColumnStatsData>>() {
-      @Override
-      public int compare(Map.Entry<String, StringColumnStatsData> o1,
-          Map.Entry<String, StringColumnStatsData> o2) {
-        return Double.compare(o1.getValue().getAvgColLen(), o2.getValue().getAvgColLen());
-      }
-    });
+    list.sort(Comparator.comparing(o -> o.getValue().getAvgColLen()));
     double minInd = adjustedIndexMap.get(list.get(0).getKey());
     double maxInd = adjustedIndexMap.get(list.get(list.size() - 1).getKey());
     double avgColLen = 0;
@@ -235,20 +226,14 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
       avgColLen = min;
     } else if (minInd < maxInd) {
       // right border is the max
-      avgColLen = (min + (max - min) * (rightBorderInd - minInd) / (maxInd - minInd));
+      avgColLen = (min + (max - min) * (numParts - minInd) / (maxInd - minInd));
     } else {
       // left border is the max
       avgColLen = (min + (max - min) * minInd / (minInd - maxInd));
     }
 
     // get the maxLen
-    Collections.sort(list, new Comparator<Map.Entry<String, StringColumnStatsData>>() {
-      @Override
-      public int compare(Map.Entry<String, StringColumnStatsData> o1,
-          Map.Entry<String, StringColumnStatsData> o2) {
-        return Long.compare(o1.getValue().getMaxColLen(), o2.getValue().getMaxColLen());
-      }
-    });
+    list.sort(Comparator.comparing(o -> o.getValue().getMaxColLen()));
     minInd = adjustedIndexMap.get(list.get(0).getKey());
     maxInd = adjustedIndexMap.get(list.get(list.size() - 1).getKey());
     double maxColLen = 0;
@@ -258,7 +243,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
       maxColLen = min;
     } else if (minInd < maxInd) {
       // right border is the max
-      maxColLen = (min + (max - min) * (rightBorderInd - minInd) / (maxInd - minInd));
+      maxColLen = (min + (max - min) * (numParts - minInd) / (maxInd - minInd));
     } else {
       // left border is the max
       maxColLen = (min + (max - min) * minInd / (minInd - maxInd));
@@ -274,13 +259,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
 
     // get the ndv
     long ndv = 0;
-    Collections.sort(list, new Comparator<Map.Entry<String, StringColumnStatsData>>() {
-      @Override
-      public int compare(Map.Entry<String, StringColumnStatsData> o1,
-          Map.Entry<String, StringColumnStatsData> o2) {
-       return Long.compare(o1.getValue().getNumDVs(), o2.getValue().getNumDVs());
-      }
-    });
+    list.sort(Comparator.comparing(o -> o.getValue().getNumDVs()));
     minInd = adjustedIndexMap.get(list.get(0).getKey());
     maxInd = adjustedIndexMap.get(list.get(list.size() - 1).getKey());
     min = list.get(0).getValue().getNumDVs();
@@ -289,7 +268,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
       ndv = (long) min;
     } else if (minInd < maxInd) {
       // right border is the max
-      ndv = (long) (min + (max - min) * (rightBorderInd - minInd) / (maxInd - minInd));
+      ndv = (long) (min + (max - min) * (numParts - minInd) / (maxInd - minInd));
     } else {
       // left border is the max
       ndv = (long) (min + (max - min) * minInd / (minInd - maxInd));
