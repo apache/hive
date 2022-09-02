@@ -111,7 +111,7 @@ public class TestAcidUtils {
   }
 
   @Test
-  public void testParsing() throws Exception {
+  public void testParsing() {
     Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
         //new MockFile("mock:/tmp/base_000123/bucket_00001", 500, new byte[0]),

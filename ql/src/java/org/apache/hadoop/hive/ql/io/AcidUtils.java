@@ -540,7 +540,7 @@ public class AcidUtils {
    */
   public static AcidOutputFormat.Options
                     parseBaseOrDeltaBucketFilename(Path bucketFile,
-                                                   Configuration conf) throws IOException {
+                                                   Configuration conf) {
     AcidOutputFormat.Options result = new AcidOutputFormat.Options(conf);
     String filename = bucketFile.getName();
     int bucket = parseBucketId(bucketFile);
