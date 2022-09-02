@@ -2823,6 +2823,12 @@ public class HiveConf extends Configuration {
                     "higher compute cost. (NDV means the number of distinct values.). It only affects the FM-Sketch \n" +
                     "(not the HLL algorithm which is the default), where it computes the number of necessary\n" +
                     " bitvectors to achieve the accuracy."),
+    HIVE_STATS_FREQ_ITEMS_MAX_MAP_SIZE("hive.stats.freq.items.max.map.size", 200,
+        "The parameter size affects the accuracy and the size of Freq Item sketches.\n"
+            + "Memory consumed is 18 * max.map.size.\n"
+            + "The size must be a power of 2"),
+    HIVE_STATS_FREQ_ITEMS_ENABLE("hive.stats.freq.items.enable", false,
+        "Whether to compute Freq Items sketches to enable string column statistics."),
     HIVE_STATS_ESTIMATORS_ENABLE("hive.stats.estimators.enable", true,
         "Estimators are able to provide more accurate column statistic infos for UDF results."),
 

@@ -81,6 +81,23 @@ public class HiveStatsUtils {
     return Lists.newArrayList(fs.globStatus(pathPattern, FileUtils.HIDDEN_FILES_PATH_FILTER));
   }
 
+  public static boolean computeFreqItemsSketch(Configuration conf) {
+    return conf.getBoolean(HiveConf.ConfVars.HIVE_STATS_FREQ_ITEMS_ENABLE.varname,
+        HiveConf.ConfVars.HIVE_STATS_FREQ_ITEMS_ENABLE.defaultBoolVal);
+  }
+
+  public static int getMaxSizeForFreqSketch(Configuration conf) {
+    int sz = conf.getInt(HiveConf.ConfVars.HIVE_STATS_FREQ_ITEMS_MAX_MAP_SIZE.varname,
+        HiveConf.ConfVars.HIVE_STATS_FREQ_ITEMS_MAX_MAP_SIZE.defaultIntVal);
+
+    if (sz % 2 != 0) {
+      throw new IllegalArgumentException(HiveConf.ConfVars.HIVE_STATS_FREQ_ITEMS_MAX_MAP_SIZE.varname +
+          " must be power of 2, got " + sz);
+    }
+    return sz;
+  }
+
+
   public static int getNumBitVectorsForNDVEstimation(Configuration conf) throws Exception {
     int numBitVectors;
     float percentageError = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_NDV_ERROR);
