@@ -44,10 +44,23 @@ DESCRIBE EXTENDED test;
 
 DESCRIBE FORMATTED test a;
 
-SELECT * from test where b = '2' and a = 'c';  -- cost = 0.14, 0.16 Vs w/sketches 0.47 / 0.29
+SELECT * from test where '2' = b and a = 'c';  -- cost = 0.14, 0.16 Vs w/sketches 0.47 / 0.29
 
-EXPLAIN CBO COST SELECT * from test where b = '2' and a = 'c';
+EXPLAIN CBO COST SELECT * from test where '2' = b and a = 'c';
 
+EXPLAIN CBO JOINCOST SELECT * from test where '2' = b and a = 'c';
+
+SELECT * from test where b = '2' and ('b' = a or a = 'c');
+
+EXPLAIN CBO COST SELECT * from test where b = '2' and ('b' = a or a = 'c');
+
+EXPLAIN CBO JOINCOST SELECT * from test where b = '2' and ('b' = a or a = 'c');
+
+SELECT * from test where b = '2' and a in ('a', 'b', 'c');
+
+EXPLAIN CBO COST SELECT * from test where b = '2' and a in ('a', 'b', 'c');
+
+EXPLAIN CBO JOINCOST SELECT * from test where b = '2' and a in ('a', 'b', 'c');
 
 -- partitioned table (to check table statistics)
 CREATE TABLE test2 (b string, c string) partitioned by (a string);

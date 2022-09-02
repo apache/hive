@@ -235,11 +235,11 @@ freq_items          	FrequentItemsSketch<T>:
                     	  abcdefghijklmno..12345            1
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
-PREHOOK: query: SELECT * from test where b = '2' and a = 'c'
+PREHOOK: query: SELECT * from test where '2' = b and a = 'c'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT * from test where b = '2' and a = 'c'
+POSTHOOK: query: SELECT * from test where '2' = b and a = 'c'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
@@ -250,19 +250,116 @@ c	2
 c	2
 PREHOOK: query: -- cost = 0.14, 0.16 Vs w/sketches 0.47 / 0.29
 
-EXPLAIN CBO COST SELECT * from test where b = '2' and a = 'c'
+EXPLAIN CBO COST SELECT * from test where '2' = b and a = 'c'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test
 #### A masked pattern was here ####
 POSTHOOK: query: -- cost = 0.14, 0.16 Vs w/sketches 0.47 / 0.29
 
-EXPLAIN CBO COST SELECT * from test where b = '2' and a = 'c'
+EXPLAIN CBO COST SELECT * from test where '2' = b and a = 'c'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject($f0=[CAST(_UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], $f1=[CAST(_UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
   HiveFilter(condition=[AND(=($0, _UTF-16LE'c'), =($1, _UTF-16LE'2'))]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    HiveTableScan(table=[[default, test]], table:alias=[test]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+
+PREHOOK: query: EXPLAIN CBO JOINCOST SELECT * from test where '2' = b and a = 'c'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO JOINCOST SELECT * from test where '2' = b and a = 'c'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject($f0=[CAST(_UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], $f1=[CAST(_UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+  HiveFilter(condition=[AND(=($0, _UTF-16LE'c'), =($1, _UTF-16LE'2'))]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    HiveTableScan(table=[[default, test]], table:alias=[test]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+
+PREHOOK: query: SELECT * from test where b = '2' and ('b' = a or a = 'c')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from test where b = '2' and ('b' = a or a = 'c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+b	2
+b	2
+b	2
+c	2
+c	2
+c	2
+c	2
+c	2
+PREHOOK: query: EXPLAIN CBO COST SELECT * from test where b = '2' and ('b' = a or a = 'c')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO COST SELECT * from test where b = '2' and ('b' = a or a = 'c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0], b=[CAST(_UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+  HiveFilter(condition=[AND(=($1, _UTF-16LE'2'), IN($0, _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    HiveTableScan(table=[[default, test]], table:alias=[test]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+
+PREHOOK: query: EXPLAIN CBO JOINCOST SELECT * from test where b = '2' and ('b' = a or a = 'c')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO JOINCOST SELECT * from test where b = '2' and ('b' = a or a = 'c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0], b=[CAST(_UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+  HiveFilter(condition=[AND(=($1, _UTF-16LE'2'), IN($0, _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    HiveTableScan(table=[[default, test]], table:alias=[test]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+
+PREHOOK: query: SELECT * from test where b = '2' and a in ('a', 'b', 'c')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from test where b = '2' and a in ('a', 'b', 'c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+b	2
+b	2
+b	2
+c	2
+c	2
+c	2
+c	2
+c	2
+PREHOOK: query: EXPLAIN CBO COST SELECT * from test where b = '2' and a in ('a', 'b', 'c')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO COST SELECT * from test where b = '2' and a in ('a', 'b', 'c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0], b=[CAST(_UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+  HiveFilter(condition=[AND(=($1, _UTF-16LE'2'), IN($0, _UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    HiveTableScan(table=[[default, test]], table:alias=[test]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+
+PREHOOK: query: EXPLAIN CBO JOINCOST SELECT * from test where b = '2' and a in ('a', 'b', 'c')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO JOINCOST SELECT * from test where b = '2' and a in ('a', 'b', 'c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0], b=[CAST(_UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+  HiveFilter(condition=[AND(=($1, _UTF-16LE'2'), IN($0, _UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
     HiveTableScan(table=[[default, test]], table:alias=[test]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
 
 PREHOOK: query: CREATE TABLE test2 (b string, c string) partitioned by (a string)
