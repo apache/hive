@@ -17,9 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.util.*;
 
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
@@ -38,6 +37,10 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.NlsString;
+import org.apache.datasketches.ArrayOfStringsSerDe;
+import org.apache.datasketches.frequencies.ItemsSketch;
+import org.apache.datasketches.memory.Memory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -159,12 +162,55 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       }
       break;
     }
+    case EQUALS: {
+      computeEqualsSelectivity(call);
+    }
 
     default:
       selectivity = computeFunctionSelectivity(call);
     }
 
     return selectivity;
+  }
+
+  private double computeEqualsSelectivity(RexCall call) {
+    final boolean isLiteralLeft = call.getOperands().get(0).getKind().equals(SqlKind.LITERAL);
+    final boolean isLiteralRight = call.getOperands().get(1).getKind().equals(SqlKind.LITERAL);
+    final boolean isInputRefLeft = call.getOperands().get(0).getKind().equals(SqlKind.INPUT_REF);
+    final boolean isInputRefRight = call.getOperands().get(1).getKind().equals(SqlKind.INPUT_REF);
+    if (childRel instanceof HiveTableScan && isLiteralLeft != isLiteralRight && isInputRefLeft != isInputRefRight) {
+      final HiveTableScan t = (HiveTableScan) childRel;
+      final int inputRefIndex = ((RexInputRef) call.getOperands().get(isInputRefLeft ? 0 : 1)).getIndex();
+      final List<ColStatistics> colStats = t.getColStat(Collections.singletonList(inputRefIndex));
+      if (!colStats.isEmpty() && colStats.get(0).getFreqItems() != null && colStats.get(0).getFreqItems().length > 0) {
+//        FreqItemsEstimator freqEstimator = FreqItemsEstimatorFactory.getFreqItemsEstimator();
+        byte[] buf = colStats.get(0).getFreqItems();
+        final ItemsSketch<String> freqItems = ItemsSketch.getInstance(
+            Memory.wrap(buf), new ArrayOfStringsSerDe());
+        final Object boundValueObject = ((RexLiteral) call.getOperands().get(isLiteralLeft ? 0 : 1)).getValue();
+        final SqlTypeName typeName = call.getOperands().get(isInputRefLeft ? 0 : 1).getType().getSqlTypeName();
+
+        long freqCount = 0;
+        switch (typeName) {
+        case CHAR:
+        case VARCHAR:
+          String value = ((NlsString)boundValueObject).getValue();
+          freqCount += freqItems.getEstimate(value);
+          break;
+        default:
+          return ((double) 1 / (double) 3);
+        }
+
+        double selectivity = freqCount / t.getTable().getRowCount();
+        if (selectivity <= 0.0) {
+          selectivity = 0.10;
+        } else if (selectivity >= 1.0) {
+          selectivity = 1.0;
+        }
+        return selectivity;
+      }
+    }
+    return ((double) 1 / (double) 3);
   }
 
   /**

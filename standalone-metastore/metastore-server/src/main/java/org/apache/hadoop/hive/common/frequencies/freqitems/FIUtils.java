@@ -86,7 +86,7 @@ public class FIUtils {
    * @param buf to deserialize
    * @return KLL sketch
    */
-  public static ItemsSketch deserializeFI(final byte[] buf) {
+  public static ItemsSketch<String> deserializeFI(final byte[] buf) {
     return deserializeFI(buf, 0, buf.length);
   }
 
