@@ -500,7 +500,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       throw new SemanticException(e.getMessage());
     }
     // add cast($columnName as float) to make sure it works for other numeric types
-    rewrittenQueryBuilder.append("ds_freq_sketch(cast(")
+    rewrittenQueryBuilder.append("ds_freq_frequent_items(cast(")
         .append(columnName)
         .append(" as string), ")
         .append(mx)
