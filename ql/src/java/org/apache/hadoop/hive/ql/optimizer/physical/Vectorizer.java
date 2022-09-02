@@ -44,6 +44,9 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConvertDecimal64ToDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorCoalesce;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFComputeBitVectorFinal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFComputeFIString;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFComputeFIFinal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColDivideDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinAntiJoinLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinAntiJoinMultiKeyOperator;
@@ -519,6 +522,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedAggregationUdfs.add("stddev_samp");
     supportedAggregationUdfs.add("bloom_filter");
     supportedAggregationUdfs.add("compute_bit_vector_hll");
+    supportedAggregationUdfs.add("ds_freq_sketch");
   }
 
   private class VectorTaskColumnInfo {
@@ -4465,17 +4469,20 @@ public class Vectorizer implements PhysicalPlanResolver {
       VectorizationContext vContext)
           throws HiveException {
 
-    VectorizedUDAFs annotation =
-        AnnotationUtils.getAnnotation(evaluator.getClass(), VectorizedUDAFs.class);
-    if (annotation == null) {
-      String issue =
-          "Evaluator " + evaluator.getClass().getSimpleName() + " does not have a " +
-          "vectorized UDAF annotation (aggregation: \"" + aggregationName + "\"). " +
-          "Vectorization not supported";
-      return new ImmutablePair<VectorAggregationDesc,String>(null, issue);
+    Class<? extends VectorAggregateExpression>[] vecAggrClasses;
+    if (aggregationName.equals("ds_freq_sketch")) {
+      vecAggrClasses = new Class[] {
+          VectorUDAFComputeFIString.class, VectorUDAFComputeFIFinal.class
+      };
+    } else {
+      VectorizedUDAFs annotation = AnnotationUtils.getAnnotation(evaluator.getClass(), VectorizedUDAFs.class);
+      if (annotation == null) {
+        String issue = "Evaluator " + evaluator.getClass().getSimpleName() + " does not have a "
+            + "vectorized UDAF annotation (aggregation: \"" + aggregationName + "\"). " + "Vectorization not supported";
+        return new ImmutablePair<VectorAggregationDesc, String>(null, issue);
+      }
+      vecAggrClasses = annotation.value();
     }
-    final Class<? extends VectorAggregateExpression>[] vecAggrClasses = annotation.value();
-
 
     // Not final since it may change later due to DECIMAL_64.
     ColumnVector.Type outputColVectorType =

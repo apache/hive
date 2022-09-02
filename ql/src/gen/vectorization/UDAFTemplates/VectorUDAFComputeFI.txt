@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates;
+package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
 
 import org.apache.hadoop.hive.common.frequencies.FreqItemsEstimator;
 import org.apache.hadoop.hive.common.frequencies.FreqItemsEstimatorFactory;
@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.vector.<InputColumnVectorType>;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
@@ -36,7 +37,7 @@ import org.apache.hadoop.hive.ql.util.JavaDataModel;
 /**
  * Generated from template VectorUDAFComputeFI.txt.
  */
-@Description(name = "ds_freq_frequent_items", value = "_FUNC_(x) "
+@Description(name = "ds_freq_sketch", value = "_FUNC_(x) "
     + "Returns a ItemsSketch in a serialized form as a binary blob."
     + " Values must be of type string.")
 public class <ClassName> extends VectorAggregateExpression {
@@ -78,17 +79,17 @@ public class <ClassName> extends VectorAggregateExpression {
     if (inputColumn.noNulls) {
       if (inputColumn.isRepeating) {
         for (int i = 0; i < batchSize; i++) {
-          myagg.estimator.addToEstimator(inputColumn.vector[0]);
+          myagg.estimator.addToEstimator(inputColumn.vector[0], inputColumn.start[0], inputColumn.length[0]);
         }
       } else {
         if (batch.selectedInUse) {
           for (int s = 0; s < batchSize; s++) {
             int i = batch.selected[s];
-            myagg.estimator.addToEstimator(inputColumn.vector[i]);
+            myagg.estimator.addToEstimator(inputColumn.vector[i], inputColumn.start[i], inputColumn.length[i]);
           }
         } else {
           for (int i = 0; i < batchSize; i++) {
-            myagg.estimator.addToEstimator(inputColumn.vector[i]);
+            myagg.estimator.addToEstimator(inputColumn.vector[i], inputColumn.start[i], inputColumn.length[i]);
           }
         }
       }
@@ -96,7 +97,7 @@ public class <ClassName> extends VectorAggregateExpression {
       if (inputColumn.isRepeating) {
         if (!inputColumn.isNull[0]) {
           for (int i = 0; i < batchSize; i++) {
-            myagg.estimator.addToEstimator(inputColumn.vector[0]);
+            myagg.estimator.addToEstimator(inputColumn.vector[0], inputColumn.start[0], inputColumn.length[0]);
           }
         }
       } else {
@@ -104,13 +105,13 @@ public class <ClassName> extends VectorAggregateExpression {
           for (int j = 0; j < batchSize; ++j) {
             int i = batch.selected[j];
             if (!inputColumn.isNull[i]) {
-              myagg.estimator.addToEstimator(inputColumn.vector[i]);
+              myagg.estimator.addToEstimator(inputColumn.vector[i], inputColumn.start[i], inputColumn.length[i]);
             }
           }
         } else {
           for (int i = 0; i < batchSize; i++) {
             if (!inputColumn.isNull[i]) {
-              myagg.estimator.addToEstimator(inputColumn.vector[i]);
+              myagg.estimator.addToEstimator(inputColumn.vector[i], inputColumn.start[i], inputColumn.length[i]);
             }
           }
         }
@@ -172,19 +173,19 @@ public class <ClassName> extends VectorAggregateExpression {
       if (inputColumn.isRepeating) {
         for (int i = 0; i < batchSize; i++) {
           Aggregation myagg = getAggregation(aggregationBufferSets, i, aggregateIndex);
-          myagg.estimator.addToEstimator(inputColumn.vector[0]);
+          myagg.estimator.addToEstimator(inputColumn.vector[0], inputColumn.start[0], inputColumn.length[0]);
         }
       } else {
         if (batch.selectedInUse) {
           for (int s = 0; s < batchSize; s++) {
             int i = batch.selected[s];
             Aggregation myagg = getAggregation(aggregationBufferSets, s, aggregateIndex);
-            myagg.estimator.addToEstimator(inputColumn.vector[i]);
+            myagg.estimator.addToEstimator(inputColumn.vector[i], inputColumn.start[i], inputColumn.length[i]);
           }
         } else {
           for (int i = 0; i < batchSize; i++) {
             Aggregation myagg = getAggregation(aggregationBufferSets, i, aggregateIndex);
-            myagg.estimator.addToEstimator(inputColumn.vector[i]);
+            myagg.estimator.addToEstimator(inputColumn.vector[i], inputColumn.start[i], inputColumn.length[i]);
           }
         }
       }
@@ -193,7 +194,7 @@ public class <ClassName> extends VectorAggregateExpression {
         if (!inputColumn.isNull[0]) {
           for (int i = 0; i < batchSize; i++) {
             Aggregation myagg = getAggregation(aggregationBufferSets, i, aggregateIndex);
-            myagg.estimator.addToEstimator(inputColumn.vector[0]);
+            myagg.estimator.addToEstimator(inputColumn.vector[0], inputColumn.start[0], inputColumn.length[0]);
           }
         }
       } else {
@@ -202,14 +203,14 @@ public class <ClassName> extends VectorAggregateExpression {
             int i = batch.selected[s];
             if (!inputColumn.isNull[i]) {
               Aggregation myagg = getAggregation(aggregationBufferSets, s, aggregateIndex);
-              myagg.estimator.addToEstimator(inputColumn.vector[i]);
+              myagg.estimator.addToEstimator(inputColumn.vector[i], inputColumn.start[i], inputColumn.length[i]);
             }
           }
         } else {
           for (int i = 0; i < batchSize; i++) {
             if (!inputColumn.isNull[i]) {
               Aggregation myagg = getAggregation(aggregationBufferSets, i, aggregateIndex);
-              myagg.estimator.addToEstimator(inputColumn.vector[i]);
+              myagg.estimator.addToEstimator(inputColumn.vector[i], inputColumn.start[i], inputColumn.length[i]);
             }
           }
         }
@@ -256,14 +257,14 @@ public class <ClassName> extends VectorAggregateExpression {
   @Override
   public boolean matches(String name, ColumnVector.Type inputColVectorType, ColumnVector.Type outputColVectorType,
       GenericUDAFEvaluator.Mode mode) {
-    return name.equals("ds_freq_frequent_items") &&
+    return name.equals("ds_freq_sketch") &&
         outputColVectorType == ColumnVector.Type.BYTES &&
 #IF MERGING
         inputColVectorType == ColumnVector.Type.BYTES &&
         (mode == GenericUDAFEvaluator.Mode.PARTIAL2 || mode == GenericUDAFEvaluator.Mode.FINAL);
 #ENDIF MERGING
 #IF COMPLETE
-        inputColVectorType == ColumnVector.Type.<UpperCaseColumnVectorType> &&
+        inputColVectorType == ColumnVector.Type.BYTES &&  // <UpperCaseColumnVectorType>
         (mode == GenericUDAFEvaluator.Mode.PARTIAL1 || mode == GenericUDAFEvaluator.Mode.COMPLETE);
 #ENDIF COMPLETE
   }
