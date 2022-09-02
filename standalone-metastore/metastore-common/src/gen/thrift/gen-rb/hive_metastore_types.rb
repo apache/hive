@@ -1947,13 +1947,15 @@ class StringColumnStatsData
   NUMNULLS = 3
   NUMDVS = 4
   BITVECTORS = 5
+  FREQITEMS = 6
 
   FIELDS = {
     MAXCOLLEN => {:type => ::Thrift::Types::I64, :name => 'maxColLen'},
     AVGCOLLEN => {:type => ::Thrift::Types::DOUBLE, :name => 'avgColLen'},
     NUMNULLS => {:type => ::Thrift::Types::I64, :name => 'numNulls'},
     NUMDVS => {:type => ::Thrift::Types::I64, :name => 'numDVs'},
-    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true}
+    BITVECTORS => {:type => ::Thrift::Types::STRING, :name => 'bitVectors', :binary => true, :optional => true},
+    FREQITEMS => {:type => ::Thrift::Types::STRING, :name => 'freqitems', :binary => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end

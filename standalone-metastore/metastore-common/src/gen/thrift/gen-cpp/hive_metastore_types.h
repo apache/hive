@@ -4093,8 +4093,9 @@ void swap(LongColumnStatsData &a, LongColumnStatsData &b);
 std::ostream& operator<<(std::ostream& out, const LongColumnStatsData& obj);
 
 typedef struct _StringColumnStatsData__isset {
-  _StringColumnStatsData__isset() : bitVectors(false) {}
+  _StringColumnStatsData__isset() : bitVectors(false), freqitems(false) {}
   bool bitVectors :1;
+  bool freqitems :1;
 } _StringColumnStatsData__isset;
 
 class StringColumnStatsData : public virtual ::apache::thrift::TBase {
@@ -4107,7 +4108,8 @@ class StringColumnStatsData : public virtual ::apache::thrift::TBase {
                           avgColLen(0),
                           numNulls(0),
                           numDVs(0),
-                          bitVectors() {
+                          bitVectors(),
+                          freqitems() {
   }
 
   virtual ~StringColumnStatsData() noexcept;
@@ -4116,6 +4118,7 @@ class StringColumnStatsData : public virtual ::apache::thrift::TBase {
   int64_t numNulls;
   int64_t numDVs;
   std::string bitVectors;
+  std::string freqitems;
 
   _StringColumnStatsData__isset __isset;
 
@@ -4128,6 +4131,8 @@ class StringColumnStatsData : public virtual ::apache::thrift::TBase {
   void __set_numDVs(const int64_t val);
 
   void __set_bitVectors(const std::string& val);
+
+  void __set_freqitems(const std::string& val);
 
   bool operator == (const StringColumnStatsData & rhs) const
   {
@@ -4142,6 +4147,10 @@ class StringColumnStatsData : public virtual ::apache::thrift::TBase {
     if (__isset.bitVectors != rhs.__isset.bitVectors)
       return false;
     else if (__isset.bitVectors && !(bitVectors == rhs.bitVectors))
+      return false;
+    if (__isset.freqitems != rhs.__isset.freqitems)
+      return false;
+    else if (__isset.freqitems && !(freqitems == rhs.freqitems))
       return false;
     return true;
   }

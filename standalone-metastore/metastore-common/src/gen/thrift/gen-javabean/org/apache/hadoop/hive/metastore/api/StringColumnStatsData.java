@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField NUM_NULLS_FIELD_DESC = new org.apache.thrift.protocol.TField("numNulls", org.apache.thrift.protocol.TType.I64, (short)3);
   private static final org.apache.thrift.protocol.TField NUM_DVS_FIELD_DESC = new org.apache.thrift.protocol.TField("numDVs", org.apache.thrift.protocol.TType.I64, (short)4);
   private static final org.apache.thrift.protocol.TField BIT_VECTORS_FIELD_DESC = new org.apache.thrift.protocol.TField("bitVectors", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField FREQITEMS_FIELD_DESC = new org.apache.thrift.protocol.TField("freqitems", org.apache.thrift.protocol.TType.STRING, (short)6);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new StringColumnStatsDataStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new StringColumnStatsDataTupleSchemeFactory();
@@ -25,6 +26,7 @@ package org.apache.hadoop.hive.metastore.api;
   private long numNulls; // required
   private long numDVs; // required
   private @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer bitVectors; // optional
+  private @org.apache.thrift.annotation.Nullable java.nio.ByteBuffer freqItems; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -32,7 +34,8 @@ package org.apache.hadoop.hive.metastore.api;
     AVG_COL_LEN((short)2, "avgColLen"),
     NUM_NULLS((short)3, "numNulls"),
     NUM_DVS((short)4, "numDVs"),
-    BIT_VECTORS((short)5, "bitVectors");
+    BIT_VECTORS((short)5, "bitVectors"),
+    FREQITEMS((short)6, "freqitems");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -58,6 +61,8 @@ package org.apache.hadoop.hive.metastore.api;
           return NUM_DVS;
         case 5: // BIT_VECTORS
           return BIT_VECTORS;
+        case 6: // FREQITEMS
+          return FREQITEMS;
         default:
           return null;
       }
@@ -104,7 +109,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __NUMNULLS_ISSET_ID = 2;
   private static final int __NUMDVS_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.BIT_VECTORS};
+  private static final _Fields optionals[] = {_Fields.BIT_VECTORS,_Fields.FREQITEMS};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -117,6 +122,8 @@ package org.apache.hadoop.hive.metastore.api;
     tmpMap.put(_Fields.NUM_DVS, new org.apache.thrift.meta_data.FieldMetaData("numDVs", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.BIT_VECTORS, new org.apache.thrift.meta_data.FieldMetaData("bitVectors", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
+    tmpMap.put(_Fields.FREQITEMS, new org.apache.thrift.meta_data.FieldMetaData("freqitems", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(StringColumnStatsData.class, metaDataMap);
@@ -154,6 +161,9 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetBitVectors()) {
       this.bitVectors = org.apache.thrift.TBaseHelper.copyBinary(other.bitVectors);
     }
+    if (other.isSetFreqItems()) {
+      this.freqItems = org.apache.thrift.TBaseHelper.copyBinary(other.freqItems);
+    }
   }
 
   public StringColumnStatsData deepCopy() {
@@ -171,6 +181,7 @@ package org.apache.hadoop.hive.metastore.api;
     setNumDVsIsSet(false);
     this.numDVs = 0;
     this.bitVectors = null;
+    this.freqItems = null;
   }
 
   public long getMaxColLen() {
@@ -293,6 +304,38 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public byte[] getFreqItems() {
+    setFreqItems(org.apache.thrift.TBaseHelper.rightSize(freqItems));
+    return freqItems == null ? null : freqItems.array();
+  }
+
+  public java.nio.ByteBuffer bufferForFreqItems() {
+    return org.apache.thrift.TBaseHelper.copyBinary(freqItems);
+  }
+
+  public void setFreqItems(byte[] freqItems) {
+    this.freqItems = freqItems == null ? (java.nio.ByteBuffer)null   : java.nio.ByteBuffer.wrap(freqItems.clone());
+  }
+
+  public void setFreqItems(@org.apache.thrift.annotation.Nullable java.nio.ByteBuffer freqitems) {
+    this.freqItems = org.apache.thrift.TBaseHelper.copyBinary(freqitems);
+  }
+
+  public void unsetFreqItems() {
+    this.freqItems = null;
+  }
+
+  /** Returns true if field freqitems is set (has been assigned a value) and false otherwise */
+  public boolean isSetFreqItems() {
+    return this.freqItems != null;
+  }
+
+  public void setFreqItemsIsSet(boolean value) {
+    if (!value) {
+      this.freqItems = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case MAX_COL_LEN:
@@ -339,6 +382,18 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case FREQITEMS:
+      if (value == null) {
+        unsetFreqItems();
+      } else {
+        if (value instanceof byte[]) {
+          setFreqItems((byte[])value);
+        } else {
+          setFreqItems((java.nio.ByteBuffer)value);
+        }
+      }
+      break;
+
     }
   }
 
@@ -359,6 +414,9 @@ package org.apache.hadoop.hive.metastore.api;
 
     case BIT_VECTORS:
       return getBitVectors();
+
+    case FREQITEMS:
+      return getFreqItems();
 
     }
     throw new java.lang.IllegalStateException();
@@ -381,6 +439,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetNumDVs();
     case BIT_VECTORS:
       return isSetBitVectors();
+    case FREQITEMS:
+      return isSetFreqItems();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -443,6 +503,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_freqitems = true && this.isSetFreqItems();
+    boolean that_present_freqitems = true && that.isSetFreqItems();
+    if (this_present_freqitems || that_present_freqitems) {
+      if (!(this_present_freqitems && that_present_freqitems))
+        return false;
+      if (!this.freqItems.equals(that.freqItems))
+        return false;
+    }
+
     return true;
   }
 
@@ -461,6 +530,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetBitVectors()) ? 131071 : 524287);
     if (isSetBitVectors())
       hashCode = hashCode * 8191 + bitVectors.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetFreqItems()) ? 131071 : 524287);
+    if (isSetFreqItems())
+      hashCode = hashCode * 8191 + freqItems.hashCode();
 
     return hashCode;
   }
@@ -523,6 +596,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetFreqItems(), other.isSetFreqItems());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetFreqItems()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.freqItems, other.freqItems);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -566,6 +649,16 @@ package org.apache.hadoop.hive.metastore.api;
         sb.append("null");
       } else {
         org.apache.thrift.TBaseHelper.toString(this.bitVectors, sb);
+      }
+      first = false;
+    }
+    if (isSetFreqItems()) {
+      if (!first) sb.append(", ");
+      sb.append("freqitems:");
+      if (this.freqItems == null) {
+        sb.append("null");
+      } else {
+        org.apache.thrift.TBaseHelper.toString(this.freqItems, sb);
       }
       first = false;
     }
@@ -670,6 +763,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // FREQITEMS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.freqItems = iprot.readBinary();
+              struct.setFreqItemsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -702,6 +803,13 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.freqItems != null) {
+        if (struct.isSetFreqItems()) {
+          oprot.writeFieldBegin(FREQITEMS_FIELD_DESC);
+          oprot.writeBinary(struct.freqItems);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -727,9 +835,15 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetBitVectors()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetFreqItems()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetBitVectors()) {
         oprot.writeBinary(struct.bitVectors);
+      }
+      if (struct.isSetFreqItems()) {
+        oprot.writeBinary(struct.freqItems);
       }
     }
 
@@ -744,10 +858,14 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setNumNullsIsSet(true);
       struct.numDVs = iprot.readI64();
       struct.setNumDVsIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(1);
+      java.util.BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.bitVectors = iprot.readBinary();
         struct.setBitVectorsIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.freqItems = iprot.readBinary();
+        struct.setFreqItemsIsSet(true);
       }
     }
   }

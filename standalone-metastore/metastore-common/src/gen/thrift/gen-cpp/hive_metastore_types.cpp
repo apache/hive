@@ -8912,6 +8912,11 @@ void StringColumnStatsData::__set_bitVectors(const std::string& val) {
   this->bitVectors = val;
 __isset.bitVectors = true;
 }
+
+void StringColumnStatsData::__set_freqitems(const std::string& val) {
+  this->freqitems = val;
+__isset.freqitems = true;
+}
 std::ostream& operator<<(std::ostream& out, const StringColumnStatsData& obj)
 {
   obj.printTo(out);
@@ -8984,6 +8989,14 @@ uint32_t StringColumnStatsData::read(::apache::thrift::protocol::TProtocol* ipro
           xfer += iprot->skip(ftype);
         }
         break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readBinary(this->freqitems);
+          this->__isset.freqitems = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -9030,6 +9043,11 @@ uint32_t StringColumnStatsData::write(::apache::thrift::protocol::TProtocol* opr
     xfer += oprot->writeBinary(this->bitVectors);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.freqitems) {
+    xfer += oprot->writeFieldBegin("freqitems", ::apache::thrift::protocol::T_STRING, 6);
+    xfer += oprot->writeBinary(this->freqitems);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -9042,6 +9060,7 @@ void swap(StringColumnStatsData &a, StringColumnStatsData &b) {
   swap(a.numNulls, b.numNulls);
   swap(a.numDVs, b.numDVs);
   swap(a.bitVectors, b.bitVectors);
+  swap(a.freqitems, b.freqitems);
   swap(a.__isset, b.__isset);
 }
 
@@ -9051,6 +9070,7 @@ StringColumnStatsData::StringColumnStatsData(const StringColumnStatsData& other3
   numNulls = other316.numNulls;
   numDVs = other316.numDVs;
   bitVectors = other316.bitVectors;
+  freqitems = other316.freqitems;
   __isset = other316.__isset;
 }
 StringColumnStatsData& StringColumnStatsData::operator=(const StringColumnStatsData& other317) {
@@ -9059,6 +9079,7 @@ StringColumnStatsData& StringColumnStatsData::operator=(const StringColumnStatsD
   numNulls = other317.numNulls;
   numDVs = other317.numDVs;
   bitVectors = other317.bitVectors;
+  freqitems = other317.freqitems;
   __isset = other317.__isset;
   return *this;
 }
@@ -9070,6 +9091,7 @@ void StringColumnStatsData::printTo(std::ostream& out) const {
   out << ", " << "numNulls=" << to_string(numNulls);
   out << ", " << "numDVs=" << to_string(numDVs);
   out << ", " << "bitVectors="; (__isset.bitVectors ? (out << to_string(bitVectors)) : (out << "<null>"));
+  out << ", " << "freqitems="; (__isset.freqitems ? (out << to_string(freqitems)) : (out << "<null>"));
   out << ")";
 }
 

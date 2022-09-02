@@ -46,6 +46,11 @@ class StringColumnStatsData
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        6 => array(
+            'var' => 'freqitems',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -68,6 +73,10 @@ class StringColumnStatsData
      * @var string
      */
     public $bitVectors = null;
+    /**
+     * @var string
+     */
+    public $freqitems = null;
 
     public function __construct($vals = null)
     {
@@ -86,6 +95,9 @@ class StringColumnStatsData
             }
             if (isset($vals['bitVectors'])) {
                 $this->bitVectors = $vals['bitVectors'];
+            }
+            if (isset($vals['freqitems'])) {
+                $this->freqitems = $vals['freqitems'];
             }
         }
     }
@@ -144,6 +156,13 @@ class StringColumnStatsData
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 6:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->freqitems);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -181,6 +200,11 @@ class StringColumnStatsData
         if ($this->bitVectors !== null) {
             $xfer += $output->writeFieldBegin('bitVectors', TType::STRING, 5);
             $xfer += $output->writeString($this->bitVectors);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->freqitems !== null) {
+            $xfer += $output->writeFieldBegin('freqitems', TType::STRING, 6);
+            $xfer += $output->writeString($this->freqitems);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
