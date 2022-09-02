@@ -22,8 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.datasketches.ArrayOfStringsSerDe;
+import org.apache.datasketches.frequencies.ErrorType;
 import org.apache.datasketches.frequencies.ItemsSketch;
-import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -61,6 +61,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
+import static org.apache.datasketches.Util.LS;
 
 /**
  * Utilities for SHOW ... commands.
@@ -217,7 +219,38 @@ public final class ShowUtils {
     if (buffer == null || buffer.length == 0) {
       return "";
     }
-    return ItemsSketch.getInstance(Memory.wrap(buffer), new ArrayOfStringsSerDe()).toString();
+    ItemsSketch<?> fi_sketch = ItemsSketch.getInstance(Memory.wrap(buffer), new ArrayOfStringsSerDe());
+    final StringBuilder sb = new StringBuilder();
+    sb.append("FrequentItemsSketch<T>:").append(LS);
+    sb.append("  Stream Length    : ").append(fi_sketch.getStreamLength()).append(LS);
+    sb.append("  Max Error Offset : ").append(fi_sketch.getMaximumError()).append(LS);
+    sb.append("  Num Active Items : ").append(fi_sketch.getNumActiveItems()).append(LS);
+    sb.append("  Current Map Cap  : ").append(fi_sketch.getCurrentMapCapacity()).append(LS);
+
+    sb.append(String.format("  %20s %12s","Item", "Est")).append(LS);
+    ItemsSketch.Row<?>[] fi = fi_sketch.getFrequentItems(ErrorType.NO_FALSE_POSITIVES);
+    if (fi.length > 10) {
+      Arrays.stream(fi,0, 5).forEach(r -> formatItemsSketchRow(r, sb));
+      sb.append(String.format("  %22s", "...")).append(LS);
+      Arrays.stream(fi,fi.length - 5, fi.length).forEach(r -> formatItemsSketchRow(r, sb));
+    } else {
+      Arrays.stream(fi).forEach(r -> formatItemsSketchRow(r, sb));
+    }
+    return sb.toString();
+  }
+
+  final static String ITEMS_SKETCH_FMT = "  %22s %12d";
+  final static String ITEMS_SKETCH_FMT2 = "  %15s..%5s %12d";
+
+  private static void formatItemsSketchRow(ItemsSketch.Row<?> r, StringBuilder sb) {
+    String itemStr = r.getItem().toString();
+    if (itemStr.length() > 20) {
+      sb.append(String.format(ITEMS_SKETCH_FMT2, itemStr.substring(0, 15), itemStr.substring(itemStr.length() - 5),
+          r.getEstimate())).append(LS);
+    } else {
+      sb.append(String.format(ITEMS_SKETCH_FMT, itemStr,
+          r.getEstimate())).append(LS);
+    }
   }
 
   private static String convertToString(byte[] buffer) {

@@ -84,7 +84,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
         if (freqItemsEstimator == null) {
           freqItemsEstimator = estimator;
         } else {
-          // null histogram can happen when there are only null values
+          // null freqItems can happen when there are only null values
           if (estimator != null && !freqItemsEstimator.canMerge(estimator)) {
             areAllFreqItemsEstimatorsMergeable = false;
           }

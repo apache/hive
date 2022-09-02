@@ -68,7 +68,13 @@ public class FreqItemsEstimatorFactory {
    * @return an empty Freq Items estimator, using the maxMapSize parameter from the given estimator
    */
   public static FreqItemsEstimator getEmptyFreqItemsEstimator(FreqItemsEstimator freqItemsEstimator) {
-    //TODO: SB: Check getMaximumMapCap is equivalent to maxMapSize
-    return getEmptyFreqItemsEstimator(freqItemsEstimator.getSketch().getMaximumMapCapacity());
+    int curCapacity = freqItemsEstimator.getSketch().getMaximumMapCapacity();
+    return getEmptyFreqItemsEstimator(nextPowerOf2(curCapacity));
   }
+
+  private static int nextPowerOf2(int num)
+  {
+    return num == 1 ? 1 : Integer.highestOneBit(num - 1) * 2;
+  }
+
 }
