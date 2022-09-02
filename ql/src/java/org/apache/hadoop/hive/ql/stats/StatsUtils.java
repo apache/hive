@@ -872,6 +872,7 @@ public class StatsUtils {
       cs.setNumNulls(csd.getStringStats().getNumNulls());
       cs.setAvgColLen(csd.getStringStats().getAvgColLen());
       cs.setBitVectors(csd.getStringStats().getBitVectors());
+      cs.setFreqItems(csd.getStringStats().getFreqItems());
     } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
       if (csd.getBooleanStats().getNumFalses() > 0 && csd.getBooleanStats().getNumTrues() > 0) {
         cs.setCountDistint(2);

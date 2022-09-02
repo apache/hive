@@ -219,6 +219,11 @@ public class ColumnStatisticsObjTranslator {
       double avg = ((DoubleObjectInspector) oi).get(o);
       statsObj.getStatsData().getStringStats().setAvgColLen(avg);
       break;
+    case FREQ_SKETCH:
+      PrimitiveObjectInspector poi2 = (PrimitiveObjectInspector) oi;
+      byte[] buf2 = ((BinaryObjectInspector) poi2).getPrimitiveJavaObject(o);
+      statsObj.getStatsData().getStringStats().setFreqItems(buf2);
+      break;
     default:
       throw new RuntimeException("Unsupported column stat for STRING : " + csf);
     }
