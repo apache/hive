@@ -163,7 +163,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       break;
     }
     case EQUALS: {
-      computeEqualsSelectivity(call);
+      selectivity = computeEqualsSelectivity(call);
+      break;
     }
 
     default:

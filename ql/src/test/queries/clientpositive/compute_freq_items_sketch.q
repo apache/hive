@@ -8,8 +8,8 @@
 --
 --set hive.vectorized.execution.enabled=false;
 --select ds_freq_frequent_items(ds_freq_sketch(cstring1), 2) from alltypesorc;
-
---set hive.metastore.partition.name.whitelist.pattern=null;
+set hive.cli.print.escape.crlf=false;
+--set hive.metastore.partition.name.whitelist.pattern=metastore.stats.fetch.bitvector;
 set metastore.stats.fetch.bitvector=true;
 set hive.stats.freq.items.enable=true;
 
@@ -38,6 +38,11 @@ ANALYZE TABLE test COMPUTE STATISTICS;
 DESCRIBE EXTENDED test;
 
 DESCRIBE FORMATTED test a;
+
+SELECT * from test where a = 'a' and b > 0;
+
+EXPLAIN SELECT * from test where a = 'a' and b > 0;
+
 
 -- partitioned table (to check table statistics)
 CREATE TABLE test2 (b float, c string) partitioned by (a string);
@@ -76,3 +81,8 @@ DESCRIBE FORMATTED test2 partition(a='a') c;
 DESCRIBE FORMATTED test2 partition(a='c') c;
 
 DESCRIBE FORMATTED test2 c;
+
+SELECT * from test2 where a = 'c' and b > 0;
+
+EXPLAIN SELECT * from test2 where a = 'c' and b > 0;
+
