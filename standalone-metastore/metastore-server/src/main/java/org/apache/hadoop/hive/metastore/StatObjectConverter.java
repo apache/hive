@@ -113,6 +113,7 @@ public class StatObjectConverter {
            stringStats.isSetNumNulls() ? stringStats.getNumNulls() : null,
            stringStats.isSetNumDVs() ? stringStats.getNumDVs() : null,
            stringStats.isSetBitVectors() ? stringStats.getBitVectors() : null,
+           stringStats.isSetFreqItems() ? stringStats.getFreqItems() : null,
            stringStats.isSetMaxColLen() ? stringStats.getMaxColLen() : null,
            stringStats.isSetAvgColLen() ? stringStats.getAvgColLen() : null);
      } else if (statsObj.getStatsData().isSetBinaryStats()) {
@@ -174,6 +175,9 @@ public class StatObjectConverter {
     if (mStatsObj.getBitVector() != null) {
       oldStatsObj.setBitVector(mStatsObj.getBitVector());
     }
+    if (mStatsObj.getFreqItems() != null) {
+      oldStatsObj.setFreqItems(mStatsObj.getFreqItems());
+    }
     if (mStatsObj.getNumFalses() != null) {
       oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
     }
@@ -220,6 +224,9 @@ public class StatObjectConverter {
     if (mStatsObj.getBitVector() != null) {
       oldStatsObj.setBitVector(mStatsObj.getBitVector());
     }
+    if (mStatsObj.getFreqItems() != null) {
+      oldStatsObj.setFreqItems(mStatsObj.getFreqItems());
+    }
     if (mStatsObj.getNumFalses() != null) {
       oldStatsObj.setNumFalses(mStatsObj.getNumFalses());
     }
@@ -264,6 +271,9 @@ public class StatObjectConverter {
     }
     if (mStatsObj.getBitVector() != null) {
       setStmt.append("\"BIT_VECTOR\" = ? ,");
+    }
+    if (mStatsObj.getFreqItems() != null) {
+      setStmt.append("\"FREQ_ITEMS\" = ? ,");
     }
     if (mStatsObj.getNumFalses() != null) {
       setStmt.append("\"NUM_FALSES\" = ? ,");
@@ -312,6 +322,9 @@ public class StatObjectConverter {
     if (mStatsObj.getBitVector() != null) {
       pst.setObject(colIdx++, mStatsObj.getBitVector());
     }
+    if (mStatsObj.getFreqItems() != null) {
+      pst.setObject(colIdx++, mStatsObj.getFreqItems());
+    }
     if (mStatsObj.getNumFalses() != null) {
       pst.setObject(colIdx++, mStatsObj.getNumFalses());
     }
@@ -346,6 +359,7 @@ public class StatObjectConverter {
       stringStats.setMaxColLen(mStatsObj.getMaxColLen());
       stringStats.setNumDVs(mStatsObj.getNumDVs());
       stringStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
+      stringStats.setFreqItems((mStatsObj.getFreqItems()==null)? null : mStatsObj.getFreqItems());
       colStatsData.setStringStats(stringStats);
     } else if (colType.equals("binary")) {
       BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
@@ -499,6 +513,7 @@ public class StatObjectConverter {
           stringStats.isSetNumNulls() ? stringStats.getNumNulls() : null,
           stringStats.isSetNumDVs() ? stringStats.getNumDVs() : null,
           stringStats.isSetBitVectors() ? stringStats.getBitVectors() : null,
+          stringStats.isSetFreqItems() ? stringStats.getFreqItems() : null,
           stringStats.isSetMaxColLen() ? stringStats.getMaxColLen() : null,
           stringStats.isSetAvgColLen() ? stringStats.getAvgColLen() : null);
     } else if (statsObj.getStatsData().isSetBinaryStats()) {
@@ -550,6 +565,7 @@ public class StatObjectConverter {
       stringStats.setMaxColLen(mStatsObj.getMaxColLen());
       stringStats.setNumDVs(mStatsObj.getNumDVs());
       stringStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
+      stringStats.setFreqItems((mStatsObj.getFreqItems()==null)? null : mStatsObj.getFreqItems());
       colStatsData.setStringStats(stringStats);
     } else if (colType.equals("binary")) {
       BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
@@ -649,10 +665,21 @@ public class StatObjectConverter {
     return bytes;
   }
 
+  public static byte[] getFreqItems(byte[] bytes) {
+    // workaround for DN bug in persisting nulls in pg bytea column
+    // instead set empty bit vector with header.
+    // https://issues.apache.org/jira/browse/HIVE-17836
+    if (bytes != null && bytes.length == 0) {
+      return null;
+    }
+    return bytes;
+  }
+
   // JAVA
   public static void fillColumnStatisticsData(String colType, ColumnStatisticsData data,
       Object llow, Object lhigh, Object dlow, Object dhigh, Object declow, Object dechigh,
-      Object nulls, Object dist, Object bitVector, Object avglen, Object maxlen, Object trues, Object falses) throws MetaException {
+      Object nulls, Object dist, Object bitVector, Object freqitems,
+      Object avglen, Object maxlen, Object trues, Object falses) throws MetaException {
     colType = colType.toLowerCase();
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
@@ -668,6 +695,7 @@ public class StatObjectConverter {
       stringStats.setMaxColLen(MetastoreDirectSqlUtils.extractSqlLong(maxlen));
       stringStats.setNumDVs(MetastoreDirectSqlUtils.extractSqlLong(dist));
       stringStats.setBitVectors(getBitVector(MetastoreDirectSqlUtils.extractSqlBlob(bitVector)));
+      stringStats.setFreqItems(getFreqItems(MetastoreDirectSqlUtils.extractSqlBlob(freqitems)));
       data.setStringStats(stringStats);
     } else if (colType.equals("binary")) {
       BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
@@ -1027,6 +1055,9 @@ public class StatObjectConverter {
       }
       if (newStringStatsData.isSetBitVectors()) {
         oldStringStatsData.setBitVectors(newStringStatsData.getBitVectors());
+      }
+      if (newStringStatsData.isSetFreqItems()) {
+        oldStringStatsData.setFreqItems(newStringStatsData.getFreqItems());
       }
       break;
     }

@@ -233,7 +233,7 @@ class DirectSqlUpdateStat {
             + "\"TABLE_NAME\", \"PARTITION_NAME\", \"COLUMN_NAME\", \"COLUMN_TYPE\", \"PART_ID\","
             + " \"LONG_LOW_VALUE\", \"LONG_HIGH_VALUE\", \"DOUBLE_HIGH_VALUE\", \"DOUBLE_LOW_VALUE\","
             + " \"BIG_DECIMAL_LOW_VALUE\", \"BIG_DECIMAL_HIGH_VALUE\", \"NUM_NULLS\", \"NUM_DISTINCTS\", \"BIT_VECTOR\" ,"
-            + " \"AVG_COL_LEN\", \"MAX_COL_LEN\", \"NUM_TRUES\", \"NUM_FALSES\", \"LAST_ANALYZED\", \"ENGINE\") values "
+            + " \"FREQ_ITEMS\", \"AVG_COL_LEN\", \"MAX_COL_LEN\", \"NUM_TRUES\", \"NUM_FALSES\", \"LAST_ANALYZED\", \"ENGINE\") values "
             + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     try {
@@ -260,12 +260,13 @@ class DirectSqlUpdateStat {
         preparedStatement.setObject(15, mPartitionColumnStatistics.getNumNulls());
         preparedStatement.setObject(16, mPartitionColumnStatistics.getNumDVs());
         preparedStatement.setObject(17, mPartitionColumnStatistics.getBitVector());
-        preparedStatement.setObject(18, mPartitionColumnStatistics.getAvgColLen());
-        preparedStatement.setObject(19, mPartitionColumnStatistics.getMaxColLen());
-        preparedStatement.setObject(20, mPartitionColumnStatistics.getNumTrues());
-        preparedStatement.setObject(21, mPartitionColumnStatistics.getNumFalses());
-        preparedStatement.setLong(22, mPartitionColumnStatistics.getLastAnalyzed());
-        preparedStatement.setString(23, mPartitionColumnStatistics.getEngine());
+        preparedStatement.setObject(18, mPartitionColumnStatistics.getFreqItems());
+        preparedStatement.setObject(19, mPartitionColumnStatistics.getAvgColLen());
+        preparedStatement.setObject(20, mPartitionColumnStatistics.getMaxColLen());
+        preparedStatement.setObject(21, mPartitionColumnStatistics.getNumTrues());
+        preparedStatement.setObject(22, mPartitionColumnStatistics.getNumFalses());
+        preparedStatement.setLong(23, mPartitionColumnStatistics.getLastAnalyzed());
+        preparedStatement.setString(24, mPartitionColumnStatistics.getEngine());
 
         maxCsId++;
         numRows++;

@@ -19,24 +19,19 @@
 
 package org.apache.hadoop.hive.metastore.columnstats.aggr;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import org.apache.hadoop.hive.common.frequencies.FreqItemsEstimator;
+import org.apache.hadoop.hive.common.frequencies.FreqItemsEstimatorFactory;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.doubleInspectorFromStats;
 import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.stringInspectorFromStats;
 
 public class StringColumnStatsAggregator extends ColumnStatsAggregator implements
@@ -54,6 +49,10 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
     // bitvectors
     boolean doAllPartitionContainStats = partNames.size() == colStatsWithSourceInfo.size();
     NumDistinctValueEstimator ndvEstimator = null;
+    FreqItemsEstimator freqItemsEstimator = null;
+    boolean areAllNDVEstimatorsMergeable = true;
+    boolean areAllFreqItemsEstimatorsMergeable = true;
+
     for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
       ColumnStatisticsObj cso = csp.getColStatsObj();
       if (statsObj == null) {
@@ -66,34 +65,54 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
       }
       StringColumnStatsDataInspector stringColumnStatsData = stringInspectorFromStats(cso);
       if (stringColumnStatsData.getNdvEstimator() == null) {
-        ndvEstimator = null;
-        break;
-      } else {
-        // check if all of the bit vectors can merge
+        areAllNDVEstimatorsMergeable = false;
+      } else if (areAllNDVEstimatorsMergeable) {
         NumDistinctValueEstimator estimator = stringColumnStatsData.getNdvEstimator();
         if (ndvEstimator == null) {
           ndvEstimator = estimator;
         } else {
           if (!ndvEstimator.canMerge(estimator)) {
-            ndvEstimator = null;
-            break;
+            areAllNDVEstimatorsMergeable = false;
+          }
+        }
+      }
+      // check if we can merge histogram estimators
+      if (stringColumnStatsData.getFreqItemsEstimator() == null) {
+        areAllFreqItemsEstimatorsMergeable = false;
+      } else if (areAllFreqItemsEstimatorsMergeable) {
+        FreqItemsEstimator estimator = stringColumnStatsData.getFreqItemsEstimator();
+        if (freqItemsEstimator == null) {
+          freqItemsEstimator = estimator;
+        } else {
+          // null histogram can happen when there are only null values
+          if (estimator != null && !freqItemsEstimator.canMerge(estimator)) {
+            areAllFreqItemsEstimatorsMergeable = false;
           }
         }
       }
     }
-    if (ndvEstimator != null) {
+    if (areAllNDVEstimatorsMergeable && ndvEstimator != null) {
       ndvEstimator = NumDistinctValueEstimatorFactory
           .getEmptyNumDistinctValueEstimator(ndvEstimator);
     }
-    LOG.debug("all of the bit vectors can merge for " + colName + " is " + (ndvEstimator != null));
+    LOG.debug("all of the bit vectors can merge for " + colName + " is " + areAllNDVEstimatorsMergeable);
+    if (areAllFreqItemsEstimatorsMergeable && freqItemsEstimator != null) {
+      freqItemsEstimator = FreqItemsEstimatorFactory.getEmptyFreqItemsEstimator(freqItemsEstimator);
+    }
+    LOG.debug("all frequent items can merge for {} is {}", colName, areAllFreqItemsEstimatorsMergeable);
+
     ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
     if (doAllPartitionContainStats || colStatsWithSourceInfo.size() < 2) {
       StringColumnStatsDataInspector aggregateData = null;
       for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
         ColumnStatisticsObj cso = csp.getColStatsObj();
         StringColumnStatsDataInspector newData = stringInspectorFromStats(cso);
-        if (ndvEstimator != null) {
+        if (areAllNDVEstimatorsMergeable && ndvEstimator != null) {
           ndvEstimator.mergeEstimators(newData.getNdvEstimator());
+        }
+        if (areAllFreqItemsEstimatorsMergeable
+            && freqItemsEstimator != null && newData.getFreqItemsEstimator() != null) {
+          freqItemsEstimator.mergeEstimators(newData.getFreqItemsEstimator());
         }
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
@@ -106,7 +125,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
           aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
         }
       }
-      if (ndvEstimator != null) {
+      if (areAllNDVEstimatorsMergeable && ndvEstimator != null) {
         // if all the ColumnStatisticsObjs contain bitvectors, we do not need to
         // use uniform distribution assumption because we can merge bitvectors
         // to get a good estimation.
@@ -114,8 +133,16 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
       } else {
         // aggregateData already has the ndv of the max of all
       }
+      if (areAllFreqItemsEstimatorsMergeable && freqItemsEstimator != null) {
+        aggregateData.setFreqItems(freqItemsEstimator.serialize());
+      } else {
+        // merge what can be merged and keep the one with the biggest cardinality
+        mergeFreqItems(columnStatisticsData, colStatsWithSourceInfo);
+      }
+
       columnStatisticsData.setStringStats(aggregateData);
     } else {
+      // TODO: bail out if missing stats are over a certain threshold
       // we need extrapolation
       LOG.debug("start extrapolation for " + colName);
 
@@ -194,6 +221,8 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
       }
       extrapolate(columnStatisticsData, partNames.size(), colStatsWithSourceInfo.size(),
           adjustedIndexMap, adjustedStatsMap, -1);
+
+      mergeFreqItems(columnStatisticsData, colStatsWithSourceInfo);
     }
     LOG.debug(
         "Ndv estimation for {} is {} # of partitions requested: {} # of partitions found: {}",
@@ -203,12 +232,74 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
     return statsObj;
   }
 
+  // TODO: SB: verify the logic
+  private void mergeFreqItems(ColumnStatisticsData columnStatisticsData,
+      List<ColStatsObjWithSourceInfo> colStatsWithSourceInfo) {
+
+    // init stats internal data if missing, re-use if existing
+    StringColumnStatsData extrapolateStringData;
+    if (!columnStatisticsData.isSetStringStats()) {
+      columnStatisticsData.setStringStats(new StringColumnStatsData());
+    }
+    extrapolateStringData = columnStatisticsData.getStringStats();
+
+    // invariant: no two elements of this list are merge-compatible
+    final List<FreqItemsEstimator> mergedFreqItemsEstimators = new ArrayList<>();
+    final BitSet mergedStats = new BitSet(colStatsWithSourceInfo.size());
+    int currIndex = 0;
+
+    while (mergedStats.cardinality() != colStatsWithSourceInfo.size()) {
+      currIndex = mergedStats.nextClearBit(currIndex);
+      final ColumnStatisticsObj currColStatsObj = colStatsWithSourceInfo.get(currIndex).getColStatsObj();
+      final FreqItemsEstimator currFreqItems = stringInspectorFromStats(currColStatsObj).getFreqItemsEstimator();
+
+      // check if the histogram can be merged an existing element in the final list
+      for (FreqItemsEstimator candidateFreqItems : mergedFreqItemsEstimators) {
+        if (candidateFreqItems.canMerge(currFreqItems)) {
+          candidateFreqItems.mergeEstimators(currFreqItems);
+          mergedStats.set(currIndex);
+          break;
+        }
+      }
+
+      // if it has not been merged, then store it in the final list
+      if (!mergedStats.get(currIndex)) {
+        if (currFreqItems != null) {
+          mergedFreqItemsEstimators.add(currFreqItems);
+        }
+        // mark it as merged even if it is null so that we can skip it
+        mergedStats.set(currIndex);
+      }
+    }
+
+    // find the histogram with largest N
+    long biggestN = -1;
+    FreqItemsEstimator largestFreqItemsEstimator = null;
+    for (FreqItemsEstimator freqItems : mergedFreqItemsEstimators) {
+      if (freqItems.getSketch().getCurrentMapCapacity() > biggestN) {
+        biggestN = freqItems.getSketch().getCurrentMapCapacity();
+        largestFreqItemsEstimator = freqItems;
+      }
+    }
+
+    // set the histogram with largest N
+    if (largestFreqItemsEstimator != null) {
+      extrapolateStringData.setFreqItems(largestFreqItemsEstimator.serialize());
+    }
+  }
+
   @Override
   public void extrapolate(ColumnStatisticsData extrapolateData, int numParts,
       int numPartsWithStats, Map<String, Double> adjustedIndexMap,
       Map<String, ColumnStatisticsData> adjustedStatsMap, double densityAvg) {
-    StringColumnStatsDataInspector extrapolateStringData =
-        new StringColumnStatsDataInspector();
+
+    // init stats internal data if missing, re-use if existing
+    StringColumnStatsData extrapolateStringData;
+    if (!extrapolateData.isSetStringStats()) {
+      extrapolateData.setStringStats(new StringColumnStatsData());
+    }
+    extrapolateStringData = extrapolateData.getStringStats();
+
     Map<String, StringColumnStatsData> extractedAdjustedStatsMap = new HashMap<>();
     for (Map.Entry<String, ColumnStatisticsData> entry : adjustedStatsMap.entrySet()) {
       extractedAdjustedStatsMap.put(entry.getKey(), entry.getValue().getStringStats());
@@ -277,7 +368,6 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
     extrapolateStringData.setMaxColLen((long) maxColLen);
     extrapolateStringData.setNumNulls(numNulls);
     extrapolateStringData.setNumDVs(ndv);
-    extrapolateData.setStringStats(extrapolateStringData);
   }
 
 }

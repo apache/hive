@@ -49,6 +49,7 @@ public class MTableColumnStatistics {
   private Long numNulls;
   private Long numDVs;
   private byte[] bitVector = new byte[] { 'H', 'L' };
+  private byte[] freqItems = new byte[] {};
   private Double avgColLen;
   private Long maxColLen;
   private Long numTrues;
@@ -192,10 +193,12 @@ public class MTableColumnStatistics {
     this.decimalHighValue = highValue;
   }
 
-  public void setStringStats(Long numNulls, Long numNDVs, byte[] bitVector, Long maxColLen, Double avgColLen) {
+  public void setStringStats(Long numNulls, Long numNDVs, byte[] bitVector, byte[] freqItems,
+      Long maxColLen, Double avgColLen) {
     this.numNulls = numNulls;
     this.numDVs = numNDVs;
     setBitVector(bitVector);
+    setFreqItems(freqItems);
     this.maxColLen = maxColLen;
     this.avgColLen = avgColLen;
   }
@@ -287,6 +290,22 @@ public class MTableColumnStatistics {
     // https://issues.apache.org/jira/browse/HIVE-17836
     this.bitVector = (bitVector == null ? new byte[] { 'H', 'L' } : bitVector);
   }
+
+  public byte[] getFreqItems() {
+    // workaround for DN bug in persisting nulls in pg bytea column instead set empty histogram.
+    // https://issues.apache.org/jira/browse/HIVE-17836
+    if (freqItems != null && freqItems.length == 0) {
+      return null;
+    }
+    return freqItems;
+  }
+
+  public void setFreqItems(byte[] freqItems) {
+    // workaround for DN bug in persisting nulls in pg bytea column instead set empty histogram.
+    // https://issues.apache.org/jira/browse/HIVE-17836
+    this.freqItems = (freqItems == null ? new byte[] { } : freqItems);
+  }
+
 
   public String getEngine() {
     return engine;
