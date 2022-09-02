@@ -20,17 +20,20 @@ package org.apache.hadoop.hive.common.frequencies;
 import org.apache.datasketches.frequencies.ItemsSketch;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.hadoop.hive.common.frequencies.freqitems.FIUtils;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class FreqItemsEstimator {
 
   private final ItemsSketch<String> freqSketch;
 
   public FreqItemsEstimator() {
-    this.freqSketch = new ItemsSketch<String>(200);
+    this.freqSketch = new ItemsSketch<String>(HiveConf.ConfVars.HIVE_STATS_FREQ_ITEMS_MAX_MAP_SIZE.defaultIntVal);
   }
 
   public FreqItemsEstimator(int maxSize) {
@@ -52,6 +55,14 @@ public class FreqItemsEstimator {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public void addToEstimator(String v) {
+    freqSketch.update(v);
+  }
+
+  public void addToEstimator(byte[] v, int start, int len) {
+    freqSketch.update(new String(v, start, len, StandardCharsets.UTF_8));
   }
 
   public void mergeEstimators(FreqItemsEstimator o) {

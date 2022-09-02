@@ -90,7 +90,7 @@ public class HiveStatsUtils {
     int sz = conf.getInt(HiveConf.ConfVars.HIVE_STATS_FREQ_ITEMS_MAX_MAP_SIZE.varname,
         HiveConf.ConfVars.HIVE_STATS_FREQ_ITEMS_MAX_MAP_SIZE.defaultIntVal);
 
-    if (sz % 2 != 0) {
+    if (sz <= 0 || ((sz & (sz - 1)) != 0)) {
       throw new IllegalArgumentException(HiveConf.ConfVars.HIVE_STATS_FREQ_ITEMS_MAX_MAP_SIZE.varname +
           " must be power of 2, got " + sz);
     }

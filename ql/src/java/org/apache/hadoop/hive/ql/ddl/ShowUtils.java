@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.ddl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.datasketches.ArrayOfUtf16StringsSerDe;
+import org.apache.datasketches.ArrayOfStringsSerDe;
 import org.apache.datasketches.frequencies.ItemsSketch;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
@@ -217,7 +217,7 @@ public final class ShowUtils {
     if (buffer == null || buffer.length == 0) {
       return "";
     }
-    return ItemsSketch.getInstance(Memory.wrap(buffer), new ArrayOfUtf16StringsSerDe()).toString();
+    return ItemsSketch.getInstance(Memory.wrap(buffer), new ArrayOfStringsSerDe()).toString();
   }
 
   private static String convertToString(byte[] buffer) {

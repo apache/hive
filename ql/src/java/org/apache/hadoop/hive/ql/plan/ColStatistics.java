@@ -167,6 +167,7 @@ public class ColStatistics {
     clone.setNumNulls(numNulls);
     clone.setNumTrues(numTrues);
     clone.setNumFalses(numFalses);
+    clone.setFreqItems(freqItems);
     clone.setPrimaryKey(isPrimaryKey);
     clone.setIsEstimated(isEstimated);
     clone.setIsFilteredColumn(isFilteredColumn);

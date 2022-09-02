@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.common.frequencies.freqitems;
 
 import org.apache.datasketches.ArrayOfItemsSerDe;
-import org.apache.datasketches.ArrayOfUtf16StringsSerDe;
+import org.apache.datasketches.ArrayOfStringsSerDe;
 import org.apache.datasketches.frequencies.ItemsSketch;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
@@ -39,7 +39,7 @@ public class FIUtils {
    * @throws IOException if an error occurs during serialization
    */
   public static void serializeFI(OutputStream out, ItemsSketch<String> itemsSketch) throws IOException {
-    byte[] b = itemsSketch.toByteArray(new ArrayOfUtf16StringsSerDe());
+    byte[] b = itemsSketch.toByteArray(new ArrayOfStringsSerDe());
     out.write(b);
   }
 
@@ -59,7 +59,7 @@ public class FIUtils {
     }
 
     buffer.flush();
-    return ItemsSketch.getInstance(Memory.wrap(buffer.toByteArray()), new ArrayOfUtf16StringsSerDe());
+    return ItemsSketch.getInstance(Memory.wrap(buffer.toByteArray()), new ArrayOfStringsSerDe());
   }
 
 

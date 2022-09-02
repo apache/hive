@@ -499,12 +499,24 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     } catch (Exception e) {
       throw new SemanticException(e.getMessage());
     }
-    // add cast($columnName as float) to make sure it works for other numeric types
-    rewrittenQueryBuilder.append("ds_freq_frequent_items(cast(")
-        .append(columnName)
-        .append(" as string), ")
-        .append(mx)
-        .append(")");
+    // if vectorization is enabled, do not add the k param here, it will be handled in Vectorizer.java
+    // when calling the vectorized implementation
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_VECTORIZATION_ENABLED,
+        ConfVars.HIVE_VECTORIZATION_ENABLED.defaultBoolVal)) {
+      // add cast($columnName as float) to make sure it works for other numeric types
+      rewrittenQueryBuilder.append("ds_freq_sketch(cast(")
+          .append(columnName)
+          .append(" as string), ")
+          .append(mx)
+          .append(")");
+    } else {
+      // add cast($columnName as float) to make sure it works for other numeric types
+      rewrittenQueryBuilder.append("ds_freq_sketch(cast(")
+          .append(columnName)
+          .append(" as string), ")
+          .append(mx)
+          .append(")");
+    }
   }
   private static void appendCountTrues(StringBuilder rewrittenQueryBuilder, HiveConf conf,
       String columnName, int pos) {
