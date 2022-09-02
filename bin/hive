@@ -101,7 +101,7 @@ if [[ "$SERVICE" == "beeline" && ! -z "$BEELINE_URL_LEGACY" ]] ; then
   SERVICE_ARGS=("${SERVICE_ARGS[@]}" "-c" "${BEELINE_URL_LEGACY}")
 fi
 
-if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus)$ ]] ; then
+if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|beeline|llapstatus)$ ]] ; then
   SKIP_HBASECP=true
 fi
 
