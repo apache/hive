@@ -32,6 +32,7 @@ public class ColStatistics {
   private boolean isEstimated;
   private boolean isFilteredColumn;
   private byte[] bitVectors;
+  private byte[] freqItems;
 
   public ColStatistics(String colName, String colType) {
     this.setColumnName(colName);
@@ -119,6 +120,15 @@ public class ColStatistics {
   public void setBitVectors(byte[] bitVectors) {
     this.bitVectors = bitVectors;
   }
+
+  public byte[] getFreqItems() {
+    return freqItems;
+  }
+
+  public void setFreqItems(byte[] freqItems) {
+    this.freqItems = freqItems;
+  }
+
 
   @Override
   public String toString() {
