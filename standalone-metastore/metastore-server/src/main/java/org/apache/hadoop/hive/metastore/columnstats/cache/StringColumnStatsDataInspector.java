@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.columnstats.cache;
 
 import java.nio.ByteBuffer;
 
+import org.apache.hadoop.hive.common.frequencies.FreqItemsEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 public class StringColumnStatsDataInspector extends StringColumnStatsData {
 
   private NumDistinctValueEstimator ndvEstimator;
+  private FreqItemsEstimator freqItemsEstimator;
 
   public StringColumnStatsDataInspector() {
     super();
@@ -41,6 +43,9 @@ public class StringColumnStatsDataInspector extends StringColumnStatsData {
     super(other);
     if (other.ndvEstimator != null) {
       super.setBitVectors(ndvEstimator.serialize());
+    }
+    if (other.freqItemsEstimator != null) {
+      super.setFreqItems(freqItemsEstimator.serialize());
     }
   }
 
@@ -62,11 +67,27 @@ public class StringColumnStatsDataInspector extends StringColumnStatsData {
   }
 
   @Override
+  public byte[] getFreqItems() {
+    if (freqItemsEstimator != null) {
+      updateFreqItems();
+    }
+    return super.getFreqItems();
+  }
+
+  @Override
   public ByteBuffer bufferForBitVectors() {
     if (ndvEstimator != null) {
       updateBitVectors();
     }
     return super.bufferForBitVectors();
+  }
+
+  @Override
+  public ByteBuffer bufferForFreqItems() {
+    if (freqItemsEstimator != null) {
+      updateFreqItems();
+    }
+    return super.bufferForFreqItems();
   }
 
   @Override
@@ -82,9 +103,28 @@ public class StringColumnStatsDataInspector extends StringColumnStatsData {
   }
 
   @Override
+  public void setFreqItems(byte[] stats) {
+    super.setFreqItems(stats);
+    this.freqItemsEstimator = null;
+  }
+
+  @Override
+  public void setFreqItems(ByteBuffer stats) {
+    super.setFreqItems(stats);
+    this.freqItemsEstimator = null;
+  }
+
+
+  @Override
   public void unsetBitVectors() {
     super.unsetBitVectors();
     this.ndvEstimator = null;
+  }
+
+  @Override
+  public void unsetFreqItems() {
+    super.unsetFreqItems();
+    this.freqItemsEstimator = null;
   }
 
   @Override
@@ -96,11 +136,27 @@ public class StringColumnStatsDataInspector extends StringColumnStatsData {
   }
 
   @Override
+  public boolean isSetFreqItems() {
+    if (freqItemsEstimator != null) {
+      updateFreqItems();
+    }
+    return super.isSetFreqItems();
+  }
+
+  @Override
   public void setBitVectorsIsSet(boolean value) {
     if (ndvEstimator != null) {
       updateBitVectors();
     }
     super.setBitVectorsIsSet(value);
+  }
+
+  @Override
+  public void setFreqItemsIsSet(boolean value) {
+    if (freqItemsEstimator != null) {
+      updateFreqItems();
+    }
+    super.setFreqItemsIsSet(value);
   }
 
   public NumDistinctValueEstimator getNdvEstimator() {
@@ -110,9 +166,21 @@ public class StringColumnStatsDataInspector extends StringColumnStatsData {
     return ndvEstimator;
   }
 
+  public FreqItemsEstimator getFreqItemsEstimator() {
+    if (freqItemsEstimator == null && isSetFreqItems() && getFreqItems().length != 0) {
+      updateFreqItemsEstimator();
+    }
+    return freqItemsEstimator;
+  }
+
   public void setNdvEstimator(NumDistinctValueEstimator ndvEstimator) {
     super.unsetBitVectors();
     this.ndvEstimator = ndvEstimator;
+  }
+
+  public void setFreqItemsEstimator(FreqItemsEstimator freqItemsEstimator) {
+    super.unsetFreqItems();
+    this.freqItemsEstimator = freqItemsEstimator;
   }
 
   private void updateBitVectors() {
@@ -120,10 +188,21 @@ public class StringColumnStatsDataInspector extends StringColumnStatsData {
     this.ndvEstimator = null;
   }
 
+  private void updateFreqItems() {
+    super.setFreqItems(freqItemsEstimator.serialize());
+    this.freqItemsEstimator = null;
+  }
+
   private void updateNdvEstimator() {
     this.ndvEstimator = NumDistinctValueEstimatorFactory
         .getNumDistinctValueEstimator(super.getBitVectors());
     super.unsetBitVectors();
+  }
+
+  private void updateFreqItemsEstimator() {
+    this.freqItemsEstimator = KllHistogramEstimatorFactory
+        .getKllHistogramEstimator(super.getFreqItems());
+    super.unsetFreqItems();
   }
 
 }
