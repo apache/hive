@@ -311,9 +311,11 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     Preconditions.checkArgument(typeInfo.getCategory() == Category.PRIMITIVE);
     ColumnStatsType columnStatsType =
         ColumnStatsType.getColumnStatsType((PrimitiveTypeInfo) typeInfo);
+    List<ColumnStatsField> columnStatsFields = columnStatsType.getColumnStats();
+    columnStatsFields = ColumnStatsType.removeDisabledStatistics(conf, columnStatsFields);
     // The first column is always the type
     // The rest of columns will depend on the type itself
-    for (int i = 0; i < columnStatsType.getColumnStats().size(); i++) {
+    for (int i = 0; i < columnStatsFields.size(); i++) {
       if (i > 0) {
         rewrittenQueryBuilder.append(", ");
       }
@@ -350,6 +352,9 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       break;
     case BITVECTOR:
       appendBitVector(rewrittenQueryBuilder, conf, columnName, pos);
+      break;
+    case FREQ_SKETCH:
+      appendFreqSketch(rewrittenQueryBuilder, conf, columnName, pos);
       break;
     case MAX_LENGTH:
       appendMaxLength(rewrittenQueryBuilder, conf, columnName, pos);
@@ -455,6 +460,13 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         .append(unparseIdentifier(ColumnStatsField.BITVECTOR.getFieldName() + pos, conf));
   }
 
+  private static void appendFreqSketch(StringBuilder rewrittenQueryBuilder, HiveConf conf,
+      String columnName, int pos)  throws SemanticException {
+    appendFreqSketch(rewrittenQueryBuilder, conf, columnName);
+    rewrittenQueryBuilder.append(" AS ")
+        .append(unparseIdentifier(ColumnStatsField.FREQ_SKETCH.getFieldName() + pos, conf));
+  }
+
   private static void appendBitVector(StringBuilder rewrittenQueryBuilder, HiveConf conf,
       String columnName) throws SemanticException {
     String func = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_NDV_ALGO).toLowerCase();
@@ -479,7 +491,21 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       throw new UDFArgumentException("available ndv computation options are hll and fm. Got: " + func);
     }
   }
-
+  private static void appendFreqSketch(StringBuilder rewrittenQueryBuilder, HiveConf conf,
+      String columnName) throws SemanticException {
+    int mx;
+    try {
+      mx = HiveStatsUtils.getMaxSizeForFreqSketch(conf);
+    } catch (Exception e) {
+      throw new SemanticException(e.getMessage());
+    }
+    // add cast($columnName as float) to make sure it works for other numeric types
+    rewrittenQueryBuilder.append("ds_freq_sketch(cast(")
+        .append(columnName)
+        .append(" as string), ")
+        .append(mx)
+        .append(")");
+  }
   private static void appendCountTrues(StringBuilder rewrittenQueryBuilder, HiveConf conf,
       String columnName, int pos) {
     rewrittenQueryBuilder.append("CAST(count(CASE WHEN ")
