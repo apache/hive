@@ -147,23 +147,29 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     case IN: {
-      // TODO: 1) check for duplicates 2) We assume in clause values to be
-      // present in NDV which may not be correct (Range check can find it) 3) We
-      // assume values in NDV set is uniformly distributed over col values
-      // (account for skewness - histogram).
-      selectivity = computeFunctionSelectivity(call);
-      if (selectivity != null) {
-        selectivity = selectivity * (call.operands.size() - 1);
-        if (selectivity <= 0.0) {
-          selectivity = 0.10;
-        } else if (selectivity >= 1.0) {
-          selectivity = 1.0;
+      selectivity = computeEqualsSelectivity(call);
+      if (selectivity == -1d) {
+        // TODO: 1) check for duplicates 2) We assume in clause values to be
+        // present in NDV which may not be correct (Range check can find it) 3) We
+        // assume values in NDV set is uniformly distributed over col values
+        // (account for skewness - histogram).
+        selectivity = computeFunctionSelectivity(call);
+        if (selectivity != null) {
+          selectivity = selectivity * (call.operands.size() - 1);
+          if (selectivity <= 0.0) {
+            selectivity = 0.10;
+          } else if (selectivity >= 1.0) {
+            selectivity = 1.0;
+          }
         }
       }
       break;
     }
     case EQUALS: {
       selectivity = computeEqualsSelectivity(call);
+      if (selectivity == -1d) {
+        selectivity = computeFunctionSelectivity(call);
+      }
       break;
     }
 
@@ -174,7 +180,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     return selectivity;
   }
 
-  private double computeEqualsSelectivity(RexCall call) {
+  private Double computeEqualsSelectivity(RexCall call) {
     final boolean isLiteralLeft = call.getOperands().get(0).getKind().equals(SqlKind.LITERAL);
     final boolean isLiteralRight = call.getOperands().get(1).getKind().equals(SqlKind.LITERAL);
     final boolean isInputRefLeft = call.getOperands().get(0).getKind().equals(SqlKind.INPUT_REF);
@@ -184,34 +190,44 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       final int inputRefIndex = ((RexInputRef) call.getOperands().get(isInputRefLeft ? 0 : 1)).getIndex();
       final List<ColStatistics> colStats = t.getColStat(Collections.singletonList(inputRefIndex));
       if (!colStats.isEmpty() && colStats.get(0).getFreqItems() != null && colStats.get(0).getFreqItems().length > 0) {
-//        FreqItemsEstimator freqEstimator = FreqItemsEstimatorFactory.getFreqItemsEstimator();
+        // CAN'T use due to hive common dep.
+        // FreqItemsEstimator freqEstimator = FreqItemsEstimatorFactory.getFreqItemsEstimator();
         byte[] buf = colStats.get(0).getFreqItems();
         final ItemsSketch<String> freqItems = ItemsSketch.getInstance(
             Memory.wrap(buf), new ArrayOfStringsSerDe());
-        final Object boundValueObject = ((RexLiteral) call.getOperands().get(isLiteralLeft ? 0 : 1)).getValue();
-        final SqlTypeName typeName = call.getOperands().get(isInputRefLeft ? 0 : 1).getType().getSqlTypeName();
 
         long freqCount = 0;
-        switch (typeName) {
-        case CHAR:
-        case VARCHAR:
-          String value = ((NlsString)boundValueObject).getValue();
-          freqCount += freqItems.getEstimate(value);
-          break;
-        default:
-          return ((double) 1 / (double) 3);
+        final SqlTypeName typeName = call.getOperands().get(isInputRefLeft ? 0 : 1).getType().getSqlTypeName();
+        // a visitor pattern might need to be employed for nested function with literals for e.g. trim/ucase.
+        // but in such case, the boundValueObject should be after applying that function not before.
+        Iterator<RexLiteral> literalIterator = call.getOperands().stream().map(rexNode ->
+             rexNode.getKind().equals(SqlKind.LITERAL) ? ((RexLiteral)rexNode) : null).iterator();
+        while (literalIterator.hasNext()) {
+          RexLiteral rl = literalIterator.next();
+          if (rl == null) continue;
+          final Object boundValueObject = rl.getValue();
+          switch (typeName) {
+          case CHAR:
+          case VARCHAR:
+            String value = ((NlsString) boundValueObject).getValue();
+            freqCount += freqItems.getEstimate(value);
+            break;
+          default:
+            return -1d;
+          }
         }
 
         double selectivity = freqCount / t.getTable().getRowCount();
         if (selectivity <= 0.0) {
-          selectivity = 0.10;
+          selectivity = -1d;
         } else if (selectivity >= 1.0) {
-          selectivity = 1.0;
+          selectivity = -1d;
         }
         return selectivity;
       }
     }
-    return ((double) 1 / (double) 3);
+
+    return -1d;
   }
 
   /**
