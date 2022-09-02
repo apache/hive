@@ -222,6 +222,15 @@ public class DDLPlanUtils {
     + COLUMN_NAME + "> BUT THEY ARE NOT SUPPORTED YET.THE BASE64 VALUE FOR THE BITVECTOR IS <" +
     BASE_64_VALUE + "> ";
 
+  private final String EXIST_FREQ_ITEMS = "-- FREQ_ITEMS PRESENT FOR <" + DATABASE_NAME + ">.<" + TABLE_NAME + "> "
+      + "FOR COLUMN <" + COLUMN_NAME + "> BUT IT IS NOT SUPPORTED YET. THE BASE64 VALUE FOR THE FREQ_ITEMS IS <"
+      + BASE_64_VALUE + "> ";
+
+  private final String EXIST_FREQ_ITEMS_PARTITIONED = "-- FREQ_ITEMS PRESENT FOR <" + DATABASE_NAME + ">.<"
+      + TABLE_NAME + "> PARTITION <" + PARTITION_NAME + "> FOR COLUMN <"
+      + COLUMN_NAME + "> BUT IT IS NOT SUPPORTED YET. THE BASE64 VALUE FOR THE FREQ_ITEMS IS <"
+      + BASE_64_VALUE + "> ";
+
   /**
    * Returns the create database query for a give database name.
    *
@@ -395,6 +404,17 @@ public class DDLPlanUtils {
     ls.add(lowValue + dc.getLowValue() + "'");
   }
 
+  public String checkFreqItems(ColumnStatisticsData cd) {
+    byte[] buffer = null;
+
+    if (cd.isSetStringStats() && cd.getStringStats().isSetFreqItems()) {
+      buffer = cd.getStringStats().getFreqItems();
+    }
+
+    return encodeBytes(buffer);
+  }
+
+
   public String checkBitVectors(ColumnStatisticsData cd) {
     if (cd.isSetDoubleStats() && cd.getDoubleStats().isSetBitVectors()) {
       return Base64.getEncoder().encodeToString(cd.getDoubleStats().getBitVectors());
@@ -418,6 +438,10 @@ public class DDLPlanUtils {
       return Base64.getEncoder().encodeToString(cd.getBooleanStats().getBitVectors());
     }
     return null;
+  }
+
+  private String encodeBytes(byte[] buffer) {
+    return buffer == null ? null : Base64.getEncoder().encodeToString(buffer);
   }
 
   public String addAllColStats(ColumnStatisticsData columnStatisticsData) {
@@ -465,17 +489,25 @@ public class DDLPlanUtils {
       accessedColumns,
       true);
     ColumnStatisticsObj[] columnStatisticsObj = tableColumnStatistics.toArray(new ColumnStatisticsObj[0]);
-    for (int i = 0; i < columnStatisticsObj.length; i++) {
-      alterTblStmt.add(getAlterTableStmtCol(columnStatisticsObj[i].getStatsData(),
-        columnStatisticsObj[i].getColName(),
-        tbl.getTableName(), tbl.getDbName()));
-      String base64 = checkBitVectors(columnStatisticsObj[i].getStatsData());
-      if (base64 != null) {
+    for (ColumnStatisticsObj statisticsObj : columnStatisticsObj) {
+      alterTblStmt.add(getAlterTableStmtCol(
+          statisticsObj.getStatsData(), statisticsObj.getColName(), tbl.getTableName(), tbl.getDbName()));
+      String base64BitVector = checkBitVectors(statisticsObj.getStatsData());
+      if (base64BitVector != null) {
         ST command = new ST(EXIST_BIT_VECTORS);
         command.add(DATABASE_NAME, tbl.getDbName());
         command.add(TABLE_NAME, tbl.getTableName());
-        command.add(COLUMN_NAME, columnStatisticsObj[i].getColName());
-        command.add(BASE_64_VALUE, base64);
+        command.add(COLUMN_NAME, statisticsObj.getColName());
+        command.add(BASE_64_VALUE, base64BitVector);
+        alterTblStmt.add(command.render());
+      }
+      String base64FreqItems = checkFreqItems(statisticsObj.getStatsData());
+      if (base64FreqItems != null) {
+        ST command = new ST(EXIST_FREQ_ITEMS);
+        command.add(DATABASE_NAME, tbl.getDbName());
+        command.add(TABLE_NAME, tbl.getTableName());
+        command.add(COLUMN_NAME, statisticsObj.getColName());
+        command.add(BASE_64_VALUE, base64FreqItems);
         alterTblStmt.add(command.render());
       }
     }
@@ -521,20 +553,27 @@ public class DDLPlanUtils {
                                                              String dbName) {
     List<String> alterTableStmt = new ArrayList<String>();
     ColumnStatisticsObj[] columnStatisticsObj = columnStatisticsObjList.toArray(new ColumnStatisticsObj[0]);
-    for (int i = 0; i < columnStatisticsObj.length; i++) {
-      alterTableStmt.add(getAlterTableStmtPartitionColStat(columnStatisticsObj[i].getStatsData(),
-        columnStatisticsObj[i].getColName(),
-        tblName,
-        ptName,
-        dbName));
-      String base64 = checkBitVectors(columnStatisticsObj[i].getStatsData());
-      if (base64 != null) {
+    for (ColumnStatisticsObj statisticsObj : columnStatisticsObj) {
+      alterTableStmt.add(getAlterTableStmtPartitionColStat(
+          statisticsObj.getStatsData(), statisticsObj.getColName(), tblName, ptName, dbName));
+      String base64BitVectors = checkBitVectors(statisticsObj.getStatsData());
+      if (base64BitVectors != null) {
         ST command = new ST(EXIST_BIT_VECTORS_PARTITIONED);
         command.add(DATABASE_NAME, dbName);
         command.add(TABLE_NAME, tblName);
         command.add(PARTITION_NAME, ptName);
-        command.add(COLUMN_NAME, columnStatisticsObj[i].getColName());
-        command.add(BASE_64_VALUE, base64);
+        command.add(COLUMN_NAME, statisticsObj.getColName());
+        command.add(BASE_64_VALUE, base64BitVectors);
+        alterTableStmt.add(command.render());
+      }
+      String base64FreqItems = checkFreqItems(statisticsObj.getStatsData());
+      if (base64FreqItems != null) {
+        ST command = new ST(EXIST_FREQ_ITEMS_PARTITIONED);
+        command.add(DATABASE_NAME, dbName);
+        command.add(TABLE_NAME, tblName);
+        command.add(PARTITION_NAME, ptName);
+        command.add(COLUMN_NAME, statisticsObj.getColName());
+        command.add(BASE_64_VALUE, base64FreqItems);
         alterTableStmt.add(command.render());
       }
     }
