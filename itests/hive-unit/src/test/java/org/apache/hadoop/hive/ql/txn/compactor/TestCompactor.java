@@ -27,7 +27,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
+import org.apache.hadoop.hive.common.FileUtils;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -1714,7 +1714,7 @@ public class TestCompactor {
     verifyHasBase(table.getSd(), fs, baseDir);
 
     FileStatus[] files = fs.listStatus(new Path(table.getSd().getLocation(), baseDir),
-        AcidUtils.hiddenFileFilter);
+        FileUtils.HIDDEN_FILES_PATH_FILTER);
     Assert.assertEquals(Lists.newArrayList(files).toString(), 64, files.length);
   }
 
