@@ -493,8 +493,4 @@ public interface HiveStorageHandler extends Configurable {
   default String getCurrentSnapshot(org.apache.hadoop.hive.ql.metadata.Table table) {
     return null;
   }
-
-  default boolean isCurrentSnapshot(org.apache.hadoop.hive.ql.metadata.Table table, String otherSnapshot) {
-    return false;
-  }
 }
