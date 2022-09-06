@@ -1582,6 +1582,15 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
+    def add_write_ids_to_min_history(self, txnId, writeIds):
+        """
+        Parameters:
+         - txnId
+         - writeIds
+
+        """
+        pass
+
     def allocate_table_write_ids(self, rqst):
         """
         Parameters:
@@ -8974,6 +8983,40 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o2
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_valid_write_ids failed: unknown result")
 
+    def add_write_ids_to_min_history(self, txnId, writeIds):
+        """
+        Parameters:
+         - txnId
+         - writeIds
+
+        """
+        self.send_add_write_ids_to_min_history(txnId, writeIds)
+        self.recv_add_write_ids_to_min_history()
+
+    def send_add_write_ids_to_min_history(self, txnId, writeIds):
+        self._oprot.writeMessageBegin('add_write_ids_to_min_history', TMessageType.CALL, self._seqid)
+        args = add_write_ids_to_min_history_args()
+        args.txnId = txnId
+        args.writeIds = writeIds
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_add_write_ids_to_min_history(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = add_write_ids_to_min_history_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o2 is not None:
+            raise result.o2
+        return
+
     def allocate_table_write_ids(self, rqst):
         """
         Parameters:
@@ -12341,6 +12384,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["get_latest_txnid_in_conflict"] = Processor.process_get_latest_txnid_in_conflict
         self._processMap["repl_tbl_writeid_state"] = Processor.process_repl_tbl_writeid_state
         self._processMap["get_valid_write_ids"] = Processor.process_get_valid_write_ids
+        self._processMap["add_write_ids_to_min_history"] = Processor.process_add_write_ids_to_min_history
         self._processMap["allocate_table_write_ids"] = Processor.process_allocate_table_write_ids
         self._processMap["get_max_allocated_table_write_id"] = Processor.process_get_max_allocated_table_write_id
         self._processMap["seed_write_id"] = Processor.process_seed_write_id
@@ -17643,6 +17687,32 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("get_valid_write_ids", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_add_write_ids_to_min_history(self, seqid, iprot, oprot):
+        args = add_write_ids_to_min_history_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = add_write_ids_to_min_history_result()
+        try:
+            self._handler.add_write_ids_to_min_history(args.txnId, args.writeIds)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("add_write_ids_to_min_history", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -48706,6 +48776,152 @@ get_valid_write_ids_result.thrift_spec = (
 )
 
 
+class add_write_ids_to_min_history_args(object):
+    """
+    Attributes:
+     - txnId
+     - writeIds
+
+    """
+
+
+    def __init__(self, txnId=None, writeIds=None,):
+        self.txnId = txnId
+        self.writeIds = writeIds
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.txnId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.MAP:
+                    self.writeIds = {}
+                    (_ktype1782, _vtype1783, _size1781) = iprot.readMapBegin()
+                    for _i1785 in range(_size1781):
+                        _key1786 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                        _val1787 = iprot.readI64()
+                        self.writeIds[_key1786] = _val1787
+                    iprot.readMapEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('add_write_ids_to_min_history_args')
+        if self.txnId is not None:
+            oprot.writeFieldBegin('txnId', TType.I64, 1)
+            oprot.writeI64(self.txnId)
+            oprot.writeFieldEnd()
+        if self.writeIds is not None:
+            oprot.writeFieldBegin('writeIds', TType.MAP, 2)
+            oprot.writeMapBegin(TType.STRING, TType.I64, len(self.writeIds))
+            for kiter1788, viter1789 in self.writeIds.items():
+                oprot.writeString(kiter1788.encode('utf-8') if sys.version_info[0] == 2 else kiter1788)
+                oprot.writeI64(viter1789)
+            oprot.writeMapEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(add_write_ids_to_min_history_args)
+add_write_ids_to_min_history_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'txnId', None, None, ),  # 1
+    (2, TType.MAP, 'writeIds', (TType.STRING, 'UTF8', TType.I64, None, False), None, ),  # 2
+)
+
+
+class add_write_ids_to_min_history_result(object):
+    """
+    Attributes:
+     - o2
+
+    """
+
+
+    def __init__(self, o2=None,):
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('add_write_ids_to_min_history_result')
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 1)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(add_write_ids_to_min_history_result)
+add_write_ids_to_min_history_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 1
+)
+
+
 class allocate_table_write_ids_args(object):
     """
     Attributes:
@@ -51230,10 +51446,10 @@ class find_columns_with_stats_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype1784, _size1781) = iprot.readListBegin()
-                    for _i1785 in range(_size1781):
-                        _elem1786 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                        self.success.append(_elem1786)
+                    (_etype1793, _size1790) = iprot.readListBegin()
+                    for _i1794 in range(_size1790):
+                        _elem1795 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                        self.success.append(_elem1795)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -51250,8 +51466,8 @@ class find_columns_with_stats_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRING, len(self.success))
-            for iter1787 in self.success:
-                oprot.writeString(iter1787.encode('utf-8') if sys.version_info[0] == 2 else iter1787)
+            for iter1796 in self.success:
+                oprot.writeString(iter1796.encode('utf-8') if sys.version_info[0] == 2 else iter1796)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -57807,11 +58023,11 @@ class get_schema_all_versions_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype1791, _size1788) = iprot.readListBegin()
-                    for _i1792 in range(_size1788):
-                        _elem1793 = SchemaVersion()
-                        _elem1793.read(iprot)
-                        self.success.append(_elem1793)
+                    (_etype1800, _size1797) = iprot.readListBegin()
+                    for _i1801 in range(_size1797):
+                        _elem1802 = SchemaVersion()
+                        _elem1802.read(iprot)
+                        self.success.append(_elem1802)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -57838,8 +58054,8 @@ class get_schema_all_versions_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter1794 in self.success:
-                iter1794.write(oprot)
+            for iter1803 in self.success:
+                iter1803.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.o1 is not None:
@@ -59228,11 +59444,11 @@ class get_runtime_stats_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype1798, _size1795) = iprot.readListBegin()
-                    for _i1799 in range(_size1795):
-                        _elem1800 = RuntimeStat()
-                        _elem1800.read(iprot)
-                        self.success.append(_elem1800)
+                    (_etype1807, _size1804) = iprot.readListBegin()
+                    for _i1808 in range(_size1804):
+                        _elem1809 = RuntimeStat()
+                        _elem1809.read(iprot)
+                        self.success.append(_elem1809)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -59254,8 +59470,8 @@ class get_runtime_stats_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter1801 in self.success:
-                iter1801.write(oprot)
+            for iter1810 in self.success:
+                iter1810.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.o1 is not None:
@@ -60892,10 +61108,10 @@ class get_all_stored_procedures_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype1805, _size1802) = iprot.readListBegin()
-                    for _i1806 in range(_size1802):
-                        _elem1807 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                        self.success.append(_elem1807)
+                    (_etype1814, _size1811) = iprot.readListBegin()
+                    for _i1815 in range(_size1811):
+                        _elem1816 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                        self.success.append(_elem1816)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -60917,8 +61133,8 @@ class get_all_stored_procedures_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRING, len(self.success))
-            for iter1808 in self.success:
-                oprot.writeString(iter1808.encode('utf-8') if sys.version_info[0] == 2 else iter1808)
+            for iter1817 in self.success:
+                oprot.writeString(iter1817.encode('utf-8') if sys.version_info[0] == 2 else iter1817)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.o1 is not None:
@@ -61310,10 +61526,10 @@ class get_all_packages_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype1812, _size1809) = iprot.readListBegin()
-                    for _i1813 in range(_size1809):
-                        _elem1814 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                        self.success.append(_elem1814)
+                    (_etype1821, _size1818) = iprot.readListBegin()
+                    for _i1822 in range(_size1818):
+                        _elem1823 = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                        self.success.append(_elem1823)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -61335,8 +61551,8 @@ class get_all_packages_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRING, len(self.success))
-            for iter1815 in self.success:
-                oprot.writeString(iter1815.encode('utf-8') if sys.version_info[0] == 2 else iter1815)
+            for iter1824 in self.success:
+                oprot.writeString(iter1824.encode('utf-8') if sys.version_info[0] == 2 else iter1824)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.o1 is not None:
@@ -61579,11 +61795,11 @@ class get_all_write_event_info_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype1819, _size1816) = iprot.readListBegin()
-                    for _i1820 in range(_size1816):
-                        _elem1821 = WriteEventInfo()
-                        _elem1821.read(iprot)
-                        self.success.append(_elem1821)
+                    (_etype1828, _size1825) = iprot.readListBegin()
+                    for _i1829 in range(_size1825):
+                        _elem1830 = WriteEventInfo()
+                        _elem1830.read(iprot)
+                        self.success.append(_elem1830)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -61605,8 +61821,8 @@ class get_all_write_event_info_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRUCT, len(self.success))
-            for iter1822 in self.success:
-                iter1822.write(oprot)
+            for iter1831 in self.success:
+                iter1831.write(oprot)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.o1 is not None:

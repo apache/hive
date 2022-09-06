@@ -92,8 +92,8 @@ public class TestCleaner extends CompactorTest {
   }
 
   public void testRetryAfterFailedCleanup(boolean delayEnabled) throws Exception {
-    conf.setBoolVar(HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, delayEnabled);
-    conf.setTimeVar(HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 2, TimeUnit.SECONDS);
+    HiveConf.setBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, delayEnabled);
+    HiveConf.setTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 2, TimeUnit.SECONDS);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS, 3);
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, 100, TimeUnit.MILLISECONDS);
     String errorMessage = "No cleanup here!";
@@ -739,6 +739,8 @@ public class TestCleaner extends CompactorTest {
     rqst.setPartitionname(partName);
     long compactTxn = compactInTxn(rqst);
     addDeltaFile(t, p, 21, 22, 2);
+    
+    txnHandler.addWriteIdsToMinHistory(1, Collections.singletonMap("default.trfcp", 23L));
     startCleaner();
 
     // make sure cleaner didn't remove anything, and cleaning is still queued

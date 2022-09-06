@@ -392,29 +392,47 @@ class CompactionTxnHandler extends TxnHandler {
          * By filtering on minOpenTxnWaterMark, we will only cleanup after every transaction is committed, that could see
          * the uncompacted deltas. This way the cleaner can clean up everything that was made obsolete by this compaction.
          */
-        String whereClause = " WHERE \"CQ_STATE\" = '" + READY_FOR_CLEANING + "'";
-        if (minOpenTxnWaterMark > 0) {
+        String whereClause = " WHERE \"CQ_STATE\" = " + quoteChar(READY_FOR_CLEANING) + 
+          " AND (\"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - \"CQ_RETRY_RETENTION\" - " + retentionTime + ") OR \"CQ_COMMIT_TIME\" IS NULL)";
+        
+        String queryStr = 
+          "SELECT \"CQ_ID\", cq1.\"CQ_DATABASE\", cq1.\"CQ_TABLE\", cq1.\"CQ_PARTITION\"," + 
+          "  \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_TBLPROPERTIES\", \"CQ_RETRY_RETENTION\", " +
+          "  \"CQ_NEXT_TXN_ID\"";
+        if (useMinHistoryWriteId) {
+          queryStr += ", \"MIN_OPEN_WRITE_ID\"";
+        }
+        queryStr +=
+          "  FROM \"COMPACTION_QUEUE\" \"cq1\" " +
+          "INNER JOIN (" +
+          "  SELECT MIN(\"CQ_HIGHEST_WRITE_ID\") \"MIN_WRITE_ID_HWM\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\"" +
+          "  FROM \"COMPACTION_QUEUE\"" 
+          + whereClause +
+          "  GROUP BY \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\") \"cq2\" " +
+          "ON \"cq1\".\"CQ_DATABASE\" = \"cq2\".\"CQ_DATABASE\""+
+          "  AND \"cq1\".\"CQ_TABLE\" = \"cq2\".\"CQ_TABLE\""+
+          "  AND (\"cq1\".\"CQ_PARTITION\" = \"cq2\".\"CQ_PARTITION\"" +
+          "    OR \"cq1\".\"CQ_PARTITION\" IS NULL AND \"cq2\".\"CQ_PARTITION\" IS NULL)" +
+          "  AND \"CQ_HIGHEST_WRITE_ID\" = \"MIN_WRITE_ID_HWM\" ";
+        
+        if (useMinHistoryWriteId) {
+          queryStr += 
+            "LEFT JOIN (" +
+            "  SELECT MIN(\"MH_WRITEID\") \"MIN_OPEN_WRITE_ID\", \"MH_DATABASE\", \"MH_TABLE\"" +
+            "  FROM \"MIN_HISTORY_WRITE_ID\"" +
+            "  GROUP BY \"MH_DATABASE\", \"MH_TABLE\") \"hwm\" " +
+            "ON \"cq1\".\"CQ_DATABASE\" = \"hwm\".\"MH_DATABASE\"" +
+            "  AND \"cq1\".\"CQ_TABLE\" = \"hwm\".\"MH_TABLE\"";
+          
+          whereClause += " AND (\"CQ_HIGHEST_WRITE_ID\" < \"MIN_OPEN_WRITE_ID\" OR \"MIN_OPEN_WRITE_ID\" IS NULL)";
+          
+        } else if (minOpenTxnWaterMark > 0) {
           whereClause += " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
         }
-        whereClause += " AND (\"CQ_COMMIT_TIME\" < (" + getEpochFn(dbProduct) + " - \"CQ_RETRY_RETENTION\" - " + retentionTime + ") OR \"CQ_COMMIT_TIME\" IS NULL)";
-        String s = "SELECT \"CQ_ID\", \"cq1\".\"CQ_DATABASE\", \"cq1\".\"CQ_TABLE\", \"cq1\".\"CQ_PARTITION\"," +
-            "   \"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_TBLPROPERTIES\", \"CQ_RETRY_RETENTION\" " +
-            "  FROM \"COMPACTION_QUEUE\" \"cq1\" " +
-            "INNER JOIN (" +
-            "  SELECT MIN(\"CQ_HIGHEST_WRITE_ID\") \"WRITE_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\"" +
-            "  FROM \"COMPACTION_QUEUE\""
-            + whereClause +
-            "  GROUP BY \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\") \"cq2\" " +
-            "ON \"cq1\".\"CQ_DATABASE\" = \"cq2\".\"CQ_DATABASE\""+
-            "  AND \"cq1\".\"CQ_TABLE\" = \"cq2\".\"CQ_TABLE\""+
-            "  AND (\"cq1\".\"CQ_PARTITION\" = \"cq2\".\"CQ_PARTITION\"" +
-            "    OR \"cq1\".\"CQ_PARTITION\" IS NULL AND \"cq2\".\"CQ_PARTITION\" IS NULL)"
-            + whereClause +
-            "  AND \"CQ_HIGHEST_WRITE_ID\" = \"WRITE_ID\"" +
-            "  ORDER BY \"CQ_ID\"";
-        LOG.debug("Going to execute query <{}>", s);
+        queryStr += whereClause + " ORDER BY \"CQ_ID\"";
+        LOG.debug("Going to execute query <{}>", queryStr);
 
-        try (ResultSet rs = stmt.executeQuery(s)) {
+        try (ResultSet rs = stmt.executeQuery(queryStr)) {
           while (rs.next()) {
             CompactionInfo info = new CompactionInfo();
             info.id = rs.getLong(1);
@@ -426,6 +444,10 @@ class CompactionTxnHandler extends TxnHandler {
             info.highestWriteId = rs.getLong(7);
             info.properties = rs.getString(8);
             info.retryRetention = rs.getInt(9);
+            info.nextTxnId = rs.getLong(10);
+            if (useMinHistoryWriteId) {
+              info.minOpenWriteId = rs.getLong(11);
+            }
             LOG.debug("Found ready to clean: {}", info);
             rc.add(info);
           }
@@ -434,8 +456,7 @@ class CompactionTxnHandler extends TxnHandler {
       } catch (SQLException e) {
         LOG.error("Unable to select next element for cleaning, " + e.getMessage());
         checkRetryable(e, "findReadyToClean");
-        throw new MetaException("Unable to connect to transaction database " +
-            e.getMessage());
+        throw new MetaException("Unable to connect to transaction database " + e.getMessage());
       }
     } catch (RetryException e) {
       return findReadyToClean(minOpenTxnWaterMark, retentionTime);
@@ -717,7 +738,7 @@ class CompactionTxnHandler extends TxnHandler {
         if (!rs.next()) {
           throw new MetaException("Transaction tables not properly initialized, no record found in TXNS");
         }
-        long minUncommitedTxnid = minTxnIdSeenOpen < 0 ? rs.getLong(1) : Math.min(rs.getLong(1), minTxnIdSeenOpen);
+        long minUncommitedTxnid = Math.min(rs.getLong(1), minTxnIdSeenOpen);
 
         // As all txns below min_uncommitted_txnid are either committed or empty_aborted, we are allowed
         // to cleanup the entries less than min_uncommitted_txnid from the TXN_TO_WRITE_ID table.
@@ -1535,20 +1556,14 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.Idempotent
   public long findMinOpenTxnIdForCleaner() throws MetaException {
-    Connection dbConn = null;
     try {
-      try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
+      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction)) {
         return getMinOpenTxnIdWaterMark(dbConn);
       } catch (SQLException e) {
-        LOG.error("Unable to getMinOpenTxnIdForCleaner", e);
-        rollbackDBConn(dbConn);
-        checkRetryable(e, "getMinOpenTxnForCleaner");
-        throw new MetaException("Unable to execute getMinOpenTxnIfForCleaner() " +
-            e.getMessage());
-      } finally {
-        closeDbConn(dbConn);
-      }
+        LOG.error("Unable to findMinOpenTxnIdForCleaner", e);
+        checkRetryable(e, "findMinOpenTxnIdForCleaner");
+        throw new MetaException("Unable to execute getMinOpenTxnIfForCleaner() " + e.getMessage());
+      } 
     } catch (RetryException e) {
       return findMinOpenTxnIdForCleaner();
     }
@@ -1565,12 +1580,10 @@ class CompactionTxnHandler extends TxnHandler {
   @Deprecated
   public long findMinTxnIdSeenOpen() throws MetaException {
     if (!useMinHistoryLevel) {
-      return -1L;
+      return Long.MAX_VALUE;
     }
-    Connection dbConn = null;
     try {
-      try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction);
+      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolCompaction)) {
         long minOpenTxn;
         try (Statement stmt = dbConn.createStatement()) {
           try (ResultSet rs = stmt.executeQuery("SELECT MIN(\"MHL_MIN_OPEN_TXNID\") FROM \"MIN_HISTORY_LEVEL\"")) {
@@ -1579,24 +1592,20 @@ class CompactionTxnHandler extends TxnHandler {
             }
             minOpenTxn = rs.getLong(1);
             if (rs.wasNull()) {
-              minOpenTxn = -1L;
+              minOpenTxn = Long.MAX_VALUE;
             }
           }
         }
-        dbConn.rollback();
         return minOpenTxn;
       } catch (SQLException e) {
         if (dbProduct.isTableNotExistsError(e)) {
           useMinHistoryLevel = false;
-          return -1L;
+          return Long.MAX_VALUE;
         } else {
           LOG.error("Unable to execute findMinTxnIdSeenOpen", e);
-          rollbackDBConn(dbConn);
           checkRetryable(e, "findMinTxnIdSeenOpen");
           throw new MetaException("Unable to execute findMinTxnIdSeenOpen() " + e.getMessage());
         }
-      } finally {
-        closeDbConn(dbConn);
       }
     } catch (RetryException e) {
       return findMinTxnIdSeenOpen();

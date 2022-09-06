@@ -915,6 +915,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_valid_write_ids\n");
   }
 
+  void add_write_ids_to_min_history(const int64_t txnId, const std::map<std::string, int64_t> & writeIds) {
+    // Your implementation goes here
+    printf("add_write_ids_to_min_history\n");
+  }
+
   void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) {
     // Your implementation goes here
     printf("allocate_table_write_ids\n");

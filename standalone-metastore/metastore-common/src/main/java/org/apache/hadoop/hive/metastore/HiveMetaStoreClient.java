@@ -3948,6 +3948,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public void addWriteIdsToMinHistory(long txnId, Map<String, Long> writeIds) throws TException {
+    client.add_write_ids_to_min_history(txnId, writeIds);
+  }
+
+  @Override
   public long openTxn(String user) throws TException {
     OpenTxnsResponse txns = openTxnsIntr(user, 1, null, null, null);
     return txns.getTxn_ids().get(0);

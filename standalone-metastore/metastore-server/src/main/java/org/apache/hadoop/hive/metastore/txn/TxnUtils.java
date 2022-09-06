@@ -95,8 +95,6 @@ public class TxnUtils {
    */
   public static ValidCompactorWriteIdList createValidCompactWriteIdList(TableValidWriteIds tableValidWriteIds) {
     String fullTableName = tableValidWriteIds.getFullTableName();
-    long highWater = tableValidWriteIds.getWriteIdHighWaterMark();
-    long minOpenWriteId = Long.MAX_VALUE;
     List<Long> invalids = tableValidWriteIds.getInvalidWriteIds();
     BitSet abortedBits = BitSet.valueOf(tableValidWriteIds.getAbortedBits());
     long[] exceptions = new long[invalids.size()];
@@ -105,20 +103,18 @@ public class TxnUtils {
       if (abortedBits.get(i)) {
         // Only need aborted since we don't consider anything above minOpenWriteId
         exceptions[i++] = writeId;
-      } else {
-        minOpenWriteId = Math.min(minOpenWriteId, writeId);
-      }
+      } 
     }
-    if(i < exceptions.length) {
+    if (i < exceptions.length) {
       exceptions = Arrays.copyOf(exceptions, i);
     }
-    highWater = minOpenWriteId == Long.MAX_VALUE ? highWater : minOpenWriteId - 1;
     BitSet bitSet = new BitSet(exceptions.length);
     bitSet.set(0, exceptions.length); // for ValidCompactorWriteIdList, everything in exceptions are aborted
-    if (minOpenWriteId == Long.MAX_VALUE) {
-      return new ValidCompactorWriteIdList(fullTableName, exceptions, bitSet, highWater);
+    if (tableValidWriteIds.isSetMinOpenWriteId()) {
+      long minOpenWriteId = tableValidWriteIds.getMinOpenWriteId();
+      return new ValidCompactorWriteIdList(fullTableName, exceptions, bitSet, minOpenWriteId - 1, minOpenWriteId);
     } else {
-      return new ValidCompactorWriteIdList(fullTableName, exceptions, bitSet, highWater, minOpenWriteId);
+      return new ValidCompactorWriteIdList(fullTableName, exceptions, bitSet, tableValidWriteIds.getWriteIdHighWaterMark());
     }
   }
 
