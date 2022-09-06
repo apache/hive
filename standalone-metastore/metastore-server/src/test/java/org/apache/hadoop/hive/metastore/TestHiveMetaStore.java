@@ -174,10 +174,10 @@ public abstract class TestHiveMetaStore {
       assertTrue("Spec from name is incorrect: " + testSpec, spec.equals(testSpec));
 
       List<String> emptyVals = client.partitionNameToVals("");
-      assertTrue("Values should be empty, instead its size is: " + emptyVals.size(), emptyVals.size() == 0);
+      assertEquals("Values should be empty", 0, emptyVals.size());
 
       Map<String, String> emptySpec =  client.partitionNameToSpec("");
-      assertTrue("Spec should be empty, instead its size is: " + emptySpec.size(), emptySpec.size() == 0);
+      assertEquals("Spec should be empty", 0, emptySpec.size());
     } catch (Exception e) {
       fail();
     }
@@ -3323,16 +3323,12 @@ public abstract class TestHiveMetaStore {
     closingClient.getAllDatabases();
     closingClient.close();
 
-    MetaStoreTestUtils.waitForAssertion("Checking pm cachesize after client close", new Runnable() {
-      @Override
-      public void run() {
-        Set<JDOPersistenceManager> objectsAfterClose = new HashSet<>(getJDOPersistenceManagerCache());
-        objectsAfterClose.removeAll(objectsBeforeUse);
+    MetaStoreTestUtils.waitForAssertion("Checking pm cachesize after client close", () -> {
+      Set<JDOPersistenceManager> objectsAfterClose = new HashSet<>(getJDOPersistenceManagerCache());
+      objectsAfterClose.removeAll(objectsBeforeUse);
 
-        assertTrue(String.format("%d new objects left in the cache (after closing client)", objectsAfterClose.size()),
-            objectsAfterClose.size() == 0);
+      assertEquals("new objects left in the cache (after closing client)", 0, objectsAfterClose.size());
 
-      }
     }, 500, 30000);
 
     Set<JDOPersistenceManager> objectsAfterClose = new HashSet<>(getJDOPersistenceManagerCache());
@@ -3342,15 +3338,13 @@ public abstract class TestHiveMetaStore {
     // will trigger cleanup
     nonClosingClient.getTTransport().close();
 
-    MetaStoreTestUtils.waitForAssertion("Checking pm cachesize after transport close", new Runnable() {
-      @Override
-      public void run() {
-        Set<JDOPersistenceManager> objectsAfterDroppedConnection = new HashSet<>(getJDOPersistenceManagerCache());
-        objectsAfterDroppedConnection.removeAll(objectsAfterClose);
+    MetaStoreTestUtils.waitForAssertion("Checking pm cachesize after transport close", () -> {
+      Set<JDOPersistenceManager> objectsAfterDroppedConnection = new HashSet<>(getJDOPersistenceManagerCache());
+      objectsAfterDroppedConnection.removeAll(objectsAfterClose);
 
-        assertTrue(String.format("%d new objects left in the cache (after dropping connection)",
-            objectsAfterDroppedConnection.size()), objectsAfterDroppedConnection.size() == 0);
-      }
+      assertEquals("new objects left in the cache (after dropping connection)", 0,
+          objectsAfterDroppedConnection.size());
+
     }, 500, 30000);
 
     nonClosingClient.close(); //let's close after unit test ran successfully

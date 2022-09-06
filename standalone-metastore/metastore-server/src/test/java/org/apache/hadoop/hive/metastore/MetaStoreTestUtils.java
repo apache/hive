@@ -397,8 +397,8 @@ public class MetaStoreTestUtils {
    * @param msOverallTimeout
    * @throws Exception
    */
-  public static void waitForAssertion(String assertionContext, Runnable assertionRunnable, int msBetweenAssertionAttempts,
-      int msOverallTimeout) throws Exception {
+  public static void waitForAssertion(String assertionContext, Runnable assertionRunnable,
+      int msBetweenAssertionAttempts, int msOverallTimeout) throws Exception {
     if (msOverallTimeout <= 0) {
       msOverallTimeout = Integer.MAX_VALUE;
     }
