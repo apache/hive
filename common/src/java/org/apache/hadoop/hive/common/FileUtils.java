@@ -757,9 +757,11 @@ public final class FileUtils {
       FSDataOutputStream out = null;
 
       try {
-        in = srcFS.open(src);
-        out = dstFS.create(dst, overwrite);
-        IOUtils.copyBytes(in, out, conf, true);
+        if (!isSameFile(srcFS, src, dstFS, dst)) {
+          in = srcFS.open(src);
+          out = dstFS.create(dst, overwrite);
+          IOUtils.copyBytes(in, out, conf, true);
+        }
         if (preserveXAttrs) {
           preserveXAttr(srcFS, src, dstFS, dst);
         }
@@ -771,6 +773,46 @@ public final class FileUtils {
     }
 
     return deleteSource ? srcFS.delete(src, true) : true;
+  }
+
+  /**
+   * Checks if the source and destination are the same file. It follows the same logic as
+   * https://hadoop.apache.org/docs/stable/hadoop-distcp/DistCp.html .
+   */
+  public static boolean isSameFile(FileSystem srcFS, Path src, FileSystem dstFS, Path dst)
+      throws IOException {
+    // When both file systems are HDFS, use strong check conditions;
+    // block size, length, checksum.
+    FileStatus srcStatus = srcFS.getFileStatus(src);
+    if (srcFS.getScheme().equals("hdfs") && dstFS.getScheme().equals("hdfs")) {
+      if (!dstFS.exists(dst)) {
+        return false;
+      }
+      FileStatus dstStatus = dstFS.getFileStatus(dst);
+      if (srcStatus.getBlockSize() != dstStatus.getBlockSize()) {
+        return false;
+      }
+      if (srcStatus.getLen() != dstStatus.getLen()) {
+        return false;
+      }
+      if (!srcFS.getFileChecksum(srcStatus.getPath()).equals(dstFS.getFileChecksum(dst))) {
+        return false;
+      }
+    }
+    // Otherwise (mostly object stores), use weak check conditions; length, modification time.
+    else {
+      if (!dstFS.exists(dst)) {
+        return false;
+      }
+      FileStatus dstStatus = dstFS.getFileStatus(dst);
+      if (srcStatus.getLen() != dstStatus.getLen()) {
+        return false;
+      }
+      if (srcStatus.getModificationTime() != dstStatus.getModificationTime()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public static boolean copy(FileSystem srcFS, Path[] srcs, FileSystem dstFS, Path dst, boolean deleteSource, boolean overwrite, boolean preserveXAttr, Configuration conf) throws IOException {

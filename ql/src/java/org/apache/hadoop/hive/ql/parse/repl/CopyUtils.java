@@ -20,10 +20,11 @@ package org.apache.hadoop.hive.ql.parse.repl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -47,10 +48,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CopyUtils {
 
@@ -481,9 +484,9 @@ public class CopyUtils {
       final Path finalDestination = destination;
       try {
         proxyUser.doAs((PrivilegedExceptionAction<Boolean>) () -> {
-          //Destination should be empty
+          // Destination should have identical files only
           if (overWrite) {
-            deleteSubDirs(destinationFs, destination);
+            leaveIdenticalFilesOnly(sourceFs, paths, destinationFs, destination);
           }
           copyFilesBetweenFS(sourceFs, paths, destinationFs, finalDestination, false, true);
           return true;
@@ -492,20 +495,88 @@ public class CopyUtils {
         throw new IOException(e);
       }
     } else {
-      //Destination should be empty
+      // Destination should have identical files only
       if (overWrite) {
-        deleteSubDirs(destinationFs, destination);
+        leaveIdenticalFilesOnly(sourceFs, paths, destinationFs, destination);
       }
       copyFilesBetweenFS(sourceFs, paths, destinationFs, destination, false, true);
     }
   }
 
-  private void deleteSubDirs(FileSystem fs, Path path) throws IOException {
-    //Delete the root path instead of doing a listing
-    //This is more optimised
-    delete(fs, path, true);
-    //Recreate just the Root folder
-    mkdirs(fs, path);
+  /**
+   * Leave identical files only between source and destination. It gets source paths.
+   */
+  void leaveIdenticalFilesOnly(FileSystem sourceFs, Path[] srcPaths,
+      FileSystem destinationFs, Path destinationPath) throws IOException {
+    for (Path srcPath : srcPaths) {
+      leaveIdenticalFilesOnlyFileByFile(sourceFs, srcPath, destinationFs, destinationPath);
+    }
+  }
+
+  /**
+   * Leave identical files only between source and destination. It gets a source path.
+   */
+  private void leaveIdenticalFilesOnlyFileByFile(FileSystem sourceFs, Path srcPath,
+      FileSystem destinationFs, Path dstPath) throws IOException {
+    boolean toDelete = false;
+    switch (getType(destinationFs, dstPath)) {
+    case NONE:
+      // If destination is none, then no need to delete anything.
+      break;
+    case FILE:
+      // If destination is a file,
+      if (getType(sourceFs, srcPath) == Type.FILE) {
+        // If source is a file, then delete the destination file if it is not same as source.
+        toDelete = !FileUtils.isSameFile(sourceFs, srcPath, destinationFs, dstPath);
+      } else {
+        // Otherwise, delete the destination file.
+        toDelete = true;
+      }
+      break;
+    case DIRECTORY:
+      // If destination is a directory,
+      if (getType(sourceFs, srcPath) == Type.DIRECTORY) {
+        // If both are directories, visit for children of both.
+        Set<String> bothChildNames = Stream.concat(
+            Arrays.stream(sourceFs.listStatus(srcPath))
+                .map(FileStatus::getPath)
+                .map(Path::getName),
+            Arrays.stream(destinationFs.listStatus(dstPath))
+                .map(FileStatus::getPath)
+                .map(Path::getName)
+        ).collect(Collectors.toSet());
+        for (String childName : bothChildNames) {
+          leaveIdenticalFilesOnlyFileByFile(
+              sourceFs, new Path(srcPath, childName),
+              destinationFs, new Path(dstPath, childName)
+          );
+        }
+      } else {
+        // If source is not a directory, then delete the destination directory.
+        toDelete = true;
+      }
+      break;
+    }
+    if (toDelete) {
+      delete(destinationFs, dstPath, true);
+    }
+  }
+
+  private static Type getType(FileSystem fileSystem, Path path) throws IOException {
+    if (fileSystem.exists(path)) {
+      FileStatus fileStatus = fileSystem.getFileStatus(path);
+      if (fileStatus.isDirectory()) {
+        return Type.DIRECTORY;
+      } else {
+        return Type.FILE;
+      }
+    } else {
+      return Type.NONE;
+    }
+  }
+
+  private enum Type {
+    NONE, FILE, DIRECTORY
   }
 
   public void doCopy(Path destination, List<Path> srcPaths) throws IOException, LoginException {

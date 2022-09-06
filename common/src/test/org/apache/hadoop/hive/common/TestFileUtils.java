@@ -37,12 +37,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.HadoopShims;
 
@@ -301,6 +303,116 @@ public class TestFileUtils {
     
     RemoteIterator<LocatedFileStatus> itr = FileUtils.listFiles(fs, path, true, FileUtils.HIDDEN_FILES_PATH_FILTER);
     assertEquals(1, assertExpectedFilePaths(itr, Collections.singletonList("mock:/tmp/dummy")));
+  }
+
+  @Test
+  public void testIsSameFileHdfs() throws Exception {
+    // A HDFS-HDFS copy can check file identity with block size, file length, modification time, and checksum.
+    FileChecksum checksum = mock(FileChecksum.class);
+
+    Path src = new Path("a");
+    FileStatus srcStatus = mock(FileStatus.class);
+    when(srcStatus.getBlockSize()).thenReturn(1L);
+    when(srcStatus.getLen()).thenReturn(2L);
+    when(srcStatus.getModificationTime()).thenReturn(3L);
+    when(srcStatus.getPath()).thenReturn(src);
+
+    FileSystem srcFS = mock(FileSystem.class);
+    when(srcFS.getScheme()).thenReturn("hdfs");
+    when(srcFS.exists(src)).thenReturn(true);
+    when(srcFS.getFileStatus(src)).thenReturn(srcStatus);
+    when(srcFS.getFileChecksum(src)).thenReturn(checksum);
+
+    Path dst = new Path("dst");
+    FileStatus dstStatus = mock(FileStatus.class);
+    when(dstStatus.getBlockSize()).thenReturn(1L);
+    when(dstStatus.getLen()).thenReturn(2L);
+    when(dstStatus.getModificationTime()).thenReturn(3L);
+    when(dstStatus.getPath()).thenReturn(dst);
+
+    FileSystem dstFS = mock(FileSystem.class);
+    when(dstFS.getScheme()).thenReturn("hdfs");
+    when(dstFS.exists(dst)).thenReturn(true);
+    when(dstFS.getFileStatus(dst)).thenReturn(dstStatus);
+    when(dstFS.getFileChecksum(dst)).thenReturn(checksum);
+
+    // Return true for a same file.
+    assertTrue(FileUtils.isSameFile(srcFS, src, dstFS, dst));
+
+    // Detect different block size.
+    when(dstStatus.getBlockSize()).thenReturn(0L);
+    assertFalse(FileUtils.isSameFile(srcFS, src, dstFS, dst));
+    when(dstStatus.getBlockSize()).thenReturn(1L); // Restore
+
+    // Detect different file length.
+    when(dstStatus.getLen()).thenReturn(0L);
+    assertFalse(FileUtils.isSameFile(srcFS, src, dstFS, dst));
+    when(dstStatus.getLen()).thenReturn(2L); // Restore
+
+    // Ignore different modification time.
+    when(dstStatus.getModificationTime()).thenReturn(0L);
+    assertTrue(FileUtils.isSameFile(srcFS, src, dstFS, dst));
+    when(dstStatus.getModificationTime()).thenReturn(3L); // Restore
+
+    // Detect different checksum.
+    when(dstFS.getFileChecksum(dst)).thenReturn(null);
+    assertFalse(FileUtils.isSameFile(srcFS, src, dstFS, dst));
+    when(dstFS.getFileChecksum(dst)).thenReturn(checksum); // Restore
+  }
+
+  @Test
+  public void testIsSameFileNonHdfs() throws Exception {
+    // A non-HDFS copy can only check file identity with file length and modification time.
+    FileChecksum checksum = mock(FileChecksum.class);
+
+    Path src = new Path("a");
+    FileStatus srcStatus = mock(FileStatus.class);
+    when(srcStatus.getBlockSize()).thenReturn(1L);
+    when(srcStatus.getLen()).thenReturn(2L);
+    when(srcStatus.getModificationTime()).thenReturn(3L);
+    when(srcStatus.getPath()).thenReturn(src);
+
+    FileSystem srcFS = mock(FileSystem.class);
+    when(srcFS.getScheme()).thenReturn("hdfs");
+    when(srcFS.exists(src)).thenReturn(true);
+    when(srcFS.getFileStatus(src)).thenReturn(srcStatus);
+    when(srcFS.getFileChecksum(src)).thenReturn(checksum);
+
+    Path dst = new Path("dst");
+    FileStatus dstStatus = mock(FileStatus.class);
+    when(dstStatus.getBlockSize()).thenReturn(1L);
+    when(dstStatus.getLen()).thenReturn(2L);
+    when(dstStatus.getModificationTime()).thenReturn(3L);
+    when(dstStatus.getPath()).thenReturn(dst);
+
+    FileSystem dstFS = mock(FileSystem.class);
+    when(dstFS.getScheme()).thenReturn("asdf");
+    when(dstFS.exists(dst)).thenReturn(true);
+    when(dstFS.getFileStatus(dst)).thenReturn(dstStatus);
+    when(dstFS.getFileChecksum(dst)).thenReturn(checksum);
+
+    // Return true for a same file.
+    assertTrue(FileUtils.isSameFile(srcFS, src, dstFS, dst));
+
+    // Ignore different block size.
+    when(dstStatus.getBlockSize()).thenReturn(0L);
+    assertTrue(FileUtils.isSameFile(srcFS, src, dstFS, dst));
+    when(dstStatus.getBlockSize()).thenReturn(1L); // Restore
+
+    // Detect different file length.
+    when(dstStatus.getLen()).thenReturn(0L);
+    assertFalse(FileUtils.isSameFile(srcFS, src, dstFS, dst));
+    when(dstStatus.getLen()).thenReturn(2L); // Restore
+
+    // Detect different modification time.
+    when(dstStatus.getModificationTime()).thenReturn(0L);
+    assertFalse(FileUtils.isSameFile(srcFS, src, dstFS, dst));
+    when(dstStatus.getModificationTime()).thenReturn(3L); // Restore
+
+    // Ignore different checksum.
+    when(dstFS.getFileChecksum(dst)).thenReturn(null);
+    assertTrue(FileUtils.isSameFile(srcFS, src, dstFS, dst));
+    when(dstFS.getFileChecksum(dst)).thenReturn(checksum); // Restore
   }
 
   private int assertExpectedFilePaths(RemoteIterator<? extends FileStatus> lfs, List<String> expectedPaths)

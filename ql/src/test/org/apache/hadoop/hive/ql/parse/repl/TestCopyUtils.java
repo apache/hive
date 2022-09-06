@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.parse.repl;
 
+import org.apache.hadoop.fs.FileChecksum;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.ContentSummary;
@@ -45,6 +47,7 @@ import java.util.concurrent.Executors;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyListOf;
 import static org.mockito.ArgumentMatchers.eq;
@@ -52,6 +55,9 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -243,5 +249,107 @@ public class TestCopyUtils {
     //File count is greater than 1 do thread pool invoked
     Mockito.verify(mockExecutorService,
       Mockito.times(1)).invokeAll(callableCapture.capture());
+  }
+
+  @Test
+  public void testLeaveIdenticalFilesOnly() throws IOException {
+    // root
+    Path root = new Path("a").getParent();
+    FileStatus rootStatus = mock(FileStatus.class);
+    when(rootStatus.getPath()).thenReturn(root);
+    when(rootStatus.isDirectory()).thenReturn(true);
+
+    // a/
+    Path a = new Path("a");
+    FileStatus aStatus = mock(FileStatus.class);
+    when(aStatus.getPath()).thenReturn(a);
+    when(aStatus.isDirectory()).thenReturn(true);
+
+    // a/A
+    Path aA = new Path("a", "A");
+    FileStatus aAStatus = mock(FileStatus.class);
+    when(aAStatus.getPath()).thenReturn(aA);
+    when(aAStatus.isFile()).thenReturn(true);
+
+    // a/B
+    Path aB = new Path("a", "B");
+    FileStatus aBStatus = mock(FileStatus.class);
+    when(aBStatus.getPath()).thenReturn(aB);
+    when(aBStatus.isFile()).thenReturn(true);
+
+    // b/
+    Path b = new Path("b");
+    FileStatus bStatus = mock(FileStatus.class);
+    when(bStatus.getPath()).thenReturn(b);
+    when(bStatus.isDirectory()).thenReturn(true);
+
+    // b/C
+    Path bC = new Path("b", "C");
+    FileStatus bCStatus = mock(FileStatus.class);
+    when(bCStatus.getPath()).thenReturn(bC);
+    when(bCStatus.isFile()).thenReturn(true);
+
+    // b/D
+    Path bD = new Path("b", "D");
+    FileStatus bDStatus = mock(FileStatus.class);
+    when(bDStatus.getPath()).thenReturn(bD);
+    when(bDStatus.isFile()).thenReturn(true);
+
+    // sourceFs
+    FileSystem sourceFs = mock(FileSystem.class);
+    FileChecksum checksum = mock(FileChecksum.class);
+    when(sourceFs.exists(isOneOf(root, a, b, aA, aB, bC))).thenReturn(true);
+    when(sourceFs.getScheme()).thenReturn("hdfs");
+    when(sourceFs.getFileChecksum(any())).thenReturn(checksum);
+
+    // source structure: root(a(A, B), b(C))
+    when(sourceFs.listStatus(root)).thenReturn(new FileStatus[] {aStatus, bStatus});
+    when(sourceFs.listStatus(a)).thenReturn(new FileStatus[] {aAStatus, aBStatus});
+    when(sourceFs.getFileStatus(root)).thenReturn(rootStatus);
+    when(sourceFs.getFileStatus(a)).thenReturn(aStatus);
+    when(sourceFs.getFileStatus(aA)).thenReturn(aAStatus);
+    when(sourceFs.getFileStatus(aB)).thenReturn(aBStatus);
+    when(sourceFs.listStatus(b)).thenReturn(new FileStatus[] {bCStatus});
+    when(sourceFs.getFileStatus(b)).thenReturn(bStatus);
+    when(sourceFs.getFileStatus(bC)).thenReturn(bCStatus);
+
+    // destinationFs
+    FileSystem destinationFs = mock(FileSystem.class);
+    when(destinationFs.exists(isOneOf(root, a, b, aA, bD))).thenReturn(true);
+    when(destinationFs.getScheme()).thenReturn("hdfs");
+    when(destinationFs.getFileChecksum(any())).thenReturn(checksum);
+
+    // destination structure: root(a(A), b(D))
+    when(destinationFs.listStatus(root)).thenReturn(new FileStatus[] {aStatus, bStatus});
+    when(destinationFs.listStatus(a)).thenReturn(new FileStatus[] {aAStatus});
+    when(destinationFs.getFileStatus(root)).thenReturn(rootStatus);
+    when(destinationFs.getFileStatus(a)).thenReturn(aStatus);
+    when(destinationFs.getFileStatus(aA)).thenReturn(aAStatus);
+    when(destinationFs.listStatus(b)).thenReturn(new FileStatus[] {bDStatus});
+    when(destinationFs.getFileStatus(b)).thenReturn(bStatus);
+    when(destinationFs.getFileStatus(bD)).thenReturn(bDStatus);
+
+    // Leave identical files only.
+    // The destination will leave root(a(A)) only, and b(D) will be deleted.
+    CopyUtils copyUtils = new CopyUtils("", new HiveConf(), destinationFs);
+    copyUtils.leaveIdenticalFilesOnly(
+        sourceFs, new Path[] {root},
+        destinationFs, root
+    );
+
+    // b/D should be deleted because it's not in the source.
+    verify(destinationFs, times(1)).delete(bD, true);
+
+    // Other files and directories should not be deleted.
+    verify(destinationFs, never()).delete(eq(a), anyBoolean());
+    verify(destinationFs, never()).delete(eq(aA), anyBoolean());
+    verify(destinationFs, never()).delete(eq(aB), anyBoolean());
+    verify(destinationFs, never()).delete(eq(b), anyBoolean());
+    verify(destinationFs, never()).delete(eq(bC), anyBoolean());
+  }
+
+  @SafeVarargs
+  private static <T> T isOneOf(T ... args) {
+    return Mockito.argThat(argument -> Arrays.asList(args).contains(argument));
   }
 }
