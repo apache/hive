@@ -45,6 +45,9 @@ public class BlobStorageUtils {
         return supportedBlobStoreSchemes.contains(scheme);
     }
 
+    /**
+     * Returns true if {@link HiveConf.ConfVars#HIVE_BLOBSTORE_USE_BLOBSTORE_AS_SCRATCHDIR} is true, false otherwise.
+     */
     public static boolean isBlobStorageAsScratchDir(final Configuration conf) {
         return conf.getBoolean(
                 HiveConf.ConfVars.HIVE_BLOBSTORE_USE_BLOBSTORE_AS_SCRATCHDIR.varname,
