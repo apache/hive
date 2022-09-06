@@ -77,6 +77,7 @@ import org.apache.hive.common.util.TxnIdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 
@@ -185,22 +186,6 @@ public class HiveMaterializedViewUtils {
         .map(tableName -> TableName.getDbTable(tableName.getDb(), tableName.getTable()))
         .collect(Collectors.toList());
 
-    Map<String, String> currentSnapshotMap = new HashMap<>(tablesUsedNames.size());
-    for (String tableName : tablesUsedNames) {
-      Table table = db.getTable(tableName);
-      if (table.getStorageHandler() != null) {
-        String sh = table.getStorageHandler().getCurrentSnapshot(table);
-        if (isNotBlank(sh)) {
-          currentSnapshotMap.put(table.getFullyQualifiedName(), sh);
-        } else {
-          LOG.debug(String.format(
-                  "Materialized view %s ignored for rewriting as we could not obtain current snapshot of table %s",
-                  materializedViewTable.getFullyQualifiedName(), tableName));
-          return null;
-        }
-      }
-    }
-
     Map<String, String> snapshotMap = snapshot.getTableSnapshots();
     if (snapshotMap == null || snapshotMap.isEmpty()) {
       LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
@@ -209,7 +194,6 @@ public class HiveMaterializedViewUtils {
     }
 
     Set<String> storedTablesUsed = materializedViewTable.getMVMetadata().getSourceTableFullNames();
-    boolean ignore = false;
     for (String fullyQualifiedTableName : tablesUsedNames) {
       // Note. If the materialized view does not contain a table that is contained in the query,
       // we do not need to check whether that specific table is outdated or not. If a rewriting
@@ -218,31 +202,32 @@ public class HiveMaterializedViewUtils {
       if (!storedTablesUsed.contains(fullyQualifiedTableName)) {
         continue;
       }
-      String currentTableSnapshot = currentSnapshotMap.get(fullyQualifiedTableName);
-      if (currentTableSnapshot == null) {
-        LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                " ignored for rewriting as it is outdated and cannot be considered for " +
-                " rewriting because it uses non-transactional table " + fullyQualifiedTableName);
-        ignore = true;
-        break;
+
+      Table table = db.getTable(fullyQualifiedTableName);
+      if (table.getStorageHandler() == null) {
+        LOG.debug("Materialized view {} ignored for rewriting as we could not storage handler of table {}",
+                materializedViewTable.getFullyQualifiedName(), fullyQualifiedTableName);
+        return null;
       }
+      String currentTableSnapshot = table.getStorageHandler().getCurrentSnapshot(table);
+      if (isBlank(currentTableSnapshot)) {
+        LOG.debug(
+                "Materialized view {} ignored for rewriting as we could not obtain current snapshot of table {}",
+                materializedViewTable.getFullyQualifiedName(), fullyQualifiedTableName);
+        return null;
+      }
+
       String storedTableSnapshot = snapshotMap.get(fullyQualifiedTableName);
       if (storedTableSnapshot == null) {
         // This should not happen, but we ignore for safety
-        LOG.warn("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                " ignored for rewriting as details about txn ids for table " + fullyQualifiedTableName +
-                " could not be found in " + snapshotMap);
-        ignore = true;
-        break;
+        LOG.warn("Materialized view {} ignored for rewriting as snapshot for table {} could not be found",
+                materializedViewTable.getFullyQualifiedName(), fullyQualifiedTableName);
+        return null;
       }
       if (!currentTableSnapshot.equals(storedTableSnapshot)) {
-        LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                " contents are outdated");
+        LOG.debug("Materialized view {} contents are outdated", materializedViewTable.getFullyQualifiedName());
         return true;
       }
-    }
-    if (ignore) {
-      return null;
     }
 
     return false;
