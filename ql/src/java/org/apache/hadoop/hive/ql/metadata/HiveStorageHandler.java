@@ -490,6 +490,11 @@ public interface HiveStorageHandler extends Configurable {
   default void executeOperation(org.apache.hadoop.hive.ql.metadata.Table table, AlterTableExecuteSpec executeSpec) {
   }
 
+  /**
+   * Query the unique snapshot id of the passed table.
+   * @param table - {@link org.apache.hadoop.hive.ql.metadata.Table} which snapshot id should be returned.
+   * @return String representation of the snapshotId or null if not supported.
+   */
   default String getCurrentSnapshot(org.apache.hadoop.hive.ql.metadata.Table table) {
     return null;
   }

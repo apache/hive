@@ -27,6 +27,10 @@ import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.Map;
 
+/**
+ * Class to store snapshot data of Materialized view source tables.
+ * The data represents the state of the source tables when the view was created/last rebuilt.
+ */
 public class MaterializationSnapshot {
 
   public static MaterializationSnapshot fromJson(String jsonString) {
@@ -38,7 +42,10 @@ public class MaterializationSnapshot {
     }
   }
 
+  // snapshot of native ACID tables
   private String validTxnList;
+  // snapshot of non-native ACID tables. Key is the fully qualified name of the table.
+  // Value is the unique id of the snapshot provided by the table's storage HiveStorageHandler
   private Map<String, String> tableSnapshots;
 
   private MaterializationSnapshot() {
