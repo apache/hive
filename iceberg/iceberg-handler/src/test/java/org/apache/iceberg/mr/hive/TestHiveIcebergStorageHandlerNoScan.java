@@ -1587,6 +1587,20 @@ public class TestHiveIcebergStorageHandlerNoScan {
         });
   }
 
+  @Test
+  public void testCTLT() {
+    // Create a normal table and add some data
+    shell.executeStatement("CREATE TABLE source(a int)");
+    shell.executeStatement("insert into source values(1)");
+
+    shell.executeStatement(String.format("CREATE TABLE dest LIKE source STORED BY ICEBERG %s ",
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", "dest"))));
+
+    // Try a select query and check if the table is empty .
+    String result = shell.executeAndStringify("select a from " + TableIdentifier.of("default", "dest").name());
+    Assert.assertTrue(result.isEmpty());
+  }
+
   /**
    * Checks that the new schema has newintcol and newstring col columns on both HMS and Iceberg sides
    * @throws Exception - any test error

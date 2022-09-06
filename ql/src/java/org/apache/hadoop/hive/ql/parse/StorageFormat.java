@@ -48,15 +48,29 @@ public class StorageFormat {
   private final Map<String, String> serdeProps;
 
   private enum StorageHandlerTypes {
-    ICEBERG("\'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler\'");
+    ICEBERG("\'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler\'",
+        "org.apache.iceberg.mr.hive.HiveIcebergInputFormat", "org.apache.iceberg.mr.hive.HiveIcebergOutputFormat");
 
     private final String className;
-    StorageHandlerTypes(String className) {
+    private final String inputFormat;
+    private final String outputFormat;
+
+    StorageHandlerTypes(String className, String inputFormat, String outputFormat) {
       this.className = className;
+      this.inputFormat = inputFormat;
+      this.outputFormat = outputFormat;
     }
 
     public String className() {
       return className;
+    }
+
+    public String inputFormat() {
+      return inputFormat;
+    }
+
+    public String outputFormat() {
+      return outputFormat;
     }
   }
 
@@ -141,6 +155,8 @@ public class StorageFormat {
     for (StorageHandlerTypes type : StorageHandlerTypes.values()) {
       if (type.name().equalsIgnoreCase(name)) {
         name = type.className();
+        inputFormat = type.inputFormat();
+        outputFormat = type.outputFormat();
         break;
       }
     }
