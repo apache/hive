@@ -42,10 +42,10 @@ public class MaterializationSnapshot {
     }
   }
 
-  // snapshot of native ACID tables
+  // Snapshot of native ACID tables.
   private String validTxnList;
-  // snapshot of non-native ACID tables. Key is the fully qualified name of the table.
-  // Value is the unique id of the snapshot provided by the table's storage HiveStorageHandler
+  // Snapshot of non-native ACID and insert-only transactional tables. Key is the fully qualified name of the table.
+  // Value is the unique id of the snapshot provided by the table's storage HiveStorageHandler.
   private Map<String, String> tableSnapshots;
 
   private MaterializationSnapshot() {
@@ -61,6 +61,10 @@ public class MaterializationSnapshot {
     this.tableSnapshots = tableSnapshots;
   }
 
+  /**
+   * Returns the json representation of this object.
+   * @return {@link String} containing a json.
+   */
   public String asJsonString() {
     try (Writer out = new StringWriter()) {
       new ObjectMapper().writeValue(out, this);

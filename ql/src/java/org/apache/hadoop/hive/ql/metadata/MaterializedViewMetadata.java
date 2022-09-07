@@ -88,6 +88,13 @@ public class MaterializedViewMetadata {
     return unmodifiableList(creationMetadata.getSourceTables());
   }
 
+  /**
+   * Get the snapshot data of the materialized view source tables stored in HMS.
+   * The returned object contains the valid txn list in case of native acid tables
+   * or the snapshotIds of tables which storage handle supports snapshots.
+   * @return {@link MaterializationSnapshot} object or null if the wrapped {@link CreationMetadata} object
+   * does not contain snapshot data
+   */
   public MaterializationSnapshot getSnapshot() {
     if (creationMetadata.getValidTxnList() == null || creationMetadata.getValidTxnList().isEmpty()) {
       LOG.debug("Could not obtain materialization snapshot of materialized view {}.{}",
