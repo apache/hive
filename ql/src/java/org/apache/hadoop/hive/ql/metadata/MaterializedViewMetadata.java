@@ -91,7 +91,7 @@ public class MaterializedViewMetadata {
   public MaterializationSnapshot getSnapshot() {
     if (creationMetadata.getValidTxnList() == null || creationMetadata.getValidTxnList().isEmpty()) {
       LOG.debug("Could not obtain materialization snapshot of materialized view {}.{}",
-          creationMetadata.getDbName(), creationMetadata.getDbName());
+          creationMetadata.getDbName(), creationMetadata.getTblName());
       return null;
     }
     return MaterializationSnapshot.fromJson(creationMetadata.getValidTxnList());
