@@ -980,7 +980,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public String getCurrentSnapshot(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+  public String getCurrentSnapshotId(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     Snapshot current = table.currentSnapshot();

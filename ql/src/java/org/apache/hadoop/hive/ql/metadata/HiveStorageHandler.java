@@ -495,7 +495,7 @@ public interface HiveStorageHandler extends Configurable {
    * @param table - {@link org.apache.hadoop.hive.ql.metadata.Table} which snapshot id should be returned.
    * @return String representation of the snapshotId or null if not supported.
    */
-  default String getCurrentSnapshot(org.apache.hadoop.hive.ql.metadata.Table table) {
+  default String getCurrentSnapshotId(org.apache.hadoop.hive.ql.metadata.Table table) {
     return null;
   }
 }

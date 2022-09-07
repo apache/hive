@@ -209,7 +209,7 @@ public class HiveMaterializedViewUtils {
                 materializedViewTable.getFullyQualifiedName(), fullyQualifiedTableName);
         return null;
       }
-      String currentTableSnapshot = table.getStorageHandler().getCurrentSnapshot(table);
+      String currentTableSnapshot = table.getStorageHandler().getCurrentSnapshotId(table);
       if (isBlank(currentTableSnapshot)) {
         LOG.debug(
                 "Materialized view {} ignored for rewriting as we could not obtain current snapshot of table {}",
@@ -495,7 +495,7 @@ public class HiveMaterializedViewUtils {
     for (TableName tableName : tables) {
       Table table = db.getTable(tableName);
       if (table.getStorageHandler() != null) {
-        String sh = table.getStorageHandler().getCurrentSnapshot(table);
+        String sh = table.getStorageHandler().getCurrentSnapshotId(table);
         if (isNotBlank(sh)) {
           snapshot.put(table.getFullyQualifiedName(), sh);
         }
