@@ -14222,7 +14222,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           if (AcidUtils.isTransactionalTable(table)) {
             ++nativeAcidCount;
-          } else if (AcidUtils.isNonNativeAcidTable(table) && table.getStorageHandler().areSnapshotsSupported()) {
+          } else if (table.isNonNative() && table.getStorageHandler().areSnapshotsSupported()) {
             ++supportsSnapshotCount;
           } else {
             throw new SemanticException("Automatic rewriting for materialized view cannot "

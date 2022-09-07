@@ -10,4 +10,4 @@ POSTHOOK: query: create external table test_update (id int, value string) stored
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_update
-FAILED: SemanticException [Error 10435]: Update and Merge into non-native ACID table is only supported when hive.split.update is true.
+FAILED: SemanticException [Error 10294]: Attempt to do update or delete using transaction manager that does not support these operations.

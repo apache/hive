@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.StreamSupport;
+import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
@@ -376,7 +377,8 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
       Schema schema = new Schema(required(1, columnName, type));
       List<Record> records = TestHelper.generateRandomRecords(schema, 1, 0L);
-      Table table = testTables.createTable(shell, tableName, schema, fileFormat, records, 2);
+      Table table = testTables.createTable(shell, tableName, schema, PartitionSpec.unpartitioned(), fileFormat, records,
+          2);
 
       shell.executeStatement("DELETE FROM " + tableName);
       HiveIcebergTestUtils.validateData(table, ImmutableList.of(), 0);
@@ -555,12 +557,41 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
 
       Schema schema = new Schema(required(1, columnName, type));
       List<Record> originalRecords = TestHelper.generateRandomRecords(schema, 1, 0L);
-      Table table = testTables.createTable(shell, tableName, schema, fileFormat, originalRecords, 2);
+      Table table = testTables.createTable(shell, tableName, schema, PartitionSpec.unpartitioned(), fileFormat,
+          originalRecords, 2);
 
       List<Record> newRecords = TestHelper.generateRandomRecords(schema, 1, 3L);
       shell.executeStatement(testTables.getUpdateQuery(tableName, newRecords.get(0)));
       HiveIcebergTestUtils.validateData(table, newRecords, 0);
     }
+  }
+
+  @Test
+  public void testDeleteStatementFormatV1() {
+    // create and insert an initial batch of records
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2);
+    // insert one more batch so that we have multiple data files within the same partition
+    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
+        TableIdentifier.of("default", "customers"), false));
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "Attempt to do update or delete on table", () -> {
+          shell.executeStatement("DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'");
+        });
+  }
+
+  @Test
+  public void testUpdateStatementFormatV1() {
+    // create and insert an initial batch of records
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2);
+    // insert one more batch so that we have multiple data files within the same partition
+    shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
+        TableIdentifier.of("default", "customers"), false));
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "Attempt to do update or delete on table", () -> {
+          shell.executeStatement("UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'");
+        });
   }
 
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {
