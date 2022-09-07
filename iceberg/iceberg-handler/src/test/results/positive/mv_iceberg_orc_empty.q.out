@@ -1,3 +1,7 @@
+PREHOOK: query: drop table if exists tbl_ice
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_ice
+POSTHOOK: type: DROPTABLE
 PREHOOK: query: create external table tbl_ice(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -23,17 +27,17 @@ POSTHOOK: Lineage: mat1.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int,
 PREHOOK: query: explain cbo
 select b, c from tbl_ice where c > 52
 PREHOOK: type: QUERY
-PREHOOK: Input: default@mat1
 PREHOOK: Input: default@tbl_ice
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain cbo
 select b, c from tbl_ice where c > 52
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@tbl_ice
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+HiveProject(b=[$1], c=[$2])
+  HiveFilter(condition=[>($2, 52)])
+    HiveTableScan(table=[[default, tbl_ice]], table:alias=[tbl_ice])
 
 PREHOOK: query: insert into tbl_ice values (111, 'one', 55), (333, 'two', 56)
 PREHOOK: type: QUERY
@@ -47,12 +51,12 @@ PREHOOK: query: explain cbo
 select b, c from tbl_ice where c > 52
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_ice
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain cbo
 select b, c from tbl_ice where c > 52
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveProject(b=[$1], c=[$2])
   HiveFilter(condition=[>($2, 52)])
@@ -86,11 +90,11 @@ POSTHOOK: Lineage: mat1.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int,
 PREHOOK: query: select * from mat1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from mat1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mat1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 one	55
 two	56
 PREHOOK: query: explain cbo
@@ -98,13 +102,13 @@ select b, c from tbl_ice where c > 52
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mat1
 PREHOOK: Input: default@tbl_ice
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: explain cbo
 select b, c from tbl_ice where c > 52
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@tbl_ice
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
