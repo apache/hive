@@ -112,16 +112,17 @@ public class HiveMaterializedViewUtils {
     MaterializedViewMetadata mvMetadata = materializedViewTable.getMVMetadata();
     MaterializationSnapshot snapshot = mvMetadata.getSnapshot();
 
-    if (snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
+    if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
       return isOutdatedMaterializedView(snapshot, db, tablesUsed, materializedViewTable);
     }
 
+    String materializationTxnList = snapshot != null ? snapshot.getValidTxnList() : null;
     return isOutdatedMaterializedView(
-        snapshot.getValidTxnList(), validTxnsList, txnMgr, tablesUsed, materializedViewTable);
+        materializationTxnList, validTxnsList, txnMgr, tablesUsed, materializedViewTable);
   }
 
   private static Boolean isOutdatedMaterializedView(
-      String mvValidTxnListString, String validTxnsList, HiveTxnManager txnMgr,
+      String materializationTxnList, String validTxnsList, HiveTxnManager txnMgr,
       Set<TableName> tablesUsed, Table materializedViewTable) throws LockException {
     List<String> tablesUsedNames = tablesUsed.stream()
         .map(tableName -> TableName.getDbTable(tableName.getDb(), tableName.getTable()))
@@ -134,12 +135,12 @@ public class HiveMaterializedViewUtils {
     }
 
     Set<String> storedTablesUsed = materializedViewTable.getMVMetadata().getSourceTableFullNames();
-    if (mvValidTxnListString == null || mvValidTxnListString.isEmpty()) {
+    if (materializationTxnList == null || materializationTxnList.isEmpty()) {
       LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
               " ignored for rewriting as we could not obtain materialization txn ids");
       return null;
     }
-    ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(mvValidTxnListString);
+    ValidTxnWriteIdList materializationTxnWriteIds = new ValidTxnWriteIdList(materializationTxnList);
     boolean ignore = false;
     for (String fullyQualifiedTableName : tablesUsedNames) {
       // Note. If the materialized view does not contain a table that is contained in the query,
@@ -158,12 +159,12 @@ public class HiveMaterializedViewUtils {
         ignore = true;
         break;
       }
-      ValidWriteIdList tableWriteIds = mvTxnWriteIds.getTableValidWriteIdList(fullyQualifiedTableName);
+      ValidWriteIdList tableWriteIds = materializationTxnWriteIds.getTableValidWriteIdList(fullyQualifiedTableName);
       if (tableWriteIds == null) {
         // This should not happen, but we ignore for safety
         LOG.warn("Materialized view " + materializedViewTable.getFullyQualifiedName() +
                 " ignored for rewriting as details about txn ids for table " + fullyQualifiedTableName +
-                " could not be found in " + mvTxnWriteIds);
+                " could not be found in " + materializationTxnWriteIds);
         ignore = true;
         break;
       }
@@ -242,13 +243,14 @@ public class HiveMaterializedViewUtils {
       HiveRelOptMaterialization materialization, String validTxnsList,
       MaterializationSnapshot snapshot) throws LockException {
 
-    if (snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
+    if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
       // Not supported yet for Iceberg tables
       return materialization;
     }
 
+    String materializationTxnList = snapshot != null ? snapshot.getValidTxnList() : null;
     return augmentMaterializationWithTimeInformation(
-        materialization, validTxnsList, new ValidTxnWriteIdList(snapshot.getValidTxnList()));
+        materialization, validTxnsList, new ValidTxnWriteIdList(materializationTxnList));
   }
 
   private static HiveRelOptMaterialization augmentMaterializationWithTimeInformation(
