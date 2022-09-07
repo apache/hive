@@ -89,6 +89,7 @@ import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.SortDirection;
 import org.apache.iceberg.SortField;
@@ -982,6 +983,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public String getCurrentSnapshot(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
-    return Long.toString(table.currentSnapshot().sequenceNumber());
+    Snapshot current = table.currentSnapshot();
+    long currentSnapshotId = current != null ? current.snapshotId() : -1;
+    return Long.toString(currentSnapshotId);
   }
 }
