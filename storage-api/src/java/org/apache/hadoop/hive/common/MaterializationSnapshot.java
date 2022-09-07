@@ -38,7 +38,7 @@ public class MaterializationSnapshot {
       return new ObjectMapper().readValue(jsonString, MaterializationSnapshot.class);
     } catch (JsonProcessingException e) {
       // this is not a jsonString, fall back to treating it as ValidTxnWriteIdList
-      return new MaterializationSnapshot(jsonString, null);
+      return new MaterializationSnapshot(jsonString);
     }
   }
 
@@ -51,8 +51,13 @@ public class MaterializationSnapshot {
   private MaterializationSnapshot() {
   }
 
-  public MaterializationSnapshot(String validTxnList, Map<String, String> tableSnapshots) {
+  public MaterializationSnapshot(String validTxnList) {
     this.validTxnList = validTxnList;
+    this.tableSnapshots = null;
+  }
+
+  public MaterializationSnapshot(Map<String, String> tableSnapshots) {
+    this.validTxnList = null;
     this.tableSnapshots = tableSnapshots;
   }
 

@@ -57,10 +57,8 @@ public class MaterializedViewUpdateOperation extends DDLOperation<MaterializedVi
       } else if (desc.isUpdateCreationMetadata()) {
         // We need to update the status of the creation signature
         Table mvTable = context.getDb().getTable(desc.getName());
-        Map<String, String> snapshot = getSnapshotOf(context.getDb(), mvTable.getMVMetadata().getSourceTableNames());
         MaterializedViewMetadata newMetadata = mvTable.getMVMetadata().reset(
-                new MaterializationSnapshot(
-                context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY), snapshot));
+                getSnapshotOf(context, mvTable.getMVMetadata().getSourceTableNames()));
         context.getDb().updateCreationMetadata(mvTable.getDbName(), mvTable.getTableName(), newMetadata);
         mvTable.setMaterializedViewMetadata(newMetadata);
         HiveMaterializedViewsRegistry.get().refreshMaterializedView(context.getDb().getConf(), mvTable);

@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -490,7 +491,17 @@ public class HiveMaterializedViewUtils {
     return newScan;
   }
 
-  public static Map<String, String> getSnapshotOf(Hive db, Set<TableName> tables) throws HiveException {
+  public static MaterializationSnapshot getSnapshotOf(DDLOperationContext context, Set<TableName> tables)
+          throws HiveException {
+    Map<String, String> snapshot = getSnapshotOf(context.getDb(), tables);
+    if (snapshot.isEmpty()) {
+      return new MaterializationSnapshot(context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+    }
+
+    return new MaterializationSnapshot(snapshot);
+  }
+
+  private static Map<String, String> getSnapshotOf(Hive db, Set<TableName> tables) throws HiveException {
     Map<String, String> snapshot = new HashMap<>(tables.size());
     for (TableName tableName : tables) {
       Table table = db.getTable(tableName);
