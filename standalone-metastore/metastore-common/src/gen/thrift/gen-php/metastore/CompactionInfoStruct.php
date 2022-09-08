@@ -102,6 +102,11 @@ class CompactionInfoStruct
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        17 => array(
+            'var' => 'poolname',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -168,6 +173,10 @@ class CompactionInfoStruct
      * @var int
      */
     public $retryRetention = null;
+    /**
+     * @var string
+     */
+    public $poolname = null;
 
     public function __construct($vals = null)
     {
@@ -219,6 +228,9 @@ class CompactionInfoStruct
             }
             if (isset($vals['retryRetention'])) {
                 $this->retryRetention = $vals['retryRetention'];
+            }
+            if (isset($vals['poolname'])) {
+                $this->poolname = $vals['poolname'];
             }
         }
     }
@@ -354,6 +366,13 @@ class CompactionInfoStruct
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 17:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->poolname);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -446,6 +465,11 @@ class CompactionInfoStruct
         if ($this->retryRetention !== null) {
             $xfer += $output->writeFieldBegin('retryRetention', TType::I64, 16);
             $xfer += $output->writeI64($this->retryRetention);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->poolname !== null) {
+            $xfer += $output->writeFieldBegin('poolname', TType::STRING, 17);
+            $xfer += $output->writeString($this->poolname);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

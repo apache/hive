@@ -26654,6 +26654,11 @@ void CompactionRequest::__set_initiatorVersion(const std::string& val) {
   this->initiatorVersion = val;
 __isset.initiatorVersion = true;
 }
+
+void CompactionRequest::__set_poolName(const std::string& val) {
+  this->poolName = val;
+__isset.poolName = true;
+}
 std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj)
 {
   obj.printTo(out);
@@ -26766,6 +26771,14 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->poolName);
+          this->__isset.poolName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -26835,6 +26848,11 @@ uint32_t CompactionRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += oprot->writeString(this->initiatorVersion);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.poolName) {
+    xfer += oprot->writeFieldBegin("poolName", ::apache::thrift::protocol::T_STRING, 9);
+    xfer += oprot->writeString(this->poolName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -26850,6 +26868,7 @@ void swap(CompactionRequest &a, CompactionRequest &b) {
   swap(a.properties, b.properties);
   swap(a.initiatorId, b.initiatorId);
   swap(a.initiatorVersion, b.initiatorVersion);
+  swap(a.poolName, b.poolName);
   swap(a.__isset, b.__isset);
 }
 
@@ -26862,6 +26881,7 @@ CompactionRequest::CompactionRequest(const CompactionRequest& other978) {
   properties = other978.properties;
   initiatorId = other978.initiatorId;
   initiatorVersion = other978.initiatorVersion;
+  poolName = other978.poolName;
   __isset = other978.__isset;
 }
 CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other979) {
@@ -26873,6 +26893,7 @@ CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other97
   properties = other979.properties;
   initiatorId = other979.initiatorId;
   initiatorVersion = other979.initiatorVersion;
+  poolName = other979.poolName;
   __isset = other979.__isset;
   return *this;
 }
@@ -26887,6 +26908,7 @@ void CompactionRequest::printTo(std::ostream& out) const {
   out << ", " << "properties="; (__isset.properties ? (out << to_string(properties)) : (out << "<null>"));
   out << ", " << "initiatorId="; (__isset.initiatorId ? (out << to_string(initiatorId)) : (out << "<null>"));
   out << ", " << "initiatorVersion="; (__isset.initiatorVersion ? (out << to_string(initiatorVersion)) : (out << "<null>"));
+  out << ", " << "poolName="; (__isset.poolName ? (out << to_string(poolName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -26969,6 +26991,11 @@ __isset.enqueueTime = true;
 void CompactionInfoStruct::__set_retryRetention(const int64_t val) {
   this->retryRetention = val;
 __isset.retryRetention = true;
+}
+
+void CompactionInfoStruct::__set_poolname(const std::string& val) {
+  this->poolname = val;
+__isset.poolname = true;
 }
 std::ostream& operator<<(std::ostream& out, const CompactionInfoStruct& obj)
 {
@@ -27132,6 +27159,14 @@ uint32_t CompactionInfoStruct::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
+      case 17:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->poolname);
+          this->__isset.poolname = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -27233,6 +27268,11 @@ uint32_t CompactionInfoStruct::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeI64(this->retryRetention);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.poolname) {
+    xfer += oprot->writeFieldBegin("poolname", ::apache::thrift::protocol::T_STRING, 17);
+    xfer += oprot->writeString(this->poolname);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -27256,6 +27296,7 @@ void swap(CompactionInfoStruct &a, CompactionInfoStruct &b) {
   swap(a.hasoldabort, b.hasoldabort);
   swap(a.enqueueTime, b.enqueueTime);
   swap(a.retryRetention, b.retryRetention);
+  swap(a.poolname, b.poolname);
   swap(a.__isset, b.__isset);
 }
 
@@ -27276,6 +27317,7 @@ CompactionInfoStruct::CompactionInfoStruct(const CompactionInfoStruct& other981)
   hasoldabort = other981.hasoldabort;
   enqueueTime = other981.enqueueTime;
   retryRetention = other981.retryRetention;
+  poolname = other981.poolname;
   __isset = other981.__isset;
 }
 CompactionInfoStruct& CompactionInfoStruct::operator=(const CompactionInfoStruct& other982) {
@@ -27295,6 +27337,7 @@ CompactionInfoStruct& CompactionInfoStruct::operator=(const CompactionInfoStruct
   hasoldabort = other982.hasoldabort;
   enqueueTime = other982.enqueueTime;
   retryRetention = other982.retryRetention;
+  poolname = other982.poolname;
   __isset = other982.__isset;
   return *this;
 }
@@ -27317,6 +27360,7 @@ void CompactionInfoStruct::printTo(std::ostream& out) const {
   out << ", " << "hasoldabort="; (__isset.hasoldabort ? (out << to_string(hasoldabort)) : (out << "<null>"));
   out << ", " << "enqueueTime="; (__isset.enqueueTime ? (out << to_string(enqueueTime)) : (out << "<null>"));
   out << ", " << "retryRetention="; (__isset.retryRetention ? (out << to_string(retryRetention)) : (out << "<null>"));
+  out << ", " << "poolname="; (__isset.poolname ? (out << to_string(poolname)) : (out << "<null>"));
   out << ")";
 }
 
@@ -28074,6 +28118,11 @@ void CompactionResponse::printTo(std::ostream& out) const {
 ShowCompactRequest::~ShowCompactRequest() noexcept {
 }
 
+
+void ShowCompactRequest::__set_poolName(const std::string& val) {
+  this->poolName = val;
+__isset.poolName = true;
+}
 std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj)
 {
   obj.printTo(out);
@@ -28100,7 +28149,20 @@ uint32_t ShowCompactRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->poolName);
+          this->__isset.poolName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -28114,6 +28176,11 @@ uint32_t ShowCompactRequest::write(::apache::thrift::protocol::TProtocol* oprot)
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("ShowCompactRequest");
 
+  if (this->__isset.poolName) {
+    xfer += oprot->writeFieldBegin("poolName", ::apache::thrift::protocol::T_STRING, 1);
+    xfer += oprot->writeString(this->poolName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -28121,20 +28188,23 @@ uint32_t ShowCompactRequest::write(::apache::thrift::protocol::TProtocol* oprot)
 
 void swap(ShowCompactRequest &a, ShowCompactRequest &b) {
   using ::std::swap;
-  (void) a;
-  (void) b;
+  swap(a.poolName, b.poolName);
+  swap(a.__isset, b.__isset);
 }
 
-ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other995) noexcept {
-  (void) other995;
+ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other995) {
+  poolName = other995.poolName;
+  __isset = other995.__isset;
 }
-ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& other996) noexcept {
-  (void) other996;
+ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& other996) {
+  poolName = other996.poolName;
+  __isset = other996.__isset;
   return *this;
 }
 void ShowCompactRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "ShowCompactRequest(";
+  out << "poolName="; (__isset.poolName ? (out << to_string(poolName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -28232,6 +28302,11 @@ __isset.initiatorVersion = true;
 void ShowCompactResponseElement::__set_cleanerStart(const int64_t val) {
   this->cleanerStart = val;
 __isset.cleanerStart = true;
+}
+
+void ShowCompactResponseElement::__set_poolName(const std::string& val) {
+  this->poolName = val;
+__isset.poolName = true;
 }
 std::ostream& operator<<(std::ostream& out, const ShowCompactResponseElement& obj)
 {
@@ -28419,6 +28494,14 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
           xfer += iprot->skip(ftype);
         }
         break;
+      case 20:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->poolName);
+          this->__isset.poolName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -28535,6 +28618,11 @@ uint32_t ShowCompactResponseElement::write(::apache::thrift::protocol::TProtocol
     xfer += oprot->writeI64(this->cleanerStart);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.poolName) {
+    xfer += oprot->writeFieldBegin("poolName", ::apache::thrift::protocol::T_STRING, 20);
+    xfer += oprot->writeString(this->poolName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -28561,6 +28649,7 @@ void swap(ShowCompactResponseElement &a, ShowCompactResponseElement &b) {
   swap(a.initiatorId, b.initiatorId);
   swap(a.initiatorVersion, b.initiatorVersion);
   swap(a.cleanerStart, b.cleanerStart);
+  swap(a.poolName, b.poolName);
   swap(a.__isset, b.__isset);
 }
 
@@ -28584,6 +28673,7 @@ ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponse
   initiatorId = other998.initiatorId;
   initiatorVersion = other998.initiatorVersion;
   cleanerStart = other998.cleanerStart;
+  poolName = other998.poolName;
   __isset = other998.__isset;
 }
 ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other999) {
@@ -28606,6 +28696,7 @@ ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowComp
   initiatorId = other999.initiatorId;
   initiatorVersion = other999.initiatorVersion;
   cleanerStart = other999.cleanerStart;
+  poolName = other999.poolName;
   __isset = other999.__isset;
   return *this;
 }
@@ -28631,6 +28722,7 @@ void ShowCompactResponseElement::printTo(std::ostream& out) const {
   out << ", " << "initiatorId="; (__isset.initiatorId ? (out << to_string(initiatorId)) : (out << "<null>"));
   out << ", " << "initiatorVersion="; (__isset.initiatorVersion ? (out << to_string(initiatorVersion)) : (out << "<null>"));
   out << ", " << "cleanerStart="; (__isset.cleanerStart ? (out << to_string(cleanerStart)) : (out << "<null>"));
+  out << ", " << "poolName="; (__isset.poolName ? (out << to_string(poolName)) : (out << "<null>"));
   out << ")";
 }
 
@@ -29054,6 +29146,11 @@ void FindNextCompactRequest::__set_workerVersion(const std::string& val) {
   this->workerVersion = val;
 __isset.workerVersion = true;
 }
+
+void FindNextCompactRequest::__set_poolName(const std::string& val) {
+  this->poolName = val;
+__isset.poolName = true;
+}
 std::ostream& operator<<(std::ostream& out, const FindNextCompactRequest& obj)
 {
   obj.printTo(out);
@@ -29098,6 +29195,14 @@ uint32_t FindNextCompactRequest::read(::apache::thrift::protocol::TProtocol* ipr
           xfer += iprot->skip(ftype);
         }
         break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->poolName);
+          this->__isset.poolName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -29125,6 +29230,11 @@ uint32_t FindNextCompactRequest::write(::apache::thrift::protocol::TProtocol* op
     xfer += oprot->writeString(this->workerVersion);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.poolName) {
+    xfer += oprot->writeFieldBegin("poolName", ::apache::thrift::protocol::T_STRING, 3);
+    xfer += oprot->writeString(this->poolName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -29134,17 +29244,20 @@ void swap(FindNextCompactRequest &a, FindNextCompactRequest &b) {
   using ::std::swap;
   swap(a.workerId, b.workerId);
   swap(a.workerVersion, b.workerVersion);
+  swap(a.poolName, b.poolName);
   swap(a.__isset, b.__isset);
 }
 
 FindNextCompactRequest::FindNextCompactRequest(const FindNextCompactRequest& other1024) {
   workerId = other1024.workerId;
   workerVersion = other1024.workerVersion;
+  poolName = other1024.poolName;
   __isset = other1024.__isset;
 }
 FindNextCompactRequest& FindNextCompactRequest::operator=(const FindNextCompactRequest& other1025) {
   workerId = other1025.workerId;
   workerVersion = other1025.workerVersion;
+  poolName = other1025.poolName;
   __isset = other1025.__isset;
   return *this;
 }
@@ -29153,6 +29266,7 @@ void FindNextCompactRequest::printTo(std::ostream& out) const {
   out << "FindNextCompactRequest(";
   out << "workerId="; (__isset.workerId ? (out << to_string(workerId)) : (out << "<null>"));
   out << ", " << "workerVersion="; (__isset.workerVersion ? (out << to_string(workerVersion)) : (out << "<null>"));
+  out << ", " << "poolName="; (__isset.poolName ? (out << to_string(poolName)) : (out << "<null>"));
   out << ")";
 }
 

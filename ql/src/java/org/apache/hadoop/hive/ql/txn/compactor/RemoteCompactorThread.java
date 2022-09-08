@@ -45,6 +45,16 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 public class RemoteCompactorThread extends CompactorThread {
   protected IMetaStoreClient msc;
 
+  private String poolName;
+
+  public String getPoolName() {
+    return poolName;
+  }
+
+  public void setPoolName(String poolName) {
+    this.poolName = poolName;
+  }
+
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     this.msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
