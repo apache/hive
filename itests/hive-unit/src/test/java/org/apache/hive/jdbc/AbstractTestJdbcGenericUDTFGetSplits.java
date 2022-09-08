@@ -71,6 +71,7 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES, "default");
     conf.setTimeVar(HiveConf.ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL, 100, TimeUnit.MILLISECONDS);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS, true);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE, 4);
     conf.setBoolVar(HiveConf.ConfVars.TEZ_EXEC_SUMMARY, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_CHECKS_CARTESIAN, false);
     conf.setVar(HiveConf.ConfVars.LLAP_IO_MEMORY_MODE, "none");

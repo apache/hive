@@ -3960,7 +3960,7 @@ public class HiveConf extends Configuration {
         "A list of comma separated values corresponding to YARN queues of the same name.\n" +
         "When HiveServer2 is launched in Tez mode, this configuration needs to be set\n" +
         "for multiple Tez sessions to run in parallel on the cluster."),
-    HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE("hive.server2.tez.sessions.per.default.queue", 1,
+    HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE("hive.server2.tez.sessions.per.default.queue", 4,
         "A positive integer that determines the number of Tez sessions that should be\n" +
         "launched on each of the queues specified by \"hive.server2.tez.default.queues\".\n" +
         "Determines the parallelism on each queue."),
