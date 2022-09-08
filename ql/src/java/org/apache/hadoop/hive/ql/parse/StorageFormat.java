@@ -55,7 +55,7 @@ public class StorageFormat {
     private final String inputFormat;
     private final String outputFormat;
 
-    StorageHandlerTypes(String className, String inputFormat, String outputFormat) {
+    private StorageHandlerTypes(String className, String inputFormat, String outputFormat) {
       this.className = className;
       this.inputFormat = inputFormat;
       this.outputFormat = outputFormat;

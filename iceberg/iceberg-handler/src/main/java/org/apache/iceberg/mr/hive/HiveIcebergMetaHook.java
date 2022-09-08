@@ -156,6 +156,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
 
     if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
+      if (Boolean.parseBoolean(this.catalogProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {
+        throw new RuntimeException("CTLT target table must be a HiveCatalog table.");
+      }
       // For non-HiveCatalog tables too, we should set the input and output format
       // so that the table can be read by other engines like Impala
       hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getCanonicalName());

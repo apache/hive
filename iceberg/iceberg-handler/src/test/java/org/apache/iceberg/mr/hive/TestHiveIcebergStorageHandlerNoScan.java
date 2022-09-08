@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
@@ -1588,18 +1589,51 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testCTLT() {
+  public void testCTLT() throws TException, InterruptedException {
+    Assume.assumeTrue(" CTLT target table must be a HiveCatalog table",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
     // Create a normal table and add some data
     shell.executeStatement("CREATE TABLE source(a int)");
     shell.executeStatement("insert into source values(1)");
 
-    shell.executeStatement(String.format("CREATE TABLE dest LIKE source STORED BY ICEBERG %s ",
-        testTables.locationForCreateTableSQL(TableIdentifier.of("default", "dest"))));
+    // Run a CTLT query.
+    shell.executeStatement(String.format("CREATE TABLE dest LIKE source STORED BY ICEBERG %s %s",
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", "dest")),
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
 
     // Try a select query and check if the table is empty .
     String result = shell.executeAndStringify("select a from " + TableIdentifier.of("default", "dest").name());
     Assert.assertTrue(result.isEmpty());
+
+    // Validate the properties of the table.
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "dest");
+    StorageDescriptor sd = hmsTable.getSd();
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergSerDe", sd.getSerdeInfo().getSerializationLib());
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergInputFormat", sd.getInputFormat());
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergOutputFormat", sd.getOutputFormat());
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergStorageHandler",
+        hmsTable.getParameters().get("storage_handler"));
+    Assert.assertEquals("ICEBERG", hmsTable.getParameters().get("table_type"));
   }
+
+  @Test
+  public void testCTLTHiveCatalogValidation() throws TException, InterruptedException {
+    Assume.assumeTrue(" CTLT target table works on HiveCatalog table",
+        testTableType != TestTables.TestTableType.HIVE_CATALOG);
+
+    // Create a normal table and add some data
+    shell.executeStatement("CREATE TABLE source(a int)");
+    shell.executeStatement("insert into source values(1)");
+
+    // Run a CTLT query.
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        " CTLT target table must be a HiveCatalog table", () -> {
+          shell.executeStatement(String.format("CREATE TABLE dest LIKE source STORED BY ICEBERG %s %s",
+              testTables.locationForCreateTableSQL(TableIdentifier.of("default", "dest")),
+              testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
+        });
+  }
+
 
   /**
    * Checks that the new schema has newintcol and newstring col columns on both HMS and Iceberg sides
