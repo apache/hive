@@ -14211,13 +14211,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Do not allow view to be defined on temp table or other materialized view
       validateTablesUsed(this);
       if (createVwDesc.isRewriteEnabled()) {
+        int nativeAcidCount = 0;
+        int supportsSnapshotCount = 0;
         for (TableScanOperator ts : topOps.values()) {
           Table table = ts.getConf().getTableMetadata();
           if (SemanticAnalyzer.DUMMY_TABLE.equals(table.getTableName())) {
             continue;
           }
-          if (!AcidUtils.isTransactionalTable(table) && !AcidUtils.isNonNativeAcidTable(table) ||
-                  !table.getStorageHandler().areSnapshotsSupported()) {
+          if (AcidUtils.isTransactionalTable(table)) {
+            ++nativeAcidCount;
+          } else if (AcidUtils.isNonNativeAcidTable(table) && table.getStorageHandler().areSnapshotsSupported()) {
+            ++supportsSnapshotCount;
+          } else {
             throw new SemanticException("Automatic rewriting for materialized view cannot "
                     + "be enabled if the materialized view uses non-transactional tables");
           }
@@ -14225,6 +14230,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException("Automatic rewriting for materialized view cannot "
                     + "be enabled if the materialized view uses time travel query.");
           }
+        }
+        if (nativeAcidCount > 0 && supportsSnapshotCount > 0) {
+          throw new SemanticException("All materialized view source tables either must be native ACID tables or " +
+                  "must support table snapshots.");
         }
       }
 
