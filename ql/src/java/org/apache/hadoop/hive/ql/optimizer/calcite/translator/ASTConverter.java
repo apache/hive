@@ -43,7 +43,6 @@ import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.core.Union;
-import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -89,6 +88,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
+
+import static org.apache.calcite.rel.core.Values.isEmpty;
 
 public class ASTConverter {
   private static final Logger LOG = LoggerFactory.getLogger(ASTConverter.class);
@@ -164,7 +165,7 @@ public class ASTConverter {
   private ASTNode convert() throws CalciteSemanticException {
     if (root instanceof HiveValues) {
       HiveValues values = (HiveValues) root;
-      if (HiveValues.isEmpty(values)) {
+      if (isEmpty(values)) {
         select = values;
         return emptyPlan(values.getRowType());
       }
