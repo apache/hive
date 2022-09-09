@@ -20,6 +20,12 @@ package org.apache.hadoop.hive.common.type;
 
 import java.util.Objects;
 
+/**
+ * Represents a table snapshot.
+ * This is used by transferring relevant snapshot info using {@link HiveStorageHandler} API.
+ * Currently, it wraps only Iceberg snapshotId to support decision-making whether to use
+ * materialized view on Iceberg tables.
+ */
 public class SnapshotContext {
   private long snapshotId;
 
@@ -33,6 +39,10 @@ public class SnapshotContext {
     this.snapshotId = snapshotId;
   }
 
+  /**
+   * Unique identifier of this snapshot context and the underlying snapshot.
+   * @return long snapshotId.
+   */
   public long getSnapshotId() {
     return snapshotId;
   }
