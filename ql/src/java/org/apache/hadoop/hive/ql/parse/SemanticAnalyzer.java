@@ -14216,7 +14216,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (SemanticAnalyzer.DUMMY_TABLE.equals(table.getTableName())) {
             continue;
           }
-          if (!AcidUtils.isTransactionalTable(table) && !AcidUtils.isNonNativeAcidTable(table)) {
+          if (!AcidUtils.isTransactionalTable(table) && !AcidUtils.isNonNativeAcidTable(table) ||
+                  !table.getStorageHandler().areSnapshotsSupported()) {
             throw new SemanticException("Automatic rewriting for materialized view cannot "
                     + "be enabled if the materialized view uses non-transactional tables");
           }

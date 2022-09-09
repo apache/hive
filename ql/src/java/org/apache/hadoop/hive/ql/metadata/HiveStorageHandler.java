@@ -26,6 +26,7 @@ import java.util.Collections;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -491,11 +492,19 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * Query the unique snapshot id of the passed table.
-   * @param table - {@link org.apache.hadoop.hive.ql.metadata.Table} which snapshot id should be returned.
-   * @return String representation of the snapshotId or null if not supported.
+   * Gets whether this storage handler supports snapshots.
+   * @return true means snapshots are supported false otherwise
    */
-  default String getCurrentSnapshotId(org.apache.hadoop.hive.ql.metadata.Table table) {
+  default boolean areSnapshotsSupported() {
+    return false;
+  }
+
+  /**
+   * Query the most recent unique snapshot's context of the passed table.
+   * @param table - {@link org.apache.hadoop.hive.ql.metadata.Table} which snapshot context should be returned.
+   * @return {@link SnapshotContext} wraps the snapshotId or null if no snapshot present.
+   */
+  default SnapshotContext getCurrentSnapshotContext(org.apache.hadoop.hive.ql.metadata.Table table) {
     return null;
   }
 }

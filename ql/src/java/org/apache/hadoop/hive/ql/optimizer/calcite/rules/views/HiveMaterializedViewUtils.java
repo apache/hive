@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -51,6 +52,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -59,6 +61,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
 import org.apache.hadoop.hive.common.MaterializationSnapshot;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -77,9 +80,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.TxnIdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 
 public class HiveMaterializedViewUtils {
@@ -188,7 +188,7 @@ public class HiveMaterializedViewUtils {
         .map(tableName -> TableName.getDbTable(tableName.getDb(), tableName.getTable()))
         .collect(Collectors.toList());
 
-    Map<String, String> snapshotMap = snapshot.getTableSnapshots();
+    Map<String, SnapshotContext> snapshotMap = snapshot.getTableSnapshots();
     if (snapshotMap == null || snapshotMap.isEmpty()) {
       LOG.debug("Materialized view {} ignored for rewriting as we could not obtain current snapshot ids",
               materializedViewTable.getFullyQualifiedName());
@@ -207,26 +207,19 @@ public class HiveMaterializedViewUtils {
 
       Table table = db.getTable(fullyQualifiedTableName);
       if (table.getStorageHandler() == null) {
-        LOG.debug("Materialized view {} ignored for rewriting as we could not storage handler of table {}",
+        LOG.debug("Materialized view {} ignored for rewriting as we could not get storage handler of table {}",
                 materializedViewTable.getFullyQualifiedName(), fullyQualifiedTableName);
         return null;
       }
-      String currentTableSnapshot = table.getStorageHandler().getCurrentSnapshotId(table);
-      if (isBlank(currentTableSnapshot)) {
-        LOG.debug(
-                "Materialized view {} ignored for rewriting as we could not obtain current snapshot of table {}",
+      if (!table.getStorageHandler().areSnapshotsSupported()) {
+        LOG.debug("Materialized view {} ignored for rewriting as storage handler of table {} " +
+                        "does not support snapshots.",
                 materializedViewTable.getFullyQualifiedName(), fullyQualifiedTableName);
         return null;
       }
-
-      String storedTableSnapshot = snapshotMap.get(fullyQualifiedTableName);
-      if (storedTableSnapshot == null) {
-        // This should not happen, but we ignore for safety
-        LOG.warn("Materialized view {} ignored for rewriting as snapshot for table {} could not be found",
-                materializedViewTable.getFullyQualifiedName(), fullyQualifiedTableName);
-        return null;
-      }
-      if (!currentTableSnapshot.equals(storedTableSnapshot)) {
+      SnapshotContext currentTableSnapshot = table.getStorageHandler().getCurrentSnapshotContext(table);
+      SnapshotContext storedTableSnapshot = snapshotMap.get(fullyQualifiedTableName);
+      if (!Objects.equals(currentTableSnapshot, storedTableSnapshot)) {
         LOG.debug("Materialized view {} contents are outdated", materializedViewTable.getFullyQualifiedName());
         return true;
       }
@@ -495,23 +488,24 @@ public class HiveMaterializedViewUtils {
 
   public static MaterializationSnapshot getSnapshotOf(DDLOperationContext context, Set<TableName> tables)
           throws HiveException {
-    Map<String, String> snapshot = getSnapshotOf(context.getDb(), tables);
-    if (snapshot.isEmpty()) {
+    Map<String, SnapshotContext> snapshot = getSnapshotOf(context.getDb(), tables);
+    if (snapshot == null) {
       return new MaterializationSnapshot(context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
     }
 
     return new MaterializationSnapshot(snapshot);
   }
 
-  private static Map<String, String> getSnapshotOf(Hive db, Set<TableName> tables) throws HiveException {
-    Map<String, String> snapshot = new HashMap<>(tables.size());
+  private static Map<String, SnapshotContext> getSnapshotOf(Hive db, Set<TableName> tables) throws HiveException {
+    Map<String, SnapshotContext> snapshot = new HashMap<>(tables.size());
     for (TableName tableName : tables) {
       Table table = db.getTable(tableName);
       if (table.getStorageHandler() != null) {
-        String sh = table.getStorageHandler().getCurrentSnapshotId(table);
-        if (isNotBlank(sh)) {
-          snapshot.put(table.getFullyQualifiedName(), sh);
+        HiveStorageHandler storageHandler = table.getStorageHandler();
+        if (!storageHandler.areSnapshotsSupported()) {
+          return null;
         }
+        snapshot.put(table.getFullyQualifiedName(), storageHandler.getCurrentSnapshotContext(table));
       }
     }
     return snapshot;

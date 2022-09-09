@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -980,11 +981,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public String getCurrentSnapshotId(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+  public boolean areSnapshotsSupported() {
+    return true;
+  }
+
+  @Override
+  public SnapshotContext getCurrentSnapshotContext(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     Snapshot current = table.currentSnapshot();
-    long currentSnapshotId = current != null ? current.snapshotId() : -1;
-    return Long.toString(currentSnapshotId);
+    if (current == null) {
+      return null;
+    }
+    return new SnapshotContext(current.snapshotId());
   }
 }

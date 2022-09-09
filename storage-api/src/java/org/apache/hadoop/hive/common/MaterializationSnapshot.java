@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -33,11 +36,14 @@ import java.util.Map;
  */
 public class MaterializationSnapshot {
 
+  private static final Logger LOG = LoggerFactory.getLogger(MaterializationSnapshot.class);
+
   public static MaterializationSnapshot fromJson(String jsonString) {
     try {
       return new ObjectMapper().readValue(jsonString, MaterializationSnapshot.class);
     } catch (JsonProcessingException e) {
-      // this is not a jsonString, fall back to treating it as ValidTxnWriteIdList
+      LOG.warn(String.format("Unable to parse string as json '%s'. Falling back to parse it as a ValidTxnWriteIdList",
+              jsonString), e);
       return new MaterializationSnapshot(jsonString);
     }
   }
@@ -46,8 +52,11 @@ public class MaterializationSnapshot {
   private String validTxnList;
   // Snapshot of non-native ACID and insert-only transactional tables. Key is the fully qualified name of the table.
   // Value is the unique id of the snapshot provided by the table's storage HiveStorageHandler.
-  private Map<String, String> tableSnapshots;
+  private Map<String, SnapshotContext> tableSnapshots;
 
+  /**
+   * Constructor for json serialization
+   */
   private MaterializationSnapshot() {
   }
 
@@ -56,7 +65,7 @@ public class MaterializationSnapshot {
     this.tableSnapshots = null;
   }
 
-  public MaterializationSnapshot(Map<String, String> tableSnapshots) {
+  public MaterializationSnapshot(Map<String, SnapshotContext> tableSnapshots) {
     this.validTxnList = null;
     this.tableSnapshots = tableSnapshots;
   }
@@ -95,7 +104,7 @@ public class MaterializationSnapshot {
    * @return {@link Map} of snapshotIds where the key is the fully qualified name of the table and the
    * values is the {@link String} representation of snapshotId or null if all tables are native ACID
    */
-  public Map<String, String> getTableSnapshots() {
+  public Map<String, SnapshotContext> getTableSnapshots() {
     return tableSnapshots;
   }
 }
