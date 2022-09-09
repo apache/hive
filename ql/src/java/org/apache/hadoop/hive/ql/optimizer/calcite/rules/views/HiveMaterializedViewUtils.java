@@ -506,6 +506,8 @@ public class HiveMaterializedViewUtils {
           return null;
         }
         snapshot.put(table.getFullyQualifiedName(), storageHandler.getCurrentSnapshotContext(table));
+      } else {
+        return null;
       }
     }
     return snapshot;
