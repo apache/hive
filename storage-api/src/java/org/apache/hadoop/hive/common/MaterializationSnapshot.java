@@ -82,10 +82,19 @@ public class MaterializationSnapshot {
             '}';
   }
 
+  /**
+   * Gets {@link ValidTxnWriteIdList} of the MV source tables when the MV was created/last rebuilt
+   * @return {@link String} representation of {@link ValidTxnWriteIdList} or null if all source tables are non-native.
+   */
   public String getValidTxnList() {
     return validTxnList;
   }
 
+  /**
+   * Gets the snapshotIds of the MV source tables when the MV was created/last rebuilt
+   * @return {@link Map} of snapshotIds where the key is the fully qualified name of the table and the
+   * values is the {@link String} representation of snapshotId or null if all tables are native ACID
+   */
   public Map<String, String> getTableSnapshots() {
     return tableSnapshots;
   }
