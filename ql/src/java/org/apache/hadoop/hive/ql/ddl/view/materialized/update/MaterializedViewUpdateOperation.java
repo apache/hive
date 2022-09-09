@@ -18,17 +18,13 @@
 
 package org.apache.hadoop.hive.ql.ddl.view.materialized.update;
 
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
-import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
-
-import java.util.Map;
 
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.getSnapshotOf;
 

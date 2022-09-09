@@ -190,8 +190,8 @@ public class HiveMaterializedViewUtils {
 
     Map<String, String> snapshotMap = snapshot.getTableSnapshots();
     if (snapshotMap == null || snapshotMap.isEmpty()) {
-      LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-              " ignored for rewriting as we could not obtain current snapshot ids");
+      LOG.debug("Materialized view {} ignored for rewriting as we could not obtain current snapshot ids",
+              materializedViewTable.getFullyQualifiedName());
       return null;
     }
 

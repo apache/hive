@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.ddl.view.create;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -31,7 +30,6 @@ import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.metastore.Warehouse;
