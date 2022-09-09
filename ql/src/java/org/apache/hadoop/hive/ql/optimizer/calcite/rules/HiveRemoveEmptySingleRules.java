@@ -85,7 +85,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
    * and take the right branch only.
    *
    * select * from (select * from emp where 1=0) right join dept
-   * ->
+   * to
    * select null as emp.col0 ... null as emp.coln, dept.* from dept
    */
   public interface JoinLeftEmptyRuleConfig extends PruneEmptyRule.Config {
@@ -146,7 +146,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
    * and take the left branch only.
    *
    * select * from emp right join (select * from dept where 1=0)
-   * ->
+   * to
    * select emp.*, null as dept.col0 ... null as dept.coln from emp
    */
   public interface JoinRightEmptyRuleConfig extends PruneEmptyRule.Config {
