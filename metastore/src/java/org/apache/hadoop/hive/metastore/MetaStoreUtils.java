@@ -2007,12 +2007,12 @@ public class MetaStoreUtils {
    * @param conf configuration object, used to determine default catalog
    * @return a database name with or without the catalog name prepended.
    */
-  public static String prependCatalogToDbName(String dbName, HiveConf conf) {
+  public static String prependCatalogToDbName(String dbName, HiveConf conf, String currentCatalog) {
     StringBuilder buf = new StringBuilder();
 
-    if(isCatalogEnabled(conf)) {
+    if(isCatalogEnabled(conf, currentCatalog)) {
       buf.append(CATALOG_DB_THRIFT_NAME_MARKER)
-              .append(getDefaultCatalog(conf))
+              .append(currentCatalog)
               .append(CATALOG_DB_SEPARATOR);
     }
 
@@ -2030,6 +2030,16 @@ public class MetaStoreUtils {
 
     String catName = conf.get(CATALOG_DEFAULT);
     if (catName == null || "".equals(catName)) return false;
+    return true;
+  }
+
+  public static Boolean isCatalogEnabled(HiveConf conf, String currentCatalog) {
+    if (conf == null) {
+      return false;
+    }
+
+    String catName = conf.get(CATALOG_DEFAULT);
+    if ((catName == null || "".equals(catName)) && "".equals(currentCatalog)) return false;
     return true;
   }
 

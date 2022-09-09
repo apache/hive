@@ -141,7 +141,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public HiveMetaStoreClient(HiveConf conf, HiveMetaHookLoader hookLoader, Boolean allowEmbedded)
     throws MetaException {
 
-    this.currentCatalog = getDefaultCatalog(conf);
+    if (isCatalogEnabled(conf)) {
+      this.currentCatalog = getDefaultCatalog(conf);
+    } else {
+      this.currentCatalog = "";
+    }
 
     this.hookLoader = hookLoader;
     if (conf == null) {
@@ -378,7 +382,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void alter_table_with_environmentContext(String dbname, String tbl_name, Table new_tbl,
       EnvironmentContext envContext) throws InvalidOperationException, MetaException, TException {
-    client.alter_table_with_environment_context(prependCatalogToDbName(dbname, conf), tbl_name, new_tbl, envContext);
+    client.alter_table_with_environment_context(prependCatalogToDbName(dbname, conf, getCurrentCatalog()), tbl_name, new_tbl, envContext);
   }
 
   /**
@@ -395,7 +399,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void renamePartition(final String dbname, final String name, final List<String> part_vals, final Partition newPart)
       throws InvalidOperationException, MetaException, TException {
-    client.rename_partition(prependCatalogToDbName(dbname, conf), name, part_vals, newPart);
+    client.rename_partition(prependCatalogToDbName(dbname, conf, getCurrentCatalog()), name, part_vals, newPart);
   }
 
   private void open() throws MetaException {
@@ -611,7 +615,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public Partition add_partition(Partition new_part, EnvironmentContext envContext)
       throws InvalidObjectException, AlreadyExistsException, MetaException,
       TException {
-    if (!new_part.isSetCatName() && isCatalogEnabled(conf)) new_part.setCatName(getCurrentCatalog());
+    if (!new_part.isSetCatName() && isCatalogEnabled(conf, getCurrentCatalog())) new_part.setCatName(getCurrentCatalog());
     Partition p = client.add_partition_with_environment_context(new_part, envContext);
     return fastpath ? p : deepCopy(p);
   }
@@ -628,7 +632,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public int add_partitions(List<Partition> new_parts)
       throws InvalidObjectException, AlreadyExistsException, MetaException,
       TException {
-    if (isCatalogEnabled(conf) && new_parts != null && !new_parts.isEmpty() && !new_parts.get(0).isSetCatName()) {
+    if (isCatalogEnabled(conf, getCurrentCatalog()) && new_parts != null && !new_parts.isEmpty() && !new_parts.get(0).isSetCatName()) {
       final String defaultCat = getCurrentCatalog();
       for(Partition p: new_parts) {
         p.setCatName(defaultCat);
@@ -648,7 +652,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     AddPartitionsRequest req = new AddPartitionsRequest(
         part.getDbName(), part.getTableName(), parts, ifNotExists);
 
-    if(isCatalogEnabled(conf)) {
+    if(isCatalogEnabled(conf, getCurrentCatalog())) {
       final String defaultCat = getCurrentCatalog();
       req.setCatName(defaultCat);
       // Make sure all of the partitions have the catalog set as well
@@ -664,7 +668,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public int add_partitions_pspec(PartitionSpecProxy partitionSpec) throws TException {
-    if (isCatalogEnabled(conf) && partitionSpec.getCatName() == null) partitionSpec.setCatName(getCurrentCatalog());
+    if (isCatalogEnabled(conf, getCurrentCatalog()) && partitionSpec.getCatName() == null) partitionSpec.setCatName(getCurrentCatalog());
     return client.add_partitions_pspec(partitionSpec.toPartitionSpec());
   }
 
@@ -690,7 +694,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public Partition appendPartition(String db_name, String table_name, List<String> part_vals,
       EnvironmentContext envContext) throws InvalidObjectException, AlreadyExistsException,
       MetaException, TException {
-    Partition p = client.append_partition_with_environment_context(prependCatalogToDbName(db_name, conf), table_name,
+    Partition p = client.append_partition_with_environment_context(prependCatalogToDbName(db_name, conf, getCurrentCatalog()), table_name,
         part_vals, envContext);
     return fastpath ? p : deepCopy(p);
   }
@@ -704,7 +708,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public Partition appendPartition(String dbName, String tableName, String partName,
       EnvironmentContext envContext) throws InvalidObjectException, AlreadyExistsException,
       MetaException, TException {
-    Partition p = client.append_partition_by_name_with_environment_context(prependCatalogToDbName(dbName, conf),
+    Partition p = client.append_partition_by_name_with_environment_context(prependCatalogToDbName(dbName, conf, getCurrentCatalog()),
         tableName, partName, envContext);
     return fastpath ? p : deepCopy(p);
   }
@@ -721,8 +725,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       String sourceDb, String sourceTable, String destDb,
       String destinationTableName) throws MetaException,
       NoSuchObjectException, InvalidObjectException, TException {
-    return client.exchange_partition(partitionSpecs, prependCatalogToDbName(sourceDb, conf), sourceTable,
-        prependCatalogToDbName(destDb, conf), destinationTableName);
+    return client.exchange_partition(partitionSpecs, prependCatalogToDbName(sourceDb, conf, getCurrentCatalog()), sourceTable,
+        prependCatalogToDbName(destDb, conf, getCurrentCatalog()), destinationTableName);
   }
 
   /**
@@ -737,8 +741,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       String sourceDb, String sourceTable, String destDb,
       String destinationTableName) throws MetaException,
       NoSuchObjectException, InvalidObjectException, TException {
-    return client.exchange_partitions(partitionSpecs, prependCatalogToDbName(sourceDb, conf), sourceTable,
-        prependCatalogToDbName(destDb, conf), destinationTableName);
+    return client.exchange_partitions(partitionSpecs, prependCatalogToDbName(sourceDb, conf, getCurrentCatalog()), sourceTable,
+        prependCatalogToDbName(destDb, conf, getCurrentCatalog()), destinationTableName);
   }
 
   @Override
@@ -759,7 +763,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void createDatabase(Database db)
       throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
-    if (!db.isSetCatalogName() && isCatalogEnabled(conf)) db.setCatalogName(getCurrentCatalog());
+    if (!db.isSetCatalogName() && isCatalogEnabled(conf, getCurrentCatalog())) db.setCatalogName(getCurrentCatalog());
     client.create_database(db);
   }
 
@@ -773,7 +777,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void createTable(Table tbl) throws AlreadyExistsException,
       InvalidObjectException, MetaException, NoSuchObjectException, TException {
-    if (!tbl.isSetCatName() && isCatalogEnabled(conf)) tbl.setCatName(getCurrentCatalog());
+    if (!tbl.isSetCatName() && isCatalogEnabled(conf, getCurrentCatalog())) tbl.setCatName(getCurrentCatalog());
     createTable(tbl, null);
   }
 
@@ -902,7 +906,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
          }
         }
     }
-    client.drop_database(prependCatalogToDbName(name, conf), deleteData, cascade);
+    client.drop_database(prependCatalogToDbName(name, conf, getCurrentCatalog()), deleteData, cascade);
   }
 
   /**
@@ -950,7 +954,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   public boolean dropPartition(String dbName, String tableName, String partName, boolean deleteData,
       EnvironmentContext envContext) throws NoSuchObjectException, MetaException, TException {
-    return client.drop_partition_by_name_with_environment_context(prependCatalogToDbName(dbName, conf), tableName,
+    return client.drop_partition_by_name_with_environment_context(prependCatalogToDbName(dbName, conf, getCurrentCatalog()), tableName,
         partName, deleteData, envContext);
   }
 
@@ -984,7 +988,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public boolean dropPartition(String db_name, String tbl_name, List<String> part_vals,
       boolean deleteData, EnvironmentContext envContext) throws NoSuchObjectException,
       MetaException, TException {
-    return client.drop_partition_with_environment_context(prependCatalogToDbName(db_name, conf), tbl_name, part_vals,
+    return client.drop_partition_with_environment_context(prependCatalogToDbName(db_name, conf, getCurrentCatalog()), tbl_name, part_vals,
         deleteData, envContext);
   }
 
@@ -1002,7 +1006,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     rps.setExprs(exprs);
     DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
-    if(isCatalogEnabled(conf)) {
+    if(isCatalogEnabled(conf, getCurrentCatalog())) {
       req.setCatName(getCurrentCatalog());
     }
     req.setDeleteData(options.deleteData);
@@ -1184,7 +1188,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<String> getDatabases(String databasePattern)
     throws MetaException {
     try {
-      return filterHook.filterDatabases(client.get_databases(prependCatalogToDbName(databasePattern, conf)));
+      return filterHook.filterDatabases(client.get_databases(prependCatalogToDbName(databasePattern, conf, getCurrentCatalog())));
     } catch (Exception e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
@@ -1214,21 +1218,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public List<Partition> listPartitions(String db_name, String tbl_name,
       short max_parts) throws NoSuchObjectException, MetaException, TException {
-    List<Partition> parts = client.get_partitions(prependCatalogToDbName(db_name, conf), tbl_name, max_parts);
+    List<Partition> parts = client.get_partitions(prependCatalogToDbName(db_name, conf, getCurrentCatalog()), tbl_name, max_parts);
     return fastpath ? parts : deepCopyPartitions(filterHook.filterPartitions(parts));
   }
 
   @Override
   public PartitionSpecProxy listPartitionSpecs(String dbName, String tableName, int maxParts) throws TException {
     return PartitionSpecProxy.Factory.get(filterHook.filterPartitionSpecs(
-        client.get_partitions_pspec(prependCatalogToDbName(dbName, conf), tableName, maxParts)));
+        client.get_partitions_pspec(prependCatalogToDbName(dbName, conf, getCurrentCatalog()), tableName, maxParts)));
   }
 
   @Override
   public List<Partition> listPartitions(String db_name, String tbl_name,
       List<String> part_vals, short max_parts)
       throws NoSuchObjectException, MetaException, TException {
-    List<Partition> parts = client.get_partitions_ps(prependCatalogToDbName(db_name, conf), tbl_name, part_vals,
+    List<Partition> parts = client.get_partitions_ps(prependCatalogToDbName(db_name, conf, getCurrentCatalog()), tbl_name, part_vals,
         max_parts);
     return fastpath ? parts : deepCopyPartitions(filterHook.filterPartitions(parts));
   }
@@ -1237,7 +1241,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<Partition> listPartitionsWithAuthInfo(String db_name,
       String tbl_name, short max_parts, String user_name, List<String> group_names)
        throws NoSuchObjectException, MetaException, TException {
-    List<Partition> parts = client.get_partitions_with_auth(prependCatalogToDbName(db_name, conf), tbl_name, max_parts,
+    List<Partition> parts = client.get_partitions_with_auth(prependCatalogToDbName(db_name, conf, getCurrentCatalog()), tbl_name, max_parts,
         user_name, group_names);
     return fastpath ? parts :deepCopyPartitions(filterHook.filterPartitions(parts));
   }
@@ -1247,7 +1251,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       String tbl_name, List<String> part_vals, short max_parts,
       String user_name, List<String> group_names) throws NoSuchObjectException,
       MetaException, TException {
-    List<Partition> parts = client.get_partitions_ps_with_auth(prependCatalogToDbName(db_name, conf),
+    List<Partition> parts = client.get_partitions_ps_with_auth(prependCatalogToDbName(db_name, conf, getCurrentCatalog()),
         tbl_name, part_vals, max_parts, user_name, group_names);
     return fastpath ? parts : deepCopyPartitions(filterHook.filterPartitions(parts));
   }
@@ -1270,7 +1274,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<Partition> listPartitionsByFilter(String db_name, String tbl_name,
       String filter, short max_parts) throws MetaException,
          NoSuchObjectException, TException {
-    List<Partition> parts = client.get_partitions_by_filter(prependCatalogToDbName(db_name, conf), tbl_name, filter,
+    List<Partition> parts = client.get_partitions_by_filter(prependCatalogToDbName(db_name, conf, getCurrentCatalog()), tbl_name, filter,
         max_parts);
     return fastpath ? parts :deepCopyPartitions(filterHook.filterPartitions(parts));
   }
@@ -1280,7 +1284,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
                                                        String filter, int max_parts) throws MetaException,
          NoSuchObjectException, TException {
     return PartitionSpecProxy.Factory.get(filterHook.filterPartitionSpecs(
-        client.get_part_specs_by_filter(prependCatalogToDbName(db_name, conf), tbl_name, filter, max_parts)));
+        client.get_part_specs_by_filter(prependCatalogToDbName(db_name, conf, getCurrentCatalog()), tbl_name, filter, max_parts)));
   }
 
   @Override
@@ -1329,7 +1333,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public Database getDatabase(String name) throws NoSuchObjectException,
       MetaException, TException {
-    Database d = client.get_database(prependCatalogToDbName(name, conf));
+    Database d = client.get_database(prependCatalogToDbName(name, conf, getCurrentCatalog()));
     return fastpath ? d :deepCopy(filterHook.filterDatabase(d));
   }
 
@@ -1346,21 +1350,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public Partition getPartition(String db_name, String tbl_name,
       List<String> part_vals) throws NoSuchObjectException, MetaException, TException {
-    Partition p = client.get_partition(prependCatalogToDbName(db_name, conf), tbl_name, part_vals);
+    Partition p = client.get_partition(prependCatalogToDbName(db_name, conf, getCurrentCatalog()), tbl_name, part_vals);
     return fastpath ? p : deepCopy(filterHook.filterPartition(p));
   }
 
   @Override
   public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
       List<String> part_names) throws NoSuchObjectException, MetaException, TException {
-    List<Partition> parts = client.get_partitions_by_names(prependCatalogToDbName(db_name, conf), tbl_name, part_names);
+    List<Partition> parts = client.get_partitions_by_names(prependCatalogToDbName(db_name, conf, getCurrentCatalog()), tbl_name, part_names);
     return fastpath ? parts : deepCopyPartitions(filterHook.filterPartitions(parts));
   }
 
   @Override
   public PartitionValuesResponse listPartitionValues(PartitionValuesRequest request)
       throws MetaException, TException, NoSuchObjectException {
-    if (!request.isSetCatName() && isCatalogEnabled(conf)) request.setCatName(getCurrentCatalog());
+    if (!request.isSetCatName() && isCatalogEnabled(conf, getCurrentCatalog())) request.setCatName(getCurrentCatalog());
     return client.get_partition_values(request);
   }
 
@@ -1369,7 +1373,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       List<String> part_vals, String user_name, List<String> group_names)
       throws MetaException, UnknownTableException, NoSuchObjectException,
       TException {
-    Partition p = client.get_partition_with_auth(prependCatalogToDbName(db_name, conf), tbl_name, part_vals, user_name,
+    Partition p = client.get_partition_with_auth(prependCatalogToDbName(db_name, conf, getCurrentCatalog()), tbl_name, part_vals, user_name,
         group_names);
     return fastpath ? p : deepCopy(filterHook.filterPartition(p));
   }
@@ -1388,7 +1392,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public Table getTable(String dbname, String name) throws MetaException,
       TException, NoSuchObjectException {
-    Table t = client.get_table(prependCatalogToDbName(dbname, conf), name);
+    Table t = client.get_table(prependCatalogToDbName(dbname, conf, getCurrentCatalog()), name);
     return fastpath ? t : deepCopy(filterHook.filterTable(t));
   }
 
@@ -1405,7 +1409,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
       throws MetaException, InvalidOperationException, UnknownDBException, TException {
-    List<Table> tabs = client.get_table_objects_by_name(prependCatalogToDbName(dbName, conf), tableNames);
+    List<Table> tabs = client.get_table_objects_by_name(prependCatalogToDbName(dbName, conf, getCurrentCatalog()), tableNames);
     return fastpath ? tabs : deepCopyTables(filterHook.filterTables(tabs));
   }
 
@@ -1414,7 +1418,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<String> listTableNamesByFilter(String dbName, String filter, short maxTables)
       throws MetaException, TException, InvalidOperationException, UnknownDBException {
     return filterHook.filterTableNames(dbName,
-        client.get_table_names_by_filter(prependCatalogToDbName(dbName, conf), filter, maxTables));
+        client.get_table_names_by_filter(prependCatalogToDbName(dbName, conf, getCurrentCatalog()), filter, maxTables));
   }
 
   /**
@@ -1433,7 +1437,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public List<String> getTables(String dbname, String tablePattern) throws MetaException {
     try {
-      return filterHook.filterTableNames(dbname, client.get_tables(prependCatalogToDbName(dbname, conf), tablePattern));
+      return filterHook.filterTableNames(dbname, client.get_tables(prependCatalogToDbName(dbname, conf, getCurrentCatalog()), tablePattern));
     } catch (Exception e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
@@ -1444,7 +1448,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public List<String> getTables(String dbname, String tablePattern, TableType tableType) throws MetaException {
     try {
-      return filterHook.filterTableNames(dbname, client.get_tables_by_type(prependCatalogToDbName(dbname, conf),
+      return filterHook.filterTableNames(dbname, client.get_tables_by_type(prependCatalogToDbName(dbname, conf, getCurrentCatalog()),
           tablePattern, tableType.toString()));
     } catch (Exception e) {
       MetaStoreUtils.logAndThrowMetaException(e);
@@ -1456,7 +1460,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<TableMeta> getTableMeta(String dbPatterns, String tablePatterns, List<String> tableTypes)
       throws MetaException {
     try {
-      return filterNames(client.get_table_meta(prependCatalogToDbName(dbPatterns, conf), tablePatterns, tableTypes));
+      return filterNames(client.get_table_meta(prependCatalogToDbName(dbPatterns, conf, getCurrentCatalog()), tablePatterns, tableTypes));
     } catch (Exception e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
@@ -1487,7 +1491,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public List<String> getAllTables(String dbname) throws MetaException {
     try {
-      return filterHook.filterTableNames(dbname, client.get_all_tables(prependCatalogToDbName(dbname, conf)));
+      return filterHook.filterTableNames(dbname, client.get_all_tables(prependCatalogToDbName(dbname, conf, getCurrentCatalog())));
     } catch (Exception e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
@@ -1498,7 +1502,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public boolean tableExists(String databaseName, String tableName) throws MetaException,
       TException, UnknownDBException {
     try {
-      return filterHook.filterTable(client.get_table(prependCatalogToDbName(databaseName, conf), tableName)) != null;
+      return filterHook.filterTable(client.get_table(prependCatalogToDbName(databaseName, conf, getCurrentCatalog()), tableName)) != null;
     } catch (NoSuchObjectException e) {
       return false;
     }
@@ -1516,7 +1520,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<String> listPartitionNames(String dbName, String tblName,
       short max) throws MetaException, TException {
     return filterHook.filterPartitionNames(dbName, tblName,
-        client.get_partition_names(prependCatalogToDbName(dbName, conf), tblName, max));
+        client.get_partition_names(prependCatalogToDbName(dbName, conf, getCurrentCatalog()), tblName, max));
   }
 
   @Override
@@ -1524,7 +1528,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       List<String> part_vals, short max_parts)
       throws MetaException, TException, NoSuchObjectException {
     return filterHook.filterPartitionNames(db_name, tbl_name,
-        client.get_partition_names_ps(prependCatalogToDbName(db_name, conf), tbl_name, part_vals, max_parts));
+        client.get_partition_names_ps(prependCatalogToDbName(db_name, conf, getCurrentCatalog()), tbl_name, part_vals, max_parts));
   }
 
   /**
@@ -1543,7 +1547,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public int getNumPartitionsByFilter(String db_name, String tbl_name,
                                       String filter) throws MetaException,
           NoSuchObjectException, TException {
-    return client.get_num_partitions_by_filter(prependCatalogToDbName(db_name, conf), tbl_name, filter);
+    return client.get_num_partitions_by_filter(prependCatalogToDbName(db_name, conf, getCurrentCatalog()), tbl_name, filter);
   }
 
   @Override
@@ -1556,10 +1560,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void alter_partition(String dbName, String tblName, Partition newPart, EnvironmentContext environmentContext)
       throws InvalidOperationException, MetaException, TException {
-    if (isCatalogEnabled(conf) && !newPart.isSetCatName()) {
+    if (isCatalogEnabled(conf, getCurrentCatalog()) && !newPart.isSetCatName()) {
       newPart.setCatName(getCurrentCatalog());
     }
-    String dbNameWithCatalog = prependCatalogToDbName(dbName, conf);
+    String dbNameWithCatalog = prependCatalogToDbName(dbName, conf, getCurrentCatalog());
     if (environmentContext == null) {
       client.alter_partition(dbNameWithCatalog, tblName, newPart);
     } else {
@@ -1576,13 +1580,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void alter_partitions(String dbName, String tblName, List<Partition> newParts, EnvironmentContext environmentContext)
   throws InvalidOperationException, MetaException, TException {
-    if (isCatalogEnabled(conf)) {
+    if (isCatalogEnabled(conf, getCurrentCatalog())) {
       final String defaultCat = getCurrentCatalog();
       for(Partition p: newParts) {
         if (!p.isSetCatName()) p.setCatName(defaultCat);
       }
     }
-    String dbNameWithCatalog = prependCatalogToDbName(dbName, conf);
+    String dbNameWithCatalog = prependCatalogToDbName(dbName, conf, getCurrentCatalog());
     if (environmentContext == null) {
       client.alter_partitions(dbNameWithCatalog, tblName, newParts);
     } else {
@@ -1593,7 +1597,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public void alterDatabase(String dbName, Database db)
       throws MetaException, NoSuchObjectException, TException {
-    client.alter_database(prependCatalogToDbName(dbName, conf), db);
+    client.alter_database(prependCatalogToDbName(dbName, conf, getCurrentCatalog()), db);
   }
   /**
    * @param db
@@ -1609,7 +1613,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<FieldSchema> getFields(String db, String tableName)
       throws MetaException, TException, UnknownTableException,
       UnknownDBException {
-    List<FieldSchema> fields = client.get_fields(prependCatalogToDbName(db, conf), tableName);
+    List<FieldSchema> fields = client.get_fields(prependCatalogToDbName(db, conf, getCurrentCatalog()), tableName);
     return fastpath ? fields : deepCopyFieldSchemas(fields);
   }
 
@@ -1803,7 +1807,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
          envCxt = new EnvironmentContext(props);
        }
 
-    List<FieldSchema> fields = client.get_schema_with_environment_context(prependCatalogToDbName(db, conf), tableName, envCxt);
+    List<FieldSchema> fields = client.get_schema_with_environment_context(prependCatalogToDbName(db, conf, getCurrentCatalog()), tableName, envCxt);
     return fastpath ? fields : deepCopyFieldSchemas(fields);
   }
 
@@ -1816,7 +1820,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   @Override
   public Partition getPartition(String db, String tableName, String partName)
       throws MetaException, TException, UnknownTableException, NoSuchObjectException {
-    Partition p = client.get_partition_by_name(prependCatalogToDbName(db, conf), tableName, partName);
+    Partition p = client.get_partition_by_name(prependCatalogToDbName(db, conf, getCurrentCatalog()), tableName, partName);
     return fastpath ? p : deepCopy(filterHook.filterPartition(p));
   }
 
@@ -1828,7 +1832,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public Partition appendPartitionByName(String dbName, String tableName, String partName,
       EnvironmentContext envContext) throws InvalidObjectException, AlreadyExistsException,
       MetaException, TException {
-    Partition p = client.append_partition_by_name_with_environment_context(prependCatalogToDbName(dbName, conf),
+    Partition p = client.append_partition_by_name_with_environment_context(prependCatalogToDbName(dbName, conf, getCurrentCatalog()),
         tableName, partName, envContext);
     return fastpath ? p : deepCopy(p);
   }
@@ -1841,7 +1845,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public boolean dropPartitionByName(String dbName, String tableName, String partName,
       boolean deleteData, EnvironmentContext envContext) throws NoSuchObjectException,
       MetaException, TException {
-    return client.drop_partition_by_name_with_environment_context(prependCatalogToDbName(dbName, conf), tableName,
+    return client.drop_partition_by_name_with_environment_context(prependCatalogToDbName(dbName, conf, getCurrentCatalog()), tableName,
         partName, deleteData, envContext);
   }
 
@@ -2465,7 +2469,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   protected void drop_table_with_environment_context(String dbname, String name,
       boolean deleteData, EnvironmentContext envContext) throws MetaException, TException,
       NoSuchObjectException, UnsupportedOperationException {
-    client.drop_table_with_environment_context(prependCatalogToDbName(dbname, conf), name, deleteData, envContext);
+    client.drop_table_with_environment_context(prependCatalogToDbName(dbname, conf, getCurrentCatalog()), name, deleteData, envContext);
   }
 
   @Override
