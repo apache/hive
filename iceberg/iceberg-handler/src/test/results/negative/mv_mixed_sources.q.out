@@ -22,4 +22,4 @@ POSTHOOK: query: create external table tbl_ice(a int, b string, c int) stored by
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice
-FAILED: SemanticException All materialized view source tables must be native ACID tables orall source tables must support table snapshots.
+FAILED: SemanticException All materialized view source tables either must be native ACID tables or must support table snapshots.

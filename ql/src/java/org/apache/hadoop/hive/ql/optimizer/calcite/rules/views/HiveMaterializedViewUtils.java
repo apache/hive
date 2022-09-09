@@ -489,7 +489,7 @@ public class HiveMaterializedViewUtils {
   public static MaterializationSnapshot getSnapshotOf(DDLOperationContext context, Set<TableName> tables)
           throws HiveException {
     Map<String, SnapshotContext> snapshot = getSnapshotOf(context.getDb(), tables);
-    if (snapshot == null) {
+    if (snapshot.isEmpty()) {
       return new MaterializationSnapshot(context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
     }
 
@@ -503,11 +503,11 @@ public class HiveMaterializedViewUtils {
       if (table.getStorageHandler() != null) {
         HiveStorageHandler storageHandler = table.getStorageHandler();
         if (!storageHandler.areSnapshotsSupported()) {
-          return null;
+          return Collections.emptyMap();
         }
         snapshot.put(table.getFullyQualifiedName(), storageHandler.getCurrentSnapshotContext(table));
       } else {
-        return null;
+        return Collections.emptyMap();
       }
     }
     return snapshot;
