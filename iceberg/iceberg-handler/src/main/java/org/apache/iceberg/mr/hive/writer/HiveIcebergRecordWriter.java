@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DataFile;
-import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.Record;
@@ -41,10 +40,10 @@ class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
   private final int currentSpecId;
 
   HiveIcebergRecordWriter(Schema schema, Map<Integer, PartitionSpec> specs, int currentSpecId,
-      FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileFormat format, FileIO io,
+      FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileIO io,
       long targetFileSize) {
     super(schema, specs, io,
-        new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize));
+        new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, targetFileSize));
     this.currentSpecId = currentSpecId;
   }
 

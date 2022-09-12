@@ -233,6 +233,11 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     return list;
   }
 
+  @Override
+  public List<String> filterDataConnectors(List<String> dcList) throws MetaException {
+    return dcList;
+  }
+
   private List<String> filterDatabaseObjects(HiveMetaStoreAuthzInfo hiveMetaStoreAuthzInfo) throws MetaException {
     List<String> ret = null;
 
@@ -428,6 +433,15 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
           break;
         case DROP_FUNCTION:
           authzEvent = new DropFunctionEvent(preEventContext);
+          break;
+        case CREATE_DATACONNECTOR:
+          authzEvent = new CreateDataConnectorEvent(preEventContext);
+          break;
+        case ALTER_DATACONNECTOR:
+          authzEvent = new AlterDataConnectorEvent(preEventContext);
+          break;
+        case DROP_DATACONNECTOR:
+          authzEvent = new DropDataConnectorEvent(preEventContext);
           break;
         case AUTHORIZATION_API_CALL:
         case READ_ISCHEMA:

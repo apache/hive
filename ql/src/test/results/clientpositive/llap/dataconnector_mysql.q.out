@@ -50,6 +50,39 @@ POSTHOOK: Input: database:db_mysql
 city
 country
 state
+PREHOOK: query: SHOW CREATE TABLE country
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: db_mysql@country
+POSTHOOK: query: SHOW CREATE TABLE country
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: db_mysql@country
+CREATE EXTERNAL TABLE `country`(
+  `name` varchar(255) COMMENT 'from deserializer')
+ROW FORMAT SERDE 
+  'org.apache.hive.storage.jdbc.JdbcSerDe' 
+STORED BY 
+  'org.apache.hive.storage.jdbc.JdbcStorageHandler' 
+WITH SERDEPROPERTIES ( 
+  'serialization.format'='1')
+TBLPROPERTIES (
+  'hive.sql.database.type'='MYSQL', 
+  'hive.sql.dbcp.password'='qtestpassword', 
+  'hive.sql.dbcp.username'='root', 
+  'hive.sql.jdbc.driver'='com.mysql.jdbc.Driver', 
+  'hive.sql.jdbc.url'='jdbc:mysql://localhost:3306/qtestDB', 
+  'hive.sql.schema'='qtestDB', 
+  'hive.sql.table'='country')
+PREHOOK: query: SELECT * FROM country
+PREHOOK: type: QUERY
+PREHOOK: Input: db_mysql@country
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM country
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db_mysql@country
+#### A masked pattern was here ####
+India
+Russia
+USA
 PREHOOK: query: DROP DATABASE db_mysql
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:db_mysql

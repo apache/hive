@@ -18,16 +18,18 @@
 package org.apache.hadoop.hive.llap;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -143,6 +145,32 @@ public final class LlapHiveUtils {
 
   public static boolean isLlapMode(Configuration conf) {
     return "llap".equalsIgnoreCase(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
+  }
+
+  /**
+   * Determines the fileID for the given path using the FileSystem type provided while considering daemon configuration.
+   * Invokes HdfsUtils.getFileId(), the resulting file ID can be of types Long (inode) or SyntheticFileId depending
+   * on the FS type and the actual daemon configuration.
+   * Can be costly on cloud file systems.
+   * @param fs FileSystem type
+   * @param path Path associated to this file
+   * @param daemonConf Llap daemon configuration
+   * @return the generated fileID, can be null in special cases (e.g. conf disallows synthetic ID on a non-HDFS FS)
+   * @throws IOException
+   */
+  public static Object createFileIdUsingFS(FileSystem fs, Path path, Configuration daemonConf) throws IOException {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Will invoke HdfsUtils.getFileId - this is costly on cloud file systems. " +
+          "Turn on TRACE level logging to show call trace.");
+      if (LOG.isTraceEnabled()) {
+        LOG.trace(Arrays.deepToString(Thread.currentThread().getStackTrace()));
+      }
+    }
+    boolean allowSynthetic = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID);
+    boolean checkDefaultFs = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID);
+    boolean forceSynthetic = !HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_USE_FILEID_PATH);
+
+    return HdfsUtils.getFileId(fs, path, allowSynthetic, checkDefaultFs, forceSynthetic);
   }
 
 }

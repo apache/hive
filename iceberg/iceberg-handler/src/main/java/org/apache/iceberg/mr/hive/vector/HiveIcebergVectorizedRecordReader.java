@@ -49,7 +49,11 @@ public final class HiveIcebergVectorizedRecordReader extends AbstractMapredIcebe
         VectorizedRowBatch newBatch = (VectorizedRowBatch) innerReader.getCurrentValue();
         value.cols = newBatch.cols;
         value.endOfFile = newBatch.endOfFile;
+        value.numCols = newBatch.numCols;
+        value.projectedColumns = newBatch.projectedColumns;
+        value.projectionSize = newBatch.projectionSize;
         value.selectedInUse = newBatch.selectedInUse;
+        value.selected = newBatch.selected;
         value.size = newBatch.size;
         return true;
       } else {

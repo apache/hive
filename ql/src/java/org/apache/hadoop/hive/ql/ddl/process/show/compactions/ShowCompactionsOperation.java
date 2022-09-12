@@ -47,7 +47,7 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
   public int execute() throws HiveException {
     SessionState sessionState = SessionState.get();
     // Call the metastore to get the status of all known compactions (completed get purged eventually)
-    ShowCompactResponse rsp = context.getDb().showCompactions();
+    ShowCompactResponse rsp = context.getDb().showCompactions(desc.getPoolName());
 
     // Write the results into the file
     try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
@@ -98,6 +98,8 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.writeBytes("Initiator host");
     os.write(Utilities.tabCode);
     os.writeBytes("Initiator");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Pool name");
     os.write(Utilities.newLineCode);
   }
 
@@ -129,9 +131,12 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     String error = e.getErrorMessage();
     os.writeBytes(error == null ? NO_VAL : error);
+    os.write(Utilities.tabCode);
     os.writeBytes(getHostFromId(e.getInitiatorId()));
     os.write(Utilities.tabCode);
     os.writeBytes(getThreadIdFromId(e.getInitiatorId()));
+    os.write(Utilities.tabCode);
+    os.writeBytes(e.getPoolName());
     os.write(Utilities.newLineCode);
   }
 }

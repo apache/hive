@@ -946,7 +946,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     // Now check QB in more detail. canHandleQbForCbo returns null if query can
     // be handled.
-    msg = CalcitePlanner.canHandleQbForCbo(queryProperties, conf, true, needToLogMessage);
+    msg = CalcitePlanner.canHandleQbForCbo(queryProperties, conf, true);
     if (msg == null) {
       return Pair.of(true, msg);
     }
@@ -964,8 +964,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @param conf
    * @param topLevelQB
    *          Does QB corresponds to top most query block?
-   * @param verbose
-   *          Whether return value should be verbose in case of failure.
    * @return null if the query can be handled; non-null reason string if it
    *         cannot be.
    *
@@ -974,44 +972,29 @@ public class CalcitePlanner extends SemanticAnalyzer {
    *         Query<br>
    *         2. Nested Subquery will return false for qbToChk.getIsQuery()
    */
-  private static String canHandleQbForCbo(QueryProperties queryProperties, HiveConf conf,
-      boolean topLevelQB, boolean verbose) {
-
-    if (!queryProperties.hasClusterBy() && !queryProperties.hasDistributeBy()
-        && !(queryProperties.hasSortBy() && queryProperties.hasLimit())
-        && !queryProperties.hasPTF() && !queryProperties.usesScript()
-        && queryProperties.isCBOSupportedLateralViews()) {
-      // Ok to run CBO.
-      return null;
-    }
-
+  private static String canHandleQbForCbo(QueryProperties queryProperties,
+                                          HiveConf conf, boolean topLevelQB) {
+    List<String> reasons = new ArrayList<>();
     // Not ok to run CBO, build error message.
-    String msg = "";
-    if (verbose) {
-      if (queryProperties.hasClusterBy()) {
-        msg += "has cluster by; ";
-      }
-      if (queryProperties.hasDistributeBy()) {
-        msg += "has distribute by; ";
-      }
-      if (queryProperties.hasSortBy() && queryProperties.hasLimit()) {
-        msg += "has sort by with limit; ";
-      }
-      if (queryProperties.hasPTF()) {
-        msg += "has PTF; ";
-      }
-      if (queryProperties.usesScript()) {
-        msg += "uses scripts; ";
-      }
-      if (queryProperties.hasLateralViews()) {
-        msg += "has lateral views; ";
-      }
-      if (msg.isEmpty()) {
-        msg += "has some unspecified limitations; ";
-      }
-      msg = msg.substring(0, msg.length() - 2);
+    if (queryProperties.hasClusterBy()) {
+      reasons.add("has cluster by");
     }
-    return msg;
+    if (queryProperties.hasDistributeBy()) {
+      reasons.add("has distribute by");
+    }
+    if (queryProperties.hasSortBy() && queryProperties.hasLimit()) {
+      reasons.add("has sort by with limit");
+    }
+    if (queryProperties.hasPTF()) {
+      reasons.add("has PTF");
+    }
+    if (queryProperties.usesScript()) {
+      reasons.add("uses scripts");
+    }
+    if (!queryProperties.isCBOSupportedLateralViews()) {
+      reasons.add("has lateral views");
+    }
+    return reasons.isEmpty() ? null : String.join("; ", reasons);
   }
 
   /* This method inserts the right profiles into profiles CBO depending
@@ -5025,7 +5008,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 0. Check if we can handle the SubQuery;
       // canHandleQbForCbo returns null if the query can be handled.
-      String reason = canHandleQbForCbo(queryProperties, conf, false, LOG.isDebugEnabled());
+      String reason = canHandleQbForCbo(queryProperties, conf, false);
       if (reason != null) {
         String msg = "CBO can not handle Sub Query";
         if (LOG.isDebugEnabled()) {

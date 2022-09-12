@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.ExecutionMode;
 import org.apache.hadoop.hive.ql.hooks.TestHiveProtoLoggingHook;
 import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.tez.dag.history.logging.proto.ProtoMessageReader;
 import org.junit.Assert;
 import org.junit.Test;
@@ -61,11 +62,11 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
 
   @Test public void testMmMinorCompactionNotPartitionedWithoutBuckets() throws Exception {
     conf.setVar(HiveConf.ConfVars.COMPACTOR_JOB_QUEUE, CUSTOM_COMPACTION_QUEUE);
-    String tmpFolder = folder.newFolder().getAbsolutePath();
     conf.setVar(HiveConf.ConfVars.HIVE_PROTO_EVENTS_BASE_PATH, tmpFolder);
 
     String dbName = "default";
     String tableName = "testMmMinorCompaction";
+    String dbTableName = dbName + "." + tableName;
     // Create test table
     TestDataProvider testDataProvider = new TestCrudCompactorOnTez.TestDataProvider();
     testDataProvider.createMmTable(tableName, false, false);
@@ -148,12 +149,13 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
         Collections.singletonList(newDeltaName), actualDeltasAfterComp);
     // Verify number of files in directory
     FileStatus[] files = fs.listStatus(new Path(table.getSd().getLocation(), newDeltaName),
-        AcidUtils.hiddenFileFilter);
+       FileUtils.HIDDEN_FILES_PATH_FILTER);
     Assert.assertEquals("Incorrect number of bucket files", 2, files.length);
     // Verify bucket files in delta dirs
     List<String> expectedBucketFiles = Arrays.asList("000000_0", "000001_0");
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil.getBucketFileNamesForMMTables(fs, table, null, actualDeltasAfterComp.get(0)));
+
     verifyAllContents(tableName, testDataProvider, expectedData);
     // Clean up
     testDataProvider.dropTable(tableName);

@@ -90,4 +90,9 @@ public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
     return partitionNames;
   }
 
+  @Override
+  public List<String> filterDataConnectors(List<String> dcList) throws MetaException {
+    return dcList;
+  }
+
 }

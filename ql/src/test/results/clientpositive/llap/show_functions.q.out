@@ -371,7 +371,6 @@ st_exteriorring
 st_geodesiclengthwgs84
 st_geomcollection
 st_geometryn
-st_geometryprocessing
 st_geometrytype
 st_geomfromgeojson
 st_geomfromjson
@@ -983,7 +982,6 @@ st_exteriorring
 st_geodesiclengthwgs84
 st_geomcollection
 st_geometryn
-st_geometryprocessing
 st_geometrytype
 st_geomfromgeojson
 st_geomfromjson

@@ -94,6 +94,14 @@ public class OperationManager extends AbstractService {
   @Override
   public synchronized void stop() {
     super.stop();
+    for (Operation operation : getOperations()) {
+      try {
+        cancelOperation(operation.getHandle(),
+            "Operation canceled due to HiveServer2 stop");
+      } catch (Exception e) {
+        LOG.warn("Error canceling the operation", e);
+      }
+    }
   }
 
   public ExecuteStatementOperation newExecuteStatementOperation(HiveSession parentSession,
@@ -106,20 +114,22 @@ public class OperationManager extends AbstractService {
     return executeStatementOperation;
   }
 
-  public GetTypeInfoOperation newGetTypeInfoOperation(HiveSession parentSession) {
+  public GetTypeInfoOperation newGetTypeInfoOperation(HiveSession parentSession)
+      throws HiveSQLException {
     GetTypeInfoOperation operation = new GetTypeInfoOperation(parentSession);
     addOperation(operation);
     return operation;
   }
 
-  public GetCatalogsOperation newGetCatalogsOperation(HiveSession parentSession) {
+  public GetCatalogsOperation newGetCatalogsOperation(HiveSession parentSession)
+      throws HiveSQLException {
     GetCatalogsOperation operation = new GetCatalogsOperation(parentSession);
     addOperation(operation);
     return operation;
   }
 
   public GetSchemasOperation newGetSchemasOperation(HiveSession parentSession,
-      String catalogName, String schemaName) {
+      String catalogName, String schemaName) throws HiveSQLException {
     GetSchemasOperation operation = new GetSchemasOperation(parentSession, catalogName, schemaName);
     addOperation(operation);
     return operation;
@@ -127,21 +137,23 @@ public class OperationManager extends AbstractService {
 
   public MetadataOperation newGetTablesOperation(HiveSession parentSession,
       String catalogName, String schemaName, String tableName,
-      List<String> tableTypes) {
+      List<String> tableTypes) throws HiveSQLException {
     MetadataOperation operation =
         new GetTablesOperation(parentSession, catalogName, schemaName, tableName, tableTypes);
     addOperation(operation);
     return operation;
   }
 
-  public GetTableTypesOperation newGetTableTypesOperation(HiveSession parentSession) {
+  public GetTableTypesOperation newGetTableTypesOperation(HiveSession parentSession)
+      throws HiveSQLException {
     GetTableTypesOperation operation = new GetTableTypesOperation(parentSession);
     addOperation(operation);
     return operation;
   }
 
   public GetColumnsOperation newGetColumnsOperation(HiveSession parentSession,
-      String catalogName, String schemaName, String tableName, String columnName) {
+      String catalogName, String schemaName, String tableName, String columnName)
+      throws HiveSQLException {
     GetColumnsOperation operation = new GetColumnsOperation(parentSession,
         catalogName, schemaName, tableName, columnName);
     addOperation(operation);
@@ -149,7 +161,8 @@ public class OperationManager extends AbstractService {
   }
 
   public GetFunctionsOperation newGetFunctionsOperation(HiveSession parentSession,
-      String catalogName, String schemaName, String functionName) {
+      String catalogName, String schemaName, String functionName)
+      throws HiveSQLException {
     GetFunctionsOperation operation = new GetFunctionsOperation(parentSession,
         catalogName, schemaName, functionName);
     addOperation(operation);
@@ -157,7 +170,8 @@ public class OperationManager extends AbstractService {
   }
 
   public GetPrimaryKeysOperation newGetPrimaryKeysOperation(HiveSession parentSession,
-	      String catalogName, String schemaName, String tableName) {
+	      String catalogName, String schemaName, String tableName)
+      throws HiveSQLException {
     GetPrimaryKeysOperation operation = new GetPrimaryKeysOperation(parentSession,
 	    catalogName, schemaName, tableName);
 	addOperation(operation);
@@ -167,7 +181,7 @@ public class OperationManager extends AbstractService {
   public GetCrossReferenceOperation newGetCrossReferenceOperation(
    HiveSession session, String primaryCatalog, String primarySchema,
    String primaryTable, String foreignCatalog, String foreignSchema,
-   String foreignTable) {
+   String foreignTable) throws HiveSQLException {
    GetCrossReferenceOperation operation = new GetCrossReferenceOperation(session,
      primaryCatalog, primarySchema, primaryTable, foreignCatalog, foreignSchema,
      foreignTable);
@@ -208,7 +222,11 @@ public class OperationManager extends AbstractService {
     return operation.getQueryId();
   }
 
-  private void addOperation(Operation operation) {
+  private void addOperation(Operation operation) throws HiveSQLException {
+    if (getServiceState() != STATE.STARTED) {
+      throw new HiveSQLException("Unable to run new queries as HiveServer2 is decommissioned or inactive,"
+          + " state: " + getServiceState());
+    }
     LOG.info("Adding operation: {} {}", operation.getHandle(),
         operation.getParentSession().getSessionHandle());
     queryIdOperation.put(getQueryId(operation), operation);
@@ -449,5 +467,4 @@ public class OperationManager extends AbstractService {
         .map(cache -> cache.getAllQueryIds())
         .orElse(Collections.emptySet());
   }
-
 }

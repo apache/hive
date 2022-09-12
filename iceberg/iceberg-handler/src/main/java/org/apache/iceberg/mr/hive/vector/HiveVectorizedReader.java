@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -42,17 +43,21 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hive.iceberg.org.apache.orc.OrcConf;
+import org.apache.hive.iceberg.org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.hive.iceberg.org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.hive.iceberg.org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.hive.iceberg.org.apache.parquet.schema.MessageType;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.orc.VectorizedReadUtils;
+import org.apache.iceberg.parquet.ParquetFooterInputFromCache;
 import org.apache.iceberg.parquet.ParquetSchemaUtil;
 import org.apache.iceberg.parquet.TypeWithSchemaVisitor;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -72,7 +77,7 @@ public class HiveVectorizedReader {
   }
 
   public static <D> CloseableIterable<D> reader(Path path, FileScanTask task, Map<Integer, ?> idToConstant,
-      TaskAttemptContext context) {
+      TaskAttemptContext context, Expression residual) {
     // Tweaks on jobConf here are relevant for this task only, so we need to copy it first as context's conf is reused..
     JobConf job = new JobConf(context.getConfiguration());
     FileFormat format = task.file().format();
@@ -125,15 +130,17 @@ public class HiveVectorizedReader {
       // TODO: Iceberg currently does not track the last modification time of a file. Until that's added,
       // we need to set Long.MIN_VALUE as last modification time in the fileId triplet.
       SyntheticFileId fileId = new SyntheticFileId(path, task.file().fileSizeInBytes(), Long.MIN_VALUE);
+      fileId.toJobConf(job);
       RecordReader<NullWritable, VectorizedRowBatch> recordReader = null;
 
       switch (format) {
         case ORC:
-          recordReader = orcRecordReader(job, reporter, task, path, start, length, readColumnIds, fileId);
+          recordReader = orcRecordReader(job, reporter, task, path, start, length, readColumnIds,
+              fileId, residual);
           break;
 
         case PARQUET:
-          recordReader = parquetRecordReader(job, reporter, task, path, start, length);
+          recordReader = parquetRecordReader(job, reporter, task, path, start, length, fileId);
           break;
         default:
           throw new UnsupportedOperationException("Vectorized Hive reading unimplemented for format: " + format);
@@ -148,7 +155,7 @@ public class HiveVectorizedReader {
 
   private static RecordReader<NullWritable, VectorizedRowBatch> orcRecordReader(JobConf job, Reporter reporter,
       FileScanTask task, Path path, long start, long length, List<Integer> readColumnIds,
-      SyntheticFileId fileId) throws IOException {
+      SyntheticFileId fileId, Expression residual) throws IOException {
     RecordReader<NullWritable, VectorizedRowBatch> recordReader = null;
 
     // Need to turn positional schema evolution off since we use column name based schema evolution for projection
@@ -161,7 +168,7 @@ public class HiveVectorizedReader {
     OrcTail orcTail = VectorizedReadUtils.deserializeToOrcTail(serializedOrcTail);
 
     VectorizedReadUtils.handleIcebergProjection(task, job,
-        VectorizedReadUtils.deserializeToShadedOrcTail(serializedOrcTail).getSchema());
+        VectorizedReadUtils.deserializeToShadedOrcTail(serializedOrcTail).getSchema(), residual);
 
     // If LLAP enabled, try to retrieve an LLAP record reader - this might yield to null in some special cases
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
@@ -182,11 +189,22 @@ public class HiveVectorizedReader {
   }
 
   private static RecordReader<NullWritable, VectorizedRowBatch> parquetRecordReader(JobConf job, Reporter reporter,
-      FileScanTask task, Path path, long start, long length) throws IOException {
+      FileScanTask task, Path path, long start, long length, SyntheticFileId fileId) throws IOException {
     InputSplit split = new FileSplit(path, start, length, job);
     VectorizedParquetInputFormat inputFormat = new VectorizedParquetInputFormat();
 
-    MessageType fileSchema = ParquetFileReader.readFooter(job, path).getFileMetaData().getSchema();
+    MemoryBufferOrBuffers footerData = null;
+    if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
+        LlapProxy.getIo() != null) {
+      LlapProxy.getIo().initCacheOnlyInputFormat(inputFormat);
+      footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(path, job, fileId);
+    }
+
+    ParquetMetadata parquetMetadata = footerData != null ?
+        ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), ParquetMetadataConverter.NO_FILTER) :
+        ParquetFileReader.readFooter(job, path);
+
+    MessageType fileSchema = parquetMetadata.getFileMetaData().getSchema();
     MessageType typeWithIds = null;
     Schema expectedSchema = task.spec().schema();
 

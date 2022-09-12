@@ -11,14 +11,16 @@ package org.apache.hadoop.hive.metastore.api;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class ShowCompactRequest implements org.apache.thrift.TBase<ShowCompactRequest, ShowCompactRequest._Fields>, java.io.Serializable, Cloneable, Comparable<ShowCompactRequest> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ShowCompactRequest");
 
+  private static final org.apache.thrift.protocol.TField POOL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("poolName", org.apache.thrift.protocol.TType.STRING, (short)1);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new ShowCompactRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new ShowCompactRequestTupleSchemeFactory();
 
+  private @org.apache.thrift.annotation.Nullable java.lang.String poolName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
+    POOL_NAME((short)1, "poolName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -34,6 +36,8 @@ package org.apache.hadoop.hive.metastore.api;
     @org.apache.thrift.annotation.Nullable
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
+        case 1: // POOL_NAME
+          return POOL_NAME;
         default:
           return null;
       }
@@ -73,9 +77,14 @@ package org.apache.hadoop.hive.metastore.api;
       return _fieldName;
     }
   }
+
+  // isset id assignments
+  private static final _Fields optionals[] = {_Fields.POOL_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.POOL_NAME, new org.apache.thrift.meta_data.FieldMetaData("poolName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ShowCompactRequest.class, metaDataMap);
   }
@@ -87,6 +96,9 @@ package org.apache.hadoop.hive.metastore.api;
    * Performs a deep copy on <i>other</i>.
    */
   public ShowCompactRequest(ShowCompactRequest other) {
+    if (other.isSetPoolName()) {
+      this.poolName = other.poolName;
+    }
   }
 
   public ShowCompactRequest deepCopy() {
@@ -95,16 +107,52 @@ package org.apache.hadoop.hive.metastore.api;
 
   @Override
   public void clear() {
+    this.poolName = null;
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getPoolName() {
+    return this.poolName;
+  }
+
+  public void setPoolName(@org.apache.thrift.annotation.Nullable java.lang.String poolName) {
+    this.poolName = poolName;
+  }
+
+  public void unsetPoolName() {
+    this.poolName = null;
+  }
+
+  /** Returns true if field poolName is set (has been assigned a value) and false otherwise */
+  public boolean isSetPoolName() {
+    return this.poolName != null;
+  }
+
+  public void setPoolNameIsSet(boolean value) {
+    if (!value) {
+      this.poolName = null;
+    }
   }
 
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
+    case POOL_NAME:
+      if (value == null) {
+        unsetPoolName();
+      } else {
+        setPoolName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
   @org.apache.thrift.annotation.Nullable
   public java.lang.Object getFieldValue(_Fields field) {
     switch (field) {
+    case POOL_NAME:
+      return getPoolName();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -116,6 +164,8 @@ package org.apache.hadoop.hive.metastore.api;
     }
 
     switch (field) {
+    case POOL_NAME:
+      return isSetPoolName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -133,12 +183,25 @@ package org.apache.hadoop.hive.metastore.api;
     if (this == that)
       return true;
 
+    boolean this_present_poolName = true && this.isSetPoolName();
+    boolean that_present_poolName = true && that.isSetPoolName();
+    if (this_present_poolName || that_present_poolName) {
+      if (!(this_present_poolName && that_present_poolName))
+        return false;
+      if (!this.poolName.equals(that.poolName))
+        return false;
+    }
+
     return true;
   }
 
   @Override
   public int hashCode() {
     int hashCode = 1;
+
+    hashCode = hashCode * 8191 + ((isSetPoolName()) ? 131071 : 524287);
+    if (isSetPoolName())
+      hashCode = hashCode * 8191 + poolName.hashCode();
 
     return hashCode;
   }
@@ -151,6 +214,16 @@ package org.apache.hadoop.hive.metastore.api;
 
     int lastComparison = 0;
 
+    lastComparison = java.lang.Boolean.compare(isSetPoolName(), other.isSetPoolName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPoolName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.poolName, other.poolName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -172,6 +245,15 @@ package org.apache.hadoop.hive.metastore.api;
     java.lang.StringBuilder sb = new java.lang.StringBuilder("ShowCompactRequest(");
     boolean first = true;
 
+    if (isSetPoolName()) {
+      sb.append("poolName:");
+      if (this.poolName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.poolName);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -215,6 +297,14 @@ package org.apache.hadoop.hive.metastore.api;
           break;
         }
         switch (schemeField.id) {
+          case 1: // POOL_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.poolName = iprot.readString();
+              struct.setPoolNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -228,6 +318,13 @@ package org.apache.hadoop.hive.metastore.api;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.poolName != null) {
+        if (struct.isSetPoolName()) {
+          oprot.writeFieldBegin(POOL_NAME_FIELD_DESC);
+          oprot.writeString(struct.poolName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -245,11 +342,24 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, ShowCompactRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+      java.util.BitSet optionals = new java.util.BitSet();
+      if (struct.isSetPoolName()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetPoolName()) {
+        oprot.writeString(struct.poolName);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ShowCompactRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+      java.util.BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.poolName = iprot.readString();
+        struct.setPoolNameIsSet(true);
+      }
     }
   }
 

@@ -103,6 +103,21 @@ df -h
   }
 }
 
+def sonarAnalysis(args) {
+  withCredentials([string(credentialsId: 'sonar', variable: 'SONAR_TOKEN')]) {
+      def mvnCmd = """mvn org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184:sonar \
+      -Dsonar.organization=apache \
+      -Dsonar.projectKey=apache_hive \
+      -Dsonar.host.url=https://sonarcloud.io \
+      """+args+" -DskipTests -Dit.skipTests -Dmaven.javadoc.skip"
+
+      sh """#!/bin/bash -e
+      sw java 11 && . /etc/profile.d/java.sh
+      export MAVEN_OPTS=-Xmx5G
+      """+mvnCmd
+  }
+}
+
 def hdbPodTemplate(closure) {
   podTemplate(
   containers: [
@@ -302,6 +317,31 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
 '''
             buildHive("install -Dtest=noMatches -Pdist,iceberg -f apache-hive-*-nightly-*/pom.xml")
         }
+      }
+  }
+  branches['sonar'] = {
+      executorNode {
+          if(env.CHANGE_BRANCH == 'master') {
+              stage('Prepare') {
+                  loadWS();
+              }
+              stage('Sonar') {
+                  sonarAnalysis("-Dsonar.branch.name=${CHANGE_BRANCH}")
+              }
+          } else if(env.CHANGE_ID) {
+              stage('Prepare') {
+                  loadWS();
+              }
+              stage('Sonar') {
+                  sonarAnalysis("""-Dsonar.pullrequest.github.repository=apache/hive \
+                                   -Dsonar.pullrequest.key=${CHANGE_ID} \
+                                   -Dsonar.pullrequest.branch=${CHANGE_BRANCH} \
+                                   -Dsonar.pullrequest.base=${CHANGE_TARGET} \
+                                   -Dsonar.pullrequest.provider=GitHub""")
+              }
+          } else {
+              echo "Skipping sonar analysis, we only run it on PRs and on the master branch"
+          }
       }
   }
   for (int i = 0; i < splits.size(); i++) {

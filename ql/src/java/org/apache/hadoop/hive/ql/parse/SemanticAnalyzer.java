@@ -24,6 +24,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONV
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEARCHIVEENABLED;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.DEFAULT_TABLE_TYPE;
 import static org.apache.hadoop.hive.ql.ddl.view.create.AbstractCreateViewAnalyzer.validateTablesUsed;
@@ -2456,8 +2457,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             }
             try {
               CreateTableDesc tblDesc = qb.getTableDesc();
-              if (tblDesc != null && tblDesc.isTemporary() && AcidUtils
-                  .isInsertOnlyTable(tblDesc.getTblProps(), true)) {
+              if (tblDesc != null && tblDesc.isTemporary() && AcidUtils.isInsertOnlyTable(tblDesc.getTblProps())) {
                 fname = FileUtils.makeQualified(location, conf).toString();
               } else {
                 fname = ctx.getExtTmpPathRelTo(FileUtils.makeQualified(location, conf)).toString();
@@ -9442,25 +9442,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // backtrack can be null when input is script operator
       ExprNodeDesc exprBack = ExprNodeDescUtils.backtrack(expr, dummy, parent);
-      int kindex;
-      if (exprBack == null) {
-        kindex = -1;
-      } else if (ExprNodeDescUtils.isConstant(exprBack)) {
-        kindex = reduceKeysBack.indexOf(exprBack);
-      } else {
-        kindex = ExprNodeDescUtils.indexOf(exprBack, reduceKeysBack);
-      }
-      if (kindex >= 0) {
-        ColumnInfo newColInfo = new ColumnInfo(colInfo);
-        String internalColName = Utilities.ReduceField.KEY + ".reducesinkkey" + kindex;
-        newColInfo.setInternalName(internalColName);
-        newColInfo.setTabAlias(nm[0]);
-        outputRR.put(nm[0], nm[1], newColInfo);
-        if (nm2 != null) {
-          outputRR.addMappingOnly(nm2[0], nm2[1], newColInfo);
+      if (exprBack != null) {
+        if (ExprNodeDescUtils.isConstant(exprBack)) {
+          int kindex = reduceKeysBack.indexOf(exprBack);
+          if (kindex >= 0) {
+            addJoinKeyToRowSchema(outputRR, index, i, colInfo, nm, nm2, kindex);
+            continue;
+          }
+        } else {
+          int startIdx = 0;
+          int kindex;
+          // joinKey may present multiple times, add the duplicates to the schema with different internal name.
+          // example: KEY.reducesinkkey0, KEY.reducesinkkey1
+          //      join        LU_CUSTOMER        a16
+          //      on         (a15.CUSTOMER_ID = a16.CUSTOMER_ID and pa11.CUSTOMER_ID = a16.CUSTOMER_ID)
+          while ((kindex = ExprNodeDescUtils.indexOf(exprBack, reduceKeysBack, startIdx)) >= 0) {
+            addJoinKeyToRowSchema(outputRR, index, i, colInfo, nm, nm2, kindex);
+            startIdx = kindex + 1;
+          }
+          if (startIdx > 0) {
+            // at least one instance found
+            continue;
+          }
         }
-        index[i] = kindex;
-        continue;
       }
       index[i] = -reduceValues.size() - 1;
       String outputColName = getColumnInternalName(reduceValues.size());
@@ -9532,6 +9536,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     rsOp.setColumnExprMap(colExprMap);
     rsOp.setInputAliases(srcs);
     return rsOp;
+  }
+
+  private void addJoinKeyToRowSchema(
+      RowResolver outputRR, int[] index, int i, ColumnInfo colInfo, String[] nm, String[] nm2, int kindex) {
+    ColumnInfo newColInfo = new ColumnInfo(colInfo);
+    String internalColName = ReduceField.KEY + ".reducesinkkey" + kindex;
+    newColInfo.setInternalName(internalColName);
+    newColInfo.setTabAlias(nm[0]);
+    outputRR.put(nm[0], nm[1], newColInfo);
+    if (nm2 != null) {
+      outputRR.addMappingOnly(nm2[0], nm2[1], newColInfo);
+    }
+    index[i] = kindex;
   }
 
   private Operator genJoinOperator(QB qb, QBJoinTree joinTree,
@@ -14020,6 +14037,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         storageHandler = (HiveStorageHandler) ReflectionUtils.newInstance(
                 conf.getClassByName(storageFormat.getStorageHandler()), SessionState.get().getConf());
+        t.setProperty(META_TABLE_STORAGE, storageHandler.getClass().getName());
       } catch (ClassNotFoundException ex) {
         LOG.error("Class not found. Storage handler will be set to null: "+ex.getMessage() , ex);
       }
@@ -14029,7 +14047,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       t.setSerdeParam(serdeMap.getKey(), serdeMap.getValue());
     }
     WriteType lockType = tblProps != null && Boolean.parseBoolean(tblProps.get(TABLE_IS_CTAS))
-        && AcidUtils.isExclusiveCTASEnabled(conf) ?
+        && AcidUtils.isExclusiveCTASEnabled(conf)
+        // iceberg CTAS has it's own locking mechanism, therefore we should exclude them
+        && (t.getStorageHandler() == null || !t.getStorageHandler().directInsertCTAS()) ?
       WriteType.CTAS : WriteType.DDL_NO_LOCK;
     
     outputs.add(new WriteEntity(t, lockType));

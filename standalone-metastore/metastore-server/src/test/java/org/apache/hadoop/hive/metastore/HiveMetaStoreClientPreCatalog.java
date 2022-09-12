@@ -2542,17 +2542,27 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     }
     client.repl_tbl_writeid_state(rqst);
   }
+  @Override
+  public long allocateTableWriteId(long txnId, String dbName, String tableName, boolean shouldRealloc) throws TException {
+    return allocateTableWriteIdsBatch(Collections.singletonList(txnId), dbName, tableName, shouldRealloc).get(0).getWriteId();
+  }
 
   @Override
   public long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException {
-    return allocateTableWriteIdsBatch(Collections.singletonList(txnId), dbName, tableName).get(0).getWriteId();
+    return allocateTableWriteIdsBatch(Collections.singletonList(txnId), dbName, tableName, false).get(0).getWriteId();
   }
 
   @Override
   public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName)
           throws TException {
+    return allocateTableWriteIdsBatch(txnIds, dbName, tableName, false);
+  }
+
+  public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName, boolean shouldRealloc)
+          throws TException {
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
     rqst.setTxnIds(txnIds);
+    rqst.setReallocate(shouldRealloc);
     return allocateTableWriteIdsBatchIntr(rqst);
   }
 
@@ -2657,9 +2667,22 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     cr.setProperties(tblproperties);
     return client.compact2(cr);
   }
+
+  @Override
+  public CompactionResponse compact2(CompactionRequest request) throws TException {
+    return client.compact2(request);
+  }
+
   @Override
   public ShowCompactResponse showCompactions() throws TException {
     return client.show_compact(new ShowCompactRequest());
+  }
+
+  @Override
+  public ShowCompactResponse showCompactions(String poolName) throws TException {
+    ShowCompactRequest request = new ShowCompactRequest();
+    request.setPoolName(poolName);
+    return client.show_compact(request);
   }
 
   @Override

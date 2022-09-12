@@ -30,12 +30,14 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapCacheAwareFs;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
+import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.BucketIdentifier;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -52,12 +54,10 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.parquet.ParquetRuntimeException;
-import org.apache.parquet.bytes.BytesUtils;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.page.PageReadStore;
 import org.apache.parquet.format.converter.ParquetMetadataConverter.MetadataFilter;
 import org.apache.parquet.hadoop.ParquetFileReader;
-import org.apache.parquet.hadoop.ParquetFileWriter;
 import org.apache.parquet.hadoop.ParquetInputSplit;
 import org.apache.parquet.hadoop.metadata.BlockMetaData;
 import org.apache.parquet.hadoop.metadata.ColumnChunkMetaData;
@@ -83,7 +83,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
-import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 import static org.apache.parquet.format.converter.ParquetMetadataConverter.NO_FILTER;
 
 /**
@@ -104,7 +103,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private Object[] partitionValues;
   private Path cacheFsPath;
   private static final int MAP_DEFINITION_LEVEL_MAX = 3;
-  private final boolean isReadCacheOnly;
 
   /**
    * For each request column, the reader to read this column. This is NULL if this column
@@ -150,11 +148,11 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       this.cacheConf = cacheConf;
 
       if (metadataCache != null) {
-        cacheKey = HdfsUtils.getFileId(filePath.getFileSystem(conf), filePath,
-            HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),
-            HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID),
-            !HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_IO_USE_FILEID_PATH));
-        // HdfsUtils.getFileId might yield to null in certain configurations
+        cacheKey = SyntheticFileId.fromJobConf(conf);
+        if (cacheKey == null) {
+          cacheKey = LlapHiveUtils.createFileIdUsingFS(filePath.getFileSystem(conf), filePath, cacheConf);
+        }
+        // createFileIdUsingFS() might yield to null in certain configurations
         if (cacheKey != null) {
           cacheTag = cacheTagOfParquetFile(filePath, cacheConf, conf);
           // If we are going to use cache, change the path to depend on file ID for extra consistency.
@@ -169,7 +167,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
 
       colsToInclude = ColumnProjectionUtils.getReadColumnIDs(conf);
       //initialize the rowbatchContext
-      isReadCacheOnly = HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY);
       rbCtx = Utilities.getVectorizedRowBatchCtx(jobConf);
 
       if (parquetInputSplit != null) {
@@ -285,40 +282,14 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
 
   private ParquetMetadata readSplitFooter(JobConf configuration, final Path file,
       Object cacheKey, MetadataFilter filter, CacheTag tag) throws IOException {
-    MemoryBufferOrBuffers footerData = (cacheKey == null || metadataCache == null) ? null
-        : metadataCache.getFileMetadata(cacheKey);
-    if (footerData != null) {
-      LOG.info("Found the footer in cache for " + cacheKey);
-      try {
-        return ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), filter);
-      } finally {
-        metadataCache.decRefBuffer(footerData);
-      }
-    } else {
-      throwIfCacheOnlyRead(isReadCacheOnly);
-    }
-    final FileSystem fs = file.getFileSystem(configuration);
-    final FileStatus stat = fs.getFileStatus(file);
     if (cacheKey == null || metadataCache == null) {
+      // Non-LLAP case
+      FileSystem fs = file.getFileSystem(configuration);
+      FileStatus stat = fs.getFileStatus(file);
       return readFooterFromFile(file, fs, stat, filter);
-    }
-
-    // To avoid reading the footer twice, we will cache it first and then read from cache.
-    // Parquet calls protobuf methods directly on the stream and we can't get bytes after the fact.
-    try (SeekableInputStream stream = HadoopStreams.wrap(fs.open(file))) {
-      long footerLengthIndex = stat.getLen()
-          - ParquetFooterInputFromCache.FOOTER_LENGTH_SIZE - ParquetFileWriter.MAGIC.length;
-      stream.seek(footerLengthIndex);
-      int footerLength = BytesUtils.readIntLittleEndian(stream);
-      stream.seek(footerLengthIndex - footerLength);
-      LOG.info("Caching the footer of length " + footerLength + " for " + cacheKey);
-      // Note: we don't pass in isStopped here - this is not on an IO thread.
-      footerData = metadataCache.putFileMetadata(cacheKey, footerLength, stream, tag, null);
-      try {
-        return ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), filter);
-      } finally {
-        metadataCache.decRefBuffer(footerData);
-      }
+    } else {
+      MemoryBufferOrBuffers footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(file, configuration, cacheKey);
+      return ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), filter);
     }
   }
 
@@ -337,7 +308,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     return ParquetFileReader.readFooter(inputFile, filter);
   }
 
-  private static CacheTag cacheTagOfParquetFile(Path path, Configuration cacheConf, JobConf jobConf) {
+  public static CacheTag cacheTagOfParquetFile(Path path, Configuration cacheConf, JobConf jobConf) {
     MapWork mapWork = LlapHiveUtils.findMapWork(jobConf);
     if (!HiveConf.getBoolVar(cacheConf, ConfVars.LLAP_TRACK_CACHE_USAGE) || mapWork == null) {
       return null;

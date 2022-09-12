@@ -30,6 +30,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField INITIATOR_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("initiatorId", org.apache.thrift.protocol.TType.STRING, (short)17);
   private static final org.apache.thrift.protocol.TField INITIATOR_VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("initiatorVersion", org.apache.thrift.protocol.TType.STRING, (short)18);
   private static final org.apache.thrift.protocol.TField CLEANER_START_FIELD_DESC = new org.apache.thrift.protocol.TField("cleanerStart", org.apache.thrift.protocol.TType.I64, (short)19);
+  private static final org.apache.thrift.protocol.TField POOL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("poolName", org.apache.thrift.protocol.TType.STRING, (short)20);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new ShowCompactResponseElementStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new ShowCompactResponseElementTupleSchemeFactory();
@@ -53,6 +54,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String initiatorId; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String initiatorVersion; // optional
   private long cleanerStart; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String poolName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -78,7 +80,8 @@ package org.apache.hadoop.hive.metastore.api;
     WORKER_VERSION((short)16, "workerVersion"),
     INITIATOR_ID((short)17, "initiatorId"),
     INITIATOR_VERSION((short)18, "initiatorVersion"),
-    CLEANER_START((short)19, "cleanerStart");
+    CLEANER_START((short)19, "cleanerStart"),
+    POOL_NAME((short)20, "poolName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -132,6 +135,8 @@ package org.apache.hadoop.hive.metastore.api;
           return INITIATOR_VERSION;
         case 19: // CLEANER_START
           return CLEANER_START;
+        case 20: // POOL_NAME
+          return POOL_NAME;
         default:
           return null;
       }
@@ -180,7 +185,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __ENQUEUETIME_ISSET_ID = 4;
   private static final int __CLEANERSTART_ISSET_ID = 5;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.WORKERID,_Fields.START,_Fields.RUN_AS,_Fields.HIGHTEST_TXN_ID,_Fields.META_INFO,_Fields.END_TIME,_Fields.HADOOP_JOB_ID,_Fields.ID,_Fields.ERROR_MESSAGE,_Fields.ENQUEUE_TIME,_Fields.WORKER_VERSION,_Fields.INITIATOR_ID,_Fields.INITIATOR_VERSION,_Fields.CLEANER_START};
+  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.WORKERID,_Fields.START,_Fields.RUN_AS,_Fields.HIGHTEST_TXN_ID,_Fields.META_INFO,_Fields.END_TIME,_Fields.HADOOP_JOB_ID,_Fields.ID,_Fields.ERROR_MESSAGE,_Fields.ENQUEUE_TIME,_Fields.WORKER_VERSION,_Fields.INITIATOR_ID,_Fields.INITIATOR_VERSION,_Fields.CLEANER_START,_Fields.POOL_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -222,6 +227,8 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.CLEANER_START, new org.apache.thrift.meta_data.FieldMetaData("cleanerStart", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.POOL_NAME, new org.apache.thrift.meta_data.FieldMetaData("poolName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ShowCompactResponseElement.class, metaDataMap);
   }
@@ -294,6 +301,9 @@ package org.apache.hadoop.hive.metastore.api;
       this.initiatorVersion = other.initiatorVersion;
     }
     this.cleanerStart = other.cleanerStart;
+    if (other.isSetPoolName()) {
+      this.poolName = other.poolName;
+    }
   }
 
   public ShowCompactResponseElement deepCopy() {
@@ -328,6 +338,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.initiatorVersion = null;
     setCleanerStartIsSet(false);
     this.cleanerStart = 0;
+    this.poolName = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -782,6 +793,30 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __CLEANERSTART_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getPoolName() {
+    return this.poolName;
+  }
+
+  public void setPoolName(@org.apache.thrift.annotation.Nullable java.lang.String poolName) {
+    this.poolName = poolName;
+  }
+
+  public void unsetPoolName() {
+    this.poolName = null;
+  }
+
+  /** Returns true if field poolName is set (has been assigned a value) and false otherwise */
+  public boolean isSetPoolName() {
+    return this.poolName != null;
+  }
+
+  public void setPoolNameIsSet(boolean value) {
+    if (!value) {
+      this.poolName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DBNAME:
@@ -936,6 +971,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case POOL_NAME:
+      if (value == null) {
+        unsetPoolName();
+      } else {
+        setPoolName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -999,6 +1042,9 @@ package org.apache.hadoop.hive.metastore.api;
     case CLEANER_START:
       return getCleanerStart();
 
+    case POOL_NAME:
+      return getPoolName();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1048,6 +1094,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetInitiatorVersion();
     case CLEANER_START:
       return isSetCleanerStart();
+    case POOL_NAME:
+      return isSetPoolName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1236,6 +1284,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_poolName = true && this.isSetPoolName();
+    boolean that_present_poolName = true && that.isSetPoolName();
+    if (this_present_poolName || that_present_poolName) {
+      if (!(this_present_poolName && that_present_poolName))
+        return false;
+      if (!this.poolName.equals(that.poolName))
+        return false;
+    }
+
     return true;
   }
 
@@ -1318,6 +1375,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetCleanerStart()) ? 131071 : 524287);
     if (isSetCleanerStart())
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(cleanerStart);
+
+    hashCode = hashCode * 8191 + ((isSetPoolName()) ? 131071 : 524287);
+    if (isSetPoolName())
+      hashCode = hashCode * 8191 + poolName.hashCode();
 
     return hashCode;
   }
@@ -1520,6 +1581,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetPoolName(), other.isSetPoolName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPoolName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.poolName, other.poolName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1696,6 +1767,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("cleanerStart:");
       sb.append(this.cleanerStart);
+      first = false;
+    }
+    if (isSetPoolName()) {
+      if (!first) sb.append(", ");
+      sb.append("poolName:");
+      if (this.poolName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.poolName);
+      }
       first = false;
     }
     sb.append(")");
@@ -1911,6 +1992,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 20: // POOL_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.poolName = iprot.readString();
+              struct.setPoolNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -2037,6 +2126,13 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeI64(struct.cleanerStart);
         oprot.writeFieldEnd();
       }
+      if (struct.poolName != null) {
+        if (struct.isSetPoolName()) {
+          oprot.writeFieldBegin(POOL_NAME_FIELD_DESC);
+          oprot.writeString(struct.poolName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -2104,7 +2200,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetCleanerStart()) {
         optionals.set(14);
       }
-      oprot.writeBitSet(optionals, 15);
+      if (struct.isSetPoolName()) {
+        optionals.set(15);
+      }
+      oprot.writeBitSet(optionals, 16);
       if (struct.isSetPartitionname()) {
         oprot.writeString(struct.partitionname);
       }
@@ -2150,6 +2249,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetCleanerStart()) {
         oprot.writeI64(struct.cleanerStart);
       }
+      if (struct.isSetPoolName()) {
+        oprot.writeString(struct.poolName);
+      }
     }
 
     @Override
@@ -2163,7 +2265,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setTypeIsSet(true);
       struct.state = iprot.readString();
       struct.setStateIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(15);
+      java.util.BitSet incoming = iprot.readBitSet(16);
       if (incoming.get(0)) {
         struct.partitionname = iprot.readString();
         struct.setPartitionnameIsSet(true);
@@ -2223,6 +2325,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(14)) {
         struct.cleanerStart = iprot.readI64();
         struct.setCleanerStartIsSet(true);
+      }
+      if (incoming.get(15)) {
+        struct.poolName = iprot.readString();
+        struct.setPoolNameIsSet(true);
       }
     }
   }

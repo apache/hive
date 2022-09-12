@@ -48,4 +48,18 @@ public class HivePrivilegeObjectUtils {
 
   }
 
+  /**
+   * Convert list of dcnames into list of HivePrivilegeObject
+   * @param dcList
+   * @return
+   */
+  public static List<HivePrivilegeObject> getHivePrivDcObjects(List<String> dcList) {
+    List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
+    for (String dcname : dcList) {
+      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATACONNECTOR, null, dcname));
+    }
+    return objs;
+
+  }
+
 }

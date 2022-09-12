@@ -41,6 +41,34 @@ INSERT INTO llap_orders VALUES
 (19, 54, 6, timestamp('2015-08-15 01:59:22.177'), 'EU', 'HU'),
 (20, 10, 0, timestamp('2018-05-06 12:56:12.789'), 'US', 'CA');
 
+--verify row level filtering works with Iceberg ORC too
+set hive.auto.convert.join=true;
+set hive.disable.unsafe.external.table.operations=false;
+set hive.vectorized.execution.mapjoin.native.fast.hashtable.enabled=true;
+
+explain select sum(quantity)
+    from llap_orders o, llap_items i
+    where
+        o.itemid = i.itemid and i.price != 83000 and
+        (
+            (o.quantity > 0 and o.quantity < 39)
+                or
+            (o.quantity > 39 and o.quantity < 69)
+                or
+            (o.quantity > 70 )
+        );
+select sum(quantity)
+from llap_orders o, llap_items i
+where
+    o.itemid = i.itemid and i.price != 83000 and
+    (
+        (o.quantity > 0 and o.quantity < 39)
+            or
+        (o.quantity > 39 and o.quantity < 69)
+            or
+        (o.quantity > 70 )
+    );
+
 --select query without any schema change yet
 SELECT i.name, i.description, SUM(o.quantity) FROM llap_items i JOIN llap_orders o ON i.itemid = o.itemid  WHERE p1 = 'EU' and i.price >= 50000 GROUP BY i.name, i.description;
 

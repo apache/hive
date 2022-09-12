@@ -27,6 +27,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField HASOLDABORT_FIELD_DESC = new org.apache.thrift.protocol.TField("hasoldabort", org.apache.thrift.protocol.TType.BOOL, (short)14);
   private static final org.apache.thrift.protocol.TField ENQUEUE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("enqueueTime", org.apache.thrift.protocol.TType.I64, (short)15);
   private static final org.apache.thrift.protocol.TField RETRY_RETENTION_FIELD_DESC = new org.apache.thrift.protocol.TField("retryRetention", org.apache.thrift.protocol.TType.I64, (short)16);
+  private static final org.apache.thrift.protocol.TField POOLNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("poolname", org.apache.thrift.protocol.TType.STRING, (short)17);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CompactionInfoStructStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CompactionInfoStructTupleSchemeFactory();
@@ -47,6 +48,7 @@ package org.apache.hadoop.hive.metastore.api;
   private boolean hasoldabort; // optional
   private long enqueueTime; // optional
   private long retryRetention; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String poolname; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -69,7 +71,8 @@ package org.apache.hadoop.hive.metastore.api;
     ERROR_MESSAGE((short)13, "errorMessage"),
     HASOLDABORT((short)14, "hasoldabort"),
     ENQUEUE_TIME((short)15, "enqueueTime"),
-    RETRY_RETENTION((short)16, "retryRetention");
+    RETRY_RETENTION((short)16, "retryRetention"),
+    POOLNAME((short)17, "poolname");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -117,6 +120,8 @@ package org.apache.hadoop.hive.metastore.api;
           return ENQUEUE_TIME;
         case 16: // RETRY_RETENTION
           return RETRY_RETENTION;
+        case 17: // POOLNAME
+          return POOLNAME;
         default:
           return null;
       }
@@ -166,7 +171,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __ENQUEUETIME_ISSET_ID = 5;
   private static final int __RETRYRETENTION_ISSET_ID = 6;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS,_Fields.PROPERTIES,_Fields.TOOMANYABORTS,_Fields.STATE,_Fields.WORKER_ID,_Fields.START,_Fields.HIGHEST_WRITE_ID,_Fields.ERROR_MESSAGE,_Fields.HASOLDABORT,_Fields.ENQUEUE_TIME,_Fields.RETRY_RETENTION};
+  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS,_Fields.PROPERTIES,_Fields.TOOMANYABORTS,_Fields.STATE,_Fields.WORKER_ID,_Fields.START,_Fields.HIGHEST_WRITE_ID,_Fields.ERROR_MESSAGE,_Fields.HASOLDABORT,_Fields.ENQUEUE_TIME,_Fields.RETRY_RETENTION,_Fields.POOLNAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -202,6 +207,8 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.RETRY_RETENTION, new org.apache.thrift.meta_data.FieldMetaData("retryRetention", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.POOLNAME, new org.apache.thrift.meta_data.FieldMetaData("poolname", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CompactionInfoStruct.class, metaDataMap);
   }
@@ -262,6 +269,9 @@ package org.apache.hadoop.hive.metastore.api;
     this.hasoldabort = other.hasoldabort;
     this.enqueueTime = other.enqueueTime;
     this.retryRetention = other.retryRetention;
+    if (other.isSetPoolname()) {
+      this.poolname = other.poolname;
+    }
   }
 
   public CompactionInfoStruct deepCopy() {
@@ -293,6 +303,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.enqueueTime = 0;
     setRetryRetentionIsSet(false);
     this.retryRetention = 0;
+    this.poolname = null;
   }
 
   public long getId() {
@@ -673,6 +684,30 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __RETRYRETENTION_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getPoolname() {
+    return this.poolname;
+  }
+
+  public void setPoolname(@org.apache.thrift.annotation.Nullable java.lang.String poolname) {
+    this.poolname = poolname;
+  }
+
+  public void unsetPoolname() {
+    this.poolname = null;
+  }
+
+  /** Returns true if field poolname is set (has been assigned a value) and false otherwise */
+  public boolean isSetPoolname() {
+    return this.poolname != null;
+  }
+
+  public void setPoolnameIsSet(boolean value) {
+    if (!value) {
+      this.poolname = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case ID:
@@ -803,6 +838,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case POOLNAME:
+      if (value == null) {
+        unsetPoolname();
+      } else {
+        setPoolname((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -857,6 +900,9 @@ package org.apache.hadoop.hive.metastore.api;
     case RETRY_RETENTION:
       return getRetryRetention();
 
+    case POOLNAME:
+      return getPoolname();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -900,6 +946,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetEnqueueTime();
     case RETRY_RETENTION:
       return isSetRetryRetention();
+    case POOLNAME:
+      return isSetPoolname();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1061,6 +1109,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_poolname = true && this.isSetPoolname();
+    boolean that_present_poolname = true && that.isSetPoolname();
+    if (this_present_poolname || that_present_poolname) {
+      if (!(this_present_poolname && that_present_poolname))
+        return false;
+      if (!this.poolname.equals(that.poolname))
+        return false;
+    }
+
     return true;
   }
 
@@ -1129,6 +1186,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetRetryRetention()) ? 131071 : 524287);
     if (isSetRetryRetention())
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(retryRetention);
+
+    hashCode = hashCode * 8191 + ((isSetPoolname()) ? 131071 : 524287);
+    if (isSetPoolname())
+      hashCode = hashCode * 8191 + poolname.hashCode();
 
     return hashCode;
   }
@@ -1301,6 +1362,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetPoolname(), other.isSetPoolname());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPoolname()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.poolname, other.poolname);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1443,6 +1514,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("retryRetention:");
       sb.append(this.retryRetention);
+      first = false;
+    }
+    if (isSetPoolname()) {
+      if (!first) sb.append(", ");
+      sb.append("poolname:");
+      if (this.poolname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.poolname);
+      }
       first = false;
     }
     sb.append(")");
@@ -1634,6 +1715,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 17: // POOLNAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.poolname = iprot.readString();
+              struct.setPoolnameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1737,6 +1826,13 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeI64(struct.retryRetention);
         oprot.writeFieldEnd();
       }
+      if (struct.poolname != null) {
+        if (struct.isSetPoolname()) {
+          oprot.writeFieldBegin(POOLNAME_FIELD_DESC);
+          oprot.writeString(struct.poolname);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1795,7 +1891,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetRetryRetention()) {
         optionals.set(11);
       }
-      oprot.writeBitSet(optionals, 12);
+      if (struct.isSetPoolname()) {
+        optionals.set(12);
+      }
+      oprot.writeBitSet(optionals, 13);
       if (struct.isSetPartitionname()) {
         oprot.writeString(struct.partitionname);
       }
@@ -1832,6 +1931,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetRetryRetention()) {
         oprot.writeI64(struct.retryRetention);
       }
+      if (struct.isSetPoolname()) {
+        oprot.writeString(struct.poolname);
+      }
     }
 
     @Override
@@ -1845,7 +1947,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setTablenameIsSet(true);
       struct.type = org.apache.hadoop.hive.metastore.api.CompactionType.findByValue(iprot.readI32());
       struct.setTypeIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(12);
+      java.util.BitSet incoming = iprot.readBitSet(13);
       if (incoming.get(0)) {
         struct.partitionname = iprot.readString();
         struct.setPartitionnameIsSet(true);
@@ -1893,6 +1995,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(11)) {
         struct.retryRetention = iprot.readI64();
         struct.setRetryRetentionIsSet(true);
+      }
+      if (incoming.get(12)) {
+        struct.poolname = iprot.readString();
+        struct.setPoolnameIsSet(true);
       }
     }
   }
