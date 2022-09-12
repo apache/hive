@@ -22,7 +22,7 @@ import java.util.Objects;
 
 /**
  * Represents a table snapshot.
- * This is used by transferring relevant snapshot info using {@link HiveStorageHandler} API.
+ * This is used by transferring relevant snapshot info using HiveStorageHandler API.
  * Currently, it wraps only Iceberg snapshotId to support decision-making whether to use
  * materialized view on Iceberg tables.
  */
