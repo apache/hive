@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEARCHIVEENABLED;
@@ -14212,15 +14213,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Do not allow view to be defined on temp table or other materialized view
       validateTablesUsed(this);
       if (createVwDesc.isRewriteEnabled()) {
+        int nativeAcidCount = 0;
+        int supportsSnapshotCount = 0;
         for (TableScanOperator ts : topOps.values()) {
           Table table = ts.getConf().getTableMetadata();
           if (SemanticAnalyzer.DUMMY_TABLE.equals(table.getTableName())) {
             continue;
           }
-          if (!AcidUtils.isTransactionalTable(table)) {
+          if (AcidUtils.isTransactionalTable(table)) {
+            ++nativeAcidCount;
+          } else if (AcidUtils.isNonNativeAcidTable(table) && table.getStorageHandler().areSnapshotsSupported()) {
+            ++supportsSnapshotCount;
+          } else {
             throw new SemanticException("Automatic rewriting for materialized view cannot "
                     + "be enabled if the materialized view uses non-transactional tables");
           }
+          if (isNotBlank(ts.getConf().getAsOfTimestamp()) || isNotBlank(ts.getConf().getAsOfVersion())) {
+            throw new SemanticException("Automatic rewriting for materialized view cannot "
+                    + "be enabled if the materialized view uses time travel query.");
+          }
+        }
+        if (nativeAcidCount > 0 && supportsSnapshotCount > 0) {
+          throw new SemanticException("All materialized view source tables either must be native ACID tables or " +
+                  "must support table snapshots.");
         }
       }
 

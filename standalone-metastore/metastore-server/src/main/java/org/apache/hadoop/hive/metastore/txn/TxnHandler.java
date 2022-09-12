@@ -68,6 +68,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
@@ -2572,8 +2573,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     // the materialization was created. Otherwise, query returns 0 rows.
 
     // Parse validReaderWriteIdList from creation metadata
-    final ValidTxnWriteIdList validReaderWriteIdList =
-            new ValidTxnWriteIdList(creationMetadata.getValidTxnList());
+    MaterializationSnapshot mvSnapshot = MaterializationSnapshot.fromJson(creationMetadata.getValidTxnList());
+    if (mvSnapshot.getTableSnapshots() != null && !mvSnapshot.getTableSnapshots().isEmpty()) {
+      // Incremental rebuild of MVs on Iceberg sources is not supported.
+      return null;
+    }
+    final ValidTxnWriteIdList validReaderWriteIdList = new ValidTxnWriteIdList(mvSnapshot.getValidTxnList());
 
     // Parse validTxnList
     final ValidReadTxnList currentValidTxnList = new ValidReadTxnList(validTxnListStr);
