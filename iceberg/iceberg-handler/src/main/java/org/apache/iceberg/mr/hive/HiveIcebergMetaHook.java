@@ -295,6 +295,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       assertTableCanBeMigrated(hmsTable);
       isTableMigration = true;
 
+      setAutoPurgeProperty(hmsTable);
+
       StorageDescriptor sd = hmsTable.getSd();
       preAlterTableProperties = new PreAlterTableProperties();
       preAlterTableProperties.tableLocation = sd.getLocation();
@@ -353,6 +355,15 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       handleChangeColumn(hmsTable);
     } else if (AlterTableType.ADDPROPS.equals(currentAlterTableOp)) {
       assertNotCrossTableMetadataLocationChange(hmsTable.getParameters());
+    }
+  }
+
+  private void setAutoPurgeProperty(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    // If the format version is 2 and the external table purge property isn't explicitly defined set it to True by
+    // default
+    if ("2".equals(hmsTable.getParameters().get(TableProperties.FORMAT_VERSION)) &&
+        hmsTable.getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE) == null) {
+      hmsTable.getParameters().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "TRUE");
     }
   }
 

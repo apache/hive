@@ -19,11 +19,15 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -33,6 +37,7 @@ import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.thrift.TException;
@@ -42,6 +47,7 @@ import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
 
 /**
  * Tests table migration from native Hive tables to Iceberg backed tables (with the same underlying fileformat).
@@ -86,7 +92,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
         "named_struct('map1', map('a', 'b'), 'map2', map('c', 'd')) " +
         ")", identifier.name()));
 
-    validateMigration(identifier.name());
+    validateMigration(identifier.name(), false);
   }
 
   @Test
@@ -97,7 +103,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
         testTables.propertiesForCreateTableSQL(ImmutableMap.of());
     shell.executeStatement(createQuery);
     shell.executeStatement("INSERT INTO " + tableName + " VALUES (1), (2), (3)");
-    validateMigration(tableName);
+    validateMigration(tableName, false);
   }
 
   @Test
@@ -110,7 +116,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='bbb') VALUES (4), (5)");
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ccc') VALUES (6)");
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ddd') VALUES (7), (8), (9), (10)");
-    validateMigration(tableName);
+    validateMigration(tableName, false);
   }
 
   @Test
@@ -124,7 +130,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='bbb') VALUES (4), (5)");
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ccc') VALUES (6)");
     shell.executeStatement("INSERT INTO " + tableName + " PARTITION (b='ddd') VALUES (7), (8), (9), (10)");
-    validateMigration(tableName);
+    validateMigration(tableName, false);
   }
 
   @Test
@@ -214,10 +220,88 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
             "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')"));
   }
 
-  private void validateMigration(String tableName) throws TException, InterruptedException {
+  @Test
+  public void testMigrateHiveTableToIcebergV2Purge() throws TException, InterruptedException, IOException {
+    String tableName = "tbl";
+    // Create a normal external table.
+    String createQuery =
+        "CREATE EXTERNAL TABLE " + tableName + " (a int) STORED AS " + fileFormat.name() + " " + testTables
+            .locationForCreateTableSQL(TableIdentifier.of("default", tableName)) + testTables
+            .propertiesForCreateTableSQL(ImmutableMap.of());
+    shell.executeStatement(createQuery);
+
+    // Insert some data into the created table.
+    shell.executeStatement("INSERT INTO " + tableName + " VALUES (1), (2), (3)");
+
+    // Get the table location and check if it exists.
+    Table hmsTable = shell.metastore().getTable("default", tableName);
+    Path location = new Path(hmsTable.getSd().getLocation());
+    Assert.assertTrue(location.getFileSystem(shell.getHiveConf()).exists(location));
+
+    // Migrate it to Iceberg table v2 format & validate basic properties.
+    validateMigration(tableName, true);
+
+    // Get the HMS table & validate external.table.purge is set to true.
+    hmsTable = shell.metastore().getTable("default", tableName);
+    Assert.assertTrue(StringUtils.join(hmsTable.getParameters()),
+        hmsTable.getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE).equalsIgnoreCase("TRUE"));
+
+    // Get the Iceberg table & validate gc.enabled got set to true.
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(TableIdentifier.of("default", tableName));
+    Assert.assertTrue(StringUtils.join(icebergTable.properties()),
+        icebergTable.properties().get(TableProperties.GC_ENABLED).equalsIgnoreCase("TRUE"));
+
+    // Validate the location still exists, then post table drop it doesn't.
+    Assert.assertTrue(location.getFileSystem(shell.getHiveConf()).exists(location));
+    shell.executeStatement(String.format("DROP TABLE %s", tableName));
+    Assert.assertFalse(location.getFileSystem(shell.getHiveConf()).exists(location));
+  }
+
+  @Test
+  public void testMigrateHiveTableToIcebergV2ExplicitPurge() throws TException, InterruptedException, IOException {
+    String tableName = "tbl";
+    // Create a normal external table with explicitly defined external.table.purge as false
+    String createQuery =
+        "CREATE EXTERNAL TABLE " + tableName + " (a int) STORED AS " + fileFormat.name() + " " + testTables
+            .locationForCreateTableSQL(TableIdentifier.of("default", tableName)) + testTables
+            .propertiesForCreateTableSQL(Collections.singletonMap("external.table.purge", "false"));
+    shell.executeStatement(createQuery);
+
+    // Insert some data into the created table.
+    shell.executeStatement("INSERT INTO " + tableName + " VALUES (1), (2), (3)");
+
+    // Get the table location and check if it exists.
+    Table hmsTable = shell.metastore().getTable("default", tableName);
+    Path location = new Path(hmsTable.getSd().getLocation());
+    Assert.assertTrue(location.getFileSystem(shell.getHiveConf()).exists(location));
+
+    // Migrate it to Iceberg table v2 format & validate basic properties.
+    validateMigration(tableName, true);
+
+    // Get the HMS table & validate external.table.purge is still set to false.
+    hmsTable = shell.metastore().getTable("default", tableName);
+    Assert.assertTrue(StringUtils.join(hmsTable.getParameters()),
+        hmsTable.getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE).equalsIgnoreCase("FALSE"));
+
+    // Get the Iceberg table & validate gc.enabled didn't got set to true.
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(TableIdentifier.of("default", tableName));
+    Assert.assertFalse(StringUtils.join(icebergTable.properties()),
+        "TRUE".equalsIgnoreCase(icebergTable.properties().get(TableProperties.GC_ENABLED)));
+
+    // Validate the location exists & post table drop also it still exist since purge was explicitly set to False.
+    Assert.assertTrue(location.getFileSystem(shell.getHiveConf()).exists(location));
+    shell.executeStatement(String.format("DROP TABLE %s", tableName));
+    Assert.assertTrue(location.getFileSystem(shell.getHiveConf()).exists(location));
+  }
+
+  private void validateMigration(String tableName, boolean isV2) throws TException, InterruptedException {
+    String tblProperties = "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')";
+    if (isV2) {
+      tblProperties =
+          "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler', 'format-version' = '2')";
+    }
     List<Object[]> originalResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
-    shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES " +
-        "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')");
+    shell.executeStatement("ALTER TABLE " + tableName + " SET TBLPROPERTIES " + tblProperties);
     List<Object[]> alterResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
     Assert.assertEquals(originalResult.size(), alterResult.size());
     for (int i = 0; i < originalResult.size(); i++) {
