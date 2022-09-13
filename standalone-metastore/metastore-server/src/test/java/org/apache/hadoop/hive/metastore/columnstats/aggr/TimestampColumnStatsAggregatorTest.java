@@ -153,7 +153,8 @@ public class TimestampColumnStatsAggregatorTest {
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
 
-    // the aggregation does not update hll, only numNDVs is, it keeps the first hll
+    // the aggregation does not update hll, only numDVs is, it keeps the first hll
+    // notice that numDVs is computed by using HLL, it can detect that 'TS_3' appears twice
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Timestamp.class).numNulls(6).numDVs(7)
         .low(TS_1).high(TS_7).hll(values1).build();
 

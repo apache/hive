@@ -136,7 +136,8 @@ public class LongColumnStatsAggregatorTest {
     LongColumnStatsAggregator aggregator = new LongColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
 
-    // the aggregation does not update hll, only numNDVs is, it keeps the first hll
+    // the aggregation does not update hll, only numDVs is, it keeps the first hll
+    // notice that numDVs is computed by using HLL, it can detect that '3' appears twice
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(6).numDVs(7)
         .low(1L).high(7L).hll(1, 2, 3).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());

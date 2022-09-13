@@ -133,7 +133,7 @@ public class DecimalColumnStatsAggregatorTest {
     List<String> partitions = Arrays.asList("part1", "part2", "part3");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(Decimal.class).numNulls(1).numDVs(3)
-        .low(ONE).high(TWO).hll(1, 2, 3).build();
+        .low(ONE).high(THREE).hll(1, 2, 3).build();
     ColumnStatisticsData data2 = new ColStatsBuilder<>(Decimal.class).numNulls(2).numDVs(3)
         .low(THREE).high(FIVE).hll(3, 4, 5).build();
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Decimal.class).numNulls(3).numDVs(2)
@@ -147,7 +147,8 @@ public class DecimalColumnStatsAggregatorTest {
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
 
-    // the aggregation does not update hll, only numNDVs is, it keeps the first hll
+    // the aggregation does not update hll, only numDVs is, it keeps the first hll
+    // notice that numDVs is computed by using HLL, it can detect that '3' appears twice
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Decimal.class).numNulls(6).numDVs(7)
         .low(ONE).high(SEVEN).hll(1, 2, 3).build();
 

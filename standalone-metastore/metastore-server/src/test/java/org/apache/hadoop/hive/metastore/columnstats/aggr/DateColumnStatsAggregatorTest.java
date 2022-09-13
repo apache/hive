@@ -152,7 +152,8 @@ public class DateColumnStatsAggregatorTest {
     DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
 
-    // the aggregation does not update hll, only numNDVs is, it keeps the first hll
+    // the aggregation does not update hll, only numDVs is, it keeps the first hll
+    // notice that numDVs is computed by using HLL, it can detect that 'DATE_3' appears twice
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(7)
         .low(DATE_1).high(DATE_7).hll(values1).build();
 
