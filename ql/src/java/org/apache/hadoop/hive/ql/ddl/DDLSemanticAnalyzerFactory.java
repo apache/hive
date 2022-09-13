@@ -76,6 +76,9 @@ public final class DDLSemanticAnalyzerFactory {
       }
 
       DDLType ddlType = analyzerClass.getAnnotation(DDLType.class);
+      if (ddlType == null) {
+        continue;
+      }
       for (int type : ddlType.types()) {
         if (TYPE_TO_ANALYZER.containsKey(type)) {
           throw new IllegalStateException(
