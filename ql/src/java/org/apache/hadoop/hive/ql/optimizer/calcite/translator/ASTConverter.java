@@ -43,6 +43,7 @@ import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.core.Union;
+import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -144,9 +145,21 @@ public class ASTConverter {
   private static ASTNode emptyPlan(RelDataType dataType) {
     ASTBuilder select = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
     for (int i = 0; i < dataType.getFieldCount(); ++i) {
+      RelDataTypeField fieldType = dataType.getFieldList().get(i);
+      HiveToken ht = TypeConverter.hiveToken(fieldType.getType());
+      ASTNode typeNode;
+      if (ht == null) {
+        typeNode = ASTBuilder.construct(
+                HiveParser.Identifier, fieldType.getType().getSqlTypeName().getName().toLowerCase()).node();
+      } else {
+        typeNode = ASTBuilder.construct(ht.type, ht.text).node();
+      }
       select.add(ASTBuilder.selectExpr(
-              ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node(),
-              dataType.getFieldList().get(i).getName()));
+              ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION")
+                      .add(typeNode)
+                      .add(ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node()).node()
+              ,
+              fieldType.getName()));
     }
 
     ASTNode insert = ASTBuilder.
@@ -559,6 +572,14 @@ public class ASTConverter {
       }
     }
 
+    public void handle(Values values) {
+      if (ASTConverter.this.select == null) {
+        ASTConverter.this.select = values;
+      } else {
+        ASTConverter.this.from = values;
+      }
+    }
+
     @Override
     public void visit(RelNode node, int ordinal, RelNode parent) {
 
@@ -584,6 +605,8 @@ public class ASTConverter {
         } else {
           ASTConverter.this.orderLimit = node;
         }
+      } else if (node instanceof Values) {
+        handle((HiveValues) node);
       }
       /*
        * once the source node is reached; stop traversal for this QB
