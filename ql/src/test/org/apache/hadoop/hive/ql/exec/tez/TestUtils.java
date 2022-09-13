@@ -121,7 +121,7 @@ public class TestUtils {
 
     when(mockRegistry.getInstances()).thenReturn(mockInstanceSet);
     when(mockInstanceSet.getAllInstancesOrdered(anyBoolean())).thenReturn(instances);
-    SplitLocationProvider provider = Utils.getCustomSplitLocationProvider(mockRegistry, LOG);
+    SplitLocationProvider provider = Utils.getCustomSplitLocationProvider(mockRegistry, 0, LOG);
 
     assertLocations((HostAffinitySplitLocationProvider)provider, new String[] {ACTIVE});
 
@@ -133,7 +133,7 @@ public class TestUtils {
     instances.remove(dynamic);
     instances.add(fixed);
 
-    provider = Utils.getCustomSplitLocationProvider(mockRegistry, LOG);
+    provider = Utils.getCustomSplitLocationProvider(mockRegistry, 0, LOG);
 
     assertLocations((HostAffinitySplitLocationProvider)provider, new String[] {FIXED});
   }

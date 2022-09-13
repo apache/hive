@@ -5053,6 +5053,14 @@ public class HiveConf extends Configuration {
     // These are read by Hadoop IPC, so you should check the usage and naming conventions (e.g.
     // ".blocked" is a string hardcoded by Hadoop, and defaults are enforced elsewhere in Hive)
     // before making changes or copy-pasting these.
+    LLAP_ZK_REGISTRY_INSTANCE_TIMEOUT_BEFORE_SPLITGENERATION(
+        "hive.llap.zk.registry.instance.timeout.before.splitgeneration", 0,
+        "HiveSplitGenerator will wait this many milliseconds for LLAP instances to become ready before"
+            + "trying generate splits.\n"
+            + "This can prevent some exceptions when LLAP instances are not ready yet but the query is already "
+            + "assigned to the TezAM."
+            + "Default value is 0, which means no timeout (similar behavior applies to values smaller than 1000 "
+            + "due to the nature of retry logic inside)"),
     LLAP_SECURITY_ACL("hive.llap.daemon.acl", "*", "The ACL for LLAP daemon."),
     LLAP_SECURITY_ACL_DENY("hive.llap.daemon.acl.blocked", "", "The deny ACL for LLAP daemon."),
     LLAP_MANAGEMENT_ACL("hive.llap.management.acl", "*", "The ACL for LLAP daemon management."),

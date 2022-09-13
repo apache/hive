@@ -20,15 +20,14 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
@@ -74,7 +73,9 @@ public class Utils {
       return locationProviderImpl;
     } else if (useCustomLocations) {
       LlapRegistryService serviceRegistry = LlapRegistryService.getClient(conf);
-      return getCustomSplitLocationProvider(serviceRegistry, LOG);
+      int instanceTimeoutMs =
+          HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_ZK_REGISTRY_INSTANCE_TIMEOUT_BEFORE_SPLITGENERATION);
+      return getCustomSplitLocationProvider(serviceRegistry, instanceTimeoutMs, LOG);
     } else {
       splitLocationProvider = new SplitLocationProvider() {
         @Override
@@ -96,15 +97,29 @@ public class Utils {
   }
 
   @VisibleForTesting
-  static SplitLocationProvider getCustomSplitLocationProvider(LlapRegistryService serviceRegistry, Logger LOG) throws
-      IOException {
+  static SplitLocationProvider getCustomSplitLocationProvider(LlapRegistryService serviceRegistry,
+      int instanceTimeoutMs, Logger LOG) throws IOException {
     LOG.info("Using LLAP instance " + serviceRegistry.getApplicationId());
+    long st = System.currentTimeMillis();
 
-    Collection<LlapServiceInstance> serviceInstances =
-        serviceRegistry.getInstances().getAllInstancesOrdered(true);
-    Preconditions.checkArgument(!serviceInstances.isEmpty(),
-        "No running LLAP daemons! Please check LLAP service status and zookeeper configuration");
+    waitFor(() -> {
+      Collection<LlapServiceInstance> serviceInstances = null;
+      try {
+        serviceInstances = serviceRegistry.getInstances().getAllInstancesOrdered(true);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      return !serviceInstances.isEmpty();
+    }, 1000, instanceTimeoutMs,
+        String.format(
+            "No running LLAP daemons! Please check LLAP service status and zookeeper configuration (timeout: %s ms)",
+            instanceTimeoutMs));
+
+    // we can call this again, TreeCache inside prevents double communication to zookeeper
+    Collection<LlapServiceInstance> serviceInstances = serviceRegistry.getInstances().getAllInstancesOrdered(true);
+    LOG.info("{} LLAP instance(s) found in {} ms", serviceInstances.size(), System.currentTimeMillis() - st);
     ArrayList<String> locations = new ArrayList<>(serviceInstances.size());
+
     for (LlapServiceInstance serviceInstance : serviceInstances) {
       String executors =
           serviceInstance.getProperties().get(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS);
@@ -126,6 +141,40 @@ public class Utils {
     return new HostAffinitySplitLocationProvider(locations);
   }
 
+  /**
+   * Wait for the specified Supplier to return true. The check will be performed
+   * initially and then every {@code checkEveryMillis} until at least
+   * {@code waitForMillis} time has expired.
+   *
+   * Method is inspired by hadoop's GenericTestUtils.waitFor()
+   *
+   * @param check the test to perform.
+   * @param checkEveryMillis how often to perform the test.
+   * @param waitForMillis the amount of time after which no more tests will be
+   * performed.
+   * @param errorMsg error message to provide in the exception.
+   */
+  public static void waitFor(final Supplier<Boolean> check, final long checkEveryMillis, final long waitForMillis,
+      final String errorMsg) {
+    long st = System.currentTimeMillis();
+    boolean result = check.get();
+
+    while (!result && (System.currentTimeMillis() - st < waitForMillis)) {
+      try {
+        Thread.sleep(checkEveryMillis);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new RuntimeException(
+            "Interrupted while waiting for condition for " + Long.toString(System.currentTimeMillis() - st) + " millis",
+            e);
+      }
+      result = check.get();
+    }
+
+    if (!result) {
+      throw new RuntimeException(errorMsg);
+    }
+  }
 
   /**
    * Merges two different tez counters into one
