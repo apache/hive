@@ -152,7 +152,13 @@ public class ASTConverter {
         typeNode = ASTBuilder.construct(
                 HiveParser.Identifier, fieldType.getType().getSqlTypeName().getName().toLowerCase()).node();
       } else {
-        typeNode = ASTBuilder.construct(ht.type, ht.text).node();
+        ASTBuilder typeNodeBuilder = ASTBuilder.construct(ht.type, ht.text);
+        if (ht.args != null) {
+          for (String castArg : ht.args) {
+            typeNodeBuilder.add(HiveParser.Identifier, castArg);
+          }
+        }
+        typeNode = typeNodeBuilder.node();
       }
       select.add(ASTBuilder.selectExpr(
               ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION")
