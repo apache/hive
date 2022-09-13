@@ -50,7 +50,7 @@ public class DoubleColumnStatsAggregatorTest {
     List<String> partitions = Collections.singletonList("part1");
 
     ColumnStatisticsData data1 = new ColStatsBuilder<>(double.class).numNulls(1).numDVs(2)
-        .low(1d).high(4d).hll(1, 3).build();
+        .low(1d).high(4d).hll(1, 4).build();
     List<ColStatsObjWithSourceInfo> statsList =
         Collections.singletonList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)));
 
