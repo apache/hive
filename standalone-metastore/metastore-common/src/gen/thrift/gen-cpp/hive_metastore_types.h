@@ -10569,12 +10569,13 @@ void swap(HeartbeatTxnRangeResponse &a, HeartbeatTxnRangeResponse &b);
 std::ostream& operator<<(std::ostream& out, const HeartbeatTxnRangeResponse& obj);
 
 typedef struct _CompactionRequest__isset {
-  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false), initiatorId(false), initiatorVersion(false) {}
+  _CompactionRequest__isset() : partitionname(false), runas(false), properties(false), initiatorId(false), initiatorVersion(false), poolName(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
   bool initiatorId :1;
   bool initiatorVersion :1;
+  bool poolName :1;
 } _CompactionRequest__isset;
 
 class CompactionRequest : public virtual ::apache::thrift::TBase {
@@ -10589,7 +10590,8 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
                       type(static_cast<CompactionType::type>(0)),
                       runas(),
                       initiatorId(),
-                      initiatorVersion() {
+                      initiatorVersion(),
+                      poolName() {
   }
 
   virtual ~CompactionRequest() noexcept;
@@ -10605,6 +10607,7 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   std::map<std::string, std::string>  properties;
   std::string initiatorId;
   std::string initiatorVersion;
+  std::string poolName;
 
   _CompactionRequest__isset __isset;
 
@@ -10623,6 +10626,8 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
   void __set_initiatorId(const std::string& val);
 
   void __set_initiatorVersion(const std::string& val);
+
+  void __set_poolName(const std::string& val);
 
   bool operator == (const CompactionRequest & rhs) const
   {
@@ -10652,6 +10657,10 @@ class CompactionRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.initiatorVersion && !(initiatorVersion == rhs.initiatorVersion))
       return false;
+    if (__isset.poolName != rhs.__isset.poolName)
+      return false;
+    else if (__isset.poolName && !(poolName == rhs.poolName))
+      return false;
     return true;
   }
   bool operator != (const CompactionRequest &rhs) const {
@@ -10671,7 +10680,7 @@ void swap(CompactionRequest &a, CompactionRequest &b);
 std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj);
 
 typedef struct _CompactionInfoStruct__isset {
-  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false), retryRetention(false) {}
+  _CompactionInfoStruct__isset() : partitionname(false), runas(false), properties(false), toomanyaborts(false), state(false), workerId(false), start(false), highestWriteId(false), errorMessage(false), hasoldabort(false), enqueueTime(false), retryRetention(false), poolname(false) {}
   bool partitionname :1;
   bool runas :1;
   bool properties :1;
@@ -10684,6 +10693,7 @@ typedef struct _CompactionInfoStruct__isset {
   bool hasoldabort :1;
   bool enqueueTime :1;
   bool retryRetention :1;
+  bool poolname :1;
 } _CompactionInfoStruct__isset;
 
 class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
@@ -10707,7 +10717,8 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
                          errorMessage(),
                          hasoldabort(0),
                          enqueueTime(0),
-                         retryRetention(0) {
+                         retryRetention(0),
+                         poolname() {
   }
 
   virtual ~CompactionInfoStruct() noexcept;
@@ -10731,6 +10742,7 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   bool hasoldabort;
   int64_t enqueueTime;
   int64_t retryRetention;
+  std::string poolname;
 
   _CompactionInfoStruct__isset __isset;
 
@@ -10765,6 +10777,8 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
   void __set_enqueueTime(const int64_t val);
 
   void __set_retryRetention(const int64_t val);
+
+  void __set_poolname(const std::string& val);
 
   bool operator == (const CompactionInfoStruct & rhs) const
   {
@@ -10823,6 +10837,10 @@ class CompactionInfoStruct : public virtual ::apache::thrift::TBase {
     if (__isset.retryRetention != rhs.__isset.retryRetention)
       return false;
     else if (__isset.retryRetention && !(retryRetention == rhs.retryRetention))
+      return false;
+    if (__isset.poolname != rhs.__isset.poolname)
+      return false;
+    else if (__isset.poolname && !(poolname == rhs.poolname))
       return false;
     return true;
   }
@@ -11145,19 +11163,33 @@ void swap(CompactionResponse &a, CompactionResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const CompactionResponse& obj);
 
+typedef struct _ShowCompactRequest__isset {
+  _ShowCompactRequest__isset() : poolName(false) {}
+  bool poolName :1;
+} _ShowCompactRequest__isset;
 
 class ShowCompactRequest : public virtual ::apache::thrift::TBase {
  public:
 
-  ShowCompactRequest(const ShowCompactRequest&) noexcept;
-  ShowCompactRequest& operator=(const ShowCompactRequest&) noexcept;
-  ShowCompactRequest() noexcept {
+  ShowCompactRequest(const ShowCompactRequest&);
+  ShowCompactRequest& operator=(const ShowCompactRequest&);
+  ShowCompactRequest() noexcept
+                     : poolName() {
   }
 
   virtual ~ShowCompactRequest() noexcept;
+  std::string poolName;
 
-  bool operator == (const ShowCompactRequest & /* rhs */) const
+  _ShowCompactRequest__isset __isset;
+
+  void __set_poolName(const std::string& val);
+
+  bool operator == (const ShowCompactRequest & rhs) const
   {
+    if (__isset.poolName != rhs.__isset.poolName)
+      return false;
+    else if (__isset.poolName && !(poolName == rhs.poolName))
+      return false;
     return true;
   }
   bool operator != (const ShowCompactRequest &rhs) const {
@@ -11177,7 +11209,7 @@ void swap(ShowCompactRequest &a, ShowCompactRequest &b);
 std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj);
 
 typedef struct _ShowCompactResponseElement__isset {
-  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false), workerVersion(false), initiatorId(false), initiatorVersion(false), cleanerStart(false) {}
+  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false), workerVersion(false), initiatorId(false), initiatorVersion(false), cleanerStart(false), poolName(false) {}
   bool partitionname :1;
   bool workerid :1;
   bool start :1;
@@ -11193,6 +11225,7 @@ typedef struct _ShowCompactResponseElement__isset {
   bool initiatorId :1;
   bool initiatorVersion :1;
   bool cleanerStart :1;
+  bool poolName :1;
 } _ShowCompactResponseElement__isset;
 
 class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
@@ -11218,7 +11251,8 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
                                  workerVersion(),
                                  initiatorId(),
                                  initiatorVersion(),
-                                 cleanerStart(0) {
+                                 cleanerStart(0),
+                                 poolName() {
   }
 
   virtual ~ShowCompactResponseElement() noexcept;
@@ -11245,6 +11279,7 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   std::string initiatorId;
   std::string initiatorVersion;
   int64_t cleanerStart;
+  std::string poolName;
 
   _ShowCompactResponseElement__isset __isset;
 
@@ -11285,6 +11320,8 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   void __set_initiatorVersion(const std::string& val);
 
   void __set_cleanerStart(const int64_t val);
+
+  void __set_poolName(const std::string& val);
 
   bool operator == (const ShowCompactResponseElement & rhs) const
   {
@@ -11355,6 +11392,10 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
     if (__isset.cleanerStart != rhs.__isset.cleanerStart)
       return false;
     else if (__isset.cleanerStart && !(cleanerStart == rhs.cleanerStart))
+      return false;
+    if (__isset.poolName != rhs.__isset.poolName)
+      return false;
+    else if (__isset.poolName && !(poolName == rhs.poolName))
       return false;
     return true;
   }
@@ -11512,9 +11553,10 @@ void swap(GetLatestCommittedCompactionInfoResponse &a, GetLatestCommittedCompact
 std::ostream& operator<<(std::ostream& out, const GetLatestCommittedCompactionInfoResponse& obj);
 
 typedef struct _FindNextCompactRequest__isset {
-  _FindNextCompactRequest__isset() : workerId(false), workerVersion(false) {}
+  _FindNextCompactRequest__isset() : workerId(false), workerVersion(false), poolName(false) {}
   bool workerId :1;
   bool workerVersion :1;
+  bool poolName :1;
 } _FindNextCompactRequest__isset;
 
 class FindNextCompactRequest : public virtual ::apache::thrift::TBase {
@@ -11524,18 +11566,22 @@ class FindNextCompactRequest : public virtual ::apache::thrift::TBase {
   FindNextCompactRequest& operator=(const FindNextCompactRequest&);
   FindNextCompactRequest() noexcept
                          : workerId(),
-                           workerVersion() {
+                           workerVersion(),
+                           poolName() {
   }
 
   virtual ~FindNextCompactRequest() noexcept;
   std::string workerId;
   std::string workerVersion;
+  std::string poolName;
 
   _FindNextCompactRequest__isset __isset;
 
   void __set_workerId(const std::string& val);
 
   void __set_workerVersion(const std::string& val);
+
+  void __set_poolName(const std::string& val);
 
   bool operator == (const FindNextCompactRequest & rhs) const
   {
@@ -11546,6 +11592,10 @@ class FindNextCompactRequest : public virtual ::apache::thrift::TBase {
     if (__isset.workerVersion != rhs.__isset.workerVersion)
       return false;
     else if (__isset.workerVersion && !(workerVersion == rhs.workerVersion))
+      return false;
+    if (__isset.poolName != rhs.__isset.poolName)
+      return false;
+    else if (__isset.poolName && !(poolName == rhs.poolName))
       return false;
     return true;
   }

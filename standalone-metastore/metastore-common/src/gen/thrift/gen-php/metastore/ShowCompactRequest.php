@@ -21,11 +21,25 @@ class ShowCompactRequest
     static public $isValidate = false;
 
     static public $_TSPEC = array(
+        1 => array(
+            'var' => 'poolName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
+    /**
+     * @var string
+     */
+    public $poolName = null;
 
-    public function __construct()
+    public function __construct($vals = null)
     {
+        if (is_array($vals)) {
+            if (isset($vals['poolName'])) {
+                $this->poolName = $vals['poolName'];
+            }
+        }
     }
 
     public function getName()
@@ -47,6 +61,13 @@ class ShowCompactRequest
                 break;
             }
             switch ($fid) {
+                case 1:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->poolName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -61,6 +82,11 @@ class ShowCompactRequest
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('ShowCompactRequest');
+        if ($this->poolName !== null) {
+            $xfer += $output->writeFieldBegin('poolName', TType::STRING, 1);
+            $xfer += $output->writeString($this->poolName);
+            $xfer += $output->writeFieldEnd();
+        }
         $xfer += $output->writeFieldStop();
         $xfer += $output->writeStructEnd();
         return $xfer;

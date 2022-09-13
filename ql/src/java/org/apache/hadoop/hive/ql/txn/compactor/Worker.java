@@ -249,6 +249,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
       findNextCompactRequest.setWorkerId(workerName);
       findNextCompactRequest.setWorkerVersion(runtimeVersion);
+      findNextCompactRequest.setPoolName(this.getPoolName());
       ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(findNextCompactRequest));
       LOG.info("Processing compaction request {}", ci);
 
@@ -257,6 +258,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
       if ((runtimeVersion != null || ci.initiatorVersion != null) && !runtimeVersion.equals(ci.initiatorVersion)) {
         LOG.warn("Worker and Initiator versions do not match. Worker: v{}, Initiator: v{}", runtimeVersion, ci.initiatorVersion);
+      }
+
+      if (StringUtils.isBlank(getPoolName()) && StringUtils.isNotBlank(ci.poolName)) {
+        LOG.warn("A timed out copmaction pool entry ({}) is picked up by one of the default compaction pool workers.", ci);
+      }
+      if (StringUtils.isNotBlank(getPoolName()) && StringUtils.isNotBlank(ci.poolName) && !getPoolName().equals(ci.poolName)) {
+        LOG.warn("The returned compaction request ({}) belong to a different pool. Altough the worker is assigned to the {} pool," +
+            " it will process the request.", ci, getPoolName());
       }
       checkInterrupt();
 

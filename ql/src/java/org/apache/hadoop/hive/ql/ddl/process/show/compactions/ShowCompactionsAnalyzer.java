@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.process.show.compactions;
 
+import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -39,8 +40,17 @@ public class ShowCompactionsAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
+    String poolName = null;
+    Tree pool = root.getChild(0);
+    if (pool != null) {
+      if (pool.getType() != HiveParser.TOK_COMPACT_POOL) {
+        throw new SemanticException("Unknown token, 'POOL' expected.");
+      } else {
+        poolName = unescapeSQLString(pool.getChild(0).getText());
+      }
+    }
     ctx.setResFile(ctx.getLocalTmpPath());
-    ShowCompactionsDesc desc = new ShowCompactionsDesc(ctx.getResFile());
+    ShowCompactionsDesc desc = new ShowCompactionsDesc(ctx.getResFile(), poolName);
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(task);
 

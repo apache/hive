@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
@@ -780,9 +781,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     // Can not create INTERVAL types from normal create table, so leave them out from this test
     Map<String, Type> notSupportedTypes = ImmutableMap.of(
         "TINYINT", Types.IntegerType.get(),
-        "SMALLINT", Types.IntegerType.get(),
-        "VARCHAR(1)", Types.StringType.get(),
-         "CHAR(1)", Types.StringType.get());
+        "SMALLINT", Types.IntegerType.get());
 
     shell.setHiveSessionValue(InputFormatConfig.SCHEMA_AUTO_CONVERSION, "true");
 
@@ -796,6 +795,19 @@ public class TestHiveIcebergStorageHandlerNoScan {
       org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
       Assert.assertEquals(notSupportedTypes.get(notSupportedType), icebergTable.schema().columns().get(0).type());
       shell.executeStatement("DROP TABLE not_supported_types");
+    }
+
+    List<String> notCompatibleTypes = ImmutableList.of("VARCHAR(1)", "CHAR(1)");
+
+    for (String notCompatibleType : notCompatibleTypes) {
+      AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+          "Unsupported Hive type", () -> {
+            shell.executeStatement("CREATE EXTERNAL TABLE not_compatible_types (not_supported " + notCompatibleType +
+                ") STORED BY ICEBERG " +
+                testTables.locationForCreateTableSQL(identifier) +
+                testTables.propertiesForCreateTableSQL(
+                    ImmutableMap.of(InputFormatConfig.EXTERNAL_TABLE_PURGE, "TRUE")));
+          });
     }
   }
 
@@ -1575,6 +1587,53 @@ public class TestHiveIcebergStorageHandlerNoScan {
               "'storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler','metadata_location'='asdf')");
         });
   }
+
+  @Test
+  public void testCTLT() throws TException, InterruptedException {
+    Assume.assumeTrue(" CTLT target table must be a HiveCatalog table",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    // Create a normal table and add some data
+    shell.executeStatement("CREATE TABLE source(a int)");
+    shell.executeStatement("insert into source values(1)");
+
+    // Run a CTLT query.
+    shell.executeStatement(String.format("CREATE TABLE dest LIKE source STORED BY ICEBERG %s %s",
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", "dest")),
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
+
+    // Try a select query and check if the table is empty .
+    String result = shell.executeAndStringify("select a from " + TableIdentifier.of("default", "dest").name());
+    Assert.assertTrue(result.isEmpty());
+
+    // Validate the properties of the table.
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "dest");
+    StorageDescriptor sd = hmsTable.getSd();
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergSerDe", sd.getSerdeInfo().getSerializationLib());
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergInputFormat", sd.getInputFormat());
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergOutputFormat", sd.getOutputFormat());
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergStorageHandler",
+        hmsTable.getParameters().get("storage_handler"));
+    Assert.assertEquals("ICEBERG", hmsTable.getParameters().get("table_type"));
+  }
+
+  @Test
+  public void testCTLTHiveCatalogValidation() throws TException, InterruptedException {
+    Assume.assumeTrue(" CTLT target table works on HiveCatalog table",
+        testTableType != TestTables.TestTableType.HIVE_CATALOG);
+
+    // Create a normal table and add some data
+    shell.executeStatement("CREATE TABLE source(a int)");
+    shell.executeStatement("insert into source values(1)");
+
+    // Run a CTLT query.
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        " CTLT target table must be a HiveCatalog table", () -> {
+          shell.executeStatement(String.format("CREATE TABLE dest LIKE source STORED BY ICEBERG %s %s",
+              testTables.locationForCreateTableSQL(TableIdentifier.of("default", "dest")),
+              testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
+        });
+  }
+
 
   /**
    * Checks that the new schema has newintcol and newstring col columns on both HMS and Iceberg sides

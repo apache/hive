@@ -24,9 +24,11 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -71,7 +73,8 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
     Table table = getTable(tableName);
 
     if (AcidUtils.isTransactionalTable(table)) {
-      compactAcidTable(tableName, partitionSpec);
+      String poolName = table.getProperty(Constants.HIVE_COMPACTOR_WORKER_POOL);
+      compactAcidTable(tableName, partitionSpec, poolName);
     } else {
       // non-native and non-managed tables are not supported as MoveTask requires filenames to be in specific format,
       // violating which can cause data loss
@@ -95,10 +98,11 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
     }
   }
 
-  private void compactAcidTable(TableName tableName, Map<String, String> partitionSpec) throws SemanticException {
+  private void compactAcidTable(TableName tableName, Map<String, String> partitionSpec, String poolName) throws SemanticException {
     boolean isBlocking = !HiveConf.getBoolVar(conf, ConfVars.TRANSACTIONAL_CONCATENATE_NOBLOCK, false);
 
-    AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, "MAJOR", isBlocking, null);
+    AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, CompactionType.MAJOR.name(), isBlocking,
+        poolName, null);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
     setAcidDdlDesc(getTable(tableName), desc);
   }

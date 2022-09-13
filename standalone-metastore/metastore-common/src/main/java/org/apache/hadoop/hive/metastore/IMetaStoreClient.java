@@ -3447,10 +3447,15 @@ public interface IMetaStoreClient {
    * @param partitionName Name of the partition to be compacted
    * @param type Whether this is a major or minor compaction.
    * @throws TException
+   * @deprecated use {@link #compact2(CompactionRequest)}
    */
   @Deprecated
   void compact(String dbname, String tableName, String partitionName,  CompactionType type)
       throws TException;
+
+  /**
+   * @deprecated use {@link #compact2(CompactionRequest)}
+   */
   @Deprecated
   void compact(String dbname, String tableName, String partitionName, CompactionType type,
                Map<String, String> tblproperties) throws TException;
@@ -3469,9 +3474,23 @@ public interface IMetaStoreClient {
    * @param tblproperties the list of tblproperties to override for this compact. Can be null.
    * @return id of newly scheduled compaction or id/state of one which is already scheduled/running
    * @throws TException
+   * @deprecated use {@link #compact2(CompactionRequest)}
    */
+  @Deprecated
   CompactionResponse compact2(String dbname, String tableName, String partitionName, CompactionType type,
                               Map<String, String> tblproperties) throws TException;
+
+  /**
+   * Send a request to compact a table or partition.  This will not block until the compaction is
+   * complete.  It will instead put a request on the queue for that table or partition to be
+   * compacted.  No checking is done on the dbname, tableName, or partitionName to make sure they
+   * refer to valid objects.  It is assumed this has already been done by the caller.  At most one
+   * Compaction can be scheduled/running for any given resource at a time.
+   * @param request The {@link CompactionRequest} object containing the details required to enqueue
+   *                a compaction request.
+   * @throws TException
+   */
+  CompactionResponse compact2(CompactionRequest request) throws TException;
 
   /**
    * Get a list of all compactions.
@@ -3480,6 +3499,15 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   ShowCompactResponse showCompactions() throws TException;
+
+  /**
+   * Get a list of all compactions for the given pool name.
+   * @return List of all current compactions for the given pool name.  This includes compactions waiting to happen,
+   * in progress, and finished but waiting to clean the existing files.
+   * @param poolName The name of the compaction pool for which the compactions must be returned.
+   * @throws TException
+   */
+  ShowCompactResponse showCompactions(String poolName) throws TException;
 
   /**
    * Submit a request for performing cleanup of output directory. This is particularly

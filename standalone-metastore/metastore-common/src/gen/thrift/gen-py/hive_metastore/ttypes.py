@@ -15273,11 +15273,12 @@ class CompactionRequest(object):
      - properties
      - initiatorId
      - initiatorVersion
+     - poolName
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, initiatorId=None, initiatorVersion=None,):
+    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, initiatorId=None, initiatorVersion=None, poolName=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionname = partitionname
@@ -15286,6 +15287,7 @@ class CompactionRequest(object):
         self.properties = properties
         self.initiatorId = initiatorId
         self.initiatorVersion = initiatorVersion
+        self.poolName = poolName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15342,6 +15344,11 @@ class CompactionRequest(object):
                     self.initiatorVersion = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRING:
+                    self.poolName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15388,6 +15395,10 @@ class CompactionRequest(object):
             oprot.writeFieldBegin('initiatorVersion', TType.STRING, 8)
             oprot.writeString(self.initiatorVersion.encode('utf-8') if sys.version_info[0] == 2 else self.initiatorVersion)
             oprot.writeFieldEnd()
+        if self.poolName is not None:
+            oprot.writeFieldBegin('poolName', TType.STRING, 9)
+            oprot.writeString(self.poolName.encode('utf-8') if sys.version_info[0] == 2 else self.poolName)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -15431,11 +15442,12 @@ class CompactionInfoStruct(object):
      - hasoldabort
      - enqueueTime
      - retryRetention
+     - poolname
 
     """
 
 
-    def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None, retryRetention=None,):
+    def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None, retryRetention=None, poolname=None,):
         self.id = id
         self.dbname = dbname
         self.tablename = tablename
@@ -15452,6 +15464,7 @@ class CompactionInfoStruct(object):
         self.hasoldabort = hasoldabort
         self.enqueueTime = enqueueTime
         self.retryRetention = retryRetention
+        self.poolname = poolname
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15542,6 +15555,11 @@ class CompactionInfoStruct(object):
                     self.retryRetention = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 17:
+                if ftype == TType.STRING:
+                    self.poolname = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15615,6 +15633,10 @@ class CompactionInfoStruct(object):
         if self.retryRetention is not None:
             oprot.writeFieldBegin('retryRetention', TType.I64, 16)
             oprot.writeI64(self.retryRetention)
+            oprot.writeFieldEnd()
+        if self.poolname is not None:
+            oprot.writeFieldBegin('poolname', TType.STRING, 17)
+            oprot.writeString(self.poolname.encode('utf-8') if sys.version_info[0] == 2 else self.poolname)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -16086,7 +16108,15 @@ class CompactionResponse(object):
 
 
 class ShowCompactRequest(object):
+    """
+    Attributes:
+     - poolName
 
+    """
+
+
+    def __init__(self, poolName=None,):
+        self.poolName = poolName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -16097,6 +16127,11 @@ class ShowCompactRequest(object):
             (fname, ftype, fid) = iprot.readFieldBegin()
             if ftype == TType.STOP:
                 break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.poolName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -16107,6 +16142,10 @@ class ShowCompactRequest(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('ShowCompactRequest')
+        if self.poolName is not None:
+            oprot.writeFieldBegin('poolName', TType.STRING, 1)
+            oprot.writeString(self.poolName.encode('utf-8') if sys.version_info[0] == 2 else self.poolName)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -16147,11 +16186,12 @@ class ShowCompactResponseElement(object):
      - initiatorId
      - initiatorVersion
      - cleanerStart
+     - poolName
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId="None", id=None, errorMessage=None, enqueueTime=None, workerVersion=None, initiatorId=None, initiatorVersion=None, cleanerStart=None,):
+    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId="None", id=None, errorMessage=None, enqueueTime=None, workerVersion=None, initiatorId=None, initiatorVersion=None, cleanerStart=None, poolName=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionname = partitionname
@@ -16171,6 +16211,7 @@ class ShowCompactResponseElement(object):
         self.initiatorId = initiatorId
         self.initiatorVersion = initiatorVersion
         self.cleanerStart = cleanerStart
+        self.poolName = poolName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -16276,6 +16317,11 @@ class ShowCompactResponseElement(object):
                     self.cleanerStart = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 20:
+                if ftype == TType.STRING:
+                    self.poolName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -16361,6 +16407,10 @@ class ShowCompactResponseElement(object):
         if self.cleanerStart is not None:
             oprot.writeFieldBegin('cleanerStart', TType.I64, 19)
             oprot.writeI64(self.cleanerStart)
+            oprot.writeFieldEnd()
+        if self.poolName is not None:
+            oprot.writeFieldBegin('poolName', TType.STRING, 20)
+            oprot.writeString(self.poolName.encode('utf-8') if sys.version_info[0] == 2 else self.poolName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -16631,13 +16681,15 @@ class FindNextCompactRequest(object):
     Attributes:
      - workerId
      - workerVersion
+     - poolName
 
     """
 
 
-    def __init__(self, workerId=None, workerVersion=None,):
+    def __init__(self, workerId=None, workerVersion=None, poolName=None,):
         self.workerId = workerId
         self.workerVersion = workerVersion
+        self.poolName = poolName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -16658,6 +16710,11 @@ class FindNextCompactRequest(object):
                     self.workerVersion = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.poolName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -16675,6 +16732,10 @@ class FindNextCompactRequest(object):
         if self.workerVersion is not None:
             oprot.writeFieldBegin('workerVersion', TType.STRING, 2)
             oprot.writeString(self.workerVersion.encode('utf-8') if sys.version_info[0] == 2 else self.workerVersion)
+            oprot.writeFieldEnd()
+        if self.poolName is not None:
+            oprot.writeFieldBegin('poolName', TType.STRING, 3)
+            oprot.writeString(self.poolName.encode('utf-8') if sys.version_info[0] == 2 else self.poolName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -30955,6 +31016,7 @@ CompactionRequest.thrift_spec = (
     (6, TType.MAP, 'properties', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 6
     (7, TType.STRING, 'initiatorId', 'UTF8', None, ),  # 7
     (8, TType.STRING, 'initiatorVersion', 'UTF8', None, ),  # 8
+    (9, TType.STRING, 'poolName', 'UTF8', None, ),  # 9
 )
 all_structs.append(CompactionInfoStruct)
 CompactionInfoStruct.thrift_spec = (
@@ -30975,6 +31037,7 @@ CompactionInfoStruct.thrift_spec = (
     (14, TType.BOOL, 'hasoldabort', None, None, ),  # 14
     (15, TType.I64, 'enqueueTime', None, None, ),  # 15
     (16, TType.I64, 'retryRetention', None, None, ),  # 16
+    (17, TType.STRING, 'poolname', 'UTF8', None, ),  # 17
 )
 all_structs.append(OptionalCompactionInfoStruct)
 OptionalCompactionInfoStruct.thrift_spec = (
@@ -31015,6 +31078,8 @@ CompactionResponse.thrift_spec = (
 )
 all_structs.append(ShowCompactRequest)
 ShowCompactRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'poolName', 'UTF8', None, ),  # 1
 )
 all_structs.append(ShowCompactResponseElement)
 ShowCompactResponseElement.thrift_spec = (
@@ -31038,6 +31103,7 @@ ShowCompactResponseElement.thrift_spec = (
     (17, TType.STRING, 'initiatorId', 'UTF8', None, ),  # 17
     (18, TType.STRING, 'initiatorVersion', 'UTF8', None, ),  # 18
     (19, TType.I64, 'cleanerStart', None, None, ),  # 19
+    (20, TType.STRING, 'poolName', 'UTF8', None, ),  # 20
 )
 all_structs.append(ShowCompactResponse)
 ShowCompactResponse.thrift_spec = (
@@ -31062,6 +31128,7 @@ FindNextCompactRequest.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'workerId', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'workerVersion', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'poolName', 'UTF8', None, ),  # 3
 )
 all_structs.append(AddDynamicPartitions)
 AddDynamicPartitions.thrift_spec = (

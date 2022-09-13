@@ -117,6 +117,11 @@ class ShowCompactResponseElement
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        20 => array(
+            'var' => 'poolName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -195,6 +200,10 @@ class ShowCompactResponseElement
      * @var int
      */
     public $cleanerStart = null;
+    /**
+     * @var string
+     */
+    public $poolName = null;
 
     public function __construct($vals = null)
     {
@@ -255,6 +264,9 @@ class ShowCompactResponseElement
             }
             if (isset($vals['cleanerStart'])) {
                 $this->cleanerStart = $vals['cleanerStart'];
+            }
+            if (isset($vals['poolName'])) {
+                $this->poolName = $vals['poolName'];
             }
         }
     }
@@ -411,6 +423,13 @@ class ShowCompactResponseElement
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 20:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->poolName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -518,6 +537,11 @@ class ShowCompactResponseElement
         if ($this->cleanerStart !== null) {
             $xfer += $output->writeFieldBegin('cleanerStart', TType::I64, 19);
             $xfer += $output->writeI64($this->cleanerStart);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->poolName !== null) {
+            $xfer += $output->writeFieldBegin('poolName', TType::STRING, 20);
+            $xfer += $output->writeString($this->poolName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

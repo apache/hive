@@ -85,7 +85,7 @@ class HiveSchemaConverter {
             return Types.BooleanType.get();
           case BYTE:
           case SHORT:
-            Preconditions.checkArgument(autoConvert, "Unsupported Hive type: %s, use integer " +
+            Preconditions.checkArgument(autoConvert, "Unsupported Hive type %s, use integer " +
                     "instead or enable automatic type conversion, set 'iceberg.mr.schema.auto.conversion' to true",
                 ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory());
 
@@ -99,12 +99,8 @@ class HiveSchemaConverter {
             return Types.BinaryType.get();
           case CHAR:
           case VARCHAR:
-            Preconditions.checkArgument(autoConvert, "Unsupported Hive type: %s, use integer " +
-                    "instead or enable automatic type conversion, set 'iceberg.mr.schema.auto.conversion' to true",
-                ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory());
-
-            LOG.debug("Using auto conversion from CHAR/VARCHAR to STRING");
-            return Types.StringType.get();
+            throw new IllegalArgumentException("Unsupported Hive type (" +
+                ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory() + ") for Iceberg tables.");
           case STRING:
             return Types.StringType.get();
           case TIMESTAMP:
