@@ -257,7 +257,9 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
     Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
     Map<String, Type> notSupportedTypes = ImmutableMap.of(
         "TINYINT", Types.IntegerType.get(),
-        "SMALLINT", Types.IntegerType.get());
+        "SMALLINT", Types.IntegerType.get(),
+        "VARCHAR(1)", Types.StringType.get(),
+        "CHAR(1)", Types.StringType.get());
 
     shell.setHiveSessionValue(InputFormatConfig.SCHEMA_AUTO_CONVERSION, "true");
 
@@ -290,19 +292,19 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
         "boolean_col_5 BOOLEAN, " +
         "float_col_6 FLOAT, " +
         "bigint_col_7 BIGINT, " +
-        "string0098_col_8 STRING, " +
+        "varchar0098_col_8 VARCHAR(98), " +
         "timestamp_col_9 TIMESTAMP, " +
         "bigint_col_10 BIGINT, " +
         "decimal0903_col_11 DECIMAL(9, 3), " +
         "timestamp_col_12 TIMESTAMP, " +
         "timestamp_col_13 TIMESTAMP, " +
         "float_col_14 FLOAT, " +
-        "string0254_col_15 STRING, " +
+        "char0254_col_15 CHAR(254), " +
         "double_col_16 DOUBLE, " +
         "timestamp_col_17 TIMESTAMP, " +
         "boolean_col_18 BOOLEAN, " +
         "decimal2608_col_19 DECIMAL(26, 8), " +
-        "string0216_col_20 STRING, " +
+        "varchar0216_col_20 VARCHAR(216), " +
         "string_col_21 STRING, " +
         "bigint_col_22 BIGINT, " +
         "boolean_col_23 BOOLEAN, " +
@@ -315,7 +317,7 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
         "decimal2020_col_30 DECIMAL(20, 20), " +
         "boolean_col_31 BOOLEAN, " +
         "double_col_32 DOUBLE, " +
-        "string0148_col_33 STRING, " +
+        "varchar0148_col_33 VARCHAR(148), " +
         "decimal2121_col_34 DECIMAL(21, 21), " +
         "tinyint_col_35 TINYINT, " +
         "boolean_col_36 BOOLEAN, " +
@@ -326,7 +328,7 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
         "decimal1408_col_41 DECIMAL(14, 8), " +
         "string_col_42 STRING, " +
         "decimal0902_col_43 DECIMAL(9, 2), " +
-        "string0204_col_44 STRING, " +
+        "varchar0204_col_44 VARCHAR(204), " +
         "boolean_col_45 BOOLEAN, " +
         "timestamp_col_46 TIMESTAMP, " +
         "boolean_col_47 BOOLEAN, " +
@@ -339,12 +341,12 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
         "timestamp_col_54 TIMESTAMP, " +
         "int_col_55 INT, " +
         "decimal0505_col_56 DECIMAL(5, 5), " +
-        "string0155_col_57 STRING, " +
+        "char0155_col_57 CHAR(155), " +
         "boolean_col_58 BOOLEAN, " +
         "bigint_col_59 BIGINT, " +
         "boolean_col_60 BOOLEAN, " +
         "boolean_col_61 BOOLEAN, " +
-        "string0249_col_62 STRING, " +
+        "char0249_col_62 CHAR(249), " +
         "boolean_col_63 BOOLEAN, " +
         "timestamp_col_64 TIMESTAMP, " +
         "decimal1309_col_65 DECIMAL(13, 9), " +
@@ -356,12 +358,12 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
         "timestamp_col_71 TIMESTAMP, " +
         "double_col_72 DOUBLE, " +
         "boolean_col_73 BOOLEAN, " +
-        "string0222_col_74 STRING, " +
+        "char0222_col_74 CHAR(222), " +
         "float_col_75 FLOAT, " +
         "string_col_76 STRING, " +
         "decimal2612_col_77 DECIMAL(26, 12), " +
         "timestamp_col_78 TIMESTAMP, " +
-        "string0128_col_79 STRING, " +
+        "char0128_col_79 CHAR(128), " +
         "timestamp_col_80 TIMESTAMP, " +
         "double_col_81 DOUBLE, " +
         "timestamp_col_82 TIMESTAMP, " +
