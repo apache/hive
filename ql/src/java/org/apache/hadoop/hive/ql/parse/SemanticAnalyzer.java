@@ -3359,7 +3359,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode root = (ASTNode) t;
         if (root.getType() == HiveParser.TOK_FUNCTION) {
           ASTNode func = (ASTNode) ParseDriver.adaptor.getChild(root, 0);
-          if (func.getText().equals("grouping") && func.getChildCount() == 0) {
+          if (func.getText().equalsIgnoreCase("grouping") && func.getChildCount() == 0) {
             int numberOperands = ParseDriver.adaptor.getChildCount(root);
             // We implement this logic using replaceChildren instead of replacing
             // the root node itself because windowing logic stores multiple
