@@ -44,7 +44,7 @@ public class DateColumnStatsAggregatorTest {
   private static final Table TABLE = new Table("dummy", "db", "hive", 0, 0,
       0, null, null, Collections.emptyMap(), null, null,
       TableType.MANAGED_TABLE.toString());
-  private static final FieldSchema COL = new FieldSchema("col", "int", "");
+  private static final FieldSchema COL = new FieldSchema("col", "date", "");
 
   private static final Date DATE_1 = new Date(1);
   private static final Date DATE_2 = new Date(2);
