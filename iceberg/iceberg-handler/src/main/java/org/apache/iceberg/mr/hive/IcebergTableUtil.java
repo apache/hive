@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -52,9 +53,11 @@ public class IcebergTableUtil {
    * hmsTable. It then calls {@link IcebergTableUtil#getTable(Configuration, Properties)} with these properties.
    * @param configuration a Hadoop configuration
    * @param hmsTable the HMS table
+   * @param skipCache if set to true there won't be an attempt to retrieve the table from SessionState
    * @return the Iceberg table
    */
-  static Table getTable(Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+  static Table getTable(Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable,
+      boolean skipCache) {
     Properties properties = new Properties();
     properties.setProperty(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
     properties.setProperty(Catalogs.LOCATION, hmsTable.getSd().getLocation());
@@ -63,7 +66,11 @@ public class IcebergTableUtil {
           properties.setProperty(k, v);
           return v;
         });
-    return getTable(configuration, properties);
+    return getTable(configuration, properties, skipCache);
+  }
+
+  static Table getTable(Configuration configuration, org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    return getTable(configuration, hmsTable, false);
   }
 
   /**
@@ -72,9 +79,10 @@ public class IcebergTableUtil {
    * therefore we claim it through the Catalogs API and then store it in query state.
    * @param configuration a Hadoop configuration
    * @param properties controlling properties
+   * @param skipCache if set to true there won't be an attempt to retrieve the table from SessionState
    * @return an Iceberg table
    */
-  static Table getTable(Configuration configuration, Properties properties) {
+  static Table getTable(Configuration configuration, Properties properties, boolean skipCache) {
     String metaTable = properties.getProperty("metaTable");
     String tableName = properties.getProperty(Catalogs.NAME);
     String location = properties.getProperty(Catalogs.LOCATION);
@@ -86,14 +94,27 @@ public class IcebergTableUtil {
     }
 
     String tableIdentifier = properties.getProperty(Catalogs.NAME);
-    return SessionStateUtil.getResource(configuration, tableIdentifier).filter(o -> o instanceof Table)
-        .map(o -> (Table) o).orElseGet(() -> {
-          LOG.debug("Iceberg table {} is not found in QueryState. Loading table from configured catalog",
-              tableIdentifier);
+    Function<Void, Table> tableLoadFunc =
+        unused -> {
           Table tab = Catalogs.loadTable(configuration, properties);
           SessionStateUtil.addResource(configuration, tableIdentifier, tab);
           return tab;
-        });
+        };
+
+    if (skipCache) {
+      return tableLoadFunc.apply(null);
+    } else {
+      return SessionStateUtil.getResource(configuration, tableIdentifier).filter(o -> o instanceof Table)
+          .map(o -> (Table) o).orElseGet(() -> {
+            LOG.debug("Iceberg table {} is not found in QueryState. Loading table from configured catalog",
+                tableIdentifier);
+            return tableLoadFunc.apply(null);
+          });
+    }
+  }
+
+  static Table getTable(Configuration configuration, Properties properties) {
+    return getTable(configuration, properties, false);
   }
 
   /**
