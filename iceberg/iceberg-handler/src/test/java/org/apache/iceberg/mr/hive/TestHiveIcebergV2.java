@@ -20,22 +20,17 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.StreamSupport;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.fs.Path;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
-import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -566,57 +561,6 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
       shell.executeStatement(testTables.getUpdateQuery(tableName, newRecords.get(0)));
       HiveIcebergTestUtils.validateData(table, newRecords, 0);
     }
-  }
-
-  @Test
-  public void testTablePurgeProperty() throws Exception {
-    final String tableName = "customer";
-    testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
-
-    org.apache.hadoop.hive.metastore.api.Table tbl =
-        shell.metastore().getTable(TableIdentifier.of("default", tableName));
-    // Check if the purge property is set.
-    Assert.assertTrue(StringUtils.join(tbl.getParameters()),
-        tbl.getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE).equalsIgnoreCase("TRUE"));
-
-    // Get the Iceberg table & validate gc.enabled got set to true.
-    org.apache.iceberg.Table icebergTable = testTables.loadTable(TableIdentifier.of("default", tableName));
-    Assert.assertTrue(StringUtils.join(icebergTable.properties()),
-        icebergTable.properties().get(TableProperties.GC_ENABLED).equalsIgnoreCase("TRUE"));
-
-    // Check the location exists before drop & doesn't exist post that.
-    Path location = new Path(tbl.getSd().getLocation());
-    Assert.assertTrue(location.getFileSystem(shell.getHiveConf()).exists(location));
-    shell.executeStatement(String.format("DROP TABLE %s", tableName));
-    Assert.assertFalse(location.getFileSystem(shell.getHiveConf()).exists(location));
-  }
-
-  @Test
-  public void testTablePurgeExplicitProperty() throws Exception {
-
-    // Create a Iceberg table with purge explicitly set to false.
-    final String tableName = "customer";
-    testTables.createTable(shell, tableName, HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
-        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2,
-        Collections.singletonMap(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE"));
-
-    org.apache.hadoop.hive.metastore.api.Table tbl =
-        shell.metastore().getTable(TableIdentifier.of("default", tableName));
-    // Check if the purge property is not set to TRUE.
-    Assert.assertFalse(StringUtils.join(tbl.getParameters()),
-        "TRUE".equalsIgnoreCase(tbl.getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE)));
-
-    // Get the Iceberg table & validate gc.enabled didn't got set to true.
-    org.apache.iceberg.Table icebergTable = testTables.loadTable(TableIdentifier.of("default", tableName));
-    Assert.assertFalse(StringUtils.join(icebergTable.properties()),
-        "TRUE".equalsIgnoreCase(icebergTable.properties().get(TableProperties.GC_ENABLED)));
-
-    // Check the location exists before drop & exists post that as well since purge is set to false.
-    Path location = new Path(tbl.getSd().getLocation());
-    Assert.assertTrue(location.getFileSystem(shell.getHiveConf()).exists(location));
-    shell.executeStatement(String.format("DROP TABLE %s", tableName));
-    Assert.assertTrue(location.getFileSystem(shell.getHiveConf()).exists(location));
   }
 
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {

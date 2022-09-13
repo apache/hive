@@ -200,10 +200,6 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       createHMSTableInHook = true;
     }
 
-    if (setAutoPurgeProperty(hmsTable)) {
-      catalogProperties.put(HiveTableOperations.translateToIcebergProp(InputFormatConfig.EXTERNAL_TABLE_PURGE), "TRUE");
-    }
-
     assertFileFormat(catalogProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
   }
 
@@ -362,16 +358,13 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
-  private boolean setAutoPurgeProperty(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+  private void setAutoPurgeProperty(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     // If the format version is 2 and the external table purge property isn't explicitly defined set it to True by
     // default
-    if (MetaStoreUtils.isExternalTable(hmsTable) &&
-        "2".equals(hmsTable.getParameters().get(TableProperties.FORMAT_VERSION)) &&
+    if ("2".equals(hmsTable.getParameters().get(TableProperties.FORMAT_VERSION)) &&
         hmsTable.getParameters().get(InputFormatConfig.EXTERNAL_TABLE_PURGE) == null) {
       hmsTable.getParameters().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "TRUE");
-      return true;
     }
-    return false;
   }
 
   /**
