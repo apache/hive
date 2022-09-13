@@ -349,7 +349,6 @@ STAGE PLANS:
       table name: default.orc_merge5a
       partition spec:
         st 80.0
-      table name: default.orc_merge5a
 
   Stage: Stage-1
     Move Operator

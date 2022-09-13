@@ -58,11 +58,6 @@ public class AlterTableConcatenateDesc extends AbstractAlterTableDesc implements
     this.tableDesc = tableDesc;
   }
 
-  @Explain(displayName = "table name")
-  public String getTableName() {
-    return tableName;
-  }
-
   /** For Explain only. */
   @Explain(displayName = "partition spec")
   public Map<String, String> getPartitionSpec() {
