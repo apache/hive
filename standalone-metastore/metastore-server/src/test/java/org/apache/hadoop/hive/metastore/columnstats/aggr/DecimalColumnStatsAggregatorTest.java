@@ -190,30 +190,15 @@ public class DecimalColumnStatsAggregatorTest {
     // sum of all the numDVs for all partitions), ndv tuner influences the choice between the lower bound
     // (ndvTuner = 0) and the higher bound (ndvTuner = 1), and intermediate values for ndvTuner in the range (0, 1)
     aggregator.useDensityFunctionForNDVEstimation = false;
-
-    aggregator.ndvTuner = 0;
-    computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    expectedStats = new ColStatsBuilder<>(Decimal.class).numNulls(6).numDVs(4)
-        .low(ONE).high(EIGHT).fmSketch(1, 2, 3).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
-
-    aggregator.ndvTuner = 0.5;
-    computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    expectedStats = new ColStatsBuilder<>(Decimal.class).numNulls(6).numDVs(7)
-        .low(ONE).high(EIGHT).fmSketch(1, 2, 3).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
-
-    aggregator.ndvTuner = 0.75;
-    computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    expectedStats = new ColStatsBuilder<>(Decimal.class).numNulls(6).numDVs(8)
-        .low(ONE).high(EIGHT).fmSketch(1, 2, 3).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
-
-    aggregator.ndvTuner = 1;
-    computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    expectedStats = new ColStatsBuilder<>(Decimal.class).numNulls(6).numDVs(10)
-        .low(ONE).high(EIGHT).fmSketch(1, 2, 3).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    double[] tunerValues = new double[] { 0, 0.5, 0.75, 1 };
+    long[] expectedDVs = new long[] { 4, 7, 8, 10 };
+    for (int i = 0; i < tunerValues.length; i++) {
+      aggregator.ndvTuner = tunerValues[i];
+      computedStatsObj = aggregator.aggregate(statsList, partitions, true);
+      expectedStats = new ColStatsBuilder<>(Decimal.class).numNulls(6).numDVs(expectedDVs[i])
+          .low(ONE).high(EIGHT).fmSketch(1, 2, 3).build();
+      Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    }
   }
 
   @Test

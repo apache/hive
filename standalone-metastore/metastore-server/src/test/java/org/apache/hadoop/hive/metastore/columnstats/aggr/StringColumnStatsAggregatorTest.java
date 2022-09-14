@@ -125,21 +125,12 @@ public class StringColumnStatsAggregatorTest {
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
-    aggregator.ndvTuner = 0;
-    computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
-
-    aggregator.ndvTuner = 0.5;
-    computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
-
-    aggregator.ndvTuner = 0.75;
-    computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
-
-    aggregator.ndvTuner = 1;
-    computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    double[] tunerValues = new double[] { 0, 0.5, 0.75, 1 };
+    for (int i = 0; i < tunerValues.length; i++) {
+      aggregator.ndvTuner = tunerValues[i];
+      computedStatsObj = aggregator.aggregate(statsList, partitions, true);
+      Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    }
   }
 
   @Test

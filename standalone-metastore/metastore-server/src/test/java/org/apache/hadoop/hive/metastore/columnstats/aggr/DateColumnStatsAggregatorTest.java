@@ -199,30 +199,15 @@ public class DateColumnStatsAggregatorTest {
     // sum of all the numDVs for all partitions), ndv tuner influences the choice between the lower bound
     // (ndvTuner = 0) and the higher bound (ndvTuner = 1), and intermediate values for ndvTuner in the range (0, 1)
     aggregator.useDensityFunctionForNDVEstimation = false;
-
-    aggregator.ndvTuner = 0;
-    computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(4)
-        .low(DATE_1).high(DATE_8).fmSketch(values1).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
-
-    aggregator.ndvTuner = 0.5;
-    computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(7)
-        .low(DATE_1).high(DATE_8).fmSketch(values1).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
-
-    aggregator.ndvTuner = 0.75;
-    computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(8)
-        .low(DATE_1).high(DATE_8).fmSketch(values1).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
-
-    aggregator.ndvTuner = 1;
-    computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(10)
-        .low(DATE_1).high(DATE_8).fmSketch(values1).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    double[] tunerValues = new double[] { 0, 0.5, 0.75, 1 };
+    long[] expectedNDVs = new long[] { 4, 7, 8, 10 };
+    for (int i = 0; i < tunerValues.length; i++) {
+      aggregator.ndvTuner = tunerValues[i];
+      computedStatsObj = aggregator.aggregate(statsList, partitions, true);
+      expectedStats = new ColStatsBuilder<>(Date.class).numNulls(6).numDVs(expectedNDVs[i])
+          .low(DATE_1).high(DATE_8).fmSketch(values1).build();
+      Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    }
   }
 
   @Test
