@@ -79,8 +79,10 @@ public class StringColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(String.class).numNulls(3).numDVs(2).avgColLen(17.5).maxColLen(18)
         .hll(S_6, S_7).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
@@ -103,8 +105,10 @@ public class StringColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(String.class).numNulls(3).numDVs(2).avgColLen(17.5).maxColLen(18)
         .hll(S_6, S_7).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
 
@@ -149,8 +153,10 @@ public class StringColumnStatsAggregatorTest {
     ColumnStatisticsData data4 = new ColStatsBuilder<>(String.class).numNulls(2).numDVs(3).avgColLen(14).maxColLen(18)
         .hll(S_3, S_4, S_5).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)), createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)),
+        createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
 
     StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, false);
@@ -171,7 +177,8 @@ public class StringColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(String.class).numNulls(3).numDVs(2).avgColLen(17.5).maxColLen(18)
         .hll(S_6, S_7).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
         createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     StringColumnStatsAggregator aggregator = new StringColumnStatsAggregator();

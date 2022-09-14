@@ -91,7 +91,8 @@ public class DoubleColumnStatsAggregatorTest {
         .low(1d).high(2d).hll(1, 2).build();
     ColumnStatisticsData data2 = new ColStatsBuilder<>(double.class).numNulls(2).numDVs(3).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
         createStatsWithInfo(data2, TABLE, COL, partitions.get(1)));
 
     DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
@@ -126,8 +127,10 @@ public class DoubleColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(double.class).numNulls(3).numDVs(2)
         .low(6d).high(7d).hll(6, 7).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
@@ -149,8 +152,10 @@ public class DoubleColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(double.class).numNulls(3).numDVs(4)
         .low(1d).high(8d).hll(1, 2, 6, 8).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
 
@@ -209,8 +214,10 @@ public class DoubleColumnStatsAggregatorTest {
     ColumnStatisticsData data4 = new ColStatsBuilder<>(double.class).numNulls(2).numDVs(3)
         .low(3d).high(5d).hll(3, 4, 5).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)), createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)),
+        createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
 
     DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, false);
@@ -230,7 +237,8 @@ public class DoubleColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(double.class).numNulls(3).numDVs(1)
         .low(7d).high(7d).hll(7).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
         createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();

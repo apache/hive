@@ -104,7 +104,8 @@ public class TimestampColumnStatsAggregatorTest {
         .low(TS_1).high(TS_2).hll(values1).build();
     ColumnStatisticsData data2 = new ColStatsBuilder<>(Timestamp.class).numNulls(2).numDVs(3).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
         createStatsWithInfo(data2, TABLE, COL, partitions.get(1)));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
@@ -144,8 +145,10 @@ public class TimestampColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Timestamp.class).numNulls(3).numDVs(2)
         .low(TS_6).high(TS_7).hll(values3).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
@@ -174,8 +177,10 @@ public class TimestampColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Timestamp.class).numNulls(3).numDVs(4).low(TS_1)
         .high(TS_8).hll(values3).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
 
@@ -238,8 +243,10 @@ public class TimestampColumnStatsAggregatorTest {
     ColumnStatisticsData data4 = new ColStatsBuilder<>(Timestamp.class).numNulls(2).numDVs(3).low(TS_3).high(TS_5)
         .hll(values4).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)), createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)),
+        createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, false);
@@ -261,7 +268,8 @@ public class TimestampColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Timestamp.class).numNulls(3).numDVs(1)
         .low(TS_7).high(TS_7).hll(TS_7.getSecondsSinceEpoch()).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
         createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();

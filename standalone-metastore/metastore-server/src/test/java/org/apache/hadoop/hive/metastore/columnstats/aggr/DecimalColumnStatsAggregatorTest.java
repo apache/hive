@@ -103,7 +103,8 @@ public class DecimalColumnStatsAggregatorTest {
         .low(ONE).high(TWO).hll(1, 2).build();
     ColumnStatisticsData data2 = new ColStatsBuilder<>(Decimal.class).numNulls(2).numDVs(3).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
         createStatsWithInfo(data2, TABLE, COL, partitions.get(1)));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
@@ -138,8 +139,10 @@ public class DecimalColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Decimal.class).numNulls(3).numDVs(2)
         .low(SIX).high(SEVEN).hll(6, 7).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
@@ -162,8 +165,10 @@ public class DecimalColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Decimal.class).numNulls(3).numDVs(4)
         .low(ONE).high(EIGHT).hll(1, 2, 6, 8).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
 
@@ -222,8 +227,10 @@ public class DecimalColumnStatsAggregatorTest {
     ColumnStatisticsData data4 = new ColStatsBuilder<>(Decimal.class).numNulls(2).numDVs(3)
         .low(THREE).high(FIVE).hll(3, 4, 5).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)), createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)),
+        createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, false);
@@ -244,7 +251,8 @@ public class DecimalColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Decimal.class).numNulls(3).numDVs(1)
         .low(SEVEN).high(SEVEN).hll(7).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
         createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     DecimalColumnStatsAggregator aggregator = new DecimalColumnStatsAggregator();

@@ -67,8 +67,10 @@ public class BooleanColumnStatsAggregatorTest {
     ColumnStatisticsData data2 = new ColStatsBuilder<>(Boolean.class).numNulls(2).numFalses(6).numTrues(18).build();
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Boolean.class).numNulls(3).numFalses(2).numTrues(18).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
@@ -85,8 +87,10 @@ public class BooleanColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Boolean.class).numNulls(3).numFalses(2).numTrues(18).build();
     ColumnStatisticsData data4 = new ColStatsBuilder<>(Boolean.class).numNulls(2).numFalses(6).numTrues(18).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)), createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)),
+        createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
 
     BooleanColumnStatsAggregator aggregator = new BooleanColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, false);

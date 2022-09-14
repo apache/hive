@@ -103,7 +103,8 @@ public class DateColumnStatsAggregatorTest {
         .low(DATE_1).high(DATE_2).hll(values1).build();
     ColumnStatisticsData data2 = new ColStatsBuilder<>(Date.class).numNulls(2).numDVs(3).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
         createStatsWithInfo(data2, TABLE, COL, partitions.get(1)));
 
     DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
@@ -143,8 +144,10 @@ public class DateColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Date.class).numNulls(3).numDVs(2)
         .low(DATE_6).high(DATE_7).hll(values3).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
@@ -171,8 +174,10 @@ public class DateColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Date.class).numNulls(3).numDVs(4)
         .low(DATE_1).high(DATE_8).hll(values3).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
 
@@ -235,8 +240,10 @@ public class DateColumnStatsAggregatorTest {
     ColumnStatisticsData data4 = new ColStatsBuilder<>(Date.class).numNulls(2).numDVs(3)
         .low(DATE_3).high(DATE_5).hll(values4).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)), createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)),
+        createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
 
     DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, false);
@@ -258,7 +265,8 @@ public class DateColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Date.class).numNulls(3).numDVs(1)
         .low(DATE_7).high(DATE_7).hll(DATE_7.getDaysSinceEpoch()).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
         createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     DateColumnStatsAggregator aggregator = new DateColumnStatsAggregator();

@@ -67,8 +67,10 @@ public class BinaryColumnStatsAggregatorTest {
     ColumnStatisticsData data2 = new ColStatsBuilder<>(byte[].class).numNulls(2).avgColLen(14).maxColLen(18).build();
     ColumnStatisticsData data3 = new ColStatsBuilder<>(byte[].class).numNulls(3).avgColLen(17.5).maxColLen(18).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)), createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data2, TABLE, COL, partitions.get(1)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)));
 
     BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
@@ -85,8 +87,10 @@ public class BinaryColumnStatsAggregatorTest {
     ColumnStatisticsData data3 = new ColStatsBuilder<>(byte[].class).numNulls(3).avgColLen(17.5).maxColLen(18).build();
     ColumnStatisticsData data4 = new ColStatsBuilder<>(byte[].class).numNulls(2).avgColLen(14).maxColLen(18).build();
 
-    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
-        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)), createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
+    List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
+        createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
+        createStatsWithInfo(data3, TABLE, COL, partitions.get(2)),
+        createStatsWithInfo(data4, TABLE, COL, partitions.get(3)));
 
     BinaryColumnStatsAggregator aggregator = new BinaryColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, false);
