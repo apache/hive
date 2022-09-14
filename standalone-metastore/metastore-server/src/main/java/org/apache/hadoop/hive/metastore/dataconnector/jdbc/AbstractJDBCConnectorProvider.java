@@ -39,6 +39,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnectorProvider {
   private static Logger LOG = LoggerFactory.getLogger(AbstractJDBCConnectorProvider.class);
@@ -107,8 +108,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   @Override public void open() throws ConnectException {
     try {
-      handle = DriverManager.getConnection(jdbcUrl, username, password);
-      isOpen = true;
+      handle = DriverManager.getDriver(jdbcUrl).connect(jdbcUrl, getConnectionProperties());
     } catch (SQLException sqle) {
       LOG.warn("Could not connect to remote data source at " + jdbcUrl);
       throw new ConnectException("Could not connect to remote datasource at " + jdbcUrl + ",cause:" + sqle.getMessage());
@@ -117,7 +117,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   protected Connection getConnection() {
     try {
-      if (!isOpen)
+      if (!isOpen())
         open();
     } catch (ConnectException ce) {
       throw new RuntimeException(ce.getMessage(), ce);
@@ -129,8 +129,21 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     throw new RuntimeException("unexpected type for connection handle");
   }
 
+  protected boolean isOpen() {
+    if (handle == null) {
+      return false;
+    }
+    try {
+      if (handle instanceof Connection)
+        return ((Connection) handle).isValid(3);
+    } catch (SQLException e) {
+      LOG.warn("Could not validate jdbc connection to "+ jdbcUrl, e);
+    }
+    return false;
+  }
+
   @Override public void close() {
-    if (isOpen) {
+    if (isOpen()) {
       try {
         ((Connection)handle).close();
       } catch (SQLException sqle) {
@@ -372,5 +385,12 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       }
     }
     return "some_dummy_path";
+  }
+
+  protected Properties getConnectionProperties() {
+    Properties connectionProperties = new Properties();
+    connectionProperties.setProperty("user", username);
+    connectionProperties.setProperty("password", password);
+    return connectionProperties;
   }
 }

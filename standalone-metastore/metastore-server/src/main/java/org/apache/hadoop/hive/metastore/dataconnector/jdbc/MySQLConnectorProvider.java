@@ -27,14 +27,27 @@ import org.slf4j.LoggerFactory;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
   private static Logger LOG = LoggerFactory.getLogger(MySQLConnectorProvider.class);
 
   private static final String DRIVER_CLASS = "com.mysql.jdbc.Driver";
 
+  public static final String JDBC_MYSQL_CONFIG_PREFIX = "hive.sql.mysql";
+  public static final String JDBC_MYSQL_AUTO_RECONNECT = JDBC_MYSQL_CONFIG_PREFIX + ".auto.reconnect";
+  public static final String JDBC_MYSQL_MAX_RECONNECTS = JDBC_MYSQL_CONFIG_PREFIX + ".max.reconnects";
+  public static final String JDBC_MYSQL_CONNECT_TIMEOUT = JDBC_MYSQL_CONFIG_PREFIX + ".connect.timeout";
+
+  String autoReconnect = null;
+  String maxReconnects = null;
+  String connectTimeout = null;
+
   public MySQLConnectorProvider(String dbName, DataConnector dataConn) {
     super(dbName, dataConn, DRIVER_CLASS);
+    this.autoReconnect = connector.getParameters().get(JDBC_MYSQL_AUTO_RECONNECT);
+    this.maxReconnects = connector.getParameters().get(JDBC_MYSQL_MAX_RECONNECTS);
+    this.connectTimeout = connector.getParameters().get(JDBC_MYSQL_CONNECT_TIMEOUT);
   }
 
   /**
@@ -95,5 +108,19 @@ public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
       break;
     }
     return mappedType;
+  }
+
+  protected Properties getConnectionProperties() {
+    Properties connectionProperties = super.getConnectionProperties();
+    if (autoReconnect != null) {
+      connectionProperties.setProperty("autoReconnect", autoReconnect);
+      if (maxReconnects != null) {
+        connectionProperties.setProperty("maxReconnects", maxReconnects);
+      }
+    }
+    if (connectTimeout != null) {
+      connectionProperties.setProperty("connectTimeout", connectTimeout);
+    }
+    return connectionProperties;
   }
 }
