@@ -199,9 +199,6 @@ public class TimestampColumnStatsAggregatorTest {
         .fmSketch(values1).build();
     Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
 
-    // here the ndv lower bound is 4 (the highest individual numDVs), the higher bound is 10 (3 + 3 + 4, that is the
-    // sum of all the numDVs for all partitions), ndv tuner influences the choice between the lower bound
-    // (ndvTuner = 0) and the higher bound (ndvTuner = 1), and intermediate values for ndvTuner in the range (0, 1)
     aggregator.useDensityFunctionForNDVEstimation = false;
     double[] tunerValues = new double[] { 0, 0.5, 0.75, 1 };
     long[] expectedDVs = new long[] { 4, 7, 8, 10 };

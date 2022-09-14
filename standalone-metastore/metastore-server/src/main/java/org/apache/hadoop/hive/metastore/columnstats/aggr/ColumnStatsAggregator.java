@@ -27,6 +27,19 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWi
 
 public abstract class ColumnStatsAggregator {
   public boolean useDensityFunctionForNDVEstimation;
+  /**
+   * The tuner controls the derivation of the NDV value when aggregating statistics from multiple partitions. It accepts
+   * values in the range [0, 1] pushing the aggregated NDV closer to the lower, or upper bound respectively.
+   * <p>
+   * For example, consider the aggregation of three partitions with NDV values 2, 3, and 4, respectively. The NDV
+   * lower bound is 4 (the highest among individual NDVs), and the upper bound is 9 (the sum of individual NDVs). In
+   * this case the aggregated NDV will be in the range [4, 9] touching the bounds when the tuner is equal to 0, or 1
+   * respectively.
+   * </p>
+   * <p>
+   * It is optional and concrete implementations can choose to ignore it completely.
+   * </p>
+   */
   public double ndvTuner;
 
   public abstract ColumnStatisticsObj aggregate(
