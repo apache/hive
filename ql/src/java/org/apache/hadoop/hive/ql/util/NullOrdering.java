@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.util;
 
+import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -26,20 +27,22 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.NullVa
  * Enum for converting different Null ordering description types.
  */
 public enum NullOrdering {
-  NULLS_FIRST(1, HiveParser.TOK_NULLS_FIRST, NullValueOption.MINVALUE, 'a'),
-  NULLS_LAST(0, HiveParser.TOK_NULLS_LAST, NullValueOption.MAXVALUE, 'z');
+  NULLS_FIRST(1, HiveParser.TOK_NULLS_FIRST, NullValueOption.MINVALUE, 'a', RelFieldCollation.NullDirection.FIRST),
+  NULLS_LAST(0, HiveParser.TOK_NULLS_LAST, NullValueOption.MAXVALUE, 'z', RelFieldCollation.NullDirection.LAST);
 
-  NullOrdering(int code, int token, NullValueOption nullValueOption, char sign) {
+  NullOrdering(int code, int token, NullValueOption nullValueOption, char sign, RelFieldCollation.NullDirection direction) {
     this.code = code;
     this.token = token;
     this.nullValueOption = nullValueOption;
     this.sign = sign;
+    this.direction = direction;
   }
 
   private final int code;
   private final int token;
   private final NullValueOption nullValueOption;
   private final char sign;
+  private final RelFieldCollation.NullDirection direction;
 
   public static NullOrdering fromToken(int token) {
     for (NullOrdering nullOrdering : NullOrdering.values()) {
@@ -87,5 +90,9 @@ public enum NullOrdering {
 
   public char getSign() {
     return sign;
+  }
+
+  public RelFieldCollation.NullDirection getDirection() {
+    return direction;
   }
 }

@@ -108,6 +108,7 @@ public class Context {
   private int moveTaskId = 0;
   protected ExplainConfiguration explainConfig = null;
   protected String cboInfo;
+  protected boolean cboPlanReady;
   protected boolean cboSucceeded;
   protected String optimizedSql;
   protected String calcitePlan;
@@ -1164,6 +1165,14 @@ public class Context {
 
   public void setOptimizedSql(String newSql) {
     this.optimizedSql = newSql;
+  }
+
+  public boolean isCboPlanReady() {
+    return cboPlanReady;
+  }
+
+  public void setCboPlanReady(boolean cboPlanReady) {
+    this.cboPlanReady = cboPlanReady;
   }
 
   public boolean isCboSucceeded() {

@@ -312,6 +312,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFInline;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -566,6 +568,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         try {
           // 0. Gen Optimized Plan
           RelNode newPlan = logicalPlan();
+          this.ctx.setCboPlanReady(true);
 
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
             if (cboCtx.type == PreCboCtx.Type.VIEW && !materializedView) {
@@ -3549,7 +3552,24 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final SqlAggFunction aggregation = SqlFunctionConverter.getCalciteAggFn(agg.getAggregateName(), agg.isDistinct(),
           aggArgRelDTBldr.build(), aggFnRetType);
 
-      return new AggregateCall(aggregation, agg.isDistinct(), argList, aggFnRetType, null);
+      List<RelFieldCollation> collationList = new ArrayList<>(agg.getWithinGroupKeys().size());
+      for (FunctionHelper.OBKey obKey : agg.getWithinGroupKeys()) {
+        Integer inputIndx = rexNodeToPosMap.get(obKey.getSortExpression().toString());
+        if (inputIndx == null) {
+          gbChildProjLst.add(obKey.getSortExpression());
+          rexNodeToPosMap.put(obKey.getSortExpression().toString(), childProjLstIndx);
+          inputIndx = childProjLstIndx;
+          childProjLstIndx++;
+        }
+
+        collationList.add(new RelFieldCollation(inputIndx,
+                DirectionUtils.codeToDirection(obKey.getSortDirection()),
+                obKey.getNullOrdering().getDirection()));
+      }
+
+      return AggregateCall.create(aggregation, agg.isDistinct(), false, false, argList, -1,
+              RelCollations.of(collationList), aggFnRetType, null);
+//      return new AggregateCall(aggregation, agg.isDistinct(), argList, aggFnRetType, null);
     }
 
     private RelNode genGBRelNode(List<RexNode> gbExprs, List<AggregateInfo> aggInfoLst,
@@ -3812,14 +3832,35 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
             // 6.2 Convert UDAF Params to ExprNodeDesc
             List<RexNode> aggParameters = new ArrayList<>();
+            List<FunctionHelper.OBKey> obKeys = new ArrayList<>();
             for (int i = 1; i < value.getChildCount(); i++) {
+              if (value.getChild(i).getType() == HiveParser.TOK_WITHIN_GROUP) {
+                Tree orderByNode = value.getChild(i).getChild(0);
+                if (aggParameters.size() != orderByNode.getChildCount()) {
+                  throw new SemanticException(ErrorMsg.WITHIN_GROUP_PARAMETER_MISMATCH,
+                          Integer.toString(aggParameters.size()), Integer.toString(orderByNode.getChildCount()));
+                }
+
+                for (int j = 0; j < orderByNode.getChildCount(); ++j) {
+                  Tree tabSortColNameNode = orderByNode.getChild(j);
+                  Tree nullsNode = tabSortColNameNode.getChild(0);
+                  ASTNode sortKey = (ASTNode) tabSortColNameNode.getChild(0).getChild(0);
+                  RexNode sortExpr = genRexNode(sortKey, groupByInputRowResolver, cluster.getRexBuilder());
+                  obKeys.add(new FunctionHelper.OBKey(
+                          sortExpr,
+                          DirectionUtils.tokenToCode(tabSortColNameNode.getType()),
+                          NullOrdering.fromToken(nullsNode.getType())));
+                }
+
+                continue;
+              }
               RexNode parameterExpr = genRexNode(
                   (ASTNode) value.getChild(i), groupByInputRowResolver, cluster.getRexBuilder());
               aggParameters.add(parameterExpr);
             }
 
             AggregateInfo aInfo = functionHelper.getAggregateFunctionInfo(
-              isDistinct, isAllColumns, aggName, aggParameters);
+              isDistinct, isAllColumns, aggName, aggParameters, obKeys);
             aggregations.add(aInfo);
             String field = getColumnInternalName(groupingColsSize + aggregations.size() - 1);
             outputColumnNames.add(field);
