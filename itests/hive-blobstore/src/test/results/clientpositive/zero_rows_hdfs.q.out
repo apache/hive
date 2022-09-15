@@ -69,15 +69,32 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hdfs_target
 #### A masked pattern was here ####
 100
+PREHOOK: query: explain cbo
+INSERT OVERWRITE TABLE hdfs_target SELECT key FROM blobstore_source WHERE FALSE
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@blobstore_source
+PREHOOK: Output: default@hdfs_target
+POSTHOOK: query: explain cbo
+INSERT OVERWRITE TABLE hdfs_target SELECT key FROM blobstore_source WHERE FALSE
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@blobstore_source
+POSTHOOK: Output: default@hdfs_target
+CBO PLAN:
+HiveValues(tuples=[[]])
+
 PREHOOK: query: INSERT OVERWRITE TABLE hdfs_target SELECT key FROM blobstore_source WHERE FALSE
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@blobstore_source
 PREHOOK: Output: default@hdfs_target
 POSTHOOK: query: INSERT OVERWRITE TABLE hdfs_target SELECT key FROM blobstore_source WHERE FALSE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@blobstore_source
 POSTHOOK: Output: default@hdfs_target
-POSTHOOK: Lineage: hdfs_target.key SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: hdfs_target.key SIMPLE []
 PREHOOK: query: SELECT COUNT(*) FROM hdfs_target
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hdfs_target
