@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)7);
   private static final org.apache.thrift.protocol.TField SKIP_COLUMN_SCHEMA_FOR_PARTITION_FIELD_DESC = new org.apache.thrift.protocol.TField("skipColumnSchemaForPartition", org.apache.thrift.protocol.TType.BOOL, (short)8);
   private static final org.apache.thrift.protocol.TField PARTITION_COL_SCHEMA_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionColSchema", org.apache.thrift.protocol.TType.LIST, (short)9);
+  private static final org.apache.thrift.protocol.TField ENVIRONMENT_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("environmentContext", org.apache.thrift.protocol.TType.STRUCT, (short)10);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new AddPartitionsRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new AddPartitionsRequestTupleSchemeFactory();
@@ -33,6 +34,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String validWriteIdList; // optional
   private boolean skipColumnSchemaForPartition; // optional
   private @org.apache.thrift.annotation.Nullable java.util.List<FieldSchema> partitionColSchema; // optional
+  private @org.apache.thrift.annotation.Nullable EnvironmentContext environmentContext; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -44,7 +46,8 @@ package org.apache.hadoop.hive.metastore.api;
     CAT_NAME((short)6, "catName"),
     VALID_WRITE_ID_LIST((short)7, "validWriteIdList"),
     SKIP_COLUMN_SCHEMA_FOR_PARTITION((short)8, "skipColumnSchemaForPartition"),
-    PARTITION_COL_SCHEMA((short)9, "partitionColSchema");
+    PARTITION_COL_SCHEMA((short)9, "partitionColSchema"),
+    ENVIRONMENT_CONTEXT((short)10, "environmentContext");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -78,6 +81,8 @@ package org.apache.hadoop.hive.metastore.api;
           return SKIP_COLUMN_SCHEMA_FOR_PARTITION;
         case 9: // PARTITION_COL_SCHEMA
           return PARTITION_COL_SCHEMA;
+        case 10: // ENVIRONMENT_CONTEXT
+          return ENVIRONMENT_CONTEXT;
         default:
           return null;
       }
@@ -123,7 +128,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __NEEDRESULT_ISSET_ID = 1;
   private static final int __SKIPCOLUMNSCHEMAFORPARTITION_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.NEED_RESULT,_Fields.CAT_NAME,_Fields.VALID_WRITE_ID_LIST,_Fields.SKIP_COLUMN_SCHEMA_FOR_PARTITION,_Fields.PARTITION_COL_SCHEMA};
+  private static final _Fields optionals[] = {_Fields.NEED_RESULT,_Fields.CAT_NAME,_Fields.VALID_WRITE_ID_LIST,_Fields.SKIP_COLUMN_SCHEMA_FOR_PARTITION,_Fields.PARTITION_COL_SCHEMA,_Fields.ENVIRONMENT_CONTEXT};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -147,6 +152,8 @@ package org.apache.hadoop.hive.metastore.api;
     tmpMap.put(_Fields.PARTITION_COL_SCHEMA, new org.apache.thrift.meta_data.FieldMetaData("partitionColSchema", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FieldSchema.class))));
+    tmpMap.put(_Fields.ENVIRONMENT_CONTEXT, new org.apache.thrift.meta_data.FieldMetaData("environmentContext", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, EnvironmentContext.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AddPartitionsRequest.class, metaDataMap);
   }
@@ -204,6 +211,9 @@ package org.apache.hadoop.hive.metastore.api;
       }
       this.partitionColSchema = __this__partitionColSchema;
     }
+    if (other.isSetEnvironmentContext()) {
+      this.environmentContext = new EnvironmentContext(other.environmentContext);
+    }
   }
 
   public AddPartitionsRequest deepCopy() {
@@ -224,6 +234,7 @@ package org.apache.hadoop.hive.metastore.api;
     setSkipColumnSchemaForPartitionIsSet(false);
     this.skipColumnSchemaForPartition = false;
     this.partitionColSchema = null;
+    this.environmentContext = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -468,6 +479,30 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public EnvironmentContext getEnvironmentContext() {
+    return this.environmentContext;
+  }
+
+  public void setEnvironmentContext(@org.apache.thrift.annotation.Nullable EnvironmentContext environmentContext) {
+    this.environmentContext = environmentContext;
+  }
+
+  public void unsetEnvironmentContext() {
+    this.environmentContext = null;
+  }
+
+  /** Returns true if field environmentContext is set (has been assigned a value) and false otherwise */
+  public boolean isSetEnvironmentContext() {
+    return this.environmentContext != null;
+  }
+
+  public void setEnvironmentContextIsSet(boolean value) {
+    if (!value) {
+      this.environmentContext = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DB_NAME:
@@ -542,6 +577,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case ENVIRONMENT_CONTEXT:
+      if (value == null) {
+        unsetEnvironmentContext();
+      } else {
+        setEnvironmentContext((EnvironmentContext)value);
+      }
+      break;
+
     }
   }
 
@@ -575,6 +618,9 @@ package org.apache.hadoop.hive.metastore.api;
     case PARTITION_COL_SCHEMA:
       return getPartitionColSchema();
 
+    case ENVIRONMENT_CONTEXT:
+      return getEnvironmentContext();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -604,6 +650,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetSkipColumnSchemaForPartition();
     case PARTITION_COL_SCHEMA:
       return isSetPartitionColSchema();
+    case ENVIRONMENT_CONTEXT:
+      return isSetEnvironmentContext();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -702,6 +750,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_environmentContext = true && this.isSetEnvironmentContext();
+    boolean that_present_environmentContext = true && that.isSetEnvironmentContext();
+    if (this_present_environmentContext || that_present_environmentContext) {
+      if (!(this_present_environmentContext && that_present_environmentContext))
+        return false;
+      if (!this.environmentContext.equals(that.environmentContext))
+        return false;
+    }
+
     return true;
   }
 
@@ -742,6 +799,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetPartitionColSchema()) ? 131071 : 524287);
     if (isSetPartitionColSchema())
       hashCode = hashCode * 8191 + partitionColSchema.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetEnvironmentContext()) ? 131071 : 524287);
+    if (isSetEnvironmentContext())
+      hashCode = hashCode * 8191 + environmentContext.hashCode();
 
     return hashCode;
   }
@@ -844,6 +905,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetEnvironmentContext(), other.isSetEnvironmentContext());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetEnvironmentContext()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.environmentContext, other.environmentContext);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -934,6 +1005,16 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
+    if (isSetEnvironmentContext()) {
+      if (!first) sb.append(", ");
+      sb.append("environmentContext:");
+      if (this.environmentContext == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.environmentContext);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -957,6 +1038,9 @@ package org.apache.hadoop.hive.metastore.api;
     }
 
     // check for sub-struct validity
+    if (environmentContext != null) {
+      environmentContext.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -1089,6 +1173,15 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 10: // ENVIRONMENT_CONTEXT
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.environmentContext = new EnvironmentContext();
+              struct.environmentContext.read(iprot);
+              struct.setEnvironmentContextIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1165,6 +1258,13 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.environmentContext != null) {
+        if (struct.isSetEnvironmentContext()) {
+          oprot.writeFieldBegin(ENVIRONMENT_CONTEXT_FIELD_DESC);
+          struct.environmentContext.write(oprot);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1208,7 +1308,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetPartitionColSchema()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetEnvironmentContext()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetNeedResult()) {
         oprot.writeBool(struct.needResult);
       }
@@ -1229,6 +1332,9 @@ package org.apache.hadoop.hive.metastore.api;
             _iter659.write(oprot);
           }
         }
+      }
+      if (struct.isSetEnvironmentContext()) {
+        struct.environmentContext.write(oprot);
       }
     }
 
@@ -1253,7 +1359,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setPartsIsSet(true);
       struct.ifNotExists = iprot.readBool();
       struct.setIfNotExistsIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(5);
+      java.util.BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.needResult = iprot.readBool();
         struct.setNeedResultIsSet(true);
@@ -1283,6 +1389,11 @@ package org.apache.hadoop.hive.metastore.api;
           }
         }
         struct.setPartitionColSchemaIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.environmentContext = new EnvironmentContext();
+        struct.environmentContext.read(iprot);
+        struct.setEnvironmentContextIsSet(true);
       }
     }
   }
