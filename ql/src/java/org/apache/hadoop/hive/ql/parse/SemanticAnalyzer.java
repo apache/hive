@@ -12074,7 +12074,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   Path dummyPath;
-  protected Table getDummyTable() throws SemanticException {
+  public Table getDummyTable() throws SemanticException {
     if (dummyPath == null) {
       dummyPath = createDummyFile();
     }
