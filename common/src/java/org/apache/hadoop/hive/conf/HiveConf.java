@@ -3068,7 +3068,7 @@ public class HiveConf extends Configuration {
         "Enables non-blocking DROP TABLE operation.\n" +
         "If enabled, every table directory would be suffixed with the corresponding table creation txnId."),
     
-    HIVE_ACID_TRUNCATE_USE_BASE("hive.acid.truncate.usebase", false,
+    HIVE_ACID_TRUNCATE_USE_BASE("hive.acid.truncate.usebase", true,
         "If enabled, truncate for transactional tables will not delete the data directories,\n" +
         "rather create a new base directory with no datafiles."),
     
