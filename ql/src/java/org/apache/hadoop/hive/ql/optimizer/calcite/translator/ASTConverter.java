@@ -147,26 +147,31 @@ public class ASTConverter {
     ASTBuilder select = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
     for (int i = 0; i < dataType.getFieldCount(); ++i) {
       RelDataTypeField fieldType = dataType.getFieldList().get(i);
-      HiveToken ht = TypeConverter.hiveToken(fieldType.getType());
-      ASTNode typeNode;
-      if (ht == null) {
-        typeNode = ASTBuilder.construct(
-                HiveParser.Identifier, fieldType.getType().getSqlTypeName().getName().toLowerCase()).node();
+      if (fieldType.getValue().getSqlTypeName() == SqlTypeName.NULL) {
+        select.add(ASTBuilder.selectExpr(
+                ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node(),
+                fieldType.getName()));
       } else {
-        ASTBuilder typeNodeBuilder = ASTBuilder.construct(ht.type, ht.text);
-        if (ht.args != null) {
-          for (String castArg : ht.args) {
-            typeNodeBuilder.add(HiveParser.Identifier, castArg);
+        HiveToken ht = TypeConverter.hiveToken(fieldType.getType());
+        ASTNode typeNode;
+        if (ht == null) {
+          typeNode = ASTBuilder.construct(
+                  HiveParser.Identifier, fieldType.getType().getSqlTypeName().getName().toLowerCase()).node();
+        } else {
+          ASTBuilder typeNodeBuilder = ASTBuilder.construct(ht.type, ht.text);
+          if (ht.args != null) {
+            for (String castArg : ht.args) {
+              typeNodeBuilder.add(HiveParser.Identifier, castArg);
+            }
           }
+          typeNode = typeNodeBuilder.node();
         }
-        typeNode = typeNodeBuilder.node();
+        select.add(ASTBuilder.selectExpr(
+                ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION")
+                        .add(typeNode)
+                        .add(ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node()).node(),
+                fieldType.getName()));
       }
-      select.add(ASTBuilder.selectExpr(
-              ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION")
-                      .add(typeNode)
-                      .add(ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node()).node()
-              ,
-              fieldType.getName()));
     }
 
     ASTNode insert = ASTBuilder.
