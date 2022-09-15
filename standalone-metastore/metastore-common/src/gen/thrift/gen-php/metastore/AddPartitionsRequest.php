@@ -76,6 +76,12 @@ class AddPartitionsRequest
                 'class' => '\metastore\FieldSchema',
                 ),
         ),
+        10 => array(
+            'var' => 'environmentContext',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\EnvironmentContext',
+        ),
     );
 
     /**
@@ -114,6 +120,10 @@ class AddPartitionsRequest
      * @var \metastore\FieldSchema[]
      */
     public $partitionColSchema = null;
+    /**
+     * @var \metastore\EnvironmentContext
+     */
+    public $environmentContext = null;
 
     public function __construct($vals = null)
     {
@@ -144,6 +154,9 @@ class AddPartitionsRequest
             }
             if (isset($vals['partitionColSchema'])) {
                 $this->partitionColSchema = $vals['partitionColSchema'];
+            }
+            if (isset($vals['environmentContext'])) {
+                $this->environmentContext = $vals['environmentContext'];
             }
         }
     }
@@ -250,6 +263,14 @@ class AddPartitionsRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 10:
+                    if ($ftype == TType::STRUCT) {
+                        $this->environmentContext = new \metastore\EnvironmentContext();
+                        $xfer += $this->environmentContext->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -321,6 +342,14 @@ class AddPartitionsRequest
                 $xfer += $iter587->write($output);
             }
             $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->environmentContext !== null) {
+            if (!is_object($this->environmentContext)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('environmentContext', TType::STRUCT, 10);
+            $xfer += $this->environmentContext->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

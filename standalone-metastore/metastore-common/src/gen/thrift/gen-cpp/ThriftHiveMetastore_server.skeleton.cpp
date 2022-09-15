@@ -65,6 +65,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("create_database\n");
   }
 
+  void create_database_req(const CreateDatabaseRequest& createDatabaseRequest) {
+    // Your implementation goes here
+    printf("create_database_req\n");
+  }
+
   void get_database(Database& _return, const std::string& name) {
     // Your implementation goes here
     printf("get_database\n");
@@ -100,9 +105,19 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("alter_database\n");
   }
 
+  void alter_database_req(const AlterDatabaseRequest& alterDbReq) {
+    // Your implementation goes here
+    printf("alter_database_req\n");
+  }
+
   void create_dataconnector(const DataConnector& connector) {
     // Your implementation goes here
     printf("create_dataconnector\n");
+  }
+
+  void create_dataconnector_req(const CreateDataConnectorRequest& connectorReq) {
+    // Your implementation goes here
+    printf("create_dataconnector_req\n");
   }
 
   void get_dataconnector_req(DataConnector& _return, const GetDataConnectorRequest& request) {
@@ -115,6 +130,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_dataconnector\n");
   }
 
+  void drop_dataconnector_req(const DropDataConnectorRequest& dropDcReq) {
+    // Your implementation goes here
+    printf("drop_dataconnector_req\n");
+  }
+
   void get_dataconnectors(std::vector<std::string> & _return) {
     // Your implementation goes here
     printf("get_dataconnectors\n");
@@ -123,6 +143,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void alter_dataconnector(const std::string& name, const DataConnector& connector) {
     // Your implementation goes here
     printf("alter_dataconnector\n");
+  }
+
+  void alter_dataconnector_req(const AlterDataConnectorRequest& alterReq) {
+    // Your implementation goes here
+    printf("alter_dataconnector_req\n");
   }
 
   void get_type(Type& _return, const std::string& name) {
@@ -245,6 +270,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_table_with_environment_context\n");
   }
 
+  void drop_table_req(const DropTableRequest& dropTableReq) {
+    // Your implementation goes here
+    printf("drop_table_req\n");
+  }
+
   void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) {
     // Your implementation goes here
     printf("truncate_table\n");
@@ -355,6 +385,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_partition_with_environment_context\n");
   }
 
+  void add_partition_req(Partition& _return, const AddPartitionsRequest& addPartitionsReq) {
+    // Your implementation goes here
+    printf("add_partition_req\n");
+  }
+
   int32_t add_partitions(const std::vector<Partition> & new_parts) {
     // Your implementation goes here
     printf("add_partitions\n");
@@ -380,6 +415,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("append_partition_with_environment_context\n");
   }
 
+  void append_partition_req(Partition& _return, const AppendPartitionsRequest& appendPartitionsReq) {
+    // Your implementation goes here
+    printf("append_partition_req\n");
+  }
+
   void append_partition_by_name(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name) {
     // Your implementation goes here
     printf("append_partition_by_name\n");
@@ -388,6 +428,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void append_partition_by_name_with_environment_context(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const EnvironmentContext& environment_context) {
     // Your implementation goes here
     printf("append_partition_by_name_with_environment_context\n");
+  }
+
+  void append_partition_by_name_req(Partition& _return, const AppendPartitionRequest& appendPartitionRequest) {
+    // Your implementation goes here
+    printf("append_partition_by_name_req\n");
   }
 
   bool drop_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData) {
@@ -400,6 +445,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_partition_with_environment_context\n");
   }
 
+  bool drop_partition_req(const DropPartitionRequest& dropPartitionReq) {
+    // Your implementation goes here
+    printf("drop_partition_req\n");
+  }
+
   bool drop_partition_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData) {
     // Your implementation goes here
     printf("drop_partition_by_name\n");
@@ -408,6 +458,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   bool drop_partition_by_name_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData, const EnvironmentContext& environment_context) {
     // Your implementation goes here
     printf("drop_partition_by_name_with_environment_context\n");
+  }
+
+  bool drop_partition_by_name_req(const DropPartitionRequest& dropPartitionReq) {
+    // Your implementation goes here
+    printf("drop_partition_by_name_req\n");
   }
 
   void drop_partitions_req(DropPartitionsResult& _return, const DropPartitionsRequest& req) {
@@ -468,6 +523,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_partition_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_parts) {
     // Your implementation goes here
     printf("get_partition_names\n");
+  }
+
+  void get_partition_by_names_req(std::vector<std::string> & _return, const PartitionsRequest& partitionReq) {
+    // Your implementation goes here
+    printf("get_partition_by_names_req\n");
   }
 
   void get_partition_values(PartitionValuesResponse& _return, const PartitionValuesRequest& request) {
