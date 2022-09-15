@@ -72,6 +72,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.parquet.hadoop.ParquetOutputFormat;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -1621,6 +1622,24 @@ public class TestHiveIcebergStorageHandlerNoScan {
               testTables.locationForCreateTableSQL(TableIdentifier.of("default", "dest")),
               testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
         });
+  }
+
+  @Test
+  public void testParquetHiveCatalogValidation() throws TException, InterruptedException, IOException {
+
+    // Create a table with explicitly set parquet.compression
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), FileFormat.PARQUET, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 1,
+        Collections.singletonMap(ParquetOutputFormat.COMPRESSION, "SNAPPY"));
+
+    // Check the property got set in the hive table metadata.
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(target);
+    Assert.assertEquals("SNAPPY", hmsTable.getParameters().get(ParquetOutputFormat.COMPRESSION).toUpperCase());
+
+    // Check the property got set in the iceberg table metadata.
+    Table icebergTable = testTables.loadTable(target);
+    Assert.assertEquals("SNAPPY", icebergTable.properties().get(TableProperties.PARQUET_COMPRESSION).toUpperCase());
   }
 
 
