@@ -509,7 +509,8 @@ public class CopyUtils {
   void leaveIdenticalFilesOnly(FileSystem sourceFs, Path[] srcPaths,
       FileSystem destinationFs, Path destinationPath) throws IOException {
     for (Path srcPath : srcPaths) {
-      leaveIdenticalFilesOnlyFileByFile(sourceFs, srcPath, destinationFs, destinationPath);
+      leaveIdenticalFilesOnlyFileByFile(sourceFs, srcPath,
+          destinationFs, new Path(destinationPath, srcPath.getName()));
     }
   }
 
@@ -519,15 +520,20 @@ public class CopyUtils {
   private void leaveIdenticalFilesOnlyFileByFile(FileSystem sourceFs, Path srcPath,
       FileSystem destinationFs, Path dstPath) throws IOException {
     boolean toDelete = false;
-    switch (getType(destinationFs, dstPath)) {
+    Type dstType = getType(destinationFs, dstPath);
+    Type srcType = getType(sourceFs, srcPath);
+    LOG.debug("Source path: {}, type: {}", srcPath, srcType);
+    LOG.debug("Destination path: {}, type: {}", dstPath, dstType);
+    switch (dstType) {
     case NONE:
       // If destination is none, then no need to delete anything.
       break;
     case FILE:
       // If destination is a file,
-      if (getType(sourceFs, srcPath) == Type.FILE) {
+      if (srcType == Type.FILE) {
         // If source is a file, then delete the destination file if it is not same as source.
         toDelete = !FileUtils.isSameFile(sourceFs, srcPath, destinationFs, dstPath);
+        LOG.debug("Same file?: {}", !toDelete);
       } else {
         // Otherwise, delete the destination file.
         toDelete = true;
@@ -535,7 +541,7 @@ public class CopyUtils {
       break;
     case DIRECTORY:
       // If destination is a directory,
-      if (getType(sourceFs, srcPath) == Type.DIRECTORY) {
+      if (srcType == Type.DIRECTORY) {
         // If both are directories, visit for children of both.
         Set<String> bothChildNames = Stream.concat(
             Arrays.stream(sourceFs.listStatus(srcPath))

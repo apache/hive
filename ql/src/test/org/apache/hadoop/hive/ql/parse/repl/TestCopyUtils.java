@@ -333,7 +333,7 @@ public class TestCopyUtils {
     // The destination will leave root(a(A)) only, and b(D) will be deleted.
     CopyUtils copyUtils = new CopyUtils("", new HiveConf(), destinationFs);
     copyUtils.leaveIdenticalFilesOnly(
-        sourceFs, new Path[] {root},
+        sourceFs, new Path[] {a, b},
         destinationFs, root
     );
 
