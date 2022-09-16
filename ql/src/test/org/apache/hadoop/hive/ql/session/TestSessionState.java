@@ -30,6 +30,10 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
@@ -200,6 +204,23 @@ public class TestSessionState {
         .getFileFromClasspath(RELOADED_CLAZZ_PREFIX_NAME + version + HiveTestUtils.TXT_FILE_EXT);
     File jarFile = HiveTestUtils.genLocalJarForTest(u, RELOADED_CLAZZ_PREFIX_NAME);
     Files.move(jarFile, new File(jarFile.getAbsolutePath() + "." + version));
+  }
+
+  @Test
+  public void testSessionConfInThreadPool() throws InterruptedException, ExecutionException {
+    HiveConf sessionConf = SessionState.get().getConf();
+    String configKey = "test.config.dummy";
+    String configVal = "dummyValue";
+    sessionConf.set(configKey, configVal);
+
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    Future<String> future = executor.submit(() -> {
+      HiveConf conf = SessionState.get().getConf();
+      return conf.get(configKey);
+    });
+
+    String actualVal = future.get();
+    assertEquals(configVal, actualVal);
   }
 
   @Test

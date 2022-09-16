@@ -619,7 +619,7 @@ public class SessionState implements ISessionAuthState{
    * Singleton Session object per thread.
    *
    **/
-  private static ThreadLocal<SessionStates> tss = new ThreadLocal<SessionStates>() {
+  private static InheritableThreadLocal<SessionStates> tss = new InheritableThreadLocal<SessionStates>() {
     @Override
     protected SessionStates initialValue() {
       return new SessionStates();
