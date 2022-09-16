@@ -3364,7 +3364,7 @@ public class AcidUtils {
 
   public static boolean isNonNativeAcidTable(Table table) {
     return table != null && table.getStorageHandler() != null &&
-        table.getStorageHandler().supportsAcidOperations() != HiveStorageHandler.AcidSupportType.NONE;
+        table.getStorageHandler().supportsAcidOperations(table) != HiveStorageHandler.AcidSupportType.NONE;
   }
 
   /**
@@ -3386,7 +3386,7 @@ public class AcidUtils {
 
   public static boolean acidTableWithoutTransactions(Table table) {
     return table != null && table.getStorageHandler() != null &&
-        table.getStorageHandler().supportsAcidOperations() == HiveStorageHandler.AcidSupportType.WITHOUT_TRANSACTIONS;
+        table.getStorageHandler().supportsAcidOperations(table) == HiveStorageHandler.AcidSupportType.WITHOUT_TRANSACTIONS;
   }
 
   static class DirInfoValue {

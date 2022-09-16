@@ -574,8 +574,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public AcidSupportType supportsAcidOperations() {
-    return AcidSupportType.WITHOUT_TRANSACTIONS;
+  public AcidSupportType supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table table) {
+    if (table.getParameters() != null && "2".equals(table.getParameters().get(TableProperties.FORMAT_VERSION))) {
+      return AcidSupportType.WITHOUT_TRANSACTIONS;
+    }
+
+    return AcidSupportType.NONE;
   }
 
   @Override
