@@ -682,7 +682,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         }
 
 
-        newTable = validateTablePaths(table);
+        newTable = validateTablePaths(db, table);
         if (isInsertAcid) { // MICRO_MANAGED Tables
           if (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE)) {
             LOG.debug("Processor has required capabilities to be able to create INSERT-only tables");
@@ -703,7 +703,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       }
     } else if (TableType.EXTERNAL_TABLE.name().equals(tableType)) {
       LOG.debug("Table to be created is of type " + tableType);
-      newTable = validateTablePaths(table);
+      newTable = validateTablePaths(db, table);
     }
     LOG.info("Transformer returning table:" + newTable.toString());
     return newTable;
@@ -743,19 +743,18 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     LOG.info("Starting translation for Alter table for processor " + processorId + " with " + processorCapabilities
         + " on table " + newTable.getTableName());
 
-
+    Database newDb = getDbForTable(newTable);
     if (tableLocationChanged(oldTable, newTable)) {
-      validateTablePaths(newTable);
+      validateTablePaths(newDb, newTable);
     }
 
-    Database oldDb = getDbForTable(oldTable);
     boolean isTranslatedToExternalFollowsRenames = MetastoreConf.getBoolVar(hmsHandler.getConf(),
         ConfVars.METASTORE_METADATA_TRANSFORMER_TRANSLATED_TO_EXTERNAL_FOLLOWS_RENAMES);
 
     if (isTranslatedToExternalFollowsRenames && isTableRename(oldTable, newTable)
         && isTranslatedToExternalTable(oldTable)
         && isTranslatedToExternalTable(newTable)) {
-      Database newDb = getDbForTable(newTable);
+      Database oldDb = getDbForTable(oldTable);
       Path oldPath = TableLocationStrategy.getDefaultPath(hmsHandler, oldDb, oldTable.getTableName());
       if (oldTable.getSd().getLocation().equals(oldPath.toString())) {
         Path newPath = getTranslatedToExternalTableDefaultLocation(newDb, newTable);
@@ -889,19 +888,12 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     return reads;
   }
 
-  private Table validateTablePaths(Table table) throws MetaException {
-    Database db = null;
-    String tableLocation = table.isSetSd()? table.getSd().getLocation() : null;
-    try {
-      db = hmsHandler.get_database_core(table.getCatName(), table.getDbName());
-    } catch (NoSuchObjectException e) {
-      throw new MetaException("Database " + table.getTableName() + " for table " + table.getTableName() + " could not be found");
-    }
-
+  private Table validateTablePaths(Database db, Table table) throws MetaException {
+    Path tableLocation = getLocation(table);
     if (TableType.MANAGED_TABLE.name().equals(table.getTableType())) {
       if (db.getManagedLocationUri() != null) {
         if (tableLocation != null) {
-          if (!FileUtils.isSubdirectory(db.getManagedLocationUri(), tableLocation)) {
+          if (!FileUtils.isSubdirectory(new Path(db.getManagedLocationUri()).toString(), tableLocation.toString())) {
             throw new MetaException(
                 "Illegal location for managed table, it has to be within database's managed location");
           }
@@ -912,8 +904,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         }
       } else {
         if (tableLocation != null) {
-          Path tablePath = Path.getPathWithoutSchemeAndAuthority(new Path(tableLocation));
-          if (!FileUtils.isSubdirectory(hmsHandler.getWh().getWhRoot().toString(), tableLocation)) {
+          if (!FileUtils.isSubdirectory(hmsHandler.getWh().getWhRoot().toString(), tableLocation.toString())) {
             throw new MetaException(
                 "A managed table's location should be located within managed warehouse root directory or within its database's "
                     + "managedLocationUri. Table " + table.getTableName() + "'s location is not valid:" + tableLocation
@@ -929,7 +920,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       Path dbLocation = Path.getPathWithoutSchemeAndAuthority(new Path(db.getLocationUri()));
       LOG.debug("ValidateTablePaths: whRoot={} dbLocation={} tableLocation={} ", whRootPath.toString(), dbLocation.toString(), tableLocation);
       if (tableLocation != null) {
-        Path tablePath = Path.getPathWithoutSchemeAndAuthority(new Path(tableLocation));
+        Path tablePath = Path.getPathWithoutSchemeAndAuthority(tableLocation);
         if (isTenantBasedStorage) {
           if (!FileUtils.isSubdirectory(dbLocation.toString(), tablePath.toString())) { // location outside dblocation
             throw new MetaException(
