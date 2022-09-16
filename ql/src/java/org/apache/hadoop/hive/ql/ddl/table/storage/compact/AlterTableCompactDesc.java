@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterTableCompactDesc extends AbstractAlterTableDesc implements DDLDescWithWriteId {
   private final String tableName;
   private final Map<String, String> partitionSpec;
-  private final String compactionType;dbtxnmgr_compact1.q
+  private final String compactionType;
   private final boolean isBlocking;
   private final String poolName;
   private final Map<String, String> properties;
