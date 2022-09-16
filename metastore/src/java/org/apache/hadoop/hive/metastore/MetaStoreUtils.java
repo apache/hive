@@ -2044,6 +2044,12 @@ public class MetaStoreUtils {
   }
 
   public static String getDefaultCatalog(HiveConf conf) {
+    // If catalog is disabled, we should return an empty string so we don't mistakenly
+    // use `Warehouse.DEFAULT_CATALOG_NAME` as catalog name.
+    if (!isCatalogEnabled(conf)) {
+      return "";
+    }
+
     if (conf == null) {
       LOG.warn("Configuration is null, so going with default catalog.");
       return Warehouse.DEFAULT_CATALOG_NAME;
