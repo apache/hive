@@ -4645,6 +4645,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         parts.forEach(p -> p.setCatName(catName));
       }
       AddPartitionsRequest addPartitionsReq = new AddPartitionsRequest(parts.get(0).getDbName(), parts.get(0).getTableName(), parts, false);
+      if (parts.get(0).isSetCatName()) {
+        addPartitionsReq.setCatName(parts.get(0).getCatName());
+      }
       ret = add_partitions_req(addPartitionsReq).getPartitions().size();
       assert ret == parts.size();
     } catch (Exception e) {
@@ -6552,7 +6555,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public List<FieldSchema> get_fields_with_environment_context(String db, String tableName,
                                                                final EnvironmentContext envContext)
       throws MetaException, UnknownTableException, UnknownDBException {
-    startFunction("get_fields_with_environment_context", ": db=" + db + "tbl=" + tableName);
+    String[] parsedDbName = parseDbName(db, conf);
+    GetFieldsRequest req = new GetFieldsRequest(parsedDbName[DB_NAME], tableName);
+    req.setCatName(parsedDbName[CAT_NAME]);
+    req.setEnvContext(envContext);
+    return get_fields_req(req).getFields();
+  }
+
+  private List<FieldSchema> get_fields_with_environment_context_core(String db, String tableName, final EnvironmentContext envContext)
+          throws MetaException, UnknownTableException, UnknownDBException {
+    startFunction("get_fields_with_environment_context_core", ": db=" + db + "tbl=" + tableName);
     String[] names = tableName.split("\\.");
     String base_table_name = names[0];
     String[] parsedDbName = parseDbName(db, conf);
@@ -6568,9 +6580,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new UnknownTableException(e.getMessage());
       }
       if (null == tbl.getSd().getSerdeInfo().getSerializationLib() ||
-          MetastoreConf.getStringCollection(conf,
-              ConfVars.SERDES_USING_METASTORE_FOR_SCHEMA).contains(
-              tbl.getSd().getSerdeInfo().getSerializationLib())) {
+              MetastoreConf.getStringCollection(conf,
+                      ConfVars.SERDES_USING_METASTORE_FOR_SCHEMA).contains(
+                      tbl.getSd().getSerdeInfo().getSerializationLib())) {
         ret = tbl.getSd().getCols();
       } else {
         StorageSchemaReader schemaReader = getStorageSchemaReader();
@@ -6580,17 +6592,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ex = e;
       throw handleException(e).throwIfInstance(UnknownTableException.class, MetaException.class).defaultMetaException();
     } finally {
-      endFunction("get_fields_with_environment_context", ret != null, ex, tableName);
+      endFunction("get_fields_with_environment_context_core", ret != null, ex, tableName);
     }
-
     return ret;
   }
 
   @Override
   public GetFieldsResponse get_fields_req(GetFieldsRequest req)
-      throws MetaException, UnknownTableException, UnknownDBException, TException {
+      throws MetaException, UnknownTableException, UnknownDBException {
     String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
-    List<FieldSchema> fields = get_fields_with_environment_context(
+    List<FieldSchema> fields = get_fields_with_environment_context_core(
         dbName, req.getTblName(), req.getEnvContext());
     GetFieldsResponse res = new GetFieldsResponse();
     res.setFields(fields);
@@ -6644,7 +6655,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public List<FieldSchema> get_schema_with_environment_context(String db, String tableName,
                                                                final EnvironmentContext envContext)
       throws MetaException, UnknownTableException, UnknownDBException {
-    startFunction("get_schema_with_environment_context", ": db=" + db + "tbl=" + tableName);
+    String[] parsedDbName = parseDbName(db, conf);
+    GetSchemaRequest req = new GetSchemaRequest(parsedDbName[DB_NAME], tableName);
+    req.setCatName(parsedDbName[CAT_NAME]);
+    req.setEnvContext(envContext);
+    return get_schema_req(req).getFields();
+  }
+
+  private List<FieldSchema> get_schema_with_environment_context_core(String db, String tableName, final EnvironmentContext envContext)
+          throws MetaException, UnknownTableException, UnknownDBException {
+    startFunction("get_schema_with_environment_context_core", ": db=" + db + "tbl=" + tableName);
     boolean success = false;
     Exception ex = null;
     try {
@@ -6659,8 +6679,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         throw new UnknownTableException(e.getMessage());
       }
       // Pass unparsed db name here
-      List<FieldSchema> fieldSchemas = get_fields_with_environment_context(db, base_table_name,
-          envContext);
+      List<FieldSchema> fieldSchemas = get_fields_with_environment_context_core(db, base_table_name,
+              envContext);
 
       if (tbl == null || fieldSchemas == null) {
         throw new UnknownTableException(tableName + " doesn't exist");
@@ -6676,18 +6696,18 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
-          .throwIfInstance(UnknownDBException.class, UnknownTableException.class, MetaException.class)
-          .defaultMetaException();
+              .throwIfInstance(UnknownDBException.class, UnknownTableException.class, MetaException.class)
+              .defaultMetaException();
     } finally {
-      endFunction("get_schema_with_environment_context", success, ex, tableName);
+      endFunction("get_schema_with_environment_context_core", success, ex, tableName);
     }
   }
 
   @Override
   public GetSchemaResponse get_schema_req(GetSchemaRequest req)
-      throws MetaException, UnknownTableException, UnknownDBException, TException {
+      throws MetaException, UnknownTableException, UnknownDBException {
     String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
-    List<FieldSchema> fields = get_schema_with_environment_context(
+    List<FieldSchema> fields = get_schema_with_environment_context_core(
         dbName, req.getTblName(), req.getEnvContext());
     GetSchemaResponse res = new GetSchemaResponse();
     res.setFields(fields);
