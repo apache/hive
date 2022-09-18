@@ -219,9 +219,9 @@
   <repositories>
    <!-- This needs to be removed before checking in-->
     <repository>
-      <id>datanucleus</id>
-      <name>datanucleus maven repository</name>
-      <url>http://www.datanucleus.org/downloads/maven2</url>
+      <id>jboss-maven2</id>
+      <name>jboss maven2 repository</name>
+      <url>https://repository.jboss.org/maven2/</url>
       <layout>default</layout>
       <releases>
         <enabled>true</enabled>
