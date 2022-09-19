@@ -2161,8 +2161,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     RawStore ms = getMS();
     String dcName = dropDcReq.getConnectorName();
-    boolean ifNotExists = dropDcReq.isSetIfNotExists();
-    boolean checkReferences = dropDcReq.isSetCheckReferences();
+    boolean ifNotExists = dropDcReq.isIfNotExists();
+    boolean checkReferences = dropDcReq.isCheckReferences();
     startFunction("drop_dataconnector_req", ": " + dcName);
     try {
       connector = getMS().getDataConnector(dcName);
@@ -4225,12 +4225,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           throws InvalidObjectException, AlreadyExistsException, MetaException {
     List<String> part_vals = appendPartitionsReq.getPartVals();
     String dbName = appendPartitionsReq.getDbName();
+    String catName = appendPartitionsReq.getCatalogName();
     String tableName = appendPartitionsReq.getTableName();
     if (part_vals == null || part_vals.isEmpty()) {
       throw new MetaException("The partition values must not be null or empty.");
     }
-    String[] parsedDbName = parseDbName(dbName, conf);
-    startPartitionFunction("append_partition_req", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, part_vals);
+    startPartitionFunction("append_partition_req", catName, dbName, tableName, part_vals);
     if (LOG.isDebugEnabled()) {
       for (String part : part_vals) {
         LOG.debug(part);
@@ -4239,7 +4239,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Partition ret = null;
     Exception ex = null;
     try {
-      ret = append_partition_common(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, part_vals, appendPartitionsReq.getEnvironmentContext());
+      ret = append_partition_common(getMS(), catName, dbName, tableName, part_vals, appendPartitionsReq.getEnvironmentContext());
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
@@ -5602,7 +5602,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     try {
       ret = drop_partition_common(getMS(), catName, dbName,
-              tbl_name, part_vals, dropPartitionReq.isSetDeleteData(), dropPartitionReq.getEnvironmentContext());
+              tbl_name, part_vals, dropPartitionReq.isDeleteData(), dropPartitionReq.getEnvironmentContext());
     } catch (Exception e) {
       ex = e;
       handleException(e).convertIfInstance(IOException.class, MetaException.class)
@@ -6985,7 +6985,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     try {
       ret = drop_partition_by_name_core(getMS(), cat_name, db_name, tbl_name, part_name,
-              dropPartitionReq.isSetDeleteData(), dropPartitionReq.getEnvironmentContext());
+              dropPartitionReq.isDeleteData(), dropPartitionReq.getEnvironmentContext());
     } catch (Exception e) {
       ex = e;
       handleException(e).convertIfInstance(IOException.class, MetaException.class).rethrowException(e);
