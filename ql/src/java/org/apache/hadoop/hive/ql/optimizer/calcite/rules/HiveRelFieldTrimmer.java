@@ -601,21 +601,32 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     //
     // But group and indicator fields stay, even if they are not used.
 
-    final RelBuilder relBuilder = REL_BUILDER.get();
-    final RelDataType rowType = aggregate.getRowType();
-
     // Compute which input fields are used.
-    // 1. group fields are always used
-    final ImmutableBitSet.Builder inputFieldsUsed =
-            aggregate.getGroupSet().rebuild();
-    // 2. agg functions
+
+
+    // agg functions
+    // agg functions are added first (before group sets) because rewriteGBConstantsKeys
+    // needs it
+    final ImmutableBitSet.Builder aggCallFieldsUsedBuilder =  ImmutableBitSet.builder();
     for (AggregateCall aggCall : aggregate.getAggCallList()) {
-      inputFieldsUsed.addAll(aggCall.getArgList());
-      if (aggCall.filterArg >= 0) {
-        inputFieldsUsed.set(aggCall.filterArg);
+      for (int i : aggCall.getArgList()) {
+        aggCallFieldsUsedBuilder.set(i);
       }
-      inputFieldsUsed.addAll(RelCollations.ordinals(aggCall.collation));
+      if (aggCall.filterArg >= 0) {
+        aggCallFieldsUsedBuilder.set(aggCall.filterArg);
+      }
     }
+
+    // transform if group by contain constant keys
+    ImmutableBitSet aggCallFieldsUsed = aggCallFieldsUsedBuilder.build();
+    aggregate = rewriteGBConstantKeys(aggregate, fieldsUsed, aggCallFieldsUsed);
+
+    // add group fields
+    final ImmutableBitSet.Builder inputFieldsUsed =  aggregate.getGroupSet().rebuild();
+    inputFieldsUsed.addAll(aggCallFieldsUsed);
+
+
+    final RelDataType rowType = aggregate.getRowType();
 
     // Create input with trimmed columns.
     final RelNode input = aggregate.getInput();
@@ -625,11 +636,23 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     final RelNode newInput = trimResult.left;
     final Mapping inputMapping = trimResult.right;
 
-    // We have to return group keys and (if present) indicators.
-    // So, pretend that the consumer asked for them.
-    final int groupCount = aggregate.getGroupSet().cardinality();
+    ImmutableBitSet originalGroupSet = aggregate.getGroupSet();
+    ImmutableBitSet updatedGroupSet = generateNewGroupset(aggregate, fieldsUsed);
+    ImmutableBitSet gbKeysDeleted = originalGroupSet.except(updatedGroupSet);
+    ImmutableBitSet updatedGroupFields = ImmutableBitSet.range(originalGroupSet.cardinality());
+    final int updatedGroupCount = updatedGroupSet.cardinality();
+
+    // we need to clear the bits corresponding to deleted gb keys
+    int setIdx = 0;
+    while(setIdx != -1) {
+      setIdx = gbKeysDeleted.nextSetBit(setIdx);
+      if(setIdx != -1) {
+        updatedGroupFields = updatedGroupFields.clear(setIdx);
+        setIdx++;
+      }
+    }
     fieldsUsed =
-            fieldsUsed.union(ImmutableBitSet.range(groupCount));
+            fieldsUsed.union(updatedGroupFields);
 
     // If the input is unchanged, and we need to project all columns,
     // there's nothing to do.
@@ -639,8 +662,13 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
               Mappings.createIdentity(rowType.getFieldCount()));
     }
 
+    // update the group by keys based on inputMapping
+    ImmutableBitSet newGroupSet =
+            Mappings.apply(inputMapping, updatedGroupSet);
+
     // Which agg calls are used by our consumer?
-    int j = groupCount;
+    int originalGroupCount = aggregate.getGroupSet().cardinality();
+    int j = originalGroupCount;
     int usedAggCallCount = 0;
     for (int i = 0; i < aggregate.getAggCallList().size(); i++) {
       if (fieldsUsed.get(j++)) {
@@ -653,26 +681,35 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
             Mappings.create(
                     MappingType.INVERSE_SURJECTION,
                     rowType.getFieldCount(),
-                    groupCount + usedAggCallCount);
+                    updatedGroupCount + usedAggCallCount);
 
-    final ImmutableBitSet newGroupSet =
-            Mappings.apply(inputMapping, aggregate.getGroupSet());
 
-    final ImmutableList<ImmutableBitSet> newGroupSets =
-            ImmutableList.copyOf(
-                    Iterables.transform(aggregate.getGroupSets(),
-                            input1 -> Mappings.apply(inputMapping, input1)));
+    // if group keys were reduced, it means we didn't have grouping therefore
+    // we don't need to transform group sets
+    ImmutableList<ImmutableBitSet> newGroupSets = null;
+    if(!updatedGroupSet.equals(aggregate.getGroupSet())) {
+      newGroupSets = ImmutableList.of(newGroupSet);
+    } else {
+      newGroupSets = ImmutableList.copyOf(
+              Iterables.transform(aggregate.getGroupSets(),
+                      input1 -> Mappings.apply(inputMapping, input1)));
+    }
 
     // Populate mapping of where to find the fields. System, group key and
     // indicator fields first.
-    for (j = 0; j < groupCount; j++) {
-      mapping.set(j, j);
+    int gbKeyIdx = 0;
+    for (j = 0; j < originalGroupCount; j++) {
+      if(fieldsUsed.get(j)) {
+        mapping.set(j, gbKeyIdx);
+        gbKeyIdx++;
+      }
     }
 
     // Now create new agg calls, and populate mapping for them.
+    final RelBuilder relBuilder = REL_BUILDER.get();
     relBuilder.push(newInput);
     final List<RelBuilder.AggCall> newAggCallList = new ArrayList<>();
-    j = groupCount;
+    j = originalGroupCount; // because lookup in fieldsUsed is done using original group count
     for (AggregateCall aggCall : aggregate.getAggCallList()) {
       if (fieldsUsed.get(j)) {
         final ImmutableList<RexNode> args =
@@ -681,25 +718,20 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
         final RexNode filterArg = aggCall.filterArg < 0 ? null
                 : relBuilder.field(Mappings.apply(inputMapping, aggCall.filterArg));
         RelBuilder.AggCall newAggCall =
-                relBuilder.aggregateCall(aggCall.getAggregation(), args)
-                        .distinct(aggCall.isDistinct())
-                        .filter(filterArg)
-                        .approximate(aggCall.isApproximate())
-                        .sort(relBuilder.fields(aggCall.collation))
-                        .as(aggCall.name);
-        mapping.set(j, groupCount + newAggCallList.size());
+                relBuilder.aggregateCall(aggCall.getAggregation(),
+                        aggCall.isDistinct(), aggCall.isApproximate(),
+                        filterArg, aggCall.name, args);
+        mapping.set(j, updatedGroupCount +  newAggCallList.size());
         newAggCallList.add(newAggCall);
       }
       ++j;
     }
 
     final RelBuilder.GroupKey groupKey =
-            relBuilder.groupKey(newGroupSet,
-                    (Iterable<ImmutableBitSet>) newGroupSets);
+            relBuilder.groupKey(newGroupSet, newGroupSets);
     relBuilder.aggregate(groupKey, newAggCallList);
 
-    final RelNode newAggregate = RelOptUtil.propagateRelHints(aggregate, relBuilder.build());
-    return result(newAggregate, mapping);
+    return result(relBuilder.build(), mapping);
   }
 
   /**
