@@ -124,6 +124,8 @@ public class SerializationUtilities {
     private Hook globalHook;
     // this should be set on-the-fly after borrowing this instance and needs to be reset on release
     private Configuration configuration;
+    // default false;
+    private boolean isExprNodeFirst;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static final class SerializerWithHook extends com.esotericsoftware.kryo.Serializer {
@@ -227,6 +229,27 @@ public class SerializationUtilities {
     @Override
     public Configuration getConf() {
       return configuration;
+    }
+
+    @Override
+    public com.esotericsoftware.kryo.Registration getRegistration(Class type) {
+      // If PartitionExpressionForMetastore performs deserialization at remote HMS,
+      // the first class encountered during deserialization must be a ExprNodeDesc,
+      // throwing exception to avoid potential security problem.
+      if (isExprNodeFirst) {
+        // Restore isExprNodeFirst to false, so kryo can deserialize the children of expression
+        // that are not the instance of ExprNodeDesc.
+        isExprNodeFirst = false;
+        if (!ExprNodeDesc.class.isAssignableFrom(type)) {
+          throw new UnsupportedOperationException(
+              "The object to be deserialized must be a ExprNodeDesc, but encountered: " + type);
+        }
+      }
+      return super.getRegistration(type);
+    }
+
+    public void setExprNodeFirst(boolean isPartFilter) {
+      this.isExprNodeFirst = isPartFilter;
     }
   }
 
@@ -830,10 +853,13 @@ public class SerializationUtilities {
   /**
    * Deserializes expression from Kryo.
    * @param bytes Bytes containing the expression.
+   * @param isPartFilter ture if it is a partition filter
    * @return Expression; null if deserialization succeeded, but the result type is incorrect.
    */
-  public static <T> T deserializeObjectWithTypeInformation(byte[] bytes) {
-    Kryo kryo = borrowKryo();
+  public static <T> T deserializeObjectWithTypeInformation(byte[] bytes,
+      boolean isPartFilter) {
+    KryoWithHooks kryo = (KryoWithHooks) borrowKryo();
+    kryo.setExprNodeFirst(isPartFilter);
     try (Input inp = new Input(new ByteArrayInputStream(bytes))) {
       return (T) kryo.readClassAndObject(inp);
     } finally {
