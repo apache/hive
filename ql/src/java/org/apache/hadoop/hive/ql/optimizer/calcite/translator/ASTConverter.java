@@ -152,20 +152,7 @@ public class ASTConverter {
                 ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node(),
                 fieldType.getName()));
       } else {
-        HiveToken ht = TypeConverter.hiveToken(fieldType.getType());
-        ASTNode typeNode;
-        if (ht == null) {
-          typeNode = ASTBuilder.construct(
-                  HiveParser.Identifier, fieldType.getType().getSqlTypeName().getName().toLowerCase()).node();
-        } else {
-          ASTBuilder typeNodeBuilder = ASTBuilder.construct(ht.type, ht.text);
-          if (ht.args != null) {
-            for (String castArg : ht.args) {
-              typeNodeBuilder.add(HiveParser.Identifier, castArg);
-            }
-          }
-          typeNode = typeNodeBuilder.node();
-        }
+        ASTNode typeNode = createCast(fieldType);
         select.add(ASTBuilder.selectExpr(
                 ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION")
                         .add(typeNode)
@@ -185,6 +172,24 @@ public class ASTConverter {
             construct(HiveParser.TOK_QUERY, "TOK_QUERY").
             add(insert).
             node();
+  }
+
+  private static ASTNode createCast(RelDataTypeField fieldType) {
+    HiveToken ht = TypeConverter.hiveToken(fieldType.getType());
+    ASTNode typeNode;
+    if (ht == null) {
+      typeNode = ASTBuilder.construct(
+              HiveParser.Identifier, fieldType.getType().getSqlTypeName().getName().toLowerCase()).node();
+    } else {
+      ASTBuilder typeNodeBuilder = ASTBuilder.construct(ht.type, ht.text);
+      if (ht.args != null) {
+        for (String castArg : ht.args) {
+          typeNodeBuilder.add(HiveParser.Identifier, castArg);
+        }
+      }
+      typeNode = typeNodeBuilder.node();
+    }
+    return typeNode;
   }
 
   private ASTNode convert() throws CalciteSemanticException {
