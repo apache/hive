@@ -45,6 +45,8 @@ final class CompactionMetricData {
 
   private Map<String, Long> stateCount;
 
+  private Map<String, Integer> poolCount;
+
   private Double failedCompactionPercentage;
 
   private long initiatorsCount;
@@ -65,6 +67,7 @@ final class CompactionMetricData {
 
   private void init() {
     final Map<String, ShowCompactResponseElement> lastElements = new HashMap<>();
+    poolCount = new HashMap<>();
 
     oldestEnqueueTime = OLDEST_TIME_NO_VALUE;
     oldestWorkingTime = OLDEST_TIME_NO_VALUE;
@@ -80,6 +83,7 @@ final class CompactionMetricData {
       String state = element.getState();
       if (TxnStore.INITIATED_RESPONSE.equals(state) && (oldestEnqueueTime > element.getEnqueueTime())) {
         oldestEnqueueTime = element.getEnqueueTime();
+        poolCount.compute(element.getPoolName(), (k, old) -> (old == null) ? 1 : old + 1);
       }
 
       if (element.isSetStart()) {
@@ -146,6 +150,10 @@ final class CompactionMetricData {
 
   Map<String, Long> getStateCount() {
     return new HashMap<>(stateCount);
+  }
+
+  public Map<String, Integer> getPoolCount() {
+    return new HashMap<>(poolCount);
   }
 
   Long getOldestEnqueueTime() {
