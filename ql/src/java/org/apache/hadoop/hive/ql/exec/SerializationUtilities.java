@@ -863,6 +863,7 @@ public class SerializationUtilities {
     try (Input inp = new Input(new ByteArrayInputStream(bytes))) {
       return (T) kryo.readClassAndObject(inp);
     } finally {
+      kryo.setExprNodeFirst(false);
       releaseKryo(kryo);
     }
   }
