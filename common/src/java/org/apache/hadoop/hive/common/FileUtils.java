@@ -738,30 +738,71 @@ public final class FileUtils {
                              boolean overwrite, boolean preserveXAttrs, Configuration conf) throws IOException {
     Path src = srcStatus.getPath();
     dst = checkDest(src.getName(), dstFS, dst, overwrite);
+
+    // Copy a directory
     if (srcStatus.isDirectory()) {
+      // Prepare
       checkDependencies(srcFS, src, dstFS, dst);
       if (!dstFS.mkdirs(dst)) {
         return false;
       }
 
+      // Visit each child
       FileStatus[] fileStatus = srcFS.listStatus(src);
       for (FileStatus file : fileStatus) {
-        copy(srcFS, file, dstFS, new Path(dst, file.getPath().getName()), deleteSource, overwrite, preserveXAttrs,
-            conf);
+        final Path childDstPath = new Path(dst, file.getPath().getName());
+        copy(srcFS, file, dstFS, childDstPath, deleteSource, overwrite, preserveXAttrs, conf);
       }
+
+      // Update attributes
+      final long currentTime = System.currentTimeMillis();
+      dstFS.setTimes(dst, currentTime, currentTime);
       if (preserveXAttrs) {
         preserveXAttr(srcFS, src, dstFS, dst);
       }
-    } else {
+    }
+    // Copy a file
+    else {
       InputStream in = null;
       FSDataOutputStream out = null;
 
       try {
-        if (!isSameFile(srcFS, src, dstFS, dst)) {
+        final boolean toDelete;
+        final boolean toCopy;
+
+        // 1. Plan the copy
+        if (dstFS.exists(dst)) {
+          // If there's a same file, skip
+          if (isSameFile(srcFS, src, dstFS, dst)) {
+            toDelete = false;
+            toCopy = false;
+          }
+          // If there's a different file, recreate
+          else {
+            toDelete = true;
+            toCopy = true;
+          }
+        }
+        // If there's nothing, create
+        else {
+          toDelete = false;
+          toCopy = true;
+        }
+
+        // 2. Execute the copy
+        // Delete when needed
+        if (toDelete) {
+          dstFS.delete(dst, true);
+        }
+        // Copy when needed
+        if (toCopy) {
           in = srcFS.open(src);
           out = dstFS.create(dst, overwrite);
           IOUtils.copyBytes(in, out, conf, true);
         }
+        // Update attributes
+        final long currentTime = System.currentTimeMillis();
+        dstFS.setTimes(dst, currentTime, currentTime);
         if (preserveXAttrs) {
           preserveXAttr(srcFS, src, dstFS, dst);
         }
@@ -820,7 +861,12 @@ public final class FileUtils {
     boolean returnVal = true;
     StringBuilder exceptions = new StringBuilder();
     if (srcs.length == 1) {
-      return copy(srcFS, srcFS.getFileStatus(srcs[0]), dstFS, dst, deleteSource, overwrite, preserveXAttr, conf);
+      final Path src = srcs[0];
+      final boolean result = copy(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite,
+          preserveXAttr, conf);
+      final long currentTime = System.currentTimeMillis();
+      dstFS.setTimes(dst, currentTime, currentTime);
+      return result;
     } else {
       try {
         FileStatus sdst = dstFS.getFileStatus(dst);
@@ -846,6 +892,8 @@ public final class FileUtils {
           exceptions.append(var15.getMessage());
           exceptions.append("\n");
         }
+        final long currentTime = System.currentTimeMillis();
+        dstFS.setTimes(dst, currentTime, currentTime);
       }
 
       if (gotException) {
@@ -862,6 +910,11 @@ public final class FileUtils {
     }
   }
 
+  /**
+   * Check whether the destination path is valid or not.
+   * An overwrite allows an existing directory or file.
+   * A non-overwrite allows only a non-existing destination.
+   */
   private static Path checkDest(String srcName, FileSystem dstFS, Path dst, boolean overwrite) throws IOException {
     FileStatus sdst;
     try {
@@ -872,7 +925,14 @@ public final class FileUtils {
     if (null != sdst) {
       if (sdst.isDirectory()) {
         if (null == srcName) {
-          throw new PathIsDirectoryException(dst.toString());
+          // A directory is allowed for overwriting.
+          if (overwrite) {
+            return dst;
+          }
+          // A directory is not allowed for non-overwriting.
+          else {
+            throw new PathIsDirectoryException(dst.toString());
+          }
         }
 
         return checkDest((String)null, dstFS, new Path(dst, srcName), overwrite);
