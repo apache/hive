@@ -184,7 +184,7 @@ public abstract class CompactorTest {
     table.setTableName(tableName);
     table.setDbName(dbName);
     table.setOwner("me");
-    table.setSd(newStorageDescriptor(getLocation(tableName, null).toString(), sortCols));
+    table.setSd(newStorageDescriptor(getLocation(tableName, null), sortCols));
     List<FieldSchema> partKeys = new ArrayList<>(1);
     if (partitioned) {
       partKeys.add(new FieldSchema("ds", "string", "no comment"));
@@ -227,7 +227,7 @@ public abstract class CompactorTest {
     part.addToValues(value);
     part.setDbName(t.getDbName());
     part.setTableName(t.getTableName());
-    part.setSd(newStorageDescriptor(getLocation(t.getTableName(), value).toString(), sortCols));
+    part.setSd(newStorageDescriptor(getLocation(t.getTableName(), value), sortCols));
     part.setParameters(parameters);
     ms.add_partition(part);
     return part;
@@ -295,7 +295,8 @@ public abstract class CompactorTest {
 
   protected List<Path> getDirectories(HiveConf conf, Table t, Partition p) throws Exception {
     String partValue = (p == null) ? null : p.getValues().get(0);
-    Path dir = getLocation(t.getTableName(), partValue);
+    String location = getLocation(t.getTableName(), partValue);
+    Path dir = new Path(location);
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] stats = fs.listStatus(dir);
     List<Path> paths = new ArrayList<Path>(stats.length);
@@ -381,12 +382,12 @@ public abstract class CompactorTest {
     t.run();
   }
 
-  private Path getLocation(String tableName, String partValue) {
-    Path tblLocation = new Path(tmpdir,tableName);
+  private String getLocation(String tableName, String partValue) {
+    Path tblLocation = new Path(tmpdir, tableName);
     if (partValue != null) {
-      tblLocation = new Path(tblLocation,"ds=" + partValue);
+      tblLocation = new Path(tblLocation, "ds=" + partValue);
     }
-    return tblLocation;
+    return tblLocation.toString();
   }
 
   private enum FileType {BASE, DELTA, LEGACY, LENGTH_FILE}
@@ -399,7 +400,7 @@ public abstract class CompactorTest {
   private void addFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords, FileType type, int numBuckets,
       boolean allBucketsPresent, long visibilityId) throws Exception {
     String partValue = (p == null) ? null : p.getValues().get(0);
-    Path location = getLocation(t.getTableName(), partValue);
+    Path location = new Path(getLocation(t.getTableName(), partValue));
     String filename = null;
     switch (type) {
       case BASE: filename = AcidUtils.addVisibilitySuffix(AcidUtils.BASE_PREFIX + maxTxn, visibilityId); break;
