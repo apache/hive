@@ -110,7 +110,7 @@ public class TestCleanerWithSecureDFS extends CompactorTest {
   public void setup() throws Exception {
     HiveConf conf = new HiveConf(secureConf);
     conf.set("fs.defaultFS", dfsCluster.getFileSystem().getUri().toString());
-    super.setup(new HiveConf(secureConf));
+    setup(new HiveConf(secureConf));
   }
 
   private static HiveConf createSecureDFSConfig(MiniKdc kdc) throws Exception {

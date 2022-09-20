@@ -127,7 +127,7 @@ public abstract class CompactorTest {
     setup(new HiveConf());
   }
 
-  protected void setup(HiveConf conf) throws Exception {
+  protected final void setup(HiveConf conf) throws Exception {
     this.conf = conf;
     fs = FileSystem.get(conf);
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
