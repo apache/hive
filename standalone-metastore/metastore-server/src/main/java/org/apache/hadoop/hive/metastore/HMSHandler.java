@@ -1380,6 +1380,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       req.setRemote_dbname(db.getRemote_dbname());
     }
     create_database_req(req);
+    //location and manged location might be set/changed.
+    db.setLocationUri(req.getLocationUri());
+    db.setManagedLocationUri(req.getManagedLocationUri());
   }
 
   @Override
@@ -1428,6 +1431,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         db.setRemote_dbname(createDatabaseRequest.getRemote_dbname());
       }
       create_database_core(getMS(), db);
+      createDatabaseRequest.setLocationUri(db.getLocationUri());
+      createDatabaseRequest.setManagedLocationUri(db.getManagedLocationUri());
       success = true;
     } catch (Exception e) {
       ex = e;
