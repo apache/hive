@@ -70,7 +70,6 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
 
     Table metadata = hiveOpConverter.getSemanticAnalyzer().getDummyTable();
     TableScanDesc tsd = new TableScanDesc(SemanticAnalyzer.DUMMY_TABLE, Collections.emptyList(), metadata);
-//    tsd.setPartColumns(Collections.emptyList());
     tsd.setNeededColumnIDs(neededColumnIDs);
     tsd.setNeededColumns(valuesRel.getRowType().getFieldNames());
 
@@ -82,12 +81,9 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
     int limit = 0;
     int offset = 0;
     LimitDesc limitDesc = new LimitDesc(offset, limit);
-//    ArrayList<ColumnInfo> cinfoLst = HiveOpConverterUtils.createColInfos(ts);
     Operator<?> resultOp = OperatorFactory.getAndMakeChild(limitDesc, new RowSchema(colInfoList), ts);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Generated " + resultOp + " with row schema: [" + resultOp.getSchema() + "]");
-    }
+    LOG.debug("Generated {} with row schema: [{}]", resultOp, resultOp.getSchema());
 
     // 3. Return result
     return new OpAttr(SemanticAnalyzer.DUMMY_TABLE, Collections.emptySet(), ts).clone(resultOp);
