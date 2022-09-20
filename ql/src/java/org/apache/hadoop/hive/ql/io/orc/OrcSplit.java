@@ -68,7 +68,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   private transient Object fileKey;
   private long fileLen;
   private transient long writeId = 0;
-  private transient int bucketId = 0;
+  private final transient int bucketId;
   private transient int stmtId = 0;
 
   /**
@@ -88,6 +88,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     //This constructor is used to create the object and then call readFields()
     // so just pass nulls to this super constructor.
     super(null, 0, 0, (String[]) null);
+    bucketId = 0;
   }
 
   public OrcSplit(Path path, Object fileId, long offset, long length, String[] hosts,
@@ -103,7 +104,7 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     this.isOriginal = isOriginal;
     this.hasBase = hasBase;
     this.rootDir = rootDir;
-    int bucketId = AcidUtils.parseBucketId(path);
+    bucketId = AcidUtils.parseBucketId(path);
     long minWriteId = !deltas.isEmpty() ?
             AcidUtils.parseBaseOrDeltaBucketFilename(path, null).getMinimumWriteId() : -1;
     this.deltas.addAll(
@@ -384,7 +385,6 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
         OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(getPath(), rootPath, conf);
     writeId = tmd.syntheticWriteId;
     stmtId = tmd.statementId;
-    bucketId = AcidUtils.parseBucketId(getPath());
   }
 
   @Override
