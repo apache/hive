@@ -40,7 +40,9 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
   HiveValuesVisitor(HiveOpConverter hiveOpConverter) {
@@ -64,6 +66,7 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
     List<Integer> neededColumnIDs = new ArrayList<>();
     List<String> neededColumnNames = new ArrayList<>();
     List<ExprNodeDesc> exprNodeDescList = new ArrayList<>();
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<>();
 
     ArrayList<ColumnInfo> colInfoList = new ArrayList<>();
     for (int i = 0; i < valuesRel.getRowType().getFieldList().size(); i++) {
@@ -75,6 +78,7 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
       neededColumnNames.add(typeField.getName());
 
       ExprNodeDesc exprNodeDesc = new ExprNodeConstantDesc(TypeConverter.convert(typeField.getType()), null);
+      colExprMap.put(typeField.getName(), exprNodeDesc);
       exprNodeDescList.add(exprNodeDesc);
     }
 
@@ -90,6 +94,7 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
 
     SelectDesc sd = new SelectDesc(exprNodeDescList, neededColumnNames);
     SelectOperator selOp = (SelectOperator) OperatorFactory.getAndMakeChild(sd, new RowSchema(colInfoList), ts);
+    selOp.setColumnExprMap(colExprMap);
 
     int limit = 0;
     int offset = 0;
