@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
@@ -31,7 +32,10 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.opconventer.HiveOpConverter.OpAttr;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
+import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 
 import java.util.ArrayList;
@@ -58,6 +62,8 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
     }
 
     List<Integer> neededColumnIDs = new ArrayList<>();
+    List<String> neededColumnNames = new ArrayList<>();
+    List<ExprNodeDesc> exprNodeDescList = new ArrayList<>();
 
     ArrayList<ColumnInfo> colInfoList = new ArrayList<>();
     for (int i = 0; i < valuesRel.getRowType().getFieldList().size(); i++) {
@@ -66,6 +72,10 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
               typeField.getName(), TypeConverter.convert(typeField.getType()), SemanticAnalyzer.DUMMY_TABLE, false);
       colInfoList.add(ci);
       neededColumnIDs.add(i);
+      neededColumnNames.add(typeField.getName());
+
+      ExprNodeDesc exprNodeDesc = new ExprNodeConstantDesc(TypeConverter.convert(typeField.getType()), null);
+      exprNodeDescList.add(exprNodeDesc);
     }
 
     Table metadata = hiveOpConverter.getSemanticAnalyzer().getDummyTable();
@@ -78,14 +88,17 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
 
     hiveOpConverter.getTopOps().put(SemanticAnalyzer.DUMMY_TABLE, ts);
 
+    SelectDesc sd = new SelectDesc(exprNodeDescList, neededColumnNames);
+    SelectOperator selOp = (SelectOperator) OperatorFactory.getAndMakeChild(sd, new RowSchema(colInfoList), ts);
+
     int limit = 0;
     int offset = 0;
     LimitDesc limitDesc = new LimitDesc(offset, limit);
-    Operator<?> resultOp = OperatorFactory.getAndMakeChild(limitDesc, new RowSchema(colInfoList), ts);
+    Operator<?> resultOp = OperatorFactory.getAndMakeChild(limitDesc, new RowSchema(colInfoList), selOp);
 
     LOG.debug("Generated {} with row schema: [{}]", resultOp, resultOp.getSchema());
 
     // 3. Return result
-    return new OpAttr(SemanticAnalyzer.DUMMY_TABLE, Collections.emptySet(), ts).clone(resultOp);
+    return new OpAttr(SemanticAnalyzer.DUMMY_TABLE, Collections.emptySet(), selOp).clone(resultOp);
   }
 }
