@@ -68,7 +68,7 @@ public interface FunctionHelper {
    * Returns aggregation information based on given parameters.
    */
   AggregateInfo getAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns,
-                                         String aggregateName, List<RexNode> aggregateParameters, List<OBKey> obKeys)
+                                         String aggregateName, List<RexNode> aggregateParameters, List<FieldCollation> fieldCollations)
       throws SemanticException;
 
   /**
@@ -125,12 +125,12 @@ public interface FunctionHelper {
    */
   boolean isStateful(FunctionInfo fi);
 
-  class OBKey {
+  class FieldCollation {
     private final RexNode sortExpression;
     private final int sortDirection;
     private final NullOrdering nullOrdering;
 
-    public OBKey(RexNode sortExpression, int sortDirection, NullOrdering nullSortOrder) {
+    public FieldCollation(RexNode sortExpression, int sortDirection, NullOrdering nullSortOrder) {
       this.sortExpression = sortExpression;
       this.sortDirection = sortDirection;
       this.nullOrdering = nullSortOrder;
@@ -157,7 +157,7 @@ public interface FunctionHelper {
     private final TypeInfo returnType;
     private final String aggregateName;
     private final boolean distinct;
-    private final List<OBKey> withinGroupKeys;
+    private final List<FieldCollation> collation;
 
     public AggregateInfo(List<RexNode> parameters, TypeInfo returnType, String aggregateName,
         boolean distinct) {
@@ -165,16 +165,16 @@ public interface FunctionHelper {
       this.returnType = returnType;
       this.aggregateName = aggregateName;
       this.distinct = distinct;
-      this.withinGroupKeys = Collections.emptyList();
+      this.collation = Collections.emptyList();
     }
 
     public AggregateInfo(List<RexNode> parameters, TypeInfo returnType, String aggregateName,
-        boolean distinct, List<OBKey> withinGroupKeys) {
+        boolean distinct, List<FieldCollation> collation) {
       this.parameters = ImmutableList.copyOf(parameters);
       this.returnType = returnType;
       this.aggregateName = aggregateName;
       this.distinct = distinct;
-      this.withinGroupKeys = withinGroupKeys;
+      this.collation = collation;
     }
 
     public List<RexNode> getParameters() {
@@ -193,8 +193,8 @@ public interface FunctionHelper {
       return distinct;
     }
 
-    public List<OBKey> getWithinGroupKeys() {
-      return withinGroupKeys;
+    public List<FieldCollation> getCollation() {
+      return collation;
     }
   }
 

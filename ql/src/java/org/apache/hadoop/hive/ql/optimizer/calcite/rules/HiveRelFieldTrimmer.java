@@ -633,7 +633,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     final RelNode input = aggregate.getInput();
     final Set<RelDataTypeField> inputExtraFields = Collections.emptySet();
     final TrimResult trimResult =
-            trimChild(aggregate, input, inputFieldsUsed.build(), inputExtraFields);
+        trimChild(aggregate, input, inputFieldsUsed.build(), inputExtraFields);
     final RelNode newInput = trimResult.left;
     final Mapping inputMapping = trimResult.right;
 
@@ -653,19 +653,19 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       }
     }
     fieldsUsed =
-            fieldsUsed.union(updatedGroupFields);
+        fieldsUsed.union(updatedGroupFields);
 
     // If the input is unchanged, and we need to project all columns,
     // there's nothing to do.
     if (input == newInput
-            && fieldsUsed.equals(ImmutableBitSet.range(rowType.getFieldCount()))) {
+        && fieldsUsed.equals(ImmutableBitSet.range(rowType.getFieldCount()))) {
       return result(aggregate,
-              Mappings.createIdentity(rowType.getFieldCount()));
+          Mappings.createIdentity(rowType.getFieldCount()));
     }
 
     // update the group by keys based on inputMapping
     ImmutableBitSet newGroupSet =
-            Mappings.apply(inputMapping, updatedGroupSet);
+        Mappings.apply(inputMapping, updatedGroupSet);
 
     // Which agg calls are used by our consumer?
     int originalGroupCount = aggregate.getGroupSet().cardinality();
@@ -679,10 +679,10 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
     // Offset due to the number of system fields having changed.
     Mapping mapping =
-            Mappings.create(
-                    MappingType.INVERSE_SURJECTION,
-                    rowType.getFieldCount(),
-                    updatedGroupCount + usedAggCallCount);
+        Mappings.create(
+            MappingType.INVERSE_SURJECTION,
+            rowType.getFieldCount(),
+            updatedGroupCount + usedAggCallCount);
 
 
     // if group keys were reduced, it means we didn't have grouping therefore
@@ -692,8 +692,8 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       newGroupSets = ImmutableList.of(newGroupSet);
     } else {
       newGroupSets = ImmutableList.copyOf(
-              Iterables.transform(aggregate.getGroupSets(),
-                      input1 -> Mappings.apply(inputMapping, input1)));
+          Iterables.transform(aggregate.getGroupSets(),
+              input1 -> Mappings.apply(inputMapping, input1)));
     }
 
     // Populate mapping of where to find the fields. System, group key and
@@ -714,10 +714,10 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     for (AggregateCall aggCall : aggregate.getAggCallList()) {
       if (fieldsUsed.get(j)) {
         final ImmutableList<RexNode> args =
-                relBuilder.fields(
-                        Mappings.apply2(inputMapping, aggCall.getArgList()));
+            relBuilder.fields(
+                Mappings.apply2(inputMapping, aggCall.getArgList()));
         final RexNode filterArg = aggCall.filterArg < 0 ? null
-                : relBuilder.field(Mappings.apply(inputMapping, aggCall.filterArg));
+            : relBuilder.field(Mappings.apply(inputMapping, aggCall.filterArg));
         RelBuilder.AggCall newAggCall =
                 relBuilder.aggregateCall(aggCall.getAggregation(), args)
                         .distinct(aggCall.isDistinct())
@@ -732,7 +732,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     }
 
     final RelBuilder.GroupKey groupKey =
-            relBuilder.groupKey(newGroupSet, newGroupSets);
+        relBuilder.groupKey(newGroupSet, newGroupSets);
     relBuilder.aggregate(groupKey, newAggCallList);
 
     return result(relBuilder.build(), mapping);

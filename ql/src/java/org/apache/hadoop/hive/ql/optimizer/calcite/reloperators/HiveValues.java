@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  * Subclass of {@link org.apache.calcite.rel.core.Values}.
- * Targeting Hive engine.
+ * Specialized to Hive engine.
  */
 public class HiveValues extends Values {
 

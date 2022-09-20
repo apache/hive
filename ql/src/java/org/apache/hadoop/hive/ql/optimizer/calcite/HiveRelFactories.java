@@ -100,7 +100,7 @@ public class HiveRelFactories {
               HIVE_SEMI_JOIN_FACTORY,
               HIVE_SORT_FACTORY,
               HIVE_SORT_EXCHANGE_FACTORY,
-                  HIVE_VALUES_FACTORY,
+              HIVE_VALUES_FACTORY,
               HIVE_AGGREGATE_FACTORY,
               HIVE_SET_OP_FACTORY));
 

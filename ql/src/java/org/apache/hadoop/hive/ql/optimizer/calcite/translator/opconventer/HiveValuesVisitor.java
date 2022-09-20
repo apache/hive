@@ -63,39 +63,40 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
       return null;
     }
 
-    List<Integer> neededColumnIDs = new ArrayList<>();
-    List<String> neededColumnNames = new ArrayList<>();
+    // 1. collect columns for project row schema
+    List<String> columnNames = new ArrayList<>();
     List<ExprNodeDesc> exprNodeDescList = new ArrayList<>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<>();
 
     ArrayList<ColumnInfo> colInfoList = new ArrayList<>();
     for (int i = 0; i < valuesRel.getRowType().getFieldList().size(); i++) {
       RelDataTypeField typeField = valuesRel.getRowType().getFieldList().get(i);
+
       ColumnInfo ci = new ColumnInfo(
               typeField.getName(), TypeConverter.convert(typeField.getType()), SemanticAnalyzer.DUMMY_TABLE, false);
       colInfoList.add(ci);
-      neededColumnIDs.add(i);
-      neededColumnNames.add(typeField.getName());
+      columnNames.add(typeField.getName());
 
       ExprNodeDesc exprNodeDesc = new ExprNodeConstantDesc(TypeConverter.convert(typeField.getType()), null);
       colExprMap.put(typeField.getName(), exprNodeDesc);
       exprNodeDescList.add(exprNodeDesc);
     }
 
+    // 2. Create TS on dummy table
     Table metadata = hiveOpConverter.getSemanticAnalyzer().getDummyTable();
     TableScanDesc tsd = new TableScanDesc(SemanticAnalyzer.DUMMY_TABLE, Collections.emptyList(), metadata);
-    tsd.setNeededColumnIDs(neededColumnIDs);
-    tsd.setNeededColumns(valuesRel.getRowType().getFieldNames());
 
     TableScanOperator ts = (TableScanOperator) OperatorFactory.get(
-            hiveOpConverter.getSemanticAnalyzer().getOpContext(), tsd, new RowSchema(colInfoList));
+            hiveOpConverter.getSemanticAnalyzer().getOpContext(), tsd, new RowSchema(Collections.emptyList()));
 
     hiveOpConverter.getTopOps().put(SemanticAnalyzer.DUMMY_TABLE, ts);
 
-    SelectDesc sd = new SelectDesc(exprNodeDescList, neededColumnNames);
+    // 3. Create Select operator
+    SelectDesc sd = new SelectDesc(exprNodeDescList, columnNames);
     SelectOperator selOp = (SelectOperator) OperatorFactory.getAndMakeChild(sd, new RowSchema(colInfoList), ts);
     selOp.setColumnExprMap(colExprMap);
 
+    // 4. Create Limit 0 operator
     int limit = 0;
     int offset = 0;
     LimitDesc limitDesc = new LimitDesc(offset, limit);
@@ -103,7 +104,6 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
 
     LOG.debug("Generated {} with row schema: [{}]", resultOp, resultOp.getSchema());
 
-    // 3. Return result
     return new OpAttr(SemanticAnalyzer.DUMMY_TABLE, Collections.emptySet(), selOp).clone(resultOp);
   }
 }

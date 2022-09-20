@@ -134,11 +134,15 @@ public class ASTConverter {
   //               TOK_TMP_FILE
   //         TOK_SELECT
   //            TOK_SELEXPR
-  //               NULL
+  //               TOK_FUNCTION
+  //                  TOK_<type>
+  //                  TOK_NULL
   //               alias0
   //            ...
   //            TOK_SELEXPR
-  //               NULL
+  //               TOK_FUNCTION
+  //                  TOK_<type>
+  //                  TOK_NULL
   //               aliasn
   //         TOK_LIMIT
   //            0
