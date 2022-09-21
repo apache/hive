@@ -717,7 +717,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (!targetTxnIdList.isEmpty()) {
           if (targetTxnIdList.size() != rqst.getReplSrcTxnIds().size()) {
             LOG.warn("target txn id number {} is not matching with source txn id number {}",
-                targetTxnIdList.toString(), rqst.getReplSrcTxnIds().toString());
+                targetTxnIdList, rqst.getReplSrcTxnIds());
           }
           LOG.info("Target transactions {} are present for repl policy : {} and Source transaction id : {}",
               targetTxnIdList.toString(), rqst.getReplPolicy(), rqst.getReplSrcTxnIds().toString());
@@ -935,7 +935,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       List<String> params = Arrays.asList(replPolicy);
       for (String query : inQueries) {
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Going to execute select <" + query.replaceAll("\\?", "{}") + ">", quoteString(replPolicy));
+          LOG.debug("Going to execute select <" + query.replace("?", "{}") + ">", quoteString(replPolicy));
         }
         pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
         rs = pst.executeQuery();
@@ -946,9 +946,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
       LOG.debug("targetTxnid for srcTxnId " + sourceTxnIdList.toString() + " is " + targetTxnIdList.toString());
       return targetTxnIdList;
-    } catch (SQLException e) {
-      LOG.warn("failed to get target txn ids {}", e.getMessage());
-      throw e;
     } finally {
       closeStmt(pst);
       close(rs);
@@ -1005,9 +1002,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
       }
       return dbNames;
-    } catch (SQLException e) {
-      LOG.warn("Failed to get ReplPolicies for replayed txns: {}", e.getMessage());
-      throw e;
     } finally {
       closeStmt(pst);
       close(rs);
@@ -1017,7 +1011,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private void deleteReplTxnMapEntry(Connection dbConn, long sourceTxnId, String replPolicy) throws SQLException {
     String s = "DELETE FROM \"REPL_TXN_MAP\" WHERE \"RTM_SRC_TXN_ID\" = " + sourceTxnId + " AND \"RTM_REPL_POLICY\" = ?";
     try (PreparedStatement pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, Arrays.asList(replPolicy))) {
-      LOG.info("Going to execute  <" + s.replaceAll("\\?", "{}") + ">", quoteString(replPolicy));
+      LOG.info("Going to execute  <" + s.replace("?", "{}") + ">", quoteString(replPolicy));
       pst.executeUpdate();
     }
   }
@@ -1167,7 +1161,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       String query = "select \"DB_ID\" from \"DBS\" where \"NAME\" = ?  and \"CTLG_NAME\" = ?";
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, Arrays.asList(database, catalog));
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">",
+        LOG.debug("Going to execute query <" + query.replace("?", "{}") + ">",
             quoteString(database), quoteString(catalog));
       }
       rs = pst.executeQuery();
@@ -1204,7 +1198,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, Arrays.asList(propValue));
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Updating " + prop + " for db: " + database + " <" + query.replaceAll("\\?", "{}") + ">", propValue);
+        LOG.debug("Updating " + prop + " for db: " + database + " <" + query.replace("?", "{}") + ">", propValue);
       }
       if (pst.executeUpdate() != 1) {
         //only one row insert or update should happen
@@ -1269,7 +1263,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       params = Arrays.asList(table);
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">", quoteString(table));
+        LOG.debug("Going to execute query <" + query.replace("?", "{}") + ">", quoteString(table));
       }
 
       rs = pst.executeQuery();
@@ -1294,7 +1288,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       params = Arrays.asList(lastReplId);
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Updating repl id for table <" + query.replaceAll("\\?", "{}") + ">", lastReplId);
+        LOG.debug("Updating repl id for table <" + query.replace("?", "{}") + ">", lastReplId);
       }
       if (pst.executeUpdate() != 1) {
         //only one row insert or update should happen
@@ -1348,7 +1342,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
           pstInt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
           if (LOG.isDebugEnabled()) {
-            LOG.debug("Updating repl id for part <" + query.replaceAll("\\?", "{}") + ">", lastReplId);
+            LOG.debug("Updating repl id for part <" + query.replace("?", "{}") + ">", lastReplId);
           }
           if (pstInt.executeUpdate() != 1) {
             //only one row insert or update should happen
@@ -1853,7 +1847,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         String sql = "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = ? AND \"NWI_TABLE\" = ?";
         pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, sql, params);
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Going to execute query <" + sql.replaceAll("\\?", "{}") + ">",
+          LOG.debug("Going to execute query <" + sql.replace("?", "{}") + ">",
               quoteString(dbName), quoteString(tblName));
         }
         rs = pStmt.executeQuery();
@@ -1907,7 +1901,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         closeStmt(pStmt);
         pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, sql, params);
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Going to execute insert <" + sql.replaceAll("\\?", "{}") + ">",
+          LOG.debug("Going to execute insert <" + sql.replace("?", "{}") + ">",
               quoteString(dbName), quoteString(tblName));
         }
         pStmt.execute();
@@ -1970,7 +1964,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               + "\"T2W_TABLE\" = ? AND \"T2W_WRITEID\" = "+ writeId;
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Going to execute query <" + s.replaceAll("\\?", "{}") + ">", quoteString(names[0]),
+        LOG.debug("Going to execute query <" + s.replace("?", "{}") + ">", quoteString(names[0]),
             quoteString(names[1]));
       }
       rs = pst.executeQuery();
@@ -2057,7 +2051,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               + " AND \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ?";
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Going to execute query<" + s.replaceAll("\\?", "{}") + ">",
+        LOG.debug("Going to execute query<" + s.replace("?", "{}") + ">",
             quoteString(names[0]), quoteString(names[1]));
       }
       rs = pst.executeQuery();
@@ -2073,7 +2067,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         closeStmt(pst);
         pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Going to execute query<" + s.replaceAll("\\?", "{}") + ">",
+          LOG.debug("Going to execute query<" + s.replace("?", "{}") + ">",
               quoteString(names[0]), quoteString(names[1]));
         }
         rs = pst.executeQuery();
@@ -2092,7 +2086,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       closeStmt(pst);
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Going to execute query<" + s.replaceAll("\\?", "{}") + ">",
+        LOG.debug("Going to execute query<" + s.replace("?", "{}") + ">",
             quoteString(names[0]), quoteString(names[1]));
       }
       rs = pst.executeQuery();
@@ -2172,8 +2166,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if (srcTxnIds.size() != txnIds.size()) {
             // Idempotent case where txn was already closed but gets allocate write id event.
             // So, just ignore it and return empty list.
-            LOG.info("Idempotent case: Target txn id is missing for source txn id : {} and repl policy {}",
-                srcTxnIds.toString(), rqst.getReplPolicy());
+            LOG.info("Idempotent case: Target txn id is missing for source txn id : {} and repl policy {}", srcTxnIds,
+                rqst.getReplPolicy());
             return new AllocateTableWriteIdsResponse(txnToWriteIds);
           }
         } else {
@@ -2218,7 +2212,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           for (String query : queries) {
             pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
             if (LOG.isDebugEnabled()) {
-              LOG.debug("Going to execute delete <" + query.replaceAll("\\?", "{}") + ">",
+              LOG.debug("Going to execute delete <" + query.replace("?", "{}") + ">",
                   quoteString(dbName), quoteString(tblName));
             }
             int numRowsDeleted = pStmt.executeUpdate();
@@ -2237,7 +2231,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           for (String query : queries) {
             pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params);
             if (LOG.isDebugEnabled()) {
-              LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">",
+              LOG.debug("Going to execute query <" + query.replace("?", "{}") + ">",
                   quoteString(dbName), quoteString(tblName));
             }
             rs = pStmt.executeQuery();
@@ -2278,7 +2272,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         closeStmt(pStmt);
         pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Going to execute query <" + s.replaceAll("\\?", "{}") + ">",
+          LOG.debug("Going to execute query <" + s.replace("?", "{}") + ">",
               quoteString(dbName), quoteString(tblName));
         }
         rs = pStmt.executeQuery();
@@ -2292,7 +2286,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           closeStmt(pStmt);
           pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
           if (LOG.isDebugEnabled()) {
-            LOG.debug("Going to execute insert <" + s.replaceAll("\\?", "{}") + ">",
+            LOG.debug("Going to execute insert <" + s.replace("?", "{}") + ">",
                 quoteString(dbName), quoteString(tblName));
           }
           pStmt.execute();
@@ -2306,7 +2300,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           closeStmt(pStmt);
           pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
           if (LOG.isDebugEnabled()) {
-            LOG.debug("Going to execute update <" + s.replaceAll("\\?", "{}") + ">",
+            LOG.debug("Going to execute update <" + s.replace("?", "{}") + ">",
                 quoteString(dbName), quoteString(tblName));
           }
           pStmt.executeUpdate();
@@ -2320,7 +2314,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             closeStmt(pStmt);
             pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
             if (LOG.isDebugEnabled()) {
-              LOG.debug("Going to execute delete <" + s.replaceAll("\\?", "{}") + ">",
+              LOG.debug("Going to execute delete <" + s.replace("?", "{}") + ">",
                   quoteString(dbName), quoteString(tblName));
             }
             pStmt.executeUpdate();
@@ -2390,7 +2384,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, SELECT_NWI_NEXT_FROM_NEXT_WRITE_ID,
             Arrays.asList(dbName, tableName));
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Going to execute query <" + SELECT_NWI_NEXT_FROM_NEXT_WRITE_ID.replaceAll("\\?", "{}") + ">",
+          LOG.debug("Going to execute query <" + SELECT_NWI_NEXT_FROM_NEXT_WRITE_ID.replace("?", "{}") + ">",
               quoteString(dbName), quoteString(tableName));
         }
         rs = pStmt.executeQuery();
@@ -2434,7 +2428,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                 + Long.toString(rqst.getSeedWriteId() + 1) + ")";
         pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, Arrays.asList(rqst.getDbName(), rqst.getTableName()));
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Going to execute insert <" + s.replaceAll("\\?", "{}") + ">",
+          LOG.debug("Going to execute insert <" + s.replace("?", "{}") + ">",
               quoteString(rqst.getDbName()), quoteString(rqst.getTableName()));
         }
         pst.execute();
@@ -2768,7 +2762,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           " \"MRL_DB_NAME\" = ? AND \"MRL_TBL_NAME\" = ?";
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, selectQ, params);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Going to execute query <" + selectQ.replaceAll("\\?", "{}") + ">",
+        LOG.debug("Going to execute query <" + selectQ.replace("?", "{}") + ">",
             quoteString(dbName), quoteString(tableName));
       }
       rs = pst.executeQuery();
@@ -2782,7 +2776,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       closeStmt(pst);
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, insertQ, params);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Going to execute update <" + insertQ.replaceAll("\\?", "{}") + ">",
+        LOG.debug("Going to execute update <" + insertQ.replace("?", "{}") + ">",
             quoteString(dbName), quoteString(tableName));
       }
       pst.executeUpdate();
@@ -2818,7 +2812,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             " AND \"MRL_TBL_NAME\" = ?";
         pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, Arrays.asList(dbName, tableName));
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Going to execute update <" + s.replaceAll("\\?", "{}") + ">",
+          LOG.debug("Going to execute update <" + s.replace("?", "{}") + ">",
               quoteString(dbName), quoteString(tableName));
         }
         int rc = pst.executeUpdate();
@@ -3658,7 +3652,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             + " \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND \"T2W_WRITEID\" = " + writeId;
         pst = sqlGenerator.prepareStmtWithParameters(dbConn, query, Arrays.asList(dbName, tblName));
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Going to execute query <" + query.replaceAll("\\?", "{}") + ">",
+          LOG.debug("Going to execute query <" + query.replace("?", "{}") + ">",
               quoteString(dbName), quoteString(tblName));
         }
         ResultSet rs  = pst.executeQuery();
