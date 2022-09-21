@@ -1335,18 +1335,4 @@ public class HiveCalciteUtil {
     rexNode.accept(visitor);
     return rexTableInputRefs;
   }
-
-  public static void populateProjects(RexBuilder rexBuilder, RelDataType inputRowType,
-                                List<RexNode> projects, List<String> projectNames) {
-    populateProjects(rexBuilder, inputRowType, 0, inputRowType.getFieldCount(), projects, projectNames);
-  }
-  
-  public static void populateProjects(RexBuilder rexBuilder, RelDataType inputRowType, int offset, int length,
-                                List<RexNode> projects, List<String> projectNames) {
-    for (int i = 0; i < length; ++i) {
-      RelDataTypeField relDataTypeField = inputRowType.getFieldList().get(i);
-      projects.add(rexBuilder.makeInputRef(relDataTypeField.getType(), offset + i));
-      projectNames.add(relDataTypeField.getName());
-    }
-  }
 }

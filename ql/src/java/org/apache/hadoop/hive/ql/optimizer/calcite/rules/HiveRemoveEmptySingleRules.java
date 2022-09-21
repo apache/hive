@@ -33,8 +33,10 @@ import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.rules.PruneEmptyRules;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -42,8 +44,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.populateProjects;
 
 /**
  * This class provides access to Calcite's {@link PruneEmptyRules}.
@@ -106,7 +106,8 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
             // left
             addNullLiterals(rexBuilder, empty, projects, columnNames);
             // right
-            populateProjects(rexBuilder, right.getRowType(), projects, columnNames);
+            copyProjects(rexBuilder, right.getRowType(),
+                    join.getRowType(), empty.getRowType().getFieldCount(), projects, columnNames);
 
             RelNode project = call.builder().push(right).project(projects, columnNames).build();
             call.transformTo(project);
@@ -125,6 +126,20 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
       RexNode nullLiteral = rexBuilder.makeNullLiteral(relDataTypeField.getType());
       projectFields.add(nullLiteral);
       newColumnNames.add(empty.getRowType().getFieldList().get(i).getName());
+    }
+  }
+
+  public static void copyProjects(RexBuilder rexBuilder, RelDataType inRowType,
+                                  RelDataType castRowType, int castRowTypeOffset,
+                                  List<RexNode> outProjects, List<String> outProjectNames) {
+
+    for (int i = 0; i < inRowType.getFieldCount(); ++i) {
+      RelDataTypeField relDataTypeField = inRowType.getFieldList().get(i);
+      RexInputRef inputRef = rexBuilder.makeInputRef(relDataTypeField.getType(), i);
+      RexNode cast = rexBuilder.makeCast(
+              castRowType.getFieldList().get(castRowTypeOffset + i).getType(), inputRef);
+      outProjects.add(cast);
+      outProjectNames.add(relDataTypeField.getName());
     }
   }
 
@@ -165,7 +180,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
             List<String> columnNames = new ArrayList<>(
                     left.getRowType().getFieldCount() + empty.getRowType().getFieldCount());
             // left
-            populateProjects(rexBuilder, left.getRowType(), projects, columnNames);
+            copyProjects(rexBuilder, left.getRowType(), join.getRowType(), 0, projects, columnNames);
             // right
             addNullLiterals(rexBuilder, empty, projects, columnNames);
 
