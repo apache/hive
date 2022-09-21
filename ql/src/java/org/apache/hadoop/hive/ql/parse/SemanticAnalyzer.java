@@ -11568,8 +11568,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
         // Obtain inspector for schema
-        StructObjectInspector rowObjectInspector = (StructObjectInspector) tab
-            .getDeserializer().getObjectInspector();
+        final Deserializer deserializer = tab.getDeserializer();
+        StructObjectInspector rowObjectInspector = (StructObjectInspector) deserializer.getObjectInspector();
+
+        // Specific Handling for Iceberg serde, which sets specific properties in SessionConf.
+        copyIcebergSerdeConfigurations(deserializer);
         List<? extends StructField> fields = rowObjectInspector
             .getAllStructFieldRefs();
         for (int i = 0; i < fields.size(); i++) {
@@ -11792,6 +11795,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.debug("Created Table Plan for {} {}", alias, op);
 
     return output;
+  }
+
+  void copyIcebergSerdeConfigurations(Deserializer deserializer) {
+    if (deserializer.getClass().getName().equals("org.apache.iceberg.mr.hive.HiveIcebergSerDe")) {
+      String customConfs = SessionState.getSessionConf().get("iceberg.serde.confs");
+      if (customConfs != null && !customConfs.isEmpty()) {
+        String[] configurations = customConfs.split(",");
+        for (String configuration : configurations) {
+          String[] keyValue = configuration.split(":");
+          conf.set(keyValue[0], keyValue[1]);
+        }
+      }
+    }
   }
 
   boolean isSkewedCol(String alias, QB qb, String colName) {

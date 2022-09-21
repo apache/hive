@@ -82,6 +82,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   public void initialize(@Nullable Configuration configuration, Properties serDeProperties,
                          Properties partitionProperties) throws SerDeException {
     super.initialize(configuration, serDeProperties, partitionProperties);
+    StringBuilder sb = new StringBuilder();
 
     // HiveIcebergSerDe.initialize is called multiple places in Hive code:
     // - When we are trying to create a table - HiveDDL data is stored at the serDeProperties, but no Iceberg table
@@ -130,13 +131,15 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       }
     }
 
-    this.projectedSchema = projectedSchema(configuration, serDeProperties.getProperty(Catalogs.NAME), tableSchema);
+    this.projectedSchema = projectedSchema(configuration, serDeProperties.getProperty(Catalogs.NAME), tableSchema, sb);
 
     // Currently ClusteredWriter is used which requires that records are ordered by partition keys.
     // Here we ensure that SortedDynPartitionOptimizer will kick in and do the sorting.
     // TODO: remove once we have both Fanout and ClusteredWriter available: HIVE-25948
-    HiveConf.setIntVar(configuration, HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD, 1);
-    HiveConf.setVar(configuration, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    sb.append(HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD.varname).append(":").append(1).append(",");
+    sb.append(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE.varname).append(":").append("nonstrict");
+
+    configuration.set("iceberg.serde.confs", sb.toString());
 
     try {
       this.inspector = IcebergObjectInspector.create(projectedSchema);
@@ -145,7 +148,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     }
   }
 
-  private static Schema projectedSchema(Configuration configuration, String tableName, Schema tableSchema) {
+  private static Schema projectedSchema(Configuration configuration, String tableName, Schema tableSchema,
+      StringBuilder sb) {
     Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(configuration, tableName);
     if (operation != null) {
       switch (operation) {
@@ -159,7 +163,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
           throw new IllegalArgumentException("Unsupported operation " + operation);
       }
     } else {
-      configuration.setBoolean(InputFormatConfig.CASE_SENSITIVE, false);
+      sb.append(InputFormatConfig.CASE_SENSITIVE).append(":").append(false).append(",");
       String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(configuration);
       // When same table is joined multiple times, it is possible some selected columns are duplicated,
       // in this case wrong recordStructField position leads wrong value or ArrayIndexOutOfBoundException
