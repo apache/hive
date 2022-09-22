@@ -406,7 +406,7 @@ public class ASTConverter {
             node.getCluster().getRexBuilder(), schema, fieldCollations, obRefToCallMap, astToken, astText);
   }
 
-  public static ASTNode convertFieldCollationsToASTNode(
+  private static ASTNode convertFieldCollationsToASTNode(
             RexBuilder rexBuilder, Schema schema, List<RelFieldCollation> fieldCollations, Map<Integer, RexNode> obRefToCallMap,
     int astToken, String astText) {
 
