@@ -21784,6 +21784,11 @@ void AbortTxnRequest::__set_txn_type(const TxnType::type val) {
   this->txn_type = val;
 __isset.txn_type = true;
 }
+
+void AbortTxnRequest::__set_errorMessage(const std::string& val) {
+  this->errorMessage = val;
+__isset.errorMessage = true;
+}
 std::ostream& operator<<(std::ostream& out, const AbortTxnRequest& obj)
 {
   obj.printTo(out);
@@ -21839,6 +21844,14 @@ uint32_t AbortTxnRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->errorMessage);
+          this->__isset.errorMessage = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -21872,6 +21885,11 @@ uint32_t AbortTxnRequest::write(::apache::thrift::protocol::TProtocol* oprot) co
     xfer += oprot->writeI32(static_cast<int32_t>(this->txn_type));
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.errorMessage) {
+    xfer += oprot->writeFieldBegin("errorMessage", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->errorMessage);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -21882,6 +21900,7 @@ void swap(AbortTxnRequest &a, AbortTxnRequest &b) {
   swap(a.txnid, b.txnid);
   swap(a.replPolicy, b.replPolicy);
   swap(a.txn_type, b.txn_type);
+  swap(a.errorMessage, b.errorMessage);
   swap(a.__isset, b.__isset);
 }
 
@@ -21889,12 +21908,14 @@ AbortTxnRequest::AbortTxnRequest(const AbortTxnRequest& other818) {
   txnid = other818.txnid;
   replPolicy = other818.replPolicy;
   txn_type = other818.txn_type;
+  errorMessage = other818.errorMessage;
   __isset = other818.__isset;
 }
 AbortTxnRequest& AbortTxnRequest::operator=(const AbortTxnRequest& other819) {
   txnid = other819.txnid;
   replPolicy = other819.replPolicy;
   txn_type = other819.txn_type;
+  errorMessage = other819.errorMessage;
   __isset = other819.__isset;
   return *this;
 }
@@ -21904,6 +21925,7 @@ void AbortTxnRequest::printTo(std::ostream& out) const {
   out << "txnid=" << to_string(txnid);
   out << ", " << "replPolicy="; (__isset.replPolicy ? (out << to_string(replPolicy)) : (out << "<null>"));
   out << ", " << "txn_type="; (__isset.txn_type ? (out << to_string(txn_type)) : (out << "<null>"));
+  out << ", " << "errorMessage="; (__isset.errorMessage ? (out << to_string(errorMessage)) : (out << "<null>"));
   out << ")";
 }
 

@@ -14,6 +14,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField TXNID_FIELD_DESC = new org.apache.thrift.protocol.TField("txnid", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField REPL_POLICY_FIELD_DESC = new org.apache.thrift.protocol.TField("replPolicy", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField TXN_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("txn_type", org.apache.thrift.protocol.TType.I32, (short)3);
+  private static final org.apache.thrift.protocol.TField ERROR_MESSAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("errorMessage", org.apache.thrift.protocol.TType.STRING, (short)4);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new AbortTxnRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new AbortTxnRequestTupleSchemeFactory();
@@ -21,6 +22,7 @@ package org.apache.hadoop.hive.metastore.api;
   private long txnid; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String replPolicy; // optional
   private @org.apache.thrift.annotation.Nullable TxnType txn_type; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String errorMessage; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -30,7 +32,8 @@ package org.apache.hadoop.hive.metastore.api;
      * 
      * @see TxnType
      */
-    TXN_TYPE((short)3, "txn_type");
+    TXN_TYPE((short)3, "txn_type"),
+    ERROR_MESSAGE((short)4, "errorMessage");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -52,6 +55,8 @@ package org.apache.hadoop.hive.metastore.api;
           return REPL_POLICY;
         case 3: // TXN_TYPE
           return TXN_TYPE;
+        case 4: // ERROR_MESSAGE
+          return ERROR_MESSAGE;
         default:
           return null;
       }
@@ -95,7 +100,7 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __TXNID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.REPL_POLICY,_Fields.TXN_TYPE};
+  private static final _Fields optionals[] = {_Fields.REPL_POLICY,_Fields.TXN_TYPE,_Fields.ERROR_MESSAGE};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -105,6 +110,8 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TXN_TYPE, new org.apache.thrift.meta_data.FieldMetaData("txn_type", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, TxnType.class)));
+    tmpMap.put(_Fields.ERROR_MESSAGE, new org.apache.thrift.meta_data.FieldMetaData("errorMessage", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AbortTxnRequest.class, metaDataMap);
   }
@@ -132,6 +139,9 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetTxn_type()) {
       this.txn_type = other.txn_type;
     }
+    if (other.isSetErrorMessage()) {
+      this.errorMessage = other.errorMessage;
+    }
   }
 
   public AbortTxnRequest deepCopy() {
@@ -144,6 +154,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.txnid = 0;
     this.replPolicy = null;
     this.txn_type = null;
+    this.errorMessage = null;
   }
 
   public long getTxnid() {
@@ -224,6 +235,30 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getErrorMessage() {
+    return this.errorMessage;
+  }
+
+  public void setErrorMessage(@org.apache.thrift.annotation.Nullable java.lang.String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
+
+  public void unsetErrorMessage() {
+    this.errorMessage = null;
+  }
+
+  /** Returns true if field errorMessage is set (has been assigned a value) and false otherwise */
+  public boolean isSetErrorMessage() {
+    return this.errorMessage != null;
+  }
+
+  public void setErrorMessageIsSet(boolean value) {
+    if (!value) {
+      this.errorMessage = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case TXNID:
@@ -250,6 +285,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case ERROR_MESSAGE:
+      if (value == null) {
+        unsetErrorMessage();
+      } else {
+        setErrorMessage((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -264,6 +307,9 @@ package org.apache.hadoop.hive.metastore.api;
 
     case TXN_TYPE:
       return getTxn_type();
+
+    case ERROR_MESSAGE:
+      return getErrorMessage();
 
     }
     throw new java.lang.IllegalStateException();
@@ -282,6 +328,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetReplPolicy();
     case TXN_TYPE:
       return isSetTxn_type();
+    case ERROR_MESSAGE:
+      return isSetErrorMessage();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -326,6 +374,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_errorMessage = true && this.isSetErrorMessage();
+    boolean that_present_errorMessage = true && that.isSetErrorMessage();
+    if (this_present_errorMessage || that_present_errorMessage) {
+      if (!(this_present_errorMessage && that_present_errorMessage))
+        return false;
+      if (!this.errorMessage.equals(that.errorMessage))
+        return false;
+    }
+
     return true;
   }
 
@@ -342,6 +399,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetTxn_type()) ? 131071 : 524287);
     if (isSetTxn_type())
       hashCode = hashCode * 8191 + txn_type.getValue();
+
+    hashCode = hashCode * 8191 + ((isSetErrorMessage()) ? 131071 : 524287);
+    if (isSetErrorMessage())
+      hashCode = hashCode * 8191 + errorMessage.hashCode();
 
     return hashCode;
   }
@@ -380,6 +441,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetTxn_type()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txn_type, other.txn_type);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetErrorMessage(), other.isSetErrorMessage());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetErrorMessage()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.errorMessage, other.errorMessage);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -425,6 +496,16 @@ package org.apache.hadoop.hive.metastore.api;
         sb.append("null");
       } else {
         sb.append(this.txn_type);
+      }
+      first = false;
+    }
+    if (isSetErrorMessage()) {
+      if (!first) sb.append(", ");
+      sb.append("errorMessage:");
+      if (this.errorMessage == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.errorMessage);
       }
       first = false;
     }
@@ -501,6 +582,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // ERROR_MESSAGE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.errorMessage = iprot.readString();
+              struct.setErrorMessageIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -531,6 +620,13 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.errorMessage != null) {
+        if (struct.isSetErrorMessage()) {
+          oprot.writeFieldBegin(ERROR_MESSAGE_FIELD_DESC);
+          oprot.writeString(struct.errorMessage);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -556,12 +652,18 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetTxn_type()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetErrorMessage()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetReplPolicy()) {
         oprot.writeString(struct.replPolicy);
       }
       if (struct.isSetTxn_type()) {
         oprot.writeI32(struct.txn_type.getValue());
+      }
+      if (struct.isSetErrorMessage()) {
+        oprot.writeString(struct.errorMessage);
       }
     }
 
@@ -570,7 +672,7 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       struct.txnid = iprot.readI64();
       struct.setTxnidIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(2);
+      java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.replPolicy = iprot.readString();
         struct.setReplPolicyIsSet(true);
@@ -578,6 +680,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(1)) {
         struct.txn_type = org.apache.hadoop.hive.metastore.api.TxnType.findByValue(iprot.readI32());
         struct.setTxn_typeIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.errorMessage = iprot.readString();
+        struct.setErrorMessageIsSet(true);
       }
     }
   }

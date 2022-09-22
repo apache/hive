@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsDataConverter;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.HdfsUtils;
@@ -8699,6 +8700,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void abort_txn(AbortTxnRequest rqst) throws TException {
+    rqst.setErrorMessage("ABORT_INTERRUPT");
     getTxnHandler().abortTxn(rqst);
     boolean isHiveReplTxn = rqst.isSetReplPolicy() && TxnType.DEFAULT.equals(rqst.getTxn_type());
     if (listeners != null && !listeners.isEmpty() && !isHiveReplTxn) {

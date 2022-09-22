@@ -8747,9 +8747,10 @@ void swap(OpenTxnsResponse &a, OpenTxnsResponse &b);
 std::ostream& operator<<(std::ostream& out, const OpenTxnsResponse& obj);
 
 typedef struct _AbortTxnRequest__isset {
-  _AbortTxnRequest__isset() : replPolicy(false), txn_type(false) {}
+  _AbortTxnRequest__isset() : replPolicy(false), txn_type(false), errorMessage(false) {}
   bool replPolicy :1;
   bool txn_type :1;
+  bool errorMessage :1;
 } _AbortTxnRequest__isset;
 
 class AbortTxnRequest : public virtual ::apache::thrift::TBase {
@@ -8760,7 +8761,8 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
   AbortTxnRequest() noexcept
                   : txnid(0),
                     replPolicy(),
-                    txn_type(static_cast<TxnType::type>(0)) {
+                    txn_type(static_cast<TxnType::type>(0)),
+                    errorMessage() {
   }
 
   virtual ~AbortTxnRequest() noexcept;
@@ -8771,6 +8773,7 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
    * @see TxnType
    */
   TxnType::type txn_type;
+  std::string errorMessage;
 
   _AbortTxnRequest__isset __isset;
 
@@ -8779,6 +8782,8 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
   void __set_replPolicy(const std::string& val);
 
   void __set_txn_type(const TxnType::type val);
+
+  void __set_errorMessage(const std::string& val);
 
   bool operator == (const AbortTxnRequest & rhs) const
   {
@@ -8791,6 +8796,10 @@ class AbortTxnRequest : public virtual ::apache::thrift::TBase {
     if (__isset.txn_type != rhs.__isset.txn_type)
       return false;
     else if (__isset.txn_type && !(txn_type == rhs.txn_type))
+      return false;
+    if (__isset.errorMessage != rhs.__isset.errorMessage)
+      return false;
+    else if (__isset.errorMessage && !(errorMessage == rhs.errorMessage))
       return false;
     return true;
   }

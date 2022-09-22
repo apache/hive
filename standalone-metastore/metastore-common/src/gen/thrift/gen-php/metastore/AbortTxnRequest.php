@@ -37,6 +37,11 @@ class AbortTxnRequest
             'type' => TType::I32,
             'class' => '\metastore\TxnType',
         ),
+        4 => array(
+            'var' => 'errorMessage',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -51,6 +56,10 @@ class AbortTxnRequest
      * @var int
      */
     public $txn_type = null;
+    /**
+     * @var string
+     */
+    public $errorMessage = null;
 
     public function __construct($vals = null)
     {
@@ -63,6 +72,9 @@ class AbortTxnRequest
             }
             if (isset($vals['txn_type'])) {
                 $this->txn_type = $vals['txn_type'];
+            }
+            if (isset($vals['errorMessage'])) {
+                $this->errorMessage = $vals['errorMessage'];
             }
         }
     }
@@ -107,6 +119,13 @@ class AbortTxnRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 4:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->errorMessage);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -134,6 +153,11 @@ class AbortTxnRequest
         if ($this->txn_type !== null) {
             $xfer += $output->writeFieldBegin('txn_type', TType::I32, 3);
             $xfer += $output->writeI32($this->txn_type);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->errorMessage !== null) {
+            $xfer += $output->writeFieldBegin('errorMessage', TType::STRING, 4);
+            $xfer += $output->writeString($this->errorMessage);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
