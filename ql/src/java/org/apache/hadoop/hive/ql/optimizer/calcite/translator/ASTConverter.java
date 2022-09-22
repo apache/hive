@@ -147,7 +147,11 @@ public class ASTConverter {
   //         TOK_LIMIT
   //            0
   //            0
-  private static ASTNode emptyPlan(RelDataType dataType) {
+  public static ASTNode emptyPlan(RelDataType dataType) {
+    if (dataType.getFieldCount() == 0) {
+      throw new IllegalArgumentException("Schema is empty.");
+    }
+
     ASTBuilder select = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
     for (int i = 0; i < dataType.getFieldCount(); ++i) {
       RelDataTypeField fieldType = dataType.getFieldList().get(i);

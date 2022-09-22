@@ -1,0 +1,102 @@
+package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
+
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rel.type.RelDataTypeFieldImpl;
+import org.apache.calcite.rel.type.RelRecordType;
+import org.apache.calcite.sql.type.ArraySqlType;
+import org.apache.calcite.sql.type.BasicSqlType;
+import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.emptyPlan;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+public class TestASTConverter {
+  @Test
+  public void testEmptyPlanWhenInputSchemaIsEmpty() {
+    IllegalArgumentException thrown = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      emptyPlan(new RelRecordType(Collections.emptyList()));
+    });
+
+    Assertions.assertTrue(thrown.getMessage().contains("Schema is empty"));
+  }
+
+  @Test
+  public void testEmptyPlan() {
+    List<RelDataTypeField> fields = asList(
+            new RelDataTypeFieldImpl("a", 0, new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.INTEGER)),
+            new RelDataTypeFieldImpl("b", 1, new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.CHAR, 30)),
+            new RelDataTypeFieldImpl("c", 2, new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.NULL)),
+            new RelDataTypeFieldImpl("d", 3, new ArraySqlType(new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.INTEGER), false)),
+            new RelDataTypeFieldImpl("e", 4, new ArraySqlType(new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.INTEGER), true)));
+    RelDataType dataType = new RelRecordType(fields);
+
+    ASTNode tree = emptyPlan(dataType);
+
+    // TOK_QUERY -> TOK_INSERT -> TOK_SELECT
+    assertThat(tree.getChild(0).getChild(1).getChildCount(), is(fields.size()));
+
+    assertThat(tree.dump(), is(EXPECTED_TREE));
+  }
+
+  private static final String EXPECTED_TREE = "\n" +
+          "TOK_QUERY\n" +
+          "   TOK_INSERT\n" +
+          "      TOK_DESTINATION\n" +
+          "         TOK_DIR\n" +
+          "            TOK_TMP_FILE\n" +
+          "      TOK_SELECT\n" +
+          "         TOK_SELEXPR\n" +
+          "            TOK_FUNCTION\n" +
+          "               TOK_INT\n" +
+          "               TOK_NULL\n" +
+          "            a\n" +
+          "         TOK_SELEXPR\n" +
+          "            TOK_FUNCTION\n" +
+          "               TOK_CHAR\n" +
+          "                  30\n" +
+          "               TOK_NULL\n" +
+          "            b\n" +
+          "         TOK_SELEXPR\n" +
+          "            TOK_NULL\n" +
+          "            c\n" +
+          "         TOK_SELEXPR\n" +
+          "            TOK_FUNCTION\n" +
+          "               array\n" +
+          "               TOK_NULL\n" +
+          "            d\n" +
+          "         TOK_SELEXPR\n" +
+          "            TOK_FUNCTION\n" +
+          "               array\n" +
+          "               TOK_NULL\n" +
+          "            e\n" +
+          "      TOK_LIMIT\n" +
+          "         0\n" +
+          "         0\n";
+}
