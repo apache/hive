@@ -28,7 +28,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CreateDatabaseRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CreateDatabaseRequestTupleSchemeFactory();
 
-  private @org.apache.thrift.annotation.Nullable java.lang.String databaseName; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String databaseName; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String description; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String locationUri; // optional
   private @org.apache.thrift.annotation.Nullable java.util.Map<java.lang.String,java.lang.String> parameters; // optional
@@ -149,11 +149,11 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __CREATETIME_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.DESCRIPTION,_Fields.LOCATION_URI,_Fields.PARAMETERS,_Fields.PRIVILEGES,_Fields.OWNER_NAME,_Fields.OWNER_TYPE,_Fields.CATALOG_NAME,_Fields.CREATE_TIME,_Fields.MANAGED_LOCATION_URI,_Fields.TYPE,_Fields.DATA_CONNECTOR_NAME,_Fields.REMOTE_DBNAME};
+  private static final _Fields optionals[] = {_Fields.DATABASE_NAME,_Fields.DESCRIPTION,_Fields.LOCATION_URI,_Fields.PARAMETERS,_Fields.PRIVILEGES,_Fields.OWNER_NAME,_Fields.OWNER_TYPE,_Fields.CATALOG_NAME,_Fields.CREATE_TIME,_Fields.MANAGED_LOCATION_URI,_Fields.TYPE,_Fields.DATA_CONNECTOR_NAME,_Fields.REMOTE_DBNAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.DATABASE_NAME, new org.apache.thrift.meta_data.FieldMetaData("databaseName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.DATABASE_NAME, new org.apache.thrift.meta_data.FieldMetaData("databaseName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.DESCRIPTION, new org.apache.thrift.meta_data.FieldMetaData("description", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
@@ -186,13 +186,6 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public CreateDatabaseRequest() {
-  }
-
-  public CreateDatabaseRequest(
-    java.lang.String databaseName)
-  {
-    this();
-    this.databaseName = databaseName;
   }
 
   /**
@@ -1142,13 +1135,15 @@ package org.apache.hadoop.hive.metastore.api;
     java.lang.StringBuilder sb = new java.lang.StringBuilder("CreateDatabaseRequest(");
     boolean first = true;
 
-    sb.append("databaseName:");
-    if (this.databaseName == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.databaseName);
+    if (isSetDatabaseName()) {
+      sb.append("databaseName:");
+      if (this.databaseName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.databaseName);
+      }
+      first = false;
     }
-    first = false;
     if (isSetDescription()) {
       if (!first) sb.append(", ");
       sb.append("description:");
@@ -1271,10 +1266,6 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetDatabaseName()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'databaseName' is unset! Struct:" + toString());
-    }
-
     // check for sub-struct validity
     if (privileges != null) {
       privileges.validate();
@@ -1448,9 +1439,11 @@ package org.apache.hadoop.hive.metastore.api;
 
       oprot.writeStructBegin(STRUCT_DESC);
       if (struct.databaseName != null) {
-        oprot.writeFieldBegin(DATABASE_NAME_FIELD_DESC);
-        oprot.writeString(struct.databaseName);
-        oprot.writeFieldEnd();
+        if (struct.isSetDatabaseName()) {
+          oprot.writeFieldBegin(DATABASE_NAME_FIELD_DESC);
+          oprot.writeString(struct.databaseName);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.description != null) {
         if (struct.isSetDescription()) {
@@ -1559,45 +1552,50 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, CreateDatabaseRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      oprot.writeString(struct.databaseName);
       java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetDescription()) {
+      if (struct.isSetDatabaseName()) {
         optionals.set(0);
       }
-      if (struct.isSetLocationUri()) {
+      if (struct.isSetDescription()) {
         optionals.set(1);
       }
-      if (struct.isSetParameters()) {
+      if (struct.isSetLocationUri()) {
         optionals.set(2);
       }
-      if (struct.isSetPrivileges()) {
+      if (struct.isSetParameters()) {
         optionals.set(3);
       }
-      if (struct.isSetOwnerName()) {
+      if (struct.isSetPrivileges()) {
         optionals.set(4);
       }
-      if (struct.isSetOwnerType()) {
+      if (struct.isSetOwnerName()) {
         optionals.set(5);
       }
-      if (struct.isSetCatalogName()) {
+      if (struct.isSetOwnerType()) {
         optionals.set(6);
       }
-      if (struct.isSetCreateTime()) {
+      if (struct.isSetCatalogName()) {
         optionals.set(7);
       }
-      if (struct.isSetManagedLocationUri()) {
+      if (struct.isSetCreateTime()) {
         optionals.set(8);
       }
-      if (struct.isSetType()) {
+      if (struct.isSetManagedLocationUri()) {
         optionals.set(9);
       }
-      if (struct.isSetDataConnectorName()) {
+      if (struct.isSetType()) {
         optionals.set(10);
       }
-      if (struct.isSetRemote_dbname()) {
+      if (struct.isSetDataConnectorName()) {
         optionals.set(11);
       }
-      oprot.writeBitSet(optionals, 12);
+      if (struct.isSetRemote_dbname()) {
+        optionals.set(12);
+      }
+      oprot.writeBitSet(optionals, 13);
+      if (struct.isSetDatabaseName()) {
+        oprot.writeString(struct.databaseName);
+      }
       if (struct.isSetDescription()) {
         oprot.writeString(struct.description);
       }
@@ -1646,18 +1644,20 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, CreateDatabaseRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      struct.databaseName = iprot.readString();
-      struct.setDatabaseNameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(12);
+      java.util.BitSet incoming = iprot.readBitSet(13);
       if (incoming.get(0)) {
+        struct.databaseName = iprot.readString();
+        struct.setDatabaseNameIsSet(true);
+      }
+      if (incoming.get(1)) {
         struct.description = iprot.readString();
         struct.setDescriptionIsSet(true);
       }
-      if (incoming.get(1)) {
+      if (incoming.get(2)) {
         struct.locationUri = iprot.readString();
         struct.setLocationUriIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(3)) {
         {
           org.apache.thrift.protocol.TMap _map1380 = iprot.readMapBegin(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING); 
           struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map1380.size);
@@ -1672,40 +1672,40 @@ package org.apache.hadoop.hive.metastore.api;
         }
         struct.setParametersIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(4)) {
         struct.privileges = new PrincipalPrivilegeSet();
         struct.privileges.read(iprot);
         struct.setPrivilegesIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(5)) {
         struct.ownerName = iprot.readString();
         struct.setOwnerNameIsSet(true);
       }
-      if (incoming.get(5)) {
+      if (incoming.get(6)) {
         struct.ownerType = org.apache.hadoop.hive.metastore.api.PrincipalType.findByValue(iprot.readI32());
         struct.setOwnerTypeIsSet(true);
       }
-      if (incoming.get(6)) {
+      if (incoming.get(7)) {
         struct.catalogName = iprot.readString();
         struct.setCatalogNameIsSet(true);
       }
-      if (incoming.get(7)) {
+      if (incoming.get(8)) {
         struct.createTime = iprot.readI32();
         struct.setCreateTimeIsSet(true);
       }
-      if (incoming.get(8)) {
+      if (incoming.get(9)) {
         struct.managedLocationUri = iprot.readString();
         struct.setManagedLocationUriIsSet(true);
       }
-      if (incoming.get(9)) {
+      if (incoming.get(10)) {
         struct.type = org.apache.hadoop.hive.metastore.api.DatabaseType.findByValue(iprot.readI32());
         struct.setTypeIsSet(true);
       }
-      if (incoming.get(10)) {
+      if (incoming.get(11)) {
         struct.dataConnectorName = iprot.readString();
         struct.setDataConnectorNameIsSet(true);
       }
-      if (incoming.get(11)) {
+      if (incoming.get(12)) {
         struct.remote_dbname = iprot.readString();
         struct.setRemote_dbnameIsSet(true);
       }

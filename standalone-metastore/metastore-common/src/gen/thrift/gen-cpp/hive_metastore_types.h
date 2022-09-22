@@ -7721,7 +7721,10 @@ void swap(AddPartitionsResult &a, AddPartitionsResult &b);
 std::ostream& operator<<(std::ostream& out, const AddPartitionsResult& obj);
 
 typedef struct _AddPartitionsRequest__isset {
-  _AddPartitionsRequest__isset() : needResult(true), catName(false), validWriteIdList(false), skipColumnSchemaForPartition(false), partitionColSchema(false), environmentContext(false) {}
+  _AddPartitionsRequest__isset() : dbName(false), tblName(false), parts(false), needResult(true), catName(false), validWriteIdList(false), skipColumnSchemaForPartition(false), partitionColSchema(false), environmentContext(false) {}
+  bool dbName :1;
+  bool tblName :1;
+  bool parts :1;
   bool needResult :1;
   bool catName :1;
   bool validWriteIdList :1;
@@ -7781,11 +7784,17 @@ class AddPartitionsRequest : public virtual ::apache::thrift::TBase {
 
   bool operator == (const AddPartitionsRequest & rhs) const
   {
-    if (!(dbName == rhs.dbName))
+    if (__isset.dbName != rhs.__isset.dbName)
       return false;
-    if (!(tblName == rhs.tblName))
+    else if (__isset.dbName && !(dbName == rhs.dbName))
       return false;
-    if (!(parts == rhs.parts))
+    if (__isset.tblName != rhs.__isset.tblName)
+      return false;
+    else if (__isset.tblName && !(tblName == rhs.tblName))
+      return false;
+    if (__isset.parts != rhs.__isset.parts)
+      return false;
+    else if (__isset.parts && !(parts == rhs.parts))
       return false;
     if (!(ifNotExists == rhs.ifNotExists))
       return false;
@@ -8094,7 +8103,9 @@ void swap(DropPartitionsRequest &a, DropPartitionsRequest &b);
 std::ostream& operator<<(std::ostream& out, const DropPartitionsRequest& obj);
 
 typedef struct _DropPartitionRequest__isset {
-  _DropPartitionRequest__isset() : partName(false), partVals(false), deleteData(false), environmentContext(false), catName(false) {}
+  _DropPartitionRequest__isset() : dbName(false), tblName(false), partName(false), partVals(false), deleteData(false), environmentContext(false), catName(false) {}
+  bool dbName :1;
+  bool tblName :1;
   bool partName :1;
   bool partVals :1;
   bool deleteData :1;
@@ -8142,9 +8153,13 @@ class DropPartitionRequest : public virtual ::apache::thrift::TBase {
 
   bool operator == (const DropPartitionRequest & rhs) const
   {
-    if (!(dbName == rhs.dbName))
+    if (__isset.dbName != rhs.__isset.dbName)
       return false;
-    if (!(tblName == rhs.tblName))
+    else if (__isset.dbName && !(dbName == rhs.dbName))
+      return false;
+    if (__isset.tblName != rhs.__isset.tblName)
+      return false;
+    else if (__isset.tblName && !(tblName == rhs.tblName))
       return false;
     if (__isset.partName != rhs.__isset.partName)
       return false;
@@ -18030,7 +18045,8 @@ void swap(CreateTableRequest &a, CreateTableRequest &b);
 std::ostream& operator<<(std::ostream& out, const CreateTableRequest& obj);
 
 typedef struct _CreateDatabaseRequest__isset {
-  _CreateDatabaseRequest__isset() : description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false), type(false), dataConnectorName(false), remote_dbname(false) {}
+  _CreateDatabaseRequest__isset() : databaseName(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false), createTime(false), managedLocationUri(false), type(false), dataConnectorName(false), remote_dbname(false) {}
+  bool databaseName :1;
   bool description :1;
   bool locationUri :1;
   bool parameters :1;
@@ -18117,7 +18133,9 @@ class CreateDatabaseRequest : public virtual ::apache::thrift::TBase {
 
   bool operator == (const CreateDatabaseRequest & rhs) const
   {
-    if (!(databaseName == rhs.databaseName))
+    if (__isset.databaseName != rhs.__isset.databaseName)
+      return false;
+    else if (__isset.databaseName && !(databaseName == rhs.databaseName))
       return false;
     if (__isset.description != rhs.__isset.description)
       return false;
@@ -18816,8 +18834,11 @@ void swap(AlterPartitionsRequest &a, AlterPartitionsRequest &b);
 std::ostream& operator<<(std::ostream& out, const AlterPartitionsRequest& obj);
 
 typedef struct _AppendPartitionRequest__isset {
-  _AppendPartitionRequest__isset() : catalogName(false), environmentContext(false) {}
+  _AppendPartitionRequest__isset() : catalogName(false), dbName(false), tableName(false), partName(false), environmentContext(false) {}
   bool catalogName :1;
+  bool dbName :1;
+  bool tableName :1;
+  bool partName :1;
   bool environmentContext :1;
 } _AppendPartitionRequest__isset;
 
@@ -18858,11 +18879,17 @@ class AppendPartitionRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.catalogName && !(catalogName == rhs.catalogName))
       return false;
-    if (!(dbName == rhs.dbName))
+    if (__isset.dbName != rhs.__isset.dbName)
       return false;
-    if (!(tableName == rhs.tableName))
+    else if (__isset.dbName && !(dbName == rhs.dbName))
       return false;
-    if (!(partName == rhs.partName))
+    if (__isset.tableName != rhs.__isset.tableName)
+      return false;
+    else if (__isset.tableName && !(tableName == rhs.tableName))
+      return false;
+    if (__isset.partName != rhs.__isset.partName)
+      return false;
+    else if (__isset.partName && !(partName == rhs.partName))
       return false;
     if (__isset.environmentContext != rhs.__isset.environmentContext)
       return false;
@@ -18887,8 +18914,11 @@ void swap(AppendPartitionRequest &a, AppendPartitionRequest &b);
 std::ostream& operator<<(std::ostream& out, const AppendPartitionRequest& obj);
 
 typedef struct _AppendPartitionsRequest__isset {
-  _AppendPartitionsRequest__isset() : catalogName(false), environmentContext(false) {}
+  _AppendPartitionsRequest__isset() : catalogName(false), dbName(false), tableName(false), partVals(false), environmentContext(false) {}
   bool catalogName :1;
+  bool dbName :1;
+  bool tableName :1;
+  bool partVals :1;
   bool environmentContext :1;
 } _AppendPartitionsRequest__isset;
 
@@ -18928,11 +18958,17 @@ class AppendPartitionsRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.catalogName && !(catalogName == rhs.catalogName))
       return false;
-    if (!(dbName == rhs.dbName))
+    if (__isset.dbName != rhs.__isset.dbName)
       return false;
-    if (!(tableName == rhs.tableName))
+    else if (__isset.dbName && !(dbName == rhs.dbName))
       return false;
-    if (!(partVals == rhs.partVals))
+    if (__isset.tableName != rhs.__isset.tableName)
+      return false;
+    else if (__isset.tableName && !(tableName == rhs.tableName))
+      return false;
+    if (__isset.partVals != rhs.__isset.partVals)
+      return false;
+    else if (__isset.partVals && !(partVals == rhs.partVals))
       return false;
     if (__isset.environmentContext != rhs.__isset.environmentContext)
       return false;
@@ -19727,8 +19763,11 @@ void swap(GetSchemaResponse &a, GetSchemaResponse &b);
 std::ostream& operator<<(std::ostream& out, const GetSchemaResponse& obj);
 
 typedef struct _GetPartitionRequest__isset {
-  _GetPartitionRequest__isset() : catName(false), validWriteIdList(false), id(true) {}
+  _GetPartitionRequest__isset() : catName(false), dbName(false), tblName(false), partVals(false), validWriteIdList(false), id(true) {}
   bool catName :1;
+  bool dbName :1;
+  bool tblName :1;
+  bool partVals :1;
   bool validWriteIdList :1;
   bool id :1;
 } _GetPartitionRequest__isset;
@@ -19774,11 +19813,17 @@ class GetPartitionRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
       return false;
-    if (!(dbName == rhs.dbName))
+    if (__isset.dbName != rhs.__isset.dbName)
       return false;
-    if (!(tblName == rhs.tblName))
+    else if (__isset.dbName && !(dbName == rhs.dbName))
       return false;
-    if (!(partVals == rhs.partVals))
+    if (__isset.tblName != rhs.__isset.tblName)
+      return false;
+    else if (__isset.tblName && !(tblName == rhs.tblName))
+      return false;
+    if (__isset.partVals != rhs.__isset.partVals)
+      return false;
+    else if (__isset.partVals && !(partVals == rhs.partVals))
       return false;
     if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
       return false;
@@ -19843,8 +19888,10 @@ void swap(GetPartitionResponse &a, GetPartitionResponse &b);
 std::ostream& operator<<(std::ostream& out, const GetPartitionResponse& obj);
 
 typedef struct _PartitionsRequest__isset {
-  _PartitionsRequest__isset() : catName(false), maxParts(true), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
+  _PartitionsRequest__isset() : catName(false), dbName(false), tblName(false), maxParts(true), validWriteIdList(false), id(true), skipColumnSchemaForPartition(false), includeParamKeyPattern(false), excludeParamKeyPattern(false) {}
   bool catName :1;
+  bool dbName :1;
+  bool tblName :1;
   bool maxParts :1;
   bool validWriteIdList :1;
   bool id :1;
@@ -19907,9 +19954,13 @@ class PartitionsRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
       return false;
-    if (!(dbName == rhs.dbName))
+    if (__isset.dbName != rhs.__isset.dbName)
       return false;
-    if (!(tblName == rhs.tblName))
+    else if (__isset.dbName && !(dbName == rhs.dbName))
+      return false;
+    if (__isset.tblName != rhs.__isset.tblName)
+      return false;
+    else if (__isset.tblName && !(tblName == rhs.tblName))
       return false;
     if (__isset.maxParts != rhs.__isset.maxParts)
       return false;

@@ -924,9 +924,9 @@ struct AddPartitionsResult {
 
 // Request type for add_partitions_req
 struct AddPartitionsRequest {
-  1: required string dbName,
-  2: required string tblName,
-  3: required list<Partition> parts,
+  1: optional string dbName,
+  2: optional string tblName,
+  3: optional list<Partition> parts,
   4: required bool ifNotExists,
   5: optional bool needResult=true,
   6: optional string catName,
@@ -967,8 +967,8 @@ struct DropPartitionsRequest {
 }
 
 struct DropPartitionRequest {
-  1: required string dbName,
-  2: required string tblName,
+  1: optional string dbName,
+  2: optional string tblName,
   3: optional string partName,
   4: optional list<string> partVals,
   5: optional bool deleteData,
@@ -2144,7 +2144,7 @@ struct CreateTableRequest {
 }
 
 struct CreateDatabaseRequest {
-  1: required string databaseName,
+  1: optional string databaseName,
   2: optional string description,
   3: optional string locationUri,
   4: optional map<string, string> parameters,
@@ -2244,17 +2244,17 @@ struct AlterPartitionsRequest {
 
 struct AppendPartitionRequest {
   1: optional string catalogName,
-  2: required string dbName,
-  3: required string tableName,
-  4: required string partName,
+  2: optional string dbName,
+  3: optional string tableName,
+  4: optional string partName,
   5: optional EnvironmentContext environmentContext
 }
 
 struct AppendPartitionsRequest {
   1: optional string catalogName,
-  2: required string dbName,
-  3: required string tableName,
-  4: required list<string> partVals,
+  2: optional string dbName,
+  3: optional string tableName,
+  4: optional list<string> partVals,
   5: optional EnvironmentContext environmentContext
 }
 
@@ -2350,9 +2350,9 @@ struct GetSchemaResponse {
 
 struct GetPartitionRequest {
    1: optional string catName,
-   2: required string dbName,
-   3: required string tblName,
-   4: required list<string> partVals,
+   2: optional string dbName,
+   3: optional string tblName,
+   4: optional list<string> partVals,
    5: optional string validWriteIdList,
    6: optional i64 id=-1 // table id
 }
@@ -2363,8 +2363,8 @@ struct GetPartitionResponse {
 
 struct PartitionsRequest { // Not using Get prefix as that name is already used for a different method
    1: optional string catName,
-   2: required string dbName,
-   3: required string tblName,
+   2: optional string dbName,
+   3: optional string tblName,
    4: optional i16 maxParts=-1,
    5: optional string validWriteIdList,
    6: optional i64 id=-1, // table id

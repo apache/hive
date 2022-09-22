@@ -28,17 +28,17 @@ class GetPartitionRequest
         ),
         2 => array(
             'var' => 'dbName',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
         3 => array(
             'var' => 'tblName',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
         4 => array(
             'var' => 'partVals',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::LST,
             'etype' => TType::STRING,
             'elem' => array(

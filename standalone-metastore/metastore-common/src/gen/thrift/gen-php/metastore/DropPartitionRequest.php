@@ -23,12 +23,12 @@ class DropPartitionRequest
     static public $_TSPEC = array(
         1 => array(
             'var' => 'dbName',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
         2 => array(
             'var' => 'tblName',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
         3 => array(
