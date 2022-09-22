@@ -336,7 +336,7 @@ public final class HiveRewriteToDataSketchesRules {
 
       @Override
       boolean isApplicable(AggregateCall aggCall) {
-        if ((aggInput != null)
+        if (aggInput != null
             && !aggCall.isDistinct() && aggCall.getArgList().size() == 1
             && aggCall.getAggregation().getName().equalsIgnoreCase("percentile_disc")
             && !aggCall.hasFilter()
