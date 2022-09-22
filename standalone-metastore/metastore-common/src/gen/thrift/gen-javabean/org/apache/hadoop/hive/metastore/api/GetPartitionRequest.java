@@ -22,9 +22,9 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new GetPartitionRequestTupleSchemeFactory();
 
   private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
-  private @org.apache.thrift.annotation.Nullable java.lang.String dbName; // required
-  private @org.apache.thrift.annotation.Nullable java.lang.String tblName; // required
-  private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> partVals; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String dbName; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String tblName; // optional
+  private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> partVals; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String validWriteIdList; // optional
   private long id; // optional
 
@@ -106,17 +106,17 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __ID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.VALID_WRITE_ID_LIST,_Fields.ID};
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.DB_NAME,_Fields.TBL_NAME,_Fields.PART_VALS,_Fields.VALID_WRITE_ID_LIST,_Fields.ID};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tblName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tblName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("partVals", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("partVals", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.VALID_WRITE_ID_LIST, new org.apache.thrift.meta_data.FieldMetaData("validWriteIdList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -130,17 +130,6 @@ package org.apache.hadoop.hive.metastore.api;
   public GetPartitionRequest() {
     this.id = -1L;
 
-  }
-
-  public GetPartitionRequest(
-    java.lang.String dbName,
-    java.lang.String tblName,
-    java.util.List<java.lang.String> partVals)
-  {
-    this();
-    this.dbName = dbName;
-    this.tblName = tblName;
-    this.partVals = partVals;
   }
 
   /**
@@ -640,30 +629,36 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
-    if (!first) sb.append(", ");
-    sb.append("dbName:");
-    if (this.dbName == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.dbName);
+    if (isSetDbName()) {
+      if (!first) sb.append(", ");
+      sb.append("dbName:");
+      if (this.dbName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dbName);
+      }
+      first = false;
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("tblName:");
-    if (this.tblName == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.tblName);
+    if (isSetTblName()) {
+      if (!first) sb.append(", ");
+      sb.append("tblName:");
+      if (this.tblName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tblName);
+      }
+      first = false;
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("partVals:");
-    if (this.partVals == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.partVals);
+    if (isSetPartVals()) {
+      if (!first) sb.append(", ");
+      sb.append("partVals:");
+      if (this.partVals == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.partVals);
+      }
+      first = false;
     }
-    first = false;
     if (isSetValidWriteIdList()) {
       if (!first) sb.append(", ");
       sb.append("validWriteIdList:");
@@ -686,18 +681,6 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetDbName()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'dbName' is unset! Struct:" + toString());
-    }
-
-    if (!isSetTblName()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'tblName' is unset! Struct:" + toString());
-    }
-
-    if (!isSetPartVals()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'partVals' is unset! Struct:" + toString());
-    }
-
     // check for sub-struct validity
   }
 
@@ -816,26 +799,32 @@ package org.apache.hadoop.hive.metastore.api;
         }
       }
       if (struct.dbName != null) {
-        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
-        oprot.writeString(struct.dbName);
-        oprot.writeFieldEnd();
+        if (struct.isSetDbName()) {
+          oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+          oprot.writeString(struct.dbName);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.tblName != null) {
-        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
-        oprot.writeString(struct.tblName);
-        oprot.writeFieldEnd();
+        if (struct.isSetTblName()) {
+          oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+          oprot.writeString(struct.tblName);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.partVals != null) {
-        oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.partVals.size()));
-          for (java.lang.String _iter1475 : struct.partVals)
+        if (struct.isSetPartVals()) {
+          oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
           {
-            oprot.writeString(_iter1475);
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.partVals.size()));
+            for (java.lang.String _iter1475 : struct.partVals)
+            {
+              oprot.writeString(_iter1475);
+            }
+            oprot.writeListEnd();
           }
-          oprot.writeListEnd();
+          oprot.writeFieldEnd();
         }
-        oprot.writeFieldEnd();
       }
       if (struct.validWriteIdList != null) {
         if (struct.isSetValidWriteIdList()) {
@@ -866,28 +855,43 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, GetPartitionRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      oprot.writeString(struct.dbName);
-      oprot.writeString(struct.tblName);
-      {
-        oprot.writeI32(struct.partVals.size());
-        for (java.lang.String _iter1476 : struct.partVals)
-        {
-          oprot.writeString(_iter1476);
-        }
-      }
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetCatName()) {
         optionals.set(0);
       }
-      if (struct.isSetValidWriteIdList()) {
+      if (struct.isSetDbName()) {
         optionals.set(1);
       }
-      if (struct.isSetId()) {
+      if (struct.isSetTblName()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetPartVals()) {
+        optionals.set(3);
+      }
+      if (struct.isSetValidWriteIdList()) {
+        optionals.set(4);
+      }
+      if (struct.isSetId()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
+      }
+      if (struct.isSetDbName()) {
+        oprot.writeString(struct.dbName);
+      }
+      if (struct.isSetTblName()) {
+        oprot.writeString(struct.tblName);
+      }
+      if (struct.isSetPartVals()) {
+        {
+          oprot.writeI32(struct.partVals.size());
+          for (java.lang.String _iter1476 : struct.partVals)
+          {
+            oprot.writeString(_iter1476);
+          }
+        }
       }
       if (struct.isSetValidWriteIdList()) {
         oprot.writeString(struct.validWriteIdList);
@@ -900,31 +904,37 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetPartitionRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      struct.dbName = iprot.readString();
-      struct.setDbNameIsSet(true);
-      struct.tblName = iprot.readString();
-      struct.setTblNameIsSet(true);
-      {
-        org.apache.thrift.protocol.TList _list1477 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-        struct.partVals = new java.util.ArrayList<java.lang.String>(_list1477.size);
-        @org.apache.thrift.annotation.Nullable java.lang.String _elem1478;
-        for (int _i1479 = 0; _i1479 < _list1477.size; ++_i1479)
-        {
-          _elem1478 = iprot.readString();
-          struct.partVals.add(_elem1478);
-        }
-      }
-      struct.setPartValsIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      java.util.BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
       }
       if (incoming.get(1)) {
+        struct.dbName = iprot.readString();
+        struct.setDbNameIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.tblName = iprot.readString();
+        struct.setTblNameIsSet(true);
+      }
+      if (incoming.get(3)) {
+        {
+          org.apache.thrift.protocol.TList _list1477 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.partVals = new java.util.ArrayList<java.lang.String>(_list1477.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1478;
+          for (int _i1479 = 0; _i1479 < _list1477.size; ++_i1479)
+          {
+            _elem1478 = iprot.readString();
+            struct.partVals.add(_elem1478);
+          }
+        }
+        struct.setPartValsIsSet(true);
+      }
+      if (incoming.get(4)) {
         struct.validWriteIdList = iprot.readString();
         struct.setValidWriteIdListIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(5)) {
         struct.id = iprot.readI64();
         struct.setIdIsSet(true);
       }

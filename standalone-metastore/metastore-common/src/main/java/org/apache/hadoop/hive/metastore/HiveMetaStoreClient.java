@@ -1106,7 +1106,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (!new_part.isSetCatName()) {
       new_part.setCatName(getDefaultCatalog(conf));
     }
-    AddPartitionsRequest addPartitionsReq = new AddPartitionsRequest(new_part.getDbName(), new_part.getTableName(), new ArrayList<>(Arrays.asList(new_part)), false);
+    AddPartitionsRequest addPartitionsReq = new AddPartitionsRequest();
+    addPartitionsReq.setDbName(new_part.getDbName());
+    addPartitionsReq.setTblName(new_part.getTableName());
+    addPartitionsReq.setParts(new ArrayList<>(Arrays.asList(new_part)));
+    addPartitionsReq.setIfNotExists(false);
     addPartitionsReq.setEnvironmentContext(envContext);
     Partition p = client.add_partition_req(addPartitionsReq);
     return deepCopy(p);
@@ -1132,7 +1136,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       final String defaultCat = getDefaultCatalog(conf);
       new_parts.forEach(p -> p.setCatName(defaultCat));
     }
-    AddPartitionsRequest addPartitionsReq = new AddPartitionsRequest(new_parts.get(0).getDbName(), new_parts.get(0).getTableName(), new_parts, false);
+    AddPartitionsRequest addPartitionsReq = new AddPartitionsRequest();
+    addPartitionsReq.setDbName(new_parts.get(0).getDbName());
+    addPartitionsReq.setTblName(new_parts.get(0).getTableName());
+    addPartitionsReq.setParts(new_parts);
+    addPartitionsReq.setIfNotExists(false);
+    addPartitionsReq.setCatName(new_parts.get(0).getCatName());
     return client.add_partitions_req(addPartitionsReq).getPartitions().size();
   }
 
@@ -1148,8 +1157,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     Partition part = parts.get(0);
     // Have to set it for each partition too
     final String defaultCat = getDefaultCatalog(conf);
-    AddPartitionsRequest req = new AddPartitionsRequest(
-        part.getDbName(), part.getTableName(), parts, ifNotExists);
+    AddPartitionsRequest req = new AddPartitionsRequest();
+    req.setDbName(part.getDbName());
+    req.setTblName(part.getTableName());
+    req.setParts(parts);
+    req.setIfNotExists(ifNotExists);
     boolean skipColumnSchemaForPartition =
             MetastoreConf.getBoolVar(conf, ConfVars.METASTORE_CLIENT_FIELD_SCHEMA_FOR_PARTITIONS);
     if (!part.isSetCatName() && part.getSd() != null
@@ -1212,7 +1224,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public Partition appendPartition(String catName, String dbName, String tableName,
                                    String name) throws TException {
-    AppendPartitionRequest appendPartitionRequest = new AppendPartitionRequest(dbName, tableName, name);
+    AppendPartitionRequest appendPartitionRequest = new AppendPartitionRequest();
+    appendPartitionRequest.setDbName(dbName);
+    appendPartitionRequest.setTableName(tableName);
+    appendPartitionRequest.setPartName(name);
     appendPartitionRequest.setCatalogName(catName);
     Partition p = client.append_partition_by_name_req(appendPartitionRequest);
     return deepCopy(p);
@@ -1221,7 +1236,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public Partition appendPartition(String catName, String dbName, String tableName,
                                    List<String> partVals) throws TException {
-    AppendPartitionsRequest appendPartitionsReq = new AppendPartitionsRequest(dbName, tableName, partVals);
+    AppendPartitionsRequest appendPartitionsReq = new AppendPartitionsRequest();
+    appendPartitionsReq.setDbName(dbName);
+    appendPartitionsReq.setTableName(tableName);
+    appendPartitionsReq.setPartVals(partVals);
     appendPartitionsReq.setCatalogName(catName);
     Partition p = client.append_partition_req(appendPartitionsReq);
     return deepCopy(p);
@@ -1230,7 +1248,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Deprecated
   public Partition appendPartition(String dbName, String tableName, List<String> partVals,
                                    EnvironmentContext ec) throws TException {
-    AppendPartitionsRequest appendPartitionsReq = new AppendPartitionsRequest(dbName, tableName, partVals);
+    AppendPartitionsRequest appendPartitionsReq = new AppendPartitionsRequest();
+    appendPartitionsReq.setDbName(dbName);
+    appendPartitionsReq.setTableName(tableName);
+    appendPartitionsReq.setPartVals(partVals);
     appendPartitionsReq.setCatalogName(getDefaultCatalog(conf));
     appendPartitionsReq.setEnvironmentContext(ec);
     return client.append_partition_req(appendPartitionsReq).deepCopy();
@@ -1364,7 +1385,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (!db.isSetCatalogName()) {
       db.setCatalogName(getDefaultCatalog(conf));
     }
-    CreateDatabaseRequest req = new CreateDatabaseRequest(db.getName());
+    CreateDatabaseRequest req = new CreateDatabaseRequest();
+    req.setDatabaseName(db.getName());
     if (db.isSetDescription()) {
       req.setDescription(db.getDescription());
     }
@@ -1400,6 +1422,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       req.setRemote_dbname(db.getRemote_dbname());
     }
     client.create_database_req(req);
+    //location and manged location might be set/changed.
+    db.setLocationUri(req.getLocationUri());
+    db.setManagedLocationUri(req.getManagedLocationUri());
   }
 
   /**
@@ -1882,7 +1907,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public boolean dropPartition(String catName, String db_name, String tbl_name, String name,
                                boolean deleteData) throws TException {
-    DropPartitionRequest dropPartitionReq = new DropPartitionRequest(db_name, tbl_name);
+    DropPartitionRequest dropPartitionReq = new DropPartitionRequest();
+    dropPartitionReq.setDbName(db_name);
+    dropPartitionReq.setTblName(tbl_name);
     dropPartitionReq.setCatName(catName);
     dropPartitionReq.setPartName(name);
     dropPartitionReq.setDeleteData(deleteData);
@@ -1902,7 +1929,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Deprecated
   public boolean dropPartition(String db_name, String tbl_name, List<String> part_vals,
       EnvironmentContext env_context) throws TException {
-    DropPartitionRequest dropPartitionReq = new DropPartitionRequest(db_name, tbl_name);
+    DropPartitionRequest dropPartitionReq = new DropPartitionRequest();
+    dropPartitionReq.setDbName(db_name);
+    dropPartitionReq.setTblName(tbl_name);
     dropPartitionReq.setCatName(getDefaultCatalog(conf));
     dropPartitionReq.setPartVals(part_vals);
     dropPartitionReq.setDeleteData(true);
@@ -1913,7 +1942,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Deprecated
   public boolean dropPartition(String dbName, String tableName, String partName, boolean dropData,
                                EnvironmentContext ec) throws TException {
-    DropPartitionRequest dropPartitionReq = new DropPartitionRequest(dbName, tableName);
+    DropPartitionRequest dropPartitionReq = new DropPartitionRequest();
+    dropPartitionReq.setDbName(dbName);
+    dropPartitionReq.setTblName(tableName);
     dropPartitionReq.setCatName(getDefaultCatalog(conf));
     dropPartitionReq.setPartName(partName);
     dropPartitionReq.setDeleteData(dropData);
@@ -1962,7 +1993,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         }
       }
     }
-    DropPartitionRequest dropPartitionReq = new DropPartitionRequest(db_name, tbl_name);
+    DropPartitionRequest dropPartitionReq = new DropPartitionRequest();
+    dropPartitionReq.setDbName(db_name);
+    dropPartitionReq.setTblName(tbl_name);
     dropPartitionReq.setCatName(catName);
     dropPartitionReq.setPartVals(part_vals);
     dropPartitionReq.setDeleteData(options.deleteData);
@@ -2648,10 +2681,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public Partition getPartition(String catName, String dbName, String tblName,
                                 List<String> partVals) throws TException {
 
-    GetPartitionRequest getPartitionRequest = new GetPartitionRequest(dbName, tblName, partVals);
+    GetPartitionRequest getPartitionRequest = new GetPartitionRequest();
+    getPartitionRequest.setDbName(dbName);
+    getPartitionRequest.setTblName(tblName);
+    getPartitionRequest.setPartVals(partVals);
     getPartitionRequest.setCatName(catName);
-    Partition p = client.get_partition_req(getPartitionRequest).getPartition();
-    return deepCopy(FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, p));
+    GetPartitionResponse res = client.get_partition_req(getPartitionRequest);
+    return deepCopy(FilterUtils.filterPartitionIfEnabled(isClientFilterEnabled, filterHook, res.getPartition()));
   }
 
   @Override
@@ -3164,7 +3200,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   protected List<String> listPartitionNamesInternal(String catName, String dbName, String tableName,
       int maxParts) throws TException {
-    PartitionsRequest partitionReq = new PartitionsRequest(dbName, tableName);
+    PartitionsRequest partitionReq = new PartitionsRequest();
+    partitionReq.setDbName(dbName);
+    partitionReq.setTblName(tableName);
     partitionReq.setCatName(catName);
     partitionReq.setMaxParts(shrinkMaxtoShort(maxParts));
     return client.get_partition_by_names_req(partitionReq);
@@ -3186,12 +3224,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   protected List<String> listPartitionNamesInternal(String catName, String db_name, String tbl_name,
-      List<String> part_vals, int max_parts) throws TException {
-    GetPartitionNamesPsRequest getPartitionNamesPsRequest = new GetPartitionNamesPsRequest(db_name, tbl_name);
+      List<String> part_vals, int max_parts) throws MetaException, TException, NoSuchObjectException {
+    GetPartitionNamesPsRequest getPartitionNamesPsRequest = new GetPartitionNamesPsRequest();
+    getPartitionNamesPsRequest.setDbName(db_name);
+    getPartitionNamesPsRequest.setTblName(tbl_name);
     getPartitionNamesPsRequest.setCatName(catName);
     getPartitionNamesPsRequest.setPartValues(part_vals);
     getPartitionNamesPsRequest.setMaxParts(shrinkMaxtoShort(max_parts));
-    return client.get_partition_names_ps_req(getPartitionNamesPsRequest).getNames();
+    GetPartitionNamesPsResponse resp = client.get_partition_names_ps_req(getPartitionNamesPsRequest);
+//    try {
+//      resp = client.get_partition_names_ps_req(getPartitionNamesPsRequest);
+//    } catch (MetaException e) {
+//      MetaStoreUtils.throwMetaException(e);
+//    }
+    return resp.getNames();
   }
 
   @Override
@@ -3704,7 +3750,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public Partition appendPartitionByName(String dbName, String tableName, String partName,
       EnvironmentContext envContext) throws InvalidObjectException, AlreadyExistsException,
       MetaException, TException {
-    AppendPartitionRequest appendPartitionRequest = new AppendPartitionRequest(dbName, tableName, partName);
+    AppendPartitionRequest appendPartitionRequest = new AppendPartitionRequest();
+    appendPartitionRequest.setDbName(dbName);
+    appendPartitionRequest.setTableName(tableName);
+    appendPartitionRequest.setPartName(partName);
     appendPartitionRequest.setCatalogName(getDefaultCatalog(conf));
     appendPartitionRequest.setEnvironmentContext(envContext);
     Partition p = client.append_partition_by_name_req(appendPartitionRequest);
@@ -3719,7 +3768,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public boolean dropPartitionByName(String dbName, String tableName, String partName,
       boolean deleteData, EnvironmentContext envContext) throws NoSuchObjectException,
       MetaException, TException {
-    DropPartitionRequest dropPartitionReq = new DropPartitionRequest(dbName, tableName);
+    DropPartitionRequest dropPartitionReq = new DropPartitionRequest();
+    dropPartitionReq.setDbName(dbName);
+    dropPartitionReq.setTblName(tableName);
     dropPartitionReq.setCatName(getDefaultCatalog(conf));
     dropPartitionReq.setPartName(partName);
     dropPartitionReq.setDeleteData(deleteData);

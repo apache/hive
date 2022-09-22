@@ -3371,9 +3371,9 @@ class AddPartitionsRequest
   ENVIRONMENTCONTEXT = 10
 
   FIELDS = {
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
-    PARTS => {:type => ::Thrift::Types::LIST, :name => 'parts', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName', :optional => true},
+    PARTS => {:type => ::Thrift::Types::LIST, :name => 'parts', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}, :optional => true},
     IFNOTEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifNotExists'},
     NEEDRESULT => {:type => ::Thrift::Types::BOOL, :name => 'needResult', :default => true, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
@@ -3386,9 +3386,6 @@ class AddPartitionsRequest
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field parts is unset!') unless @parts
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field ifNotExists is unset!') if @ifNotExists.nil?
   end
 
@@ -3507,8 +3504,8 @@ class DropPartitionRequest
   CATNAME = 7
 
   FIELDS = {
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName', :optional => true},
     PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partName', :optional => true},
     PARTVALS => {:type => ::Thrift::Types::LIST, :name => 'partVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData', :optional => true},
@@ -3519,8 +3516,6 @@ class DropPartitionRequest
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -7198,7 +7193,7 @@ class CreateDatabaseRequest
   REMOTE_DBNAME = 13
 
   FIELDS = {
-    DATABASENAME => {:type => ::Thrift::Types::STRING, :name => 'databaseName'},
+    DATABASENAME => {:type => ::Thrift::Types::STRING, :name => 'databaseName', :optional => true},
     DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true},
     LOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'locationUri', :optional => true},
     PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true},
@@ -7216,7 +7211,6 @@ class CreateDatabaseRequest
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field databaseName is unset!') unless @databaseName
     unless @ownerType.nil? || ::PrincipalType::VALID_VALUES.include?(@ownerType)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field ownerType!')
     end
@@ -7485,18 +7479,15 @@ class AppendPartitionRequest
 
   FIELDS = {
     CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
-    PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
+    PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partName', :optional => true},
     ENVIRONMENTCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environmentContext', :class => ::EnvironmentContext, :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partName is unset!') unless @partName
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -7512,18 +7503,15 @@ class AppendPartitionsRequest
 
   FIELDS = {
     CATALOGNAME => {:type => ::Thrift::Types::STRING, :name => 'catalogName', :optional => true},
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
-    PARTVALS => {:type => ::Thrift::Types::LIST, :name => 'partVals', :element => {:type => ::Thrift::Types::STRING}},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
+    PARTVALS => {:type => ::Thrift::Types::LIST, :name => 'partVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     ENVIRONMENTCONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environmentContext', :class => ::EnvironmentContext, :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partVals is unset!') unless @partVals
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -7821,9 +7809,9 @@ class GetPartitionRequest
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
-    PARTVALS => {:type => ::Thrift::Types::LIST, :name => 'partVals', :element => {:type => ::Thrift::Types::STRING}},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName', :optional => true},
+    PARTVALS => {:type => ::Thrift::Types::LIST, :name => 'partVals', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :default => -1, :optional => true}
   }
@@ -7831,9 +7819,6 @@ class GetPartitionRequest
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partVals is unset!') unless @partVals
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -7870,8 +7855,8 @@ class PartitionsRequest
 
   FIELDS = {
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName', :optional => true},
     MAXPARTS => {:type => ::Thrift::Types::I16, :name => 'maxParts', :default => -1, :optional => true},
     VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :default => -1, :optional => true},
@@ -7883,8 +7868,6 @@ class PartitionsRequest
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
   end
 
   ::Thrift::Struct.generate_accessors self

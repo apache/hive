@@ -10998,12 +10998,6 @@ class AddPartitionsRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.dbName is None:
-            raise TProtocolException(message='Required field dbName is unset!')
-        if self.tblName is None:
-            raise TProtocolException(message='Required field tblName is unset!')
-        if self.parts is None:
-            raise TProtocolException(message='Required field parts is unset!')
         if self.ifNotExists is None:
             raise TProtocolException(message='Required field ifNotExists is unset!')
         return
@@ -11523,10 +11517,6 @@ class DropPartitionRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.dbName is None:
-            raise TProtocolException(message='Required field dbName is unset!')
-        if self.tblName is None:
-            raise TProtocolException(message='Required field tblName is unset!')
         return
 
     def __repr__(self):
@@ -26241,8 +26231,6 @@ class CreateDatabaseRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.databaseName is None:
-            raise TProtocolException(message='Required field databaseName is unset!')
         return
 
     def __repr__(self):
@@ -27294,12 +27282,6 @@ class AppendPartitionRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.dbName is None:
-            raise TProtocolException(message='Required field dbName is unset!')
-        if self.tableName is None:
-            raise TProtocolException(message='Required field tableName is unset!')
-        if self.partName is None:
-            raise TProtocolException(message='Required field partName is unset!')
         return
 
     def __repr__(self):
@@ -27410,12 +27392,6 @@ class AppendPartitionsRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.dbName is None:
-            raise TProtocolException(message='Required field dbName is unset!')
-        if self.tableName is None:
-            raise TProtocolException(message='Required field tableName is unset!')
-        if self.partVals is None:
-            raise TProtocolException(message='Required field partVals is unset!')
         return
 
     def __repr__(self):
@@ -28687,12 +28663,6 @@ class GetPartitionRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.dbName is None:
-            raise TProtocolException(message='Required field dbName is unset!')
-        if self.tblName is None:
-            raise TProtocolException(message='Required field tblName is unset!')
-        if self.partVals is None:
-            raise TProtocolException(message='Required field partVals is unset!')
         return
 
     def __repr__(self):
@@ -28898,10 +28868,6 @@ class PartitionsRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.dbName is None:
-            raise TProtocolException(message='Required field dbName is unset!')
-        if self.tblName is None:
-            raise TProtocolException(message='Required field tblName is unset!')
         return
 
     def __repr__(self):
