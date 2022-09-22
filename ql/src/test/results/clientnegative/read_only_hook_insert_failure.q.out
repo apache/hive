@@ -1,0 +1,4 @@
+FAILED: Hive Internal Error: org.apache.hadoop.hive.ql.metadata.HiveException(Only SELECT queries are allowed in read-only mode.)
+org.apache.hadoop.hive.ql.metadata.HiveException: Only SELECT queries are allowed in read-only mode.
+#### A masked pattern was here ####
+
