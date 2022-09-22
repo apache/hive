@@ -68,7 +68,7 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
     List<ExprNodeDesc> exprNodeDescList = new ArrayList<>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<>();
 
-    ArrayList<ColumnInfo> colInfoList = new ArrayList<>();
+    List<ColumnInfo> colInfoList = new ArrayList<>();
     for (int i = 0; i < valuesRel.getRowType().getFieldList().size(); i++) {
       RelDataTypeField typeField = valuesRel.getRowType().getFieldList().get(i);
 
