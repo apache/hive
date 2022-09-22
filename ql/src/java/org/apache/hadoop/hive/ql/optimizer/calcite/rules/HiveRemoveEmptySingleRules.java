@@ -37,6 +37,7 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 
@@ -91,6 +92,11 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
     @Override default PruneEmptyRule toRule() {
       return new PruneEmptyRule(this) {
         @Override public void onMatch(RelOptRuleCall call) {
+          if (Bug.CALCITE_5294_FIXED) {
+            throw new IllegalStateException(
+                    "Class JoinLeftEmptyRuleConfig is redundant after fix is merged into Calcite");
+          }
+
           Join join = call.rel(0);
           HiveValues empty = call.rel(1);
           RelNode right = call.rel(2);
@@ -145,6 +151,11 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
     @Override default PruneEmptyRule toRule() {
       return new PruneEmptyRule(this) {
         @Override public void onMatch(RelOptRuleCall call) {
+          if (Bug.CALCITE_5294_FIXED) {
+            throw new IllegalStateException(
+                    "Class JoinRightEmptyRuleConfig is redundant after fix is merged into Calcite");
+          }
+
           Join join = call.rel(0);
           RelNode left = call.rel(1);
           HiveValues empty = call.rel(2);
@@ -179,16 +190,24 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
     }
   }
 
-  private static Stream<RexNode> castToNullable(
-          RexBuilder rexBuilder, Stream<RexNode> expressions) {
+  private static Stream<RexNode> castToNullable(RexBuilder rexBuilder, Stream<RexNode> expressions) {
+    if (Bug.CALCITE_5294_FIXED) {
+      throw new IllegalStateException(
+              "Class HiveRemoveEmptySingleRules.castToNullable is redundant after fix is merged into Calcite");
+    }
+
     RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
     return expressions.map(
             rexNode -> rexBuilder.makeCast(
                     typeFactory.createTypeWithNullability(rexNode.getType(), true), rexNode));
   }
 
-  private static Stream<RexNode> getNullLiteralStream(
-          Values empty, RexBuilder rexBuilder) {
+  private static Stream<RexNode> getNullLiteralStream(Values empty, RexBuilder rexBuilder) {
+    if (Bug.CALCITE_5294_FIXED) {
+      throw new IllegalStateException(
+              "Class HiveRemoveEmptySingleRules.getNullLiteralStream is redundant after fix is merged into Calcite");
+    }
+
     return empty.getRowType().getFieldList().stream().map(
             typeField -> rexBuilder.makeNullLiteral(typeField.getType()));
   }
@@ -236,6 +255,11 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
     @Override default PruneEmptyRules.PruneEmptyRule toRule() {
       return new PruneEmptyRules.PruneEmptyRule(this) {
         @Override public void onMatch(RelOptRuleCall call) {
+          if (Bug.CALCITE_5293_FIXED) {
+            throw new IllegalStateException(
+                    "Class HiveUnionEmptyPruneRuleConfig is redundant after fix is merged into Calcite");
+          }
+
           final Union union = call.rel(0);
           final List<RelNode> inputs = union.getInputs();
           assert inputs != null;
@@ -263,6 +287,11 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
   }
 
   private static boolean isEmpty(RelNode node) {
+    if (Bug.CALCITE_5293_FIXED) {
+      throw new IllegalStateException(
+              "Method HiveRemoveEmptySingleRules.isEmpty is redundant after fix is merged into Calcite");
+    }
+
     if (node instanceof Values) {
       return ((Values) node).getTuples().isEmpty();
     }
