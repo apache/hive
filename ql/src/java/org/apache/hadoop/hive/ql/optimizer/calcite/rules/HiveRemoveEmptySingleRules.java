@@ -33,17 +33,16 @@ import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.rules.PruneEmptyRules;
-import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class provides access to Calcite's {@link PruneEmptyRules}.
@@ -99,47 +98,25 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
           if (join.getJoinType().generatesNullsOnLeft()) {
             // "select * from emp right join dept" is not necessarily empty if
             // emp is empty
-            List<RexNode> projects = new ArrayList<>(
-                    empty.getRowType().getFieldCount() + right.getRowType().getFieldCount());
-            List<String> columnNames = new ArrayList<>(
-                    empty.getRowType().getFieldCount() + right.getRowType().getFieldCount());
-            // left
-            addNullLiterals(rexBuilder, empty, projects, columnNames);
-            // right
-            copyProjects(rexBuilder, right.getRowType(),
-                    join.getRowType(), empty.getRowType().getFieldCount(), projects, columnNames);
+            // join can be removed and take the right branch, all columns come from emp are null
+            RelBuilder relBuilder = call.builder().push(right);
+            Stream<RexNode> rightFields = relBuilder.fields().stream();
+            if (join.getJoinType() == JoinRelType.FULL) {
+              rightFields = castToNullable(rexBuilder, rightFields);
+            }
 
-            RelNode project = call.builder().push(right).project(projects, columnNames).build();
+            List<RexNode> projects = Stream.concat(
+                    getNullLiteralStream(empty, rexBuilder), rightFields).collect(Collectors.toList());
+
+            RelNode project = relBuilder
+                    .project(projects, join.getRowType().getFieldNames())
+                    .build();
             call.transformTo(project);
             return;
           }
           call.transformTo(call.builder().push(join).empty().build());
         }
       };
-    }
-  }
-
-  private static void addNullLiterals(
-          RexBuilder rexBuilder, HiveValues empty, List<RexNode> projectFields, List<String> newColumnNames) {
-    for (int i = 0; i < empty.getRowType().getFieldList().size(); ++i) {
-      RelDataTypeField relDataTypeField = empty.getRowType().getFieldList().get(i);
-      RexNode nullLiteral = rexBuilder.makeNullLiteral(relDataTypeField.getType());
-      projectFields.add(nullLiteral);
-      newColumnNames.add(empty.getRowType().getFieldList().get(i).getName());
-    }
-  }
-
-  public static void copyProjects(RexBuilder rexBuilder, RelDataType inRowType,
-                                  RelDataType castRowType, int castRowTypeOffset,
-                                  List<RexNode> outProjects, List<String> outProjectNames) {
-
-    for (int i = 0; i < inRowType.getFieldCount(); ++i) {
-      RelDataTypeField relDataTypeField = inRowType.getFieldList().get(i);
-      RexInputRef inputRef = rexBuilder.makeInputRef(relDataTypeField.getType(), i);
-      RexNode cast = rexBuilder.makeCast(
-              castRowType.getFieldList().get(castRowTypeOffset + i).getType(), inputRef);
-      outProjects.add(cast);
-      outProjectNames.add(relDataTypeField.getName());
     }
   }
 
@@ -175,16 +152,19 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
           if (join.getJoinType().generatesNullsOnRight()) {
             // "select * from emp left join dept" is not necessarily empty if
             // dept is empty
-            List<RexNode> projects = new ArrayList<>(
-                    left.getRowType().getFieldCount() + empty.getRowType().getFieldCount());
-            List<String> columnNames = new ArrayList<>(
-                    left.getRowType().getFieldCount() + empty.getRowType().getFieldCount());
-            // left
-            copyProjects(rexBuilder, left.getRowType(), join.getRowType(), 0, projects, columnNames);
-            // right
-            addNullLiterals(rexBuilder, empty, projects, columnNames);
+            // join can be removed and take the left branch, all columns come from dept are null
+            RelBuilder relBuilder = call.builder().push(left);
+            Stream<RexNode> leftfields = relBuilder.fields().stream();
+            if (join.getJoinType() == JoinRelType.FULL) {
+              leftfields = castToNullable(rexBuilder, leftfields);
+            }
 
-            RelNode project = call.builder().push(left).project(projects, columnNames).build();
+            List<RexNode> projects = Stream.concat(
+                    leftfields, getNullLiteralStream(empty, rexBuilder)).collect(Collectors.toList());
+
+            RelNode project = relBuilder
+                    .project(projects, join.getRowType().getFieldNames())
+                    .build();
             call.transformTo(project);
             return;
           }
@@ -197,6 +177,21 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
         }
       };
     }
+  }
+
+  private static Stream<RexNode> castToNullable(
+          RexBuilder rexBuilder, Stream<RexNode> leftExpressions) {
+    RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+    leftExpressions = leftExpressions.map(
+            rexNode -> rexBuilder.makeCast(
+                    typeFactory.createTypeWithNullability(rexNode.getType(), true), rexNode));
+    return leftExpressions;
+  }
+
+  private static Stream<RexNode> getNullLiteralStream(
+          Values empty, RexBuilder rexBuilder) {
+    return empty.getRowType().getFieldList().stream().map(
+            typeField -> rexBuilder.makeNullLiteral(typeField.getType()));
   }
 
   public static final RelOptRule SORT_INSTANCE =
