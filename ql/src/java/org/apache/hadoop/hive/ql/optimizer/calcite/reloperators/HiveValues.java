@@ -34,11 +34,8 @@ import java.util.List;
  */
 public class HiveValues extends Values {
 
-  public HiveValues(
-          RelOptCluster cluster,
-          RelDataType rowType,
-          ImmutableList<ImmutableList<RexLiteral>> tuples,
-          RelTraitSet traits) {
+  public HiveValues(RelOptCluster cluster, RelDataType rowType, ImmutableList<ImmutableList<RexLiteral>> tuples,
+                    RelTraitSet traits) {
     super(cluster, rowType, tuples, traits);
   }
 
