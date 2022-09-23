@@ -549,9 +549,9 @@ public final class Util {
     HostAndPort hp = HostAndPort.fromString(host)
             .withDefaultPort(port);
 
-    LOG.info("Connecting to {}:{}", hp.getHostText(), hp.getPort());
+    LOG.info("Connecting to {}:{}", hp.getHost(), hp.getPort());
 
-    return new URI(THRIFT_SCHEMA, null, hp.getHostText(), hp.getPort(),
+    return new URI(THRIFT_SCHEMA, null, hp.getHost(), hp.getPort(),
             null, null, null);
   }
 
