@@ -61,7 +61,6 @@ import org.junit.Assert;
  *
  * It may be possible to extend this to more than just DDL later.
  */
-@Ignore("HIVE-26343")
 public class TestWebHCatE2e {
   private static final Logger LOG =
       LoggerFactory.getLogger(TestWebHCatE2e.class);
