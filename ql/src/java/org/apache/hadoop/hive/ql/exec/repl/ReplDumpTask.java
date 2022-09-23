@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.commons.collections4.CollectionUtils;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -161,7 +162,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private List<TxnType> excludedTxns = Arrays.asList(TxnType.READ_ONLY, TxnType.REPL_CREATED);
   private boolean createEventMarker = false;
   private boolean unsetDbPropertiesForOptimisedBootstrap;
-  private boolean useExportServiceForTableDump = true;
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
@@ -193,13 +193,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (work.dataCopyIteratorsInitialized()) {
         initiateDataCopyTasks();
       } else {
-        if (!ExportService.getInstance().isExportServiceRunning()) {
-          LOG.info("ReplDumpTask: ExportService is not running");
-          useExportServiceForTableDump = false;
-        } else {
-          LOG.info("ReplDumpTask: ExportService is running");
-          useExportServiceForTableDump = true;
-        }
         Path dumpRoot = ReplUtils.getEncodedDumpRootPath(conf, work.dbNameOrPattern.toLowerCase());
         Path latestDumpPath = ReplUtils.getLatestDumpPath(dumpRoot, conf);
         if (ReplUtils.failedWithNonRecoverableError(latestDumpPath, conf)) {
@@ -961,6 +954,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           }
         }
         for(String matchedDbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
+          ExportService exportService = new ExportService(conf);
           for (String tableName : Utils.matchesTbl(hiveDb, matchedDbName, work.replScope)) {
             try {
               Table table = hiveDb.getTable(matchedDbName, tableName);
@@ -975,7 +969,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               // Dump the table to be bootstrapped if required.
               if (shouldBootstrapDumpTable(table)) {
                 HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, matchedDbName).table(table);
-                dumpTable(matchedDbName, tableName, validTxnList, dbRootMetadata, dbRootData, bootDumpBeginReplId,
+                dumpTable(exportService, matchedDbName, tableName, validTxnList, dbRootMetadata, dbRootData, bootDumpBeginReplId,
                         hiveDb, tableTuple, managedTblList, dataCopyAtLoad);
               }
               if (tableList != null && isTableSatifiesConfig(table)) {
@@ -987,14 +981,22 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               LOG.debug(te.getMessage());
             }
           }
-          try {
-            if (ExportService.getInstance() != null) {
-              ExportService.getInstance().waitForTasksToFinish();
+
+          if (exportService != null && exportService.isExportServiceRunning()) {
+            try {
+              exportService.waitForTasksToFinishAndShutdown();
+            } catch (SemanticException e) {
+              LOG.error("ExportService thread failed to perform table dump operation ", e.getCause());
+              throw new SemanticException(e.getMessage(), e);
             }
-          } catch (SemanticException e) {
-            LOG.error("ExportService thread failed to perform table dump operation ", e.getCause());
-            throw new SemanticException(e.getMessage(), e);
+            try {
+              exportService.await(60, TimeUnit.SECONDS);
+              exportService = null;
+            } catch (Exception e) {
+              LOG.error("Error while shutting down ExportService ", e);
+            }
           }
+
           // if it is not a table level replication, add a single task for
           // the database default location and the paths configured.
           if (isExternalTablePresent && shouldDumpExternalTableLocation(conf) && isSingleTaskForExternalDb) {
@@ -1271,6 +1273,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             // Get the counter to store the snapshots created & deleted at source.
             replSnapshotCount = new SnapshotUtils.ReplSnapshotCount();
           }
+          ExportService exportService = new ExportService(conf);
           for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
             Table table = null;
             try {
@@ -1293,7 +1296,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
                         conf);
                 isExternalTablePresent = true;
               }
-              dumpTable(dbName, tblName, validTxnList, dbRoot, dbDataRoot,
+              dumpTable(exportService, dbName, tblName, validTxnList, dbRoot, dbDataRoot,
                       bootDumpBeginReplId,
                       hiveDb, tableTuple, managedTblList, dataCopyAtLoad);
             } catch (InvalidTableException te) {
@@ -1306,13 +1309,20 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               tableList.add(tblName);
             }
           }
-          try {
-            if (ExportService.getInstance() != null) {
-              ExportService.getInstance().waitForTasksToFinish();
+
+          if (exportService != null && exportService.isExportServiceRunning()) {
+            try {
+              exportService.waitForTasksToFinishAndShutdown();
+            } catch (SemanticException e) {
+              LOG.error("ExportService thread failed to perform table dump operation ", e.getCause());
+              throw new SemanticException(e.getMessage(), e);
             }
-          } catch (SemanticException e) {
-            LOG.error("ExportService thread failed to perform table dump operation ", e.getCause());
-            throw new SemanticException(e.getMessage(), e);
+            try {
+              exportService.await(60, TimeUnit.SECONDS);
+              exportService = null;
+            } catch (Exception e) {
+              LOG.error("Error while shutting down ExportService ", e);
+            }
           }
 
           // if it is not a table level replication, add a single task for
@@ -1465,7 +1475,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return dbRoot;
   }
 
-  void dumpTable(String dbName, String tblName, String validTxnList, Path dbRootMetadata,
+  void dumpTable(ExportService exportService, String dbName, String tblName, String validTxnList, Path dbRootMetadata,
                                        Path dbRootData, long lastReplId, Hive hiveDb,
                                        HiveWrapper.Tuple<Table> tuple, FileList managedTbleList, boolean dataCopyAtLoad)
           throws Exception {
@@ -1487,8 +1497,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
     tuple.replicationSpec.setRepl(true);
     TableExport tableExport = new TableExport(exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx);
-    if (useExportServiceForTableDump) {
-      tableExport.parallelWrite(false, managedTbleList, dataCopyAtLoad);
+    if (exportService != null && exportService.isExportServiceRunning()) {
+      tableExport.parallelWrite(exportService,false, managedTbleList, dataCopyAtLoad);
     } else {
       tableExport.serialWrite(false, managedTbleList, dataCopyAtLoad);
     }

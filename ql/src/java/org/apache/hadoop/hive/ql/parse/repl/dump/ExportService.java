@@ -43,48 +43,18 @@ public class ExportService {
   /**
    * Executor service to execute runnable export jobs
    */
-  private volatile ExecutorService execService;
+  private ExecutorService execService;
   private static final Logger LOG = LoggerFactory.getLogger(ExportService.class);
   private final List<Future<?>> futures = new LinkedList<>();
-  private final AtomicBoolean isServiceRunning =  new AtomicBoolean(false);
+  private final AtomicBoolean isServiceRunning =  new AtomicBoolean(false);;
   private final int threadPoolSizeLimit = 100;
 
   /**
-   * Class private constructor to create empty INSTANCE
-   */
-  private ExportService() {
-  }
-
-  /**
-   * A singleton instance of ExportService
-   */
-  private static final ExportService INSTANCE = new ExportService();
-
-  /**
-   * A static method to return a singleton instance of ExportService.
-   * @return Singleton instance of ExportService.
-   */
-  public static ExportService getInstance() {
-    return INSTANCE;
-  }
-
-  /**
-   * Configure ExportService request to create provided number of parallel threads.
+   * Create and configure the ExportService. Create a fixed thread pool of size
+   * provided by config parameter REPL_TABLE_DUMP_PARALLELISM.
    * @param hiveConf
-   *          HiveConfig containing value of REPL_TABLE_DUMP_PARALLELISM config variable
-   *          which indicates number of parallel threads to be created.
-   * @param cancelCurrentJob
-   *          A boolean flag to indicate whether to cancel current ongoing task or shutdown
-   *          export service immediately.
    */
-  public synchronized void configure(HiveConf hiveConf, boolean cancelCurrentJob) {
-    if (execService != null) {
-      if (cancelCurrentJob) {
-        execService.shutdownNow();
-      } else {
-        execService.shutdown();
-      }
-    }
+  public ExportService(HiveConf hiveConf) {
     int nDumpThreads = hiveConf.getIntVar(HiveConf.ConfVars.REPL_TABLE_DUMP_PARALLELISM);
     if (nDumpThreads == 0) {
       LOG.warn("ExportService is disabled since thread pool size (REPL_TABLE_DUMP_PARALLELISM) is specified as 0");
@@ -107,36 +77,17 @@ public class ExportService {
    * If it is shutdown return false else return true
    * @return false/true
    */
-  public synchronized boolean isExportServiceRunning() {
+  public boolean isExportServiceRunning() {
     return isServiceRunning.get();
   }
+
   /**
    * Executes the submitted ExportJob
    * @param job
    */
-  public synchronized void submit(ExportJob job) {
+  public void submit(ExportJob job) {
     assert (execService != null);
     futures.add(execService.submit(job));
-  }
-
-  /**
-   * Shutdown the ExportService and does not allow further ExportJob to be submitted.
-   */
-  public synchronized void shutdown() {
-    assert (execService != null);
-    LOG.debug("ExportService got shutdown");
-    execService.shutdown();
-    isServiceRunning.set(false);
-  }
-
-  /**
-   * Shutdown immediately the ExportService and does not allow further ExportJob to be submitted
-   */
-  public synchronized void shutdownNow() {
-    assert (execService != null);
-    LOG.debug("ExportService got shutdownNow");
-    execService.shutdownNow();
-    isServiceRunning.set(false);
   }
 
   /**
@@ -146,7 +97,7 @@ public class ExportService {
    * @return true if executor terminated and false if timeout elapsed
    * @throws InterruptedException
    */
-  public synchronized boolean await(long timeout, TimeUnit unit) throws InterruptedException {
+  public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
     assert (execService != null);
     LOG.debug("ExportService : awaiting termination of submitted jobs");
     return execService.awaitTermination(timeout, unit);
@@ -156,7 +107,7 @@ public class ExportService {
    * Wait for all tasks submitted to ExecutorService threads to complete execution.
    * @throws HiveException
    */
-  public synchronized void waitForTasksToFinish() throws HiveException {
+  public void waitForTasksToFinishAndShutdown() throws HiveException {
    for (Future<?> future : futures) {
       try {
         future.get();
@@ -167,7 +118,11 @@ public class ExportService {
         futures.remove(future);
         throw new HiveException(e.getCause().getMessage(), e.getCause());
       }
-    }
+   }
+   assert (execService != null);
+   LOG.debug("ExportService got shutdown");
+   execService.shutdown();
+   isServiceRunning.set(false);
   }
 
   /**

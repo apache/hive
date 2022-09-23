@@ -44,7 +44,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -95,7 +94,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.TempTable;
-import org.apache.hadoop.hive.ql.parse.repl.dump.ExportService;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -312,8 +310,6 @@ public class SessionState implements ISessionAuthState{
 
   private final CleanupService cleanupService;
 
-  private final AtomicBoolean shouldCloseExportService = new AtomicBoolean(false);
-
   /**
    * Used to cache functions in use for a query, during query planning
    * and is later used for function usage authorization.
@@ -475,12 +471,6 @@ public class SessionState implements ISessionAuthState{
     this.cleanupService = cleanupService;
 
     ShimLoader.getHadoopShims().setHadoopSessionContext(getSessionId());
-
-    // Create and configure Table and Partition ExportService if it is not running
-    if (!ExportService.getInstance().isExportServiceRunning()) {
-      ExportService.getInstance().configure(conf, true);
-      shouldCloseExportService.set(true);
-    }
   }
 
   public Map<String, String> getHiveVariables() {
@@ -1835,16 +1825,6 @@ public class SessionState implements ISessionAuthState{
   }
 
   public void close() throws IOException {
-    // shutdown ExportService
-    if (shouldCloseExportService.get()) {
-      ExportService.getInstance().shutdown();
-      try {
-        ExportService.getInstance().await(60, TimeUnit.SECONDS);
-      } catch (Exception e) {
-        LOG.error("Error in shutting down ExportService while closing session ", e);
-      }
-    }
-
     for (Closeable cleanupItem : cleanupItems) {
       try {
         cleanupItem.close();

@@ -47,21 +47,24 @@ public class TableAndPartitionExportBench {
   public static class BaseBench {
 
     protected static final Logger LOG = LoggerFactory.getLogger(BaseBench.class);
-    static final ExportService exportService = ExportService.getInstance();
     final HiveConf conf = new HiveConf();
     final int nTables = 500;
 
     @Benchmark
-    public void parallel() throws SemanticException, InterruptedException {
-      exportService.configure(conf, true);
+    public void parallel() throws SemanticException, InterruptedException, HiveException {
+      ExportService exportService = new ExportService(conf);
       try {
         for (int i = 0; i < nTables; i++) {
-          new DumbTableExport().parallelWrite(true, null, true);
+          new DumbTableExport().parallelWrite(exportService, true, null, true);
         }
       } catch (HiveException e) {
         throw new SemanticException(e);
       }
-      exportService.shutdown();
+      try {
+        exportService.waitForTasksToFinishAndShutdown();
+      } catch (HiveException e) {
+        throw new HiveException(e.getMessage());
+      }
       try {
         exportService.await(10, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
@@ -71,19 +74,12 @@ public class TableAndPartitionExportBench {
 
     @Benchmark
     public void serial() throws SemanticException, InterruptedException {
-      exportService.configure(conf, true);
       try {
         for (int i = 0; i < nTables; i++) {
           new DumbTableExport().serialWrite(true, null, true);
         }
       } catch (SemanticException e) {
         throw new SemanticException(e);
-      }
-      exportService.shutdown();
-      try {
-        exportService.await(10, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
-        throw new InterruptedException(e.getMessage());
       }
     }
   }

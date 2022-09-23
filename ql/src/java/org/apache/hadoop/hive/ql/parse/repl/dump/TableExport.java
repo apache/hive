@@ -129,8 +129,9 @@ public class TableExport {
    * @param dataCopyAtLoad Indicates whether data need to be distcp during load only or not.
    * @throws HiveException
    */
-  public void parallelWrite(boolean isExportTask, FileList fileList, boolean dataCopyAtLoad) throws HiveException {
-    ExportService.getInstance().submit(() -> {
+  public void parallelWrite(ExportService exportService, boolean isExportTask, FileList fileList, boolean dataCopyAtLoad) throws HiveException {
+    assert (exportService != null && exportService.isExportServiceRunning());
+    exportService.submit(() -> {
       if (tableSpec != null) {
         logger.debug("Starting parallel export of table {} ", tableSpec.getTableName());
       }

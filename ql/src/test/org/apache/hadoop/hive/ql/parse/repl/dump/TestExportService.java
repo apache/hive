@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
@@ -71,16 +72,15 @@ public class TestExportService {
     };
   }
 
-  private void configureAndSubmitTasks() {
+  private void configureAndSubmitTasks() throws HiveException {
     when(conf.getIntVar(HiveConf.ConfVars.REPL_TABLE_DUMP_PARALLELISM)).thenReturn(nThreads);
-    exportService = ExportService.getInstance();
-    exportService.configure(conf, true);
+    exportService = new ExportService(conf);
     taskNumber = 0;
     sem = new Semaphore(totalTask);
     for (int i = 0; i < totalTask; i++) {
       exportService.submit(runParallelTask());
     }
-    exportService.shutdown();
+    exportService.waitForTasksToFinishAndShutdown();
   }
 
   @Test
