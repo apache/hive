@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.ExportService;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.dump.TableExport;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
@@ -160,6 +161,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private List<TxnType> excludedTxns = Arrays.asList(TxnType.READ_ONLY, TxnType.REPL_CREATED);
   private boolean createEventMarker = false;
   private boolean unsetDbPropertiesForOptimisedBootstrap;
+  private boolean useExportServiceForTableDump = true;
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
     private final String name;
@@ -191,6 +193,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (work.dataCopyIteratorsInitialized()) {
         initiateDataCopyTasks();
       } else {
+        if (!ExportService.getInstance().isExportServiceStarted()) {
+          LOG.debug("ReplDumpTask: ExportService is not started");
+          useExportServiceForTableDump = false;
+        } else {
+          LOG.debug("ReplDumpTask: ExportService is already started");
+          useExportServiceForTableDump = true;
+        }
         Path dumpRoot = ReplUtils.getEncodedDumpRootPath(conf, work.dbNameOrPattern.toLowerCase());
         Path latestDumpPath = ReplUtils.getLatestDumpPath(dumpRoot, conf);
         if (ReplUtils.failedWithNonRecoverableError(latestDumpPath, conf)) {
@@ -978,6 +987,14 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               LOG.debug(te.getMessage());
             }
           }
+          try {
+            if (ExportService.getInstance() != null) {
+              ExportService.getInstance().waitForTasksToFinish();
+            }
+          } catch (SemanticException e) {
+            LOG.error("ExportService thread failed to perform table dump operation ", e.getCause());
+            throw new SemanticException(e.getMessage(), e);
+          }
           // if it is not a table level replication, add a single task for
           // the database default location and the paths configured.
           if (isExternalTablePresent && shouldDumpExternalTableLocation(conf) && isSingleTaskForExternalDb) {
@@ -1289,6 +1306,14 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               tableList.add(tblName);
             }
           }
+          try {
+            if (ExportService.getInstance() != null) {
+              ExportService.getInstance().waitForTasksToFinish();
+            }
+          } catch (SemanticException e) {
+            LOG.error("ExportService thread failed to perform table dump operation ", e.getCause());
+            throw new SemanticException(e.getMessage(), e);
+          }
 
           // if it is not a table level replication, add a single task for
           // the database default location and for the configured paths for external tables.
@@ -1461,8 +1486,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
     tuple.replicationSpec.setRepl(true);
-    new TableExport(exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).write(
-            false, managedTbleList, dataCopyAtLoad);
+    if (useExportServiceForTableDump) {
+      new TableExport(exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).parallelWrite(
+              false, managedTbleList, dataCopyAtLoad);
+    } else {
+      new TableExport(exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).serialWrite(
+              false, managedTbleList, dataCopyAtLoad);
+    }
     work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.TABLES.name(), 1);
     work.getReplLogger().tableLog(tblName, tableSpec.tableHandle.getTableType());
   }

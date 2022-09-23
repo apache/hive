@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -94,6 +95,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.TempTable;
+import org.apache.hadoop.hive.ql.parse.repl.dump.ExportService;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -310,6 +312,8 @@ public class SessionState implements ISessionAuthState{
 
   private final CleanupService cleanupService;
 
+  private ExportService exportService;
+
   /**
    * Used to cache functions in use for a query, during query planning
    * and is later used for function usage authorization.
@@ -471,6 +475,10 @@ public class SessionState implements ISessionAuthState{
     this.cleanupService = cleanupService;
 
     ShimLoader.getHadoopShims().setHadoopSessionContext(getSessionId());
+
+    // Create and configure Table and Partition ExportService
+    this.exportService = ExportService.getInstance();
+    this.exportService.configure(conf, true);
   }
 
   public Map<String, String> getHiveVariables() {
@@ -1825,6 +1833,17 @@ public class SessionState implements ISessionAuthState{
   }
 
   public void close() throws IOException {
+    // shutdown ExportService
+    if (exportService != null) {
+      exportService.shutdown();
+      try {
+        exportService.await(Long.MAX_VALUE, TimeUnit.SECONDS);
+        exportService = null;
+      } catch (Exception e) {
+        LOG.error("Error while shutting down ExportService ", e);
+      }
+    }
+
     for (Closeable cleanupItem : cleanupItems) {
       try {
         cleanupItem.close();
