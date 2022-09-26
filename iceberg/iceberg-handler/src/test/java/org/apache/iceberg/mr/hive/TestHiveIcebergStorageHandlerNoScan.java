@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
@@ -71,6 +72,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.parquet.hadoop.ParquetOutputFormat;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -782,7 +784,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         "TINYINT", Types.IntegerType.get(),
         "SMALLINT", Types.IntegerType.get(),
         "VARCHAR(1)", Types.StringType.get(),
-         "CHAR(1)", Types.StringType.get());
+        "CHAR(1)", Types.StringType.get());
 
     shell.setHiveSessionValue(InputFormatConfig.SCHEMA_AUTO_CONVERSION, "true");
 
@@ -1575,6 +1577,71 @@ public class TestHiveIcebergStorageHandlerNoScan {
               "'storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler','metadata_location'='asdf')");
         });
   }
+
+  @Test
+  public void testCTLT() throws TException, InterruptedException {
+    Assume.assumeTrue(" CTLT target table must be a HiveCatalog table",
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    // Create a normal table and add some data
+    shell.executeStatement("CREATE TABLE source(a int)");
+    shell.executeStatement("insert into source values(1)");
+
+    // Run a CTLT query.
+    shell.executeStatement(String.format("CREATE TABLE dest LIKE source STORED BY ICEBERG %s %s",
+        testTables.locationForCreateTableSQL(TableIdentifier.of("default", "dest")),
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
+
+    // Try a select query and check if the table is empty .
+    String result = shell.executeAndStringify("select a from " + TableIdentifier.of("default", "dest").name());
+    Assert.assertTrue(result.isEmpty());
+
+    // Validate the properties of the table.
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "dest");
+    StorageDescriptor sd = hmsTable.getSd();
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergSerDe", sd.getSerdeInfo().getSerializationLib());
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergInputFormat", sd.getInputFormat());
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergOutputFormat", sd.getOutputFormat());
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergStorageHandler",
+        hmsTable.getParameters().get("storage_handler"));
+    Assert.assertEquals("ICEBERG", hmsTable.getParameters().get("table_type"));
+  }
+
+  @Test
+  public void testCTLTHiveCatalogValidation() throws TException, InterruptedException {
+    Assume.assumeTrue(" CTLT target table works on HiveCatalog table",
+        testTableType != TestTables.TestTableType.HIVE_CATALOG);
+
+    // Create a normal table and add some data
+    shell.executeStatement("CREATE TABLE source(a int)");
+    shell.executeStatement("insert into source values(1)");
+
+    // Run a CTLT query.
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        " CTLT target table must be a HiveCatalog table", () -> {
+          shell.executeStatement(String.format("CREATE TABLE dest LIKE source STORED BY ICEBERG %s %s",
+              testTables.locationForCreateTableSQL(TableIdentifier.of("default", "dest")),
+              testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
+        });
+  }
+
+  @Test
+  public void testParquetHiveCatalogValidation() throws TException, InterruptedException, IOException {
+
+    // Create a table with explicitly set parquet.compression
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), FileFormat.PARQUET, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 1,
+        Collections.singletonMap(ParquetOutputFormat.COMPRESSION, "SNAPPY"));
+
+    // Check the property got set in the hive table metadata.
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(target);
+    Assert.assertEquals("SNAPPY", hmsTable.getParameters().get(ParquetOutputFormat.COMPRESSION).toUpperCase());
+
+    // Check the property got set in the iceberg table metadata.
+    Table icebergTable = testTables.loadTable(target);
+    Assert.assertEquals("SNAPPY", icebergTable.properties().get(TableProperties.PARQUET_COMPRESSION).toUpperCase());
+  }
+
 
   /**
    * Checks that the new schema has newintcol and newstring col columns on both HMS and Iceberg sides

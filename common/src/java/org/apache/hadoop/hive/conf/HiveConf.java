@@ -61,6 +61,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -3067,7 +3068,7 @@ public class HiveConf extends Configuration {
         "Enables non-blocking DROP TABLE operation.\n" +
         "If enabled, every table directory would be suffixed with the corresponding table creation txnId."),
     
-    HIVE_ACID_TRUNCATE_USE_BASE("hive.acid.truncate.usebase", false,
+    HIVE_ACID_TRUNCATE_USE_BASE("hive.acid.truncate.usebase", true,
         "If enabled, truncate for transactional tables will not delete the data directories,\n" +
         "rather create a new base directory with no datafiles."),
     
@@ -7035,5 +7036,16 @@ public class HiveConf extends Configuration {
       Map.Entry<String, String> e = iter.next();
       set(e.getKey(), e.getValue());
     }
+  }
+
+  public List<Map.Entry<String, String>> getMatchingEntries(Pattern regex) {
+    List<Map.Entry<String, String>> matchingEntries = new ArrayList<>();
+    for (Map.Entry<String, String> entry : this) {
+      Matcher matcher = regex.matcher(entry.getKey());
+      if (matcher.matches()) {
+        matchingEntries.add(new AbstractMap.SimpleEntry<>(entry.getKey(), matcher.group(0)));
+      }
+    }
+    return matchingEntries;
   }
 }

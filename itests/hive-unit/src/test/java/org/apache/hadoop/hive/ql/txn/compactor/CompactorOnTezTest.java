@@ -254,6 +254,11 @@ public abstract class CompactorOnTezTest {
       executeStatementOnDriver("create database " + dbName, driver);
     }
 
+    void createDb(String dbName, String poolName) throws Exception {
+      executeStatementOnDriver("drop database if exists " + dbName + " cascade", driver);
+      executeStatementOnDriver("create database " + dbName + " WITH DBPROPERTIES('hive.compactor.worker.pool'='" + poolName + "')", driver);
+    }
+
     /**
      * 5 txns.
      */

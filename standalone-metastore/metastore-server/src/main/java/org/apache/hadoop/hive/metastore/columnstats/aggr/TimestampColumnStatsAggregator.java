@@ -49,6 +49,8 @@ public class TimestampColumnStatsAggregator extends ColumnStatsAggregator implem
   @Override
   public ColumnStatisticsObj aggregate(List<ColStatsObjWithSourceInfo> colStatsWithSourceInfo,
                                        List<String> partNames, boolean areAllPartsFound) throws MetaException {
+    checkStatisticsList(colStatsWithSourceInfo);
+
     ColumnStatisticsObj statsObj = null;
     String colType = null;
     String colName = null;
@@ -99,9 +101,10 @@ public class TimestampColumnStatsAggregator extends ColumnStatsAggregator implem
       for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
         ColumnStatisticsObj cso = csp.getColStatsObj();
         TimestampColumnStatsDataInspector newData = timestampInspectorFromStats(cso);
+        lowerBound = Math.max(lowerBound, newData.getNumDVs());
         higherBound += newData.getNumDVs();
         if (newData.isSetLowValue() && newData.isSetHighValue()) {
-          densityAvgSum += (diff(newData.getHighValue(), newData.getLowValue())) / newData.getNumDVs();
+          densityAvgSum += ((double) (diff(newData.getHighValue(), newData.getLowValue())) / newData.getNumDVs());
         }
         if (ndvEstimator != null) {
           ndvEstimator.mergeEstimators(newData.getNdvEstimator());
@@ -124,7 +127,8 @@ public class TimestampColumnStatsAggregator extends ColumnStatsAggregator implem
         aggregateData.setNumDVs(ndvEstimator.estimateNumDistinctValues());
       } else {
         long estimation;
-        if (useDensityFunctionForNDVEstimation) {
+        if (useDensityFunctionForNDVEstimation && aggregateData != null
+            && aggregateData.isSetLowValue() && aggregateData.isSetHighValue() ) {
           // We have estimation, lowerbound and higherbound. We use estimation
           // if it is between lowerbound and higherbound.
           double densityAvg = densityAvgSum / partNames.size();
@@ -161,7 +165,7 @@ public class TimestampColumnStatsAggregator extends ColumnStatsAggregator implem
           String partName = csp.getPartName();
           TimestampColumnStatsData newData = cso.getStatsData().getTimestampStats();
           if (useDensityFunctionForNDVEstimation) {
-            densityAvgSum += diff(newData.getHighValue(), newData.getLowValue()) / newData.getNumDVs();
+            densityAvgSum += ((double) diff(newData.getHighValue(), newData.getLowValue()) / newData.getNumDVs());
           }
           adjustedIndexMap.put(partName, (double) indexMap.get(partName));
           adjustedStatsMap.put(partName, cso.getStatsData());
@@ -190,7 +194,7 @@ public class TimestampColumnStatsAggregator extends ColumnStatsAggregator implem
               csd.setTimestampStats(aggregateData);
               adjustedStatsMap.put(pseudoPartName.toString(), csd);
               if (useDensityFunctionForNDVEstimation) {
-                densityAvgSum += diff(aggregateData.getHighValue(), aggregateData.getLowValue())
+                densityAvgSum += ((double) diff(aggregateData.getHighValue(), aggregateData.getLowValue()))
                     / aggregateData.getNumDVs();
               }
               // reset everything
@@ -223,7 +227,7 @@ public class TimestampColumnStatsAggregator extends ColumnStatsAggregator implem
           csd.setTimestampStats(aggregateData);
           adjustedStatsMap.put(pseudoPartName.toString(), csd);
           if (useDensityFunctionForNDVEstimation) {
-            densityAvgSum += diff(aggregateData.getHighValue(), aggregateData.getLowValue())
+            densityAvgSum += ((double) diff(aggregateData.getHighValue(), aggregateData.getLowValue()))
                 / aggregateData.getNumDVs();
           }
         }

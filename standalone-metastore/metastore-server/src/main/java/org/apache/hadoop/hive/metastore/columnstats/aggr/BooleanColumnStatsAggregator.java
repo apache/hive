@@ -32,6 +32,8 @@ public class BooleanColumnStatsAggregator extends ColumnStatsAggregator {
   @Override
   public ColumnStatisticsObj aggregate(List<ColStatsObjWithSourceInfo> colStatsWithSourceInfo,
       List<String> partNames, boolean areAllPartsFound) throws MetaException {
+    checkStatisticsList(colStatsWithSourceInfo);
+
     ColumnStatisticsObj statsObj = null;
     String colType = null;
     String colName = null;

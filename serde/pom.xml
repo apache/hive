@@ -81,7 +81,7 @@
       <version>${hppc.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.davidmoten</groupId>
+      <groupId>com.google.flatbuffers</groupId>
       <artifactId>flatbuffers-java</artifactId>
       <version>${flatbuffers.version}</version>
     </dependency>

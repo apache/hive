@@ -70,6 +70,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.Tasks;
+import org.apache.parquet.hadoop.ParquetOutputFormat;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,8 +97,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
 
   private static final BiMap<String, String> ICEBERG_TO_HMS_TRANSLATION = ImmutableBiMap.of(
       // gc.enabled in Iceberg and external.table.purge in Hive are meant to do the same things but with different names
-      GC_ENABLED, "external.table.purge"
-  );
+      GC_ENABLED, "external.table.purge",
+      TableProperties.PARQUET_COMPRESSION, ParquetOutputFormat.COMPRESSION);
 
   private static Cache<String, ReentrantLock> commitLockCache;
 

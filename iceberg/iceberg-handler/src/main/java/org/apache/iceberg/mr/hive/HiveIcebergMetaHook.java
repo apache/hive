@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -52,6 +53,12 @@ import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.iceberg.BaseMetastoreTableOperations;
@@ -156,6 +163,9 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
 
     if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
+      if (Boolean.parseBoolean(this.catalogProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {
+        throw new RuntimeException("CTLT target table must be a HiveCatalog table.");
+      }
       // For non-HiveCatalog tables too, we should set the input and output format
       // so that the table can be read by other engines like Impala
       hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getCanonicalName());
@@ -409,7 +419,44 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     if (!hasCorrectFileFormat) {
       throw new MetaException("Cannot convert hive table to iceberg with input format: " + sd.getInputFormat());
     }
+
+    List<TypeInfo> typeInfos =
+        hmsTable.getSd().getCols().stream().map(f -> TypeInfoUtils.getTypeInfoFromTypeString(f.getType()))
+            .collect(Collectors.toList());
+    for (TypeInfo typeInfo : typeInfos) {
+      validateColumnType(typeInfo);
+    }
   }
+
+  private void validateColumnType(TypeInfo typeInfo) throws MetaException {
+    switch (typeInfo.getCategory()) {
+      case PRIMITIVE:
+        PrimitiveObjectInspector.PrimitiveCategory primitiveCategory =
+            ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+        if (primitiveCategory.equals(PrimitiveObjectInspector.PrimitiveCategory.CHAR) || primitiveCategory.equals(
+            PrimitiveObjectInspector.PrimitiveCategory.VARCHAR)) {
+          throw new MetaException(String.format(
+              "Cannot convert hive table to iceberg that contains column type %s. " + "Use string type columns instead",
+             primitiveCategory));
+        }
+        break;
+      case STRUCT:
+        List<TypeInfo> structTypeInfos = ((StructTypeInfo) typeInfo).getAllStructFieldTypeInfos();
+        for (TypeInfo structTypeInfo : structTypeInfos) {
+          validateColumnType(structTypeInfo);
+        }
+        break;
+      case LIST:
+        validateColumnType(((ListTypeInfo) typeInfo).getListElementTypeInfo());
+        break;
+      case MAP:
+        MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
+        validateColumnType(mapTypeInfo.getMapKeyTypeInfo());
+        validateColumnType(mapTypeInfo.getMapValueTypeInfo());
+        break;
+    }
+  }
+
 
   @Override
   public void commitAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)

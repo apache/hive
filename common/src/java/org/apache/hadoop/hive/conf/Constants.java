@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.conf;
 
+import java.util.regex.Pattern;
+
 public class Constants {
   /* Constants for Hive stats */
   public static final String HIVE_ENGINE = "hive";
@@ -96,5 +98,9 @@ public class Constants {
 
   public static final String ORC_INPUT_FORMAT = "org.apache.hadoop.hive.ql.io.orc.OrcInputFormat";
   public static final String ORC_OUTPUT_FORMAT = "org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat";
+
+
+  public static final Pattern COMPACTION_POOLS_PATTERN = Pattern.compile("hive\\.compactor\\.worker\\.(.*)\\.threads");
+  public static final String HIVE_COMPACTOR_WORKER_POOL = "hive.compactor.worker.pool";
 
 }

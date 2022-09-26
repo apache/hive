@@ -43,8 +43,6 @@ import org.slf4j.LoggerFactory;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -60,6 +58,7 @@ import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTI
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_OLDEST_CLEANING_AGE;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_OLDEST_WORKING_AGE;
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_POOLS_ITEM_COUNT;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_STATUS_PREFIX;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.NUM_ABORTED_TXNS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.NUM_COMPLETED_TXN_COMPONENTS;
@@ -79,9 +78,6 @@ import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.TABLES_W
 import static org.apache.hadoop.hive.metastore.txn.CompactionMetricsData.MetricType.NUM_DELTAS;
 import static org.apache.hadoop.hive.metastore.txn.CompactionMetricsData.MetricType.NUM_OBSOLETE_DELTAS;
 import static org.apache.hadoop.hive.metastore.txn.CompactionMetricsData.MetricType.NUM_SMALL_DELTAS;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.NO_VAL;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getHostFromId;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getThreadIdFromId;
 
 /**
  * Collect and publish ACID and compaction related metrics.
@@ -336,6 +332,8 @@ public class AcidMetricService implements MetastoreTaskThread {
             .set(0);
       }
     }
+
+    Metrics.getOrCreateMapMetrics(COMPACTION_POOLS_ITEM_COUNT).update(metricData.getPoolCount());
 
     updateOldestCompactionMetric(COMPACTION_OLDEST_ENQUEUE_AGE, metricData.getOldestEnqueueTime());
     updateOldestCompactionMetric(COMPACTION_OLDEST_WORKING_AGE, metricData.getOldestWorkingTime());

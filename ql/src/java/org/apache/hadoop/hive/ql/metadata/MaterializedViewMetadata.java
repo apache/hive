@@ -18,9 +18,12 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,6 +35,8 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 
 public class MaterializedViewMetadata {
+  private static final Logger LOG = LoggerFactory.getLogger(MaterializedViewMetadata.class);
+
   final CreationMetadata creationMetadata;
 
   MaterializedViewMetadata(CreationMetadata creationMetadata) {
@@ -39,9 +44,10 @@ public class MaterializedViewMetadata {
   }
 
   public MaterializedViewMetadata(
-          String catalogName, String dbName, String mvName, Set<SourceTable> sourceTables, String validTxnList) {
+          String catalogName, String dbName, String mvName, Set<SourceTable> sourceTables,
+          MaterializationSnapshot snapshot) {
     this.creationMetadata = new CreationMetadata(catalogName, dbName, mvName, toFullTableNames(sourceTables));
-    this.creationMetadata.setValidTxnList(validTxnList);
+    this.creationMetadata.setValidTxnList(snapshot.asJsonString());
     this.creationMetadata.setSourceTables(unmodifiableList(new ArrayList<>(sourceTables)));
   }
 
@@ -81,15 +87,27 @@ public class MaterializedViewMetadata {
     return unmodifiableList(creationMetadata.getSourceTables());
   }
 
-  public String getValidTxnList() {
-    return creationMetadata.getValidTxnList();
+  /**
+   * Get the snapshot data of the materialized view source tables stored in HMS.
+   * The returned object contains the valid txn list in case of native acid tables
+   * or the snapshotIds of tables which storage handle supports snapshots.
+   * @return {@link MaterializationSnapshot} object or null if the wrapped {@link CreationMetadata} object
+   * does not contain snapshot data
+   */
+  public MaterializationSnapshot getSnapshot() {
+    if (creationMetadata.getValidTxnList() == null || creationMetadata.getValidTxnList().isEmpty()) {
+      LOG.debug("Could not obtain materialization snapshot of materialized view {}.{}",
+          creationMetadata.getDbName(), creationMetadata.getTblName());
+      return null;
+    }
+    return MaterializationSnapshot.fromJson(creationMetadata.getValidTxnList());
   }
 
   public long getMaterializationTime() {
     return creationMetadata.getMaterializationTime();
   }
 
-  public MaterializedViewMetadata reset(String validTxnList) {
+  public MaterializedViewMetadata reset(MaterializationSnapshot snapshot) {
     Set<SourceTable> newSourceTables =
             creationMetadata.getSourceTables().stream().map(this::from).collect(Collectors.toSet());
 
@@ -98,7 +116,7 @@ public class MaterializedViewMetadata {
             creationMetadata.getDbName(),
             creationMetadata.getTblName(),
             unmodifiableSet(newSourceTables),
-            validTxnList);
+            snapshot);
   }
 
   private SourceTable from(SourceTable sourceTable) {

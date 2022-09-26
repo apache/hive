@@ -77,6 +77,8 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
   // The column number for this one column join specialization.
   private transient int singleJoinColumn;
 
+  private transient boolean isDebugEnabled;
+
   //---------------------------------------------------------------------------
   // Pass-thru constructors.
   //
@@ -84,15 +86,18 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
   /** Kryo ctor. */
   protected VectorMapJoinInnerLongOperator() {
     super();
+    isDebugEnabled = LOG.isDebugEnabled();
   }
 
   public VectorMapJoinInnerLongOperator(CompilationOpContext ctx) {
     super(ctx);
+    isDebugEnabled = LOG.isDebugEnabled();
   }
 
   public VectorMapJoinInnerLongOperator(CompilationOpContext ctx, OperatorDesc conf,
       VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
     super(ctx, conf, vContext, vectorDesc);
+    isDebugEnabled = LOG.isDebugEnabled();
   }
 
   //---------------------------------------------------------------------------
@@ -197,7 +202,7 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
          * Common repeated join result processing.
          */
 
-        if (LOG.isDebugEnabled()) {
+        if (isDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishInnerRepeated(batch, joinResult, hashMapResults[0]);
@@ -207,7 +212,7 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
          * NOT Repeating.
          */
 
-        if (LOG.isDebugEnabled()) {
+        if (isDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
@@ -361,7 +366,7 @@ public class VectorMapJoinInnerLongOperator extends VectorMapJoinInnerGenerateRe
           }
         }
 
-        if (LOG.isDebugEnabled()) {
+        if (isDebugEnabled) {
           LOG.debug(CLASS_NAME +
               " allMatchs " + intArrayToRangesString(allMatchs,allMatchCount) +
               " equalKeySeriesHashMapResultIndices " + intArrayToRangesString(equalKeySeriesHashMapResultIndices, equalKeySeriesCount) +

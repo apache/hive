@@ -68,6 +68,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
@@ -131,7 +132,6 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
-import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
@@ -141,7 +141,6 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
@@ -249,6 +248,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
 
   private static final String TXN_TMP_STATE = "_";
+
+  private static final String DEFAULT_POOL_NAME = "default";
 
   // Lock states
   static final protected char LOCK_ACQUIRED = 'a';
@@ -2572,8 +2573,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     // the materialization was created. Otherwise, query returns 0 rows.
 
     // Parse validReaderWriteIdList from creation metadata
-    final ValidTxnWriteIdList validReaderWriteIdList =
-            new ValidTxnWriteIdList(creationMetadata.getValidTxnList());
+    MaterializationSnapshot mvSnapshot = MaterializationSnapshot.fromJson(creationMetadata.getValidTxnList());
+    if (mvSnapshot.getTableSnapshots() != null && !mvSnapshot.getTableSnapshots().isEmpty()) {
+      // Incremental rebuild of MVs on Iceberg sources is not supported.
+      return null;
+    }
+    final ValidTxnWriteIdList validReaderWriteIdList = new ValidTxnWriteIdList(mvSnapshot.getValidTxnList());
 
     // Parse validTxnList
     final ValidReadTxnList currentValidTxnList = new ValidReadTxnList(validTxnListStr);
@@ -3696,7 +3701,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                 "\"CQ_TABLE\", ");
             String partName = rqst.getPartitionname();
             if (partName != null) buf.append("\"CQ_PARTITION\", ");
-            buf.append("\"CQ_STATE\", \"CQ_TYPE\", \"CQ_ENQUEUE_TIME\"");
+            buf.append("\"CQ_STATE\", \"CQ_TYPE\", \"CQ_ENQUEUE_TIME\", \"CQ_POOL_NAME\"");
             if (rqst.getProperties() != null) {
               buf.append(", \"CQ_TBLPROPERTIES\"");
             }
@@ -3727,6 +3732,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             buf.append(thriftCompactionType2DbType(rqst.getType()));
             buf.append("',");
             buf.append(getEpochFn(dbProduct));
+            buf.append(", ?");
+            params.add(rqst.getPoolName());
             if (rqst.getProperties() != null) {
               buf.append(", ?");
               params.add(new StringableMap(rqst.getProperties()).toString());
@@ -3857,37 +3864,55 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   @RetrySemantics.ReadOnly
+  @SuppressWarnings("squid:S2095")
   public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException {
     ShowCompactResponse response = new ShowCompactResponse(new ArrayList<>());
     Connection dbConn = null;
-    Statement stmt = null;
+    PreparedStatement stmt = null;
     try {
       try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.createStatement();
-        String s = "" +
-            //-1 because 'null' literal doesn't work for all DBs...
+        StringBuilder sb =new StringBuilder(2048);
+        sb.append(
             "SELECT " +
             "  \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", \"CQ_STATE\", \"CQ_TYPE\", \"CQ_WORKER_ID\", " +
             "  \"CQ_START\", -1 \"CC_END\", \"CQ_RUN_AS\", \"CQ_HADOOP_JOB_ID\", \"CQ_ID\", \"CQ_ERROR_MESSAGE\", " +
             "  \"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", " +
-            "  \"CQ_CLEANER_START\"" +
+            "  \"CQ_CLEANER_START\", \"CQ_POOL_NAME\"" +
             "FROM " +
-            "  \"COMPACTION_QUEUE\" " +
+                "  \"COMPACTION_QUEUE\" "
+        );
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(rqst.getPoolName())) {
+          sb.append("WHERE \"CQ_POOL_NAME\" = ? ");
+        }
+        sb.append(
             "UNION ALL " +
             "SELECT " +
             "  \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_WORKER_ID\", " +
             "  \"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HADOOP_JOB_ID\", \"CC_ID\", \"CC_ERROR_MESSAGE\", " +
             "  \"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\", " +
-            "  -1 " +
+            "  -1 , \"CC_POOL_NAME\"" +
             "FROM " +
-            "  \"COMPLETED_COMPACTIONS\""; //todo: sort by cq_id?
+            "  \"COMPLETED_COMPACTIONS\" "
+        );
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(rqst.getPoolName())) {
+          sb.append("WHERE \"CC_POOL_NAME\" = ?");
+        }
+        //todo: sort by cq_id?
         //what I want is order by cc_end desc, cc_start asc (but derby has a bug https://issues.apache.org/jira/browse/DERBY-6013)
         //to sort so that currently running jobs are at the end of the list (bottom of screen)
         //and currently running ones are in sorted by start time
         //w/o order by likely currently running compactions will be first (LHS of Union)
-        LOG.debug("Going to execute query <" + s + ">");
-        ResultSet rs = stmt.executeQuery(s);
+
+        String query = sb.toString();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.prepareStatement(query);
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(rqst.getPoolName())) {
+          stmt.setString(1, rqst.getPoolName());
+          stmt.setString(2, rqst.getPoolName());
+        }
+
+        LOG.debug("Going to execute query <" + query + ">");
+        ResultSet rs = stmt.executeQuery();
         while (rs.next()) {
           ShowCompactResponseElement e = new ShowCompactResponseElement();
           e.setDbname(rs.getString(1));
@@ -3922,6 +3947,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           long cleanerStart = rs.getLong(17);
           if (!rs.wasNull() && (cleanerStart != -1)) {
             e.setCleanerStart(cleanerStart);
+          }
+          String poolName = rs.getString(18);
+          if (org.apache.commons.lang3.StringUtils.isBlank(poolName)) {
+            e.setPoolName(DEFAULT_POOL_NAME);
+          } else {
+            e.setPoolName(poolName);
           }
           response.addToCompacts(e);
         }
