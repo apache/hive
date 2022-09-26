@@ -59,8 +59,10 @@ public class CreateMaterializedViewOperation extends DDLOperation<CreateMaterial
         return 0;
       }
 
-      // Materialized View already exists, thus we should be replacing
-      throw new HiveException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(desc.getViewName()));
+      if (!(oldview.getStorageHandler() != null && oldview.getStorageHandler().areSnapshotsSupported())) {
+        // Materialized View already exists, thus we should be replacing
+        throw new HiveException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(desc.getViewName()));
+      }
     } else {
       // We create new view
       Table tbl = desc.toTable(context.getConf());
