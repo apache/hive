@@ -1,6 +1,7 @@
 --! qt:dataset:src
-set hive.exec.pre.hooks = org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyHiveHook;
-set hive.enforce.readonly = true;
+set hive.exec.pre.hooks = org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyDatabaseHook;
+
+ALTER DATABASE default SET DBPROPERTIES('readonly' = 'true');
 
 -- SET
 set hive.exec.reducers.max = 1;
