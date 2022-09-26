@@ -323,14 +323,7 @@ public abstract class Operation {
           scheduledExecutorService.shutdown();
         } else {
           log.info("Closing operation log {} without delay", operationLog);
-          String logLoc = operationLog.toString();
-          if (new File(logLoc).exists()) {
-            log.info("===t1 log exists");
-          }
           operationLog.close();
-          if (new File(logLoc).exists()) {
-            log.info("===t2 log exists");
-          }
           OperationLogManager.closeOperation(this);
         }
       }

@@ -74,15 +74,13 @@ public class OperationLogManager {
   private static long maxBytesToFetch;
 
   private final HiveConf hiveConf;
-  private final SessionManager sessionManager;
   private final OperationManager operationManager;
   private OperationLogDirCleaner cleaner;
   private String historicParentLogDir;
   private String serverInstance;
 
-  public OperationLogManager(SessionManager sessionManager, HiveConf hiveConf) {
-    this.sessionManager = sessionManager;
-    this.operationManager = sessionManager.getOperationManager();
+  public OperationLogManager(OperationManager operationManager, HiveConf hiveConf) {
+    this.operationManager = operationManager;
     this.hiveConf = hiveConf;
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_HISTORIC_OPERATION_LOG_ENABLED)
         && hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)
