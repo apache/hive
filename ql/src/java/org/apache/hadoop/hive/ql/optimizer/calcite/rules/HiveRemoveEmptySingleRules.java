@@ -33,6 +33,7 @@ import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.rules.PruneEmptyRules;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
@@ -98,21 +99,22 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
           final Join join = call.rel(0);
           final Values empty = call.rel(1);
           final RelNode right = call.rel(2);
-          final RelBuilder b = call.builder();
+          final RelBuilder relBuilder = call.builder();
           if (join.getJoinType().generatesNullsOnLeft()) {
             // If "emp" is empty, "select * from emp right join dept" will have
             // the same number of rows as "dept", and null values for the
             // columns from "emp". The left side of the join can be removed.
             final List<RexNode> nullLiterals =
-                    Collections.nCopies(empty.getRowType().getFieldCount(), b.literal(null));
+                    Collections.nCopies(empty.getRowType().getFieldCount(),
+                            relBuilder.literal(null));
             call.transformTo(
-                    b.push(right)
-                            .project(concat(nullLiterals, b.fields()))
+                    relBuilder.push(right)
+                            .project(concat(nullLiterals, relBuilder.fields()))
                             .convert(join.getRowType(), true)
                             .build());
             return;
           }
-          call.transformTo(b.push(join).empty().build());
+          call.transformTo(relBuilder.push(join).empty().build());
         }
       };
     }
@@ -151,16 +153,17 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
           final Join join = call.rel(0);
           final RelNode left = call.rel(1);
           final Values empty = call.rel(2);
-          final RelBuilder b = call.builder();
+          final RelBuilder relBuilder = call.builder();
           if (join.getJoinType().generatesNullsOnRight()) {
             // If "dept" is empty, "select * from emp left join dept" will have
             // the same number of rows as "emp", and null values for the
             // columns from "dept". The right side of the join can be removed.
             final List<RexNode> nullLiterals =
-                    Collections.nCopies(empty.getRowType().getFieldCount(), b.literal(null));
+                    Collections.nCopies(empty.getRowType().getFieldCount(),
+                            relBuilder.literal(null));
             call.transformTo(
-                    b.push(left)
-                            .project(concat(b.fields(), nullLiterals))
+                    relBuilder.push(left)
+                            .project(concat(relBuilder.fields(), nullLiterals))
                             .convert(join.getRowType(), true)
                             .build());
             return;
@@ -170,7 +173,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
             call.transformTo(join.getLeft());
             return;
           }
-          call.transformTo(b.push(join).empty().build());
+          call.transformTo(relBuilder.push(join).empty().build());
         }
       };
     }
