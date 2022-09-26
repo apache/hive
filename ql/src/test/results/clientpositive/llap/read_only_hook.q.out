@@ -1,3 +1,6 @@
+POSTHOOK: query: ALTER DATABASE default SET DBPROPERTIES('readonly' = 'true')
+POSTHOOK: type: ALTERDATABASE
+POSTHOOK: Output: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
@@ -16,6 +19,8 @@ COMMENT
   'Default Hive database'
 LOCATION
   'hdfs://### HDFS PATH ###'
+WITH DBPROPERTIES (
+  'readonly'='true')
 POSTHOOK: query: SHOW CREATE TABLE src
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@src
