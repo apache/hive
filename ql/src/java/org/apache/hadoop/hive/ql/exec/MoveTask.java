@@ -37,6 +37,8 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
+import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
@@ -1073,6 +1075,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         storageHandlerClass = createTableDesc.getStorageHandler();
         commitProperties = new Properties();
         commitProperties.put(hive_metastoreConstants.META_TABLE_NAME, createTableDesc.getDbTableName());
+      } else if (moveWork.getLoadFileWork().getCreateViewDesc() != null) {
+        storageHandlerClass = moveWork.getLoadFileWork().getCreateViewDesc().getStorageHandler();
+        commitProperties = new Properties();
+        commitProperties.put(hive_metastoreConstants.META_TABLE_NAME, moveWork.getLoadFileWork().getCreateViewDesc().getViewName());
       }
     }
 

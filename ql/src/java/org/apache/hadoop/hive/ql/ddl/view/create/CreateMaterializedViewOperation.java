@@ -52,52 +52,57 @@ public class CreateMaterializedViewOperation extends DDLOperation<CreateMaterial
 
   @Override
   public int execute() throws HiveException {
-    Table oldview = context.getDb().getTable(desc.getViewName(), false);
-    if (oldview != null) {
+    Table tbl = context.getDb().getTable(desc.getViewName(), false);
+    if (tbl != null) {
 
       if (desc.getIfNotExists()) {
         return 0;
       }
 
-      if (!(oldview.getStorageHandler() != null && oldview.getStorageHandler().areSnapshotsSupported())) {
+      if (!(tbl.getStorageHandler() != null && tbl.getStorageHandler().areSnapshotsSupported())) {
         // Materialized View already exists, thus we should be replacing
         throw new HiveException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(desc.getViewName()));
       }
+      setMVData(tbl);
     } else {
       // We create new view
-      Table tbl = desc.toTable(context.getConf());
-      // We set the signature for the view if it is a materialized view
-      if (tbl.isMaterializedView()) {
-        Set<SourceTable> sourceTables = new HashSet<>(desc.getTablesUsed().size());
-        for (TableName tableName : desc.getTablesUsed()) {
-          sourceTables.add(context.getDb().getTable(tableName).createSourceTable());
-        }
-        MaterializedViewMetadata metadata = new MaterializedViewMetadata(
-                MetaStoreUtils.getDefaultCatalog(context.getConf()),
-                tbl.getDbName(),
-                tbl.getTableName(),
-                sourceTables,
-                getSnapshotOf(context, desc.getTablesUsed()));
-        tbl.setMaterializedViewMetadata(metadata);
-      }
+      tbl = desc.toTable(context.getConf());
+      setMVData(tbl);
       context.getDb().createTable(tbl, desc.getIfNotExists());
-      DDLUtils.addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK),
-          context.getWork().getOutputs());
-
-      //set lineage info
-      DataContainer dc = new DataContainer(tbl.getTTable());
-      Map<String, String> tblProps = tbl.getTTable().getParameters();
-      Path tlocation = null;
-      try {
-        Warehouse wh = new Warehouse(context.getConf());
-        tlocation = wh.getDefaultTablePath(context.getDb().getDatabase(tbl.getDbName()), tbl.getTableName(),
-                tblProps == null || !AcidUtils.isTablePropertyTransactional(tblProps));
-      } catch (MetaException e) {
-        throw new HiveException(e);
-      }
-
-      context.getQueryState().getLineageState().setLineage(tlocation, dc, tbl.getCols());
     }
+    DDLUtils.addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK),
+            context.getWork().getOutputs());
+
+    //set lineage info
+    DataContainer dc = new DataContainer(tbl.getTTable());
+    Map<String, String> tblProps = tbl.getTTable().getParameters();
+    Path tlocation = null;
+    try {
+      Warehouse wh = new Warehouse(context.getConf());
+      tlocation = wh.getDefaultTablePath(context.getDb().getDatabase(tbl.getDbName()), tbl.getTableName(),
+              tblProps == null || !AcidUtils.isTablePropertyTransactional(tblProps));
+    } catch (MetaException e) {
+      throw new HiveException(e);
+    }
+
+    context.getQueryState().getLineageState().setLineage(tlocation, dc, tbl.getCols());
     return 0;
+  }
+
+  private void setMVData(Table tbl) throws HiveException {
+    // We set the signature for the view if it is a materialized view
+    if (tbl.isMaterializedView()) {
+      Set<SourceTable> sourceTables = new HashSet<>(desc.getTablesUsed().size());
+      for (TableName tableName : desc.getTablesUsed()) {
+        sourceTables.add(context.getDb().getTable(tableName).createSourceTable());
+      }
+      MaterializedViewMetadata metadata = new MaterializedViewMetadata(
+              MetaStoreUtils.getDefaultCatalog(context.getConf()),
+              tbl.getDbName(),
+              tbl.getTableName(),
+              sourceTables,
+              getSnapshotOf(context, desc.getTablesUsed()));
+      tbl.setMaterializedViewMetadata(metadata);
+    }
   }
 }
