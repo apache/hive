@@ -36,6 +36,7 @@ Table Parameters:
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
+	orc.files.only      	true                
 	rawDataSize         	0                   
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
@@ -97,6 +98,7 @@ Table Parameters:
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
+	orc.files.only      	false               
 	rawDataSize         	0                   
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
@@ -158,6 +160,7 @@ Table Parameters:
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
+	orc.files.only      	false               
 	rawDataSize         	0                   
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
@@ -219,6 +222,7 @@ Table Parameters:
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
+	orc.files.only      	false               
 	rawDataSize         	0                   
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
@@ -277,6 +281,7 @@ Table Parameters:
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
+	orc.files.only      	true                
 	rawDataSize         	0                   
 	serialization.format	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler

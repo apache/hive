@@ -101,6 +101,7 @@ Table Parameters:
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   
 	numRows             	9                   
+	orc.files.only      	false               
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	schema.name-mapping.default	[ {                 
 	                           	  \"field-id\" : 1, 
@@ -193,6 +194,7 @@ Table Parameters:
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
+	orc.files.only      	false               
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	schema.name-mapping.default	[ {                 
 	                           	  \"field-id\" : 1, 

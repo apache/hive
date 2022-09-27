@@ -94,6 +94,7 @@ Table Parameters:
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	3                   
 	numRows             	10                  
+	orc.files.only      	false               
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   
@@ -159,6 +160,7 @@ Table Parameters:
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
+	orc.files.only      	false               
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	rawDataSize         	0                   
 	serialization.format	1                   

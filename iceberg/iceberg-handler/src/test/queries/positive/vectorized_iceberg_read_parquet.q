@@ -6,6 +6,7 @@ insert into table tbl_ice_parquet values (1, 'one'), (2, 'two'), (3, 'three'), (
 analyze table tbl_ice_parquet compute statistics for columns;
 
 explain select b, max(a) from tbl_ice_parquet group by b;
+explain vectorization only detail select b, max(a) from tbl_ice_parquet group by b;
 select b, max(a) from tbl_ice_parquet group by b;
 
 create external table tbl_ice_parquet_all_types (
@@ -25,6 +26,9 @@ insert into tbl_ice_parquet_all_types values (1.1, 1.2, false, 4, 56789012345678
 
 explain select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_parquet_all_types
     group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal;
+
+explain vectorization only detail select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_parquet_all_types
+group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal;
 select max(t_float), t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal from tbl_ice_parquet_all_types
         group by t_double, t_boolean, t_int, t_bigint, t_binary, t_string, t_timestamp, t_date, t_decimal;
 
@@ -55,6 +59,8 @@ describe tbl_ice_parquet_parted;
 
 -- should yield to the same result as previously
 select p1, a, min(b) from tbl_ice_parquet_parted group by p1, a;
+
+explain vectorization only detail select p1, a, min(b) from tbl_ice_parquet_parted group by p1, a;
 
 insert into tbl_ice_parquet_parted values ('Europe', 'cc', 3, 'Austria');
 

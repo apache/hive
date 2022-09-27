@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.DataCache;
@@ -177,9 +178,19 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
 
   @Override
   public VectorizedSupport.Support[] getSupportedFeatures() {
-    // disabling VectorizedSupport.Support.DECIMAL_64 as Parquet doesn't support it, and we have no way of telling
-    // beforehand what kind of file format we're going to hit later
-    return new VectorizedSupport.Support[]{  };
+    throw new UnsupportedOperationException("This overload of getSupportedFeatures should never be called");
+  }
+
+  @Override
+  public VectorizedSupport.Support[] getSupportedFeatures(HiveConf hiveConf, Properties properties) {
+    // disabling VectorizedSupport.Support.DECIMAL_64 for Parquet as it doesn't support it
+    boolean isORCOnly = Boolean.parseBoolean(properties.getProperty(HiveIcebergMetaHook.ORC_FILES_ONLY));
+    if (!isORCOnly) {
+      HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED, "");
+      return new VectorizedSupport.Support[] {};
+    }
+    HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED, "decimal_64");
+    return new VectorizedSupport.Support[] { VectorizedSupport.Support.DECIMAL_64 };
   }
 
   @Override
