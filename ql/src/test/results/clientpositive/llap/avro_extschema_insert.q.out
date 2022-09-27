@@ -22,11 +22,13 @@ p1                  	string
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 p1                  	string              	                    
-PREHOOK: query: create external table avro_extschema_insert2 like avro_extschema_insert1
+PREHOOK: query: create external table avro_extschema_insert2 like avro_extschema_insert1 stored as avro
+#### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@avro_extschema_insert2
-POSTHOOK: query: create external table avro_extschema_insert2 like avro_extschema_insert1
+POSTHOOK: query: create external table avro_extschema_insert2 like avro_extschema_insert1 stored as avro
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro_extschema_insert2
