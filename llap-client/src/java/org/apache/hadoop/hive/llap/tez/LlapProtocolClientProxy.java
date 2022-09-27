@@ -15,6 +15,8 @@
 package org.apache.hadoop.hive.llap.tez;
 
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.SocketFactory;
@@ -38,13 +40,21 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFra
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.UpdateFragmentResponseProto;
 import org.apache.hadoop.hive.llap.impl.LlapProtocolClientImpl;
 import org.apache.hadoop.hive.llap.protocol.LlapProtocolBlockingPB;
+import org.apache.hadoop.hive.llap.security.LlapTokenClient;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LlapProtocolClientProxy
   extends AsyncPbRpcProxy<LlapProtocolBlockingPB, LlapTokenIdentifier> {
+  private static final Logger LOG = LoggerFactory.getLogger(LlapProtocolClientProxy.class);
+  private static final long LLAP_TOKEN_REFRESH_INTERVAL_IN_AM_SECONDS = 300;
+
+  protected final ScheduledExecutorService newTokenChecker = Executors.newScheduledThreadPool(1);
+  private LlapTokenClient tokenClient;
 
   public LlapProtocolClientProxy(
       int numThreads, Configuration conf, Token<LlapTokenIdentifier> llapToken) {
@@ -55,6 +65,7 @@ public class LlapProtocolClientProxy
             TimeUnit.MILLISECONDS),
         HiveConf.getTimeVar(conf, ConfVars.LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MS,
             TimeUnit.MILLISECONDS), -1, HiveConf.getIntVar(conf, ConfVars.LLAP_MAX_CONCURRENT_REQUESTS_PER_NODE));
+    initPeriodicTokenRefresh(conf);
   }
 
   public void registerDag(RegisterDagRequestProto request, String host, int port,
@@ -92,6 +103,35 @@ public class LlapProtocolClientProxy
       final int port, final ExecuteRequestCallback<UpdateFragmentResponseProto> callback) {
     LlapNodeId nodeId = LlapNodeId.getInstance(host, port);
     queueRequest(new SendUpdateFragmentCallable(nodeId, request, callback));
+  }
+
+  protected void initPeriodicTokenRefresh(Configuration conf) {
+    if (!UserGroupInformation.isSecurityEnabled()) {
+      return;
+    }
+    long tokenRenewInterval =
+        HiveConf.getTimeVar(conf, ConfVars.LLAP_DELEGATION_TOKEN_RENEW_INTERVAL, TimeUnit.SECONDS);
+    // if the tokenRenewInterval is low (e.g. testing), let's use the half of it as interval instead of the constant
+    long interval = Math.min(tokenRenewInterval / 2, LLAP_TOKEN_REFRESH_INTERVAL_IN_AM_SECONDS);
+
+    LOG.info("Initializing periodic token refresh in AM, will run in every {}s", interval);
+    tokenClient = new LlapTokenClient(conf);
+
+    newTokenChecker.scheduleAtFixedRate(() -> {
+      fetchToken();
+    }, 0, interval, TimeUnit.SECONDS);
+  }
+
+  private synchronized void fetchToken() {
+    LOG.debug("Trying to fetch a new token...");
+    try {
+      Token<LlapTokenIdentifier> newToken =
+          tokenClient.withCurrentToken(new Token<LlapTokenIdentifier>(token)).getDelegationToken(null);
+      LOG.debug("Received new token: {}, old was: {}", newToken, token);
+      setToken(newToken);
+    } catch (Exception e) {
+      LOG.error("Caught exception while fetching token", e);
+    }
   }
 
   private class RegisterDagCallable extends
@@ -201,5 +241,9 @@ public class LlapProtocolClientProxy
   @Override
   protected void shutdownProtocolImpl(LlapProtocolBlockingPB client) {
     // Nothing to do.
+  }
+
+  public void refreshToken() {
+    fetchToken();
   }
 }
