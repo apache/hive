@@ -127,3 +127,39 @@ or inOutputOpt.key = null;
 drop table orOutput;
 drop table inOutput;
 drop table inOutputOpt;
+
+-- test case(s) for HIVE-26320 for ORC
+SET hive.optimize.point.lookup=true;
+SET hive.optimize.point.lookup.min=2;
+CREATE EXTERNAL TABLE hive2623_orc(kob varchar(2), enhanced_type_code int) STORED AS ORC;
+INSERT INTO hive2623_orc VALUES('BB',18),('BC',18),('AB',18);
+SELECT CASE WHEN ((kob='BB' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623_orc;
+DROP TABLE hive2623_orc;
+
+CREATE EXTERNAL TABLE hive2623_char_orc(kob char(2), enhanced_type_code int) STORED AS ORC;
+INSERT INTO hive2623_char_orc VALUES('B',18),('BC',18),('AB',18);
+SELECT CASE WHEN ((kob='B ' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623_char_orc;
+DROP TABLE hive2623_char_orc;
+
+-- test case(s) for HIVE-26320 for PARQUET
+SET hive.optimize.point.lookup=true;
+SET hive.optimize.point.lookup.min=2;
+
+CREATE EXTERNAL TABLE hive2623_parq(kob varchar(2), enhanced_type_code int) STORED AS PARQUET;
+INSERT INTO hive2623_parq VALUES('BB',18),('BC',18),('AB',18);
+SELECT CASE WHEN ((kob='BB' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623_parq;
+DROP TABLE hive2623_parq;
+
+CREATE EXTERNAL TABLE hive2623_char_parq(kob char(2), enhanced_type_code int) STORED AS PARQUET;
+INSERT INTO hive2623_char_parq VALUES('B ',18),('BC',18),('AB',18);
+SELECT CASE WHEN ((kob='B ' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623_char_parq;
+DROP TABLE hive2623_char_parq;
+
+CREATE EXTERNAL TABLE hive2623_int_parq(kob int, enhanced_type_code int) STORED AS PARQUET;
+INSERT INTO hive2623_int_parq VALUES(2,18),(23,18),(12,18);
+SELECT CASE WHEN ((kob=2 AND enhanced_type_code=18) OR (kob=23  AND enhanced_type_code=18)) THEN 1 ELSE 0 END AS logic_check FROM hive2623_int_parq;
+DROP TABLE hive2623_int_parq;

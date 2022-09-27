@@ -362,3 +362,196 @@ POSTHOOK: query: drop table inOutputOpt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@inoutputopt
 POSTHOOK: Output: default@inoutputopt
+PREHOOK: query: CREATE EXTERNAL TABLE hive2623_orc(kob varchar(2), enhanced_type_code int) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive2623_orc
+POSTHOOK: query: CREATE EXTERNAL TABLE hive2623_orc(kob varchar(2), enhanced_type_code int) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive2623_orc
+PREHOOK: query: INSERT INTO hive2623_orc VALUES('BB',18),('BC',18),('AB',18)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive2623_orc
+POSTHOOK: query: INSERT INTO hive2623_orc VALUES('BB',18),('BC',18),('AB',18)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive2623_orc
+POSTHOOK: Lineage: hive2623_orc.enhanced_type_code SCRIPT []
+POSTHOOK: Lineage: hive2623_orc.kob SCRIPT []
+PREHOOK: query: SELECT CASE WHEN ((kob='BB' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive2623_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN ((kob='BB' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive2623_orc
+#### A masked pattern was here ####
+1
+1
+0
+PREHOOK: query: DROP TABLE hive2623_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive2623_orc
+PREHOOK: Output: default@hive2623_orc
+POSTHOOK: query: DROP TABLE hive2623_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive2623_orc
+POSTHOOK: Output: default@hive2623_orc
+PREHOOK: query: CREATE EXTERNAL TABLE hive2623_char_orc(kob char(2), enhanced_type_code int) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive2623_char_orc
+POSTHOOK: query: CREATE EXTERNAL TABLE hive2623_char_orc(kob char(2), enhanced_type_code int) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive2623_char_orc
+PREHOOK: query: INSERT INTO hive2623_char_orc VALUES('B',18),('BC',18),('AB',18)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive2623_char_orc
+POSTHOOK: query: INSERT INTO hive2623_char_orc VALUES('B',18),('BC',18),('AB',18)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive2623_char_orc
+POSTHOOK: Lineage: hive2623_char_orc.enhanced_type_code SCRIPT []
+POSTHOOK: Lineage: hive2623_char_orc.kob SCRIPT []
+PREHOOK: query: SELECT CASE WHEN ((kob='B ' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623_char_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive2623_char_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN ((kob='B ' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623_char_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive2623_char_orc
+#### A masked pattern was here ####
+1
+1
+0
+PREHOOK: query: DROP TABLE hive2623_char_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive2623_char_orc
+PREHOOK: Output: default@hive2623_char_orc
+POSTHOOK: query: DROP TABLE hive2623_char_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive2623_char_orc
+POSTHOOK: Output: default@hive2623_char_orc
+PREHOOK: query: CREATE EXTERNAL TABLE hive2623_parq(kob varchar(2), enhanced_type_code int) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive2623_parq
+POSTHOOK: query: CREATE EXTERNAL TABLE hive2623_parq(kob varchar(2), enhanced_type_code int) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive2623_parq
+PREHOOK: query: INSERT INTO hive2623_parq VALUES('BB',18),('BC',18),('AB',18)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive2623_parq
+POSTHOOK: query: INSERT INTO hive2623_parq VALUES('BB',18),('BC',18),('AB',18)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive2623_parq
+POSTHOOK: Lineage: hive2623_parq.enhanced_type_code SCRIPT []
+POSTHOOK: Lineage: hive2623_parq.kob SCRIPT []
+PREHOOK: query: SELECT CASE WHEN ((kob='BB' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623_parq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive2623_parq
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN ((kob='BB' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623_parq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive2623_parq
+#### A masked pattern was here ####
+1
+1
+0
+PREHOOK: query: DROP TABLE hive2623_parq
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive2623_parq
+PREHOOK: Output: default@hive2623_parq
+POSTHOOK: query: DROP TABLE hive2623_parq
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive2623_parq
+POSTHOOK: Output: default@hive2623_parq
+PREHOOK: query: CREATE EXTERNAL TABLE hive2623_char_parq(kob char(2), enhanced_type_code int) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive2623_char_parq
+POSTHOOK: query: CREATE EXTERNAL TABLE hive2623_char_parq(kob char(2), enhanced_type_code int) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive2623_char_parq
+PREHOOK: query: INSERT INTO hive2623_char_parq VALUES('B ',18),('BC',18),('AB',18)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive2623_char_parq
+POSTHOOK: query: INSERT INTO hive2623_char_parq VALUES('B ',18),('BC',18),('AB',18)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive2623_char_parq
+POSTHOOK: Lineage: hive2623_char_parq.enhanced_type_code SCRIPT []
+POSTHOOK: Lineage: hive2623_char_parq.kob SCRIPT []
+PREHOOK: query: SELECT CASE WHEN ((kob='B ' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623_char_parq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive2623_char_parq
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN ((kob='B ' AND enhanced_type_code='18') OR (kob='BC' AND enhanced_type_code='18')) THEN 1 ELSE 0 END AS logic_check
+FROM hive2623_char_parq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive2623_char_parq
+#### A masked pattern was here ####
+1
+1
+0
+PREHOOK: query: DROP TABLE hive2623_char_parq
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive2623_char_parq
+PREHOOK: Output: default@hive2623_char_parq
+POSTHOOK: query: DROP TABLE hive2623_char_parq
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive2623_char_parq
+POSTHOOK: Output: default@hive2623_char_parq
+PREHOOK: query: CREATE EXTERNAL TABLE hive2623_int_parq(kob int, enhanced_type_code int) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive2623_int_parq
+POSTHOOK: query: CREATE EXTERNAL TABLE hive2623_int_parq(kob int, enhanced_type_code int) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive2623_int_parq
+PREHOOK: query: INSERT INTO hive2623_int_parq VALUES(2,18),(23,18),(12,18)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive2623_int_parq
+POSTHOOK: query: INSERT INTO hive2623_int_parq VALUES(2,18),(23,18),(12,18)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive2623_int_parq
+POSTHOOK: Lineage: hive2623_int_parq.enhanced_type_code SCRIPT []
+POSTHOOK: Lineage: hive2623_int_parq.kob SCRIPT []
+PREHOOK: query: SELECT CASE WHEN ((kob=2 AND enhanced_type_code=18) OR (kob=23  AND enhanced_type_code=18)) THEN 1 ELSE 0 END AS logic_check FROM hive2623_int_parq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive2623_int_parq
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN ((kob=2 AND enhanced_type_code=18) OR (kob=23  AND enhanced_type_code=18)) THEN 1 ELSE 0 END AS logic_check FROM hive2623_int_parq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive2623_int_parq
+#### A masked pattern was here ####
+1
+1
+0
+PREHOOK: query: DROP TABLE hive2623_int_parq
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive2623_int_parq
+PREHOOK: Output: default@hive2623_int_parq
+POSTHOOK: query: DROP TABLE hive2623_int_parq
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive2623_int_parq
+POSTHOOK: Output: default@hive2623_int_parq
