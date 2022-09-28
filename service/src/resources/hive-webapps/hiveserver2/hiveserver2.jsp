@@ -85,15 +85,12 @@ String remoteUser = request.getRemoteUser();
         </div>
       </div>
     </div>
-
-<div class="container">
-    <div class="row inner_header">
-        <div class="page-header">
-            <h1>HiveServer2</h1>
-        </div>
-    </div>
-    <div class="row">
-
+<div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+<div></div>  
 <%
 if (sessionManager != null) { 
   long currentTime = System.currentTimeMillis();
