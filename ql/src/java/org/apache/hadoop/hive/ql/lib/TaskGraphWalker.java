@@ -38,13 +38,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  */
 public class TaskGraphWalker implements SemanticGraphWalker {
 
-
   public class TaskGraphWalkerContext{
-    private final HashMap<Node, Object> reMap;
-
-    public TaskGraphWalkerContext(HashMap<Node, Object> reMap){
-      this.reMap = reMap;
-    }
     public void addToDispatchList(Node dispatchedObj){
       if(dispatchedObj != null) {
         retMap.put(dispatchedObj, null);
@@ -67,7 +61,7 @@ public class TaskGraphWalker implements SemanticGraphWalker {
   public TaskGraphWalker(SemanticDispatcher disp) {
     dispatcher = disp;
     opStack = new Stack<Node>();
-    walkerCtx = new TaskGraphWalkerContext(retMap);
+    walkerCtx = new TaskGraphWalkerContext();
   }
 
   /**
@@ -136,13 +130,14 @@ public class TaskGraphWalker implements SemanticGraphWalker {
    * @throws SemanticException
    */
   public void walk(Node nd) throws SemanticException {
-      if(!(nd instanceof Task)){
+      if (!(nd instanceof Task)){
         throw new SemanticException("Task Graph Walker only walks for Task Graph");
       }
 
       if (getDispatchedList().contains(nd)) {
         return;
       }
+
       if (opStack.empty() || nd != opStack.peek()) {
         opStack.push(nd);
       }
@@ -150,32 +145,14 @@ public class TaskGraphWalker implements SemanticGraphWalker {
       List<Task<?>> nextTaskList = null;
       Set<Task<?>> nextTaskSet = new HashSet<Task<?>>();
       List<Task<?>> taskListInConditionalTask = null;
-
-
-      if(nd instanceof ConditionalTask ){
-        //for conditional task, next task list should return the children tasks of each task, which
-        //is contained in the conditional task.
-        taskListInConditionalTask = ((ConditionalTask) nd).getListTasks();
-        for(Task<?> tsk: taskListInConditionalTask){
-          List<Task<?>> childTask = tsk.getChildTasks();
-          if(childTask != null){
-            nextTaskSet.addAll(tsk.getChildTasks());
-          }
-        }
-        //convert the set into list
-        if(nextTaskSet.size()>0){
-          nextTaskList = new ArrayList<Task<?>>();
-          for(Task<?> tsk:nextTaskSet ){
-            nextTaskList.add(tsk);
-          }
-        }
-      }else{
+      if (nd instanceof ConditionalTask) {
+        nextTaskList = ((ConditionalTask) nd).getListTasks();
+      } else {
         //for other tasks, just return its children tasks
         nextTaskList = ((Task<?>)nd).getChildTasks();
       }
 
-      if ((nextTaskList == null)
-          || getDispatchedList().containsAll(nextTaskList)) {
+      if ((nextTaskList == null) || getDispatchedList().containsAll(nextTaskList)) {
         dispatch(nd, opStack,this.walkerCtx);
         opStack.pop();
         return;
@@ -184,6 +161,5 @@ public class TaskGraphWalker implements SemanticGraphWalker {
       getToWalk().add(0, nd);
       getToWalk().removeAll(nextTaskList);
       getToWalk().addAll(0, nextTaskList);
-
   }
 }

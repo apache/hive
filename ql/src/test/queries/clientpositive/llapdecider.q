@@ -67,4 +67,10 @@ set hive.llap.skip.compile.udf.check=true;
 
 EXPLAIN SELECT sum(cast(test_udf_get_java_string(cast(key as string)) as int) + 1) from src_orc_n2 where cast(key as int) > 1;
 
+set hive.execution.mode=llap;
+set hive.llap.execution.mode=all;
+set hive.merge.tezfiles=true;
+--- LLAP should execute the merge
+EXPLAIN INSERT INTO src_orc_n2 SELECT * FROM src_orc_n2;
+
 set hive.execution.mode=container;
