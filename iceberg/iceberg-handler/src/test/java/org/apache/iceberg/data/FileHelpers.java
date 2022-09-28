@@ -62,7 +62,8 @@ public class FileHelpers {
     FileFormat format = defaultFormat(table.properties());
     FileAppenderFactory<Record> factory = new GenericAppenderFactory(table.schema(), table.spec());
 
-    PositionDeleteWriter<?> writer = factory.newPosDeleteWriter(encrypt(out), format, partition);
+    PositionDeleteWriter<Record> writer =
+        factory.newPosDeleteWriter(encrypt(out), format, partition);
     try (Closeable toClose = writer) {
       for (Pair<CharSequence, Long> delete : deletes) {
         PositionDelete<Record> posDelete = PositionDelete.create();
