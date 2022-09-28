@@ -46,12 +46,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@scr_txn_2
 PREHOOK: query: alter table scr_txn compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@scr_txn
+PREHOOK: Output: default@scr_txn
 POSTHOOK: query: alter table scr_txn compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@scr_txn
+POSTHOOK: Output: default@scr_txn
 PREHOOK: query: alter table scr_txn_2 compact 'minor'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@scr_txn_2
+PREHOOK: Output: default@scr_txn_2
 POSTHOOK: query: alter table scr_txn_2 compact 'minor'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@scr_txn_2
+POSTHOOK: Output: default@scr_txn_2
 PREHOOK: query: CREATE TEMPORARY TABLE src_tmp (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

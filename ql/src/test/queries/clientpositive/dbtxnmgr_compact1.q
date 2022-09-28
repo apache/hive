@@ -13,7 +13,7 @@ alter table T1_n153 compact 'major';
 
 alter table T2_n153 compact 'minor';
 
-explain alter table t compact 'MAJOR' pool 'test';
+explain alter table T1_n153 compact 'MAJOR' pool 'test';
 
 show compactions;
 

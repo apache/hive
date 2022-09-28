@@ -22,6 +22,9 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -30,7 +33,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * commands.
  */
 @Explain(displayName = "Compact", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableCompactDesc implements DDLDescWithWriteId {
+public class AlterTableCompactDesc extends AbstractAlterTableDesc implements DDLDescWithWriteId {
   private final String tableName;
   private final Map<String, String> partitionSpec;
   private final String compactionType;
@@ -40,7 +43,8 @@ public class AlterTableCompactDesc implements DDLDescWithWriteId {
   private Long writeId;
 
   public AlterTableCompactDesc(TableName tableName, Map<String, String> partitionSpec, String compactionType,
-      boolean isBlocking, String poolName, Map<String, String> properties) {
+      boolean isBlocking, String poolName, Map<String, String> properties) throws SemanticException{
+    super(AlterTableType.COMPACT, tableName, partitionSpec, null, false, false, properties);
     this.tableName = tableName.getNotEmptyDbTable();
     this.partitionSpec = partitionSpec;
     this.compactionType = compactionType;
