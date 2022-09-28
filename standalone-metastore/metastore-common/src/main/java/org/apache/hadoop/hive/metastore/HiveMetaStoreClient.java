@@ -1861,6 +1861,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public List<Partition> dropPartitions(String catName, String dbName, String tblName,
+      String[] partNames,
+      PartitionDropOptions options) throws TException {
+    RequestPartsSpec rps = new RequestPartsSpec();
+    rps.setNames(Arrays.asList(partNames));
+    return dropPartitions(catName, dbName, tblName, rps, options);
+  }
+
+  @Override
+  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
                                         List<Pair<Integer, byte[]>> partExprs,
                                         PartitionDropOptions options) throws TException {
     RequestPartsSpec rps = new RequestPartsSpec();
@@ -1872,6 +1881,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       exprs.add(dpe);
     }
     rps.setExprs(exprs);
+    return dropPartitions(catName, dbName, tblName, rps, options);
+  }
+
+  private List<Partition> dropPartitions(String catName, String dbName, String tblName,
+      RequestPartsSpec rps, PartitionDropOptions options)
+      throws TException {
     DropPartitionsRequest req = new DropPartitionsRequest(dbName, tblName, rps);
     req.setCatName(catName);
     req.setDeleteData(options.deleteData);

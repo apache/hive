@@ -129,9 +129,10 @@ public class Msck {
     String qualifiedTableName = null;
     boolean success = false;
     long txnId = -1;
-    long partitionExpirySeconds = msckInfo.getPartitionExpirySeconds();
+    long partitionExpirySeconds = -1;
     try {
       Table table = getMsc().getTable(msckInfo.getCatalogName(), msckInfo.getDbName(), msckInfo.getTableName());
+      partitionExpirySeconds = PartitionManagementTask.getRetentionPeriodInSeconds(table);
       qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
       HiveMetaStoreChecker checker = new HiveMetaStoreChecker(getMsc(), getConf(), partitionExpirySeconds);
       // checkMetastore call will fill in result with partitions that are present in filesystem
@@ -533,7 +534,7 @@ public class Msck {
     if (expiredPartitions != null && !expiredPartitions.isEmpty()) {
       batchWork.addAll(expiredPartitions);
     }
-    PartitionDropOptions dropOptions = new PartitionDropOptions().deleteData(deleteData).ifExists(true);
+    PartitionDropOptions dropOptions = new PartitionDropOptions().deleteData(deleteData).ifExists(true).returnResults(false);
     new RetryUtilities.ExponentiallyDecayingBatchWork<Void>(batchSize, decayingFactor, maxRetries) {
       @Override
       public Void execute(int size) throws MetastoreException {
@@ -572,8 +573,8 @@ public class Msck {
             // so 3rd parameter (deleteData) is set to false
             // msck is doing a clean up of hms.  if for some reason the partition is already
             // deleted, then it is good.  So, the last parameter ifexists is set to true
-            List<Pair<Integer, byte[]>> partExprs = getPartitionExpr(dropParts);
-            metastoreClient.dropPartitions(table.getCatName(), table.getDbName(), table.getTableName(), partExprs, dropOptions);
+            metastoreClient.dropPartitions(table.getCatName(), table.getDbName(), table.getTableName(),
+                dropParts.toArray(new String[0]), dropOptions);
 
             // if last batch is successful remove it from partsNotInFs
             batchWork.removeAll(lastBatch);

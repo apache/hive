@@ -1464,6 +1464,30 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   }
 
   @Override
+  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
+      String[] partNames, PartitionDropOptions options) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      return super.dropPartitions(catName, dbName, tblName, partNames, options);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    List<Partition> result = new ArrayList<>();
+    List<Partition> partitions = tt.getPartitionsByNames(Arrays.asList(partNames));;
+    for (Partition p : partitions) {
+      Partition droppedPartition = tt.dropPartition(p.getValues());
+      if (droppedPartition != null) {
+        result.add(droppedPartition);
+        boolean purgeData = options != null ? options.purgeData : true;
+        boolean deleteData = options != null ? options.deleteData : true;
+        if (deleteData && !tt.isExternal()) {
+          deletePartitionLocation(droppedPartition, purgeData);
+        }
+      }
+    }
+    return result;
+  }
+
+  @Override
   public Partition exchange_partition(Map<String, String> partitionSpecs, String sourceCatName,
       String sourceDbName, String sourceTableName, String destCatName, String destDbName, String destTableName)
       throws TException {

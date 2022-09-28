@@ -283,7 +283,9 @@ public class ExpressionTree {
 
     private void generateJDOFilterOverTables(Map<String, Object> params,
         FilterBuilder filterBuilder) throws MetaException {
-      if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_OWNER)) {
+      if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_NAME)) {
+        keyName = "this.tableName";
+      } else if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_OWNER)) {
         keyName = "this.owner";
       } else if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_LAST_ACCESS)) {
         //lastAccessTime expects an integer, so we cannot use the "like operator"
@@ -299,6 +301,15 @@ public class ExpressionTree {
           return;
         }
         String paramKeyName = keyName.substring(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS.length());
+        // dot in parameter is not supported when parsing the tree.
+        if ("discover__partitions".equals(paramKeyName)) {
+          paramKeyName = "discover.partitions";
+        } else if ("EXTERNAL".equals(paramKeyName)
+            && "NULL".equalsIgnoreCase(value.toString())
+            && (operator == Operator.LIKE || operator == Operator.EQUALS)) {
+          filterBuilder.append( " !this.parameters.containsKey(\"" + paramKeyName + "\") ");
+          return;
+        }
         keyName = "this.parameters.get(\"" + paramKeyName + "\")";
         //value is persisted as a string in the db, so make sure it's a string here
         // in case we get a long.
