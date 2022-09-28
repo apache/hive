@@ -4517,22 +4517,21 @@ public class Vectorizer implements PhysicalPlanResolver {
           vContext.getVectorExpression(
               exprNodeDesc, VectorExpressionDescriptor.Mode.PROJECTION);
       if (inputExpression == null) {
-        String issue ="Parameter expression " + exprNodeDesc.toString() + " not supported " +
-            aggregationName + "(" + parameterList.toString() + ")";
-        return new ImmutablePair<VectorAggregationDesc,String>(null, issue);
+        String issue ="Parameter expression " + exprNodeDesc + " not supported " +
+            aggregationName + "(" + parameterList + ")";
+        return new ImmutablePair<>(null, issue);
       }
       if (inputExpression.getOutputTypeInfo() == null) {
-        String issue ="Parameter expression " + exprNodeDesc.toString() + " with null type not supported " +
-            aggregationName + "(" + parameterList.toString() + ")";
-        return new ImmutablePair<VectorAggregationDesc,String>(null, issue);
+        String issue ="Parameter expression " + exprNodeDesc + " with null type not supported " +
+            aggregationName + "(" + parameterList + ")";
+        return new ImmutablePair<>(null, issue);
       }
       inputColVectorType = inputExpression.getOutputColumnVectorType();
     } else {
-
       // No multi-parameter aggregations supported.
       String issue ="Aggregations with > 1 parameter are not supported " +
-          aggregationName + "(" + parameterList.toString() + ")";
-      return new ImmutablePair<VectorAggregationDesc,String>(null, issue);
+          aggregationName + "(" + parameterList + ")";
+      return new ImmutablePair<>(null, issue);
     }
 
 
