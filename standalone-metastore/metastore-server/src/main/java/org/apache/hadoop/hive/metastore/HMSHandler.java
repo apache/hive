@@ -5708,7 +5708,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     GetPartitionsResponse response = null;
     Exception ex = null;
     try {
-      Table table = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
+      Table table = get_table_core(catName, parsedDbName[DB_NAME], tableName);
       List<Partition> partitions = getMS()
           .getPartitionSpecsByFilterAndProjection(table, request.getProjectionSpec(),
               request.getFilterSpec());

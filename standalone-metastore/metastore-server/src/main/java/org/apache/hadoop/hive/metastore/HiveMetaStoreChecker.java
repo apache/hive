@@ -29,12 +29,14 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPar
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionListByFilterExp;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionName;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionColtoTypeMap;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionsByProjectSpec;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPath;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isPartitioned;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -58,12 +60,16 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionProjectionsSpecBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -264,12 +270,17 @@ public class HiveMetaStoreChecker {
             MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DEFAULTPARTITIONNAME), results);
         parts = new PartitionIterable(results);
       } else {
+        GetPartitionsRequest request = new GetPartitionsRequest(table.getDbName(), table.getTableName(),
+            null, null);
+        request.setProjectionSpec(new GetPartitionProjectionsSpecBuilder().addProjectField("sd.location")
+            .addProjectField("createTime").addProjectField("tableName")
+            .addProjectField("values").build());
+        request.setCatName(table.getCatName());
         int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
         if (batchSize > 0) {
-          parts = new PartitionIterable(getMsc(), table, batchSize);
+          parts = new PartitionIterable(getMsc(), table, batchSize).withProjectSpec(request);
         } else {
-          List<Partition> loadedPartitions = getAllPartitionsOf(getMsc(), table);
-          parts = new PartitionIterable(loadedPartitions);
+          parts = new PartitionIterable(getPartitionsByProjectSpec(msc, request));
         }
       }
     } else {
@@ -383,8 +394,8 @@ public class HiveMetaStoreChecker {
           pr.setTableName(partition.getTableName());
           result.getExpiredPartitions().add(pr);
           if (LOG.isDebugEnabled()) {
-            LOG.debug("{}.{}.{}.{} expired. createdAt: {} current: {} age: {}s expiry: {}s", partition.getCatName(),
-                partition.getDbName(), partition.getTableName(), pr.getPartitionName(), createdTime, currentEpochSecs,
+            LOG.debug("{}.{}.{}.{} expired. createdAt: {} current: {} age: {}s expiry: {}s", table.getCatName(),
+                table.getDbName(), partition.getTableName(), pr.getPartitionName(), createdTime, currentEpochSecs,
                 partitionAgeSeconds, partitionExpirySeconds);
           }
         }
