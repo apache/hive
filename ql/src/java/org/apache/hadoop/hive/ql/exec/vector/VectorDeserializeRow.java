@@ -1061,8 +1061,8 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     @Override
     void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef)
             throws IOException {
-      if (field.getDataTypePhysicalVariation() == DataTypePhysicalVariation.DECIMAL_64) {
-        ((Decimal64ColumnVector) colVector).vector[batchIndex] = deserializeRead.currentDecimal64;
+      if (colVector instanceof Decimal64ColumnVector) {
+        ((Decimal64ColumnVector) colVector).set(batchIndex, deserializeRead.currentHiveDecimalWritable);
       } else {
         // The DecimalColumnVector set method will quickly copy the deserialized decimal writable fields.
         ((DecimalColumnVector) colVector).set(
