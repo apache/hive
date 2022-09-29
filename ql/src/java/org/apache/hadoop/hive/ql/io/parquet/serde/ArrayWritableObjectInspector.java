@@ -91,7 +91,7 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     }
   }
 
-  protected ObjectInspector getObjectInspector(
+  private ObjectInspector getObjectInspector(
       TypeInfo typeInfo, TypeInfo prunedTypeInfo) {
     if (typeInfo.equals(TypeInfoFactory.doubleTypeInfo)) {
       return PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
