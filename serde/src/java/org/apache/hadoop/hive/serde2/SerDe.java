@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.serde2;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+
 /**
  * A Hive Serializer/Deserializer.
  */
@@ -29,4 +31,8 @@ public interface SerDe {
    * @return {@link SerDeStats} object; or in case not supported: null
    */
   SerDeStats getSerDeStats();
+
+  default void handleJobLevelConfigurations(HiveConf conf) {
+    // Do nothing
+  }
 }
