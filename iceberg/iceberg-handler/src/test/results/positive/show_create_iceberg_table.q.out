@@ -31,8 +31,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
   'engine.hive.enabled'='true', 
+  'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
-  'orc.files.only'='false', 
   'serialization.format'='1', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
@@ -81,8 +81,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
   'engine.hive.enabled'='true', 
+  'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
-  'orc.files.only'='false', 
   'serialization.format'='1', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
@@ -132,8 +132,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
   'engine.hive.enabled'='true', 
+  'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
-  'orc.files.only'='false', 
   'serialization.format'='1', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
@@ -171,8 +171,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
   'engine.hive.enabled'='true', 
+  'iceberg.orc.files.only'='false', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
-  'orc.files.only'='false', 
   'serialization.format'='1', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
