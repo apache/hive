@@ -120,7 +120,7 @@ public class ParquetHiveSerDe extends AbstractSerDe implements SchemaInference {
       if (needsConversion(keyTypeInfo)) {
         return true;
       }
-      TypeInfo valueTypeInfo = ((MapTypeInfo) type).getMapKeyTypeInfo();
+      TypeInfo valueTypeInfo = ((MapTypeInfo) type).getMapValueTypeInfo();
       if (needsConversion(valueTypeInfo)) {
         return true;
       }
