@@ -36,12 +36,16 @@ import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriteSupport;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -481,13 +485,31 @@ public enum ETypeConverter {
   },
   ESTRING_CONVERTER(String.class) {
     @Override
-    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent,
+                                    TypeInfo hiveTypeInfo) {
+      String typeName = hiveTypeInfo.getTypeName().toLowerCase();
+      if (typeName.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
+        return new BinaryConverter<HiveCharWritable>(type, parent, index) {
+          @Override
+          protected HiveCharWritable convert(Binary binary) {
+            return new HiveCharWritable(binary.getBytes(), ((CharTypeInfo) hiveTypeInfo).getLength());
+          }
+        };
+      } else if (typeName.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
+        return new BinaryConverter<HiveVarcharWritable>(type, parent, index) {
+          @Override
+          protected HiveVarcharWritable convert(Binary binary) {
+            return new HiveVarcharWritable(binary.getBytes(), ((VarcharTypeInfo) hiveTypeInfo).getLength());
+          }
+        };
+      }
+      // STRING type
       return new BinaryConverter<Text>(type, parent, index) {
-        @Override
-        protected Text convert(Binary binary) {
-          return new Text(binary.getBytes());
-        }
-      };
+          @Override
+          protected Text convert(Binary binary) {
+            return new Text(binary.getBytes());
+          }
+        };
     }
   },
   EDECIMAL_CONVERTER(BigDecimal.class) {
