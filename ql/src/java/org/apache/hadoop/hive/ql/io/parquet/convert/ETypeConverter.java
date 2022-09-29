@@ -486,30 +486,36 @@ public enum ETypeConverter {
   ESTRING_CONVERTER(String.class) {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent,
-                                    TypeInfo hiveTypeInfo) {
-      String typeName = hiveTypeInfo.getTypeName().toLowerCase();
-      if (typeName.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
-        return new BinaryConverter<HiveCharWritable>(type, parent, index) {
-          @Override
-          protected HiveCharWritable convert(Binary binary) {
-            return new HiveCharWritable(binary.getBytes(), ((CharTypeInfo) hiveTypeInfo).getLength());
-          }
-        };
-      } else if (typeName.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
-        return new BinaryConverter<HiveVarcharWritable>(type, parent, index) {
-          @Override
-          protected HiveVarcharWritable convert(Binary binary) {
-            return new HiveVarcharWritable(binary.getBytes(), ((VarcharTypeInfo) hiveTypeInfo).getLength());
-          }
-        };
+        TypeInfo hiveTypeInfo) {
+      // If we have type information, we should return properly typed strings. However, there are a variety
+      // of code paths that do not provide the typeInfo in those cases we default to Text. This idiom is also
+      // followed by for example the BigDecimal converter in which if there is no type information,
+      // it defaults to the widest representation
+      if (hiveTypeInfo != null) {
+        String typeName = hiveTypeInfo.getTypeName().toLowerCase();
+        if (typeName.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
+          return new BinaryConverter<HiveCharWritable>(type, parent, index) {
+            @Override
+              protected HiveCharWritable convert(Binary binary) {
+                return new HiveCharWritable(binary.getBytes(), ((CharTypeInfo) hiveTypeInfo).getLength());
+              }
+          };
+        } else if (typeName.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
+          return new BinaryConverter<HiveVarcharWritable>(type, parent, index) {
+            @Override
+              protected HiveVarcharWritable convert(Binary binary) {
+                return new HiveVarcharWritable(binary.getBytes(), ((VarcharTypeInfo) hiveTypeInfo).getLength());
+              }
+          };
+        }
       }
       // STRING type
       return new BinaryConverter<Text>(type, parent, index) {
-          @Override
+        @Override
           protected Text convert(Binary binary) {
             return new Text(binary.getBytes());
           }
-        };
+      };
     }
   },
   EDECIMAL_CONVERTER(BigDecimal.class) {
