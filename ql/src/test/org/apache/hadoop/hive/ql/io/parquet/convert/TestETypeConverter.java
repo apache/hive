@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
+import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory.stringTypeInfo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -30,8 +31,11 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.io.parquet.convert.ETypeConverter.BinaryConverter;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -212,23 +216,59 @@ public class TestETypeConverter {
   }
 
   @Test
-  public void testGetTextConverter() throws Exception {
+  public void testGetTextConverterForString() throws Exception {
     PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.BINARY)
-        .as(LogicalTypeAnnotation.stringType()).named("value");
-    Writable writable = getWritableFromBinaryConverter(new VarcharTypeInfo(), primitiveType,
-        Binary.fromString("this_is_a_value"));
-    Text textWritable = (Text) writable;
-    assertEquals("this_is_a_value", textWritable.toString());
+            .as(LogicalTypeAnnotation.stringType()).named("value");
+    String value = "this_is_a_value";
+    Text textWritable = (Text) getWritableFromBinaryConverter(stringTypeInfo, primitiveType,
+            Binary.fromString(value));
+    // we should get what we put in
+    assertEquals(value, textWritable.toString());
+  }
+
+  @Test
+  public void testGetTextConverterForChar() throws Exception {
+    PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.BINARY)
+            .as(LogicalTypeAnnotation.stringType()).named("value");
+    String value = "this_is_a_value";
+
+    HiveCharWritable textWritable = (HiveCharWritable) getWritableFromBinaryConverter(
+            new CharTypeInfo(value.length() + 2), primitiveType, Binary.fromString(value));
+    // check that it enforces the length (it should be padded)
+    assertEquals(value + "  ", textWritable.toString());
+
+    textWritable = (HiveCharWritable) getWritableFromBinaryConverter(
+            new CharTypeInfo(6), primitiveType, Binary.fromString(value));
+    // check that it enforces the length (it should truncate)
+    assertEquals(value.substring(0, 6), textWritable.toString());
+  }
+
+  @Test
+  public void testGetTextConverterForVarchar() throws Exception {
+    PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.BINARY)
+            .as(LogicalTypeAnnotation.stringType()).named("value");
+    String value = "this_is_a_value";
+
+    HiveVarcharWritable textWritable = (HiveVarcharWritable) getWritableFromBinaryConverter(
+            new VarcharTypeInfo(6), primitiveType, Binary.fromString(value));
+    // check that it enforces the length (it should truncate)
+    assertEquals(value.substring(0, 6), textWritable.toString());
+
+    textWritable = (HiveVarcharWritable) getWritableFromBinaryConverter(
+            new VarcharTypeInfo(34), primitiveType, Binary.fromString(value));
+    // check that it does not pad
+    assertEquals(value, textWritable.toString());
   }
 
   @Test
   public void testGetTextConverterNoHiveTypeInfo() throws Exception {
     PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.BINARY)
         .as(LogicalTypeAnnotation.stringType()).named("value");
-    Writable writable =
-        getWritableFromBinaryConverter(null, primitiveType, Binary.fromString("this_is_a_value"));
-    Text textWritable = (Text) writable;
-    assertEquals("this_is_a_value", textWritable.toString());
+    String value = "this_is_a_value";
+
+    Text textWritable = (Text) getWritableFromBinaryConverter(null, primitiveType, Binary.fromString(value));
+    // we should get what we put in
+    assertEquals(value, textWritable.toString());
   }
 
   @Test
