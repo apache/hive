@@ -54,8 +54,6 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
 
     LOG.debug("Translating operator rel#{}:{} with row type: [{}]",
             valuesRel.getId(), valuesRel.getRelTypeName(), valuesRel.getRowType());
-    LOG.debug("Operator rel#{}:{} has {} tuples.",
-            valuesRel.getId(), valuesRel.getRelTypeName(), valuesRel.tuples.size());
 
     if (!Values.isEmpty(valuesRel)) {
       LOG.error("Empty {} operator translation not supported yet in return path.",
