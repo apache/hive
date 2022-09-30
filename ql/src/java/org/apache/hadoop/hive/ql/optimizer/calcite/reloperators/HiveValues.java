@@ -41,10 +41,6 @@ public class HiveValues extends Values {
 
   @Override
   public RelNode copy(RelTraitSet traitSet, List<RelNode> inputs) {
-    if (getInputs().equals(inputs) && traitSet.equals(getTraitSet())) {
-      return this;
-    }
-
     return new HiveValues(getCluster(), getRowType(), tuples, getTraitSet());
   }
 }
