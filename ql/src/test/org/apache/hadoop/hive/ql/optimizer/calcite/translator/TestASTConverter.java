@@ -24,6 +24,7 @@ import org.apache.calcite.rel.type.RelDataTypeFieldImpl;
 import org.apache.calcite.rel.type.RelRecordType;
 import org.apache.calcite.sql.type.ArraySqlType;
 import org.apache.calcite.sql.type.BasicSqlType;
+import org.apache.calcite.sql.type.MapSqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -34,6 +35,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.emptyPlan;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -54,9 +56,7 @@ class TestASTConverter {
     List<RelDataTypeField> fields = asList(
             new RelDataTypeFieldImpl("a", 0, new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.INTEGER)),
             new RelDataTypeFieldImpl("b", 1, new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.CHAR, 30)),
-            new RelDataTypeFieldImpl("c", 2, new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.NULL)),
-            new RelDataTypeFieldImpl("d", 3, new ArraySqlType(new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.INTEGER), false)),
-            new RelDataTypeFieldImpl("e", 4, new ArraySqlType(new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.INTEGER), true)));
+            new RelDataTypeFieldImpl("c", 2, new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.NULL)));
     RelDataType dataType = new RelRecordType(fields);
 
     ASTNode tree = emptyPlan(dataType);
@@ -88,17 +88,31 @@ class TestASTConverter {
           "         TOK_SELEXPR\n" +
           "            TOK_NULL\n" +
           "            c\n" +
-          "         TOK_SELEXPR\n" +
-          "            TOK_FUNCTION\n" +
-          "               array\n" +
-          "               TOK_NULL\n" +
-          "            d\n" +
-          "         TOK_SELEXPR\n" +
-          "            TOK_FUNCTION\n" +
-          "               array\n" +
-          "               TOK_NULL\n" +
-          "            e\n" +
           "      TOK_LIMIT\n" +
           "         0\n" +
           "         0\n";
+
+  @Test
+  void testEmptyPlanWithComplexTypes() {
+    List<RelDataTypeField> nestedStructFields = asList(
+            new RelDataTypeFieldImpl("nf1", 0, new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.INTEGER)),
+            new RelDataTypeFieldImpl("nf2", 1, new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.CHAR, 30)));
+
+    List<RelDataTypeField> structFields = asList(
+            new RelDataTypeFieldImpl("f1", 0, new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.INTEGER)),
+            new RelDataTypeFieldImpl("farray", 1,
+                    new ArraySqlType(new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.INTEGER), true)),
+            new RelDataTypeFieldImpl("fmap", 2, new MapSqlType(
+                    new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.INTEGER),
+                    new BasicSqlType(new HiveTypeSystemImpl(), SqlTypeName.INTEGER), true)),
+            new RelDataTypeFieldImpl("fstruct", 3,
+                    new RelRecordType(nestedStructFields)));
+
+    List<RelDataTypeField> fields = singletonList(new RelDataTypeFieldImpl("a", 0, new RelRecordType(structFields)));
+    RelDataType dataType = new RelRecordType(fields);
+
+    ASTNode tree = emptyPlan(dataType);
+    System.out.println(tree.dump());
+  }
+
 }

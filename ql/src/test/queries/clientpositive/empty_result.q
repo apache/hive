@@ -1,6 +1,6 @@
 set hive.cli.print.header=true;
 
-create table t1 (a1 int, b1 int);
+create table t1 (a1 int, b1 int, c1 struct<f1:string, f2:string, f3:string>);
 create table t2 (a2 int, b2 int);
 
 explain cbo
@@ -31,3 +31,6 @@ explain cbo
 select count(a1) from t1 where 1=0 group by a1 order by a1;
 explain
 select count(a1) from t1 where 1=0 group by a1 order by a1;
+
+explain cbo
+select min(c1) from t1 where false;

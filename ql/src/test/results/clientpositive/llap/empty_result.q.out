@@ -1,8 +1,8 @@
-PREHOOK: query: create table t1 (a1 int, b1 int)
+PREHOOK: query: create table t1 (a1 int, b1 int, c1 struct<f1:string, f2:string, f3:string>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 (a1 int, b1 int)
+POSTHOOK: query: create table t1 (a1 int, b1 int, c1 struct<f1:string, f2:string, f3:string>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
@@ -184,4 +184,21 @@ STAGE PLANS:
       limit: 0
       Processor Tree:
         ListSink
+
+PREHOOK: query: explain cbo
+select min(c1) from t1 where false
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select min(c1) from t1 where false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[min($0)])
+  HiveValues(tuples=[[]])
 

@@ -155,18 +155,9 @@ public class ASTConverter {
     ASTBuilder select = ASTBuilder.construct(HiveParser.TOK_SELECT, "TOK_SELECT");
     for (int i = 0; i < dataType.getFieldCount(); ++i) {
       RelDataTypeField fieldType = dataType.getFieldList().get(i);
-      if (fieldType.getValue().getSqlTypeName() == SqlTypeName.NULL) {
-        select.add(ASTBuilder.selectExpr(
-                ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node(),
-                fieldType.getName()));
-      } else {
-        ASTNode typeNode = createCast(fieldType);
-        select.add(ASTBuilder.selectExpr(
-                ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION")
-                        .add(typeNode)
-                        .add(ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node()).node(),
-                fieldType.getName()));
-      }
+      select.add(ASTBuilder.selectExpr(
+              createNullField(fieldType.getType()),
+              fieldType.getName()));
     }
 
     ASTNode insert = ASTBuilder.
@@ -182,12 +173,38 @@ public class ASTConverter {
             node();
   }
 
-  private static ASTNode createCast(RelDataTypeField fieldType) {
-    HiveToken ht = TypeConverter.hiveToken(fieldType.getType());
+  private static ASTNode createNullField(RelDataType fieldType) {
+    if (fieldType.getSqlTypeName() == SqlTypeName.NULL) {
+      return ASTBuilder.construct(HiveParser.TOK_NULL, "TOK_NULL").node();
+    }
+
+    if (fieldType.getSqlTypeName() == SqlTypeName.ROW) {
+      ASTBuilder namedStructCallNode = ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
+      namedStructCallNode.add(HiveParser.Identifier, "named_struct");
+      for (RelDataTypeField structFieldType : fieldType.getFieldList()) {
+        namedStructCallNode.add(HiveParser.Identifier, structFieldType.getName());
+        namedStructCallNode.add(createNullField(structFieldType.getType()));
+      }
+      return namedStructCallNode.node();
+    }
+
+    if (fieldType.getSqlTypeName() == SqlTypeName.MAP) {
+      ASTBuilder mapCallNode = ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
+      mapCallNode.add(HiveParser.Identifier, "map");
+      mapCallNode.add(createNullField(fieldType.getKeyType()));
+      mapCallNode.add(createNullField(fieldType.getValueType()));
+      return mapCallNode.node();
+    }
+
+    return createCastNull(fieldType);
+  }
+
+  private static ASTNode createCastNull(RelDataType fieldType) {
+    HiveToken ht = TypeConverter.hiveToken(fieldType);
     ASTNode typeNode;
     if (ht == null) {
       typeNode = ASTBuilder.construct(
-              HiveParser.Identifier, fieldType.getType().getSqlTypeName().getName().toLowerCase()).node();
+              HiveParser.Identifier, fieldType.getSqlTypeName().getName().toLowerCase()).node();
     } else {
       ASTBuilder typeNodeBuilder = ASTBuilder.construct(ht.type, ht.text);
       if (ht.args != null) {
@@ -197,7 +214,10 @@ public class ASTConverter {
       }
       typeNode = typeNodeBuilder.node();
     }
-    return typeNode;
+    return ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION")
+            .add(typeNode)
+            .add(HiveParser.TOK_NULL, "TOK_NULL")
+            .node();
   }
 
   private ASTNode convert() throws CalciteSemanticException {
