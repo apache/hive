@@ -222,52 +222,54 @@ public class TestETypeConverter {
     String value = "this_is_a_value";
     Text textWritable = (Text) getWritableFromBinaryConverter(stringTypeInfo, primitiveType,
             Binary.fromString(value));
-    // we should get what we put in
     assertEquals(value, textWritable.toString());
   }
 
   @Test
-  public void testGetTextConverterForChar() throws Exception {
+  public void testGetTextConverterForCharPadsValueWithSpacesTillLen() {
     PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.BINARY)
             .as(LogicalTypeAnnotation.stringType()).named("value");
     String value = "this_is_a_value";
-
     HiveCharWritable textWritable = (HiveCharWritable) getWritableFromBinaryConverter(
             new CharTypeInfo(value.length() + 2), primitiveType, Binary.fromString(value));
-    // check that it enforces the length (it should be padded)
     assertEquals(value + "  ", textWritable.toString());
+  }
 
-    textWritable = (HiveCharWritable) getWritableFromBinaryConverter(
+  public void testGetTextConverterForCharTruncatesValueExceedingLen() {
+    PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.BINARY)
+            .as(LogicalTypeAnnotation.stringType()).named("value");
+    String value = "this_is_a_value";
+    HiveCharWritable textWritable = (HiveCharWritable) getWritableFromBinaryConverter(
             new CharTypeInfo(6), primitiveType, Binary.fromString(value));
-    // check that it enforces the length (it should truncate)
     assertEquals(value.substring(0, 6), textWritable.toString());
   }
 
   @Test
-  public void testGetTextConverterForVarchar() throws Exception {
+  public void testGetTextConverterForVarcharTruncatesValueExceedingLen() {
     PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.BINARY)
             .as(LogicalTypeAnnotation.stringType()).named("value");
     String value = "this_is_a_value";
-
     HiveVarcharWritable textWritable = (HiveVarcharWritable) getWritableFromBinaryConverter(
             new VarcharTypeInfo(6), primitiveType, Binary.fromString(value));
-    // check that it enforces the length (it should truncate)
     assertEquals(value.substring(0, 6), textWritable.toString());
+  }
 
-    textWritable = (HiveVarcharWritable) getWritableFromBinaryConverter(
+  @Test
+  public void testGetTextConverterForVarchar() {
+    PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.BINARY)
+            .as(LogicalTypeAnnotation.stringType()).named("value");
+    String value = "this_is_a_value";
+    HiveVarcharWritable textWritable = (HiveVarcharWritable) getWritableFromBinaryConverter(
             new VarcharTypeInfo(34), primitiveType, Binary.fromString(value));
-    // check that it does not pad
     assertEquals(value, textWritable.toString());
   }
 
   @Test
-  public void testGetTextConverterNoHiveTypeInfo() throws Exception {
+  public void testGetTextConverterNoHiveTypeInfo() {
     PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.BINARY)
         .as(LogicalTypeAnnotation.stringType()).named("value");
     String value = "this_is_a_value";
-
     Text textWritable = (Text) getWritableFromBinaryConverter(null, primitiveType, Binary.fromString(value));
-    // we should get what we put in
     assertEquals(value, textWritable.toString());
   }
 

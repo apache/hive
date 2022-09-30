@@ -36,7 +36,11 @@ public class HiveVarcharWritable extends HiveBaseCharWritable
   }
 
   public HiveVarcharWritable(byte[] bytes, int maxLength) {
-    super(bytes);
+    set(bytes, maxLength);
+  }
+
+  public void set(byte[]  bytes, int maxLength) {
+    value.set(bytes);
     enforceMaxLength(maxLength);
   }
 

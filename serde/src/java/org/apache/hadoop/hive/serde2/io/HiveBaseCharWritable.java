@@ -26,19 +26,10 @@ import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.HiveStringUtils;
 
 public abstract class HiveBaseCharWritable {
-  protected Text value;
+  protected Text value = new Text();
   protected int charLength = -1;
 
   public HiveBaseCharWritable() {
-    value = new Text();
-  }
-
-  public HiveBaseCharWritable(Text text) {
-    value = text;
-  }
-
-  public HiveBaseCharWritable(byte[] bytes) {
-    value = new Text(bytes);
   }
 
   public int getCharacterLength() {
