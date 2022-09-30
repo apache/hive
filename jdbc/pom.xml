@@ -218,6 +218,7 @@
                       <exclude>antlr:*</exclude>
                       <exclude>aopalliance:*</exclude>
                       <exclude>asm:*</exclude>
+                      <exclude>ch.qos.reload4j:*</exclude>
                       <exclude>com.fasterxml.jackson.core:*</exclude>
                       <exclude>com.google.code.gson:*</exclude>
                       <exclude>com.google.inject:*</exclude>

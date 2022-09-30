@@ -1518,6 +1518,7 @@
                     <!-- Move to SLF4J -->
                     <exclude>commons-logging:commons-logging</exclude>
                     <exclude>log4j:log4j</exclude>
+                    <exclude>ch.qos.reload4j:reload4j</exclude>
                   </excludes>
                   <searchTransitive>false</searchTransitive>
                   <message>A banned logging dependency was found!</message>
