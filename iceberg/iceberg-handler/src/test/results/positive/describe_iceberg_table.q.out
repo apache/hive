@@ -69,6 +69,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
+	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
@@ -122,6 +123,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
+	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
@@ -176,6 +178,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
+	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
@@ -218,6 +221,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
+	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
 	numRows             	0                   
