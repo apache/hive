@@ -235,6 +235,7 @@ public class TestETypeConverter {
     assertEquals(value + "  ", textWritable.toString());
   }
 
+  @Test
   public void testGetTextConverterForCharTruncatesValueExceedingLen() {
     PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.BINARY)
             .as(LogicalTypeAnnotation.stringType()).named("value");

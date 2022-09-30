@@ -56,11 +56,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@hive26230_parq_in
 POSTHOOK: Lineage: hive26230_parq_in.code SCRIPT []
 POSTHOOK: Lineage: hive26230_parq_in.kob SCRIPT []
-PREHOOK: query: SELECT (kob, code) IN (('BB', 18), ('BC', 18)) FROM hive26230_parq_in
+PREHOOK: query: SELECT (kob, code) IN ((cast('BB' as varchar(2)), 18), (cast('BC' as varchar(2)), 18)) FROM hive26230_parq_in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive26230_parq_in
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT (kob, code) IN (('BB', 18), ('BC', 18)) FROM hive26230_parq_in
+POSTHOOK: query: SELECT (kob, code) IN ((cast('BB' as varchar(2)), 18), (cast('BC' as varchar(2)), 18)) FROM hive26230_parq_in
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive26230_parq_in
 #### A masked pattern was here ####
