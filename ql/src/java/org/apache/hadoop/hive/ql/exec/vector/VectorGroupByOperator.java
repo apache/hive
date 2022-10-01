@@ -25,12 +25,14 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
@@ -48,7 +50,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFBloomFilterMerge;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperGeneral;
@@ -84,6 +85,19 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
   private static final Logger LOG = LoggerFactory.getLogger(
       VectorGroupByOperator.class.getName());
+
+  private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_TO_CLASS = new ImmutableMap.Builder<String, Class<?>>()
+      .put("int", Integer.TYPE)
+      .put("long", Long.TYPE)
+      .put("double", Double.TYPE)
+      .put("float", Float.TYPE)
+      .put("bool", Boolean.TYPE)
+      .put("char", Character.TYPE)
+      .put("byte", Byte.TYPE)
+      .put("void", Void.TYPE)
+      .put("short", Short.TYPE)
+      .put("string", String.class)
+      .build();
 
   private VectorizationContext vContext;
   private VectorGroupByDesc vectorDesc;
@@ -1128,13 +1142,11 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     isLlap = LlapProxy.isDaemon();
     VectorExpression.doTransientInit(keyExpressions, hconf);
 
-    List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
+    List<ObjectInspector> objectInspectors = new ArrayList<>();
 
     List<ExprNodeDesc> keysDesc = conf.getKeys();
     try {
-
       List<String> outputFieldNames = conf.getOutputColumnNames();
-      final int outputCount = outputFieldNames.size();
 
       for(int i = 0; i < outputKeyLength; ++i) {
         VectorExpressionWriter vew = VectorExpressionWriterFactory.
@@ -1147,11 +1159,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       aggregators = new VectorAggregateExpression[aggregateCount];
       for (int i = 0; i < aggregateCount; ++i) {
         VectorAggregationDesc vecAggrDesc = vecAggrDescs[i];
-
-        Class<? extends VectorAggregateExpression> vecAggrClass = vecAggrDesc.getVecAggrClass();
-
-        VectorAggregateExpression vecAggrExpr =
-            instantiateExpression(vecAggrDesc, hconf);
+        VectorAggregateExpression vecAggrExpr = instantiateExpression(vecAggrDesc);
         VectorExpression.doTransientInit(vecAggrExpr.getInputExpression(), hconf);
         aggregators[i] = vecAggrExpr;
 
@@ -1216,38 +1224,67 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   }
 
   @VisibleForTesting
-  VectorAggregateExpression instantiateExpression(VectorAggregationDesc vecAggrDesc,
-      Configuration hconf) throws HiveException {
-    Class<? extends VectorAggregateExpression> vecAggrClass = vecAggrDesc.getVecAggrClass();
+  VectorAggregateExpression instantiateExpression(VectorAggregationDesc vecAggrDesc) throws HiveException {
+    final Class<? extends VectorAggregateExpression> vecAggrClass = vecAggrDesc.getVecAggrClass();
+    final Constructor<? extends VectorAggregateExpression> ctor;
 
-    Constructor<? extends VectorAggregateExpression> ctor = null;
-    try {
-      if (vecAggrDesc.getVecAggrClass() == VectorUDAFBloomFilterMerge.class) {
-        // VectorUDAFBloomFilterMerge is instantiated with a number of threads of parallel processing
-        ctor = vecAggrClass.getConstructor(VectorAggregationDesc.class, int.class);
-      } else {
-        ctor = vecAggrClass.getConstructor(VectorAggregationDesc.class);
+    final List<ConstantVectorExpression> constants =
+        vecAggrDesc.getConstants() == null ? Collections.emptyList() : vecAggrDesc.getConstants();
+
+    final Class<?>[] ctorParamClasses = new Class<?>[constants.size() + 1];
+    ctorParamClasses[0] = VectorAggregationDesc.class;
+
+    final List<Object> values = new ArrayList<>(constants.size() + 1);
+    values.add(vecAggrDesc);
+
+    for (int i = 0; i < constants.size(); ++i) {
+      ConstantVectorExpression constant = constants.get(i);
+      String typeName = constant.getOutputTypeInfo().getTypeName();
+      if (!PRIMITIVE_TYPE_NAME_TO_CLASS.containsKey(typeName)) {
+        throw new IllegalArgumentException(
+            "Non-primitive type detected as " + i + "-th argument for a call to the vectorized aggregation class "
+                + vecAggrClass.getSimpleName() + ", only primitive types are supported");
       }
+      ctorParamClasses[i + 1] = PRIMITIVE_TYPE_NAME_TO_CLASS.get(typeName);
+
+      // this is needed to bring back to the right type the value, e.g. int-family always gets back a long,
+      // but in this way the constructor parameters won't match anymore, so we need to convert here
+      switch (typeName) {
+      case "byte":
+        values.add(constant.getBytesValue());
+        break;
+      case "float":
+        values.add(new Double(constant.getDoubleValue()).floatValue());
+        break;
+      case "double":
+        values.add(constant.getDoubleValue());
+        break;
+      case "int":
+        values.add(new Long(constant.getLongValue()).intValue());
+        break;
+      case "long":
+        values.add(constant.getLongValue());
+        break;
+      case "short":
+        values.add(new Long(constant.getLongValue()).shortValue());
+        break;
+      default:
+        values.add(constant.getValue());
+      }
+    }
+
+    try {
+      ctor = vecAggrClass.getConstructor(ctorParamClasses);
     } catch (Exception e) {
       throw new HiveException(
-          "Constructor " + vecAggrClass.getSimpleName() + "(VectorAggregationDesc) not available", e);
+          "Constructor " + vecAggrClass.getSimpleName() + "(" + Arrays.toString(ctorParamClasses) + ") not available", e);
     }
-    VectorAggregateExpression vecAggrExpr = null;
     try {
-      if (vecAggrDesc.getVecAggrClass() == VectorUDAFBloomFilterMerge.class) {
-        vecAggrExpr = ctor.newInstance(vecAggrDesc,
-            hconf.getInt(HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS.varname,
-                HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS.defaultIntVal));
-      } else {
-        vecAggrExpr = ctor.newInstance(vecAggrDesc);
-      }
+      return ctor.newInstance(values.toArray(new Object[0]));
     } catch (Exception e) {
-
       throw new HiveException(
-          "Failed to create " + vecAggrClass.getSimpleName() + "(VectorAggregationDesc) object ",
-          e);
+          "Failed to create " + vecAggrClass.getSimpleName() + "(" + Arrays.toString(ctorParamClasses) + ") object ", e);
     }
-    return vecAggrExpr;
   }
 
   /**

@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -98,6 +100,8 @@ public class VectorAggregationDesc implements java.io.Serializable {
 
   private final Class<? extends VectorAggregateExpression> vecAggrClass;
 
+  private List<ConstantVectorExpression> constants;
+
   private GenericUDAFEvaluator evaluator;
   private GenericUDAFEvaluator.Mode udafEvaluatorMode;
 
@@ -124,6 +128,18 @@ public class VectorAggregationDesc implements java.io.Serializable {
             DataTypePhysicalVariation.DECIMAL_64 : DataTypePhysicalVariation.NONE);
 
     this.vecAggrClass = vecAggrClass;
+  }
+
+  public VectorAggregationDesc(String aggregationName, GenericUDAFEvaluator evaluator,
+      GenericUDAFEvaluator.Mode udafEvaluatorMode,
+      TypeInfo inputTypeInfo, ColumnVector.Type inputColVectorType,
+      VectorExpression inputExpression, TypeInfo outputTypeInfo,
+      ColumnVector.Type outputColVectorType,
+      Class<? extends VectorAggregateExpression> vecAggrClass,
+      List<ConstantVectorExpression> constants) {
+    this(aggregationName, evaluator, udafEvaluatorMode, inputTypeInfo, inputColVectorType, inputExpression,
+        outputTypeInfo, outputColVectorType, vecAggrClass);
+    this.constants = constants;
   }
 
   public String getAggregationName() {
@@ -164,6 +180,10 @@ public class VectorAggregationDesc implements java.io.Serializable {
 
   public Class<? extends VectorAggregateExpression> getVecAggrClass() {
     return vecAggrClass;
+  }
+
+  public List<ConstantVectorExpression> getConstants() {
+    return constants;
   }
 
   @Override

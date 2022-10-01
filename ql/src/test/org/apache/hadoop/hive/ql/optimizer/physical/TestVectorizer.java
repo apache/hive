@@ -116,7 +116,7 @@ public class TestVectorizer {
               new GenericUDAFSum.GenericUDAFSumLong(),
               aggDesc.getMode(),
               TypeInfoFactory.longTypeInfo, ColumnVector.Type.LONG, null,
-              TypeInfoFactory.longTypeInfo, ColumnVector.Type.LONG, VectorUDAFCountStar.class)});
+              TypeInfoFactory.longTypeInfo, ColumnVector.Type.LONG, VectorUDAFCountStar.class, null)});
 
     desc.setOutputColumnNames(outputColumnNames);
     ArrayList<AggregationDesc> aggDescList = new ArrayList<AggregationDesc>();
