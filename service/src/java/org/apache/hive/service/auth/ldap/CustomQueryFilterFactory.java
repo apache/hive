@@ -77,15 +77,18 @@ public class CustomQueryFilterFactory implements FilterFactory {
         }
 
         // try a generic user search
-        String userSearchQuery = query.replace("{0}", user);
-        try {
-          resultList = client.executeCustomQuery(userSearchQuery);
-        } catch (NamingException e) {
-          throw new AuthenticationException("LDAP Authentication failed for user", e);
-        }
-        if (resultList != null && resultList.size() == 1) {
-          LOG.info("Authentication succeeded based on result from custom user search query");
-          return;
+        if (query.contains("%s")) {
+          String userSearchQuery = query.replace("%s", user);
+          LOG.info("Trying with generic user search in ldap:" + userSearchQuery);
+          try {
+            resultList = client.executeCustomQuery(userSearchQuery);
+          } catch (NamingException e) {
+            throw new AuthenticationException("LDAP Authentication failed for user", e);
+          }
+          if (resultList != null && resultList.size() == 1) {
+            LOG.info("Authentication succeeded based on result from custom user search query");
+            return;
+          }
         }
       }
       LOG.info("Authentication failed based on result set from custom LDAP query");

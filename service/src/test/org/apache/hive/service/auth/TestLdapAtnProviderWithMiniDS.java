@@ -45,8 +45,8 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(FrameworkRunner.class)
 @CreateLdapServer(transports = {
-  @CreateTransport(protocol = "LDAP"),
-  @CreateTransport(protocol = "LDAPS")
+  @CreateTransport(protocol = "LDAP", port = 10389 ),
+  @CreateTransport(protocol = "LDAPS", port = 10636 )
 })
 
 @CreateDS(partitions = {
@@ -455,15 +455,21 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
     testCase.assertAuthenticatePasses(USER1.credentialsWithDn());
     testCase.assertAuthenticatePasses(USER4.credentialsWithId());
     testCase.assertAuthenticatePasses(USER4.credentialsWithDn());
+
+    testCase = defaultBuilder()
+        .baseDN("ou=People,dc=example,dc=com")
+        .customQuery("(&(objectClass=person)(uid=%s))")
+        .build();
+
+    testCase.assertAuthenticatePasses(USER1.credentialsWithId());
+    testCase.assertAuthenticatePasses(USER2.credentialsWithId());
   }
 
   @Test
   public void testCustomQueryNegative() {
     testCase = defaultBuilder()
         .baseDN("ou=People,dc=example,dc=com")
-        .customQuery(
-            String.format("(&(objectClass=person)(uid=%s))",
-                USER1.getId()))
+        .customQuery("(&(objectClass=person)(cn=%s))")
         .build();
 
     testCase.assertAuthenticateFails(USER2.credentialsWithDn());
