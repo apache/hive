@@ -4,8 +4,7 @@ SET hive.explain.user=false;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/testcase1;
 dfs -copyFromLocal ../../data/files/compressed_4line_file1.csv  ${system:test.tmp.dir}/testcase1/;
---
---
+
 CREATE EXTERNAL TABLE `testcase1`(id int, name string) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
   LOCATION '${system:test.tmp.dir}/testcase1'
   TBLPROPERTIES ("skip.header.line.count"="1", "skip.footer.line.count"="1");
@@ -98,3 +97,10 @@ select count(*) from testcase_gz;
 set hive.fetch.task.conversion=none;
 select * from testcase_gz;
 select count(*) from testcase_gz;
+
+-- clean up testdata
+dfs -rmr ${system:test.tmp.dir}/testcase_gz;
+dfs -rmr ${system:test.tmp.dir}/testcase1/;
+dfs -rmr ${system:test.tmp.dir}/testcase2/;
+dfs -rmr ${system:test.tmp.dir}/testcase3/;
+dfs -rmr ${system:test.tmp.dir}/testcase4/;
