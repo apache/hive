@@ -176,6 +176,10 @@ public class TestHiveShell {
     }
   }
 
+  public HiveSession getSession() {
+    return session;
+  }
+
   private HiveConf initializeConf() {
     HiveConf hiveConf = new HiveConf();
 

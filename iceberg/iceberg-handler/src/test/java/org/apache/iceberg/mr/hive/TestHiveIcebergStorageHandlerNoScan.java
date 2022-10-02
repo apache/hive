@@ -29,12 +29,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -70,6 +75,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.relocated.com.google.common.util.concurrent.MoreExecutors;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
@@ -92,6 +98,10 @@ import static org.apache.iceberg.TableProperties.GC_ENABLED;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.junit.runners.Parameterized.Parameter;
 import static org.junit.runners.Parameterized.Parameters;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
 
 @RunWith(Parameterized.class)
 public class TestHiveIcebergStorageHandlerNoScan {
@@ -1640,6 +1650,76 @@ public class TestHiveIcebergStorageHandlerNoScan {
     // Check the property got set in the iceberg table metadata.
     Table icebergTable = testTables.loadTable(target);
     Assert.assertEquals("SNAPPY", icebergTable.properties().get(TableProperties.PARQUET_COMPRESSION).toUpperCase());
+  }
+
+  @Test
+  public void testConcurrentIcebergCommitsAndHiveAlterTableCalls() throws Exception {
+    Assume.assumeTrue(testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    testTables.createTable(
+        shell,
+        identifier.name(),
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        SPEC,
+        FileFormat.PARQUET,
+        ImmutableList.of());
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+
+    // Avoid commit retry limits preventing any changes from being committed.
+    icebergTable.updateProperties().set("commit.retry.num-retries", "1000000").commit();
+
+    // Swap metastore client used by TestHiveShell with our test stub
+    IMetaStoreClient realMSC = shell.getSession().getMetaStoreClient();
+    IMetaStoreClient spyMSC = spy(realMSC);
+    shell.getSession().getSessionHive().setMSC(spyMSC);
+
+    // Simulate delay on alter table calls from Hive queries to ensure they will have worked on outdated Table objects
+    // by the time they intend to persist their changes into HMS
+    doAnswer(i -> {
+      Thread.sleep(3000);
+      return i.callRealMethod();
+    }).when(spyMSC).alter_table(any(String.class), any(String.class), any(String.class),
+        any(org.apache.hadoop.hive.metastore.api.Table.class), any(EnvironmentContext.class), isNull());
+
+    ExecutorService executorService =
+        MoreExecutors.getExitingExecutorService(
+            (ThreadPoolExecutor) Executors.newFixedThreadPool(1));
+
+    // Concurrent Insert
+    executorService.submit(
+        () -> {
+          try {
+            testTables.appendIcebergTable(
+                shell.getHiveConf(),
+                icebergTable,
+                FileFormat.PARQUET,
+                null,
+                HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        });
+
+    // Concurrent ALTER TABLE properties change
+    shell.executeStatement("ALTER TABLE default.customers SET TBLPROPERTIES ('dummyKey'='dummyValue')");
+
+    executorService.shutdown();
+    executorService.awaitTermination(1, TimeUnit.MINUTES);
+
+    // Verify that the insert was effective
+    Assert.assertEquals(((BaseTable) testTables.loadTable(identifier)).operations().current().metadataFileLocation(),
+        (long) HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.size(),
+        shell.executeStatement("select count(*) from customers").get(0)[0]
+    );
+
+    // Verify that the alter table call was effective
+    Assert.assertEquals("dummyValue", shell.metastore().getTable(identifier).getParameters().get("dummyKey"));
+
+    // Should be the 4rd metadata version (1 empty base + 1 commit retry change + 1 insert + 1 property change)
+    Assert.assertEquals(3,
+        ((BaseTable) testTables.loadTable(identifier)).operations().current().previousFiles().size());
   }
 
 
