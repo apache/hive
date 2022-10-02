@@ -5366,6 +5366,7 @@ public class ObjectStore implements RawStore, Configurable {
     oldSd.getSerDeInfo().setSerializationLib(
         newSd.getSerDeInfo().getSerializationLib());
     oldSd.getSerDeInfo().setParameters(newSd.getSerDeInfo().getParameters());
+    oldSd.getSerDeInfo().setDescription(newSd.getSerDeInfo().getDescription());
     oldSd.setSkewedColNames(newSd.getSkewedColNames());
     oldSd.setSkewedColValues(newSd.getSkewedColValues());
     oldSd.setSkewedColValueLocationMaps(newSd.getSkewedColValueLocationMaps());
@@ -9755,7 +9756,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return statsMap;
   }
-  
+
   @Override
   public Map<String, String> updateTableColumnStatistics(ColumnStatistics colStats, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
@@ -9763,7 +9764,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
     ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-    
+
     Lock tableLock = getTableLockFor(statsDesc.getDbName(), statsDesc.getTableName());
     tableLock.lock();
     try {
