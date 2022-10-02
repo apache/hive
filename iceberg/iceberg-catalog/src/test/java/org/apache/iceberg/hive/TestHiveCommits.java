@@ -21,7 +21,7 @@ package org.apache.iceberg.hive;
 
 import java.io.File;
 import java.net.UnknownHostException;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.PartitionSpec;
@@ -35,7 +35,6 @@ import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -47,7 +46,7 @@ import static org.mockito.Mockito.when;
 public class TestHiveCommits extends HiveTableBaseTest {
 
   @Test
-  public void testSuppressUnlockExceptions() throws TException, InterruptedException {
+  public void testSuppressUnlockExceptions() throws TException, InterruptedException, UnknownHostException {
     Table table = catalog.loadTable(TABLE_IDENTIFIER);
     HiveTableOperations ops = (HiveTableOperations) ((HasTableOperations) table).operations();
 
@@ -65,13 +64,21 @@ public class TestHiveCommits extends HiveTableBaseTest {
 
     HiveTableOperations spyOps = spy(ops);
 
-    ArgumentCaptor<Long> lockId = ArgumentCaptor.forClass(Long.class);
-    doThrow(new RuntimeException()).when(spyOps).doUnlock(lockId.capture());
+    AtomicReference<HiveCommitLock> lockRef = new AtomicReference<>();
+
+    when(spyOps.createLock()).thenAnswer(i -> {
+          HiveCommitLock lock = (HiveCommitLock) i.callRealMethod();
+          lockRef.set(lock);
+          return lock;
+        }
+    );
 
     try {
       spyOps.commit(metadataV2, metadataV1);
+      HiveCommitLock spyLock = spy(lockRef.get());
+      doThrow(new RuntimeException()).when(spyLock).release();
     } finally {
-      ops.doUnlock(lockId.getValue());
+      ops.doUnlock(lockRef.get());
     }
 
     ops.refresh();
@@ -258,13 +265,13 @@ public class TestHiveCommits extends HiveTableBaseTest {
 
     HiveTableOperations spyOps = spy(ops);
 
-    AtomicLong lockId = new AtomicLong();
-    doAnswer(i -> {
-      lockId.set(ops.acquireLock());
-      return lockId.get();
-    }).when(spyOps).acquireLock();
+    AtomicReference<HiveCommitLock> lock = new AtomicReference<>();
+    doAnswer(l -> {
+      lock.set(ops.createLock());
+      return lock.get();
+    }).when(spyOps).createLock();
 
-    concurrentCommitAndThrowException(ops, spyOps, table, lockId);
+    concurrentCommitAndThrowException(ops, spyOps, table, lock);
 
     /*
     This commit and our concurrent commit should succeed even though this commit throws an exception
@@ -306,7 +313,7 @@ public class TestHiveCommits extends HiveTableBaseTest {
   }
 
   private void concurrentCommitAndThrowException(HiveTableOperations realOperations, HiveTableOperations spyOperations,
-                                                 Table table, AtomicLong lockId)
+                                                 Table table, AtomicReference<HiveCommitLock> lockId)
       throws TException, InterruptedException {
     // Simulate a communication error after a successful commit
     doAnswer(i -> {

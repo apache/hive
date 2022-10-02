@@ -29,11 +29,13 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Context.Operation;
+import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
@@ -509,5 +511,15 @@ public interface HiveStorageHandler extends Configurable {
    */
   default SnapshotContext getCurrentSnapshotContext(org.apache.hadoop.hive.ql.metadata.Table table) {
     return null;
+  }
+
+  /**
+   * Alter table operations can rely on this to customize the EnvironmentContext to be used during the alter table
+   * invocation (both on client and server side of HMS)
+   * @param alterTableDesc the alter table desc (e.g.: AlterTableSetPropertiesDesc) containing the work to do
+   * @param environmentContext an existing EnvironmentContext created prior, now to be filled/amended
+   */
+  default void prepareAlterTableEnvironmentContext(AbstractAlterTableDesc alterTableDesc,
+      EnvironmentContext environmentContext) {
   }
 }
