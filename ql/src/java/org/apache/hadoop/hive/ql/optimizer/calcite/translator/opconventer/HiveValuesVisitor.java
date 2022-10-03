@@ -19,12 +19,12 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator.opconventer;
 
 import org.apache.calcite.rel.core.Values;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
@@ -61,14 +61,32 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
       return null;
     }
 
-    // 1. collect columns for project row schema
+    Operator<?> ts = createDummyScan();
+    hiveOpConverter.getTopOps().put(SemanticAnalyzer.DUMMY_TABLE, (TableScanOperator) ts);
+    Operator<?> selOp = createSelect(valuesRel.getRowType(), ts);
+    Operator<?> resultOp = createLimit0(selOp.getSchema().getSignature(), selOp);
+
+    LOG.debug("Generated {} with row schema: [{}]", resultOp, resultOp.getSchema());
+
+    return new OpAttr(SemanticAnalyzer.DUMMY_TABLE, Collections.emptySet(), selOp).clone(resultOp);
+  }
+
+  private Operator<?> createDummyScan() throws SemanticException {
+    Table metadata = hiveOpConverter.getSemanticAnalyzer().getDummyTable();
+    TableScanDesc tsd = new TableScanDesc(SemanticAnalyzer.DUMMY_TABLE, Collections.emptyList(), metadata);
+
+    return OperatorFactory.get(
+            hiveOpConverter.getSemanticAnalyzer().getOpContext(), tsd, new RowSchema(Collections.emptyList()));
+  }
+
+  private static Operator<?> createSelect(RelDataType relDataType, Operator<?> parentOp) {
     List<String> columnNames = new ArrayList<>();
     List<ExprNodeDesc> exprNodeDescList = new ArrayList<>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<>();
-
     List<ColumnInfo> colInfoList = new ArrayList<>();
-    for (int i = 0; i < valuesRel.getRowType().getFieldList().size(); i++) {
-      RelDataTypeField typeField = valuesRel.getRowType().getFieldList().get(i);
+
+    for (int i = 0; i < relDataType.getFieldList().size(); i++) {
+      RelDataTypeField typeField = relDataType.getFieldList().get(i);
 
       ColumnInfo ci = new ColumnInfo(
               typeField.getName(), TypeConverter.convert(typeField.getType()), SemanticAnalyzer.DUMMY_TABLE, false);
@@ -80,28 +98,14 @@ class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
       exprNodeDescList.add(exprNodeDesc);
     }
 
-    // 2. Create TS on dummy table
-    Table metadata = hiveOpConverter.getSemanticAnalyzer().getDummyTable();
-    TableScanDesc tsd = new TableScanDesc(SemanticAnalyzer.DUMMY_TABLE, Collections.emptyList(), metadata);
-
-    TableScanOperator ts = (TableScanOperator) OperatorFactory.get(
-            hiveOpConverter.getSemanticAnalyzer().getOpContext(), tsd, new RowSchema(Collections.emptyList()));
-
-    hiveOpConverter.getTopOps().put(SemanticAnalyzer.DUMMY_TABLE, ts);
-
-    // 3. Create Select operator
     SelectDesc sd = new SelectDesc(exprNodeDescList, columnNames);
-    SelectOperator selOp = (SelectOperator) OperatorFactory.getAndMakeChild(sd, new RowSchema(colInfoList), ts);
+    Operator<?> selOp = OperatorFactory.getAndMakeChild(sd, new RowSchema(colInfoList), parentOp);
     selOp.setColumnExprMap(colExprMap);
+    return selOp;
+  }
 
-    // 4. Create Limit 0 operator
-    int limit = 0;
-    int offset = 0;
-    LimitDesc limitDesc = new LimitDesc(offset, limit);
-    Operator<?> resultOp = OperatorFactory.getAndMakeChild(limitDesc, new RowSchema(colInfoList), selOp);
-
-    LOG.debug("Generated {} with row schema: [{}]", resultOp, resultOp.getSchema());
-
-    return new OpAttr(SemanticAnalyzer.DUMMY_TABLE, Collections.emptySet(), selOp).clone(resultOp);
+  private static Operator<?> createLimit0(List<ColumnInfo> colInfoList, Operator<?> parentOp) {
+    LimitDesc limitDesc = new LimitDesc(0, 0);
+    return OperatorFactory.getAndMakeChild(limitDesc, new RowSchema(colInfoList), parentOp);
   }
 }
