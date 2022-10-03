@@ -226,6 +226,8 @@ public class ASTConverter {
       if (isEmpty(values)) {
         select = values;
         return emptyPlan(values.getRowType());
+      } else {
+        throw new UnsupportedOperationException("Values with non-empty tuples are not supported.");
       }
     }
     /*
