@@ -148,13 +148,13 @@ public class ASTConverter {
    *      TOK_SELECT
    *         TOK_SELEXPR
    *            TOK_FUNCTION
-   *               TOK_<type>
+   *               TOK_&lt;type&gt;
    *               TOK_NULL
    *            alias0
    *         ...
    *         TOK_SELEXPR
    *            TOK_FUNCTION
-   *               TOK_<type>
+   *               TOK_&lt;type&gt;
    *               TOK_NULL
    *            aliasn
    *      TOK_LIMIT
