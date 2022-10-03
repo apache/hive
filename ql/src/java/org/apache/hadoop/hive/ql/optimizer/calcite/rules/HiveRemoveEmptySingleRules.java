@@ -25,11 +25,8 @@ import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.plan.volcano.RelSubset;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
-import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.rules.PruneEmptyRules;
@@ -37,6 +34,13 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +57,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
           RelRule.Config.EMPTY
                   .withDescription("HivePruneEmptyProject")
                   .as(PruneEmptyRules.RemoveEmptySingleRule.Config.class)
-                  .withOperandFor(Project.class, project -> true)
+                  .withOperandFor(HiveProject.class, project -> true)
                   .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
                   .toRule();
 
@@ -61,14 +65,14 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
           RelRule.Config.EMPTY
                   .withDescription("HivePruneEmptyFilter")
                   .as(PruneEmptyRules.RemoveEmptySingleRule.Config.class)
-                  .withOperandFor(Filter.class, singleRel -> true)
+                  .withOperandFor(HiveFilter.class, singleRel -> true)
                   .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
                   .toRule();
 
   public static final RelOptRule JOIN_LEFT_INSTANCE =
           RelRule.Config.EMPTY
                   .withOperandSupplier(b0 ->
-                          b0.operand(Join.class).inputs(
+                          b0.operand(HiveJoin.class).inputs(
                                   b1 -> b1.operand(Values.class)
                                           .predicate(Values::isEmpty).noInputs(),
                                   b2 -> b2.operand(RelNode.class).anyInputs()))
@@ -119,17 +123,21 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
     }
   }
 
-  public static final RelOptRule JOIN_RIGHT_INSTANCE =
-          RelRule.Config.EMPTY
-                  .withOperandSupplier(b0 ->
-                          b0.operand(Join.class).inputs(
-                                  b1 -> b1.operand(RelNode.class).anyInputs(),
-                                  b2 -> b2.operand(Values.class).predicate(Values::isEmpty)
-                                          .noInputs()))
-                  .withDescription("HivePruneEmptyJoin(right)")
-                  .as(JoinRightEmptyRuleConfig.class)
-                  .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-                  .toRule();
+  public static final RelOptRule JOIN_RIGHT_INSTANCE = getJoinRightInstance(HiveJoin.class);
+  public static final RelOptRule ANTI_JOIN_RIGHT_INSTANCE = getJoinRightInstance(HiveAntiJoin.class);
+
+  private static <R extends RelNode> RelOptRule getJoinRightInstance(Class<R> clazz) {
+    return RelRule.Config.EMPTY
+            .withOperandSupplier(b0 ->
+                    b0.operand(clazz).inputs(
+                            b1 -> b1.operand(RelNode.class).anyInputs(),
+                            b2 -> b2.operand(Values.class).predicate(Values::isEmpty)
+                                    .noInputs()))
+            .withDescription("HivePruneEmptyJoin(right)")
+            .as(JoinRightEmptyRuleConfig.class)
+            .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+            .toRule();
+  }
 
   /**
    * Improved version of Calcite's {@link PruneEmptyRules.JoinRightEmptyRuleConfig}.
@@ -182,14 +190,14 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
           RelRule.Config.EMPTY
                   .withDescription("HivePruneEmptySort")
                   .as(PruneEmptyRules.RemoveEmptySingleRule.Config.class)
-                  .withOperandFor(Sort.class, singleRel -> true)
+                  .withOperandFor(HiveSortLimit.class, singleRel -> true)
                   .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
                   .toRule();
 
   public static final RelOptRule SORT_FETCH_ZERO_INSTANCE =
           RelRule.Config.EMPTY
                   .withOperandSupplier(b ->
-                          b.operand(Sort.class).anyInputs())
+                          b.operand(HiveSortLimit.class).anyInputs())
                   .withDescription("HivePruneSortLimit0")
                   .as(PruneEmptyRules.SortFetchZeroRuleConfig.class)
                   .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
@@ -199,14 +207,14 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
           RelRule.Config.EMPTY
                   .withDescription("HivePruneEmptyAggregate")
                   .as(PruneEmptyRules.RemoveEmptySingleRule.Config.class)
-                  .withOperandFor(Aggregate.class, Aggregate::isNotGrandTotal)
+                  .withOperandFor(HiveAggregate.class, Aggregate::isNotGrandTotal)
                   .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
                   .toRule();
 
   public static final RelOptRule UNION_INSTANCE =
           RelRule.Config.EMPTY
                   .withOperandSupplier(b0 ->
-                          b0.operand(Union.class).unorderedInputs(b1 ->
+                          b0.operand(HiveUnion.class).unorderedInputs(b1 ->
                                   b1.operand(Values.class)
                                           .predicate(Values::isEmpty).noInputs()))
                   .withDescription("HivePruneEmptyUnionBranch")

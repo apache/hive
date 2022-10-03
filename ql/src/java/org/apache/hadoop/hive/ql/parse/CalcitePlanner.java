@@ -1952,6 +1952,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               HiveRemoveEmptySingleRules.FILTER_INSTANCE,
               HiveRemoveEmptySingleRules.JOIN_LEFT_INSTANCE,
               HiveRemoveEmptySingleRules.JOIN_RIGHT_INSTANCE,
+              HiveRemoveEmptySingleRules.ANTI_JOIN_RIGHT_INSTANCE,
               HiveRemoveEmptySingleRules.SORT_INSTANCE,
               HiveRemoveEmptySingleRules.SORT_FETCH_ZERO_INSTANCE,
               HiveRemoveEmptySingleRules.AGGREGATE_INSTANCE,
