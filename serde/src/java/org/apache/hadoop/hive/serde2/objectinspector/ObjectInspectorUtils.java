@@ -1203,9 +1203,17 @@ public final class ObjectInspectorUtils {
       List<? extends StructField> fields1 = soi1.getAllStructFieldRefs();
       List<? extends StructField> fields2 = soi2.getAllStructFieldRefs();
       int minimum = Math.min(fields1.size(), fields2.size());
+      Object data1 =
+              soi1 instanceof ConstantObjectInspector
+              ? ((ConstantObjectInspector) soi1).getWritableConstantValue()
+              : o1;
+      Object data2 =
+              soi2 instanceof ConstantObjectInspector
+              ? ((ConstantObjectInspector) soi2).getWritableConstantValue()
+              : o2;
       for (int i = 0; i < minimum; i++) {
-        int r = compare(soi1.getStructFieldData(o1, fields1.get(i)), fields1
-            .get(i).getFieldObjectInspector(), soi2.getStructFieldData(o2,
+        int r = compare(soi1.getStructFieldData(data1, fields1.get(i)), fields1
+            .get(i).getFieldObjectInspector(), soi2.getStructFieldData(data2,
             fields2.get(i)), fields2.get(i).getFieldObjectInspector(),
             mapEqualComparer, nullValueOpt);
         if (r != 0) {
