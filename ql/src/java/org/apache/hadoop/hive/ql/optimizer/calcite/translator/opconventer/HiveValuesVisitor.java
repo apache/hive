@@ -44,6 +44,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Converts empty {@link HiveValues} to a plan like
+ * TS [DUMMY] - SEL [null, ..., null] - LIM [0]
+ */
 class HiveValuesVisitor extends HiveRelNodeVisitor<HiveValues> {
   HiveValuesVisitor(HiveOpConverter hiveOpConverter) {
     super(hiveOpConverter);
