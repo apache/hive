@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
@@ -67,6 +68,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
@@ -83,6 +85,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConvert
 import org.apache.hadoop.hive.ql.optimizer.signature.RelTreeSignature;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
@@ -127,26 +130,43 @@ public class ASTConverter {
     return c.convert();
   }
 
-  //    TOK_QUERY
-  //      TOK_INSERT
-  //         TOK_DESTINATION
-  //            TOK_DIR
-  //               TOK_TMP_FILE
-  //         TOK_SELECT
-  //            TOK_SELEXPR
-  //               TOK_FUNCTION
-  //                  TOK_<type>
-  //                  TOK_NULL
-  //               alias0
-  //            ...
-  //            TOK_SELEXPR
-  //               TOK_FUNCTION
-  //                  TOK_<type>
-  //                  TOK_NULL
-  //               aliasn
-  //         TOK_LIMIT
-  //            0
-  //            0
+  /**
+   * This method generates the abstract syntax tree of a query does not return any rows.
+   * All projected columns are null and the data types are come from the passed {@link RelDataType}.
+   * <pre>
+   * SELECT NULL alias0 ... NULL aliasn LIMIT 0;
+   * </pre>
+   * Due to a subsequent optimization when converting the plan to TEZ tasks
+   * adding a limit 0 enables Hive not submitting the query to TEZ application manager
+   * but returns empty result set immediately.
+   * <pre>
+   * TOK_QUERY
+   *   TOK_INSERT
+   *      TOK_DESTINATION
+   *         TOK_DIR
+   *            TOK_TMP_FILE
+   *      TOK_SELECT
+   *         TOK_SELEXPR
+   *            TOK_FUNCTION
+   *               TOK_<type>
+   *               TOK_NULL
+   *            alias0
+   *         ...
+   *         TOK_SELEXPR
+   *            TOK_FUNCTION
+   *               TOK_<type>
+   *               TOK_NULL
+   *            aliasn
+   *      TOK_LIMIT
+   *         0
+   *         0
+   * </pre>
+   * @param dataType - Schema
+   * @return Root {@link ASTNode} of the result plan.
+   *
+   * @see QueryProperties#getOuterQueryLimit()
+   * @see org.apache.hadoop.hive.ql.parse.TaskCompiler#compile(ParseContext, List, Set, Set)
+   */
   public static ASTNode emptyPlan(RelDataType dataType) {
     if (dataType.getFieldCount() == 0) {
       throw new IllegalArgumentException("Schema is empty.");
