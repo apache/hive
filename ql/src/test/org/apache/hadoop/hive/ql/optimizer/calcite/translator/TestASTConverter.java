@@ -61,9 +61,6 @@ class TestASTConverter {
 
     ASTNode tree = emptyPlan(dataType);
 
-    // TOK_QUERY -> TOK_INSERT -> TOK_SELECT
-    assertThat(tree.getChild(0).getChild(1).getChildCount(), is(fields.size()));
-
     assertThat(tree.dump(), is(EXPECTED_TREE));
   }
 
@@ -112,7 +109,50 @@ class TestASTConverter {
     RelDataType dataType = new RelRecordType(fields);
 
     ASTNode tree = emptyPlan(dataType);
-    System.out.println(tree.dump());
+    assertThat(tree.dump(), is(EXPECTED_COMPLEX_TREE));
   }
 
+  private static final String EXPECTED_COMPLEX_TREE = "\n" +
+          "TOK_QUERY\n" +
+          "   TOK_INSERT\n" +
+          "      TOK_DESTINATION\n" +
+          "         TOK_DIR\n" +
+          "            TOK_TMP_FILE\n" +
+          "      TOK_SELECT\n" +
+          "         TOK_SELEXPR\n" +
+          "            TOK_FUNCTION\n" +
+          "               named_struct\n" +
+          "               f1\n" +
+          "               TOK_FUNCTION\n" +
+          "                  TOK_INT\n" +
+          "                  TOK_NULL\n" +
+          "               farray\n" +
+          "               TOK_FUNCTION\n" +
+          "                  array\n" +
+          "                  TOK_NULL\n" +
+          "               fmap\n" +
+          "               TOK_FUNCTION\n" +
+          "                  map\n" +
+          "                  TOK_FUNCTION\n" +
+          "                     TOK_INT\n" +
+          "                     TOK_NULL\n" +
+          "                  TOK_FUNCTION\n" +
+          "                     TOK_INT\n" +
+          "                     TOK_NULL\n" +
+          "               fstruct\n" +
+          "               TOK_FUNCTION\n" +
+          "                  named_struct\n" +
+          "                  nf1\n" +
+          "                  TOK_FUNCTION\n" +
+          "                     TOK_INT\n" +
+          "                     TOK_NULL\n" +
+          "                  nf2\n" +
+          "                  TOK_FUNCTION\n" +
+          "                     TOK_CHAR\n" +
+          "                        30\n" +
+          "                     TOK_NULL\n" +
+          "            a\n" +
+          "      TOK_LIMIT\n" +
+          "         0\n" +
+          "         0\n";
 }
