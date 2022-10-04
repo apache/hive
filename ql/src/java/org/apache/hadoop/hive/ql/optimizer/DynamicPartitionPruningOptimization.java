@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -737,6 +738,10 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
                       rsValueCols.get(2).getTypeInfo(),
                       Utilities.ReduceField.VALUE + "." +
                               gbOutputNames.get(2), "", false));
+      int numThreads = parseContext.getConf().getInt(HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS.varname,
+          HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS.defaultIntVal);
+      PrimitiveTypeInfo intTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo("int");
+      bloomFilterFinalParams.add(new ExprNodeConstantDesc(intTypeInfo, numThreads));
 
       AggregationDesc min = new AggregationDesc("min",
               FunctionRegistry.getGenericUDAFEvaluator("min", minFinalFnOIs,
