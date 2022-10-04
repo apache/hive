@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 
@@ -69,17 +70,21 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
                   .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
                   .toRule();
 
-  public static final RelOptRule JOIN_LEFT_INSTANCE =
-          RelRule.Config.EMPTY
-                  .withOperandSupplier(b0 ->
-                          b0.operand(HiveJoin.class).inputs(
-                                  b1 -> b1.operand(Values.class)
-                                          .predicate(Values::isEmpty).noInputs(),
-                                  b2 -> b2.operand(RelNode.class).anyInputs()))
-                  .withDescription("HivePruneEmptyJoin(left)")
-                  .as(JoinLeftEmptyRuleConfig.class)
-                  .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-                  .toRule();
+  public static final RelOptRule JOIN_LEFT_INSTANCE = getJoinLeftInstance(HiveJoin.class);
+  public static final RelOptRule SEMI_JOIN_LEFT_INSTANCE = getJoinLeftInstance(HiveSemiJoin.class);
+
+  private static <R extends RelNode> RelOptRule getJoinLeftInstance(Class<R> clazz) {
+    return RelRule.Config.EMPTY
+            .withOperandSupplier(b0 ->
+                    b0.operand(clazz).inputs(
+                            b1 -> b1.operand(Values.class)
+                                    .predicate(Values::isEmpty).noInputs(),
+                            b2 -> b2.operand(RelNode.class).anyInputs()))
+            .withDescription("HivePruneEmptyJoin(left)")
+            .as(JoinLeftEmptyRuleConfig.class)
+            .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+            .toRule();
+  }
 
   /**
    * Improved version of Calcite's {@link PruneEmptyRules.JoinLeftEmptyRuleConfig}.
@@ -125,6 +130,7 @@ public class HiveRemoveEmptySingleRules extends PruneEmptyRules {
 
   public static final RelOptRule JOIN_RIGHT_INSTANCE = getJoinRightInstance(HiveJoin.class);
   public static final RelOptRule ANTI_JOIN_RIGHT_INSTANCE = getJoinRightInstance(HiveAntiJoin.class);
+  public static final RelOptRule SEMI_JOIN_RIGHT_INSTANCE = getJoinRightInstance(HiveSemiJoin.class);
 
   private static <R extends RelNode> RelOptRule getJoinRightInstance(Class<R> clazz) {
     return RelRule.Config.EMPTY
