@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -103,6 +105,7 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
 
     AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, CompactionType.MAJOR.name(), isBlocking,
         poolName, null);
+    addInputsOutputsAlterTable(tableName, partitionSpec, desc, desc.getType(), false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
     setAcidDdlDesc(getTable(tableName), desc);
   }
@@ -187,7 +190,7 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
 
   @SuppressWarnings("rawtypes")
   private Task<?> createMergeTask(TableName tableName, Table table, Map<String, String> partitionSpec, Path oldLocation,
-      ListBucketingCtx lbCtx, Class<? extends InputFormat> inputFormatClass, Path queryTmpDir) {
+      ListBucketingCtx lbCtx, Class<? extends InputFormat> inputFormatClass, Path queryTmpDir) throws SemanticException {
     AlterTableConcatenateDesc desc = new AlterTableConcatenateDesc(tableName, partitionSpec, lbCtx, oldLocation,
         queryTmpDir, inputFormatClass, Utilities.getTableDesc(table));
     DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), desc);

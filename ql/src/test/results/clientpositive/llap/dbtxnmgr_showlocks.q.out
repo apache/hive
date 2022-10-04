@@ -121,8 +121,12 @@ POSTHOOK: Lineage: partitioned_acid_table PARTITION(p=abc).a SCRIPT []
 POSTHOOK: Lineage: partitioned_acid_table PARTITION(p=abc).b SCRIPT []
 PREHOOK: query: alter table partitioned_acid_table partition(p='abc') compact 'minor'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@partitioned_acid_table
+PREHOOK: Output: default@partitioned_acid_table@p=abc
 POSTHOOK: query: alter table partitioned_acid_table partition(p='abc') compact 'minor'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@partitioned_acid_table
+POSTHOOK: Output: default@partitioned_acid_table@p=abc
 PREHOOK: query: explain show compactions
 PREHOOK: type: SHOW COMPACTIONS
 POSTHOOK: query: explain show compactions

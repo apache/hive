@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.ddl.table.constraint.add.AlterTableAddConstrain
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -68,7 +69,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
     // Don't change the table object returned by the metastore, as we'll mess with it's caches.
     Table table = oldTable.copy();
 
-    environmentContext = initializeEnvironmentContext(desc.getEnvironmentContext());
+    environmentContext = initializeEnvironmentContext(oldTable, desc.getEnvironmentContext());
 
     if (partitions == null) {
       doAlteration(table, null);
@@ -106,12 +107,16 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
     return partitions;
   }
 
-  private EnvironmentContext initializeEnvironmentContext(EnvironmentContext environmentContext) {
+  private EnvironmentContext initializeEnvironmentContext(Table table, EnvironmentContext environmentContext) {
     EnvironmentContext result = environmentContext == null ? new EnvironmentContext() : environmentContext;
     // do not need update stats in alter table/partition operations
     if (result.getProperties() == null ||
         result.getProperties().get(StatsSetupConst.DO_NOT_UPDATE_STATS) == null) {
       result.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+    }
+    HiveStorageHandler storageHandler = table.getStorageHandler();
+    if (storageHandler != null) {
+      storageHandler.prepareAlterTableEnvironmentContext(desc, result);
     }
     return result;
   }

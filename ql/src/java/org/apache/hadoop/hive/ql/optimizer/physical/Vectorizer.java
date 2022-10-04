@@ -1258,16 +1258,16 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
 
-    private Support[] getVectorizedInputFormatSupports(
-      Class<? extends InputFormat> inputFileFormatClass) {
+    private Support[] getVectorizedInputFormatSupports(Class<? extends InputFormat> inputFileFormatClass,
+        Properties properties) {
 
       try {
         InputFormat inputFormat = FetchOperator.getInputFormatFromCache(inputFileFormatClass, hiveConf);
         if (inputFormat instanceof VectorizedInputFormatInterface) {
-          return ((VectorizedInputFormatInterface) inputFormat).getSupportedFeatures();
+          return ((VectorizedInputFormatInterface) inputFormat).getSupportedFeatures(hiveConf, properties);
         }
       } catch (IOException e) {
-        LOG.error("Unable to instantiate {} input format class. Cannot determine vectorization support.", e);
+        LOG.error("Unable to instantiate input format class. Cannot determine vectorization support.", e);
       }
       // FUTURE: Decide how to ask an input file format what vectorization features it supports.
       return null;
@@ -1276,13 +1276,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     /*
      * Add the support of the VectorizedInputFileFormatInterface.
      */
-    private void addVectorizedInputFileFormatSupport(
-        Set<Support> newSupportSet,
-        boolean isInputFileFormatVectorized, Class<? extends InputFormat>inputFileFormatClass) {
+    private void addVectorizedInputFileFormatSupport(Set<Support> newSupportSet, boolean isInputFileFormatVectorized,
+        Class<? extends InputFormat> inputFileFormatClass, Properties properties) {
 
       final Support[] supports;
       if (isInputFileFormatVectorized) {
-        supports = getVectorizedInputFormatSupports(inputFileFormatClass);
+        supports = getVectorizedInputFormatSupports(inputFileFormatClass, properties);
       } else {
         supports = null;
       }
@@ -1374,7 +1373,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
 
         addVectorizedInputFileFormatSupport(
-            newSupportSet, isInputFileFormatVectorized, inputFileFormatClass);
+            newSupportSet, isInputFileFormatVectorized, inputFileFormatClass, pd.getTableDesc().getProperties());
 
         addVectorPartitionDesc(
             pd,
@@ -1402,7 +1401,7 @@ public class Vectorizer implements PhysicalPlanResolver {
                 allTypeInfoList)) {
 
           addVectorizedInputFileFormatSupport(
-              newSupportSet, isInputFileFormatVectorized, inputFileFormatClass);
+              newSupportSet, isInputFileFormatVectorized, inputFileFormatClass, pd.getTableDesc().getProperties());
 
           addVectorPartitionDesc(
               pd,

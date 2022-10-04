@@ -95,8 +95,12 @@ POSTHOOK: Input: default@sequential_update
 LOOKS OKAY	delta_0000004_0000004_0001
 PREHOOK: query: alter table sequential_update compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@sequential_update
+PREHOOK: Output: default@sequential_update
 POSTHOOK: query: alter table sequential_update compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@sequential_update
+POSTHOOK: Output: default@sequential_update
 PREHOOK: query: select distinct IF(seq==1, 'LOOKS OKAY', 'BROKEN'), regexp_extract(INPUT__FILE__NAME, '.*/(.*)/[^/]*', 1) from sequential_update
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sequential_update
@@ -243,16 +247,28 @@ POSTHOOK: Input: default@orc_test_txn@year=2018
 LOOKS OKAY
 PREHOOK: query: alter table orc_test_txn partition(year='2016') compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@orc_test_txn
+PREHOOK: Output: default@orc_test_txn@year=2016
 POSTHOOK: query: alter table orc_test_txn partition(year='2016') compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@orc_test_txn
+POSTHOOK: Output: default@orc_test_txn@year=2016
 PREHOOK: query: alter table orc_test_txn partition(year='2017') compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@orc_test_txn
+PREHOOK: Output: default@orc_test_txn@year=2017
 POSTHOOK: query: alter table orc_test_txn partition(year='2017') compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@orc_test_txn
+POSTHOOK: Output: default@orc_test_txn@year=2017
 PREHOOK: query: alter table orc_test_txn partition(year='2018') compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@orc_test_txn
+PREHOOK: Output: default@orc_test_txn@year=2018
 POSTHOOK: query: alter table orc_test_txn partition(year='2018') compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@orc_test_txn
+POSTHOOK: Output: default@orc_test_txn@year=2018
 PREHOOK: query: select distinct IF(id==1, 'LOOKS OKAY', 'BROKEN') from orc_test_txn
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_test_txn
