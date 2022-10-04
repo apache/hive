@@ -447,7 +447,7 @@ public class TxnUtils {
         if (queryCounter % batchSize == 0) {
           sb.append("end;");
           String batch = sb.toString();
-          LOG.debug("Going to execute queries in oracle anonymous statement. " + batch);
+          LOG.debug("Going to execute queries in oracle anonymous statement. {}", batch);
           stmt.execute(batch);
           sb.setLength(0);
           sb.append("begin ");
@@ -456,7 +456,7 @@ public class TxnUtils {
       if (queryCounter % batchSize != 0) {
         sb.append("end;");
         String batch = sb.toString();
-        LOG.debug("Going to execute queries in oracle anonymous statement. " + batch);
+        LOG.debug("Going to execute queries in oracle anonymous statement. {}", batch);
         stmt.execute(batch);
       }
     } else {
@@ -475,17 +475,17 @@ public class TxnUtils {
     List<Integer> affectedRowsByQuery = new ArrayList<>();
     int queryCounter = 0;
     for (String query : queries) {
-      LOG.debug("Adding query to batch: <" + query + ">");
+      LOG.debug("Adding query to batch: <{}>", query);
       queryCounter++;
       stmt.addBatch(query);
       if (queryCounter % batchSize == 0) {
-        LOG.debug("Going to execute queries in batch. Batch size: " + batchSize);
+        LOG.debug("Going to execute queries in batch. Batch size: {}", batchSize);
         int[] affectedRecordsByQuery = stmt.executeBatch();
         Arrays.stream(affectedRecordsByQuery).forEach(affectedRowsByQuery::add);
       }
     }
     if (queryCounter % batchSize != 0) {
-      LOG.debug("Going to execute queries in batch. Batch size: " + queryCounter % batchSize);
+      LOG.debug("Going to execute queries in batch. Batch size: {}", queryCounter % batchSize);
       int[] affectedRecordsByQuery = stmt.executeBatch();
       Arrays.stream(affectedRecordsByQuery).forEach(affectedRowsByQuery::add);
     }
@@ -532,7 +532,7 @@ public class TxnUtils {
 
     try {
       FileStatus stat = fs.getFileStatus(p);
-      LOG.debug("Running job as " + stat.getOwner());
+      LOG.debug("Running job as {}", stat.getOwner());
       return stat.getOwner();
     } catch (AccessControlException e) {
       // TODO not sure this is the right exception
@@ -557,12 +557,12 @@ public class TxnUtils {
         LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
       }
       if (wrapper.size() == 1) {
-        LOG.debug("Running job as " + wrapper.get(0));
+        LOG.debug("Running job as {}", wrapper.get(0));
         return wrapper.get(0);
       }
     }
-    LOG.error("Unable to stat file " + p + " as either current user(" + 
-        UserGroupInformation.getLoginUser() + ") or table owner(" + t.getOwner() + "), giving up");
+    LOG.error("Unable to stat file {} as either current user({}) or table owner({}), giving up", p,
+        UserGroupInformation.getLoginUser(), t.getOwner());
     throw new IOException("Unable to stat file: " + p);
   }
 }
