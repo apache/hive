@@ -18,7 +18,7 @@ CREATE DATABASE `default`
 COMMENT
   'Default Hive database'
 LOCATION
-  'hdfs://### HDFS PATH ###'
+#### A masked pattern was here ####
 WITH DBPROPERTIES (
   'readonly'='true')
 POSTHOOK: query: SHOW CREATE TABLE src
@@ -34,7 +34,7 @@ STORED AS INPUTFORMAT
 OUTPUTFORMAT 
   'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 LOCATION
-  'hdfs://### HDFS PATH ###'
+#### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
@@ -50,7 +50,7 @@ value               	string              	default
 POSTHOOK: query: EXPLAIN SELECT * FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -71,5 +71,5 @@ STAGE PLANS:
 POSTHOOK: query: SELECT * FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 238	val_238
