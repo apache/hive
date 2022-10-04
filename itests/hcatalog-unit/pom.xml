@@ -131,6 +131,10 @@
           <artifactId>slf4j-reload4j</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
@@ -149,6 +153,10 @@
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
         </exclusion>
         <exclusion>
           <groupId>commons-logging</groupId>
@@ -187,6 +195,10 @@
           <artifactId>slf4j-reload4j</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
@@ -214,6 +226,10 @@
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
         </exclusion>
         <exclusion>
           <groupId>commons-logging</groupId>
