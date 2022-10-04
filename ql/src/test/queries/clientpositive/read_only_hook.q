@@ -10,7 +10,6 @@ set hive.exec.reducers.max = 1;
 use default;
 
 -- SHOW
-SHOW TABLES;
 SHOW DATABASES;
 SHOW CREATE DATABASE default;
 SHOW CREATE TABLE src;

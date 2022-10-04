@@ -4,10 +4,6 @@ POSTHOOK: Output: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
-POSTHOOK: type: SHOWTABLES
-POSTHOOK: Input: database:default
-src
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
