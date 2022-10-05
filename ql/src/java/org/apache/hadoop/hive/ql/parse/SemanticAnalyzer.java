@@ -1008,7 +1008,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void transformWithinGroup(ASTNode expressionTree, Tree withinGroupNode) throws SemanticException {
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_ENABLED) && !ctx.isCboPlanReady()) {
+    if (isCBOExecuted() && !ctx.isCboPlanReady()) {
       return;
     }
 
