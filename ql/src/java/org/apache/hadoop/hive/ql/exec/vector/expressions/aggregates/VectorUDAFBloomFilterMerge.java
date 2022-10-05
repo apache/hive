@@ -26,6 +26,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
@@ -46,7 +47,7 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
 
   private long expectedEntries = -1;
   private transient int aggBufferSize;
-  private transient int numThreads;
+  private transient int numThreads = HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS.defaultIntVal;
 
   /**
    * class for storing the current aggregate value.

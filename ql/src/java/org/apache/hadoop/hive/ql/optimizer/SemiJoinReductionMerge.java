@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -451,8 +452,22 @@ public class SemiJoinReductionMerge extends Transform {
     bloomFilterEval.setMinEntries(conf.getLongVar(HiveConf.ConfVars.TEZ_MIN_BLOOM_FILTER_ENTRIES));
     bloomFilterEval.setFactor(conf.getFloatVar(HiveConf.ConfVars.TEZ_BLOOM_FILTER_FACTOR));
     bloomFilterEval.setHintEntries(numEntriesHint);
-    List<ExprNodeDesc> p = Collections.singletonList(col);
-    AggregationDesc bloom = new AggregationDesc("bloom_filter", bloomFilterEval, p, false, mode);
+
+    List<ExprNodeDesc> params;
+
+    // numThreads is available only for VectorUDAFBloomFilterMerge, which only supports
+    // these two modes, don't add numThreads otherwise
+    if (GenericUDAFEvaluator.Mode.PARTIAL2.equals(mode)
+        || GenericUDAFEvaluator.Mode.FINAL.equals(mode)) {
+      int numThreads = conf.getInt(HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS.varname,
+          HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS.defaultIntVal);
+      PrimitiveTypeInfo intTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo("int");
+      params = Arrays.asList(col, new ExprNodeConstantDesc(intTypeInfo, numThreads));
+    } else {
+      params = Collections.singletonList(col);
+    }
+
+    AggregationDesc bloom = new AggregationDesc("bloom_filter", bloomFilterEval, params, false, mode);
     // It is necessary to set the bloom filter evaluator otherwise there are runtime failures see HIVE-24018
     bloom.setGenericUDAFWritableEvaluator(bloomFilterEval);
     return bloom;

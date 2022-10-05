@@ -637,6 +637,8 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
       AggregationDesc max = new AggregationDesc("max",
               FunctionRegistry.getGenericUDAFEvaluator("max", aggFnOIs, false, false),
               params, false, Mode.PARTIAL1);
+      // we don't add numThreads here since PARTIAL1 mode is for VectorUDAFBloomFilter which does
+      // not support numThreads parameter
       AggregationDesc bloomFilter = new AggregationDesc("bloom_filter",
               FunctionRegistry.getGenericUDAFEvaluator("bloom_filter", aggFnOIs, false, false),
               params, false, Mode.PARTIAL1);
