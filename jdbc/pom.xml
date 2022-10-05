@@ -218,6 +218,7 @@
                       <exclude>antlr:*</exclude>
                       <exclude>aopalliance:*</exclude>
                       <exclude>asm:*</exclude>
+                      <exclude>ch.qos.reload4j:*</exclude>
                       <exclude>com.fasterxml.jackson.core:*</exclude>
                       <exclude>com.google.code.gson:*</exclude>
                       <exclude>com.google.inject:*</exclude>
@@ -303,6 +304,7 @@
                       <exclude>org.htrace:*</exclude>
                       <exclude>org.ow2.asm:*</exclude>
                       <exclude>org.slf4j:slf4j-log4j12</exclude>
+                      <exclude>org.slf4j:slf4j-reload4j</exclude>
                       <exclude>org.tukaani:*</exclude>
                       <exclude>org.xerial.snappy:*</exclude>
                       <exclude>tomcat:*</exclude>
