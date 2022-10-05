@@ -220,35 +220,6 @@ public class GenVectorCode extends Task {
       {"ScalarArithmeticColumn", "Multiply", "double", "double", "*"},
       {"ScalarArithmeticColumn", "Multiply", "double", "double", "*", "CHECKED"},
 
-      {"ColumnArithmeticColumn", "Add", "long", "long", "+"},
-      {"ColumnArithmeticColumn", "Add", "long", "long", "+", "CHECKED"},
-      {"ColumnArithmeticColumn", "Subtract", "long", "long", "-"},
-      {"ColumnArithmeticColumn", "Subtract", "long", "long", "-", "CHECKED"},
-      {"ColumnArithmeticColumn", "Multiply", "long", "long", "*"},
-      {"ColumnArithmeticColumn", "Multiply", "long", "long", "*", "CHECKED"},
-
-      {"ColumnArithmeticColumn", "Add", "long", "double", "+"},
-      {"ColumnArithmeticColumn", "Add", "long", "double", "+", "CHECKED"},
-      {"ColumnArithmeticColumn", "Subtract", "long", "double", "-"},
-      {"ColumnArithmeticColumn", "Subtract", "long", "double", "-", "CHECKED"},
-      {"ColumnArithmeticColumn", "Multiply", "long", "double", "*"},
-      {"ColumnArithmeticColumn", "Multiply", "long", "double", "*", "CHECKED"},
-
-      {"ColumnArithmeticColumn", "Add", "double", "long", "+"},
-      {"ColumnArithmeticColumn", "Add", "double", "long", "+", "CHECKED"},
-      {"ColumnArithmeticColumn", "Subtract", "double", "long", "-"},
-      {"ColumnArithmeticColumn", "Subtract", "double", "long", "-", "CHECKED"},
-      {"ColumnArithmeticColumn", "Multiply", "double", "long", "*"},
-      {"ColumnArithmeticColumn", "Multiply", "double", "long", "*", "CHECKED"},
-
-      {"ColumnArithmeticColumn", "Add", "double", "double", "+"},
-      {"ColumnArithmeticColumn", "Add", "double", "double", "+", "CHECKED"},
-      {"ColumnArithmeticColumn", "Subtract", "double", "double", "-"},
-      {"ColumnArithmeticColumn", "Subtract", "double", "double", "-", "CHECKED"},
-      {"ColumnArithmeticColumn", "Multiply", "double", "double", "*"},
-      {"ColumnArithmeticColumn", "Multiply", "double", "double", "*", "CHECKED"},
-
-
         //Divide operations are not CHECKED because the output is always of the type double
       {"ColumnDivideScalar", "Divide", "long", "double", "/"},
       {"ColumnDivideScalar", "Divide", "double", "long", "/"},

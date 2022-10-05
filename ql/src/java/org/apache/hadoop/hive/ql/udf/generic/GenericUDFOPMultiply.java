@@ -22,6 +22,10 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.BaseDoubleColDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.BaseDoubleColLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.BaseLongColDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.BaseLongColLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -34,10 +38,15 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
 @Description(name = "*", value = "a _FUNC_ b - Multiplies a by b")
-@VectorizedExpressions({LongColMultiplyLongColumn.class, LongColMultiplyDoubleColumn.class,
-    LongColMultiplyLongColumnChecked.class, LongColMultiplyDoubleColumnChecked.class,
-  DoubleColMultiplyLongColumn.class, DoubleColMultiplyDoubleColumn.class,
-    DoubleColMultiplyLongColumnChecked.class, DoubleColMultiplyDoubleColumnChecked.class,
+@VectorizedExpressions({
+    BaseLongColLongColumn.Multiply.class,
+    BaseLongColDoubleColumn.Multiply.class,
+    BaseDoubleColLongColumn.Multiply.class,
+    BaseDoubleColDoubleColumn.Multiply.class,
+    BaseLongColLongColumn.CheckedMultiply.class,
+    BaseLongColDoubleColumn.CheckedMultiply.class,
+    BaseDoubleColLongColumn.CheckedMultiply.class,
+    BaseDoubleColDoubleColumn.CheckedMultiply.class,
   LongColMultiplyLongScalar.class, LongColMultiplyDoubleScalar.class,
     LongColMultiplyLongScalarChecked.class, LongColMultiplyDoubleScalarChecked.class,
   DoubleColMultiplyLongScalar.class, DoubleColMultiplyDoubleScalar.class,

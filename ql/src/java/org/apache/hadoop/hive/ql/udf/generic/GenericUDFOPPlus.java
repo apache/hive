@@ -34,9 +34,16 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
  * UDFRegistry.implicitConvertable method.
  */
 @Description(name = "+", value = "a _FUNC_ b - Returns a+b")
-@VectorizedExpressions({LongColAddLongColumn.class, LongColAddDoubleColumn.class,
-  LongColAddLongColumnChecked.class, LongColAddDoubleColumnChecked.class,
-  DoubleColAddLongColumn.class, DoubleColAddDoubleColumn.class, LongColAddLongScalar.class,
+@VectorizedExpressions({
+    BaseLongColLongColumn.Add.class,
+    BaseLongColDoubleColumn.Add.class,
+    BaseDoubleColLongColumn.Add.class,
+    BaseDoubleColDoubleColumn.Add.class,
+    BaseLongColLongColumn.CheckedAdd.class,
+    BaseLongColDoubleColumn.CheckedAdd.class,
+    BaseDoubleColLongColumn.CheckedAdd.class,
+    BaseDoubleColDoubleColumn.CheckedAdd.class,
+  LongColAddLongScalar.class,
   DoubleColAddLongColumnChecked.class, DoubleColAddDoubleColumnChecked.class, LongColAddLongScalarChecked.class,
   LongColAddDoubleScalar.class, DoubleColAddLongScalar.class, DoubleColAddDoubleScalar.class,
   LongColAddDoubleScalarChecked.class, DoubleColAddLongScalarChecked.class, DoubleColAddDoubleScalarChecked.class,
