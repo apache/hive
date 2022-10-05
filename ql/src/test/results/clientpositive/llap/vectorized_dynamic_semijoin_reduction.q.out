@@ -1281,7 +1281,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), min(VALUE._col2), max(VALUE._col3), bloom_filter(VALUE._col4, expectedEntries=57)
+                aggregations: min(VALUE._col0), max(VALUE._col1), min(VALUE._col2), max(VALUE._col3), bloom_filter(VALUE._col4, 1, expectedEntries=57)
                 Group By Vectorization:
                     aggregators: VectorUDAFMinString(col 0:string) -> string, VectorUDAFMaxString(col 1:string) -> string, VectorUDAFMinLong(col 2:int) -> int, VectorUDAFMaxLong(col 3:int) -> int, VectorUDAFBloomFilterMerge(col 4:binary) -> binary
                     className: VectorGroupByOperator
@@ -1541,7 +1541,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), min(VALUE._col2), max(VALUE._col3), bloom_filter(VALUE._col4, expectedEntries=57)
+                aggregations: min(VALUE._col0), max(VALUE._col1), min(VALUE._col2), max(VALUE._col3), bloom_filter(VALUE._col4, 1, expectedEntries=57)
                 Group By Vectorization:
                     aggregators: VectorUDAFMinString(col 0:string) -> string, VectorUDAFMaxString(col 1:string) -> string, VectorUDAFMinLong(col 2:int) -> int, VectorUDAFMaxLong(col 3:int) -> int, VectorUDAFBloomFilterMerge(col 4:binary) -> binary
                     className: VectorGroupByOperator
@@ -1801,7 +1801,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), min(VALUE._col2), max(VALUE._col3), bloom_filter(VALUE._col4, expectedEntries=57)
+                aggregations: min(VALUE._col0), max(VALUE._col1), min(VALUE._col2), max(VALUE._col3), bloom_filter(VALUE._col4, 1, expectedEntries=57)
                 Group By Vectorization:
                     aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFMinLong(col 2:int) -> int, VectorUDAFMaxLong(col 3:int) -> int, VectorUDAFBloomFilterMerge(col 4:binary) -> binary
                     className: VectorGroupByOperator
@@ -2061,7 +2061,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), min(VALUE._col2), max(VALUE._col3), bloom_filter(VALUE._col4, expectedEntries=57)
+                aggregations: min(VALUE._col0), max(VALUE._col1), min(VALUE._col2), max(VALUE._col3), bloom_filter(VALUE._col4, 1, expectedEntries=57)
                 Group By Vectorization:
                     aggregators: VectorUDAFMinString(col 0:string) -> string, VectorUDAFMaxString(col 1:string) -> string, VectorUDAFMinString(col 2:string) -> string, VectorUDAFMaxString(col 3:string) -> string, VectorUDAFBloomFilterMerge(col 4:binary) -> binary
                     className: VectorGroupByOperator
