@@ -35,9 +35,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -83,6 +84,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.NDV;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.ql.util.NamedForkJoinWorkerThreadFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -120,7 +122,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.AnnotationUtils;
-import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,6 +145,17 @@ public class StatsUtils {
   private static final long TIMESTAMP_RANGE_LOWER_LIMIT = 915148800L;
   // Range upper limit for timestamp type when not defined (seconds, heuristic): '2024-12-31 23:59:59'
   private static final long TIMESTAMP_RANGE_UPPER_LIMIT = 1735689599L;
+
+  private static final ForkJoinPool statsForkJoinPool = new ForkJoinPool(
+          Runtime.getRuntime().availableProcessors(),
+          new NamedForkJoinWorkerThreadFactory("basic-stats-"),
+          getUncaughtExceptionHandler(),
+          false
+  );
+
+  private static Thread.UncaughtExceptionHandler getUncaughtExceptionHandler() {
+    return (t, e) -> LOG.error(String.format("Thread %s exited with error", t.getName()), e);
+  }
 
   /**
    * Collect table, partition and column level statistics
@@ -317,12 +329,17 @@ public class StatsUtils {
 
       basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
 
-      List<BasicStats> partStats = new ArrayList<>();
-
-      for (Partition p : partList.getNotDeniedPartns()) {
-        BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table, p));
-        partStats.add(basicStats);
+      List<BasicStats> partStats = null;
+      try {
+        partStats = statsForkJoinPool.submit(() ->
+          partList.getNotDeniedPartns().parallelStream().
+                  map(p -> basicStatsFactory.build(Partish.buildFor(table, p))).
+                  collect(Collectors.toList())
+        ).get();
+      } catch (Exception e) {
+        throw new HiveException(e);
       }
+
       BasicStats bbs = BasicStats.buildFrom(partStats);
 
       long nr = bbs.getNumRows();
