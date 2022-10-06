@@ -2906,8 +2906,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         StructObjectInspector rowObjectInspector = (StructObjectInspector) deserializer
             .getObjectInspector();
 
-        // Special handling for iceberg tables which set specific configurations during initialisation of Serde.
-        deserializer.handleJobLevelConfigurations(conf);
+        deserializer.handleJobLevelConfiguration(conf);
 
         List<? extends StructField> fields = rowObjectInspector.getAllStructFieldRefs();
         ColumnInfo colInfo;

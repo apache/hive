@@ -77,7 +77,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   private Collection<String> partitionColumns;
   private Map<ObjectInspector, Deserializer> deserializers = Maps.newHashMapWithExpectedSize(1);
   private Container<Record> row = new Container<>();
-  private Map<String, String> jobConfs =  Maps.newHashMap();
+  private Map<String, String> jobConf =  Maps.newHashMap();
 
   @Override
   public void initialize(@Nullable Configuration configuration, Properties serDeProperties,
@@ -132,13 +132,13 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     }
 
     this.projectedSchema =
-        projectedSchema(configuration, serDeProperties.getProperty(Catalogs.NAME), tableSchema, jobConfs);
+        projectedSchema(configuration, serDeProperties.getProperty(Catalogs.NAME), tableSchema, jobConf);
 
     // Currently ClusteredWriter is used which requires that records are ordered by partition keys.
     // Here we ensure that SortedDynPartitionOptimizer will kick in and do the sorting.
     // TODO: remove once we have both Fanout and ClusteredWriter available: HIVE-25948
-    jobConfs.put(HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD.varname, "1");
-    jobConfs.put(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE.varname, "nonstrict");
+    jobConf.put(HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD.varname, "1");
+    jobConf.put(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE.varname, "nonstrict");
 
     try {
       this.inspector = IcebergObjectInspector.create(projectedSchema);
@@ -261,8 +261,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   }
 
   @Override
-  public void handleJobLevelConfigurations(HiveConf conf) {
-    for (Map.Entry<String, String> confs : jobConfs.entrySet()) {
+  public void handleJobLevelConfiguration(HiveConf conf) {
+    for (Map.Entry<String, String> confs : jobConf.entrySet()) {
       conf.set(confs.getKey(), confs.getValue());
     }
   }

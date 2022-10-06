@@ -32,7 +32,11 @@ public interface SerDe {
    */
   SerDeStats getSerDeStats();
 
-  default void handleJobLevelConfigurations(HiveConf conf) {
+  /**
+   * Adds SerDe specific configurations to job conf.
+   * @param conf the job conf.
+   */
+  default void handleJobLevelConfiguration(HiveConf conf) {
     // Do nothing
   }
 }

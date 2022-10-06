@@ -11571,8 +11571,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         final Deserializer deserializer = tab.getDeserializer();
         StructObjectInspector rowObjectInspector = (StructObjectInspector) deserializer.getObjectInspector();
 
-        // Specific Handling for Iceberg serde, which sets specific properties in SessionConf.
-        deserializer.handleJobLevelConfigurations(conf);
+        deserializer.handleJobLevelConfiguration(conf);
         List<? extends StructField> fields = rowObjectInspector
             .getAllStructFieldRefs();
         for (int i = 0; i < fields.size(); i++) {
