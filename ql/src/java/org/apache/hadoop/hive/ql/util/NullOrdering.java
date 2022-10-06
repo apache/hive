@@ -71,6 +71,16 @@ public enum NullOrdering {
     throw new EnumConstantNotPresentException(NullOrdering.class, "No enum constant present with sign " + sign);
   }
 
+  public static NullOrdering fromDirection(RelFieldCollation.NullDirection nullDirection) {
+    for (NullOrdering nullOrdering : NullOrdering.values()) {
+      if (nullOrdering.direction == nullDirection) {
+        return nullOrdering;
+      }
+    }
+    throw new EnumConstantNotPresentException(
+            NullOrdering.class, "No enum constant present with null direction " + nullDirection);
+  }
+
   public static NullOrdering defaultNullOrder(Configuration hiveConf) {
     return HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST) ?
             NullOrdering.NULLS_LAST : NullOrdering.NULLS_FIRST;

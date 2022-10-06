@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +89,8 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.util.DirectionUtils;
+import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -422,7 +424,7 @@ public class ASTConverter {
 
   private void convertOrderLimitToASTNode(HiveSortLimit hiveSortLimit) {
     List<RelFieldCollation> fieldCollations = hiveSortLimit.getCollation().getFieldCollations();
-    convertFieldCollationsAndSetOrderAST(hiveSortLimit, new Schema(hiveSortLimit), fieldCollations,
+    convertFieldCollationsToASTNode(hiveSortLimit, new Schema(hiveSortLimit), fieldCollations,
             hiveSortLimit.getInputRefToCallMap(), HiveParser.TOK_ORDERBY, "TOK_ORDERBY");
 
     RexNode offsetExpr = hiveSortLimit.getOffsetExpr();
@@ -436,25 +438,16 @@ public class ASTConverter {
 
   private void convertSortToASTNode(HiveSortExchange hiveSortExchange) {
     List<RelFieldCollation> fieldCollations = hiveSortExchange.getCollation().getFieldCollations();
-    convertFieldCollationsAndSetOrderAST(hiveSortExchange, new Schema(hiveSortExchange), fieldCollations,
+    convertFieldCollationsToASTNode(hiveSortExchange, new Schema(hiveSortExchange), fieldCollations,
             null, HiveParser.TOK_SORTBY, "TOK_SORTBY");
   }
 
-  private void convertFieldCollationsAndSetOrderAST(
+  private void convertFieldCollationsToASTNode(
           RelNode node, Schema schema, List<RelFieldCollation> fieldCollations, Map<Integer, RexNode> obRefToCallMap,
           int astToken, String astText) {
-
     if (fieldCollations.isEmpty()) {
       return;
     }
-
-    hiveAST.order = convertFieldCollationsToASTNode(
-            node.getCluster().getRexBuilder(), schema, fieldCollations, obRefToCallMap, astToken, astText);
-  }
-
-  private static ASTNode convertFieldCollationsToASTNode(
-            RexBuilder rexBuilder, Schema schema, List<RelFieldCollation> fieldCollations, Map<Integer, RexNode> obRefToCallMap,
-    int astToken, String astText) {
 
     // 1 Add order/sort by token
     ASTNode orderAst = ASTBuilder.createAST(astToken, astText);
@@ -494,7 +487,7 @@ public class ASTConverter {
       }
 
       if (obExpr != null) {
-        astCol = obExpr.accept(new RexVisitor(schema, false, rexBuilder));
+        astCol = obExpr.accept(new RexVisitor(schema, false, node.getCluster().getRexBuilder()));
       } else {
         ColumnInfo cI = schema.get(c.getFieldIndex());
         /*
@@ -508,8 +501,7 @@ public class ASTConverter {
       nullDirectionAST.addChild(astCol);
       orderAst.addChild(directionAST);
     }
-
-    return orderAst;
+    hiveAST.order = orderAst;
   }
 
   private Schema getRowSchema(String tblAlias) {
@@ -1093,27 +1085,22 @@ public class ASTConverter {
             "TOK_FUNCTIONDI") : argCount == 0 ? ASTBuilder.construct(HiveParser.TOK_FUNCTIONSTAR,
             "TOK_FUNCTIONSTAR") : ASTBuilder.construct(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
         b.add(HiveParser.Identifier, agg.getAggregation().getName());
+        Iterator<RelFieldCollation> collationIterator = agg.collation.getFieldCollations().listIterator();
+        RexBuilder rexBuilder = gBy.getCluster().getRexBuilder();
         for (int i : agg.getArgList()) {
           RexInputRef iRef = new RexInputRef(i, gBy.getCluster().getTypeFactory()
               .createSqlType(SqlTypeName.ANY));
           b.add(iRef.accept(new RexVisitor(src, false, gBy.getCluster().getRexBuilder())));
-        }
-        if (!agg.collation.getFieldCollations().isEmpty()) {
-          Map<Integer, RexNode> obRefToCallMap = new HashMap<>();
-          for (RelFieldCollation fieldCollation : agg.collation.getFieldCollations()) {
+          if (collationIterator.hasNext()) {
+            RelFieldCollation fieldCollation = collationIterator.next();
             RexInputRef inputRef = new RexInputRef(fieldCollation.getFieldIndex(),
                     gBy.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
-            obRefToCallMap.put(fieldCollation.getFieldIndex(), inputRef);
+            b.add(inputRef.accept(new RexVisitor(src, false, rexBuilder)));
+            b.add(ASTBuilder.createAST(HiveParser.NumberLiteral,
+                    Integer.toString(DirectionUtils.directionToCode(fieldCollation.getDirection()))));
+            b.add(ASTBuilder.createAST(HiveParser.NumberLiteral,
+                    Integer.toString(NullOrdering.fromDirection(fieldCollation.nullDirection).getCode())));
           }
-          ASTNode orderByNode = convertFieldCollationsToASTNode(
-                  gBy.getCluster().getRexBuilder(),
-                  src,
-                  agg.collation.getFieldCollations(),
-                  obRefToCallMap,
-                  HiveParser.TOK_ORDERBY,
-                  "TOK_ORDERBY");
-
-          b.add(ASTBuilder.construct(HiveParser.TOK_WITHIN_GROUP, "TOK_WITHIN_GROUP").add(orderByNode).node());
         }
         add(new ColumnInfo(null, b.node()));
       }

@@ -568,7 +568,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         try {
           // 0. Gen Optimized Plan
           RelNode newPlan = logicalPlan();
-          this.ctx.setCboPlanReady(true);
 
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
             if (cboCtx.type == PreCboCtx.Type.VIEW && !materializedView) {

@@ -1008,7 +1008,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void transformWithinGroup(ASTNode expressionTree, Tree withinGroupNode) throws SemanticException {
-    if (isCBOExecuted() && !ctx.isCboPlanReady()) {
+    if (isCBOExecuted()) {
       return;
     }
 
