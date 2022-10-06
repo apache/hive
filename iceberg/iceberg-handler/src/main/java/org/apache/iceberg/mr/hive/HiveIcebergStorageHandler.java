@@ -91,6 +91,7 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionSpecParser;
+import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
@@ -580,6 +581,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public AcidSupportType supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table table) {
     if (table.getParameters() != null && "2".equals(table.getParameters().get(TableProperties.FORMAT_VERSION))) {
+
+      String deleteModeForTable = table.getParameters().get(TableProperties.DELETE_MODE);
+      RowLevelOperationMode rowLevelOperationMode = RowLevelOperationMode.fromName(
+          deleteModeForTable != null ? deleteModeForTable : TableProperties.DELETE_MODE_DEFAULT
+      );
+      if (RowLevelOperationMode.COPY_ON_WRITE.equals(rowLevelOperationMode)) {
+        throw new UnsupportedOperationException(
+            String.format("Hive doesn't support copy-on-write delete mode. Please set '%s'='merge-on-read' on %s " +
+                    "before running ACID operations on it.", TableProperties.DELETE_MODE, table.getTableName())
+        );
+      }
       return AcidSupportType.WITHOUT_TRANSACTIONS;
     }
 

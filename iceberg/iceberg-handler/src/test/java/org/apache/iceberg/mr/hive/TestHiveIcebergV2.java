@@ -29,6 +29,7 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
@@ -37,6 +38,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -233,10 +235,16 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
   }
 
   @Test
-  public void testDeleteStatementUnpartitioned() {
+  public void testDeleteStatementUnpartitioned() throws TException, InterruptedException {
     // create and insert an initial batch of records
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+
+    // verify delete mode set to merge-on-read
+    Assert.assertEquals("merge-on-read",
+        shell.metastore().getTable("default", "customers")
+            .getParameters().get(TableProperties.DELETE_MODE));
+
     // insert one more batch so that we have multiple data files within the same partition
     shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
         TableIdentifier.of("default", "customers"), false));
@@ -592,6 +600,40 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         "Attempt to do update or delete on table", () -> {
           shell.executeStatement("UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'");
         });
+  }
+
+  @Test
+  public void testDMLFailsForCopyOnMergeDeleteMode() {
+    // No need to check this for each file format
+    Assume.assumeTrue(fileFormat == FileFormat.ORC && testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    // create and insert an initial batch of records
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2);
+
+    // simulate copy-on-write setting on the table (i.e. set by Spark or anything else)
+    shell.executeStatement("ALTER TABLE customers SET TBLPROPERTIES ('write.delete.mode'='copy-on-write')");
+
+    // attempt a delete
+    try {
+      shell.executeStatement("DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'");
+    } catch (Throwable e) {
+      while (e.getCause() != null) {
+        e = e.getCause();
+      }
+      Assert.assertTrue(e.getMessage().contains("Hive doesn't support copy-on-write delete mode."));
+    }
+
+    // attempt an update
+    try {
+      shell.executeStatement("UPDATE customers set customer_id=3 where first_name='Joanna'");
+    } catch (Throwable e) {
+      while (e.getCause() != null) {
+        e = e.getCause();
+      }
+      Assert.assertTrue(e.getMessage().contains("Hive doesn't support copy-on-write delete mode."));
+    }
+
   }
 
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {
