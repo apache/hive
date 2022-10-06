@@ -74,7 +74,7 @@ public abstract class BaseDoubleColLongColumn extends VectorExpression {
      * conditional checks in the inner loop.
      */
     if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
-      outputVector[0] = vector1[0] + vector2[0];
+      outputVector[0] = func(vector1[0], vector2[0]);
     } else if (inputColVector1.isRepeating) {
       final double vector1Value = vector1[0];
       if (batch.selectedInUse) {
