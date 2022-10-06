@@ -53,7 +53,6 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilder.AggCall;
 import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
@@ -540,17 +539,8 @@ public final class HiveRewriteToDataSketchesRules {
         RexNode key = orderKey.getKey();
         key = rexBuilder.makeCast(getFloatType(), key);
 
-        // @formatter:off
-        AggCall aggCall = ((HiveRelBuilder) relBuilder).aggregateCall(
-            (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH),
-            /* distinct */ false,
-            /* approximate */ false,
-            /* ignoreNulls */ true,
-            null,
-            ImmutableList.of(),
-            null,
-            ImmutableList.of(key));
-        // @formatter:on
+        SqlAggFunction dataToSketchFunction = (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH);
+        AggCall aggCall = relBuilder.aggregateCall(dataToSketchFunction, key).ignoreNulls(true);
 
         relBuilder.aggregate(relBuilder.groupKey(partitionKeys), aggCall);
 
