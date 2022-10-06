@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.BRoundWithNumDigitsDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.BaseLongColLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColAndCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColOrCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.DoubleColumnInList;
@@ -107,9 +108,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncBRoundDoubleToD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncRoundDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSinDoubleToDouble;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColSubtractLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarSubtractLongColumn;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -270,7 +268,7 @@ public class TestVectorizationContext {
     VectorExpression ve = vc.getVectorExpression(sumExpr, VectorExpressionDescriptor.Mode.PROJECTION);
 
     //Verify vectorized expression
-    assertTrue(ve instanceof LongColAddLongColumn);
+    assertTrue(ve instanceof BaseLongColLongColumn.Add);
     assertEquals(2, ve.getChildExpressions().length);
     VectorExpression childExpr1 = ve.getChildExpressions()[0];
     VectorExpression childExpr2 = ve.getChildExpressions()[1];
@@ -279,13 +277,13 @@ public class TestVectorizationContext {
     //assertEquals(6, ve.getOutputColumnNum());
     assertEquals(10, ve.getOutputColumnNum());
 
-    assertTrue(childExpr1 instanceof LongColSubtractLongColumn);
+    assertTrue(childExpr1 instanceof BaseLongColLongColumn.Subtract);
     assertEquals(1, childExpr1.getChildExpressions().length);
-    assertTrue(childExpr1.getChildExpressions()[0] instanceof LongColAddLongColumn);
+    assertTrue(childExpr1.getChildExpressions()[0] instanceof BaseLongColLongColumn.Add);
     assertEquals(7, childExpr1.getOutputColumnNum());
     assertEquals(6, childExpr1.getChildExpressions()[0].getOutputColumnNum());
 
-    assertTrue(childExpr2 instanceof LongColMultiplyLongColumn);
+    assertTrue(childExpr2 instanceof BaseLongColLongColumn.Multiply);
     assertEquals(1, childExpr2.getChildExpressions().length);
     assertTrue(childExpr2.getChildExpressions()[0] instanceof LongColModuloLongColumn);
     // TODO: HIVE-20985 disabled output column reuse

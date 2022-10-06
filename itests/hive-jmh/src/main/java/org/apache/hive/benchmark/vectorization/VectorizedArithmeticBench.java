@@ -15,11 +15,10 @@ package org.apache.hive.benchmark.vectorization;
 
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.BaseDoubleColDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.BaseLongColLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColAddDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideDoubleColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumnChecked;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
@@ -57,7 +56,7 @@ public class VectorizedArithmeticBench {
     public void setup() {
       rowBatch = buildRowBatch(new DoubleColumnVector(), 2, getDoubleColumnVector(),
           getRepeatingDoubleColumnVector());
-      expression = new DoubleColAddDoubleColumn(0, 1, 2);
+      expression = new BaseDoubleColDoubleColumn.Add(0, 1, 2);
     }
   }
 
@@ -66,7 +65,7 @@ public class VectorizedArithmeticBench {
     public void setup() {
       rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(),
           getRepeatingLongColumnVector());
-      expression = new LongColAddLongColumn(0, 1, 2);
+      expression = new BaseLongColLongColumn.Add(0, 1, 2);
     }
   }
 
@@ -111,7 +110,7 @@ public class VectorizedArithmeticBench {
     public void setup() {
       rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(),
           getLongColumnVector());
-      expression = new LongColAddLongColumnChecked(0, 1, 2);
+      expression = new BaseLongColLongColumn.CheckedAdd(0, 1, 2);
       expression.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("int"));
     }
   }
@@ -121,7 +120,7 @@ public class VectorizedArithmeticBench {
     public void setup() {
       rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(),
           getLongColumnVector());
-      expression = new LongColAddLongColumn(0, 1, 2);
+      expression = new BaseLongColLongColumn.Add(0, 1, 2);
       expression.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("int"));
     }
   }

@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
     BaseDoubleColLongColumn.CheckedAdd.class,
     BaseDoubleColDoubleColumn.CheckedAdd.class,
   LongColAddLongScalar.class,
-  DoubleColAddLongColumnChecked.class, DoubleColAddDoubleColumnChecked.class, LongColAddLongScalarChecked.class,
+  LongColAddLongScalarChecked.class,
   LongColAddDoubleScalar.class, DoubleColAddLongScalar.class, DoubleColAddDoubleScalar.class,
   LongColAddDoubleScalarChecked.class, DoubleColAddLongScalarChecked.class, DoubleColAddDoubleScalarChecked.class,
   LongScalarAddLongColumn.class, LongScalarAddDoubleColumn.class, DoubleScalarAddLongColumn.class,

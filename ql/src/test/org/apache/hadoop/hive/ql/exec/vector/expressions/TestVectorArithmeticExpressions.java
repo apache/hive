@@ -40,8 +40,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColMultiplyD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColMultiplyDecimalColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColSubtractDecimalColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumnChecked;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColAddDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalScalarAddDecimalColumn;
@@ -266,10 +264,10 @@ public class TestVectorArithmeticExpressions {
     LongColumnVector lcv5 = (LongColumnVector) vrg.cols[5];
     VectorExpression expr;
     if (isChecked) {
-      expr = new LongColAddLongColumnChecked(0, 1, 2);
+      expr = new BaseLongColLongColumn.CheckedAdd(0, 1, 2);
       expr.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
     } else {
-      expr = new LongColAddLongColumn(0, 1, 2);
+      expr = new BaseLongColLongColumn.Add(0, 1, 2);
     }
 
     expr.evaluate(vrg);
@@ -303,10 +301,10 @@ public class TestVectorArithmeticExpressions {
     lcv3.isRepeating = true;
     VectorExpression expr2;
     if (isChecked) {
-      expr2 = new LongColAddLongColumnChecked(3, 4, 5);
+      expr2 = new BaseLongColLongColumn.CheckedAdd(3, 4, 5);
       expr2.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
     } else {
-      expr2 = new LongColAddLongColumn(3, 4, 5);
+      expr2 = new BaseLongColLongColumn.Add(3, 4, 5);
     }
     expr2.evaluate(vrg);
     for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {

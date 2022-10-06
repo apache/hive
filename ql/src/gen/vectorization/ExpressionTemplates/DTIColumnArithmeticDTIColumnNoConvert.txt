@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.io.LongWritable;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.BaseLongColLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -31,7 +32,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
  * expressions between a datetime/interval column and a datetime/interval column.
  * No type conversion is needed, the operations can be performed using the vectorized long value
  */
-public class <ClassName> extends LongCol<OperatorName>LongColumn {
+public class <ClassName> extends BaseLongColLongColumn.<OperatorName> {
 
   private static final long serialVersionUID = 1L;
 
