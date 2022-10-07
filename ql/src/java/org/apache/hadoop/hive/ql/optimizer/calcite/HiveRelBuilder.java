@@ -24,7 +24,6 @@ import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Join;
@@ -119,22 +118,6 @@ public class HiveRelBuilder extends RelBuilder {
       return this.push(filter);
     }
     return this;
-  }
-
-  /**
-   * Empty relationship can be expressed in many different ways, e.g.,
-   * filter(cond=false), empty LogicalValues(), etc. Calcite default implementation
-   * uses empty LogicalValues(); however, currently there is not an equivalent to
-   * this expression in Hive. Thus, we use limit 0, since Hive already includes
-   * optimizations that will do early pruning of the result tree when it is found,
-   * e.g., GlobalLimitOptimizer.
-   */
-  @Override
-  public RelBuilder empty() {
-    final RelNode input = build();
-    final RelNode sort = HiveRelFactories.HIVE_SORT_FACTORY.createSort(
-            input, RelCollations.of(), null, literal(0));
-    return this.push(sort);
   }
 
   public static SqlFunction getFloorSqlFunction(TimeUnitRange flag) {

@@ -1008,6 +1008,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void transformWithinGroup(ASTNode expressionTree, Tree withinGroupNode) throws SemanticException {
+    if (isCBOExecuted()) {
+      return;
+    }
+
     Tree functionNameNode = expressionTree.getChild(0);
     if (!FunctionRegistry.isOrderedAggregate(functionNameNode.getText())) {
       throw new SemanticException(ErrorMsg.WITHIN_GROUP_NOT_ALLOWED, functionNameNode.getText());
@@ -12070,7 +12074,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   Path dummyPath;
-  protected Table getDummyTable() throws SemanticException {
+  public Table getDummyTable() throws SemanticException {
     if (dummyPath == null) {
       dummyPath = createDummyFile();
     }

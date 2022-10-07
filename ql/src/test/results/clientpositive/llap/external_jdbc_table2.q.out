@@ -774,21 +774,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 0
       Processor Tree:
-        TableScan
-          alias: p
-          properties:
-            hive.sql.query SELECT "ikey"
-FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
-WHERE FALSE
-            hive.sql.query.fieldNames ikey
-            hive.sql.query.fieldTypes int
-            hive.sql.query.split true
-          Select Operator
-            expressions: ikey (type: int)
-            outputColumnNames: _col0
-            ListSink
+        ListSink
 
 PREHOOK: query: SELECT P.ikey
 FROM
