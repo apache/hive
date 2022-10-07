@@ -116,23 +116,19 @@ public class TestETypeConverter {
   }
 
   @Test
-  public void testGetSmallBigIntConverter() {
+  public void testGetInt64TimestampConverterBigIntHiveType() {
     Timestamp timestamp = Timestamp.valueOf("1998-10-03 09:58:31.231");
     long msTime = timestamp.toEpochMilli();
-    ByteBuffer buf = ByteBuffer.allocate(12);
-    buf.order(ByteOrder.LITTLE_ENDIAN);
-    buf.putLong(msTime);
-    buf.flip();
     // Need TimeStamp logicalType annotation here
     PrimitiveType primitiveType = createInt64TimestampType(false, TimeUnit.MILLIS);
-    Writable writable = getWritableFromBinaryConverter(createHiveTypeInfo("bigint"), primitiveType, Binary.fromByteBuffer(buf));
+    Writable writable = getWritableFromPrimitiveConverter(createHiveTypeInfo("bigint"), primitiveType, msTime);
     // Retrieve as BigInt
     LongWritable longWritable = (LongWritable) writable;
     assertEquals(msTime, longWritable.get());
   }
 
   @Test
-  public void testGetBigIntConverter() {
+  public void testGetInt96TimestampConverterBigIntHiveType() {
     Timestamp timestamp = Timestamp.valueOf("1998-10-03 09:58:31.231");
     NanoTime nanoTime = NanoTimeUtils.getNanoTime(timestamp, ZoneOffset.UTC, false);
     PrimitiveType primitiveType = Types.optional(PrimitiveTypeName.INT96).named("value");
