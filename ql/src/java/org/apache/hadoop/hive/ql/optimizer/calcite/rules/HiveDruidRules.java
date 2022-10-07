@@ -66,46 +66,21 @@ import java.util.TreeSet;
  */
 public class HiveDruidRules {
 
-  public static final DruidFilterRule FILTER = RelRule.Config.EMPTY
-    .withOperandSupplier(b0 ->
-      b0.operand(Filter.class).oneInput(b1 ->
-        b1.operand(DruidQuery.class).noInputs()))
-    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-    .as(DruidFilterRule.Config.class)
-    .toRule();
+  public static final RelOptRule FILTER =
+      DruidFilterRule.DruidFilterRuleConfig.DEFAULT.withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
-  public static final DruidProjectRule PROJECT = RelRule.Config.EMPTY
-    .withOperandSupplier(b0 ->
-      b0.operand(Project.class).oneInput(b1 ->
-        b1.operand(DruidQuery.class).noInputs()))
-    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-    .as(DruidProjectRule.Config.class)
-    .toRule();
+  public static final RelOptRule PROJECT =
+      DruidProjectRule.DruidProjectRuleConfig.DEFAULT.withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
-  public static final DruidAggregateRule AGGREGATE = RelRule.Config.EMPTY
-    .withOperandSupplier(b0 ->
-      b0.operand(Aggregate.class).oneInput(b1 ->
-        b1.operand(DruidQuery.class).noInputs()))
-    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-    .as(DruidAggregateRule.Config.class)
-    .toRule();
+  public static final RelOptRule AGGREGATE =
+      DruidAggregateRule.DruidAggregateRuleConfig.DEFAULT.withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
-  public static final DruidAggregateProjectRule AGGREGATE_PROJECT = RelRule.Config.EMPTY
-    .withOperandSupplier(b0 ->
-      b0.operand(Aggregate.class).oneInput(b1 ->
-        b1.operand(Project.class).oneInput(b2 ->
-          b2.operand(DruidQuery.class).noInputs())))
-    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-    .as(DruidAggregateProjectRule.Config.class)
-    .toRule();
+  public static final RelOptRule AGGREGATE_PROJECT =
+      DruidAggregateProjectRule.DruidAggregateProjectRuleConfig.DEFAULT.withRelBuilderFactory(
+          HiveRelFactories.HIVE_BUILDER).toRule();
 
-  public static final DruidSortRule SORT = RelRule.Config.EMPTY
-    .withOperandSupplier(b0 ->
-      b0.operand(Sort.class).oneInput(b1 ->
-        b1.operand(DruidQuery.class).noInputs()))
-    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-    .as(DruidSortRule.Config.class)
-    .toRule();
+  public static final RelOptRule SORT =
+      DruidSortRule.DruidSortRuleConfig.DEFAULT.withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER).toRule();
 
   public static final SortProjectTransposeRule SORT_PROJECT_TRANSPOSE = SortProjectTransposeRule.Config.DEFAULT
     .withOperandFor(Sort.class, Project.class, DruidQuery.class)
@@ -141,21 +116,13 @@ public class HiveDruidRules {
       .as(FilterAggregateTransposeRule.Config.class)
       .toRule();
 
-  public static final DruidPostAggregationProjectRule POST_AGGREGATION_PROJECT = RelRule.Config.EMPTY
-    .withOperandSupplier(b0 ->
-      b0.operand(Project.class).oneInput(b1 ->
-        b1.operand(DruidQuery.class).noInputs()))
-    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-    .as(DruidPostAggregationProjectRule.Config.class)
-    .toRule();
+  public static final RelOptRule POST_AGGREGATION_PROJECT =
+      DruidPostAggregationProjectRule.DruidPostAggregationProjectRuleConfig.DEFAULT.withRelBuilderFactory(
+          HiveRelFactories.HIVE_BUILDER).toRule();
 
-  public static final DruidHavingFilterRule HAVING_FILTER_RULE = RelRule.Config.EMPTY
-    .withOperandSupplier(b0 ->
-      b0.operand(Filter.class).oneInput(b1 ->
-        b1.operand(DruidQuery.class).noInputs()))
-    .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
-    .as(DruidHavingFilterRule.Config.class)
-    .toRule();
+  public static final RelOptRule HAVING_FILTER_RULE =
+      DruidHavingFilterRule.DruidHavingFilterRuleConfig.DEFAULT.withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+          .toRule();
 
   public static final AggregateExpandDistinctAggregatesDruidRule EXPAND_SINGLE_DISTINCT_AGGREGATES_DRUID_RULE =
       new AggregateExpandDistinctAggregatesDruidRule(HiveRelFactories.HIVE_BUILDER);
