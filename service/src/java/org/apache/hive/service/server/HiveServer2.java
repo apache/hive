@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.events.NotificationEventPoll;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
+import org.apache.hadoop.hive.ql.parse.repl.dump.ExportService;
 import org.apache.hadoop.hive.ql.parse.repl.metric.MetricSink;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
@@ -167,6 +168,7 @@ public class HiveServer2 extends CompositeService {
   private SettableFuture<Boolean> notLeaderTestFuture = SettableFuture.create();
   private ZooKeeperHiveHelper zooKeeperHelper = null;
   private ScheduledQueryExecutionService scheduledQueryService;
+  private ExportService exportService;
 
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
@@ -269,6 +271,10 @@ public class HiveServer2 extends CompositeService {
     HiveMaterializedViewsRegistry.get().init();
 
     StatsSources.initialize(hiveConf);
+
+    // Create and configure Table and Partition dump ExportService
+    this.exportService = ExportService.getInstance();
+    this.exportService.configure(hiveConf, true);
 
     if (hiveConf.getBoolVar(ConfVars.HIVE_SCHEDULED_QUERIES_EXECUTOR_ENABLED)) {
       scheduledQueryService = ScheduledQueryExecutionService.startScheduledQueryExecutorService(hiveConf);
@@ -1007,6 +1013,17 @@ public class HiveServer2 extends CompositeService {
       // this is mostly for testing purposes to make sure that SAML client is
       // reinitialized after a HS2 is restarted.
       HiveSaml2Client.shutdown();
+    }
+
+    // shutdown ExportService
+    if (exportService != null) {
+      exportService.shutdown();
+      try {
+        exportService.await(60, TimeUnit.SECONDS);
+        exportService = null;
+      } catch (Exception e) {
+        LOG.error("Error while shutting down ExportService ", e);
+      }
     }
   }
 

@@ -43,10 +43,10 @@ public class ExportService {
   /**
    * Executor service to execute runnable export jobs
    */
-  private ExecutorService execService;
+  private volatile ExecutorService execService;
   private static final Logger LOG = LoggerFactory.getLogger(ExportService.class);
-  private List<Future<?>> futures = new LinkedList<>();
-  private AtomicBoolean isServiceRunning =  new AtomicBoolean(false);;
+  private final List<Future<?>> futures = new LinkedList<>();
+  private final AtomicBoolean isServiceRunning =  new AtomicBoolean(false);
   private final int threadPoolSizeLimit = 100;
 
   /**
@@ -77,7 +77,7 @@ public class ExportService {
    *          A boolean flag to indicate whether to cancel current ongoing task or shutdown
    *          export service immediately.
    */
-  public void configure(HiveConf hiveConf, boolean cancelCurrentJob) {
+  public synchronized void configure(HiveConf hiveConf, boolean cancelCurrentJob) {
     if (execService != null) {
       if (cancelCurrentJob) {
         execService.shutdownNow();
@@ -98,7 +98,7 @@ public class ExportService {
     }
     ThreadFactory namingThreadFactory = new ThreadFactoryBuilder().setNameFormat("TableAndPartition-dump-thread-%d").build();
     execService = Executors.newFixedThreadPool(nDumpThreads, namingThreadFactory);
-    LOG.debug("ExportService started with thread pool size {} ", nDumpThreads);
+    LOG.info("ExportService started with thread pool size {} ", nDumpThreads);
     isServiceRunning.set(true);
   }
 
@@ -107,14 +107,14 @@ public class ExportService {
    * If it is shutdown return false else return true
    * @return false/true
    */
-  public boolean isExportServiceStarted() {
+  public synchronized boolean isExportServiceRunning() {
     return isServiceRunning.get();
   }
   /**
    * Executes the submitted ExportJob
    * @param job
    */
-  public void submit(ExportJob job) {
+  public synchronized void submit(ExportJob job) {
     assert (execService != null);
     futures.add(execService.submit(job));
   }
@@ -122,7 +122,7 @@ public class ExportService {
   /**
    * Shutdown the ExportService and does not allow further ExportJob to be submitted.
    */
-  public void shutdown() {
+  public synchronized void shutdown() {
     assert (execService != null);
     LOG.debug("ExportService got shutdown");
     execService.shutdown();
@@ -132,7 +132,7 @@ public class ExportService {
   /**
    * Shutdown immediately the ExportService and does not allow further ExportJob to be submitted
    */
-  public void shutdownNow() {
+  public synchronized void shutdownNow() {
     assert (execService != null);
     LOG.debug("ExportService got shutdownNow");
     execService.shutdownNow();
@@ -146,7 +146,7 @@ public class ExportService {
    * @return true if executor terminated and false if timeout elapsed
    * @throws InterruptedException
    */
-  public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
+  public synchronized boolean await(long timeout, TimeUnit unit) throws InterruptedException {
     assert (execService != null);
     LOG.debug("ExportService : awaiting termination of submitted jobs");
     return execService.awaitTermination(timeout, unit);
@@ -156,7 +156,7 @@ public class ExportService {
    * Wait for all tasks submitted to ExecutorService threads to complete execution.
    * @throws HiveException
    */
-  public void waitForTasksToFinish() throws HiveException {
+  public synchronized void waitForTasksToFinish() throws HiveException {
    for (Future<?> future : futures) {
       try {
         future.get();
@@ -181,5 +181,4 @@ public class ExportService {
     ThreadPoolExecutor executor = (ThreadPoolExecutor) execService;
     return executor.getTaskCount();
   }
-
 }

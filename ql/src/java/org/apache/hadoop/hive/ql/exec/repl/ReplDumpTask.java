@@ -193,11 +193,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (work.dataCopyIteratorsInitialized()) {
         initiateDataCopyTasks();
       } else {
-        if (!ExportService.getInstance().isExportServiceStarted()) {
-          LOG.debug("ReplDumpTask: ExportService is not started");
+        if (!ExportService.getInstance().isExportServiceRunning()) {
+          LOG.info("ReplDumpTask: ExportService is not running");
           useExportServiceForTableDump = false;
         } else {
-          LOG.debug("ReplDumpTask: ExportService is already started");
+          LOG.info("ReplDumpTask: ExportService is running");
           useExportServiceForTableDump = true;
         }
         Path dumpRoot = ReplUtils.getEncodedDumpRootPath(conf, work.dbNameOrPattern.toLowerCase());
@@ -1486,12 +1486,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     MmContext mmCtx = MmContext.createIfNeeded(tableSpec.tableHandle);
     tuple.replicationSpec.setRepl(true);
+    TableExport tableExport = new TableExport(exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx);
     if (useExportServiceForTableDump) {
-      new TableExport(exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).parallelWrite(
-              false, managedTbleList, dataCopyAtLoad);
+      tableExport.parallelWrite(false, managedTbleList, dataCopyAtLoad);
     } else {
-      new TableExport(exportPaths, tableSpec, tuple.replicationSpec, hiveDb, distCpDoAsUser, conf, mmCtx).serialWrite(
-              false, managedTbleList, dataCopyAtLoad);
+      tableExport.serialWrite(false, managedTbleList, dataCopyAtLoad);
     }
     work.getMetricCollector().reportStageProgress(getName(), ReplUtils.MetricName.TABLES.name(), 1);
     work.getReplLogger().tableLog(tblName, tableSpec.tableHandle.getTableType());

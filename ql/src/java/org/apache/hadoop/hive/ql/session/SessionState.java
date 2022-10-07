@@ -312,7 +312,7 @@ public class SessionState implements ISessionAuthState{
 
   private final CleanupService cleanupService;
 
-  private ExportService exportService;
+  private final AtomicBoolean shouldCloseExportService = new AtomicBoolean(false);
 
   /**
    * Used to cache functions in use for a query, during query planning
@@ -476,9 +476,11 @@ public class SessionState implements ISessionAuthState{
 
     ShimLoader.getHadoopShims().setHadoopSessionContext(getSessionId());
 
-    // Create and configure Table and Partition ExportService
-    this.exportService = ExportService.getInstance();
-    this.exportService.configure(conf, true);
+    // Create and configure Table and Partition ExportService if it is not running
+    if (!ExportService.getInstance().isExportServiceRunning()) {
+      ExportService.getInstance().configure(conf, true);
+      shouldCloseExportService.set(true);
+    }
   }
 
   public Map<String, String> getHiveVariables() {
@@ -1834,13 +1836,12 @@ public class SessionState implements ISessionAuthState{
 
   public void close() throws IOException {
     // shutdown ExportService
-    if (exportService != null) {
-      exportService.shutdown();
+    if (shouldCloseExportService.get()) {
+      ExportService.getInstance().shutdown();
       try {
-        exportService.await(Long.MAX_VALUE, TimeUnit.SECONDS);
-        exportService = null;
+        ExportService.getInstance().await(60, TimeUnit.SECONDS);
       } catch (Exception e) {
-        LOG.error("Error while shutting down ExportService ", e);
+        LOG.error("Error in shutting down ExportService while closing session ", e);
       }
     }
 
