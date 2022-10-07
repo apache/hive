@@ -304,36 +304,34 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inoutputopt
 #### A masked pattern was here ####
 11
-Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select orOutput.key, inOutput.key
 from orOutput full outer join inOutput on (orOutput.key = inOutput.key)
-where orOutput.key = null
-or inOutput.key = null
+where orOutput.key is null
+or inOutput.key is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inoutput
 PREHOOK: Input: default@oroutput
 #### A masked pattern was here ####
 POSTHOOK: query: select orOutput.key, inOutput.key
 from orOutput full outer join inOutput on (orOutput.key = inOutput.key)
-where orOutput.key = null
-or inOutput.key = null
+where orOutput.key is null
+or inOutput.key is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inoutput
 POSTHOOK: Input: default@oroutput
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select orOutput.key, inOutputOpt.key
 from orOutput full outer join inOutputOpt on (orOutput.key = inOutputOpt.key)
-where orOutput.key = null
-or inOutputOpt.key = null
+where orOutput.key is null
+or inOutputOpt.key is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inoutputopt
 PREHOOK: Input: default@oroutput
 #### A masked pattern was here ####
 POSTHOOK: query: select orOutput.key, inOutputOpt.key
 from orOutput full outer join inOutputOpt on (orOutput.key = inOutputOpt.key)
-where orOutput.key = null
-or inOutputOpt.key = null
+where orOutput.key is null
+or inOutputOpt.key is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inoutputopt
 POSTHOOK: Input: default@oroutput

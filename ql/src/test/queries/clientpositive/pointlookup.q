@@ -115,14 +115,14 @@ select count(*) from inOutputOpt;
 -- check that orOutput and inOutput matches using full outer join
 select orOutput.key, inOutput.key
 from orOutput full outer join inOutput on (orOutput.key = inOutput.key)
-where orOutput.key = null
-or inOutput.key = null;
+where orOutput.key is null
+or inOutput.key is null;
 
 -- check that ourOutput and inOutputOpt matches using full outer join
 select orOutput.key, inOutputOpt.key
 from orOutput full outer join inOutputOpt on (orOutput.key = inOutputOpt.key)
-where orOutput.key = null
-or inOutputOpt.key = null;
+where orOutput.key is null
+or inOutputOpt.key is null;
 
 drop table orOutput;
 drop table inOutput;

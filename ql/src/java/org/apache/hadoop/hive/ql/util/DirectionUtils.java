@@ -70,6 +70,10 @@ public final class DirectionUtils {
     return (Direction)convert("code", code, "direction");
   }
 
+  public static int directionToCode(Direction direction) {
+    return (int)convert("direction", direction, "code");
+  }
+
   private static Object convert(String typeFrom, Object value, String typeTo) {
     Object ascObject = ASCENDING_DATA.get(typeFrom);
     Object descObject = DESCENDING_DATA.get(typeFrom);
