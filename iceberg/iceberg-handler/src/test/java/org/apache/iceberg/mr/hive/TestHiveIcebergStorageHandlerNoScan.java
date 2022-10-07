@@ -1637,19 +1637,24 @@ public class TestHiveIcebergStorageHandlerNoScan {
   @Test
   public void testParquetHiveCatalogValidation() throws TException, InterruptedException, IOException {
 
-    // Create a table with explicitly set parquet.compression
+    // Create a table with explicitly set parquet.compression & parquet.block.size
+    Map<String, String> props = Maps.newHashMap();
+    props.put(ParquetOutputFormat.BLOCK_SIZE, "10000");
+    props.put(ParquetOutputFormat.COMPRESSION, "SNAPPY");
     TableIdentifier target = TableIdentifier.of("default", "target");
     Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), FileFormat.PARQUET, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 1,
-        Collections.singletonMap(ParquetOutputFormat.COMPRESSION, "SNAPPY"));
+        props);
 
     // Check the property got set in the hive table metadata.
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(target);
     Assert.assertEquals("SNAPPY", hmsTable.getParameters().get(ParquetOutputFormat.COMPRESSION).toUpperCase());
+    Assert.assertEquals("10000", hmsTable.getParameters().get(ParquetOutputFormat.BLOCK_SIZE));
 
     // Check the property got set in the iceberg table metadata.
     Table icebergTable = testTables.loadTable(target);
     Assert.assertEquals("SNAPPY", icebergTable.properties().get(TableProperties.PARQUET_COMPRESSION).toUpperCase());
+    Assert.assertEquals("10000", icebergTable.properties().get(TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES));
   }
 
   @Test
