@@ -86,6 +86,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -1281,6 +1282,49 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
             MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) + MetastoreConf
                 .getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE) + 1),
         countCompacts(txnHandler));
+  }
+
+  @Test
+  public void testInitiatorWithMinorCompactionForInsertOnlyTable() throws Exception {
+    String tblName = "insertOnlyTable";
+    runStatementOnDriver("drop table if exists " + tblName);
+    runStatementOnDriver("create table " + tblName + " (a INT, b STRING) stored as orc tblproperties('transactional'='true', " +
+            "'transactional_properties' = 'insert_only')");
+    hiveConf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 4);
+    hiveConf.setFloatVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD, 1.0f);
+    for(int i = 0; i < 20; i++) {
+      //generate enough delta files so that Initiator can trigger auto compaction
+      runStatementOnDriver("insert into " + tblName + " values(" + (i + 1) + ", 'foo'),(" + (i + 2) + ", 'bar'),(" + (i + 3) + ", 'baz')");
+    }
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    runInitiator(hiveConf);
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+
+    for(int i = 0; i < 5; i++) {
+      //generate enough delta files so that Initiator can trigger auto compaction
+      runStatementOnDriver("insert into " + tblName + " values(" + (i + 1) + ", 'foo'),(" + (i + 2) + ", 'bar'),(" + (i + 3) + ", 'baz')");
+    }
+    runInitiator(hiveConf);
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] fileStatuses = fs.globStatus(new Path(getWarehouseDir() + "/" + tblName + "/*"));
+
+    // One major compaction generates one base file.
+    // One minor compaction generates one delta file.
+    Assertions.assertEquals(fileStatuses.length, 2);
+    int baseFiles = 0, deltaFiles = 0;
+    for (FileStatus fileStatus : fileStatuses) {
+      if (fileStatus.getPath().getName().startsWith(AcidUtils.BASE_PREFIX)) {
+        baseFiles++;
+      } else if (fileStatus.getPath().getName().startsWith(AcidUtils.DELTA_PREFIX)) {
+        deltaFiles++;
+      }
+    }
+    Assertions.assertEquals(baseFiles, 1);
+    Assertions.assertEquals(deltaFiles, 1);
   }
 
   /**
