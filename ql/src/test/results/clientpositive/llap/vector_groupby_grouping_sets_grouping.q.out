@@ -674,7 +674,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 7, 12]
-                        selectExpressions: LongColAddLongColumn(col 5:bigint, col 6:bigint)(children: GroupingColumn(col 2, mask 2) -> 5:bigint, GroupingColumn(col 2, mask 1) -> 6:bigint) -> 7:bigint, IfExprColumnNull(col 11:boolean, col 0:int, null)(children: LongColEqualLongScalar(col 10:bigint, val 1)(children: LongColAddLongColumn(col 8:bigint, col 9:bigint)(children: GroupingColumn(col 2, mask 2) -> 8:bigint, GroupingColumn(col 2, mask 1) -> 9:bigint) -> 10:bigint) -> 11:boolean, col 0:int) -> 12:int
+                        selectExpressions: Add(col 5:bigint, col 6:bigint)(children: GroupingColumn(col 2, mask 2) -> 5:bigint, GroupingColumn(col 2, mask 1) -> 6:bigint) -> 7:bigint, IfExprColumnNull(col 11:boolean, col 0:int, null)(children: LongColEqualLongScalar(col 10:bigint, val 1)(children: Add(col 8:bigint, col 9:bigint)(children: GroupingColumn(col 2, mask 2) -> 8:bigint, GroupingColumn(col 2, mask 1) -> 9:bigint) -> 10:bigint) -> 11:boolean, col 0:int) -> 12:int
                     Statistics: Num rows: 12 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: bigint), _col3 (type: int)
@@ -1396,7 +1396,7 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: [0, 1, 5]
-                      selectExpressions: LongColAddLongColumn(col 3:bigint, col 4:bigint)(children: GroupingColumn(col 2, mask 2) -> 3:bigint, GroupingColumn(col 2, mask 1) -> 4:bigint) -> 5:bigint
+                      selectExpressions: Add(col 3:bigint, col 4:bigint)(children: GroupingColumn(col 2, mask 2) -> 3:bigint, GroupingColumn(col 2, mask 1) -> 4:bigint) -> 5:bigint
                   Statistics: Num rows: 12 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col2 (type: bigint), CASE WHEN ((_col2 = 1L)) THEN (_col0) END (type: int)

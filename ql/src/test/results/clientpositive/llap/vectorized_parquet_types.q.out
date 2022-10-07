@@ -300,7 +300,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [1, 0, 2, 5, 3, 4, 10, 13]
-                        selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 4:double) -> 13:double
+                        selectExpressions: Multiply(col 4:double, col 4:double) -> 13:double
                     Statistics: Num rows: 22 Data size: 4906 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(_col1), min(_col2), count(_col3), sum(_col4), count(_col4), sum(_col7), sum(_col5), count(_col5), max(_col6)
@@ -369,7 +369,7 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: [0, 1, 2, 3, 10, 15, 9]
-                      selectExpressions: DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 10:double, FuncPowerDoubleToDouble(col 14:double)(children: DoubleColDivideLongColumn(col 13:double, col 8:bigint)(children: DoubleColSubtractDoubleColumn(col 6:double, col 12:double)(children: DoubleColDivideLongColumn(col 11:double, col 8:bigint)(children: DoubleColMultiplyDoubleColumn(col 7:double, col 7:double) -> 11:double) -> 12:double) -> 13:double) -> 14:double) -> 15:double
+                      selectExpressions: DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 10:double, FuncPowerDoubleToDouble(col 14:double)(children: DoubleColDivideLongColumn(col 13:double, col 8:bigint)(children: Subtract(col 6:double, col 12:double)(children: DoubleColDivideLongColumn(col 11:double, col 8:bigint)(children: Multiply(col 7:double, col 7:double) -> 11:double) -> 12:double) -> 13:double) -> 14:double) -> 15:double
                   Statistics: Num rows: 3 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: tinyint)

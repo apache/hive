@@ -526,7 +526,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [7]
-                        selectExpressions: DoubleColAddDoubleColumn(col 5:double, col 6:double)(children: CastStringToDouble(col 0:string) -> 5:double, CastStringToDouble(col 0:string) -> 6:double) -> 7:double
+                        selectExpressions: Add(col 5:double, col 6:double)(children: CastStringToDouble(col 0:string) -> 5:double, CastStringToDouble(col 0:string) -> 6:double) -> 7:double
                     Statistics: Num rows: 10 Data size: 850 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       Group By Vectorization:

@@ -679,7 +679,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 6]
-                        selectExpressions: LongColAddLongColumn(col 2:int, col 3:int) -> 6:int
+                        selectExpressions: Add(col 2:int, col 3:int) -> 6:int
                     Statistics: Num rows: 6 Data size: 1068 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col2)

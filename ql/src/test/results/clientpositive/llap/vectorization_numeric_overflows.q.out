@@ -1063,7 +1063,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColLessLongScalar(col 6:int, val 50)(children: LongColSubtractLongColumnChecked(col 2:int, col 3:int) -> 6:int)
+                        predicateExpression: FilterLongColLessLongScalar(col 6:int, val 50)(children: CheckedSubtract(col 2:int, col 3:int) -> 6:int)
                     predicate: ((i1 - i2) < 50) (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1073,7 +1073,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [2, 3, 7]
-                          selectExpressions: LongColSubtractLongColumnChecked(col 2:int, col 3:int) -> 7:int
+                          selectExpressions: CheckedSubtract(col 2:int, col 3:int) -> 7:int
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col2 (type: int)

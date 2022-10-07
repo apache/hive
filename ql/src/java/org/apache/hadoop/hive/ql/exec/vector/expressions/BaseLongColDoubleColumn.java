@@ -187,7 +187,7 @@ public abstract class BaseLongColDoubleColumn extends VectorExpression {
     }
   }
 
-  public static class CheckedAdd extends BaseLongColLongColumn.Add {
+  public static class CheckedAdd extends Add {
     public CheckedAdd(int colNum1, int colNum2, int outputColumnNum) {
       super(colNum1, colNum2, outputColumnNum);
     }
@@ -202,7 +202,7 @@ public abstract class BaseLongColDoubleColumn extends VectorExpression {
     }
   }
 
-  public static class CheckedMultiply extends BaseLongColLongColumn.Multiply {
+  public static class CheckedMultiply extends Multiply {
     public CheckedMultiply(int colNum1, int colNum2, int outputColumnNum) {
       super(colNum1, colNum2, outputColumnNum);
     }
@@ -217,7 +217,7 @@ public abstract class BaseLongColDoubleColumn extends VectorExpression {
     }
   }
 
-  public static class CheckedSubtract extends BaseLongColLongColumn.Subtract {
+  public static class CheckedSubtract extends Subtract {
     public CheckedSubtract(int colNum1, int colNum2, int outputColumnNum) {
       super(colNum1, colNum2, outputColumnNum);
     }

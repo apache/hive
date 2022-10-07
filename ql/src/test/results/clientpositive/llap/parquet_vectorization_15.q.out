@@ -103,7 +103,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [4, 10, 5, 6, 0, 2, 8, 4, 14, 15, 18, 19, 22]
-                          selectExpressions: DoubleColMultiplyDoubleColumn(col 4:double, col 4:double)(children: col 4:float, col 4:float) -> 14:double, CastLongToDouble(col 0:tinyint) -> 15:double, DoubleColMultiplyDoubleColumn(col 16:double, col 17:double)(children: CastLongToDouble(col 0:tinyint) -> 16:double, CastLongToDouble(col 0:tinyint) -> 17:double) -> 18:double, CastLongToDouble(col 2:int) -> 19:double, DoubleColMultiplyDoubleColumn(col 20:double, col 21:double)(children: CastLongToDouble(col 2:int) -> 20:double, CastLongToDouble(col 2:int) -> 21:double) -> 22:double
+                          selectExpressions: Multiply(col 4:double, col 4:double)(children: col 4:float, col 4:float) -> 14:double, CastLongToDouble(col 0:tinyint) -> 15:double, Multiply(col 16:double, col 17:double)(children: CastLongToDouble(col 0:tinyint) -> 16:double, CastLongToDouble(col 0:tinyint) -> 17:double) -> 18:double, CastLongToDouble(col 2:int) -> 19:double, Multiply(col 20:double, col 21:double)(children: CastLongToDouble(col 2:int) -> 20:double, CastLongToDouble(col 2:int) -> 21:double) -> 22:double
                       Statistics: Num rows: 12288 Data size: 2367002 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(_col8), sum(_col7), count(_col0), min(_col2), sum(_col10), sum(_col9), count(_col4), sum(_col12), sum(_col11), count(_col5)

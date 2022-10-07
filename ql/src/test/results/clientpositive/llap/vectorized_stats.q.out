@@ -139,7 +139,7 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: [5, 7, 9, 10, 13, 4]
-                      selectExpressions: ConstantVectorExpression(val STRING) -> 5:string, VectorCoalesce(columns [0, 6])(children: col 0:int, ConstantVectorExpression(val 0) -> 6:int) -> 7:int, VectorCoalesce(columns [1, 8])(children: col 1:double, ConstantVectorExpression(val 0.0) -> 8:double) -> 9:double, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 10:bigint, VectorCoalesce(columns [11, 12])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 11:bigint, ConstantVectorExpression(val 0) -> 12:bigint) -> 13:bigint
+                      selectExpressions: ConstantVectorExpression(val STRING) -> 5:string, VectorCoalesce(columns [0, 6])(children: col 0:int, ConstantVectorExpression(val 0) -> 6:int) -> 7:int, VectorCoalesce(columns [1, 8])(children: col 1:double, ConstantVectorExpression(val 0.0) -> 8:double) -> 9:double, Subtract(col 2:bigint, col 3:bigint) -> 10:bigint, VectorCoalesce(columns [11, 12])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 11:bigint, ConstantVectorExpression(val 0) -> 12:bigint) -> 13:bigint
                   Statistics: Num rows: 1 Data size: 266 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -449,7 +449,7 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: [5, 0, 1, 6, 9, 4]
-                      selectExpressions: ConstantVectorExpression(val LONG) -> 5:string, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
+                      selectExpressions: ConstantVectorExpression(val LONG) -> 5:string, Subtract(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
                   Statistics: Num rows: 1 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -759,7 +759,7 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: [5, 0, 1, 6, 9, 4]
-                      selectExpressions: ConstantVectorExpression(val DOUBLE) -> 5:string, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
+                      selectExpressions: ConstantVectorExpression(val DOUBLE) -> 5:string, Subtract(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
                   Statistics: Num rows: 1 Data size: 266 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -1069,7 +1069,7 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: [5, 0, 1, 6, 9, 4]
-                      selectExpressions: ConstantVectorExpression(val TIMESTAMP) -> 5:string, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
+                      selectExpressions: ConstantVectorExpression(val TIMESTAMP) -> 5:string, Subtract(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
                   Statistics: Num rows: 1 Data size: 333 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -1380,7 +1380,7 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: [5, 0, 1, 6, 9, 4]
-                      selectExpressions: ConstantVectorExpression(val DECIMAL) -> 5:string, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
+                      selectExpressions: ConstantVectorExpression(val DECIMAL) -> 5:string, Subtract(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
                   Statistics: Num rows: 1 Data size: 475 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -1691,7 +1691,7 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumnNums: [5, 0, 1, 6, 9, 4]
-                      selectExpressions: ConstantVectorExpression(val DATE) -> 5:string, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
+                      selectExpressions: ConstantVectorExpression(val DATE) -> 5:string, Subtract(col 2:bigint, col 3:bigint) -> 6:bigint, VectorCoalesce(columns [7, 8])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 7:bigint, ConstantVectorExpression(val 0) -> 8:bigint) -> 9:bigint
                   Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false

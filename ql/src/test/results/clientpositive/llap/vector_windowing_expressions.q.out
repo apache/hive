@@ -586,7 +586,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [2, 3, 4, 8]
-                          selectExpressions: DoubleColSubtractDoubleColumn(col 7:float, col 5:float)(children: CastLongToFloatViaLongToDouble(col 3:smallint) -> 7:float) -> 8:float
+                          selectExpressions: Subtract(col 7:float, col 5:float)(children: CastLongToFloatViaLongToDouble(col 3:smallint) -> 7:float) -> 8:float
                       Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -850,7 +850,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [2, 1, 6]
-                          selectExpressions: LongColSubtractLongColumn(col 1:int, col 3:int) -> 6:int
+                          selectExpressions: Subtract(col 1:int, col 3:int) -> 6:int
                       Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -1114,7 +1114,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [2, 1, 3, 7]
-                          selectExpressions: DoubleColSubtractDoubleColumn(col 6:double, col 4:double)(children: CastLongToDouble(col 1:smallint) -> 6:double) -> 7:double
+                          selectExpressions: Subtract(col 6:double, col 4:double)(children: CastLongToDouble(col 1:smallint) -> 6:double) -> 7:double
                       Statistics: Num rows: 1 Data size: 204 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false

@@ -16,6 +16,7 @@ package org.apache.hive.benchmark.vectorization;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.BaseLongColLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -39,6 +40,16 @@ public class VectorizationTemplateBench {
       rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(),
           getLongColumnVector());
       expression = new LongColAddLongColumn(0, 1, 2);
+      expression.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    }
+  }
+
+  public static class BaseLongColLongColumnAddBench extends AbstractExpression {
+    @Override
+    public void setup() {
+      rowBatch = buildRowBatch(new LongColumnVector(), 2, getLongColumnVector(),
+          getLongColumnVector());
+      expression = new BaseLongColLongColumn.Add(0, 1, 2);
       expression.setOutputTypeInfo(TypeInfoFactory.getPrimitiveTypeInfo("int"));
     }
   }

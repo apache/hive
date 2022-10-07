@@ -537,7 +537,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1, 8, 10, 2, 14]
-                        selectExpressions: DoubleColSubtractDoubleColumn(col 7:float, col 3:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 7:float) -> 8:float, DoubleColDivideDoubleColumn(col 3:double, col 9:double)(children: col 3:float, CastLongToDouble(col 2:int) -> 9:double) -> 10:double, DoubleColSubtractDoubleColumn(col 12:double, col 13:double)(children: DoubleColDivideDoubleColumn(col 3:double, col 11:double)(children: col 3:float, CastLongToDouble(col 2:int) -> 11:double) -> 12:double, CastLongToDouble(col 2:int) -> 13:double) -> 14:double
+                        selectExpressions: Subtract(col 7:float, col 3:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 7:float) -> 8:float, DoubleColDivideDoubleColumn(col 3:double, col 9:double)(children: col 3:float, CastLongToDouble(col 2:int) -> 9:double) -> 10:double, Subtract(col 12:double, col 13:double)(children: DoubleColDivideDoubleColumn(col 3:double, col 11:double)(children: col 3:float, CastLongToDouble(col 2:int) -> 11:double) -> 12:double, CastLongToDouble(col 2:int) -> 13:double) -> 14:double
                     Statistics: Num rows: 20 Data size: 3382 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col2), sum(_col3), max(_col4), sum(_col5)
