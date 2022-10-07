@@ -899,6 +899,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
                 .equalsIgnoreCase(hmsTable.getParameters().get("write.format.default")));
   }
 
+  // TODO: remove this if copy-on-write mode gets implemented in Hive
   private static void setDeleteModeOnTableProperties(Table icebergTable, Map<String, String> newProps) {
     // Hive only supports merge-on-read delete mode, it will actually throw an error if DML operations are attempted on
     // tables that don't have this (the default is copy-on-write). We set this at table creation and v1->v2 conversion.
