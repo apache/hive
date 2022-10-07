@@ -115,7 +115,7 @@ public class HiveRelFactories {
   private static class HiveProjectFactoryImpl implements ProjectFactory {
     @Override
     public RelNode createProject(RelNode child, List<RelHint> hints,
-        List<? extends RexNode> childExprs, List<String> fieldNames) {
+        List<? extends RexNode> childExprs, List<? extends String> fieldNames) {
       RelOptCluster cluster = child.getCluster();
       RelDataType rowType = RexUtil.createStructType(
           cluster.getTypeFactory(), childExprs, fieldNames, SqlValidatorUtil.EXPR_SUGGESTER);
