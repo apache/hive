@@ -74,6 +74,10 @@ public class EnforceReadOnlyDatabaseHook implements ExecuteWithHookContext {
     if (isAlterDbWritable(hookContext)) {
       return;
     }
+    // The second exception is to load a dumped database.
+    if (hiveOperation == HiveOperation.REPLLOAD) {
+      return;
+    }
 
     // Now the remaining operation is a write operation, as a read operation is already allowed.
 
