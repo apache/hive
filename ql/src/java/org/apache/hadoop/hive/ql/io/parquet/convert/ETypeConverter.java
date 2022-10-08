@@ -800,13 +800,15 @@ public enum ETypeConverter {
 
             @Override
             public Optional<PrimitiveConverter> visit(TimestampLogicalTypeAnnotation logicalTypeAnnotation) {
-              String hiveTypeInfoName = TypeInfoUtils.getBaseName(hiveTypeInfo.getTypeName());
-              // Special case for legacy parquet timestamp types. Parquet can store the timestamp
-              // as an int64 value. If it doesn, there is no need for a timestamp conversion and
-              // instead the data can be bound directly into a long field.
-              if (EINT64_CONVERTER.getType().equals(type.getPrimitiveTypeName().javaType) &&
-                  hiveTypeInfoName.equals(serdeConstants.BIGINT_TYPE_NAME)) {
-                return Optional.of(EINT64_CONVERTER.getConverter(type, index, parent, hiveTypeInfo));
+              if (hiveTypeInfo != null) {
+                String hiveTypeInfoName = TypeInfoUtils.getBaseName(hiveTypeInfo.getTypeName());
+                // Special case for legacy parquet timestamp types. Parquet can store the timestamp
+                // as an int64 value. If it doesn, there is no need for a timestamp conversion and
+                // instead the data can be bound directly into a long field.
+                if (EINT64_CONVERTER.getType().equals(type.getPrimitiveTypeName().javaType) &&
+                    hiveTypeInfoName.equals(serdeConstants.BIGINT_TYPE_NAME)) {
+                  return Optional.of(EINT64_CONVERTER.getConverter(type, index, parent, hiveTypeInfo));
+                }
               }
               return Optional.of(EINT64_TIMESTAMP_CONVERTER.getConverter(type, index, parent, hiveTypeInfo));
             }

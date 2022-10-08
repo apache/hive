@@ -115,13 +115,9 @@ public class TestETypeConverter {
   public void testGetSmallBigIntConverter() {
     Timestamp timestamp = Timestamp.valueOf("1998-10-03 09:58:31.231");
     long msTime = timestamp.toEpochMilli();
-    ByteBuffer buf = ByteBuffer.allocate(12);
-    buf.order(ByteOrder.LITTLE_ENDIAN);
-    buf.putLong(msTime);
-    buf.flip();
     // Need TimeStamp logicalType annotation here
     PrimitiveType primitiveType = createInt64TimestampType(false, TimeUnit.MILLIS);
-    Writable writable = getWritableFromBinaryConverter(createHiveTypeInfo("bigint"), primitiveType, Binary.fromByteBuffer(buf));
+    Writable writable = getWritableFromPrimitiveConverter(createHiveTypeInfo("bigint"), primitiveType, timestamp.toEpochMilli());
     // Retrieve as BigInt
     LongWritable longWritable = (LongWritable) writable;
     assertEquals(msTime, longWritable.get());
