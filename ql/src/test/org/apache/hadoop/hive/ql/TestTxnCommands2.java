@@ -1309,22 +1309,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     runWorker(hiveConf);
     runCleaner(hiveConf);
 
-    FileSystem fs = FileSystem.get(hiveConf);
-    FileStatus[] fileStatuses = fs.globStatus(new Path(getWarehouseDir() + "/" + tblName + "/*"));
-
-    // One major compaction generates one base file.
-    // One minor compaction generates one delta file.
-    Assertions.assertEquals(fileStatuses.length, 2);
-    int baseFiles = 0, deltaFiles = 0;
-    for (FileStatus fileStatus : fileStatuses) {
-      if (fileStatus.getPath().getName().startsWith(AcidUtils.BASE_PREFIX)) {
-        baseFiles++;
-      } else if (fileStatus.getPath().getName().startsWith(AcidUtils.DELTA_PREFIX)) {
-        deltaFiles++;
-      }
-    }
-    Assertions.assertEquals(baseFiles, 1);
-    Assertions.assertEquals(deltaFiles, 1);
+    verifyDeltaDir(1, tblName, "");
+    verifyBaseDir(1, tblName, "");
   }
 
   /**
@@ -3053,6 +3039,10 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(stringifyValues(resultData2), rs);
   }
 
+  private void verifyDeltaDir(int expectedDeltas, String tblName, String partName) throws Exception {
+    verifyDir(expectedDeltas, tblName, partName, "delta_.*");
+  }
+
   private void verifyDeleteDeltaDir(int expectedDeltas, String tblName, String partName) throws Exception {
     verifyDir(expectedDeltas, tblName, partName, "delete_delta_.*");
   }
@@ -3079,7 +3069,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
   }
 
   private void verifyDeltaDirAndResult(int expectedDeltas, String tblName, String partName, int [][] resultData) throws Exception {
-    verifyDir(expectedDeltas, tblName, partName, "delta_.*");
+    verifyDeltaDir(expectedDeltas, tblName, partName);
     if (partName.equals("p=newpart")) return;
 
     List<String> rs = runStatementOnDriver("select a,b from " + tblName + (partName.isEmpty() ?
