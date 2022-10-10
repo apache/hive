@@ -152,7 +152,7 @@
     <javax-servlet.version>3.1.0</javax-servlet.version>
     <javax-servlet-jsp.version>2.3.1</javax-servlet-jsp.version>
     <javolution.version>5.5.1</javolution.version>
-    <jettison.version>1.1</jettison.version>
+    <jettison.version>1.5.1</jettison.version>
     <jetty.version>9.4.40.v20210413</jetty.version>
     <jersey.version>1.19</jersey.version>
     <jline.version>2.14.6</jline.version>
