@@ -252,14 +252,9 @@ public class CliConfigs {
         setCleanupScript("q_test_cleanup_src.sql");
 
 
-        setClusterType(MiniClusterType.MR);
+        setClusterType(MiniClusterType.TEZ);
         setFsType(QTestMiniClusters.FsType.ENCRYPTED_HDFS); // override default FsType.HDFS
-        if (getClusterType() == MiniClusterType.TEZ) {
-          setHiveConfDir("data/conf/tez");
-        } else {
-          setHiveConfDir("data/conf");
-        }
-
+        setHiveConfDir("data/conf/tez");
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
@@ -509,7 +504,7 @@ public class CliConfigs {
         setInitScript("q_test_init_src.sql");
         setCleanupScript("q_test_cleanup_src.sql");
 
-        setClusterType(MiniClusterType.MR);
+        setClusterType(MiniClusterType.TEZ);
         setFsType(QTestMiniClusters.FsType.ERASURE_CODED_HDFS); // override default FsType.HDFS
         setHiveConfDir(getClusterType());
       } catch (Exception e) {
