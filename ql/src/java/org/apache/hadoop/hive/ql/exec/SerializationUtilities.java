@@ -124,8 +124,10 @@ public class SerializationUtilities {
     private Hook globalHook;
     // this should be set on-the-fly after borrowing this instance and needs to be reset on release
     private Configuration configuration;
-    // default false;
-    private boolean isExprNodeFirst;
+    // default false, should be reset on release
+    private boolean isExprNodeFirst = false;
+    // total classes we have met during (de)serialization, should be reset on release
+    private long classCounter = 0;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static final class SerializerWithHook extends com.esotericsoftware.kryo.Serializer {
@@ -234,22 +236,27 @@ public class SerializationUtilities {
     @Override
     public com.esotericsoftware.kryo.Registration getRegistration(Class type) {
       // If PartitionExpressionForMetastore performs deserialization at remote HMS,
-      // the first class encountered during deserialization must be a ExprNodeDesc,
-      // throwing exception to avoid potential security problem.
-      if (isExprNodeFirst) {
-        // Restore isExprNodeFirst to false, so kryo can deserialize the children of expression
-        // that are not the instance of ExprNodeDesc.
-        isExprNodeFirst = false;
+      // the first class encountered during deserialization must be an ExprNodeDesc,
+      // throw exception to avoid potential security problem if it is not.
+      if (isExprNodeFirst && classCounter == 0) {
         if (!ExprNodeDesc.class.isAssignableFrom(type)) {
           throw new UnsupportedOperationException(
-              "The object to be deserialized must be a ExprNodeDesc, but encountered: " + type);
+              "The object to be deserialized must be an ExprNodeDesc, but encountered: " + type);
         }
       }
+      classCounter++;
       return super.getRegistration(type);
     }
 
     public void setExprNodeFirst(boolean isPartFilter) {
       this.isExprNodeFirst = isPartFilter;
+    }
+
+    // reset the fields on release
+    public void restore() {
+      setConf(null);
+      isExprNodeFirst = false;
+      classCounter = 0;
     }
   }
 
@@ -317,7 +324,7 @@ public class SerializationUtilities {
    */
   public static void releaseKryo(Kryo kryo) {
     if (kryo != null){
-      ((KryoWithHooks) kryo).setConf(null);
+      ((KryoWithHooks) kryo).restore();
     }
     kryoPool.free(kryo);
   }
@@ -863,7 +870,6 @@ public class SerializationUtilities {
     try (Input inp = new Input(new ByteArrayInputStream(bytes))) {
       return (T) kryo.readClassAndObject(inp);
     } finally {
-      kryo.setExprNodeFirst(false);
       releaseKryo(kryo);
     }
   }
