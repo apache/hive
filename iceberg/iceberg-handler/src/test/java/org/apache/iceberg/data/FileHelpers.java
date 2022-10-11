@@ -22,7 +22,6 @@ package org.apache.iceberg.data;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
@@ -139,6 +138,6 @@ public class FileHelpers {
 
   private static FileFormat defaultFormat(Map<String, String> properties) {
     String formatString = properties.getOrDefault(DEFAULT_FILE_FORMAT, DEFAULT_FILE_FORMAT_DEFAULT);
-    return FileFormat.valueOf(formatString.toUpperCase(Locale.ENGLISH));
+    return FileFormat.fromString(formatString);
   }
 }
