@@ -11568,8 +11568,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
         // Obtain inspector for schema
-        StructObjectInspector rowObjectInspector = (StructObjectInspector) tab
-            .getDeserializer().getObjectInspector();
+        final Deserializer deserializer = tab.getDeserializer();
+        StructObjectInspector rowObjectInspector = (StructObjectInspector) deserializer.getObjectInspector();
+
+        deserializer.handleJobLevelConfiguration(conf);
         List<? extends StructField> fields = rowObjectInspector
             .getAllStructFieldRefs();
         for (int i = 0; i < fields.size(); i++) {
