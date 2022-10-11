@@ -217,7 +217,7 @@
     <spotbugs.version>4.0.3</spotbugs.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
     <aws-secretsmanager-caching.version>1.0.1</aws-secretsmanager-caching.version>
-    <aws-java-sdk.version>1.11.901</aws-java-sdk.version>
+    <aws-java-sdk.version>1.12.132</aws-java-sdk.version>
     <jansi.version>2.3.4</jansi.version>
   </properties>
   <repositories>
