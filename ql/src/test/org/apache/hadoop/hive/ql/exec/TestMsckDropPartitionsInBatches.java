@@ -212,7 +212,7 @@ public class TestMsckDropPartitionsInBatches {
         // only first call throws exception
         doThrow(MetaException.class).doCallRealMethod().doCallRealMethod().when(spyDb)
             .dropPartitions(eq(table.getCatName()), eq(table.getDbName()),
-            eq(table.getTableName()), anyList(), any(PartitionDropOptions.class));
+            eq(table.getTableName()), any(String[].class), any(PartitionDropOptions.class));
       }
 
       expectedBatchSizes = new int[expectedCallCount];
@@ -249,7 +249,7 @@ public class TestMsckDropPartitionsInBatches {
       // all calls fail
       doThrow(MetaException.class).when(spyDb)
           .dropPartitions(eq(table.getCatName()), eq(table.getDbName()), eq(table.getTableName()),
-            anyList(), any(PartitionDropOptions.class));
+            any(String[].class), any(PartitionDropOptions.class));
 
       Exception ex = null;
       try {
@@ -264,20 +264,20 @@ public class TestMsckDropPartitionsInBatches {
 
     // there should be expectedCallCount calls to drop partitions with each batch size of
     // actualBatchSize
-    ArgumentCaptor<List> argument = ArgumentCaptor.forClass(List.class);
+    ArgumentCaptor<String[]> argument = ArgumentCaptor.forClass(String[].class);
     verify(spyDb, times(expectedCallCount))
         .dropPartitions(eq(table.getCatName()), eq(table.getDbName()), eq(table.getTableName()),
         argument.capture(), any(PartitionDropOptions.class));
 
     // confirm the batch sizes were as expected
-    List<List> droppedParts = argument.getAllValues();
+    List<String[]> droppedParts = argument.getAllValues();
 
     assertEquals(expectedCallCount, droppedParts.size());
     for (int i = 0; i < expectedCallCount; i++) {
       Assert.assertEquals(
         String.format("Unexpected batch size in attempt %d.  Expected: %d.  Found: %d", i + 1,
-          expectedBatchSizes[i], droppedParts.get(i).size()),
-        expectedBatchSizes[i], droppedParts.get(i).size());
+          expectedBatchSizes[i], droppedParts.get(i).length),
+        expectedBatchSizes[i], droppedParts.get(i).length);
     }
   }
 

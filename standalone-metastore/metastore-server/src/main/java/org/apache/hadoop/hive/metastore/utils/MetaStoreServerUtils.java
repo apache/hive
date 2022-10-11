@@ -1406,7 +1406,12 @@ public class MetaStoreServerUtils {
       List<Partition> result = new ArrayList<>();
       for (PartitionSpec spec : partitionSpecList) {
         if (spec.getPartitionList() != null && spec.getPartitionList().getPartitions() != null) {
-          result.addAll(spec.getPartitionList().getPartitions());
+          spec.getPartitionList().getPartitions().forEach(partition -> {
+            partition.setCatName(spec.getCatName());
+            partition.setDbName(spec.getDbName());
+            partition.setTableName(spec.getTableName());
+            result.add(partition);
+          });
         }
         PartitionSpecWithSharedSD pSpecWithSharedSD = spec.getSharedSDPartitionSpec();
         if (pSpecWithSharedSD == null) {
