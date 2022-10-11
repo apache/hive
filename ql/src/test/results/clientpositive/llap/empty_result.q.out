@@ -32,6 +32,34 @@ Explain
 CBO PLAN:
 HiveValues(tuples=[[]])
 
+PREHOOK: query: explain cbo
+select a1 from t1
+join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select a1 from t1
+join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveProject(a1=[$0])
+  HiveJoin(condition=[=($1, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(a1=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, t1]], table:alias=[t1])
+    HiveProject(a2=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveProject(a2=[$0])
+          HiveSortLimit(fetch=[0])
+            HiveProject(a2=[$0])
+              HiveTableScan(table=[[default, t2]], table:alias=[t2])
+
 PREHOOK: query: explain
 select a1 from t1
 join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1
@@ -54,6 +82,102 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select a1 from t1
+join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select a1 from t1
+join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+Explain
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  filterExpr: a1 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: a1 is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: a1 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 0
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: a2 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                      Filter Operator
+                        predicate: _col0 is not null (type: boolean)
+                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: PARTIAL Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
       Processor Tree:
         ListSink
 

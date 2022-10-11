@@ -7,9 +7,25 @@ explain cbo
 select a1 from t1
 join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1;
 
+set hive.optimize.prune.empty.result=false;
+
+explain cbo
+select a1 from t1
+join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1;
+
+set hive.optimize.prune.empty.result=true;
+
 explain
 select a1 from t1
 join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1;
+
+set hive.optimize.prune.empty.result=false;
+
+explain
+select a1 from t1
+join (select a2 from t2 where 1 = 0) s on s.a2 = t1.a1;
+
+set hive.optimize.prune.empty.result=true;
 
 explain cbo
 select y + 1 from (select a1 y, b1 z from t1 where b1 > 10) q WHERE 1=0;

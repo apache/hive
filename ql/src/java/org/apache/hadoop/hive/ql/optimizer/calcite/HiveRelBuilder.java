@@ -24,6 +24,7 @@ import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Join;
@@ -35,17 +36,14 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.schema.SchemaPlus;
-import org.apache.calcite.server.CalciteServerStatement;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.calcite.tools.FrameworkConfig;
-import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Litmus;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveMergeableAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
@@ -54,6 +52,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumEmptyIsZe
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,38 +73,34 @@ public class HiveRelBuilder extends RelBuilder {
     super(context, cluster, relOptSchema);
   }
 
-  /** Creates a RelBuilder. */
-  public static RelBuilder create(FrameworkConfig config) {
-    final RelOptCluster[] clusters = {null};
-    final RelOptSchema[] relOptSchemas = {null};
-    Frameworks.withPrepare(
-        new Frameworks.PrepareAction<Void>(config) {
-          @Override
-          public Void apply(RelOptCluster cluster, RelOptSchema relOptSchema,
-              SchemaPlus rootSchema, CalciteServerStatement statement) {
-            clusters[0] = cluster;
-            relOptSchemas[0] = relOptSchema;
-            return null;
-          }
-        });
-    return new HiveRelBuilder(config.getContext(), clusters[0], relOptSchemas[0]);
-  }
-
   /** Creates a {@link RelBuilderFactory}, a partially-created RelBuilder.
    * Just add a {@link RelOptCluster} and a {@link RelOptSchema} */
   public static RelBuilderFactory proto(final Context context) {
-    return new RelBuilderFactory() {
-      @Override
-      public RelBuilder create(RelOptCluster cluster, RelOptSchema schema) {
-        Context confContext = Contexts.of(Config.DEFAULT.withPruneInputOfAggregate(Bug.CALCITE_4513_FIXED));
+    return (cluster, schema) -> {
+      Context confContext = Contexts.of(Config.DEFAULT.withPruneInputOfAggregate(Bug.CALCITE_4513_FIXED));
+      if (HiveConf.getBoolVar(
+              SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_OPTIMIZE_PRUNE_EMPTY_RESULT, true)) {
         return new HiveRelBuilder(Contexts.chain(context, confContext), cluster, schema);
+      } else {
+        return new HiveRelBuilder(Contexts.chain(context, confContext), cluster, schema) {
+          /**
+           * Empty relationship can be expressed in many different ways, e.g.,
+           * filter(cond=false), empty LogicalValues(), etc. Calcite default implementation
+           * uses empty LogicalValues(); however, currently there is not an equivalent to
+           * this expression in Hive. Thus, we use limit 0, since Hive already includes
+           * optimizations that will do early pruning of the result tree when it is found,
+           * e.g., GlobalLimitOptimizer.
+           */
+          @Override
+          public RelBuilder empty() {
+            final RelNode input = build();
+            final RelNode sort = HiveRelFactories.HIVE_SORT_FACTORY.createSort(
+                    input, RelCollations.of(), null, literal(0));
+            return this.push(sort);
+          }
+        };
       }
     };
-  }
-
-  /** Creates a {@link RelBuilderFactory} that uses a given set of factories. */
-  public static RelBuilderFactory proto(Object... factories) {
-    return proto(Contexts.of(factories));
   }
 
   @Override

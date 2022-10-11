@@ -1947,18 +1947,20 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 HiveAntiSemiJoinRule.INSTANCE);
       }
 
-      generatePartialProgram(program, true, HepMatchOrder.DEPTH_FIRST,
-              HiveRemoveEmptySingleRules.PROJECT_INSTANCE,
-              HiveRemoveEmptySingleRules.FILTER_INSTANCE,
-              HiveRemoveEmptySingleRules.JOIN_LEFT_INSTANCE,
-              HiveRemoveEmptySingleRules.SEMI_JOIN_LEFT_INSTANCE,
-              HiveRemoveEmptySingleRules.JOIN_RIGHT_INSTANCE,
-              HiveRemoveEmptySingleRules.SEMI_JOIN_RIGHT_INSTANCE,
-              HiveRemoveEmptySingleRules.ANTI_JOIN_RIGHT_INSTANCE,
-              HiveRemoveEmptySingleRules.SORT_INSTANCE,
-              HiveRemoveEmptySingleRules.SORT_FETCH_ZERO_INSTANCE,
-              HiveRemoveEmptySingleRules.AGGREGATE_INSTANCE,
-              HiveRemoveEmptySingleRules.UNION_INSTANCE);
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_OPTIMIZE_PRUNE_EMPTY_RESULT, true)) {
+        generatePartialProgram(program, true, HepMatchOrder.DEPTH_FIRST,
+                HiveRemoveEmptySingleRules.PROJECT_INSTANCE,
+                HiveRemoveEmptySingleRules.FILTER_INSTANCE,
+                HiveRemoveEmptySingleRules.JOIN_LEFT_INSTANCE,
+                HiveRemoveEmptySingleRules.SEMI_JOIN_LEFT_INSTANCE,
+                HiveRemoveEmptySingleRules.JOIN_RIGHT_INSTANCE,
+                HiveRemoveEmptySingleRules.SEMI_JOIN_RIGHT_INSTANCE,
+                HiveRemoveEmptySingleRules.ANTI_JOIN_RIGHT_INSTANCE,
+                HiveRemoveEmptySingleRules.SORT_INSTANCE,
+                HiveRemoveEmptySingleRules.SORT_FETCH_ZERO_INSTANCE,
+                HiveRemoveEmptySingleRules.AGGREGATE_INSTANCE,
+                HiveRemoveEmptySingleRules.UNION_INSTANCE);
+      }
 
       // Trigger program
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);

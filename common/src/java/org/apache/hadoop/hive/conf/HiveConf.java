@@ -2621,6 +2621,8 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_LIMIT_TRANSPOSE_REDUCTION_TUPLES("hive.optimize.limittranspose.reductiontuples", (long) 0,
         "When hive.optimize.limittranspose is true, this variable specifies the minimal reduction in the\n" +
         "number of tuples of the outer input of the join or the input of the union that you should get in order to apply the rule."),
+    HIVE_OPTIMIZE_PRUNE_EMPTY_RESULT("hive.optimize.prune.empty.result", true,
+        "Enable removing sections of query plan known never produces rows."),
 
     HIVE_OPTIMIZE_CONSTRAINTS_JOIN("hive.optimize.constraints.join", true, "Whether to use referential constraints\n" +
         "to optimize (remove or transform) join operators"),
