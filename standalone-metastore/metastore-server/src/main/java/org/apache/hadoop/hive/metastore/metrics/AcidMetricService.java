@@ -58,7 +58,10 @@ import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTI
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_OLDEST_CLEANING_AGE;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_OLDEST_ENQUEUE_AGE;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_OLDEST_WORKING_AGE;
-import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_POOLS_ITEM_COUNT;
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_POOLS_INITIATED_ITEM_COUNT;
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_POOLS_OLDEST_INITIATED_AGE;
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_POOLS_OLDEST_WORKING_AGE;
+import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_POOLS_WORKING_ITEM_COUNT;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.COMPACTION_STATUS_PREFIX;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.NUM_ABORTED_TXNS;
 import static org.apache.hadoop.hive.metastore.metrics.MetricsConstants.NUM_COMPLETED_TXN_COMPONENTS;
@@ -333,7 +336,10 @@ public class AcidMetricService implements MetastoreTaskThread {
       }
     }
 
-    Metrics.getOrCreateMapMetrics(COMPACTION_POOLS_ITEM_COUNT).update(metricData.getPoolCount());
+    Metrics.getOrCreateMapMetrics(COMPACTION_POOLS_INITIATED_ITEM_COUNT).update(metricData.getInitiatedCountPerPool());
+    Metrics.getOrCreateMapMetrics(COMPACTION_POOLS_WORKING_ITEM_COUNT).update(metricData.getWorkingCountPerPool());
+    Metrics.getOrCreateMapMetrics(COMPACTION_POOLS_OLDEST_INITIATED_AGE).update(metricData.getLongestEnqueueDurationPerPool());
+    Metrics.getOrCreateMapMetrics(COMPACTION_POOLS_OLDEST_WORKING_AGE).update(metricData.getLongestWorkingDurationPerPool());
 
     updateOldestCompactionMetric(COMPACTION_OLDEST_ENQUEUE_AGE, metricData.getOldestEnqueueTime());
     updateOldestCompactionMetric(COMPACTION_OLDEST_WORKING_AGE, metricData.getOldestWorkingTime());
