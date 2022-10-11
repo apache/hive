@@ -1283,6 +1283,35 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
         countCompacts(txnHandler));
   }
 
+  @Test
+  public void testInitiatorWithMinorCompactionForInsertOnlyTable() throws Exception {
+    String tblName = "insertOnlyTable";
+    runStatementOnDriver("drop table if exists " + tblName);
+    runStatementOnDriver("create table " + tblName + " (a INT, b STRING) stored as orc tblproperties('transactional'='true', " +
+            "'transactional_properties' = 'insert_only')");
+    hiveConf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 4);
+    hiveConf.setFloatVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD, 1.0f);
+    for(int i = 0; i < 20; i++) {
+      //generate enough delta files so that Initiator can trigger auto compaction
+      runStatementOnDriver("insert into " + tblName + " values(" + (i + 1) + ", 'foo'),(" + (i + 2) + ", 'bar'),(" + (i + 3) + ", 'baz')");
+    }
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    runInitiator(hiveConf);
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+
+    for(int i = 0; i < 5; i++) {
+      //generate enough delta files so that Initiator can trigger auto compaction
+      runStatementOnDriver("insert into " + tblName + " values(" + (i + 1) + ", 'foo'),(" + (i + 2) + ", 'bar'),(" + (i + 3) + ", 'baz')");
+    }
+    runInitiator(hiveConf);
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+
+    verifyDeltaDir(1, tblName, "");
+    verifyBaseDir(1, tblName, "");
+  }
+
   /**
    * Make sure there's no FileSystem$Cache$Key leak due to UGI use
    * @throws Exception
@@ -3009,6 +3038,10 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(stringifyValues(resultData2), rs);
   }
 
+  private void verifyDeltaDir(int expectedDeltas, String tblName, String partName) throws Exception {
+    verifyDir(expectedDeltas, tblName, partName, "delta_.*");
+  }
+
   private void verifyDeleteDeltaDir(int expectedDeltas, String tblName, String partName) throws Exception {
     verifyDir(expectedDeltas, tblName, partName, "delete_delta_.*");
   }
@@ -3035,7 +3068,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
   }
 
   private void verifyDeltaDirAndResult(int expectedDeltas, String tblName, String partName, int [][] resultData) throws Exception {
-    verifyDir(expectedDeltas, tblName, partName, "delta_.*");
+    verifyDeltaDir(expectedDeltas, tblName, partName);
     if (partName.equals("p=newpart")) return;
 
     List<String> rs = runStatementOnDriver("select a,b from " + tblName + (partName.isEmpty() ?
