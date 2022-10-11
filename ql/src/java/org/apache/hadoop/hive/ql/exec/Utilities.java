@@ -4158,7 +4158,7 @@ public final class Utilities {
       if (!localFs.exists(new Path(path))) {
         throw new RuntimeException("Could not validate jar file " + path + " for class " + clazz);
       }
-      jars.add(path);
+      jars.add(localFs.makeQualified(new Path(path)).toString());
     }
     if (jars.isEmpty()) {
       return;
