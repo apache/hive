@@ -37,6 +37,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -67,6 +68,9 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   public static final String JDBC_NUM_PARTITIONS = JDBC_CONFIG_PREFIX + ".numPartitions";
   public static final String JDBC_LOW_BOUND = JDBC_CONFIG_PREFIX + ".lowerBound";
   public static final String JDBC_UPPER_BOUND = JDBC_CONFIG_PREFIX + ".upperBound";
+  // JDBC_CONNECTOR_PREFIX is used for indicating connection properties for different connectors,
+  // such as hive.connector.autoReconnect in which autoReconnect is the jdbc connection property.
+  public static final String JDBC_CONNECTOR_PREFIX = "hive.connector.";
 
   private static final String JDBC_INPUTFORMAT_CLASS = "org.apache.hive.storage.jdbc.JdbcInputFormat".intern();
   private static final String JDBC_OUTPUTFORMAT_CLASS = "org.apache.hive.storage.jdbc.JdbcOutputFormat".intern();
@@ -75,6 +79,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   String jdbcUrl = null;
   String username = null;
   String password = null; // TODO convert to byte array
+  Map<String, String> connectorPropMap = new HashMap<>();
 
   public AbstractJDBCConnectorProvider(String dbName, DataConnector dataConn, String driverClass) {
     super(dbName, dataConn, driverClass);
@@ -82,6 +87,11 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     this.jdbcUrl = connector.getUrl();
     this.username = connector.getParameters().get(JDBC_USERNAME);
     this.password = connector.getParameters().get(JDBC_PASSWORD);
+    connector.getParameters().forEach((k, v) -> {
+      if (k.startsWith(JDBC_CONNECTOR_PREFIX))
+        connectorPropMap.put(k.substring(15), v);
+    });
+
     if (this.password == null) {
       String keystore = connector.getParameters().get(JDBC_KEYSTORE);
       String key = connector.getParameters().get(JDBC_KEY);
@@ -108,6 +118,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   @Override public void open() throws ConnectException {
     try {
+      close();
       handle = DriverManager.getDriver(jdbcUrl).connect(jdbcUrl, getConnectionProperties());
     } catch (SQLException sqle) {
       LOG.warn("Could not connect to remote data source at " + jdbcUrl);
@@ -130,9 +141,6 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   }
 
   protected boolean isOpen() {
-    if (handle == null) {
-      return false;
-    }
     try {
       if (handle instanceof Connection)
         return ((Connection) handle).isValid(3);
@@ -142,8 +150,18 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     return false;
   }
 
+  protected boolean isClosed() {
+    try {
+      if (handle instanceof Connection)
+        return ((Connection) handle).isClosed();
+    } catch (SQLException e) {
+      LOG.warn("Could not determine whether jdbc connection is closed or not to "+ jdbcUrl, e);
+    }
+    return true;
+  }
+
   @Override public void close() {
-    if (isOpen()) {
+    if (!isClosed()) {
       try {
         ((Connection)handle).close();
       } catch (SQLException sqle) {
@@ -391,6 +409,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     Properties connectionProperties = new Properties();
     connectionProperties.setProperty("user", username);
     connectionProperties.setProperty("password", password);
+    connectorPropMap.forEach((k, v) -> connectionProperties.put(k, v));
     return connectionProperties;
   }
 }
