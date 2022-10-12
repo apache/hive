@@ -25,6 +25,8 @@ HIVE_FILTER_FIELD_LAST_ACCESS = %q"hive_filter_field_last_access__"
 
 HIVE_FILTER_FIELD_TABLE_NAME = %q"hive_filter_field_tableName__"
 
+HIVE_FILTER_FIELD_TABLE_TYPE = %q"hive_filter_field_tableType__"
+
 IS_ARCHIVED = %q"is_archived"
 
 ORIGINAL_LOCATION = %q"original_location"

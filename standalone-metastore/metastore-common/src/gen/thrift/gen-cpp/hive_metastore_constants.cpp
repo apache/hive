@@ -29,6 +29,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   HIVE_FILTER_FIELD_TABLE_NAME = "hive_filter_field_tableName__";
 
+  HIVE_FILTER_FIELD_TABLE_TYPE = "hive_filter_field_tableType__";
+
   IS_ARCHIVED = "is_archived";
 
   ORIGINAL_LOCATION = "original_location";

@@ -27,6 +27,7 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $HIVE_FILTER_FIELD_PARAMS;
     static protected $HIVE_FILTER_FIELD_LAST_ACCESS;
     static protected $HIVE_FILTER_FIELD_TABLE_NAME;
+    static protected $HIVE_FILTER_FIELD_TABLE_TYPE;
     static protected $IS_ARCHIVED;
     static protected $ORIGINAL_LOCATION;
     static protected $IS_IMMUTABLE;
@@ -103,6 +104,11 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_HIVE_FILTER_FIELD_TABLE_NAME()
     {
         return "hive_filter_field_tableName__";
+    }
+
+    protected static function init_HIVE_FILTER_FIELD_TABLE_TYPE()
+    {
+        return "hive_filter_field_tableType__";
     }
 
     protected static function init_IS_ARCHIVED()

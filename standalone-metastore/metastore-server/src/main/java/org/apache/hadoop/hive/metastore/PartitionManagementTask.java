@@ -123,12 +123,12 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         boolean managed = tableTypesSet.contains(TableType.MANAGED_TABLE.name());
         if (!managed && external) {
           // only for external tables
-          filterBuilder.append(" and ").append(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS)
-              .append("EXTERNAL like \"true\" ");
+          filterBuilder.append(" and ").append(hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_TYPE)
+              .append(" = \"").append(TableType.EXTERNAL_TABLE.name()).append("\" ");
         } else if (managed && !external) {
           // only for managed tables
-          filterBuilder.append(" and ").append(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS)
-              .append("EXTERNAL = \"NULL\"");
+          filterBuilder.append(" and ").append(hive_metastoreConstants.HIVE_FILTER_FIELD_TABLE_TYPE)
+              .append(" = \"").append(TableType.MANAGED_TABLE.name()).append("\" ");
         }
         if (!tablePattern.trim().isEmpty()) {
           filterBuilder.append(" and ")
