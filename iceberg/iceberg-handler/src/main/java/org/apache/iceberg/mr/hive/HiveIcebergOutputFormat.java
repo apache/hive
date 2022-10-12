@@ -40,9 +40,13 @@ import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HiveIcebergOutputFormat<T> implements OutputFormat<NullWritable, Container<Record>>,
     HiveOutputFormat<NullWritable, Container<Record>> {
+  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergOutputFormat.class);
+
   private static final String DELETE_FILE_THREAD_POOL_SIZE = "iceberg.delete.file.thread.pool.size";
   private static final int DELETE_FILE_THREAD_POOL_SIZE_DEFAULT = 10;
 

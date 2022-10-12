@@ -1,0 +1,108 @@
+PREHOOK: query: create table source(a int, b string, c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source
+POSTHOOK: query: create table source(a int, b string, c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source
+PREHOOK: query: insert into source values (1, 'one', 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@source
+POSTHOOK: query: insert into source values (1, 'one', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@source
+POSTHOOK: Lineage: source.a SCRIPT []
+POSTHOOK: Lineage: source.b SCRIPT []
+POSTHOOK: Lineage: source.c SCRIPT []
+PREHOOK: query: insert into source values (1, 'two', 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@source
+POSTHOOK: query: insert into source values (1, 'two', 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@source
+POSTHOOK: Lineage: source.a SCRIPT []
+POSTHOOK: Lineage: source.b SCRIPT []
+POSTHOOK: Lineage: source.c SCRIPT []
+PREHOOK: query: explain
+create external table tbl_ice stored by iceberg stored as orc tblproperties ('format-version'='2') as
+select a, b, c from source
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+create external table tbl_ice stored by iceberg stored as orc tblproperties ('format-version'='2') as
+select a, b, c from source
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Vertex dependency in Stage-1
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-3
+  Stats Work{}
+    Stage-0
+      Move Operator
+        Stage-1
+          Reducer 2
+          File Output Operator [FS_12]
+            Select Operator [SEL_11] (rows=1 width=794)
+              Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
+              Group By Operator [GBY_10] (rows=1 width=492)
+                Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
+              <-Map 1 [CUSTOM_SIMPLE_EDGE]
+                File Output Operator [FS_2]
+                  table:{"name:":"default.tbl_ice"}
+                  Select Operator [SEL_1] (rows=2 width=95)
+                    Output:["_col0","_col1","_col2"]
+                    TableScan [TS_0] (rows=2 width=95)
+                      default@source,source,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b","c"]
+                PARTITION_ONLY_SHUFFLE [RS_9]
+                  Group By Operator [GBY_8] (rows=1 width=560)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(col1)","max(col1)","count(1)","count(col1)","compute_bit_vector_hll(col1)","max(length(col2))","avg(COALESCE(length(col2),0))","count(col2)","compute_bit_vector_hll(col2)","min(col3)","max(col3)","count(col3)","compute_bit_vector_hll(col3)"]
+                    Select Operator [SEL_7] (rows=2 width=95)
+                      Output:["col1","col2","col3"]
+                       Please refer to the previous Select Operator [SEL_1]
+            Stage-4
+              Create Table{"name:":"default.tbl_ice"}
+    Stage-2
+      Dependency Collection{}
+         Please refer to the previous Stage-1
+
+PREHOOK: query: create external table tbl_ice stored by iceberg stored as orc tblproperties ('format-version'='2') as
+select a, b, c from source
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: create external table tbl_ice stored by iceberg stored as orc tblproperties ('format-version'='2') as
+select a, b, c from source
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: tbl_ice.a SIMPLE [(source)source.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: tbl_ice.b SIMPLE [(source)source.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_ice.c SIMPLE [(source)source.FieldSchema(name:c, type:int, comment:null), ]
+PREHOOK: query: select * from tbl_ice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_ice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one	3
+1	two	4

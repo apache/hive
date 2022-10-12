@@ -35,7 +35,6 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hadoop.HadoopTables;
-import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -225,8 +224,7 @@ public final class Catalogs {
     return new HadoopTables(conf).create(schema, spec, map, location);
   }
 
-  @VisibleForTesting
-  static Optional<Catalog> loadCatalog(Configuration conf, String catalogName) {
+  public static Optional<Catalog> loadCatalog(Configuration conf, String catalogName) {
     String catalogType = getCatalogType(conf, catalogName);
     if (NO_CATALOG_TYPE.equalsIgnoreCase(catalogType)) {
       return Optional.empty();

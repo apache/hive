@@ -443,7 +443,7 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   }
 
   @Override
-  protected String defaultWarehouseLocation(TableIdentifier tableIdentifier) {
+  public String defaultWarehouseLocation(TableIdentifier tableIdentifier) {
     // This is a little edgy since we basically duplicate the HMS location generation logic.
     // Sadly I do not see a good way around this if we want to keep the order of events, like:
     // - Create meta files
@@ -548,5 +548,9 @@ public class HiveCatalog extends BaseMetastoreCatalog implements SupportsNamespa
   @VisibleForTesting
   void setListAllTables(boolean listAllTables) {
     this.listAllTables = listAllTables;
+  }
+
+  public FileIO getFileIO() {
+    return fileIO;
   }
 }

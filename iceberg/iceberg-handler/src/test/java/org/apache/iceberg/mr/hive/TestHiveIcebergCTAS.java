@@ -92,7 +92,8 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "target");
     Assert.assertEquals(3, hmsTable.getSd().getColsSize());
     Assert.assertTrue(hmsTable.getPartitionKeys().isEmpty());
-    Assert.assertEquals(fileFormat.toString(), hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT));
+    Assert.assertEquals(
+            fileFormat.toString().toLowerCase(), hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT));
 
     // check Iceberg table has correct partition spec
     Table table = testTables.loadTable(TableIdentifier.of("default", "target"));
@@ -167,7 +168,8 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
     org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", "target");
     Assert.assertEquals(8, hmsTable.getSd().getColsSize());
     Assert.assertTrue(hmsTable.getPartitionKeys().isEmpty());
-    Assert.assertEquals(fileFormat.toString(), hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT));
+    Assert.assertEquals(
+            fileFormat.toString().toLowerCase(), hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT));
 
     // check Iceberg table has correct partition spec
     Table table = testTables.loadTable(TableIdentifier.of("default", "target"));

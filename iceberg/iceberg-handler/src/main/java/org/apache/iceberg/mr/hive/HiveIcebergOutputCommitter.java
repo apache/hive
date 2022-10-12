@@ -82,7 +82,7 @@ import org.slf4j.LoggerFactory;
  * Currently independent of the Hive ACID transactions.
  */
 public class HiveIcebergOutputCommitter extends OutputCommitter {
-  private static final String FOR_COMMIT_EXTENSION = ".forCommit";
+  static final String FOR_COMMIT_EXTENSION = ".forCommit";
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergOutputCommitter.class);
 

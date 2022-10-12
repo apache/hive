@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -105,8 +106,14 @@ import org.apache.iceberg.SortField;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+<<<<<<< HEAD
+=======
+import org.apache.iceberg.catalog.TableIdentifier;
+>>>>>>> 7efc876427 (HIVE-26628: Iceberg table is created when running explain ctas command)
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
+import org.apache.iceberg.hive.HiveCatalog;
+import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
@@ -729,6 +736,23 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   public static Table table(Configuration config, String name) {
     Table table = SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + name));
+    if (table == null && StringUtils.isNotBlank(config.get(InputFormatConfig.TABLE_LOCATION)) &&
+            StringUtils.isNotBlank(config.get(InputFormatConfig.FILE_IO))) {
+      String location = config.get(InputFormatConfig.TABLE_LOCATION);
+      String filePath = location +
+              "/temp/" +
+              config.get(HiveConf.ConfVars.HIVEQUERYID.varname) +
+              HiveIcebergOutputCommitter.FOR_COMMIT_EXTENSION +
+              "Table";
+
+      FileIO io = SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.FILE_IO));
+      try (ObjectInputStream ois = new ObjectInputStream(io.newInputFile(filePath).newStream())) {
+        table = SerializationUtil.deserializeFromBase64((String) ois.readObject());
+      } catch (ClassNotFoundException | IOException e) {
+        LOG.debug("Can not read or parse committed file: {}", filePath);
+        return null;
+      }
+    }
     checkAndSetIoConfig(config, table);
     return table;
   }
@@ -836,10 +860,19 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         throw ex;
       }
 
+      if (!Catalogs.hiveCatalog(configuration, props)) {
+        throw new RuntimeException("CTAS target table must be a HiveCatalog table.");
+      }
+
       location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
       if (StringUtils.isBlank(location)) {
         location = props.getProperty(Constants.EXPLAIN_CTAS_LOCATION);
       }
+
+      String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+      HiveCatalog hiveCatalog = (HiveCatalog) Catalogs.loadCatalog(configuration, catalogName).get();
+      String ioStr = SerializationUtil.serializeToBase64(hiveCatalog.getFileIO());
+      map.put(InputFormatConfig.FILE_IO, ioStr);
 
       try {
         AbstractSerDe serDe = tableDesc.getDeserializer(configuration);

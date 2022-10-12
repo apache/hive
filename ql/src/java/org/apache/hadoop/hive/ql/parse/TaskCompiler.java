@@ -303,6 +303,17 @@ public abstract class TaskCompiler {
       setInputFormat(rootTask);
     }
 
+    if (directInsertCtas) {
+      CreateTableDesc crtTblDesc = pCtx.getCreateTable();
+      crtTblDesc.validate(conf);
+      Task<?> crtTblTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
+      for (Task<?> rootTask : rootTasks) {
+        crtTblTask.addDependentTask(rootTask);
+        rootTasks.clear();
+        rootTasks.add(crtTblTask);
+      }
+    }
+
     optimizeTaskPlan(rootTasks, pCtx, ctx);
 
     /*
