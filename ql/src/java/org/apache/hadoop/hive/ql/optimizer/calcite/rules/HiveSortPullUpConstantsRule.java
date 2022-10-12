@@ -125,8 +125,8 @@ public final class HiveSortPullUpConstantsRule {
         return;
       }
 
-      Map<RexNode, RexNode> conditionsExtracted = HiveReduceExpressionsRule.predicateConstants(
-          RexNode.class, rexBuilder, predicates);
+      Map<RexNode, RexNode> conditionsExtracted =
+          RexUtil.predicateConstants(RexNode.class, rexBuilder, predicates.pulledUpPredicates);
       Map<RexNode, RexNode> constants = new HashMap<>();
       for (int i = 0; i < count; i++) {
         RexNode expr = rexBuilder.makeInputRef(sortNode.getInput(), i);
