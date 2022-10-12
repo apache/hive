@@ -11,8 +11,7 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
--->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+--><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-upgrade-acid</artifactId>
@@ -36,7 +35,7 @@
     <test.forkcount>1</test.forkcount>
     <skipITests>true</skipITests>
     <hdp.hive.version>2.3.3</hdp.hive.version>
-    <hdp.hadoop.version>2.7.2</hdp.hadoop.version>
+    <hdp.hadoop.version>3.3.3-RC0</hdp.hadoop.version>
   </properties>
   <dependencies>
     <!--scope is 'provided' for all.  The UpgradeTool is provided as part of Hive 3.x and
