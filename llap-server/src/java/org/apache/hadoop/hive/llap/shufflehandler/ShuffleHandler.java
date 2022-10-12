@@ -50,6 +50,8 @@ import java.util.regex.Pattern;
 
 import javax.crypto.SecretKey;
 
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalDirAllocator;
 import org.apache.hadoop.fs.Path;
@@ -389,6 +391,9 @@ public class ShuffleHandler implements AttemptRegistrationListener {
         ChannelPipeline pipeline = ch.pipeline();
         if (sslFactory != null) {
           pipeline.addLast("ssl", new SslHandler(sslFactory.createSSLEngine()));
+        }
+        if (LOG.isDebugEnabled()) {
+          pipeline.addLast("loggingHandler", new LoggingHandler(LogLevel.DEBUG));
         }
         pipeline.addLast("decoder", new HttpRequestDecoder());
         pipeline.addLast("aggregator", new HttpObjectAggregator(1 << 16));
