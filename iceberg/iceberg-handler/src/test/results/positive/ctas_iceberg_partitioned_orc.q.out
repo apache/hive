@@ -47,12 +47,29 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT `a`, `b`, `c`
 FROM `default`.`source`
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-4 is a root stage
+  Stage-1 depends on stages: Stage-4
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-0, Stage-2
   Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-4
+    Create Table
+      columns: a int, b string, c int
+      name: default.tbl_ice
+      input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+      location: hdfs://### HDFS PATH ###
+      output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+      serde properties:
+        write.format.default orc
+      storage handler: org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+      table properties:
+        EXTERNAL TRUE
+        format-version 2
+        storage_handler org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+      isExternal: true
+
   Stage: Stage-1
     Tez
 #### A masked pattern was here ####
@@ -87,9 +104,11 @@ STAGE PLANS:
                             created_with_ctas true
                             format-version 2
                             iceberg.mr.operation.type.default.tbl_ice OTHER
+                            iceberg.mr.serialized.table.default.tbl_ice rO0ABXA=
                             iceberg.mr.table.identifier default.tbl_ice
                             iceberg.mr.table.location hdfs://### HDFS PATH ###
                             iceberg.mr.table.schema {"type":"struct","schema-id":0,"fields":[{"id":1,"name":"a","required":false,"type":"int"},{"id":2,"name":"b","required":false,"type":"string"},{"id":3,"name":"c","required":false,"type":"int"}]}
+                            location hdfs://### HDFS PATH ###
                             mapred.output.committer.class org.apache.iceberg.mr.hive.HiveIcebergStorageHandler$HiveIcebergNoJobCommitter
                             name default.tbl_ice
                             serialization.format 1
@@ -105,6 +124,7 @@ STAGE PLANS:
                             iceberg.mr.operation.type.default.tbl_ice OTHER
                             iceberg.mr.table.partition.spec {"spec-id":0,"fields":[{"name":"a_bucket","transform":"bucket[16]","source-id":1,"field-id":1000},{"name":"b_trunc","transform":"truncate[3]","source-id":2,"field-id":1001}]}
                             iceberg.mr.table.schema {"type":"struct","schema-id":0,"fields":[{"id":1,"name":"a","required":false,"type":"int"},{"id":2,"name":"b","required":false,"type":"string"},{"id":3,"name":"c","required":false,"type":"int"}]}
+                            location hdfs://### HDFS PATH ###
                             name default.tbl_ice
                             serialization.format 1
                             serialization.lib org.apache.iceberg.mr.hive.HiveIcebergSerDe
@@ -246,6 +266,9 @@ POSTHOOK: Input: default@source
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: tbl_ice.a SIMPLE [(source)source.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: tbl_ice.b SIMPLE [(source)source.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_ice.c SIMPLE [(source)source.FieldSchema(name:c, type:int, comment:null), ]
 PREHOOK: query: describe formatted tbl_ice
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@tbl_ice
@@ -265,13 +288,13 @@ b                   	TRUNCATE[3]
 # Detailed Table Information	 	 
 Database:           	default             	 
 #### A masked pattern was here ####
-Retention:          	2147483647          	 
+Retention:          	0                   	 
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 	EXTERNAL            	TRUE                
-	bucketing_version   	-1                  
+	bucketing_version   	2                   
 	engine.hive.enabled 	true                
 	format-version      	2                   
 	iceberg.orc.files.only	true                
@@ -285,7 +308,10 @@ Table Parameters:
 	totalSize           	812                 
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 

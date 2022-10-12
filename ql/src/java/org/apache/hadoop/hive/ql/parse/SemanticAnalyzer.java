@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
-import static org.apache.hadoop.hive.conf.Constants.EXPLAIN_CTAS_LOCATION;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEARCHIVEENABLED;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
@@ -7750,7 +7749,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         if (tblDesc == null) {
           if (viewDesc != null) {
-            destinationTable = viewDesc.toTable(conf);
             tableDescriptor = PlanUtils.getTableDesc(viewDesc, cols, colTypes);
           } else if (qb.getIsQuery()) {
             Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
@@ -7768,28 +7766,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             }
             tableDescriptor = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat,
                 serdeClass);
-            destinationTable = null;
           } else {
             tableDescriptor = PlanUtils.getDefaultTableDesc(qb.getDirectoryDesc(), cols, colTypes);
           }
         } else {
-          destinationTable = db.getTranslateTableDryrun(tblDesc.toTable(conf).getTTable());
-          if (ctx.isExplainPlan() &&
-                  tblDesc.getTblProps().containsKey(TABLE_IS_CTAS) &&
-                  !tblDesc.getTblProps().containsKey(META_TABLE_LOCATION)) {
-            if (destinationTable.getDataLocation() == null) {
-              // no metastore.metadata.transformer.class was set
-              tblDesc.getTblProps().put(EXPLAIN_CTAS_LOCATION, new Warehouse(conf).getDefaultTablePath(
-                      destinationTable.getDbName(),
-                      destinationTable.getTableName(),
-                      Boolean.parseBoolean(destinationTable.getParameters().get("EXTERNAL"))).toString());
-            } else {
-              tblDesc.getTblProps().put(EXPLAIN_CTAS_LOCATION, destinationTable.getDataLocation().toString());
-            }
+          if (tblDesc.isCTAS() && tblDesc.getStorageHandler() != null) {
+            tblDesc.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix).toString());
           }
           tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
         }
-      } catch (HiveException | MetaException e) {
+      } catch (HiveException e) {
         throw new SemanticException(e);
       }
 
@@ -7809,6 +7795,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isDfsDir = (destType == QBMetaData.DEST_DFS_FILE);
+
+      try {
+        destinationTable = tblDesc != null ? db.getTranslateTableDryrun(tblDesc.toTable(conf).getTTable()) :
+                viewDesc != null ? viewDesc.toTable(conf) : null;
+      } catch (HiveException e) {
+        throw new SemanticException(e);
+      }
 
       destTableIsFullAcid = AcidUtils.isFullAcidTable(destinationTable);
 
@@ -14041,9 +14034,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           isTransactional, isManaged, new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()}, isDefaultTableTypeChanged);
       isExt = isExternalTableChanged(tblProps, isTransactional, isExt, isDefaultTableTypeChanged);
       tblProps.put(TABLE_IS_CTAS, "true");
-      if (ctx.isExplainPlan()) {
-        tblProps.put(EXPLAIN_CTAS_LOCATION, "");
-      }
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
       tableDesc = new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols,
@@ -14094,7 +14084,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     WriteType lockType = tblProps != null && Boolean.parseBoolean(tblProps.get(TABLE_IS_CTAS))
         && AcidUtils.isExclusiveCTASEnabled(conf)
         // iceberg CTAS has it's own locking mechanism, therefore we should exclude them
-        && (t.getStorageHandler() == null || !t.getStorageHandler().directInsertCTAS()) ?
+        && (t.getStorageHandler() == null || !t.getStorageHandler().directInsert()) ?
       WriteType.CTAS : WriteType.DDL_NO_LOCK;
     
     outputs.add(new WriteEntity(t, lockType));
