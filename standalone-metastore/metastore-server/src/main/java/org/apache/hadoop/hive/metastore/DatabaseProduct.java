@@ -812,4 +812,9 @@ public class DatabaseProduct implements Configurable {
       derbyLock.unlock();
     }
   }
+
+  public static boolean isDerbyOracle() {
+    return dbType == DbType.DERBY || dbType == DbType.ORACLE;
+  }
+
 }
