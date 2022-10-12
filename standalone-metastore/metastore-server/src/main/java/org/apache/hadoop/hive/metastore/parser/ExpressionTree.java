@@ -28,6 +28,7 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -220,33 +221,78 @@ public class ExpressionTree {
     protected void accept(TreeVisitor visitor) throws MetaException {
       visitor.visit(this);
     }
+  }
 
-    /**
-     * Generates a JDO filter statement
-     * @param params
-     *        A map of parameter key to values for the filter statement.
-     * @param filterBuffer The filter builder that is used to build filter.
-     * @param partitionKeys
-     * @throws MetaException
-     */
-    public void generateJDOFilter(Configuration conf,
-                                  Map<String, Object> params, FilterBuilder filterBuffer, List<FieldSchema> partitionKeys) throws MetaException {
-      if (filterBuffer.hasError()) return;
-      if (lhs != null) {
-        filterBuffer.append (" (");
-        lhs.generateJDOFilter(conf, params, filterBuffer, partitionKeys);
+  /**
+   * Generate the JDOQL filter for the given expression tree
+   */
+  public static class JDOFilterGenerator extends TreeVisitor {
 
-        if (rhs != null) {
-          if( andOr == LogicalOperator.AND ) {
-            filterBuffer.append(" && ");
-          } else {
-            filterBuffer.append(" || ");
-          }
+    private Configuration conf;
+    // databaseProduct may be null for temporary tables.
+    private DatabaseProduct databaseProduct;
+    private List<FieldSchema> partitionKeys;
+    // the filter builder to append to.
+    private FilterBuilder filterBuilder;
+    // the input map which is updated with the the parameterized values.
+    // Keys are the parameter names and values are the parameter values
+    private Map<String, Object> params;
+    private boolean onParsing = false;
 
-          rhs.generateJDOFilter(conf, params, filterBuffer, partitionKeys);
-        }
-        filterBuffer.append (") ");
+    public JDOFilterGenerator(Configuration conf, DatabaseProduct dbProduct,
+        List<FieldSchema> partitionKeys, FilterBuilder filterBuilder, Map<String, Object> params) {
+      this.conf = conf;
+      this.databaseProduct = dbProduct;
+      this.partitionKeys = partitionKeys;
+      this.filterBuilder = filterBuilder;
+      this.params = params;
+    }
+
+    private void beforeParsing() throws MetaException {
+      if (!onParsing && !filterBuilder.getFilter().isEmpty()) {
+        filterBuilder.append(" && ");
       }
+      onParsing = true;
+    }
+
+    @Override
+    protected void beginTreeNode(TreeNode node) throws MetaException {
+      beforeParsing();
+      filterBuilder.append("( ");
+    }
+
+    @Override
+    protected void midTreeNode(TreeNode node) throws MetaException {
+      filterBuilder.append((node.getAndOr() == LogicalOperator.AND) ? " && " : " || ");
+    }
+
+    @Override
+    protected void endTreeNode(TreeNode node) throws MetaException {
+      filterBuilder.append(") ");
+    }
+
+    @Override
+    protected void visit(LeafNode node) throws MetaException {
+      // Oracle or Derby has problem in comparing String and Clob,
+      // the column PARAM_VALUE in table TABLE_PARAMS is declared as Clob.
+      beforeParsing();
+      if (databaseProduct != null && (databaseProduct.isDERBY() || databaseProduct.isORACLE()) &&
+          (node.operator == Operator.EQUALS || node.operator == Operator.NOTEQUALS
+              || node.operator == Operator.NOTEQUALS2) &&
+          node.keyName.startsWith(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS)) {
+        if (node.operator == Operator.NOTEQUALS || node.operator == Operator.NOTEQUALS2) {
+          filterBuilder.append("!");
+        }
+        // Rewrite the EQUALS operator to LIKE to fix the problem.
+        node.operator = Operator.LIKE;
+      }
+
+      node.generateJDOFilter(conf, params, filterBuilder, partitionKeys);
+    }
+
+    @Override
+    protected boolean shouldStop() {
+      return filterBuilder.hasError();
     }
   }
 
@@ -266,7 +312,6 @@ public class ExpressionTree {
       visitor.visit(this);
     }
 
-    @Override
     public void generateJDOFilter(Configuration conf, Map<String, Object> params,
                                   FilterBuilder filterBuilder, List<FieldSchema> partitionKeys) throws MetaException {
       if (partitionKeys != null) {
@@ -586,24 +631,6 @@ public class ExpressionTree {
       root = newNode;
     }
     nodeStack.push(newNode);
-  }
-
-  /** Generate the JDOQL filter for the given expression tree
-   * @param params the input map which is updated with the
-   *     the parameterized values. Keys are the parameter names and values
-   *     are the parameter values
-   * @param filterBuilder the filter builder to append to.
-   * @param partitionKeys
-   */
-  public void generateJDOFilterFragment(Configuration conf,
-                                        Map<String, Object> params, FilterBuilder filterBuilder, List<FieldSchema> partitionKeys) throws MetaException {
-    if (root == null) {
-      return;
-    }
-
-    filterBuilder.append(" && ( ");
-    root.generateJDOFilter(conf, params, filterBuilder, partitionKeys);
-    filterBuilder.append(" )");
   }
 
   /** Case insensitive ANTLR string stream */
