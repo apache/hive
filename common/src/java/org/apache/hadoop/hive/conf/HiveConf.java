@@ -529,7 +529,7 @@ public class HiveConf extends Configuration {
             + "task increment that would cross the specified limit."),
     REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",100,
         "Number of threads that will be used to dump partition data information during repl dump."),
-    REPL_TABLE_DUMP_PARALLELISM("hive.repl.table.dump.parallelism", 100,
+    REPL_TABLE_DUMP_PARALLELISM("hive.repl.table.dump.parallelism", 15,
             "Number of threads that will be used to dump table data information during repl dump."),
     REPL_RUN_DATA_COPY_TASKS_ON_TARGET("hive.repl.run.data.copy.tasks.on.target", true,
             "Indicates whether replication should run data copy tasks during repl load operation."),

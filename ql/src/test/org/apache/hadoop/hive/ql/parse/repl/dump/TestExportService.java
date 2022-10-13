@@ -91,10 +91,4 @@ public class TestExportService {
     Assert.assertTrue(exportService.await(Long.MAX_VALUE, TimeUnit.MILLISECONDS));
   }
 
-  @Test(expected = java.lang.AssertionError.class)
-  public void testExportServiceWithParallelismExpectAwaitTerminationFails() throws Exception {
-    configureAndSubmitTasks();
-    Assert.assertTrue(exportService.await(10, TimeUnit.MICROSECONDS));
-  }
-
 }
