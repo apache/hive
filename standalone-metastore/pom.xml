@@ -77,7 +77,7 @@
     <guava.version>19.0</guava.version>
     <hadoop.version>3.3.1</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
-    <jackson.version>2.12.7</jackson.version>
+    <jackson.version>2.13.3</jackson.version>
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.13</junit.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
