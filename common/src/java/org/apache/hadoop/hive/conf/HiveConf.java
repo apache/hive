@@ -2913,7 +2913,10 @@ public class HiveConf extends Configuration {
     HIVE_STATS_MAX_NUM_STATS("hive.stats.max.num.stats", (long) 10000,
         "When the number of stats to be updated is huge, this value is used to control the number of \n" +
         " stats to be sent to HMS for update."),
-
+    HIVE_THRIFT_MAX_MESSAGE_SIZE("hive.thrift.max.message.size", "1gb",
+        new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
+        "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
+        "library."),
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false,
         "Whether Hive supports concurrency control or not. \n" +

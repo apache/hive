@@ -608,6 +608,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     client.rename_partition_req(req);
   }
 
+  private TConfiguration createMetastoreTConfiguration() {
+    int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(conf, ConfVars.THRIFT_METASTORE_MAX_MESSAGE_SIZE);
+    if (maxThriftMessageSize <= 0) {
+      return new TConfiguration();
+    }
+    return TConfiguration.custom().setMaxMessageSize(maxThriftMessageSize).build();
+  }
+
   /*
   Creates a THttpClient if HTTP mode is enabled. If Client auth mode is set to JWT,
   then the method fetches JWT from environment variable: HMS_JWT and sets in auth
@@ -670,7 +678,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         tHttpClient = SecurityUtils.getThriftHttpsClient(httpUrl, trustStorePath, trustStorePassword,
             trustStoreAlgorithm, trustStoreType, httpClientBuilder);
       }  else {
-        tHttpClient = new THttpClient(httpUrl, httpClientBuilder.build());
+        tHttpClient = new THttpClient(createMetastoreTConfiguration(), httpUrl, httpClientBuilder.build());
       }
     } catch (Exception e) {
       if (e instanceof TTransportException) {
@@ -705,7 +713,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         binaryTransport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
             trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
       } else {
-        binaryTransport = new TSocket(new TConfiguration(),store.getHost(), store.getPort(),
+        binaryTransport = new TSocket(createMetastoreTConfiguration(), store.getHost(), store.getPort(),
             clientSocketTimeout);
       }
       binaryTransport = createAuthBinaryTransport(store, binaryTransport);

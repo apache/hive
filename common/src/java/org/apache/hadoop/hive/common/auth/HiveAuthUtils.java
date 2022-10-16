@@ -50,8 +50,21 @@ import org.slf4j.LoggerFactory;
 public class HiveAuthUtils {
   private static final Logger LOG = LoggerFactory.getLogger(HiveAuthUtils.class);
 
-  public static TTransport getSocketTransport(String host, int port, int loginTimeout) throws TTransportException {
-    return new TSocket(new TConfiguration(),host, port, loginTimeout);
+  /**
+   * Create a TConfiguration object with a specific MaxMessageSize.
+   * @param maxMessageSize maximum allowed message size. 0 or -1 uses the default settings of Thrift.
+   * @return TConfiguration object with the specified maxMessageSize.
+   */
+  public static TConfiguration createTConfiguration(int maxMessageSize) {
+    if (maxMessageSize <= 0) {
+      return new TConfiguration();
+    }
+    return TConfiguration.custom().setMaxMessageSize(maxMessageSize).build();
+  }
+
+  public static TTransport getSocketTransport(String host, int port, int loginTimeout, int maxMessageSize)
+      throws TTransportException {
+    return new TSocket(createTConfiguration(maxMessageSize), host, port, loginTimeout);
   }
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout)

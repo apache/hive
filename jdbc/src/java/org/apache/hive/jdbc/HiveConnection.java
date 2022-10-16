@@ -850,7 +850,7 @@ public class HiveConnection implements java.sql.Connection {
    * @return TTransport
    * @throws TTransportException
    */
-  private TTransport createUnderlyingTransport() throws TTransportException {
+  private TTransport createUnderlyingTransport(int maxMessageSize) throws TTransportException {
     TTransport transport = null;
     // Note: Thrift returns an SSL socket that is already bound to the specified host:port
     // Therefore an open called on this would be a no-op later
@@ -881,9 +881,25 @@ public class HiveConnection implements java.sql.Connection {
       }
     } else {
       // get non-SSL socket transport
-      transport = HiveAuthUtils.getSocketTransport(host, port, loginTimeout);
+      transport = HiveAuthUtils.getSocketTransport(host, port, loginTimeout, maxMessageSize);
     }
     return transport;
+  }
+
+  private int getMaxMessageSize() throws SQLException {
+      String maxMessageSize = sessConfMap.get(JdbcConnectionParams.THRIFT_MAX_MESSAGE_SIZE);
+      if (maxMessageSize == null) {
+        return -1;
+      }
+
+      try {
+	return Integer.parseInt(maxMessageSize);
+      } catch (Exception e) {
+        String errFormat = "Invalid {} configuration of '{}'. Expected an integer specifying number of bytes. " +
+                           "A configuration of <= 0 uses default max message size.";
+        throw new SQLException(String.format(errFormat, JdbcConnectionParams.THRIFT_MAX_MESSAGE_SIZE, maxMessageSize),
+            "42000", e);
+      }
   }
 
   /**
@@ -901,7 +917,7 @@ public class HiveConnection implements java.sql.Connection {
    */
   private TTransport createBinaryTransport() throws SQLException, TTransportException {
     try {
-      TTransport socketTransport = createUnderlyingTransport();
+      TTransport socketTransport = createUnderlyingTransport(getMaxMessageSize());
       // handle secure connection if specified
       if (!JdbcConnectionParams.AUTH_SIMPLE.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))) {
         // If Kerberos

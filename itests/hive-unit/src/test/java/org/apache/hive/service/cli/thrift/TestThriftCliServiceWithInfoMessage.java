@@ -93,7 +93,7 @@ public class TestThriftCliServiceWithInfoMessage {
 
   @Test
   public void testExecuteReturnWithInfoMessage() throws Exception {
-    TTransport transport = HiveAuthUtils.getSocketTransport(host, cliPort, 0);
+    TTransport transport = HiveAuthUtils.getSocketTransport(host, cliPort, 0, -1);
     try {
       transport.open();
       TCLIService.Iface client = new TCLIService.Client(new TBinaryProtocol(transport));

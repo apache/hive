@@ -1405,6 +1405,9 @@ public class MetastoreConf {
                 "If dynamic service discovery mode is set, the URIs are used to connect to the" +
                 " corresponding service discovery servers e.g. a zookeeper. Otherwise they are " +
                 "used as URIs for remote metastore."),
+    THRIFT_METASTORE_MAX_MESSAGE_SIZE("metastore.thrift.max.message.size",
+        "hive.thrift.max.message.size", "1Gb", new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
+        "Thrift client configuration for max message size."),
     THRIFT_SERVICE_DISCOVERY_MODE("metastore.service.discovery.mode",
             "hive.metastore.service.discovery.mode",
             "",
