@@ -501,4 +501,37 @@ public class TestMetastoreConf {
     Assert.assertEquals(MetastoreConf.ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS,
         AcidOpenTxnsCounterService.class.getName());
   }
+
+  @Test
+  public void testAutoSizeProperty() {
+    conf = MetastoreConf.newMetastoreConf();
+    // Test AutoSize.Resource
+    MetastoreConf.setBoolVar(conf, ConfVars.METASTORE_AUTO_CONFIG_ENABLE, true);
+    ConfVars cacheSize = MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY;
+    Assert.assertEquals(new Float(0.1f * Runtime.getRuntime().maxMemory()).longValue(),
+        MetastoreConf.getSizeVar(conf, cacheSize));
+    MetastoreConf.setBoolVar(conf, ConfVars.METASTORE_AUTO_CONFIG_ENABLE, false);
+    Assert.assertEquals(SizeValidator.toSizeBytes((String)cacheSize.getDefaultVal()), MetastoreConf.getSizeVar(conf, cacheSize));
+    ConfVars maxThreads = ConfVars.SERVER_MAX_THREADS;
+    // Test AutoSize.BoundConfiguration
+    MetastoreConf.setBoolVar(conf, ConfVars.METASTORE_AUTO_CONFIG_ENABLE, true);
+    ConfVars fsHandlers = ConfVars.FS_HANDLER_THREADS_COUNT;
+    Assert.assertEquals(new Float(0.02f *  (Long)maxThreads.getDefaultVal()).longValue(),
+        MetastoreConf.getLongVar(conf, fsHandlers));
+    MetastoreConf.setBoolVar(conf, ConfVars.METASTORE_AUTO_CONFIG_ENABLE, false);
+    Assert.assertEquals(fsHandlers.getDefaultVal(), MetastoreConf.getLongVar(conf, fsHandlers));
+    Assert.assertNotEquals(new Float(0.02f * (Long)maxThreads.getDefaultVal()).longValue(),
+        fsHandlers.getDefaultVal());
+    // Test AutoSize.Load
+    ConfVars maxPoolSize = ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS;
+    MetastoreConf.setBoolVar(conf, ConfVars.METASTORE_AUTO_CONFIG_ENABLE, true);
+    System.setProperty("metastore.instance.size", "s");
+    Assert.assertEquals(10, MetastoreConf.getIntVar(conf, maxPoolSize));
+    System.setProperty("metastore.instance.size", "xl");
+    Assert.assertEquals(30, MetastoreConf.getIntVar(conf, maxPoolSize));
+    System.setProperty("metastore.instance.size", "l");
+    Assert.assertEquals(25, MetastoreConf.getIntVar(conf, maxPoolSize));
+    MetastoreConf.setBoolVar(conf, ConfVars.METASTORE_AUTO_CONFIG_ENABLE, false);
+    Assert.assertEquals(maxPoolSize.getDefaultVal(), MetastoreConf.getLongVar(conf, maxPoolSize));
+  }
 }

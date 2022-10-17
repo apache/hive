@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.metastore.conf;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
@@ -35,6 +37,7 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
+import org.apache.hadoop.hive.common.classification.AutoSize;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.hive.common.util.SuppressFBWarnings;
@@ -372,6 +375,7 @@ public class MetastoreConf {
          "This can be used in conjunction with hive.metastore.cached.rawstore.cached.object.whitelist. \n" +
          "Example: db2.*, db3\\.tbl1, db3\\..*. The last item can potentially override patterns specified before. \n" +
          "The blacklist also overrides the whitelist."),
+    @AutoSize.Resource(memory = 0.1f)
     CACHED_RAW_STORE_MAX_CACHE_MEMORY("metastore.cached.rawstore.max.cache.memory",
         "hive.metastore.cached.rawstore.max.cache.memory", "1Gb", new SizeValidator(),
         "The maximum memory in bytes that the cached objects can use. "
@@ -637,6 +641,7 @@ public class MetastoreConf {
     CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
         "javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",
         "Driver class name for a JDBC metastore"),
+    @AutoSize.Load(small = "10", medium = "15", large =  "25", xlarge = "30")
     CONNECTION_POOLING_MAX_CONNECTIONS("datanucleus.connectionPool.maxPoolSize",
         "datanucleus.connectionPool.maxPoolSize", 10,
         "Specify the maximum number of connections in the connection pool. Note: The configured size will be used by\n" +
@@ -834,6 +839,7 @@ public class MetastoreConf {
             + "is set to instance of HiveAuthorizerFactory, then this value is ignored."),
     FS_HANDLER_CLS("metastore.fs.handler.class", "hive.metastore.fs.handler.class",
         "org.apache.hadoop.hive.metastore.HiveMetaStoreFsImpl", ""),
+    @AutoSize.BoundConfiguration(name = "metastore.server.max.threads", proportion = 0.02f)
     FS_HANDLER_THREADS_COUNT("metastore.fshandler.threads", "hive.metastore.fshandler.threads", 15,
         "Number of threads to be allocated for metastore handler for fs operations."),
     HMS_HANDLER_ATTEMPTS("metastore.hmshandler.retry.attempts", "hive.hmshandler.retry.attempts", 10,
@@ -969,6 +975,8 @@ public class MetastoreConf {
             "hive.metastore.authentication.ldap.bindpw", "",
 "The password for the bind user, to be used to search for the full name of the user being authenticated.\n" +
         "If the username is specified, this parameter must also be specified."),
+    METASTORE_AUTO_CONFIG_ENABLE("metastore.auto.config.enable", "metastore.auto.config.enable", false,
+        "Enable auto configuring the property that annotated by AutoSize. Default is false."),
     LIMIT_PARTITION_REQUEST("metastore.limit.partition.request",
         "hive.metastore.limit.partition.request", -1,
         "This limits the number of partitions (whole partition objects) that can be requested " +
@@ -1290,6 +1298,7 @@ public class MetastoreConf {
     SERVER_MAX_MESSAGE_SIZE("metastore.server.max.message.size",
         "hive.metastore.server.max.message.size", 100*1024*1024L,
         "Maximum message size in bytes a HMS will accept."),
+    @AutoSize.Load(small = "600", medium = "1000", large = "3000", xlarge = "5000")
     SERVER_MAX_THREADS("metastore.server.max.threads",
         "hive.metastore.server.max.threads", 1000,
         "Maximum number of worker threads in the Thrift server's pool."),
@@ -2070,6 +2079,46 @@ public class MetastoreConf {
     }
   }
 
+  private static String getAutoSizeValue(Configuration conf, ConfVars vars) {
+    if (!conf.getBoolean(ConfVars.METASTORE_AUTO_CONFIG_ENABLE.varname, false)) {
+      return null;
+    }
+    try {
+      Field declaredField = ConfVars.class.getDeclaredField(vars.name());
+      Annotation[] annotations = declaredField.getDeclaredAnnotations();
+      for (Annotation annotation : annotations) {
+        if (annotation instanceof AutoSize.Resource) {
+          AutoSize.Resource resource = (AutoSize.Resource) annotation;
+          float res = resource.cpu() * Runtime.getRuntime().availableProcessors() +
+              resource.memory() * Runtime.getRuntime().maxMemory();
+          return "" + Float.valueOf(res).longValue();
+        } else if (annotation instanceof AutoSize.BoundConfiguration) {
+          AutoSize.BoundConfiguration configuration = (AutoSize.BoundConfiguration) annotation;
+          ConfVars confVars  = keyToVars.get(configuration.name());
+          if (confVars != null) {
+            Float value = conf.getLong(configuration.name(), Long.parseLong("" + confVars.defaultVal)) * configuration.proportion();
+            return String.valueOf(value.longValue());
+          }
+        } else if (annotation instanceof AutoSize.Load) {
+          AutoSize.Load load = (AutoSize.Load) annotation;
+          String instanceSize = System.getProperty("metastore.instance.size");
+          if ("s".equalsIgnoreCase(instanceSize) || "small".equalsIgnoreCase(instanceSize)) {
+            return load.small();
+          } else if ("m".equalsIgnoreCase(instanceSize) || "medium".equalsIgnoreCase(instanceSize)) {
+            return load.medium();
+          } else if ("l".equalsIgnoreCase(instanceSize) || "large".equalsIgnoreCase(instanceSize)) {
+            return load.large();
+          } else if ("xl".equalsIgnoreCase(instanceSize) || "xlarge".equalsIgnoreCase(instanceSize)) {
+            return load.xlarge();
+          }
+        }
+      }
+    } catch (Exception e) {
+      LOG.debug("Error auto sizing for " + vars.varname, e);
+    }
+    return null;
+  }
+
   // In all of the getters, we try the metastore value name first.  If it is not set we try the
   // Hive value name.
 
@@ -2081,6 +2130,10 @@ public class MetastoreConf {
    */
   public static String getVar(Configuration conf, ConfVars var) {
     assert var.defaultVal.getClass() == String.class;
+    String autoValue = getAutoSizeValue(conf, var);
+    if (autoValue != null) {
+      return autoValue;
+    }
     String val = conf.get(var.varname);
     return val == null ? conf.get(var.hiveName, (String)var.defaultVal) : val;
   }
@@ -2094,6 +2147,10 @@ public class MetastoreConf {
    */
   public static String getVar(Configuration conf, ConfVars var, String defaultVal) {
     assert var.defaultVal.getClass() == String.class;
+    String autoValue = getAutoSizeValue(conf, var);
+    if (autoValue != null) {
+      return autoValue;
+    }
     String val = conf.get(var.varname);
     return val == null ? conf.get(var.hiveName, defaultVal) : val;
   }
@@ -2148,6 +2205,10 @@ public class MetastoreConf {
    */
   public static long getLongVar(Configuration conf, ConfVars var) {
     assert var.defaultVal.getClass() == Long.class;
+    String autoValue = getAutoSizeValue(conf, var);
+    if (autoValue != null) {
+      return Long.parseLong(autoValue);
+    }
     String val = conf.get(var.varname);
     return val == null ? conf.getLong(var.hiveName, (Long)var.defaultVal) : Long.parseLong(val);
   }
