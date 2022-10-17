@@ -90,6 +90,8 @@ import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rel.rules.CoreRules;
+import org.apache.calcite.rel.rules.FilterMergeRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
 import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
@@ -217,7 +219,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExpandDistinctAggre
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFieldTrimmerRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterAggregateTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterJoinRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTSTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveFilterSetOpTransposeRule;
@@ -1847,7 +1848,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveFilterJoinRule.FILTER_ON_JOIN);
       rules.add(new HiveFilterAggregateTransposeRule(Filter.class, HiveRelFactories.HIVE_BUILDER,
           Aggregate.class));
-      rules.add(HiveFilterMergeRule.INSTANCE);
+      rules.add(FilterMergeRule.Config.DEFAULT
+          .withOperandFor(HiveFilter.class)
+          .withRelBuilderFactory(HiveRelFactories.HIVE_BUILDER)
+          .toRule());
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_REDUCE_WITH_STATS)) {
         rules.add(HiveReduceExpressionsWithStatsRule.INSTANCE);
       }
