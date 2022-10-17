@@ -495,7 +495,7 @@ public abstract class TestHiveMetaStore {
     assertTrue("Not all parts returned", mpartial.containsAll(expectedPartitions));
   }
 
-  private static List<String> makeVals(String ds, String id) {
+  public static List<String> makeVals(String ds, String id) {
     List <String> vals4 = new ArrayList<>(2);
     vals4.add(ds);
     vals4.add(id);
@@ -552,7 +552,6 @@ public abstract class TestHiveMetaStore {
       " partitions",values.size(), partitions.size());
 
     cleanUp(dbName, tblName, typeName);
-
   }
 
   @Test
@@ -3005,7 +3004,7 @@ public abstract class TestHiveMetaStore {
     stmt.executeUpdate();
   }
 
-  private void cleanUp(String dbName, String tableName, String typeName) throws Exception {
+  protected void cleanUp(String dbName, String tableName, String typeName) throws Exception {
     if(dbName != null && tableName != null) {
       client.dropTable(dbName, tableName);
     }
@@ -3017,7 +3016,7 @@ public abstract class TestHiveMetaStore {
     }
   }
 
-  private Database createDb(String dbName) throws Exception {
+  protected Database createDb(String dbName) throws Exception {
     if(null == dbName) { return null; }
     return new DatabaseBuilder()
         .setName(dbName)
@@ -3101,7 +3100,7 @@ public abstract class TestHiveMetaStore {
     return partitions;
   }
 
-  private List<Partition> createMultiPartitionTableSchema(String dbName, String tblName,
+  protected List<Partition> createMultiPartitionTableSchema(String dbName, String tblName,
       String typeName, List<List<String>> values) throws Throwable {
     return createMultiPartitionTableSchema(null, dbName, tblName, typeName, values);
   }
