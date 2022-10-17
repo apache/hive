@@ -137,9 +137,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     // Currently ClusteredWriter is used which requires that records are ordered by partition keys.
     // Here we ensure that SortedDynPartitionOptimizer will kick in and do the sorting.
     // TODO: remove once we have both Fanout and ClusteredWriter available: HIVE-25948
-    jobConf.put(HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD.varname, "1");
-    jobConf.put(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE.varname, "nonstrict");
-
+    HiveConf.setIntVar(configuration, HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD, 1);
+    HiveConf.setVar(configuration, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     try {
       this.inspector = IcebergObjectInspector.create(projectedSchema);
     } catch (Exception e) {
