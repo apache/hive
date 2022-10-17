@@ -139,9 +139,6 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     // TODO: remove once we have both Fanout and ClusteredWriter available: HIVE-25948
     HiveConf.setIntVar(configuration, HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD, 1);
     HiveConf.setVar(configuration, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
-    jobConf.put(HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD.varname, "1");
-    jobConf.put(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE.varname, "nonstrict");
-
     try {
       this.inspector = IcebergObjectInspector.create(projectedSchema);
     } catch (Exception e) {
