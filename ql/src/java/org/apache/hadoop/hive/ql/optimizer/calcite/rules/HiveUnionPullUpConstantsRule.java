@@ -38,6 +38,7 @@ import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.slf4j.Logger;
@@ -66,6 +67,10 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
 
   @Override
   public void onMatch(RelOptRuleCall call) {
+    if (Bug.CALCITE_5337_FIXED) {
+      throw new IllegalStateException("Class redundant when the fix for CALCITE-5337 is merged into Calcite");
+    }
+
     final Union union = call.rel(0);
 
     final int count = union.getRowType().getFieldCount();
@@ -105,7 +110,11 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
       RexNode expr = rexBuilder.makeInputRef(union, i);
       RelDataTypeField field = fields.get(i);
       if (constants.containsKey(expr)) {
-        topChildExprs.add(constants.get(expr));
+        if (constants.get(expr).getType().equals(field.getType())) {
+          topChildExprs.add(constants.get(expr));
+        } else {
+          topChildExprs.add(rexBuilder.makeCast(field.getType(), constants.get(expr), true));
+        }
         topChildExprsFields.add(field.getName());
       } else {
         topChildExprs.add(expr);
