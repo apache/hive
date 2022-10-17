@@ -2916,7 +2916,7 @@ public class HiveConf extends Configuration {
     HIVE_THRIFT_MAX_MESSAGE_SIZE("hive.thrift.max.message.size", "1gb",
         new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
         "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
-        "library."),
+        "library. The upper limit is 21474836480 bytes (or 2gb)."),
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false,
         "Whether Hive supports concurrency control or not. \n" +
