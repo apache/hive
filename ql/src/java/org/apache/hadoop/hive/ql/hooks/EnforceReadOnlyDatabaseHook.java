@@ -20,24 +20,20 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.alter.poperties.AlterDatabaseSetPropertiesDesc;
-import org.apache.hadoop.hive.ql.exec.ReadOnlyDatabaseException;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
-import org.apache.hadoop.hive.ql.plan.api.Stage;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -82,14 +78,12 @@ public class EnforceReadOnlyDatabaseHook implements ExecuteWithHookContext {
     // Now the remaining operation is a write operation, as a read operation is already allowed.
 
     // Disallow write operations on a read-only database.
-    if (hasReadOnlyDbAsOutput(hookContext)) {
-      throw new ReadOnlyDatabaseException("A write operation is disallowed on a read-only database.");
-    }
+    checkReadOnlyDbAsOutput(hookContext);
 
     // Allow write operations on writable databases.
   }
 
-  private static boolean hasReadOnlyDbAsOutput(HookContext hookContext) throws HiveException {
+  private static void checkReadOnlyDbAsOutput(HookContext hookContext) throws HiveException {
     LOG.debug(hookContext.getQueryPlan().getOutputs().toString());
     // If it has a data/metadata change operation on a read-only database, throw an exception.
     final Set<WriteEntity> outputs = hookContext.getQueryPlan().getOutputs();
@@ -125,13 +119,12 @@ public class EnforceReadOnlyDatabaseHook implements ExecuteWithHookContext {
         continue;
       }
       if ("true".equalsIgnoreCase(parameters.get(READONLY))) {
-        return true;
+        throw new SemanticException(ErrorMsg.READ_ONLY_DATABASE, database.getName());
       }
     }
-    return false;
   }
 
-  private static boolean isExplainOrSelectQuery(HookContext hookContext) throws HiveException {
+  private static boolean isExplainOrSelectQuery(HookContext hookContext) {
     final QueryState queryState = hookContext.getQueryState();
     final HiveOperation hiveOperation = queryState.getHiveOperation();
 
