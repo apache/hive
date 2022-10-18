@@ -2071,4 +2071,4 @@ ALTER TABLE ONLY "DC_PRIVS"
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------
-INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '4.0.0-GA', 'Hive release version 4.0.0-GA');
+INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '4.0.0', 'Hive release version 4.0.0');
