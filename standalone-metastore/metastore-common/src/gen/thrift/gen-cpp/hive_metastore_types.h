@@ -11200,7 +11200,7 @@ void swap(ShowCompactRequest &a, ShowCompactRequest &b);
 std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj);
 
 typedef struct _ShowCompactResponseElement__isset {
-  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false), workerVersion(false), initiatorId(false), initiatorVersion(false), cleanerStart(false), poolName(false) {}
+  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false), workerVersion(false), initiatorId(false), initiatorVersion(false), cleanerStart(false), poolName(false), nextTxnId(false), txnId(false), commitTime(false), hightestWriteId(false) {}
   bool partitionname :1;
   bool workerid :1;
   bool start :1;
@@ -11217,6 +11217,10 @@ typedef struct _ShowCompactResponseElement__isset {
   bool initiatorVersion :1;
   bool cleanerStart :1;
   bool poolName :1;
+  bool nextTxnId :1;
+  bool txnId :1;
+  bool commitTime :1;
+  bool hightestWriteId :1;
 } _ShowCompactResponseElement__isset;
 
 class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
@@ -11243,7 +11247,11 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
                                  initiatorId(),
                                  initiatorVersion(),
                                  cleanerStart(0),
-                                 poolName() {
+                                 poolName(),
+                                 nextTxnId(0),
+                                 txnId(0),
+                                 commitTime(0),
+                                 hightestWriteId(0) {
   }
 
   virtual ~ShowCompactResponseElement() noexcept;
@@ -11271,6 +11279,10 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   std::string initiatorVersion;
   int64_t cleanerStart;
   std::string poolName;
+  int64_t nextTxnId;
+  int64_t txnId;
+  int64_t commitTime;
+  int64_t hightestWriteId;
 
   _ShowCompactResponseElement__isset __isset;
 
@@ -11313,6 +11325,14 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   void __set_cleanerStart(const int64_t val);
 
   void __set_poolName(const std::string& val);
+
+  void __set_nextTxnId(const int64_t val);
+
+  void __set_txnId(const int64_t val);
+
+  void __set_commitTime(const int64_t val);
+
+  void __set_hightestWriteId(const int64_t val);
 
   bool operator == (const ShowCompactResponseElement & rhs) const
   {
@@ -11387,6 +11407,22 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
     if (__isset.poolName != rhs.__isset.poolName)
       return false;
     else if (__isset.poolName && !(poolName == rhs.poolName))
+      return false;
+    if (__isset.nextTxnId != rhs.__isset.nextTxnId)
+      return false;
+    else if (__isset.nextTxnId && !(nextTxnId == rhs.nextTxnId))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.commitTime != rhs.__isset.commitTime)
+      return false;
+    else if (__isset.commitTime && !(commitTime == rhs.commitTime))
+      return false;
+    if (__isset.hightestWriteId != rhs.__isset.hightestWriteId)
+      return false;
+    else if (__isset.hightestWriteId && !(hightestWriteId == rhs.hightestWriteId))
       return false;
     return true;
   }
