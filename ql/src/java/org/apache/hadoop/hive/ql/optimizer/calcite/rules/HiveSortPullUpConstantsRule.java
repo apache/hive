@@ -154,7 +154,11 @@ public final class HiveSortPullUpConstantsRule {
         RexNode expr = rexBuilder.makeInputRef(sortNode.getInput(), i);
         RelDataTypeField field = fields.get(i);
         if (constants.containsKey(expr)) {
-          topChildExprs.add(constants.get(expr));
+          if (constants.get(expr).getType().equals(field.getType())) {
+            topChildExprs.add(constants.get(expr));
+          } else {
+            topChildExprs.add(rexBuilder.makeCast(field.getType(), constants.get(expr), true));
+          }
           topChildExprsFields.add(field.getName());
         } else {
           newChildExprs.add(Pair.<RexNode, String>of(expr, field.getName()));
