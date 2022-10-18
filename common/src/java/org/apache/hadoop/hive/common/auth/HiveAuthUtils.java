@@ -122,7 +122,7 @@ public class HiveAuthUtils {
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout, int maxMessageSize)
       throws TTransportException {
-    return getSSLSocket(host, port, loginTimeout, maxMessageSize);
+    return getSSLSocket(host, port, loginTimeout, null, maxMessageSize);
   }
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout, String trustStorePath,
