@@ -79,7 +79,7 @@
     <hikaricp.version>2.6.1</hikaricp.version>
     <jackson.version>2.12.7</jackson.version>
     <javolution.version>5.5.1</javolution.version>
-    <junit.version>4.13</junit.version>
+    <junit.version>4.13.2</junit.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <junit.vintage.version>5.6.2</junit.vintage.version>
     <libfb303.version>0.9.3</libfb303.version>
