@@ -130,7 +130,7 @@
     <druid.version>0.17.1</druid.version>
     <esri.version>2.2.4</esri.version>
     <flatbuffers.version>1.9.0</flatbuffers.version>
-    <guava.version>19.0</guava.version>
+    <guava.version>31.1-jre</guava.version>
     <groovy.version>2.4.21</groovy.version>
     <h2database.version>2.1.214</h2database.version>
     <hadoop.version>3.3.1</hadoop.version>
