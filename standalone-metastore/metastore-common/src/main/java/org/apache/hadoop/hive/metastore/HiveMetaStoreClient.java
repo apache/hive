@@ -609,7 +609,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   private TConfiguration createMetastoreTConfiguration() {
-    int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(conf, ConfVars.THRIFT_METASTORE_MAX_MESSAGE_SIZE);
+    int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(conf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
     if (maxThriftMessageSize <= 0) {
       return new TConfiguration();
     }

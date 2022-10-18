@@ -75,8 +75,9 @@ public class TestRemoteHiveMetaStoreKerberos extends TestRemoteHiveMetaStore {
 
     Configuration clientConf = MetastoreConf.newMetastoreConf(conf);
     MetastoreConf.setVar(clientConf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
-    // set to a low value to prove THRIFT_METASTORE_MAX_MESSAGE_SIZE is being honored (it should throw an exception)
-    MetastoreConf.setVar(clientConf, ConfVars.THRIFT_METASTORE_MAX_MESSAGE_SIZE, "1024");
+    // set to a low value to prove THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE is being honored
+    // (it should throw an exception)
+    MetastoreConf.setVar(clientConf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE, "1024");
     HiveMetaStoreClient limitedClient = new HiveMetaStoreClient(clientConf);
     Exception expectedException = assertThrows(TTransportException.class, () -> {
       limitedClient.listPartitions(dbName, tblName, (short)-1);
@@ -86,7 +87,7 @@ public class TestRemoteHiveMetaStoreKerberos extends TestRemoteHiveMetaStore {
     assertTrue(exceptionMessage.contains("MaxMessageSize reached"));
     limitedClient.close();
 
-    // test default client (with a default THRIFT_METASTORE_MAX_MESSAGE_SIZE)
+    // test default client (with a default THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE)
     List<Partition> partitions = client.listPartitions(dbName, tblName, (short) -1);
     assertNotNull(partitions);
     assertEquals("expected to receive the same number of partitions added", values.size(), partitions.size());

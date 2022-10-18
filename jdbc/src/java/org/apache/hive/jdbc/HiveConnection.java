@@ -887,7 +887,7 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private int getMaxMessageSize() throws SQLException {
-      String maxMessageSize = sessConfMap.get(JdbcConnectionParams.THRIFT_MAX_MESSAGE_SIZE);
+      String maxMessageSize = sessConfMap.get(JdbcConnectionParams.THRIFT_CLIENT_MAX_MESSAGE_SIZE);
       if (maxMessageSize == null) {
         return -1;
       }
@@ -897,8 +897,8 @@ public class HiveConnection implements java.sql.Connection {
       } catch (Exception e) {
         String errFormat = "Invalid {} configuration of '{}'. Expected an integer specifying number of bytes. " +
                            "A configuration of <= 0 uses default max message size.";
-        throw new SQLException(String.format(errFormat, JdbcConnectionParams.THRIFT_MAX_MESSAGE_SIZE, maxMessageSize),
-            "42000", e);
+        String errMsg = String.format(errFormat, JdbcConnectionParams.THRIFT_CLIENT_MAX_MESSAGE_SIZE, maxMessageSize);
+        throw new SQLException(errMsg, "42000", e);
       }
   }
 
