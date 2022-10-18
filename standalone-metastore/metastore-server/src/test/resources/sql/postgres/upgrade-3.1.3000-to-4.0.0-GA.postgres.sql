@@ -1,5 +1,5 @@
--- The file has some overlapping with upgrade-3.2.0-to-4.0.0-alpha-2.postgres.sql
-SELECT 'Upgrading MetaStore schema from 3.1.3000 to 4.0.0-alpha-2';
+-- The file has some overlapping with upgrade-3.2.0-to-4.0.0-GA.postgres.sql
+SELECT 'Upgrading MetaStore schema from 3.1.3000 to 4.0.0-GA';
 
 -- HIVE-20793
 ALTER TABLE "WM_RESOURCEPLAN" ADD "NS" character varying(128);
@@ -141,5 +141,5 @@ ALTER TABLE "COMPACTION_QUEUE" ADD "CQ_POOL_NAME" VARCHAR(128);
 ALTER TABLE "COMPLETED_COMPACTIONS" ADD "CC_POOL_NAME" VARCHAR(128);
 
 -- These lines need to be last. Insert any changes above.
-UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0-alpha-2', "VERSION_COMMENT"='Hive release version 4.0.0-alpha-2' where "VER_ID"=1;
-SELECT 'Finished upgrading MetaStore schema from 3.1.3000 to 4.0.0-alpha-2';
+UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0-GA', "VERSION_COMMENT"='Hive release version 4.0.0-GA' where "VER_ID"=1;
+SELECT 'Finished upgrading MetaStore schema from 3.1.3000 to 4.0.0-GA';
