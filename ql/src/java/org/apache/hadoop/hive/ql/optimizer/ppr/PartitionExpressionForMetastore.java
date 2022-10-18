@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
@@ -108,7 +107,7 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   private ExprNodeDesc deserializeExpr(byte[] exprBytes) throws MetaException {
     ExprNodeDesc expr = null;
     try {
-      expr = SerializationUtilities.deserializeObjectWithTypeInformation(exprBytes);
+      expr = SerializationUtilities.deserializeObjectWithTypeInformation(exprBytes, true);
     } catch (Exception ex) {
       LOG.error("Failed to deserialize the expression", ex);
       throw new MetaException(ex.getMessage());
