@@ -608,12 +608,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     client.rename_partition_req(req);
   }
 
-  private TConfiguration createMetastoreTConfiguration() {
+  private <T extends TTransport> T configureThriftMaxMessageSize(T transport) {
     int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(conf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
-    if (maxThriftMessageSize <= 0) {
-      return new TConfiguration();
+    if (maxThriftMessageSize > 0) {
+      if (transport.getConfiguration() == null) {
+        LOG.warn("TTransport {} is returning a null Configuration, Thrift max message size is not getting configured",
+            transport.getClass().getName());
+        return transport;
+      }
+      transport.getConfiguration().setMaxMessageSize(maxThriftMessageSize);
     }
-    return TConfiguration.custom().setMaxMessageSize(maxThriftMessageSize).build();
+    return transport;
   }
 
   /*
@@ -678,7 +683,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         tHttpClient = SecurityUtils.getThriftHttpsClient(httpUrl, trustStorePath, trustStorePassword,
             trustStoreAlgorithm, trustStoreType, httpClientBuilder);
       }  else {
-        tHttpClient = new THttpClient(createMetastoreTConfiguration(), httpUrl, httpClientBuilder.build());
+        tHttpClient = new THttpClient(httpUrl, httpClientBuilder.build());
       }
     } catch (Exception e) {
       if (e instanceof TTransportException) {
@@ -689,7 +694,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       }
     }
     LOG.debug("Created thrift http client for URL: " + httpUrl);
-    return tHttpClient;
+    return configureThriftMaxMessageSize(tHttpClient);
   }
 
   private TTransport createBinaryClient(URI store, boolean useSSL) throws TTransportException,
@@ -713,7 +718,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         binaryTransport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
             trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
       } else {
-        binaryTransport = new TSocket(createMetastoreTConfiguration(), store.getHost(), store.getPort(),
+        binaryTransport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(),
             clientSocketTimeout);
       }
       binaryTransport = createAuthBinaryTransport(store, binaryTransport);
@@ -726,7 +731,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       }
     }
     LOG.debug("Created thrift binary client for URI: " + store);
-    return binaryTransport;
+    return configureThriftMaxMessageSize(binaryTransport);
   }
 
   private void open() throws MetaException {
