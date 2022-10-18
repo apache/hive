@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.CommitCompactionMessage;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
@@ -331,6 +332,14 @@ public class JSONMessageDeserializer extends MessageDeserializer {
       return mapper.readValue(messageBody, JSONDeletePartitionColumnStatMessage.class);
     } catch (Exception e) {
       throw new IllegalArgumentException("Could not construct UpdatePartitionColumnStatMessage", e);
+    }
+  }
+
+  public CommitCompactionMessage getCommitCompactionMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONCommitCompactionMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct CommitCompactionMessage", e);
     }
   }
 }
