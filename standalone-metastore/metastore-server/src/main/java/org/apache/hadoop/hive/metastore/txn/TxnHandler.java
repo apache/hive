@@ -167,7 +167,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Splitter;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.repeat;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatchNoCount;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatch;
@@ -3905,108 +3908,91 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @RetrySemantics.ReadOnly
   @SuppressWarnings("squid:S2095")
   public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException {
-    ShowCompactResponse response = new ShowCompactResponse(new ArrayList<>());
-    Connection dbConn = null;
-    PreparedStatement stmt = null;
     try {
-      try {
-        StringBuilder sb =new StringBuilder(2048);
-        sb.append(
-            "SELECT " +
-            "  \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", \"CQ_STATE\", \"CQ_TYPE\", \"CQ_WORKER_ID\", " +
-            "  \"CQ_START\", -1 \"CC_END\", \"CQ_RUN_AS\", \"CQ_HADOOP_JOB_ID\", \"CQ_ID\", \"CQ_ERROR_MESSAGE\", " +
-            "  \"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", " +
-            "  \"CQ_CLEANER_START\", \"CQ_POOL_NAME\"" +
-            "FROM " +
-                "  \"COMPACTION_QUEUE\" "
-        );
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(rqst.getPoolName())) {
-          sb.append("WHERE \"CQ_POOL_NAME\" = ? ");
-        }
-        sb.append(
-            "UNION ALL " +
-            "SELECT " +
-            "  \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_WORKER_ID\", " +
-            "  \"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HADOOP_JOB_ID\", \"CC_ID\", \"CC_ERROR_MESSAGE\", " +
-            "  \"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\", " +
-            "  -1 , \"CC_POOL_NAME\"" +
-            "FROM " +
-            "  \"COMPLETED_COMPACTIONS\" "
-        );
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(rqst.getPoolName())) {
-          sb.append("WHERE \"CC_POOL_NAME\" = ?");
-        }
-        //todo: sort by cq_id?
-        //what I want is order by cc_end desc, cc_start asc (but derby has a bug https://issues.apache.org/jira/browse/DERBY-6013)
-        //to sort so that currently running jobs are at the end of the list (bottom of screen)
-        //and currently running ones are in sorted by start time
-        //w/o order by likely currently running compactions will be first (LHS of Union)
-
-        String query = sb.toString();
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.prepareStatement(query);
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(rqst.getPoolName())) {
-          stmt.setString(1, rqst.getPoolName());
-          stmt.setString(2, rqst.getPoolName());
-        }
-
-        LOG.debug("Going to execute query <{}>", query);
-        ResultSet rs = stmt.executeQuery();
-        while (rs.next()) {
-          ShowCompactResponseElement e = new ShowCompactResponseElement();
-          e.setDbname(rs.getString(1));
-          e.setTablename(rs.getString(2));
-          e.setPartitionname(rs.getString(3));
-          e.setState(compactorStateToResponse(rs.getString(4).charAt(0)));
-          try {
-            e.setType(dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
-          } catch (MetaException ex) {
-            //do nothing to handle RU/D if we add another status
+      ShowCompactResponse response = new ShowCompactResponse(new ArrayList<>());
+      StringBuilder query = new StringBuilder(TxnQueries.SHOW_COMPACTION_QUERY).
+        append(getShowCompactionFilterClause(rqst)).
+        append(TxnQueries.SHOW_COMPACTION_ORDERBY_CLAUSE);
+      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        PreparedStatement stmt = sqlGenerator.prepareStmtWithParameters(dbConn, query.toString(),
+          getShowCompactionQueryParamList(rqst))) {
+          LOG.debug("Going to execute query <" + query + ">");
+          try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+              ShowCompactResponseElement e = new ShowCompactResponseElement();
+              e.setDbname(rs.getString(1));
+              e.setTablename(rs.getString(2));
+              e.setPartitionname(rs.getString(3));
+              e.setState(compactorStateToResponse(rs.getString(4).charAt(0)));
+              try {
+                e.setType(dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
+              } catch (MetaException ex) {
+                //do nothing to handle RU/D if we add another status
+              }
+              e.setWorkerid(rs.getString(6));
+              long start = rs.getLong(7);
+              if (!rs.wasNull()) {
+                e.setStart(start);
+              }
+              long endTime = rs.getLong(8);
+              if (endTime != -1) {
+                e.setEndTime(endTime);
+              }
+              e.setRunAs(rs.getString(9));
+              e.setHadoopJobId(rs.getString(10));
+              e.setId(rs.getLong(11));
+              e.setErrorMessage(rs.getString(12));
+              long enqueueTime = rs.getLong(13);
+              if (!rs.wasNull()) {
+                e.setEnqueueTime(enqueueTime);
+              }
+              e.setWorkerVersion(rs.getString(14));
+              e.setInitiatorId(rs.getString(15));
+              e.setInitiatorVersion(rs.getString(16));
+              long cleanerStart = rs.getLong(17);
+              if (!rs.wasNull() && (cleanerStart != -1)) {
+                e.setCleanerStart(cleanerStart);
+              }
+              String poolName = rs.getString(18);
+              if (isBlank(poolName)) {
+                e.setPoolName(DEFAULT_POOL_NAME);
+              } else {
+                e.setPoolName(poolName);
+              }
+              e.setTxnId(rs.getLong(19));
+              e.setNextTxnId(rs.getLong(20));
+              e.setCommitTime(rs.getLong(21));
+              e.setHightestTxnId(rs.getLong(22));
+              response.addToCompacts(e);
+            }
           }
-          e.setWorkerid(rs.getString(6));
-          long start = rs.getLong(7);
-          if (!rs.wasNull()) {
-            e.setStart(start);
-          }
-          long endTime = rs.getLong(8);
-          if (endTime != -1) {
-            e.setEndTime(endTime);
-          }
-          e.setRunAs(rs.getString(9));
-          e.setHadoopJobId(rs.getString(10));
-          e.setId(rs.getLong(11));
-          e.setErrorMessage(rs.getString(12));
-          long enqueueTime = rs.getLong(13);
-          if (!rs.wasNull()) {
-            e.setEnqueueTime(enqueueTime);
-          }
-          e.setWorkerVersion(rs.getString(14));
-          e.setInitiatorId(rs.getString(15));
-          e.setInitiatorVersion(rs.getString(16));
-          long cleanerStart = rs.getLong(17);
-          if (!rs.wasNull() && (cleanerStart != -1)) {
-            e.setCleanerStart(cleanerStart);
-          }
-          String poolName = rs.getString(18);
-          if (org.apache.commons.lang3.StringUtils.isBlank(poolName)) {
-            e.setPoolName(DEFAULT_POOL_NAME);
-          } else {
-            e.setPoolName(poolName);
-          }
-          response.addToCompacts(e);
-        }
       } catch (SQLException e) {
         checkRetryable(e, "showCompact(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database " +
             StringUtils.stringifyException(e));
-      } finally {
-        closeStmt(stmt);
-        closeDbConn(dbConn);
       }
       return response;
     } catch (RetryException e) {
       return showCompact(rqst);
     }
+  }
+
+  private List<String> getShowCompactionQueryParamList(ShowCompactRequest request) throws MetaException {
+    String poolName = request.getPoolName();
+    List<String> params = new ArrayList<>();
+    if (isNotBlank(poolName)) {
+      params.add(poolName);
+    }
+    return params;
+  }
+
+  private String getShowCompactionFilterClause(ShowCompactRequest request) {
+    StringBuilder filter = new StringBuilder();
+    String poolName = request.getPoolName();
+    if (isNotBlank(poolName)) {
+      filter.append("\"CC_POOL_NAME\"=?");
+    }
+    return filter.length() > 0 ? " where " + filter.toString() : EMPTY;
   }
 
   /**

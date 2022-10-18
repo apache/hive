@@ -16176,11 +16176,15 @@ class ShowCompactResponseElement(object):
      - initiatorVersion
      - cleanerStart
      - poolName
+     - nextTxnId
+     - txnId
+     - commitTime
+     - hightestWriteId
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId="None", id=None, errorMessage=None, enqueueTime=None, workerVersion=None, initiatorId=None, initiatorVersion=None, cleanerStart=None, poolName=None,):
+    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId="None", id=None, errorMessage=None, enqueueTime=None, workerVersion=None, initiatorId=None, initiatorVersion=None, cleanerStart=None, poolName=None, nextTxnId=None, txnId=None, commitTime=None, hightestWriteId=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionname = partitionname
@@ -16201,6 +16205,10 @@ class ShowCompactResponseElement(object):
         self.initiatorVersion = initiatorVersion
         self.cleanerStart = cleanerStart
         self.poolName = poolName
+        self.nextTxnId = nextTxnId
+        self.txnId = txnId
+        self.commitTime = commitTime
+        self.hightestWriteId = hightestWriteId
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -16311,6 +16319,26 @@ class ShowCompactResponseElement(object):
                     self.poolName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 21:
+                if ftype == TType.I64:
+                    self.nextTxnId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 22:
+                if ftype == TType.I64:
+                    self.txnId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 23:
+                if ftype == TType.I64:
+                    self.commitTime = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 24:
+                if ftype == TType.I64:
+                    self.hightestWriteId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -16400,6 +16428,22 @@ class ShowCompactResponseElement(object):
         if self.poolName is not None:
             oprot.writeFieldBegin('poolName', TType.STRING, 20)
             oprot.writeString(self.poolName.encode('utf-8') if sys.version_info[0] == 2 else self.poolName)
+            oprot.writeFieldEnd()
+        if self.nextTxnId is not None:
+            oprot.writeFieldBegin('nextTxnId', TType.I64, 21)
+            oprot.writeI64(self.nextTxnId)
+            oprot.writeFieldEnd()
+        if self.txnId is not None:
+            oprot.writeFieldBegin('txnId', TType.I64, 22)
+            oprot.writeI64(self.txnId)
+            oprot.writeFieldEnd()
+        if self.commitTime is not None:
+            oprot.writeFieldBegin('commitTime', TType.I64, 23)
+            oprot.writeI64(self.commitTime)
+            oprot.writeFieldEnd()
+        if self.hightestWriteId is not None:
+            oprot.writeFieldBegin('hightestWriteId', TType.I64, 24)
+            oprot.writeI64(self.hightestWriteId)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -31092,6 +31136,10 @@ ShowCompactResponseElement.thrift_spec = (
     (18, TType.STRING, 'initiatorVersion', 'UTF8', None, ),  # 18
     (19, TType.I64, 'cleanerStart', None, None, ),  # 19
     (20, TType.STRING, 'poolName', 'UTF8', None, ),  # 20
+    (21, TType.I64, 'nextTxnId', None, None, ),  # 21
+    (22, TType.I64, 'txnId', None, None, ),  # 22
+    (23, TType.I64, 'commitTime', None, None, ),  # 23
+    (24, TType.I64, 'hightestWriteId', None, None, ),  # 24
 )
 all_structs.append(ShowCompactResponse)
 ShowCompactResponse.thrift_spec = (

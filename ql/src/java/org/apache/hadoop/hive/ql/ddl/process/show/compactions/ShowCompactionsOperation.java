@@ -100,6 +100,14 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.writeBytes("Initiator");
     os.write(Utilities.tabCode);
     os.writeBytes("Pool name");
+    os.write(Utilities.tabCode);
+    os.writeBytes("TxnId");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Next TxnId");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Commit Time");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Highest WriteID");
     os.write(Utilities.newLineCode);
   }
 
@@ -137,6 +145,14 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.writeBytes(getThreadIdFromId(e.getInitiatorId()));
     os.write(Utilities.tabCode);
     os.writeBytes(e.getPoolName());
+    os.write(Utilities.tabCode);
+    os.writeBytes(e.isSetTxnId() ? Long.toString(e.getTxnId()) : NO_VAL);
+    os.write(Utilities.tabCode);
+    os.writeBytes(e.isSetNextTxnId() ? Long.toString(e.getNextTxnId()) : NO_VAL);
+    os.write(Utilities.tabCode);
+    os.writeBytes(e.isSetCommitTime() ? Long.toString(e.getCommitTime()) : NO_VAL);
+    os.write(Utilities.tabCode);
+    os.writeBytes(e.isSetHightestWriteId() ? Long.toString(e.getHightestWriteId()) : NO_VAL);
     os.write(Utilities.newLineCode);
   }
 }
