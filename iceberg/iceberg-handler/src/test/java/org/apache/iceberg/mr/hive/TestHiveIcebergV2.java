@@ -621,7 +621,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
       while (e.getCause() != null) {
         e = e.getCause();
       }
-      Assert.assertTrue(e.getMessage().contains("Hive doesn't support copy-on-write delete mode."));
+      Assert.assertTrue(e.getMessage().contains("Hive doesn't support copy-on-write mode"));
     }
 
     // attempt an update
@@ -631,7 +631,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
       while (e.getCause() != null) {
         e = e.getCause();
       }
-      Assert.assertTrue(e.getMessage().contains("Hive doesn't support copy-on-write delete mode."));
+      Assert.assertTrue(e.getMessage().contains("Hive doesn't support copy-on-write mode"));
     }
 
   }

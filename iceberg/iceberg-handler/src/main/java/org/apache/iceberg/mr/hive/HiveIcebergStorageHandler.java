@@ -110,6 +110,7 @@ import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
@@ -581,21 +582,32 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public AcidSupportType supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table table) {
     if (table.getParameters() != null && "2".equals(table.getParameters().get(TableProperties.FORMAT_VERSION))) {
-
-      String deleteModeForTable = table.getParameters().get(TableProperties.DELETE_MODE);
-      RowLevelOperationMode rowLevelOperationMode = RowLevelOperationMode.fromName(
-          deleteModeForTable != null ? deleteModeForTable : TableProperties.DELETE_MODE_DEFAULT
-      );
-      if (RowLevelOperationMode.COPY_ON_WRITE.equals(rowLevelOperationMode)) {
-        throw new UnsupportedOperationException(
-            String.format("Hive doesn't support copy-on-write delete mode. Please set '%s'='merge-on-read' on %s " +
-                    "before running ACID operations on it.", TableProperties.DELETE_MODE, table.getTableName())
-        );
-      }
+      checkDMLOperationMode(table);
       return AcidSupportType.WITHOUT_TRANSACTIONS;
     }
 
     return AcidSupportType.NONE;
+  }
+
+  // TODO: remove the checks as copy-on-write mode implementation for these DML ops get added
+  private static void checkDMLOperationMode(org.apache.hadoop.hive.ql.metadata.Table table) {
+    Map<String, String> opTypes = ImmutableMap.of(
+        TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT,
+        TableProperties.MERGE_MODE, TableProperties.MERGE_MODE_DEFAULT,
+        TableProperties.UPDATE_MODE, TableProperties.UPDATE_MODE_DEFAULT);
+
+    for (Map.Entry<String, String> opType : opTypes.entrySet()) {
+      String mode = table.getParameters().get(opType.getKey());
+      RowLevelOperationMode rowLevelOperationMode = RowLevelOperationMode.fromName(
+          mode != null ? mode : opType.getValue()
+      );
+      if (RowLevelOperationMode.COPY_ON_WRITE.equals(rowLevelOperationMode)) {
+        throw new UnsupportedOperationException(
+            String.format("Hive doesn't support copy-on-write mode as %s. Please set '%s'='merge-on-read' on %s " +
+                "before running ACID operations on it.", opType.getKey(), opType.getKey(), table.getTableName())
+        );
+      }
+    }
   }
 
   @Override
