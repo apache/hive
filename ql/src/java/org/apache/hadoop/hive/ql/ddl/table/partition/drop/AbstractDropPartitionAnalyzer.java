@@ -140,7 +140,8 @@ abstract class AbstractDropPartitionAnalyzer extends AbstractAlterTableAnalyzer 
         try {
           hasUnknown = db.getPartitionsByExpr(table, partitionSpec, conf, parts);
         } catch (Exception e) {
-          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partitionSpec.getExprString()), e);
+          throw new SemanticException("Error fetching partitions for " + partitionSpec.getExprString() +
+             ", message: " + e.getMessage(), e);
         }
         if (hasUnknown) {
           throw new SemanticException("Unexpected unknown partitions for " + partitionSpec.getExprString());
