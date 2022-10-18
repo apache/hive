@@ -205,7 +205,7 @@ public class ConstantVectorExpression extends VectorExpression {
               outputColumnNum, (HiveDecimal) constantValue, outputTypeInfo);
         case STRING:
           return new ConstantVectorExpression(
-              outputColumnNum, ((String) constantValue).getBytes(), outputTypeInfo);
+              outputColumnNum, ((String) constantValue).getBytes(StandardCharsets.UTF_8), outputTypeInfo);
         case VARCHAR:
           return new ConstantVectorExpression(
               outputColumnNum, ((HiveVarchar) constantValue), outputTypeInfo);
