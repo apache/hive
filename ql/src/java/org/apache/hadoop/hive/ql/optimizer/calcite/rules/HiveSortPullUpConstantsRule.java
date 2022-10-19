@@ -50,7 +50,7 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * Planner rule that pulls up constant keys through a SortLimit or SortExchange operator.
- *
+ * <p>
  * This rule is only applied on SortLimit operators that are not the root
  * of the plan tree. This is done because the interaction of this rule
  * with the AST conversion may cause some optimizations to not kick in
@@ -67,7 +67,7 @@ public final class HiveSortPullUpConstantsRule {
   private static final class HiveSortLimitPullUpConstantsRule
       extends HiveSortPullUpConstantsRuleBase<HiveSortLimit> {
 
-    protected HiveSortLimitPullUpConstantsRule() {
+    private HiveSortLimitPullUpConstantsRule() {
       super(HiveSortLimit.class);
     }
 
@@ -87,7 +87,7 @@ public final class HiveSortPullUpConstantsRule {
   private static final class HiveSortExchangePullUpConstantsRule
       extends HiveSortPullUpConstantsRuleBase<HiveSortExchange> {
 
-    protected HiveSortExchangePullUpConstantsRule() {
+    private HiveSortExchangePullUpConstantsRule() {
       super(HiveSortExchange.class);
     }
 
@@ -161,7 +161,7 @@ public final class HiveSortPullUpConstantsRule {
           }
           topChildExprsFields.add(field.getName());
         } else {
-          newChildExprs.add(Pair.<RexNode, String>of(expr, field.getName()));
+          newChildExprs.add(Pair.of(expr, field.getName()));
           topChildExprs.add(expr);
           topChildExprsFields.add(field.getName());
         }
@@ -203,7 +203,7 @@ public final class HiveSortPullUpConstantsRule {
           // It is a constant, we can ignore it
           continue;
         }
-        fieldCollations.add(fc.copy(target));
+        fieldCollations.add(fc.withFieldIndex(target));
       }
       return fieldCollations;
     }
