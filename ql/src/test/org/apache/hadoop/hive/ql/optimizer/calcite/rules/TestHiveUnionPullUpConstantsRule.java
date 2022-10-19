@@ -18,39 +18,28 @@
 
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
-import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.AbstractRelOptPlanner;
 import org.apache.calcite.plan.RelOptSchema;
-import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.plan.hep.HepPlanner;
-import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.logical.LogicalTableScan;
-import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.assertPlans;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.buildPlanner;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.buildRelBuilder;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.MyRecord;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.MyRecordWithNullableField;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.eq;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestHiveUnionPullUpConstantsRule {
-
-  private final static JavaTypeFactoryImpl JAVA_TYPE_FACTORY = new JavaTypeFactoryImpl();
 
   @Mock
   private RelOptSchema schemaMock;
@@ -59,62 +48,25 @@ public class TestHiveUnionPullUpConstantsRule {
   @Mock
   Table hiveTableMDMock;
 
-  private HepPlanner planner;
-  private RelBuilder rexBuilder;
-
-  private static class MyRecordWithNullableField {
-    public Integer f1;
-    public int f2;
-    public double f3;
-  }
-
-  private static class MyRecord {
-    public int f1;
-    public int f2;
-    public double f3;
-  }
+  private AbstractRelOptPlanner planner;
+  private RelBuilder relBuilder;
 
   public void before(Class<?> clazz) {
-    HepProgramBuilder programBuilder = new HepProgramBuilder();
-    programBuilder.addRuleInstance(HiveUnionPullUpConstantsRule.INSTANCE);
-
-    planner = new HepPlanner(programBuilder.build());
-
-    RexBuilder rexBuilder = new RexBuilder(JAVA_TYPE_FACTORY);
-    final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
-    RelDataType rowTypeMock = JAVA_TYPE_FACTORY.createStructType(clazz);
-    doReturn(rowTypeMock).when(tableMock).getRowType();
-    LogicalTableScan tableScan = LogicalTableScan.create(optCluster, tableMock, Collections.emptyList());
-    doReturn(tableScan).when(tableMock).toRel(ArgumentMatchers.any());
-    doReturn(tableMock).when(schemaMock).getTableForMember(any());
-    lenient().doReturn(hiveTableMDMock).when(tableMock).getHiveTableMD();
-
-    this.rexBuilder = HiveRelFactories.HIVE_BUILDER.create(optCluster, schemaMock);
-  }
-
-  public RexNode eq(String field, Number value) {
-    return rexBuilder.call(SqlStdOperatorTable.EQUALS,
-        rexBuilder.field(field), rexBuilder.literal(value));
-  }
-
-  private void test(RelNode plan, String expectedPrePlan, String expectedPostPlan) {
-    planner.setRoot(plan);
-    RelNode optimizedRelNode = planner.findBestExp();
-    assertEquals("Original plans do not match", expectedPrePlan, RelOptUtil.toString(plan));
-    assertEquals("Optimized plans do not match", expectedPostPlan, RelOptUtil.toString(optimizedRelNode));
+    planner = buildPlanner(Collections.singletonList(HiveUnionPullUpConstantsRule.INSTANCE));
+    relBuilder = buildRelBuilder(planner, schemaMock, tableMock, hiveTableMDMock, clazz);
   }
 
   @Test
   public void testNonNullableFields() {
     before(MyRecord.class);
 
-    final RelNode plan = rexBuilder
+    final RelNode plan = relBuilder
         .scan("t")
-        .filter(eq("f1",1))
-        .project(rexBuilder.field("f1"), rexBuilder.field("f2"))
+        .filter(eq(relBuilder, "f1",1))
+        .project(relBuilder.field("f1"), relBuilder.field("f2"))
         .scan("t")
-        .filter(eq("f1",1))
-        .project(rexBuilder.field("f1"), rexBuilder.field("f2"))
+        .filter(eq(relBuilder, "f1",1))
+        .project(relBuilder.field("f1"), relBuilder.field("f2"))
         .union(true)
         .build();
 
@@ -137,20 +89,20 @@ public class TestHiveUnionPullUpConstantsRule {
                     + "        HiveFilter(condition=[=($0, 1)])\n"
                     + "          LogicalTableScan(table=[[]])\n";
 
-    test(plan, prePlan, postPlan);
+    assertPlans(planner, plan, prePlan, postPlan);
   }
 
   @Test
   public void testNullableFields() {
     before(MyRecordWithNullableField.class);
 
-    final RelNode plan = rexBuilder
+    final RelNode plan = relBuilder
         .scan("t")
-        .filter(eq("f1",1))
-        .project(rexBuilder.field("f1"), rexBuilder.field("f2"))
+        .filter(eq(relBuilder, "f1",1))
+        .project(relBuilder.field("f1"), relBuilder.field("f2"))
         .scan("t")
-        .filter(eq("f1",1))
-        .project(rexBuilder.field("f1"), rexBuilder.field("f2"))
+        .filter(eq(relBuilder, "f1",1))
+        .project(relBuilder.field("f1"), relBuilder.field("f2"))
         .union(false)
         .build();
 
@@ -173,6 +125,6 @@ public class TestHiveUnionPullUpConstantsRule {
                     + "        HiveFilter(condition=[=($0, 1)])\n"
                     + "          LogicalTableScan(table=[[]])\n";
 
-    test(plan, prePlan, postPlan);
+    assertPlans(planner, plan, prePlan, postPlan);
   }
 }
