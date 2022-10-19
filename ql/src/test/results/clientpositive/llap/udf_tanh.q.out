@@ -17,21 +17,21 @@ PREHOOK: query: SELECT tanh(null)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT tanh(null)
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 NULL
 PREHOOK: query: SELECT tanh(1), tanh(6), tanh(-1.0)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT tanh(1), tanh(6), tanh(-1.0)
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 0.7615941559557649	0.9999877116507956	-0.7615941559557649
