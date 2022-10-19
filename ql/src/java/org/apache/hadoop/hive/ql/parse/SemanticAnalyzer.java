@@ -7728,31 +7728,42 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         isDestTempFile = false;
       }
 
-      if (tblDesc == null) {
-        if (viewDesc != null) {
-          tableDescriptor = PlanUtils.getTableDesc(viewDesc, cols, colTypes);
-        } else if (qb.getIsQuery()) {
-          Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
-          String fileFormat = conf.getResultFileFormat().toString();
-          if (SessionState.get().getIsUsingThriftJDBCBinarySerDe()) {
-            serdeClass = ThriftJDBCBinarySerDe.class;
-            fileFormat = ResultFileFormat.SEQUENCEFILE.toString();
-            // Set the fetch formatter to be a no-op for the ListSinkOperator, since we'll
-            // write out formatted thrift objects to SequenceFile
-            conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, NoOpFetchFormatter.class.getName());
-          } else if (fileFormat.equals(PlanUtils.LLAP_OUTPUT_FORMAT_KEY)) {
-            // If this output format is Llap, check to see if Arrow is requested
-            boolean useArrow = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW);
-            serdeClass = useArrow ? ArrowColumnarBatchSerDe.class : LazyBinarySerDe2.class;
-          }
-          tableDescriptor = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat,
+      try {
+        if (tblDesc == null) {
+          if (viewDesc != null) {
+            destinationTable = viewDesc.toTable(conf);
+            tableDescriptor = PlanUtils.getTableDesc(viewDesc, cols, colTypes);
+          } else if (qb.getIsQuery()) {
+            Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
+            String fileFormat = conf.getResultFileFormat().toString();
+            if (SessionState.get().getIsUsingThriftJDBCBinarySerDe()) {
+              serdeClass = ThriftJDBCBinarySerDe.class;
+              fileFormat = ResultFileFormat.SEQUENCEFILE.toString();
+              // Set the fetch formatter to be a no-op for the ListSinkOperator, since we'll
+              // write out formatted thrift objects to SequenceFile
+              conf.set(SerDeUtils.LIST_SINK_OUTPUT_FORMATTER, NoOpFetchFormatter.class.getName());
+            } else if (fileFormat.equals(PlanUtils.LLAP_OUTPUT_FORMAT_KEY)) {
+              // If this output format is Llap, check to see if Arrow is requested
+              boolean useArrow = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW);
+              serdeClass = useArrow ? ArrowColumnarBatchSerDe.class : LazyBinarySerDe2.class;
+            }
+            tableDescriptor = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, fileFormat,
                 serdeClass);
+            destinationTable = null;
+          } else {
+            tableDescriptor = PlanUtils.getDefaultTableDesc(qb.getDirectoryDesc(), cols, colTypes);
+          }
         } else {
-          tableDescriptor = PlanUtils.getDefaultTableDesc(qb.getDirectoryDesc(), cols, colTypes);
+          destinationTable = db.getTranslateTableDryrun(tblDesc.toTable(conf).getTTable());
+          if (tblDesc.getTblProps().containsKey(TABLE_IS_CTAS)) {
+            tblDesc.getTblProps().put(TABLE_IS_CTAS, destinationTable.getDataLocation().toString());
+          }
+          tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
         }
-      } else {
-        tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
+      } catch (HiveException e) {
+        throw new SemanticException(e);
       }
+
 
       // if available, set location in table desc properties
       if (tblDesc != null && tblDesc.getLocation() != null && tableDescriptor != null &&
@@ -7769,13 +7780,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isDfsDir = (destType == QBMetaData.DEST_DFS_FILE);
-
-      try {
-        destinationTable = tblDesc != null ? db.getTranslateTableDryrun(tblDesc.toTable(conf).getTTable()) :
-                viewDesc != null ? viewDesc.toTable(conf) : null;
-      } catch (HiveException e) {
-        throw new SemanticException(e);
-      }
 
       destTableIsFullAcid = AcidUtils.isFullAcidTable(destinationTable);
 
@@ -14006,6 +14010,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           isTransactional, isManaged, new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()}, isDefaultTableTypeChanged);
       isExt = isExternalTableChanged(tblProps, isTransactional, isExt, isDefaultTableTypeChanged);
       tblProps.put(TABLE_IS_CTAS, "true");
+      if (ctx.isExplainPlan()) {
+        tblProps.put("explain", "true");
+      }
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
       tableDesc = new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols,

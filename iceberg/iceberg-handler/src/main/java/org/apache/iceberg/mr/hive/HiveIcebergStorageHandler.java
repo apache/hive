@@ -35,6 +35,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
@@ -102,6 +103,7 @@ import org.apache.iceberg.SortField;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -804,31 +806,60 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @VisibleForTesting
   static void overlayTableProperties(Configuration configuration, TableDesc tableDesc, Map<String, String> map) {
     Properties props = tableDesc.getProperties();
-    Table table = IcebergTableUtil.getTable(configuration, props);
-    String schemaJson = SchemaParser.toJson(table.schema());
 
     Maps.fromProperties(props).entrySet().stream()
         .filter(entry -> !map.containsKey(entry.getKey())) // map overrides tableDesc properties
         .forEach(entry -> map.put(entry.getKey(), entry.getValue()));
 
-    map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
-    map.put(InputFormatConfig.TABLE_LOCATION, table.location());
-    map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
-    props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(table.spec()));
+    try {
+      Table table = IcebergTableUtil.getTable(configuration, props);
+      String schemaJson = SchemaParser.toJson(table.schema());
 
-    // serialize table object into config
-    Table serializableTable = SerializableTable.copyOf(table);
-    checkAndSkipIoConfigSerialization(configuration, serializableTable);
-    map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
-        SerializationUtil.serializeToBase64(serializableTable));
+      map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
+      map.put(InputFormatConfig.TABLE_LOCATION, table.location());
+      map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+      props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(table.spec()));
 
-    // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
-    // the serialization utils fail to serialize this character
-    map.remove("columns.comments");
+      // serialize table object into config
+      Table serializableTable = SerializableTable.copyOf(table);
+      checkAndSkipIoConfigSerialization(configuration, serializableTable);
+      map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
+          SerializationUtil.serializeToBase64(serializableTable));
 
-    // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
-    // this is an exception to the interface documentation, but it's a safe operation to add this property
-    props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+      // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
+      // the serialization utils fail to serialize this character
+      map.remove("columns.comments");
+
+      // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
+      // this is an exception to the interface documentation, but it's a safe operation to add this property
+      props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+    } catch (NoSuchTableException ex) {
+      if (!(StringUtils.isNotBlank(props.getProperty(hive_metastoreConstants.TABLE_IS_CTAS)) &&
+          Boolean.parseBoolean(props.getProperty("explain")))) {
+        throw ex;
+      }
+
+      try {
+        map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
+        map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
+            SerializationUtil.serializeToBase64(null));
+        String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+
+        String location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
+        if (StringUtils.isBlank(location)) {
+          location = props.getProperty(hive_metastoreConstants.TABLE_IS_CTAS);
+        }
+        map.put(InputFormatConfig.TABLE_LOCATION, location);
+
+        AbstractSerDe serDe = tableDesc.getDeserializer(configuration);
+        HiveIcebergSerDe icebergSerDe = (HiveIcebergSerDe) serDe;
+        String schemaJson = SchemaParser.toJson(icebergSerDe.getTableSchema());
+        map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+        props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   /**
