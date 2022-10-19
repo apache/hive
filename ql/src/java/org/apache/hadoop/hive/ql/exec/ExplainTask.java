@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -549,7 +550,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     try {
       Path resFile = work.getResFile();
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
-      out = new PrintStream(outS);
+      out = new PrintStream(outS, false, StandardCharsets.UTF_8.name());
 
       if(work.isDDL()){
         getDDLPlan(out);
