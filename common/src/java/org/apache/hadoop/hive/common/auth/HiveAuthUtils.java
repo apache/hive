@@ -77,7 +77,7 @@ public class HiveAuthUtils {
    * @return TTransport TSocket for host/port.
    */
   public static TTransport getSocketTransport(String host, int port, int loginTimeout) throws TTransportException {
-    return getSocketTransport(host, port, loginTimeout, -1);
+    return getSocketTransport(host, port, loginTimeout, /* maxMessageSize */ -1);
   }
 
   /**
@@ -112,11 +112,11 @@ public class HiveAuthUtils {
   public static TTransport getSSLSocket(String host, int port, int loginTimeout, String trustStorePath,
       String trustStorePassWord, String trustStoreType, String trustStoreAlgorithm) throws TTransportException {
     return getSSLSocket(host, port, loginTimeout, trustStorePath, trustStorePassWord, trustStoreType,
-        trustStoreAlgorithm, -1);
+        trustStoreAlgorithm, /* maxMessageSize */ -1);
   }
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout) throws TTransportException {
-    return getSSLSocket(host, port, loginTimeout, -1);
+    return getSSLSocket(host, port, loginTimeout, /* maxMessageSize */ -1);
   }
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout, int maxMessageSize)
