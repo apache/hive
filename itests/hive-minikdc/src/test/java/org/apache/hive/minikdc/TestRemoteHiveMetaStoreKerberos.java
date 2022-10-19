@@ -73,7 +73,7 @@ public class TestRemoteHiveMetaStoreKerberos extends TestRemoteHiveMetaStore {
 
     createMultiPartitionTableSchema(dbName, tblName, typeName, values);
 
-    Configuration clientConf = MetastoreConf.newMetastoreConf(conf);
+    Configuration clientConf = MetastoreConf.newMetastoreConf(new Configuration(conf));
     MetastoreConf.setVar(clientConf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
     // set to a low value to prove THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE is being honored
     // (it should throw an exception)

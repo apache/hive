@@ -106,7 +106,6 @@ public class HiveAuthUtils {
     } else {
       tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, loginTimeout);
     }
-    configureThriftMaxMessageSize(tSSLSocket, maxMessageSize);
     return getSSLSocketWithHttps(tSSLSocket, maxMessageSize);
   }
 
@@ -122,7 +121,7 @@ public class HiveAuthUtils {
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout, int maxMessageSize)
       throws TTransportException {
-    return getSSLSocket(host, port, loginTimeout, null, maxMessageSize);
+    return getSSLSocket(host, port, loginTimeout, /* params */ null, maxMessageSize);
   }
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout, String trustStorePath,
