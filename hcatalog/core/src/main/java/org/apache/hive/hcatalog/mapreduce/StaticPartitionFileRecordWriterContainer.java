@@ -26,7 +26,6 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hive.hcatalog.mapreduce.FileRecordWriterContainer;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.HCatRecord;
 

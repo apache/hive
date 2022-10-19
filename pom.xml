@@ -220,6 +220,7 @@
     <aws-secretsmanager-caching.version>1.0.1</aws-secretsmanager-caching.version>
     <aws-java-sdk.version>1.12.132</aws-java-sdk.version>
     <jansi.version>2.3.4</jansi.version>
+    <spotless.version>2.22.8</spotless.version>
   </properties>
   <repositories>
     <!-- This needs to be removed before checking in-->
@@ -1434,6 +1435,11 @@
           <artifactId>build-helper-maven-plugin</artifactId>
           <version>${maven.build-helper.plugin.version}</version>
         </plugin>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>${spotless.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -1749,6 +1755,28 @@
             <exclude>hcatalog/core/mapred/**/*_SUCCESS*</exclude>
           </excludes>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <configuration>
+          <java>
+            <includes>
+              <include>src/main/java/org/apache/**/*.java</include>
+              <include>src/test/java/org/apache/**/*.java</include>
+            </includes>
+            <removeUnusedImports/>
+          </java>
+        </configuration>
+        <executions>
+          <execution>
+            <id>spotless-check</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>validate</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.jamon</groupId>

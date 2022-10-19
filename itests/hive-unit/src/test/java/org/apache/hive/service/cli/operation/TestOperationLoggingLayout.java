@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.log.HushableRandomAccessFileAppender;
 import org.apache.hadoop.hive.ql.log.LogDivertAppender;

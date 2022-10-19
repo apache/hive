@@ -22,10 +22,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.auth.HiveAuthConstants;
-import org.apache.hive.service.auth.HiveAuthConstants.AuthTypes;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 
 

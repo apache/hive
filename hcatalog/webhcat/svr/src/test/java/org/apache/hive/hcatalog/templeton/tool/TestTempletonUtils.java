@@ -20,7 +20,6 @@ package org.apache.hive.hcatalog.templeton.tool;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.net.URISyntaxException;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;

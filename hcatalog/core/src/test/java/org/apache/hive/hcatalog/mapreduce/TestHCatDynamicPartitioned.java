@@ -38,7 +38,6 @@ import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.slf4j.Logger;

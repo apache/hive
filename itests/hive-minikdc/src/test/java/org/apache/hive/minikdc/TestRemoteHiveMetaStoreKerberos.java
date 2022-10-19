@@ -21,7 +21,6 @@ package org.apache.hive.minikdc;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TestRemoteHiveMetaStore;
-import org.apache.hadoop.hive.metastore.TestHiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;

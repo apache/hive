@@ -19,8 +19,6 @@
 //The tests here are heavily based on some timing, so there is some chance to fail.
 package org.apache.hadoop.hive.hooks;
 
-import java.io.Serializable;
-import java.lang.Override;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Properties;

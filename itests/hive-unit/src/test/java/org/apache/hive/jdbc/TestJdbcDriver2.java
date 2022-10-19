@@ -51,9 +51,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.lang.Exception;
-import java.lang.Object;
-import java.lang.String;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -675,9 +672,10 @@ public class TestJdbcDriver2 {
   }
 
   /**
-   * Execute non-select statements using execute() and executeUpdated() APIs
-   * of PreparedStatement interface
-   * @throws Exception
+   * Execute non-select statements using execute() and executeUpdated() APIs of PreparedStatement
+   * interface
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testExecutePreparedStatement() throws Exception {
@@ -712,11 +710,11 @@ public class TestJdbcDriver2 {
   }
 
   /**
-   * Execute "set x" and extract value from key=val format result
-   * Verify the extracted value
+   * Execute "set x" and extract value from key=val format result Verify the extracted value
+   *
    * @param key
    * @param expectedVal
-   * @throws Exception
+   * @throws java.lang.Exception
    */
   private void verifyConfValue(Connection con, String key, String expectedVal) throws Exception {
     Statement stmt = con.createStatement();
@@ -2313,7 +2311,8 @@ public class TestJdbcDriver2 {
 
   /**
    * Test the cursor repositioning to start of resultset
-   * @throws Exception
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testFetchFirstQuery() throws Exception {
@@ -2323,7 +2322,8 @@ public class TestJdbcDriver2 {
 
   /**
    * Test the cursor repositioning to start of resultset from non-mr query
-   * @throws Exception
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testFetchFirstNonMR() throws Exception {
@@ -2332,8 +2332,9 @@ public class TestJdbcDriver2 {
   }
 
   /**
-   *  Test for cursor repositioning to start of resultset for non-sql commands
-   * @throws Exception
+   * Test for cursor repositioning to start of resultset for non-sql commands
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testFetchFirstSetCmds() throws Exception {
@@ -2341,8 +2342,9 @@ public class TestJdbcDriver2 {
   }
 
   /**
-   *  Test for cursor repositioning to start of resultset for non-sql commands
-   * @throws Exception
+   * Test for cursor repositioning to start of resultset for non-sql commands
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testFetchFirstDfsCmds() throws Exception {
@@ -2350,11 +2352,11 @@ public class TestJdbcDriver2 {
     execFetchFirst("dfs -ls " + wareHouseDir, DfsProcessor.DFS_RESULT_HEADER, false);
   }
 
-
   /**
-   * Negative Test for cursor repositioning to start of resultset
-   * Verify unsupported JDBC resultset attributes
-   * @throws Exception
+   * Negative Test for cursor repositioning to start of resultset Verify unsupported JDBC resultset
+   * attributes
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testUnsupportedFetchTypes() throws Exception {
@@ -2376,9 +2378,10 @@ public class TestJdbcDriver2 {
   }
 
   /**
-   * Negative Test for cursor repositioning to start of resultset
-   * Verify unsupported JDBC resultset methods
-   * @throws Exception
+   * Negative Test for cursor repositioning to start of resultset Verify unsupported JDBC resultset
+   * methods
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testFetchFirstError() throws Exception {
@@ -2394,12 +2397,13 @@ public class TestJdbcDriver2 {
   }
 
   /**
-   * Read the results locally. Then reset the read position to start and read the
-   * rows again verify that we get the same results next time.
+   * Read the results locally. Then reset the read position to start and read the rows again verify
+   * that we get the same results next time.
+   *
    * @param sqlStmt - SQL statement to execute
    * @param colName - columns name to read
-   * @param oneRowOnly -  read and compare only one row from the resultset
-   * @throws Exception
+   * @param oneRowOnly - read and compare only one row from the resultset
+   * @throws java.lang.Exception
    */
   private void execFetchFirst(String sqlStmt, String colName, boolean oneRowOnly) throws Exception {
     Statement stmt =
@@ -2529,12 +2533,11 @@ public class TestJdbcDriver2 {
   }
 
   /**
-   * Test the cancellation of a query that is running.
-   * We spawn 2 threads - one running the query and
-   * the other attempting to cancel.
-   * We're using a dummy udf to simulate a query,
-   * that runs for a sufficiently long time.
-   * @throws Exception
+   * Test the cancellation of a query that is running. We spawn 2 threads - one running the query
+   * and the other attempting to cancel. We're using a dummy udf to simulate a query, that runs for
+   * a sufficiently long time.
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testQueryCancel() throws Exception {
@@ -2676,12 +2679,11 @@ public class TestJdbcDriver2 {
   }
 
   /**
-   * Test the non-null value of the Yarn ATS GUID.
-   * We spawn 2 threads - one running the query and
-   * the other attempting to read the ATS GUID.
-   * We're using a dummy udf to simulate a query,
-   * that runs for a sufficiently long time.
-   * @throws Exception
+   * Test the non-null value of the Yarn ATS GUID. We spawn 2 threads - one running the query and
+   * the other attempting to read the ATS GUID. We're using a dummy udf to simulate a query, that
+   * runs for a sufficiently long time.
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testYarnATSGuid() throws Exception {
@@ -2762,9 +2764,10 @@ public class TestJdbcDriver2 {
   }
 
   /**
-   * Loads data from a table containing non-ascii value column
-   * Runs a query and compares the return value
-   * @throws Exception
+   * Loads data from a table containing non-ascii value column Runs a query and compares the return
+   * value
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testNonAsciiReturnValues() throws Exception {
@@ -2799,7 +2802,8 @@ public class TestJdbcDriver2 {
 
   /**
    * Test getting query log method in Jdbc
-   * @throws Exception
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testGetQueryLog() throws Exception {
@@ -2871,7 +2875,8 @@ public class TestJdbcDriver2 {
 
   /**
    * Test getting query log method in Jdbc for REPL commands
-   * @throws Exception
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testGetQueryLogForReplCommands() throws Exception {
@@ -2987,7 +2992,7 @@ public class TestJdbcDriver2 {
   /**
    * Test getting query log when HS2 disable logging.
    *
-   * @throws Exception
+   * @throws java.lang.Exception
    */
   @Test
   public void testGetQueryLogOnDisabledLog() throws Exception {
@@ -3076,7 +3081,8 @@ public class TestJdbcDriver2 {
 
   /**
    * Test {@link HiveStatement#executeAsync(String)} for a select query
-   * @throws Exception
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testSelectExecAsync() throws Exception {
@@ -3128,7 +3134,8 @@ public class TestJdbcDriver2 {
 
   /**
    * Test {@link HiveStatement#executeAsync(String)} for a create table
-   * @throws Exception
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testCreateTableExecAsync() throws Exception {
@@ -3156,7 +3163,8 @@ public class TestJdbcDriver2 {
 
   /**
    * Test {@link HiveStatement#executeAsync(String)} for an insert overwrite into a table
-   * @throws Exception
+   *
+   * @throws java.lang.Exception
    */
   @Test
   public void testInsertOverwriteExecAsync() throws Exception {

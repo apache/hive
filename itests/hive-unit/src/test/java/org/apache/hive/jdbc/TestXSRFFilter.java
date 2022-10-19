@@ -20,7 +20,6 @@ package org.apache.hive.jdbc;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -35,7 +34,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
-import org.apache.hive.jdbc.XsrfHttpRequestInterceptor;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

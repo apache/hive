@@ -28,9 +28,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -41,7 +39,6 @@ import static org.apache.hadoop.hive.ql.TestAcidOnTez.TEST_DATA_DIR;
 import static org.apache.hadoop.hive.ql.TestAcidOnTez.TEST_WAREHOUSE_DIR;
 import static org.apache.hadoop.hive.ql.TestAcidOnTez.runStatementOnDriver;
 import static org.apache.hadoop.hive.ql.TestAcidOnTez.setupTez;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**

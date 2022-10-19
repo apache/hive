@@ -61,7 +61,6 @@ import org.apache.thrift.TException;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
-import com.google.gson.JsonParser;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.After;

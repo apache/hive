@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.hooks;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.junit.Assert;

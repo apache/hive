@@ -18,12 +18,9 @@
 
 package org.apache.hive.jdbc;
 
-import org.apache.hive.jdbc.HiveConnection;
-import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 
 import java.util.LinkedHashMap;
-import java.util.Properties;
 import java.util.Map;
 import java.util.HashMap;
 import java.sql.SQLException;

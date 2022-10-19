@@ -17,8 +17,6 @@
  */
 package org.apache.hive.storage.jdbc.dao;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hive.storage.jdbc.conf.JdbcStorageConfigManager;
 
 /**
  * JethroData specific data accessor. This is needed because JethroData JDBC drivers do

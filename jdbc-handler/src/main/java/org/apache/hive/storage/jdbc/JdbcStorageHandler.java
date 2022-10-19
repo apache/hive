@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfigManager;
 
 import java.io.IOException;
-import java.lang.IllegalArgumentException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

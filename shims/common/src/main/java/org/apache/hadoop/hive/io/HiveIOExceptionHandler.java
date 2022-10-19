@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.io;
 
 import java.io.IOException;
 
-import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.RecordReader;
 
 /**

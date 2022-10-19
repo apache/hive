@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.security.MessageDigest;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.MD5Hash;
 

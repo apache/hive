@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.serde2;
 
 import java.util.Set;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.TextFileStorageFormatDescriptor;
 

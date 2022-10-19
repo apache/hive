@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.serde2;
 
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 
 public class CustomTextSerDe extends LazySimpleSerDe {

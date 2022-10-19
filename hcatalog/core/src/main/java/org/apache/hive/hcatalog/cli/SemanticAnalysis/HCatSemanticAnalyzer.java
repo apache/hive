@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.common.ErrorType;
 import org.apache.hive.hcatalog.common.HCatException;
 
-import java.io.Serializable;
 import java.util.List;
 
 public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {

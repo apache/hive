@@ -27,7 +27,6 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.util.Shell;
 import org.junit.Assert;
 import org.junit.Test;
 

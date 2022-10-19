@@ -18,7 +18,6 @@
  */
 package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Database;

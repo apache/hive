@@ -22,8 +22,6 @@ import org.apache.hadoop.hive.llap.Row;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.hive.llap.LlapRowInputFormat;
 import org.junit.BeforeClass;
-import org.junit.Before;
-import org.junit.After;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
