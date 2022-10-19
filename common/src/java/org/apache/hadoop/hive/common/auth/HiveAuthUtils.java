@@ -52,7 +52,7 @@ public class HiveAuthUtils {
   /**
    * Configure the provided T transport's max message size.
    * @param transport Transport to configure maxMessage for
-   * @param maxMessageSize Maximum allowed message size in bytes, les than or equal to 0 means use the Thrift library
+   * @param maxMessageSize Maximum allowed message size in bytes, less than or equal to 0 means use the Thrift library
    *                       default.
    * @return The passed in T transport configured with desired max message size. The same object passed in is returned.
    */

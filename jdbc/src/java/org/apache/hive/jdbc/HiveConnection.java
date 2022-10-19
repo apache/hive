@@ -850,8 +850,10 @@ public class HiveConnection implements java.sql.Connection {
    *
    * @return TTransport
    * @throws TTransportException
+   * @throws SQLException
    */
-  private TTransport createUnderlyingTransport(int maxMessageSize) throws TTransportException {
+  private TTransport createUnderlyingTransport() throws TTransportException, SQLException {
+    int maxMessageSize = getMaxMessageSize();
     TTransport transport = null;
     // Note: Thrift returns an SSL socket that is already bound to the specified host:port
     // Therefore an open called on this would be a no-op later
@@ -918,7 +920,7 @@ public class HiveConnection implements java.sql.Connection {
    */
   private TTransport createBinaryTransport() throws SQLException, TTransportException {
     try {
-      TTransport socketTransport = createUnderlyingTransport(getMaxMessageSize());
+      TTransport socketTransport = createUnderlyingTransport();
       // handle secure connection if specified
       if (!JdbcConnectionParams.AUTH_SIMPLE.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))) {
         // If Kerberos
