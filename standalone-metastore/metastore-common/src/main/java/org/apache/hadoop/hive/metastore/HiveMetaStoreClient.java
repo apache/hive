@@ -608,6 +608,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     client.rename_partition_req(req);
   }
 
+  private <T extends TTransport> T configureThriftMaxMessageSize(T transport) {
+    int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(conf, ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
+    if (maxThriftMessageSize > 0) {
+      if (transport.getConfiguration() == null) {
+        LOG.warn("TTransport {} is returning a null Configuration, Thrift max message size is not getting configured",
+            transport.getClass().getName());
+        return transport;
+      }
+      transport.getConfiguration().setMaxMessageSize(maxThriftMessageSize);
+    }
+    return transport;
+  }
+
   /*
   Creates a THttpClient if HTTP mode is enabled. If Client auth mode is set to JWT,
   then the method fetches JWT from environment variable: HMS_JWT and sets in auth
@@ -681,7 +694,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       }
     }
     LOG.debug("Created thrift http client for URL: " + httpUrl);
-    return tHttpClient;
+    return configureThriftMaxMessageSize(tHttpClient);
   }
 
   private TTransport createBinaryClient(URI store, boolean useSSL) throws TTransportException,
@@ -705,7 +718,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         binaryTransport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
             trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
       } else {
-        binaryTransport = new TSocket(new TConfiguration(),store.getHost(), store.getPort(),
+        binaryTransport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(),
             clientSocketTimeout);
       }
       binaryTransport = createAuthBinaryTransport(store, binaryTransport);
@@ -718,7 +731,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       }
     }
     LOG.debug("Created thrift binary client for URI: " + store);
-    return binaryTransport;
+    return configureThriftMaxMessageSize(binaryTransport);
   }
 
   private void open() throws MetaException {
