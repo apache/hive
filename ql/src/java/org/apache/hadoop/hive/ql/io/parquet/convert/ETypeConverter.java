@@ -719,18 +719,21 @@ public enum ETypeConverter {
         TypeInfo hiveTypeInfo) {
       if (hiveTypeInfo != null) {
         String typeName = TypeInfoUtils.getBaseName(hiveTypeInfo.getTypeName());
+        final long min = getMinValue(type, typeName, Long.MIN_VALUE);
+        final long max = getMaxValue(typeName, Long.MAX_VALUE);
+
         switch (typeName) {
-          case serdeConstants.BIGINT_TYPE_NAME:
-            return new BinaryConverter<LongWritable>(type, parent, index) {
-              @Override
-              protected LongWritable convert(Binary binary) {
-                Preconditions.checkArgument(binary.length() == 8, "Must be 8 bytes");
-                ByteBuffer buf = binary.toByteBuffer();
-                buf.order(ByteOrder.LITTLE_ENDIAN);
-                long longVal = buf.getLong();
-                return new LongWritable(longVal);
+        case serdeConstants.BIGINT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addLong(long value) {
+              if ((value >= min) && (value <= max)) {
+                parent.set(index, new LongWritable(value));
+              } else {
+                parent.set(index, null);
               }
-            };
+            }
+          };
         }
       }
       return new PrimitiveConverter() {
