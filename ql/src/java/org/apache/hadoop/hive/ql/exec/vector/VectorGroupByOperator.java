@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
