@@ -4208,13 +4208,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return response;
   }
 
-  @Override
-  public ShowCompactResponse showCompactions(String poolName) throws TException {
-    ShowCompactRequest request = new ShowCompactRequest();
-    request.setPoolName(poolName);
+  @Override public ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException {
     ShowCompactResponse response = client.show_compact(request);
     response.setCompacts(FilterUtils.filterCompactionsIfEnabled(isClientFilterEnabled,
-        filterHook, getDefaultCatalog(conf), response.getCompacts()));
+            filterHook, getDefaultCatalog(conf), response.getCompacts()));
     return response;
   }
 

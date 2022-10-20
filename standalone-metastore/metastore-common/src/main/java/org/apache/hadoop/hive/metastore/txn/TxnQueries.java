@@ -19,13 +19,13 @@ package org.apache.hadoop.hive.metastore.txn;
 
 public class TxnQueries {
   public static final String SHOW_COMPACTION_ORDERBY_CLAUSE = "  ORDER BY  CASE " +
-    " WHEN CC_END > CC_START and CC_END > CC_COMMIT_TIME " +
-    " THEN CC_END " +
-    " WHEN CC_START > CC_COMMIT_TIME " +
-    " THEN CC_START " +
-    " ELSE CC_COMMIT_TIME " +
+    " WHEN \"CC_END\" > \"CC_START\" and \"CC_END\" > \"CC_COMMIT_TIME\" " +
+    " THEN \"CC_END\" " +
+    " WHEN \"CC_START\" > \"CC_COMMIT_TIME\" " +
+    " THEN \"CC_START\" " +
+    " ELSE \"CC_COMMIT_TIME\" " +
     " END desc ," +
-    " CC_ENQUEUE_TIME asc";
+    " \"CC_ENQUEUE_TIME\" asc";
 
   public static final String SHOW_COMPACTION_QUERY = "SELECT XX.* FROM ( SELECT " +
     " \"CQ_DATABASE\" AS CC_DATABASE, \"CQ_TABLE\" AS CC_TABLE, \"CQ_PARTITION\" AS CC_PARTITION, " +

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -564,5 +565,76 @@ public class TxnUtils {
     LOG.error("Unable to stat file {} as either current user({}) or table owner({}), giving up", p,
         UserGroupInformation.getLoginUser(), t.getOwner());
     throw new IOException("Unable to stat file: " + p);
+  }
+
+  public static String compactorStateToResponse(char s) {
+    switch (s) {
+      case TxnStore.INITIATED_STATE: return TxnStore.INITIATED_RESPONSE;
+      case TxnStore.WORKING_STATE: return TxnStore.WORKING_RESPONSE;
+      case TxnStore.READY_FOR_CLEANING: return TxnStore.CLEANING_RESPONSE;
+      case TxnStore.FAILED_STATE: return TxnStore.FAILED_RESPONSE;
+      case TxnStore.SUCCEEDED_STATE: return TxnStore.SUCCEEDED_RESPONSE;
+      case TxnStore.DID_NOT_INITIATE: return TxnStore.DID_NOT_INITIATE_RESPONSE;
+      case TxnStore.REFUSED_STATE: return TxnStore.REFUSED_RESPONSE;
+      default:
+        return Character.toString(s);
+    }
+  }
+
+  public static CompactionType dbCompactionType2ThriftType(char dbValue) throws MetaException {
+    switch (dbValue) {
+      case TxnStore.MAJOR_TYPE:
+        return CompactionType.MAJOR;
+      case TxnStore.MINOR_TYPE:
+        return CompactionType.MINOR;
+      default:
+        throw new MetaException("Unexpected compaction type " + dbValue);
+    }
+  }
+
+  public static Character thriftCompactionType2DbType(CompactionType ct) throws MetaException {
+    switch (ct) {
+      case MAJOR:
+        return TxnStore.MAJOR_TYPE;
+      case MINOR:
+        return TxnStore.MINOR_TYPE;
+      default:
+        throw new MetaException("Unexpected compaction type " + ct);
+    }
+  }
+
+  public static CompactionType inputCompactionType2DBType(String inputValue) throws MetaException {
+    switch (inputValue.toUpperCase()) {
+      case TxnStore.COMPACTOR_MAJOR_TYPE:
+        return CompactionType.MAJOR;
+      case TxnStore.COMPACTOR_MINOR_TYPE:
+        return CompactionType.MINOR;
+      default:
+        throw new MetaException("Unexpected compaction type " + inputValue);
+    }
+
+  }
+
+
+  public static String compactorStateFromInput(String s) throws MetaException {
+
+    switch (s) {
+      case TxnStore.INITIATED_RESPONSE:
+        return Character.toString(TxnStore.INITIATED_STATE);
+      case TxnStore.WORKING_RESPONSE:
+        return Character.toString(TxnStore.WORKING_STATE);
+      case TxnStore.CLEANING_RESPONSE:
+        return Character.toString(TxnStore.READY_FOR_CLEANING);
+      case TxnStore.FAILED_RESPONSE:
+        return Character.toString(TxnStore.FAILED_STATE);
+      case TxnStore.SUCCEEDED_RESPONSE:
+        return Character.toString(TxnStore.SUCCEEDED_STATE);
+      case TxnStore.DID_NOT_INITIATE_RESPONSE:
+        return Character.toString(TxnStore.DID_NOT_INITIATE);
+      case TxnStore.REFUSED_RESPONSE:
+        return Character.toString(TxnStore.REFUSED_STATE);
+      default:
+        throw new MetaException("Unexpected compaction status " + s);
+    }
   }
 }

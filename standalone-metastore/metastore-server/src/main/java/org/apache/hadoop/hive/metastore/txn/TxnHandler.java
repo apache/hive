@@ -237,30 +237,7 @@ import com.google.common.annotations.VisibleForTesting;
 @InterfaceStability.Evolving
 abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
-  static final protected char INITIATED_STATE = 'i';
-  static final protected char WORKING_STATE = 'w';
-  static final protected char READY_FOR_CLEANING = 'r';
-  static final char FAILED_STATE = 'f';
-  static final char SUCCEEDED_STATE = 's';
-  static final char DID_NOT_INITIATE = 'a';
-  static final char REFUSED_STATE = 'c';
-
-  // Compactor types
-  static final protected char MAJOR_TYPE = 'a';
-  static final protected char MINOR_TYPE = 'i';
-
-
-  private static final String TXN_TMP_STATE = "_";
-
-  private static final String DEFAULT_POOL_NAME = "default";
-
-  // Lock states
-  static final protected char LOCK_ACQUIRED = 'a';
-  static final protected char LOCK_WAITING = 'w';
-
-  private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
   private static final Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
-
 
   private static DataSource connPool;
   private static DataSource connPoolMutex;
@@ -3728,7 +3705,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               try (ResultSet rs = pst.executeQuery()) {
                 if(rs.next()) {
                   long enqueuedId = rs.getLong(1);
-                  String state = compactorStateToResponse(rs.getString(2).charAt(0));
+                  String state = TxnUtils.compactorStateToResponse(rs.getString(2).charAt(0));
                   LOG.info("Ignoring request to compact {}/{}/{} since it is already {} with id={}", rqst.getDbname(),
                       rqst.getTablename(), rqst.getPartitionname(), quoteString(state), enqueuedId);
                   CompactionResponse resp = new CompactionResponse(-1, REFUSED_RESPONSE, false);
@@ -3891,20 +3868,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
   
-  protected static String compactorStateToResponse(char s) {
-    switch (s) {
-      case INITIATED_STATE: return INITIATED_RESPONSE;
-      case WORKING_STATE: return WORKING_RESPONSE;
-      case READY_FOR_CLEANING: return CLEANING_RESPONSE;
-      case FAILED_STATE: return FAILED_RESPONSE;
-      case SUCCEEDED_STATE: return SUCCEEDED_RESPONSE;
-      case DID_NOT_INITIATE: return DID_NOT_INITIATE_RESPONSE;
-      case REFUSED_STATE: return REFUSED_RESPONSE;
-      default:
-        return Character.toString(s);
-    }
-  }
-
   @RetrySemantics.ReadOnly
   @SuppressWarnings("squid:S2095")
   public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException {
@@ -3916,56 +3879,59 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         PreparedStatement stmt = sqlGenerator.prepareStmtWithParameters(dbConn, query.toString(),
           getShowCompactionQueryParamList(rqst))) {
-          LOG.debug("Going to execute query <" + query + ">");
-          try (ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-              ShowCompactResponseElement e = new ShowCompactResponseElement();
-              e.setDbname(rs.getString(1));
-              e.setTablename(rs.getString(2));
-              e.setPartitionname(rs.getString(3));
-              e.setState(compactorStateToResponse(rs.getString(4).charAt(0)));
-              try {
-                e.setType(dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
-              } catch (MetaException ex) {
-                //do nothing to handle RU/D if we add another status
-              }
-              e.setWorkerid(rs.getString(6));
-              long start = rs.getLong(7);
-              if (!rs.wasNull()) {
-                e.setStart(start);
-              }
-              long endTime = rs.getLong(8);
-              if (endTime != -1) {
-                e.setEndTime(endTime);
-              }
-              e.setRunAs(rs.getString(9));
-              e.setHadoopJobId(rs.getString(10));
-              e.setId(rs.getLong(11));
-              e.setErrorMessage(rs.getString(12));
-              long enqueueTime = rs.getLong(13);
-              if (!rs.wasNull()) {
-                e.setEnqueueTime(enqueueTime);
-              }
-              e.setWorkerVersion(rs.getString(14));
-              e.setInitiatorId(rs.getString(15));
-              e.setInitiatorVersion(rs.getString(16));
-              long cleanerStart = rs.getLong(17);
-              if (!rs.wasNull() && (cleanerStart != -1)) {
-                e.setCleanerStart(cleanerStart);
-              }
-              String poolName = rs.getString(18);
-              if (isBlank(poolName)) {
-                e.setPoolName(DEFAULT_POOL_NAME);
-              } else {
-                e.setPoolName(poolName);
-              }
-              e.setTxnId(rs.getLong(19));
-              e.setNextTxnId(rs.getLong(20));
-              e.setCommitTime(rs.getLong(21));
-              e.setHightestTxnId(rs.getLong(22));
-              response.addToCompacts(e);
+        if (rqst.isSetId()) {
+          stmt.setLong(getShowCompactionQueryParamList(rqst).size() + 1, rqst.getId());
+        }
+        LOG.debug("Going to execute query <" + query + ">");
+        try (ResultSet rs = stmt.executeQuery()) {
+          while (rs.next()) {
+            ShowCompactResponseElement e = new ShowCompactResponseElement();
+            e.setDbname(rs.getString(1));
+            e.setTablename(rs.getString(2));
+            e.setPartitionname(rs.getString(3));
+            e.setState(TxnUtils.compactorStateToResponse(rs.getString(4).charAt(0)));
+            try {
+              e.setType(dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
+            } catch (MetaException ex) {
+              //do nothing to handle RU/D if we add another status
             }
+            e.setWorkerid(rs.getString(6));
+            long start = rs.getLong(7);
+            if (!rs.wasNull()) {
+              e.setStart(start);
+            }
+            long endTime = rs.getLong(8);
+            if (endTime != -1) {
+              e.setEndTime(endTime);
+            }
+            e.setRunAs(rs.getString(9));
+            e.setHadoopJobId(rs.getString(10));
+            e.setId(rs.getLong(11));
+            e.setErrorMessage(rs.getString(12));
+            long enqueueTime = rs.getLong(13);
+            if (!rs.wasNull()) {
+              e.setEnqueueTime(enqueueTime);
+            }
+            e.setWorkerVersion(rs.getString(14));
+            e.setInitiatorId(rs.getString(15));
+            e.setInitiatorVersion(rs.getString(16));
+            long cleanerStart = rs.getLong(17);
+            if (!rs.wasNull() && (cleanerStart != -1)) {
+              e.setCleanerStart(cleanerStart);
+            }
+            String poolName = rs.getString(18);
+            if (isBlank(poolName)) {
+              e.setPoolName(DEFAULT_POOL_NAME);
+            } else {
+              e.setPoolName(poolName);
+            }
+            e.setTxnId(rs.getLong(19));
+            e.setNextTxnId(rs.getLong(20));
+            e.setCommitTime(rs.getLong(21));
+            e.setHightestTxnId(rs.getLong(22));
+            response.addToCompacts(e);
           }
+        }
       } catch (SQLException e) {
         checkRetryable(e, "showCompact(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database " +
@@ -3979,9 +3945,33 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   private List<String> getShowCompactionQueryParamList(ShowCompactRequest request) throws MetaException {
     String poolName = request.getPoolName();
+    String dbName = request.getDbname();
+    String tableName = request.getTablename();
+    String partName = request.getPartitionname();
+    CompactionType type = request.getType();
+    String state = request.getState();
+    long compactionId = request.getId();
     List<String> params = new ArrayList<>();
+    if (isNotBlank(dbName)) {
+      params.add(dbName);
+    }
+    if (isNotBlank(tableName)) {
+      params.add(tableName);
+    }
+    if (isNotBlank(partName)) {
+      params.add(partName);
+    }
+    if (isNotBlank(state)) {
+      params.add(state);
+    }
+    if (type != null) {
+      params.add(TxnUtils.thriftCompactionType2DbType(type).toString());
+    }
     if (isNotBlank(poolName)) {
       params.add(poolName);
+    }
+    if (compactionId > 0) {
+      params = Collections.emptyList();
     }
     return params;
   }
@@ -3989,8 +3979,47 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private String getShowCompactionFilterClause(ShowCompactRequest request) {
     StringBuilder filter = new StringBuilder();
     String poolName = request.getPoolName();
+    String dbName = request.getDbname();
+    String tableName = request.getTablename();
+    String partName = request.getPartitionname();
+    CompactionType type = request.getType();
+    long compactionId = request.getId();
+    String state = request.getState();
+    if (isNotBlank(dbName)) {
+      filter.append("\"CC_DATABASE\"=?");
+    }
+    if (isNotBlank(tableName)) {
+      if (filter.length() > 0) {
+        filter.append(" and ");
+      }
+      filter.append("\"CC_TABLE\"=?");
+    }
+    if (isNotBlank(partName)) {
+      if (filter.length() > 0) {
+        filter.append(" and ");
+      }
+      filter.append("\"CC_PARTITION\"=?");
+    }
+    if (isNotBlank(state)) {
+      if (filter.length() > 0) {
+        filter.append(" and ");
+      }
+      filter.append("\"CC_STATE\"=?");
+    }
+    if (type != null) {
+      if (filter.length() > 0) {
+        filter.append(" and ");
+      }
+      filter.append("\"CC_TYPE\"=?");
+    }
     if (isNotBlank(poolName)) {
+      if (filter.length() > 0) {
+        filter.append(" and ");
+      }
       filter.append("\"CC_POOL_NAME\"=?");
+    }
+    if (compactionId > 0) {
+      filter.append("\"CC_ID\"=?");
     }
     return filter.length() > 0 ? " where " + filter.toString() : EMPTY;
   }
@@ -4060,7 +4089,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if (!rs.wasNull()) {
             lci.setPartitionname(partition);
           }
-          lci.setType(dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
+          lci.setType(TxnUtils.dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
           // Only put the latest record of each partition into response
           if (!partitionSet.contains(partition)) {
             response.addToCompactions(lci);
