@@ -953,8 +953,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             prevSnaps = getListFromFileList(snapPathFileList);
           }
         }
+        ExportService exportService = new ExportService(conf);
         for(String matchedDbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
-          ExportService exportService = new ExportService(conf);
           for (String tableName : Utils.matchesTbl(hiveDb, matchedDbName, work.replScope)) {
             try {
               Table table = hiveDb.getTable(matchedDbName, tableName);
@@ -991,7 +991,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             }
             try {
               exportService.await(60, TimeUnit.SECONDS);
-              exportService = null;
             } catch (Exception e) {
               LOG.error("Error while shutting down ExportService ", e);
             }
@@ -1219,6 +1218,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, conf);
         FileList snapPathFileList = isSnapshotEnabled ? createTableFileList(
             SnapshotUtils.getSnapshotFileListPath(dumpRoot), EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT, conf) : null) {
+      ExportService exportService = new ExportService(conf);
       for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
         LOG.debug("Dumping db: " + dbName);
         // TODO : Currently we don't support separate table list for each database.
@@ -1273,7 +1273,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             // Get the counter to store the snapshots created & deleted at source.
             replSnapshotCount = new SnapshotUtils.ReplSnapshotCount();
           }
-          ExportService exportService = new ExportService(conf);
           for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
             Table table = null;
             try {
@@ -1319,7 +1318,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
             }
             try {
               exportService.await(60, TimeUnit.SECONDS);
-              exportService = null;
             } catch (Exception e) {
               LOG.error("Error while shutting down ExportService ", e);
             }
