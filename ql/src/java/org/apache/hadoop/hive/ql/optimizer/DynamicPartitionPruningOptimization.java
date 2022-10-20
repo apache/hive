@@ -79,11 +79,14 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+
+import static org.apache.hadoop.hive.ql.exec.FunctionRegistry.BLOOM_FILTER_FUNCTION;
 
 /**
  * This optimization looks for expressions of the kind "x IN (RS[n])". If such
@@ -639,8 +642,8 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
               params, false, Mode.PARTIAL1);
       // we don't add numThreads here since PARTIAL1 mode is for VectorUDAFBloomFilter which does
       // not support numThreads parameter
-      AggregationDesc bloomFilter = new AggregationDesc("bloom_filter",
-              FunctionRegistry.getGenericUDAFEvaluator("bloom_filter", aggFnOIs, false, false),
+      AggregationDesc bloomFilter = new AggregationDesc(BLOOM_FILTER_FUNCTION,
+              FunctionRegistry.getGenericUDAFEvaluator(BLOOM_FILTER_FUNCTION, aggFnOIs, false, false),
               params, false, Mode.PARTIAL1);
       GenericUDAFBloomFilterEvaluator bloomFilterEval =
           (GenericUDAFBloomFilterEvaluator) bloomFilter.getGenericUDAFEvaluator();
@@ -740,9 +743,8 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
                       rsValueCols.get(2).getTypeInfo(),
                       Utilities.ReduceField.VALUE + "." +
                               gbOutputNames.get(2), "", false));
-      int numThreads = parseContext.getConf().getInt(HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS.varname,
-          HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS.defaultIntVal);
-      PrimitiveTypeInfo intTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo("int");
+      int numThreads = parseContext.getConf().getIntVar(HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS);
+      TypeInfo intTypeInfo = TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(Integer.TYPE);
       bloomFilterFinalParams.add(new ExprNodeConstantDesc(intTypeInfo, numThreads));
 
       AggregationDesc min = new AggregationDesc("min",
@@ -753,8 +755,8 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
               FunctionRegistry.getGenericUDAFEvaluator("max", maxFinalFnOIs,
                       false, false),
               maxFinalParams, false, Mode.FINAL);
-      AggregationDesc bloomFilter = new AggregationDesc("bloom_filter",
-              FunctionRegistry.getGenericUDAFEvaluator("bloom_filter", bloomFilterFinalFnOIs,
+      AggregationDesc bloomFilter = new AggregationDesc(BLOOM_FILTER_FUNCTION,
+              FunctionRegistry.getGenericUDAFEvaluator(BLOOM_FILTER_FUNCTION, bloomFilterFinalFnOIs,
                       false, false),
               bloomFilterFinalParams, false, Mode.FINAL);
       GenericUDAFBloomFilterEvaluator bloomFilterEval = (GenericUDAFBloomFilterEvaluator) bloomFilter.getGenericUDAFEvaluator();
@@ -832,7 +834,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     List<String> dynamicValueIDs = new ArrayList<String>();
     dynamicValueIDs.add(keyBaseAlias + "_min");
     dynamicValueIDs.add(keyBaseAlias + "_max");
-    dynamicValueIDs.add(keyBaseAlias + "_bloom_filter");
+    dynamicValueIDs.add(keyBaseAlias + "_" + BLOOM_FILTER_FUNCTION);
 
     runtimeValuesInfo.setTableDesc(rsFinalTableDesc);
     runtimeValuesInfo.setDynamicValueIDs(dynamicValueIDs);

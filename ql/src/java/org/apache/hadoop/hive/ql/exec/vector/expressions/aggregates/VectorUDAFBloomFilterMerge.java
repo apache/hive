@@ -39,6 +39,7 @@ import org.apache.hive.common.util.BloomKFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.ql.exec.FunctionRegistry.BLOOM_FILTER_FUNCTION;
 import static org.apache.hive.common.util.BloomKFilter.START_OF_SERIALIZED_LONGS;
 
 public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
@@ -585,7 +586,7 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
      * Just modes (PARTIAL2, FINAL).
      */
     return
-        name.equals("bloom_filter") &&
+        name.equals(BLOOM_FILTER_FUNCTION) &&
         inputColVectorType == ColumnVector.Type.BYTES &&
         outputColVectorType == ColumnVector.Type.BYTES &&
         (mode == Mode.PARTIAL2 || mode == Mode.FINAL);

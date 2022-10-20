@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -224,13 +225,15 @@ public class TestVectorGroupByOperator {
     VectorGroupByDesc vectorDesc = new VectorGroupByDesc();
     vectorDesc.setVecAggrDescs(
         new VectorAggregationDesc[] {
-          new VectorAggregationDesc(
-              agg.getGenericUDAFName(),
-              new GenericUDAFCount.GenericUDAFCountEvaluator(),
-              agg.getMode(),
-              null, ColumnVector.Type.NONE, null,
-              TypeInfoFactory.longTypeInfo, ColumnVector.Type.LONG, VectorUDAFCountStar.class, null)});
-
+            new VectorAggregationDesc.VectorAggregationDescBuilder()
+                .aggregationName(agg.getGenericUDAFName())
+                .evaluator(new GenericUDAFCount.GenericUDAFCountEvaluator())
+                .udafEvaluatorMode(agg.getMode())
+                .inputColVectorType(ColumnVector.Type.NONE)
+                .outputTypeInfo(TypeInfoFactory.longTypeInfo)
+                .outputColVectorType(ColumnVector.Type.LONG)
+                .vectorAggregationClass(VectorUDAFCountStar.class)
+                .build()});
     vectorDesc.setProcessingMode(VectorGroupByDesc.ProcessingMode.HASH);
 
     desc.setOutputColumnNames(outputColumnNames);
@@ -2364,11 +2367,27 @@ public class TestVectorGroupByOperator {
     Mockito.when(desc.getVecAggrClass()).thenReturn((Class) VectorUDAFBloomFilterMerge.class);
     Mockito.when(desc.getEvaluator())
         .thenReturn(new GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator());
-    PrimitiveTypeInfo intTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo("int");
+    TypeInfo intTypeInfo = TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(Integer.TYPE);
     Mockito.when(desc.getConstants()).thenReturn(
         Collections.singletonList(ConstantVectorExpression.create(2, 16, intTypeInfo)));
     VectorAggregateExpression expr = op.instantiateExpression(desc);
     Assert.assertEquals(VectorUDAFBloomFilterMerge.class, expr.getClass());
+  }
+
+  @Test
+  public void testInstantiateExpressionNonPrimitiveConstantType_KO() throws Exception {
+    VectorGroupByOperator op = new VectorGroupByOperator();
+    // VectorUDAFBloomFilterMerge with specific constructor (additional constant parameter)
+    VectorAggregationDesc desc = Mockito.mock(VectorAggregationDesc.class);
+    Mockito.when(desc.getVecAggrClass()).thenReturn((Class) VectorUDAFBloomFilterMerge.class);
+    Mockito.when(desc.getEvaluator())
+        .thenReturn(new GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator());
+    TypeInfo intTypeInfo = TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(Integer.TYPE);
+    TypeInfo structTypeInfo = TypeInfoFactory.getStructTypeInfo(
+        Collections.singletonList("first"), Collections.singletonList(intTypeInfo));
+    Mockito.when(desc.getConstants()).thenReturn(
+        Collections.singletonList(ConstantVectorExpression.create(2, Arrays.asList(16), structTypeInfo)));
+    assertThrows(IllegalArgumentException.class, () -> op.instantiateExpression(desc));
   }
 
   private void testMultiKey(

@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -85,19 +86,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
   private static final Logger LOG = LoggerFactory.getLogger(
       VectorGroupByOperator.class.getName());
-
-  private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_TO_CLASS = new ImmutableMap.Builder<String, Class<?>>()
-      .put("int", Integer.TYPE)
-      .put("long", Long.TYPE)
-      .put("double", Double.TYPE)
-      .put("float", Float.TYPE)
-      .put("bool", Boolean.TYPE)
-      .put("char", Character.TYPE)
-      .put("byte", Byte.TYPE)
-      .put("void", Void.TYPE)
-      .put("short", Short.TYPE)
-      .put("string", String.class)
-      .build();
 
   private VectorizationContext vContext;
   private VectorGroupByDesc vectorDesc;
@@ -1240,32 +1228,34 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     for (int i = 0; i < constants.size(); ++i) {
       ConstantVectorExpression constant = constants.get(i);
       String typeName = constant.getOutputTypeInfo().getTypeName();
-      if (!PRIMITIVE_TYPE_NAME_TO_CLASS.containsKey(typeName)) {
+      PrimitiveObjectInspectorUtils.PrimitiveTypeEntry primitiveTypeEntry =
+          PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName);
+      if (primitiveTypeEntry == null) {
         throw new IllegalArgumentException(
             "Non-primitive type detected as " + i + "-th argument for a call to the vectorized aggregation class "
                 + vecAggrClass.getSimpleName() + ", only primitive types are supported");
       }
-      ctorParamClasses[i + 1] = PRIMITIVE_TYPE_NAME_TO_CLASS.get(typeName);
+      ctorParamClasses[i + 1] = primitiveTypeEntry.primitiveJavaClass;
 
       // this is needed to bring back to the right type the value, e.g. int-family always gets back a long,
       // but in this way the constructor parameters won't match anymore, so we need to convert here
-      switch (typeName) {
-      case "byte":
+      switch (primitiveTypeEntry.primitiveCategory) {
+      case BYTE:
         values.add(constant.getBytesValue());
         break;
-      case "float":
+      case FLOAT:
         values.add(new Double(constant.getDoubleValue()).floatValue());
         break;
-      case "double":
+      case DOUBLE:
         values.add(constant.getDoubleValue());
         break;
-      case "int":
+      case INT:
         values.add(new Long(constant.getLongValue()).intValue());
         break;
-      case "long":
+      case LONG:
         values.add(constant.getLongValue());
         break;
-      case "short":
+      case SHORT:
         values.add(new Long(constant.getLongValue()).shortValue());
         break;
       default:

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
+import static org.apache.hadoop.hive.ql.exec.FunctionRegistry.BLOOM_FILTER_FUNCTION;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
 
 import java.io.IOException;
@@ -516,7 +517,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedAggregationUdfs.add("stddev");
     supportedAggregationUdfs.add("stddev_pop");
     supportedAggregationUdfs.add("stddev_samp");
-    supportedAggregationUdfs.add("bloom_filter");
+    supportedAggregationUdfs.add(BLOOM_FILTER_FUNCTION);
     supportedAggregationUdfs.add("compute_bit_vector_hll");
   }
 
@@ -4554,10 +4555,18 @@ public class Vectorizer implements PhysicalPlanResolver {
                   ColumnVector.Type.DECIMAL_64, udafEvaluatorMode);
           if (vecAggrClass != null) {
             final VectorAggregationDesc vecAggrDesc =
-                new VectorAggregationDesc(
-                    aggregationName, evaluator, udafEvaluatorMode,
-                    inputTypeInfo, inputColVectorType, inputExpression,
-                    outputTypeInfo, ColumnVector.Type.DECIMAL_64, vecAggrClass, constants);
+                new VectorAggregationDesc.VectorAggregationDescBuilder()
+                    .aggregationName(aggregationName)
+                    .evaluator(evaluator)
+                    .udafEvaluatorMode(udafEvaluatorMode)
+                    .inputTypeInfo(inputTypeInfo)
+                    .inputColVectorType(inputColVectorType)
+                    .inputExpression(inputExpression)
+                    .outputTypeInfo(outputTypeInfo)
+                    .outputColVectorType(ColumnVector.Type.DECIMAL_64)
+                    .vectorAggregationClass(vecAggrClass)
+                    .constants(constants)
+                    .build();
             return new ImmutablePair<>(vecAggrDesc, null);
           }
         }
@@ -4569,10 +4578,18 @@ public class Vectorizer implements PhysicalPlanResolver {
                 outputColVectorType, udafEvaluatorMode);
         if (vecAggrClass != null) {
           final VectorAggregationDesc vecAggrDesc =
-              new VectorAggregationDesc(
-                  aggregationName, evaluator, udafEvaluatorMode,
-                  inputTypeInfo, inputColVectorType, inputExpression,
-                  outputTypeInfo, outputColVectorType, vecAggrClass, constants);
+              new VectorAggregationDesc.VectorAggregationDescBuilder()
+                  .aggregationName(aggregationName)
+                  .evaluator(evaluator)
+                  .udafEvaluatorMode(udafEvaluatorMode)
+                  .inputTypeInfo(inputTypeInfo)
+                  .inputColVectorType(inputColVectorType)
+                  .inputExpression(inputExpression)
+                  .outputTypeInfo(outputTypeInfo)
+                  .outputColVectorType(outputColVectorType)
+                  .vectorAggregationClass(vecAggrClass)
+                  .constants(constants)
+                  .build();
           return new ImmutablePair<>(vecAggrDesc, null);
         }
 
@@ -4592,15 +4609,23 @@ public class Vectorizer implements PhysicalPlanResolver {
           // for now, disable operating on decimal64 column vectors for semijoin reduction as
           // we have to make sure same decimal type should be used during bloom filter creation
           // and bloom filter probing
-          if (aggregationName.equals("bloom_filter")) {
+          if (aggregationName.equals(BLOOM_FILTER_FUNCTION)) {
             inputExpression = vContext.wrapWithDecimal64ToDecimalConversion(inputExpression);
             inputColVectorType = ColumnVector.Type.DECIMAL;
           }
           final VectorAggregationDesc vecAggrDesc =
-              new VectorAggregationDesc(
-                  aggregationName, evaluator, udafEvaluatorMode,
-                  inputTypeInfo, inputColVectorType, inputExpression,
-                  outputTypeInfo, outputColVectorType, vecAggrClass, constants);
+              new VectorAggregationDesc.VectorAggregationDescBuilder()
+                  .aggregationName(aggregationName)
+                  .evaluator(evaluator)
+                  .udafEvaluatorMode(udafEvaluatorMode)
+                  .inputTypeInfo(inputTypeInfo)
+                  .inputColVectorType(inputColVectorType)
+                  .inputExpression(inputExpression)
+                  .outputTypeInfo(outputTypeInfo)
+                  .outputColVectorType(outputColVectorType)
+                  .vectorAggregationClass(vecAggrClass)
+                  .constants(constants)
+                  .build();
           return new ImmutablePair<>(vecAggrDesc, null);
         }
 
@@ -4621,10 +4646,18 @@ public class Vectorizer implements PhysicalPlanResolver {
             outputColVectorType, udafEvaluatorMode);
     if (vecAggrClass != null) {
       final VectorAggregationDesc vecAggrDesc =
-          new VectorAggregationDesc(
-              aggregationName, evaluator, udafEvaluatorMode,
-              inputTypeInfo, inputColVectorType, inputExpression,
-              outputTypeInfo, outputColVectorType, vecAggrClass, constants);
+          new VectorAggregationDesc.VectorAggregationDescBuilder()
+              .aggregationName(aggregationName)
+              .evaluator(evaluator)
+              .udafEvaluatorMode(udafEvaluatorMode)
+              .inputTypeInfo(inputTypeInfo)
+              .inputColVectorType(inputColVectorType)
+              .inputExpression(inputExpression)
+              .outputTypeInfo(outputTypeInfo)
+              .outputColVectorType(outputColVectorType)
+              .vectorAggregationClass(vecAggrClass)
+              .constants(constants)
+              .build();
       return new ImmutablePair<>(vecAggrDesc, null);
     }
 
