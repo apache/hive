@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.security.sasl.SaslException;
 
+import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.PlainSaslHelper;
@@ -309,9 +310,10 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
 
     String host = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST);
     int port = conf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT);
+    int maxThriftMessageSize = (int) conf.getSizeVar(HiveConf.ConfVars.HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE);
     LOG.info("Connecting to " + host + ":" + port);
 
-    transport = new TSocket(host, port);
+    transport = HiveAuthUtils.getSocketTransport(host, port, 0, maxThriftMessageSize);
     ((TSocket) transport).setTimeout((int) conf.getTimeVar(HiveConf.ConfVars.SERVER_READ_SOCKET_TIMEOUT,
       TimeUnit.SECONDS) * 1000);
     try {
