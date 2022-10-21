@@ -56,6 +56,7 @@ import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.BiMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableBiMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -193,7 +194,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
         updateHiveTable = true;
         LOG.debug("Committing existing table: {}", fullName);
       } else {
-        tbl = newHmsTable();
+        tbl = newHmsTable(metadata);
         LOG.debug("Committing new table: {}", fullName);
       }
 
@@ -291,12 +292,13 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
     }
   }
 
-  private Table newHmsTable() {
+  private Table newHmsTable(TableMetadata metadata) {
+    Preconditions.checkNotNull(metadata, "'metadata' parameter can't be null");
     final long currentTimeMillis = System.currentTimeMillis();
 
     Table newTable = new Table(tableName,
         database,
-        System.getProperty("user.name"),
+        metadata.property(TableProperties.HMS_TABLE_OWNER, System.getProperty("user.name")),
         (int) currentTimeMillis / 1000,
         (int) currentTimeMillis / 1000,
         Integer.MAX_VALUE,
@@ -318,11 +320,15 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
         .orElseGet(Maps::newHashMap);
 
     // push all Iceberg table properties into HMS
-    metadata.properties().forEach((key, value) -> {
-      // translate key names between Iceberg and HMS where needed
-      String hmsKey = ICEBERG_TO_HMS_TRANSLATION.getOrDefault(key, key);
-      parameters.put(hmsKey, value);
-    });
+    metadata.properties().entrySet().stream()
+            .filter(entry -> !entry.getKey().equalsIgnoreCase(TableProperties.HMS_TABLE_OWNER))
+            .forEach(
+              entry -> {
+                String key = entry.getKey();
+                // translate key names between Iceberg and HMS where needed
+                String hmsKey = ICEBERG_TO_HMS_TRANSLATION.getOrDefault(key, key);
+                parameters.put(hmsKey, entry.getValue());
+              });
     if (metadata.uuid() != null) {
       parameters.put(TableProperties.UUID, metadata.uuid());
     }

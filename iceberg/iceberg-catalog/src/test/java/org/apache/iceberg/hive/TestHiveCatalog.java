@@ -88,15 +88,16 @@ public class TestHiveCatalog extends HiveMetastoreTest {
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
 
+  private Schema getTestSchema() {
+    return new Schema(
+        required(1, "id", Types.IntegerType.get(), "unique ID"),
+        required(2, "data", Types.StringType.get()));
+  }
+
   @Test
   public void testCreateTableBuilder() throws Exception {
-    Schema schema = new Schema(
-        required(1, "id", Types.IntegerType.get(), "unique ID"),
-        required(2, "data", Types.StringType.get())
-    );
-    PartitionSpec spec = PartitionSpec.builderFor(schema)
-        .bucket("data", 16)
-        .build();
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
     TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
     String location = temp.newFolder("tbl").toString();
 
@@ -120,13 +121,8 @@ public class TestHiveCatalog extends HiveMetastoreTest {
 
   @Test
   public void testCreateTableWithCaching() throws Exception {
-    Schema schema = new Schema(
-        required(1, "id", Types.IntegerType.get(), "unique ID"),
-        required(2, "data", Types.StringType.get())
-    );
-    PartitionSpec spec = PartitionSpec.builderFor(schema)
-        .bucket("data", 16)
-        .build();
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
     TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
     String location = temp.newFolder("tbl").toString();
     ImmutableMap<String, String> properties = ImmutableMap.of("key1", "value1", "key2", "value2");
@@ -175,10 +171,7 @@ public class TestHiveCatalog extends HiveMetastoreTest {
 
   @Test
   public void testCreateTableTxnBuilder() throws Exception {
-    Schema schema = new Schema(
-        required(1, "id", Types.IntegerType.get(), "unique ID"),
-        required(2, "data", Types.StringType.get())
-    );
+    Schema schema = getTestSchema();
     TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
     String location = temp.newFolder("tbl").toString();
 
@@ -199,13 +192,8 @@ public class TestHiveCatalog extends HiveMetastoreTest {
 
   @Test
   public void testReplaceTxnBuilder() throws Exception {
-    Schema schema = new Schema(
-        required(1, "id", Types.IntegerType.get(), "unique ID"),
-        required(2, "data", Types.StringType.get())
-    );
-    PartitionSpec spec = PartitionSpec.builderFor(schema)
-        .bucket("data", 16)
-        .build();
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
     TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
     String location = temp.newFolder("tbl").toString();
 
@@ -246,14 +234,31 @@ public class TestHiveCatalog extends HiveMetastoreTest {
   }
 
   @Test
+  public void testCreateTableWithOwner() throws Exception {
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
+    TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
+    String location = temp.newFolder("tbl").toString();
+    String owner = "some_owner";
+    ImmutableMap<String, String> properties =
+        ImmutableMap.of(TableProperties.HMS_TABLE_OWNER, owner);
+
+    try {
+      Table table = catalog.createTable(tableIdent, schema, spec, location, properties);
+      org.apache.hadoop.hive.metastore.api.Table hmsTable =
+          metastoreClient.getTable(DB_NAME, "tbl");
+      Assert.assertEquals(owner, hmsTable.getOwner());
+      Map<String, String> hmsTableParams = hmsTable.getParameters();
+      Assert.assertFalse(hmsTableParams.containsKey(TableProperties.HMS_TABLE_OWNER));
+    } finally {
+      catalog.dropTable(tableIdent);
+    }
+  }
+
+  @Test
   public void testCreateTableDefaultSortOrder() throws Exception {
-    Schema schema = new Schema(
-        required(1, "id", Types.IntegerType.get(), "unique ID"),
-        required(2, "data", Types.StringType.get())
-    );
-    PartitionSpec spec = PartitionSpec.builderFor(schema)
-        .bucket("data", 16)
-        .build();
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
     TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
 
     try {
@@ -270,16 +275,9 @@ public class TestHiveCatalog extends HiveMetastoreTest {
 
   @Test
   public void testCreateTableCustomSortOrder() throws Exception {
-    Schema schema = new Schema(
-        required(1, "id", Types.IntegerType.get(), "unique ID"),
-        required(2, "data", Types.StringType.get())
-    );
-    PartitionSpec spec = PartitionSpec.builderFor(schema)
-        .bucket("data", 16)
-        .build();
-    SortOrder order = SortOrder.builderFor(schema)
-        .asc("id", NULLS_FIRST)
-        .build();
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
+    SortOrder order = SortOrder.builderFor(schema).asc("id", NULLS_FIRST).build();
     TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
 
     try {
@@ -417,8 +415,7 @@ public class TestHiveCatalog extends HiveMetastoreTest {
   public void testDropNamespace() throws TException {
     Namespace namespace = Namespace.of("dbname_drop");
     TableIdentifier identifier = TableIdentifier.of(namespace, "table");
-    Schema schema = new Schema(Types.StructType.of(
-        required(1, "id", Types.LongType.get())).fields());
+    Schema schema = getTestSchema();
 
     catalog.createNamespace(namespace, meta);
     catalog.createTable(identifier, schema);
@@ -445,8 +442,7 @@ public class TestHiveCatalog extends HiveMetastoreTest {
   @Test
   public void testDropTableWithoutMetadataFile() {
     TableIdentifier identifier = TableIdentifier.of(DB_NAME, "tbl");
-    Schema tableSchema =
-        new Schema(Types.StructType.of(required(1, "id", Types.LongType.get())).fields());
+    Schema tableSchema = getTestSchema();
     catalog.createTable(identifier, tableSchema);
     String metadataFileLocation = catalog.newTableOps(identifier).current().metadataFileLocation();
     TableOperations ops = catalog.newTableOps(identifier);
@@ -460,13 +456,8 @@ public class TestHiveCatalog extends HiveMetastoreTest {
 
   @Test
   public void testTableName() {
-    Schema schema = new Schema(
-        required(1, "id", Types.IntegerType.get(), "unique ID"),
-        required(2, "data", Types.StringType.get())
-    );
-    PartitionSpec spec = PartitionSpec.builderFor(schema)
-        .bucket("data", 16)
-        .build();
+    Schema schema = getTestSchema();
+    PartitionSpec spec = PartitionSpec.builderFor(schema).bucket("data", 16).build();
     TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
 
     try {
@@ -492,10 +483,7 @@ public class TestHiveCatalog extends HiveMetastoreTest {
 
   @Test
   public void testUUIDinTableProperties() throws Exception {
-    Schema schema = new Schema(
-        required(1, "id", Types.IntegerType.get(), "unique ID"),
-        required(2, "data", Types.StringType.get())
-    );
+    Schema schema = getTestSchema();
     TableIdentifier tableIdentifier = TableIdentifier.of(DB_NAME, "tbl");
     String location = temp.newFolder("tbl").toString();
 
@@ -512,10 +500,7 @@ public class TestHiveCatalog extends HiveMetastoreTest {
 
   @Test
   public void testSnapshotStatsTableProperties() throws Exception {
-    Schema schema = new Schema(
-        required(1, "id", Types.IntegerType.get(), "unique ID"),
-        required(2, "data", Types.StringType.get())
-    );
+    Schema schema = getTestSchema();
     TableIdentifier tableIdentifier = TableIdentifier.of(DB_NAME, "tbl");
     String location = temp.newFolder("tbl").toString();
 
@@ -620,10 +605,7 @@ public class TestHiveCatalog extends HiveMetastoreTest {
 
   @Test
   public void testSetDefaultPartitionSpec() throws Exception {
-    Schema schema = new Schema(
-            required(1, "id", Types.IntegerType.get(), "unique ID"),
-            required(2, "data", Types.StringType.get())
-    );
+    Schema schema = getTestSchema();
     TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
 
     try {
@@ -641,10 +623,7 @@ public class TestHiveCatalog extends HiveMetastoreTest {
 
   @Test
   public void testSetCurrentSchema() throws Exception {
-    Schema schema = new Schema(
-            required(1, "id", Types.IntegerType.get(), "unique ID"),
-            required(2, "data", Types.StringType.get())
-    );
+    Schema schema = getTestSchema();
     TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
 
     try {
@@ -686,7 +665,7 @@ public class TestHiveCatalog extends HiveMetastoreTest {
 
   @Test
   public void testTablePropsDefinedAtCatalogLevel() {
-    Schema schema = new Schema(required(1, "id", Types.IntegerType.get(), "unique ID"));
+    Schema schema = getTestSchema();
     TableIdentifier tableIdent = TableIdentifier.of(DB_NAME, "tbl");
 
     ImmutableMap<String, String> catalogProps =
