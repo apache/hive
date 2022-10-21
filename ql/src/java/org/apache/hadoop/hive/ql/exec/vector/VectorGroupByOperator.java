@@ -1234,7 +1234,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
             "Non-primitive type detected as " + i + "-th argument for a call to the vectorized aggregation class "
                 + vecAggrClass.getSimpleName() + ", only primitive types are supported");
       }
-      ctorParamClasses[i + 1] = primitiveTypeEntry.primitiveJavaClass;
+      ctorParamClasses[i + 1] = primitiveTypeEntry.primitiveJavaType;
 
       // this is needed to bring back to the right type the value, e.g. int-family always gets back a long,
       // but in this way the constructor parameters won't match anymore, so we need to convert here
