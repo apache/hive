@@ -377,7 +377,8 @@ public class VectorRandomRowSource {
       "timestamp",
       "interval_year_month",
       "interval_day_time",
-      "decimal"
+      "decimal",
+      "decimal64"
   };
 
   private static String[] possibleHiveComplexTypeNames = {
@@ -434,6 +435,8 @@ public class VectorRandomRowSource {
               "decimal(%d,%d)",
               HiveDecimal.SYSTEM_DEFAULT_PRECISION,
               HiveDecimal.SYSTEM_DEFAULT_SCALE);
+    } else if (typeName.equals("decimal64")) {
+      typeName = "decimal(18,6)";
     } else if (typeName.equals("array")) {
       String elementTypeName = getRandomTypeName(random, supportedTypes, allowedTypeNameSet);
       elementTypeName =
