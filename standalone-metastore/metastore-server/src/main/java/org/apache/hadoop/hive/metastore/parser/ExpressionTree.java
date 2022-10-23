@@ -458,7 +458,7 @@ public class ExpressionTree {
       String colType = partitionKeys.get(partColIndex).getType();
       // Can only support partitions whose types are string, or maybe integers
       // Date/Timestamp data type value is considered as string hence pushing down to JDO.
-      if (!ColumnType.STRING_TYPE_NAME.equalsIgnoreCase(colType) && !ColumnType.DATE_TYPE_NAME.equalsIgnoreCase(colType)
+      if (!ColumnType.StringTypes.contains(colType) && !ColumnType.DATE_TYPE_NAME.equalsIgnoreCase(colType)
           && !ColumnType.TIMESTAMP_TYPE_NAME.equalsIgnoreCase(colType)
           && (!isIntegralSupported || !ColumnType.IntegralTypes.contains(colType))) {
         filterBuilder.setError("Filtering is supported only on partition keys of type " +
