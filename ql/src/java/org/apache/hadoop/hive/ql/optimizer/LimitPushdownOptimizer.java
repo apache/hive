@@ -97,11 +97,6 @@ public class LimitPushdownOptimizer extends Transform {
         ".*" +
         LimitOperator.getOperatorName() + "%"),
         new TopNReducer());
-    opRules.put(new RuleRegExp("R2",
-        ReduceSinkOperator.getOperatorName() + "%" +
-        ".*" +
-        ReduceSinkOperator.getOperatorName() + "%"),
-        new TopNPropagator());
 
     LimitPushdownContext context = new LimitPushdownContext(pctx.getConf());
     SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, context);
@@ -132,18 +127,6 @@ public class LimitPushdownOptimizer extends Transform {
         }
       }
       if (rs != null) {
-        Operator<?> currentOp = rs;
-        boolean foundGroupByOperator = false;
-        while (currentOp != nd) { // nd = limitOp
-          if (currentOp instanceof GroupByOperator) {
-            if (foundGroupByOperator) {
-              // Not safe to continue for RS-GBY-GBY-LIM kind of pipelines. See HIVE-10607 for more.
-              return false;
-            }
-            foundGroupByOperator = true;
-          }
-          currentOp = currentOp.getChildOperators().get(0);
-        }
         LimitOperator limit = (LimitOperator) nd;
         LimitDesc limitDesc = limit.getConf();
         Integer offset = limitDesc.getOffset();
@@ -151,95 +134,6 @@ public class LimitPushdownOptimizer extends Transform {
         rs.getConf().setTopNMemoryUsage(((LimitPushdownContext) procCtx).threshold);
         if (rs.getNumChild() == 1 && rs.getChildren().get(0) instanceof GroupByOperator) {
           rs.getConf().setMapGroupBy(true);
-        }
-      }
-      return true;
-    }
-  }
-
-  private static class TopNPropagator implements SemanticNodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack,
-                          NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
-      ReduceSinkOperator cRS = (ReduceSinkOperator) nd;
-      if (cRS.getConf().getTopN() == -1) {
-        // No limit, nothing to propagate, we just bail out
-        return false;
-      }
-      if (cRS.getConf().isPTFReduceSink()) {
-        // Limit per partition key not supported yet
-        return false;
-      }
-      ReduceSinkOperator pRS = null;
-      for (int i = stack.size() - 2 ; i >= 0; i--) {
-        Operator<?> operator = (Operator<?>) stack.get(i);
-        if (operator.getNumChild() != 1) {
-          return false; // multi-GBY single-RS (TODO)
-        }
-        if (operator instanceof ReduceSinkOperator) {
-          pRS = (ReduceSinkOperator) operator;
-          break;
-        }
-        if (!operator.acceptLimitPushdown()) {
-          return false;
-        }
-      }
-      if (pRS != null) {
-        Operator<?> currentOp = pRS;
-        boolean foundGroupByOperator = false;
-        while (currentOp != nd) { // nd = cRS
-          if (currentOp instanceof GroupByOperator) {
-            if (foundGroupByOperator) {
-              // Not safe to continue for RS-GBY-GBY-LIM kind of pipelines. See HIVE-10607 for more.
-              return false;
-            }
-            foundGroupByOperator = true;
-          }
-          currentOp = currentOp.getChildOperators().get(0);
-        }
-        List<ExprNodeDesc> cKeys = cRS.getConf().getKeyCols();
-        List<ExprNodeDesc> pKeys = pRS.getConf().getKeyCols();
-        if (pRS.getChildren().get(0) instanceof GroupByOperator &&
-                pRS.getChildren().get(0).getChildren().get(0) == cRS) {
-          // RS-GB-RS
-          GroupByOperator gBy = (GroupByOperator) pRS.getChildren().get(0);
-          List<ExprNodeDesc> gKeys = gBy.getConf().getKeys();
-          if (!ExprNodeDescUtils.checkPrefixKeysUpstream(cKeys, pKeys, cRS, pRS)) {
-            // We might still be able to push the limit
-            if (!ExprNodeDescUtils.checkPrefixKeys(cKeys, gKeys, cRS, gBy) ||
-                    !ExprNodeDescUtils.checkPrefixKeys(gKeys, pKeys, gBy, pRS)) {
-              // We cannot push limit; bail out
-              return false;
-            }
-          }
-        } else {
-          if (!ExprNodeDescUtils.checkPrefixKeysUpstream(cKeys, pKeys, cRS, pRS)) {
-            // We cannot push limit; bail out
-            return false;
-          }
-        }
-        // Copy order
-        StringBuilder order;
-        StringBuilder orderNull;
-        if (pRS.getConf().getOrder().length() > cRS.getConf().getOrder().length()) {
-          order = new StringBuilder(cRS.getConf().getOrder());
-          orderNull = new StringBuilder(cRS.getConf().getNullOrder());
-          order.append(pRS.getConf().getOrder().substring(order.length()));
-          orderNull.append(pRS.getConf().getNullOrder().substring(orderNull.length()));
-        } else {
-          order = new StringBuilder(cRS.getConf().getOrder().substring(
-                  0, pRS.getConf().getOrder().length()));
-          orderNull = new StringBuilder(cRS.getConf().getNullOrder().substring(
-                  0, pRS.getConf().getNullOrder().length()));
-        }
-        pRS.getConf().setOrder(order.toString());
-        pRS.getConf().setNullOrder(orderNull.toString());
-        // Copy limit
-        pRS.getConf().setTopN(cRS.getConf().getTopN());
-        pRS.getConf().setTopNMemoryUsage(cRS.getConf().getTopNMemoryUsage());
-        if (pRS.getNumChild() == 1 && pRS.getChildren().get(0) instanceof GroupByOperator) {
-          pRS.getConf().setMapGroupBy(true);
         }
       }
       return true;

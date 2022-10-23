@@ -59,9 +59,34 @@ public final class CommonKeyPrefix {
    * @return {@link CommonKeyPrefix} object containing common key prefix of the mapped operators.
    */
   public static CommonKeyPrefix map(TopNKeyDesc topNKeyDesc, ReduceSinkDesc reduceSinkDesc) {
-    return map(topNKeyDesc.getKeyColumns(), topNKeyDesc.getColumnSortOrder(), topNKeyDesc.getNullOrder(),
-            reduceSinkDesc.getKeyCols(), reduceSinkDesc.getColumnExprMap(),
-            reduceSinkDesc.getOrder(), reduceSinkDesc.getNullOrder());
+    return map(topNKeyDesc.getKeyColumns(), topNKeyDesc.getColumnSortOrder(), topNKeyDesc.getNullOrder(), reduceSinkDesc.getKeyCols(), reduceSinkDesc.getColumnExprMap());
+  }
+
+  /**
+   * XXX:
+   */
+  public static CommonKeyPrefix map(
+          List<ExprNodeDesc> opKeys, String opOrder, String opNullOrder,
+          List<ExprNodeDesc> parentKeys, Map<String, ExprNodeDesc> parentColExprMap) {
+
+    CommonKeyPrefix commonPrefix = new CommonKeyPrefix();
+
+    for (int i = 0; i < opKeys.size(); ++i) {
+      ExprNodeDesc column = opKeys.get(i);
+      String columnName = column.getExprString();
+      boolean foundSame = false;
+      for (int j = 0; j < parentKeys.size(); ++j) {
+        ExprNodeDesc parentKey = parentKeys.get(j);
+        if (parentKey != null && parentKey.isSame(parentColExprMap.get(columnName))) {
+          commonPrefix.add(parentKey, opOrder.charAt(i), opNullOrder.charAt(i));
+          foundSame = true;
+        }
+      }
+      if (!foundSame) {
+        return commonPrefix;
+      }
+    }
+    return commonPrefix;
   }
 
   /**
