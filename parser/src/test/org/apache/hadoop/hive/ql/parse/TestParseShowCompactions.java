@@ -91,7 +91,7 @@ public class TestParseShowCompactions {
     @Test
     public void testShowCompactionsFilterID() throws Exception {
         ASTNode tree = parseDriver.parse(
-                "SHOW COMPACTIONS ID=1", null).getTree();
+                "SHOW COMPACTIONS COMPACTIONID=1", null).getTree();
 
         assertThat(tree.toStringTree(), is("(tok_show_compactions (tok_compact_id 1)) <eof>"));
     }
