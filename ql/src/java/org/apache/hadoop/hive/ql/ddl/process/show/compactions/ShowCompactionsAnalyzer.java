@@ -61,7 +61,7 @@ public class ShowCompactionsAnalyzer extends BaseSemanticAnalyzer {
           case HiveParser.TOK_TABTYPE:
             tbName = child.getChild(0).getText();
             if (child.getChildCount() == 2) {
-              if(child.getChild(0).getChildCount() == 2) {
+              if (child.getChild(0).getChildCount() == 2) {
                 dbName = DDLUtils.getFQName((ASTNode) child.getChild(0).getChild(0));
                 tbName = DDLUtils.getFQName((ASTNode) child.getChild(0).getChild(1));
               }

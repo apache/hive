@@ -696,7 +696,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_DEFAULT", "DEFAULT");
     xlateMap.put("KW_CHECK", "CHECK");
     xlateMap.put("KW_POOL", "POOL");
-    xlateMap.put("KW_COMPACT_ID", "ID");
+    xlateMap.put("KW_COMPACT_ID", "UID");
     xlateMap.put("KW_MOVE", "MOVE");
     xlateMap.put("KW_DO", "DO");
     xlateMap.put("KW_ALLOC_FRACTION", "ALLOC_FRACTION");
@@ -2962,7 +2962,7 @@ compactPool
   ;
 
 compactId
-@init { pushMsg("COMPACT IID clause", state); }
+@init { pushMsg("COMPACT_ID clause", state); }
 @after { popMsg(state); }
   : KW_COMPACT_ID EQUAL compactionId=Number
   -> ^(TOK_COMPACT_ID $compactionId)
