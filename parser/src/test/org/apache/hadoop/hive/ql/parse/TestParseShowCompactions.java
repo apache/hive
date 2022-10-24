@@ -93,7 +93,7 @@ public class TestParseShowCompactions {
         ASTNode tree = parseDriver.parse(
                 "SHOW COMPACTIONS ID=13242", null).getTree();
 
-        assertThat(tree.toStringTree(), is("(tok_show_compactions (tok_compact_id 1)) <eof>"));
+        assertThat(tree.toStringTree(), is("(tok_show_compactions (tok_compact_id 13242)) <eof>"));
     }
     @Test
     public void testShowCompactionsFilterQualifiedTable() throws Exception {

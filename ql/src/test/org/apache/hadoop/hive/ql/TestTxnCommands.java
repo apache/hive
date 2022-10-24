@@ -2169,7 +2169,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     for(int i = 1; i < r.size(); i++) {
       Assert.assertTrue(p.matcher(r.get(i)).matches());
     }
-    r = runStatementOnDriver("SHOW COMPACTIONS COMPACTIONID=1");
+    r = runStatementOnDriver("SHOW COMPACTIONS ID=1");
     Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getId()==1).count() +1,
             r.size());//includes Header row
     Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
