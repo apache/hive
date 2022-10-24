@@ -256,6 +256,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         return;
       }
 
+      // set this in the query state so that we can rollback the table in the lifecycle hook in case of failures
+      SessionStateUtil.addResource(conf, InputFormatConfig.CTAS_TABLE_NAME,
+              catalogProperties.getProperty(Catalogs.NAME));
+
       String tableIdentifier = catalogProperties.getProperty(Catalogs.NAME);
       SessionStateUtil.addResource(conf, tableIdentifier, table);
       String filePath = table.location() +
