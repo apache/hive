@@ -125,7 +125,7 @@ public class HiveTableUtil {
     while (fileStatusIterator.hasNext()) {
       LocatedFileStatus fileStatus = fileStatusIterator.next();
       String fileName = fileStatus.getPath().getName();
-      if (fileName.startsWith(".") || fileName.startsWith("_")) {
+      if (fileName.startsWith(".") || fileName.startsWith("_") || fileName.endsWith("metadata.json")) {
         continue;
       }
       dataFiles.addAll(TableMigrationUtil.listPartition(partitionKeys, fileStatus.getPath().toString(), format, spec,
