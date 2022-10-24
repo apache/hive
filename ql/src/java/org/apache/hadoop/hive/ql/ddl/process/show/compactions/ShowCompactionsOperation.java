@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.txn.CompactionState;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
@@ -90,10 +91,10 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
       request.setPoolName(desc.getPoolName());
     }
     if (isNotBlank(desc.getCompactionType())) {
-      request.setType(TxnUtils.inputCompactionType2DBType(desc.getCompactionType()));
+      request.setType(TxnUtils.compactionType2ThriftType(desc.getCompactionType()));
     }
     if (isNotBlank(desc.getCompactionStatus())) {
-      request.setState(TxnUtils.compactorStateFromInput(desc.getCompactionStatus()));
+      request.setState(CompactionState.fromString(desc.getCompactionStatus()).getSqlConst());
     }
     if (isNotEmpty(desc.getPartSpec())) {
       request.setPartitionname(AcidUtils.getPartitionName(desc.getPartSpec()));

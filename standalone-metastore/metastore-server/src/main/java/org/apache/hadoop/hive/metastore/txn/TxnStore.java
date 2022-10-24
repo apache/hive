@@ -104,32 +104,17 @@ public interface TxnStore extends Configurable {
   String DID_NOT_INITIATE_RESPONSE = "did not initiate";
   String REFUSED_RESPONSE = "refused";
 
-  static final char INITIATED_STATE = 'i';
-  static final char WORKING_STATE = 'w';
-  static final char READY_FOR_CLEANING = 'r';
-  static final char FAILED_STATE = 'f';
-  static final char SUCCEEDED_STATE = 's';
-  static final char DID_NOT_INITIATE = 'a';
-  static final char REFUSED_STATE = 'c';
+  char INITIATED_STATE = 'i';
+  char WORKING_STATE = 'w';
+  char READY_FOR_CLEANING = 'r';
+  char FAILED_STATE = 'f';
+  char SUCCEEDED_STATE = 's';
+  char DID_NOT_INITIATE = 'a';
+  char REFUSED_STATE = 'c';
 
   // Compactor types
-  static final char MAJOR_TYPE = 'a';
-  static final char MINOR_TYPE = 'i';
-
-
-  static final String COMPACTOR_MAJOR_TYPE = "MAJOR";
-  static final String COMPACTOR_MINOR_TYPE = "MINOR";
-
-  static final String TXN_TMP_STATE = "_";
-
-  static final String DEFAULT_POOL_NAME = "default";
-
-
-  // Lock states
-  static final char LOCK_ACQUIRED = 'a';
-  static final  char LOCK_WAITING = 'w';
-
-  static final int ALLOWED_REPEATED_DEADLOCKS = 10;
+  char MAJOR_TYPE = 'a';
+  char MINOR_TYPE = 'i';
 
   String[] COMPACTION_STATES = new String[] {INITIATED_RESPONSE, WORKING_RESPONSE, CLEANING_RESPONSE, FAILED_RESPONSE,
       SUCCEEDED_RESPONSE, DID_NOT_INITIATE_RESPONSE, REFUSED_RESPONSE };

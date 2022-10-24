@@ -3494,12 +3494,17 @@ public interface IMetaStoreClient {
 
   /**
    * Get a list of all compactions.
-   * @return List of all current compactions.  This includes compactions waiting to happen,
+   * @return List of all current compactions. This includes compactions waiting to happen,
    * in progress, and finished but waiting to clean the existing files.
    * @throws TException
    */
   ShowCompactResponse showCompactions() throws TException;
-
+  
+  /**
+   * Get a list of compactions for the given request object.
+   */
+  ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException;
+  
   /**
    * Submit a request for performing cleanup of output directory. This is particularly
    * useful for CTAS when the query fails after write and before creation of table.
@@ -4353,6 +4358,4 @@ public interface IMetaStoreClient {
    * @throws TException
    */
   List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request) throws TException;
-  ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException;
-
 }

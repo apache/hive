@@ -1360,7 +1360,7 @@ class CompactionTxnHandler extends TxnHandler {
 
 
   private void updateStatus(CompactionInfo ci) throws MetaException {
-    String strState = TxnUtils.compactorStateToResponse(ci.state);
+    String strState = CompactionState.fromSqlConst(ci.state).toString();
     LOG.debug("Marking as {}: CompactionInfo: {}", strState, ci);
     try {
       Connection dbConn = null;

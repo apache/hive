@@ -44,9 +44,9 @@ public class ShowCompactionsAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
     ctx.setResFile(ctx.getLocalTmpPath());
-    String poolName = null;
     String dbName = null;
-    String tbName = null;
+    String tblName = null;
+    String poolName = null;
     String compactionType = null;
     String compactionStatus = null;
     long compactionId = 0;
@@ -54,39 +54,37 @@ public class ShowCompactionsAnalyzer extends BaseSemanticAnalyzer {
     if (root.getChildCount() > 6) {
       throw new SemanticException(ErrorMsg.INVALID_AST_TREE.getMsg(root.toStringTree()));
     }
-    if (root.getType() == HiveParser.TOK_SHOW_COMPACTIONS) {
-      for (int i = 0; i < root.getChildCount(); i++) {
-        ASTNode child = (ASTNode) root.getChild(i);
-        switch (child.getType()) {
-          case HiveParser.TOK_TABTYPE:
-            tbName = child.getChild(0).getText();
-            if (child.getChildCount() == 2) {
-              if (child.getChild(0).getChildCount() == 2) {
-                dbName = DDLUtils.getFQName((ASTNode) child.getChild(0).getChild(0));
-                tbName = DDLUtils.getFQName((ASTNode) child.getChild(0).getChild(1));
-              }
-              ASTNode partitionSpecNode = (ASTNode) child.getChild(1);
-              partitionSpec = getValidatedPartSpec(getTable(dbName, tbName, true), partitionSpecNode, conf, false);
-            }
-            break;
-          case HiveParser.TOK_COMPACT_POOL:
-            poolName = unescapeSQLString(child.getChild(0).getText());
-            break;
-          case HiveParser.TOK_COMPACTION_TYPE:
-            compactionType = unescapeSQLString(child.getChild(0).getText());
-            break;
-          case HiveParser.TOK_COMPACTION_STATUS:
-            compactionStatus = unescapeSQLString(child.getChild(0).getText());
-            break;
-          case HiveParser.TOK_COMPACT_ID:
-           compactionId = Long.parseLong(child.getChild(0).getText());
-           break;
-          default:
-            dbName = child.getText();
-        }
+    for (int i = 0; i < root.getChildCount(); i++) {
+      ASTNode child = (ASTNode) root.getChild(i);
+      switch (child.getType()) {
+        case HiveParser.TOK_TABTYPE:
+          tblName = child.getChild(0).getText();
+          if (child.getChild(0).getChildCount() == 2) {
+            dbName = child.getChild(0).getChild(0).getText();
+            tblName = child.getChild(0).getChild(1).getText();
+          }
+          if (child.getChildCount() == 2) {
+            ASTNode partitionSpecNode = (ASTNode) child.getChild(1);
+            partitionSpec = getValidatedPartSpec(getTable(dbName, tblName, true), partitionSpecNode, conf, false);
+          }
+          break;
+        case HiveParser.TOK_COMPACT_POOL:
+          poolName = unescapeSQLString(child.getChild(0).getText());
+          break;
+        case HiveParser.TOK_COMPACTION_TYPE:
+          compactionType = unescapeSQLString(child.getChild(0).getText());
+          break;
+        case HiveParser.TOK_COMPACTION_STATUS:
+          compactionStatus = unescapeSQLString(child.getChild(0).getText());
+          break;
+        case HiveParser.TOK_COMPACT_ID:
+         compactionId = Long.parseLong(child.getChild(0).getText());
+         break;
+        case HiveParser.Identifier:
+          dbName = stripQuotes(child.getText());
       }
     }
-    ShowCompactionsDesc desc = new ShowCompactionsDesc(ctx.getResFile(), compactionId, dbName, tbName, poolName, compactionType,
+    ShowCompactionsDesc desc = new ShowCompactionsDesc(ctx.getResFile(), compactionId, dbName, tblName, poolName, compactionType,
       compactionStatus, partitionSpec);
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(task);

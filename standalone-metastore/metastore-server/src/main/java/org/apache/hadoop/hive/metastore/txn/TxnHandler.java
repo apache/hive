@@ -236,7 +236,15 @@ import com.google.common.annotations.VisibleForTesting;
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
 abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
+  
+  private static final String TXN_TMP_STATE = "_";
+  private static final String DEFAULT_POOL_NAME = "default";
 
+  // Lock states
+  static final protected char LOCK_ACQUIRED = 'a';
+  static final protected char LOCK_WAITING = 'w';
+
+  private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
   private static final Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
 
   private static DataSource connPool;
@@ -3705,7 +3713,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               try (ResultSet rs = pst.executeQuery()) {
                 if(rs.next()) {
                   long enqueuedId = rs.getLong(1);
-                  String state = TxnUtils.compactorStateToResponse(rs.getString(2).charAt(0));
+                  String state = CompactionState.fromSqlConst(rs.getString(2)).toString();
                   LOG.info("Ignoring request to compact {}/{}/{} since it is already {} with id={}", rqst.getDbname(),
                       rqst.getTablename(), rqst.getPartitionname(), quoteString(state), enqueuedId);
                   CompactionResponse resp = new CompactionResponse(-1, REFUSED_RESPONSE, false);
@@ -3748,7 +3756,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             }
             buf.append(INITIATED_STATE);
             buf.append("', '");
-            buf.append(thriftCompactionType2DbType(rqst.getType()));
+            buf.append(TxnUtils.thriftCompactionType2DbType(rqst.getType()));
             buf.append("',");
             buf.append(getEpochFn(dbProduct));
             buf.append(", ?");
@@ -3827,7 +3835,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         buf.append("\"CQ_STATE\", \"CQ_TYPE\"");
         params.add(String.valueOf(READY_FOR_CLEANING));
-        params.add(thriftCompactionType2DbType(rqst.getType()).toString());
+        params.add(TxnUtils.thriftCompactionType2DbType(rqst.getType()).toString());
 
         if (rqst.getProperties() != null) {
           buf.append(", \"CQ_TBLPROPERTIES\"");
@@ -3889,9 +3897,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             e.setDbname(rs.getString(1));
             e.setTablename(rs.getString(2));
             e.setPartitionname(rs.getString(3));
-            e.setState(TxnUtils.compactorStateToResponse(rs.getString(4).charAt(0)));
+            e.setState(CompactionState.fromSqlConst(rs.getString(4)).toString());
             try {
-              e.setType(dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
+              e.setType(TxnUtils.dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
             } catch (MetaException ex) {
               //do nothing to handle RU/D if we add another status
             }
@@ -5958,27 +5966,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
   static String quoteChar(char c) {
     return "'" + c + "'";
-  }
-
-  static CompactionType dbCompactionType2ThriftType(char dbValue) throws MetaException {
-    switch (dbValue) {
-      case MAJOR_TYPE:
-        return CompactionType.MAJOR;
-      case MINOR_TYPE:
-        return CompactionType.MINOR;
-      default:
-        throw new MetaException("Unexpected compaction type " + dbValue);
-    }
-  }
-  static Character thriftCompactionType2DbType(CompactionType ct) throws MetaException {
-    switch (ct) {
-      case MAJOR:
-        return MAJOR_TYPE;
-      case MINOR:
-        return MINOR_TYPE;
-      default:
-        throw new MetaException("Unexpected compaction type " + ct);
-    }
   }
 
   /**

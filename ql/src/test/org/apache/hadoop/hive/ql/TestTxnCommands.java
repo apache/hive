@@ -121,6 +121,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //TestTxnCommandsWithSplitUpdateAndVectorization has the vectorized version
     //of these tests.
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    HiveConf.setVar(hiveConf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, false);
@@ -2125,9 +2126,6 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   }
   @Test
   public void testShowCompactions() throws Exception {
-    d.destroy();
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
-    d = new Driver(hiveConf);
     //generate some compaction history
     runStatementOnDriver("drop database if exists mydb1 cascade");
     runStatementOnDriver("create database mydb1");
@@ -2157,7 +2155,6 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<String> r = runStatementOnDriver("SHOW COMPACTIONS");
     Assert.assertEquals(rsp.getCompacts().size()+1, r.size());//includes Header row
-
 
     r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb1 STATUS 'ready for cleaning'");
     Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getState().equals("ready for cleaning")).count() +1,
@@ -2392,9 +2389,6 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   }
 
   private void setUpCompactionRequestsData(String dbName, String tbName) throws Exception {
-    d.destroy();
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
-    d = new Driver(hiveConf);
     runStatementOnDriver("drop database if exists "+dbName);
     runStatementOnDriver("create database "+dbName);
     runStatementOnDriver("create table "+dbName+"."+tbName+" (a int, b int) partitioned by (ds String)  stored as orc " +
