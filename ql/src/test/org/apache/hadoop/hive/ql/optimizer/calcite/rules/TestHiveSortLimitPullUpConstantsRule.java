@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Collections;
+import java.util.Arrays;
 
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.assertPlans;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.buildPlanner;
@@ -39,7 +39,7 @@ import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.M
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.TestRuleHelper.eq;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TestHiveUnionPullUpConstantsRule {
+public class TestHiveSortLimitPullUpConstantsRule {
 
   @Mock
   private RelOptSchema schemaMock;
@@ -52,7 +52,8 @@ public class TestHiveUnionPullUpConstantsRule {
   private RelBuilder relBuilder;
 
   public void before(Class<?> clazz) {
-    planner = buildPlanner(Collections.singletonList(HiveUnionPullUpConstantsRule.INSTANCE));
+    planner = buildPlanner(Arrays.asList(
+        HiveSortPullUpConstantsRule.SORT_LIMIT_INSTANCE, HiveProjectMergeRule.INSTANCE));
     relBuilder = buildRelBuilder(planner, schemaMock, tableMock, hiveTableMDMock, clazz);
   }
 
@@ -63,67 +64,45 @@ public class TestHiveUnionPullUpConstantsRule {
     final RelNode plan = relBuilder
         .scan("t")
         .filter(eq(relBuilder, "f1",1))
+        .sort(relBuilder.field("f1"), relBuilder.field("f2"))
         .project(relBuilder.field("f1"), relBuilder.field("f2"))
-        .scan("t")
-        .filter(eq(relBuilder, "f1",1))
-        .project(relBuilder.field("f1"), relBuilder.field("f2"))
-        .union(true)
         .build();
 
-    String prePlan = "HiveUnion(all=[true])\n"
-                   + "  HiveProject(f1=[$0], f2=[$1])\n"
-                   + "    HiveFilter(condition=[=($0, 1)])\n"
-                   + "      LogicalTableScan(table=[[]])\n"
-                   + "  HiveProject(f1=[$0], f2=[$1])\n"
+    String prePlan = "HiveProject(f1=[$0], f2=[$1])\n"
+                   + "  HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC])\n"
                    + "    HiveFilter(condition=[=($0, 1)])\n"
                    + "      LogicalTableScan(table=[[]])\n";
 
     String postPlan = "HiveProject(f1=[1], f2=[$0])\n"
-                    + "  HiveUnion(all=[true])\n"
-                    + "    HiveProject(f2=[$1])\n"
-                    + "      HiveProject(f1=[$0], f2=[$1])\n"
-                    + "        HiveFilter(condition=[=($0, 1)])\n"
-                    + "          LogicalTableScan(table=[[]])\n"
-                    + "    HiveProject(f2=[$1])\n"
-                    + "      HiveProject(f1=[$0], f2=[$1])\n"
-                    + "        HiveFilter(condition=[=($0, 1)])\n"
-                    + "          LogicalTableScan(table=[[]])\n";
+                    + "  HiveSortLimit(sort0=[$0], dir0=[ASC])\n"
+                    + "    HiveProject(f2=[$1], f3=[$2])\n"
+                    + "      HiveFilter(condition=[=($0, 1)])\n"
+                    + "        LogicalTableScan(table=[[]])\n";
 
     assertPlans(planner, plan, prePlan, postPlan);
   }
 
-  @Test
+  @org.junit.Test
   public void testNullableFields() {
     before(MyRecordWithNullableField.class);
 
     final RelNode plan = relBuilder
         .scan("t")
-        .filter(eq(relBuilder, "f1",1))
+        .filter(eq(relBuilder,"f1",1))
+        .sort(relBuilder.field("f1"), relBuilder.field("f2"))
         .project(relBuilder.field("f1"), relBuilder.field("f2"))
-        .scan("t")
-        .filter(eq(relBuilder, "f1",1))
-        .project(relBuilder.field("f1"), relBuilder.field("f2"))
-        .union(false)
         .build();
 
-    String prePlan = "HiveUnion(all=[true])\n"
-                   + "  HiveProject(f1=[$0], f2=[$1])\n"
-                   + "    HiveFilter(condition=[=($0, 1)])\n"
-                   + "      LogicalTableScan(table=[[]])\n"
-                   + "  HiveProject(f1=[$0], f2=[$1])\n"
+    String prePlan = "HiveProject(f1=[$0], f2=[$1])\n"
+                   + "  HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC])\n"
                    + "    HiveFilter(condition=[=($0, 1)])\n"
                    + "      LogicalTableScan(table=[[]])\n";
 
     String postPlan = "HiveProject(f1=[CAST(1):JavaType(class java.lang.Integer)], f2=[$0])\n"
-                    + "  HiveUnion(all=[true])\n"
-                    + "    HiveProject(f2=[$1])\n"
-                    + "      HiveProject(f1=[$0], f2=[$1])\n"
-                    + "        HiveFilter(condition=[=($0, 1)])\n"
-                    + "          LogicalTableScan(table=[[]])\n"
-                    + "    HiveProject(f2=[$1])\n"
-                    + "      HiveProject(f1=[$0], f2=[$1])\n"
-                    + "        HiveFilter(condition=[=($0, 1)])\n"
-                    + "          LogicalTableScan(table=[[]])\n";
+                    + "  HiveSortLimit(sort0=[$0], dir0=[ASC])\n"
+                    + "    HiveProject(f2=[$1], f3=[$2])\n"
+                    + "      HiveFilter(condition=[=($0, 1)])\n"
+                    + "        LogicalTableScan(table=[[]])\n";
 
     assertPlans(planner, plan, prePlan, postPlan);
   }
