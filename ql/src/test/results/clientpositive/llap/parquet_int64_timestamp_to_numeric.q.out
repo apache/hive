@@ -1,0 +1,162 @@
+PREHOOK: query: CREATE TABLE hive_26658_table (ts TIMESTAMP) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_26658_table
+POSTHOOK: query: CREATE TABLE hive_26658_table (ts TIMESTAMP) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_26658_table
+PREHOOK: query: INSERT INTO hive_26658_table VALUES ('2022-10-21 15:58:32')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive_26658_table
+POSTHOOK: query: INSERT INTO hive_26658_table VALUES ('2022-10-21 15:58:32')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive_26658_table
+POSTHOOK: Lineage: hive_26658_table.ts SCRIPT []
+PREHOOK: query: INSERT INTO hive_26658_table VALUES ('1970-01-01 00:00:00.000009')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive_26658_table
+POSTHOOK: query: INSERT INTO hive_26658_table VALUES ('1970-01-01 00:00:00.000009')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive_26658_table
+POSTHOOK: Lineage: hive_26658_table.ts SCRIPT []
+PREHOOK: query: SELECT * FROM hive_26658_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hive_26658_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+2022-10-21 15:58:32
+1970-01-01 00:00:00.000009
+PREHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts TINYINT
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@hive_26658_table
+PREHOOK: Output: default@hive_26658_table
+POSTHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts TINYINT
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@hive_26658_table
+POSTHOOK: Output: default@hive_26658_table
+PREHOOK: query: SELECT * FROM hive_26658_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hive_26658_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+NULL
+9
+PREHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts SMALLINT
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@hive_26658_table
+PREHOOK: Output: default@hive_26658_table
+POSTHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts SMALLINT
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@hive_26658_table
+POSTHOOK: Output: default@hive_26658_table
+PREHOOK: query: SELECT * FROM hive_26658_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hive_26658_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+NULL
+9
+PREHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts INT
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@hive_26658_table
+PREHOOK: Output: default@hive_26658_table
+POSTHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts INT
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@hive_26658_table
+POSTHOOK: Output: default@hive_26658_table
+PREHOOK: query: SELECT * FROM hive_26658_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hive_26658_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+NULL
+9
+PREHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts BIGINT
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@hive_26658_table
+PREHOOK: Output: default@hive_26658_table
+POSTHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts BIGINT
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@hive_26658_table
+POSTHOOK: Output: default@hive_26658_table
+PREHOOK: query: SELECT * FROM hive_26658_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hive_26658_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+1666367912000000
+9
+PREHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts DOUBLE
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@hive_26658_table
+PREHOOK: Output: default@hive_26658_table
+POSTHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts DOUBLE
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@hive_26658_table
+POSTHOOK: Output: default@hive_26658_table
+PREHOOK: query: SELECT * FROM hive_26658_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hive_26658_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+1.666367912E15
+9.0
+PREHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts FLOAT
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@hive_26658_table
+PREHOOK: Output: default@hive_26658_table
+POSTHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts FLOAT
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@hive_26658_table
+POSTHOOK: Output: default@hive_26658_table
+PREHOOK: query: SELECT * FROM hive_26658_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hive_26658_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+1.66636785E15
+9.0
+PREHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts Decimal
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@hive_26658_table
+PREHOOK: Output: default@hive_26658_table
+POSTHOOK: query: ALTER TABLE hive_26658_table CHANGE ts ts Decimal
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@hive_26658_table
+POSTHOOK: Output: default@hive_26658_table
+PREHOOK: query: SELECT * FROM hive_26658_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM hive_26658_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_26658_table
+#### A masked pattern was here ####
+NULL
+9
