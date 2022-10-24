@@ -3881,14 +3881,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException {
     try {
       ShowCompactResponse response = new ShowCompactResponse(new ArrayList<>());
-      StringBuilder query = new StringBuilder(TxnQueries.SHOW_COMPACTION_QUERY).
-        append(getShowCompactionFilterClause(rqst)).
-        append(TxnQueries.SHOW_COMPACTION_ORDERBY_CLAUSE);
+      String query = TxnQueries.SHOW_COMPACTION_QUERY + getShowCompactFilterClause(rqst) + 
+        TxnQueries.SHOW_COMPACTION_ORDERBY_CLAUSE;
+      List<String> params = getShowCompactParamList(rqst);
+
       try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        PreparedStatement stmt = sqlGenerator.prepareStmtWithParameters(dbConn, query.toString(),
-          getShowCompactionQueryParamList(rqst))) {
+        PreparedStatement stmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params)) {
         if (rqst.isSetId()) {
-          stmt.setLong(getShowCompactionQueryParamList(rqst).size() + 1, rqst.getId());
+          stmt.setLong(1, rqst.getId());
         }
         LOG.debug("Going to execute query <" + query + ">");
         try (ResultSet rs = stmt.executeQuery()) {
@@ -3951,14 +3951,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private List<String> getShowCompactionQueryParamList(ShowCompactRequest request) throws MetaException {
+  private List<String> getShowCompactParamList(ShowCompactRequest request) throws MetaException {
+    if (request.getId() > 0) {
+      return Collections.emptyList();
+    }
     String poolName = request.getPoolName();
     String dbName = request.getDbname();
     String tableName = request.getTablename();
     String partName = request.getPartitionname();
     CompactionType type = request.getType();
     String state = request.getState();
-    long compactionId = request.getId();
+  
     List<String> params = new ArrayList<>();
     if (isNotBlank(dbName)) {
       params.add(dbName);
@@ -3978,58 +3981,36 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (isNotBlank(poolName)) {
       params.add(poolName);
     }
-    if (compactionId > 0) {
-      params = Collections.emptyList();
-    }
     return params;
   }
 
-  private String getShowCompactionFilterClause(ShowCompactRequest request) {
-    StringBuilder filter = new StringBuilder();
-    String poolName = request.getPoolName();
-    String dbName = request.getDbname();
-    String tableName = request.getTablename();
-    String partName = request.getPartitionname();
-    CompactionType type = request.getType();
-    long compactionId = request.getId();
-    String state = request.getState();
-    if (isNotBlank(dbName)) {
-      filter.append("\"CC_DATABASE\"=?");
-    }
-    if (isNotBlank(tableName)) {
-      if (filter.length() > 0) {
-        filter.append(" and ");
+  private String getShowCompactFilterClause(ShowCompactRequest request) {
+    List<String> params = new ArrayList<>();
+    
+    if (request.getId() > 0) {
+      params.add("\"CC_ID\"=?");
+    } else {
+      if (isNotBlank(request.getDbname())) {
+        params.add("\"CC_DATABASE\"=?");
       }
-      filter.append("\"CC_TABLE\"=?");
-    }
-    if (isNotBlank(partName)) {
-      if (filter.length() > 0) {
-        filter.append(" and ");
+      if (isNotBlank(request.getTablename())) {
+        params.add("\"CC_TABLE\"=?");
       }
-      filter.append("\"CC_PARTITION\"=?");
-    }
-    if (isNotBlank(state)) {
-      if (filter.length() > 0) {
-        filter.append(" and ");
+      if (isNotBlank(request.getPartitionname())) {
+        params.add("\"CC_PARTITION\"=?");
       }
-      filter.append("\"CC_STATE\"=?");
-    }
-    if (type != null) {
-      if (filter.length() > 0) {
-        filter.append(" and ");
+      if (isNotBlank(request.getState())) {
+        params.add("\"CC_STATE\"=?");
       }
-      filter.append("\"CC_TYPE\"=?");
-    }
-    if (isNotBlank(poolName)) {
-      if (filter.length() > 0) {
-        filter.append(" and ");
+      if (request.getType() != null) {
+        params.add("\"CC_TYPE\"=?");
       }
-      filter.append("\"CC_POOL_NAME\"=?");
+      if (isNotBlank(request.getPoolName())) {
+        params.add("\"CC_POOL_NAME\"=?");
+      }
     }
-    if (compactionId > 0) {
-      filter.append("\"CC_ID\"=?");
-    }
-    return filter.length() > 0 ? " where " + filter.toString() : EMPTY;
+    return params.size() > 0 ? 
+      " WHERE " + StringUtils.join(" AND ", params) : EMPTY;
   }
 
   /**
