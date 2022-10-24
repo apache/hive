@@ -215,7 +215,7 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
     shell.executeStatement(String.format(
-        "CREATE TABLE target STORED BY ICEBERG STORED AS %s %s AS SELECT * FROM source",
+        "CREATE EXTERNAL TABLE target STORED BY ICEBERG STORED AS %s %s AS SELECT * FROM source",
         fileFormat, testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target"))));
 
     List<Object[]> objects = shell.executeStatement("SELECT * FROM target ORDER BY customer_id");
