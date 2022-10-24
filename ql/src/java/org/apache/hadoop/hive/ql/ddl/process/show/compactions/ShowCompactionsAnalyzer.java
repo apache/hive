@@ -17,9 +17,9 @@
  */
 
 package org.apache.hadoop.hive.ql.ddl.process.show.compactions;
+
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -78,9 +78,9 @@ public class ShowCompactionsAnalyzer extends BaseSemanticAnalyzer {
           compactionStatus = unescapeSQLString(child.getChild(0).getText());
           break;
         case HiveParser.TOK_COMPACT_ID:
-         compactionId = Long.parseLong(child.getChild(0).getText());
-         break;
-        case HiveParser.Identifier:
+          compactionId = Long.parseLong(child.getChild(0).getText());
+          break;
+        default:
           dbName = stripQuotes(child.getText());
       }
     }

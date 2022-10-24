@@ -588,12 +588,4 @@ public class TxnUtils {
         throw new MetaException("Unexpected compaction type " + ct);
     }
   }
-  
-  public static CompactionType compactionType2ThriftType(String inputValue) throws MetaException {
-    try {
-      return CompactionType.valueOf(inputValue.toUpperCase());
-    } catch (IllegalArgumentException e) {
-      throw new MetaException("Unexpected compaction type " + inputValue);
-    }
-  }
 }

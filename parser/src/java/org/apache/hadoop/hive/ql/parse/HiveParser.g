@@ -1339,13 +1339,13 @@ showStatement
       (parttype=partTypeExpr)? (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWLOCKS $parttype? $isExtended?)
       )
     | KW_SHOW KW_COMPACTIONS
-        (
-         (KW_ID) => compactId -> ^(TOK_SHOW_COMPACTIONS compactId)
-         |
-         (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) (dbName=identifier) compactPool? compactionType? compactionStatus? orderByClause? limitClause? -> ^(TOK_SHOW_COMPACTIONS $dbName compactPool? compactionType? compactionStatus? orderByClause? limitClause?)
-         |
-         (parttype=partTypeExpr)? compactPool? compactionType? compactionStatus? orderByClause? limitClause? -> ^(TOK_SHOW_COMPACTIONS $parttype? compactPool? compactionType? compactionStatus? orderByClause? limitClause?)
-         )
+      (
+      (KW_ID) => compactionId -> ^(TOK_SHOW_COMPACTIONS compactionId)
+      |
+      (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) (dbName=identifier) compactionPool? compactionType? compactionStatus? orderByClause? limitClause? -> ^(TOK_SHOW_COMPACTIONS $dbName compactionPool? compactionType? compactionStatus? orderByClause? limitClause?)
+      |
+      (parttype=partTypeExpr)? compactionPool? compactionType? compactionStatus? orderByClause? limitClause? -> ^(TOK_SHOW_COMPACTIONS $parttype? compactionPool? compactionType? compactionStatus? orderByClause? limitClause?)
+      )
     | KW_SHOW KW_TRANSACTIONS -> ^(TOK_SHOW_TRANSACTIONS)
     | KW_SHOW KW_CONF StringLiteral -> ^(TOK_SHOWCONF StringLiteral)
     | KW_SHOW KW_RESOURCE
@@ -1355,14 +1355,7 @@ showStatement
       )
     | KW_SHOW (KW_DATACONNECTORS) -> ^(TOK_SHOWDATACONNECTORS)
     ;
-compactionType
-  : KW_TYPE compactType=StringLiteral
-  -> ^(TOK_COMPACTION_TYPE $compactType)
-  ;
-compactionStatus
-  : KW_STATUS status=StringLiteral
-  -> ^(TOK_COMPACTION_STATUS $status)
-  ;
+
 showTablesFilterExpr
 @init { pushMsg("show tables filter expr", state); }
 @after { popMsg(state); }
@@ -2954,16 +2947,21 @@ killQueryStatement
   KW_KILL KW_QUERY ( StringLiteral )+ -> ^(TOK_KILL_QUERY ( StringLiteral )+)
   ;
 
-compactPool
-@init { pushMsg("POOL clause", state); }
-@after { popMsg(state); }
-  : KW_POOL poolName=StringLiteral
-  -> ^(TOK_COMPACT_POOL $poolName)
+/*
+BEGIN SHOW COMPACTIONS statement
+*/
+compactionId
+  : KW_ID EQUAL compactId=Number -> ^(TOK_COMPACT_ID $compactId)
   ;
-
-compactId
-@init { pushMsg("COMPACT_ID clause", state); }
-@after { popMsg(state); }
-  : KW_ID EQUAL compactionId=Number
-  -> ^(TOK_COMPACT_ID $compactionId)
+compactionPool
+  : KW_POOL poolName=StringLiteral -> ^(TOK_COMPACT_POOL $poolName)
   ;
+compactionType
+  : KW_TYPE compactType=StringLiteral -> ^(TOK_COMPACTION_TYPE $compactType)
+  ;
+compactionStatus
+  : KW_STATUS status=StringLiteral -> ^(TOK_COMPACTION_STATUS $status)
+  ;
+/*
+END SHOW COMPACTIONS statement
+*/

@@ -84,6 +84,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -91,6 +92,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.txn.CompactionState;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -3419,5 +3421,21 @@ public class AcidUtils {
       }
     }
     return partitionName;
+  }
+
+  public static CompactionType compactionTypeStr2ThriftType(String inputValue) throws SemanticException {
+    try {
+      return CompactionType.valueOf(inputValue.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new SemanticException("Unexpected compaction type " + inputValue);
+    }
+  }
+
+  public static CompactionState compactionStateStr2Enum(String inputValue) throws SemanticException {
+    try {
+      return CompactionState.fromString(inputValue);
+    } catch (IllegalArgumentException e) {
+      throw new SemanticException("Unexpected compaction state " + inputValue);
+    }
   }
 }

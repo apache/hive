@@ -4009,7 +4009,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         params.add("\"CC_POOL_NAME\"=?");
       }
     }
-    return params.size() > 0 ? 
+    return !params.isEmpty() ? 
       " WHERE " + StringUtils.join(" AND ", params) : EMPTY;
   }
 

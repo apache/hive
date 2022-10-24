@@ -21,12 +21,9 @@ package org.apache.hadoop.hive.ql.ddl.process.show.compactions;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
-import org.apache.hadoop.hive.metastore.txn.CompactionState;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
@@ -44,6 +41,9 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getThreadIdF
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionStateStr2Enum;
+import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftType;
+
 /**
  * Operation process of showing compactions.
  */
@@ -53,7 +53,7 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
   }
 
   @Override
-  public int execute() throws HiveException, MetaException {
+  public int execute() throws HiveException {
     SessionState sessionState = SessionState.get();
     // Call the metastore to get the status of all known compactions (completed get purged eventually)
     ShowCompactRequest request = getShowCompactioRequest(desc);
@@ -77,7 +77,7 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     return 0;
   }
 
-  private ShowCompactRequest getShowCompactioRequest(ShowCompactionsDesc desc) throws MetaException, SemanticException {
+  private ShowCompactRequest getShowCompactioRequest(ShowCompactionsDesc desc) throws SemanticException {
     ShowCompactRequest request = new ShowCompactRequest();
     if (isBlank(desc.getDbName()) && isNotBlank(desc.getTbName())) {
       request.setDbname(SessionState.get().getCurrentDatabase());
@@ -91,10 +91,10 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
       request.setPoolName(desc.getPoolName());
     }
     if (isNotBlank(desc.getCompactionType())) {
-      request.setType(TxnUtils.compactionType2ThriftType(desc.getCompactionType()));
+      request.setType(compactionTypeStr2ThriftType(desc.getCompactionType()));
     }
     if (isNotBlank(desc.getCompactionStatus())) {
-      request.setState(CompactionState.fromString(desc.getCompactionStatus()).getSqlConst());
+      request.setState(compactionStateStr2Enum(desc.getCompactionStatus()).getSqlConst());
     }
     if (isNotEmpty(desc.getPartSpec())) {
       request.setPartitionname(AcidUtils.getPartitionName(desc.getPartSpec()));
