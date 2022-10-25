@@ -58,6 +58,7 @@ public class LogUtils {
    */
   public static final String SESSIONID_LOG_KEY = "sessionId";
   public static final String QUERYID_LOG_KEY = "queryId";
+  public static final String DAGID_KEY = "dagId";
   public static final String OPERATIONLOG_LEVEL_KEY = "operationLogLevel";
   public static final String OPERATIONLOG_LOCATION_KEY = "operationLogLocation";
 
@@ -232,6 +233,7 @@ public class LogUtils {
     // Remove the keys added, don't use clear, as it may clear all other things which are not intended to be removed.
     MDC.remove(SESSIONID_LOG_KEY);
     MDC.remove(QUERYID_LOG_KEY);
+    MDC.remove(DAGID_KEY); // it was put by TezTask after submitting DAG
     MDC.remove(OPERATIONLOG_LEVEL_KEY);
     MDC.remove(OPERATIONLOG_LOCATION_KEY);
     l4j.info("Unregistered logging context.");
@@ -259,4 +261,7 @@ public class LogUtils {
     return logFilePath;
   }
 
+  public static void putToMDC(String key, String value) {
+    MDC.put(key, value);
+  }
 }
