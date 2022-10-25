@@ -148,6 +148,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.ql.exec.FunctionRegistry.BLOOM_FILTER_FUNCTION;
+
 /**
  * TezCompiler translates the operator plan into TezTasks.
  */
@@ -1201,7 +1203,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   private static boolean isBloomFilterAgg(AggregationDesc agg) {
-    return "bloom_filter".equals(agg.getGenericUDAFName());
+    return BLOOM_FILTER_FUNCTION.equals(agg.getGenericUDAFName());
   }
 
   private static class DynamicPruningRemovalRedundantProc implements SemanticNodeProcessor {

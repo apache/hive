@@ -214,7 +214,8 @@ public abstract class GenericUDAFEvaluator implements Closeable {
     if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
       iterate(agg, parameters);
     } else {
-      assert (parameters.length == 1);
+      // extra parameters are only used to initialize the UDAFs, it's OK
+      // to ignore them here and keep the column parameter (the first one)
       merge(agg, parameters[0]);
     }
   }
