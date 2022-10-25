@@ -138,6 +138,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Show Compactions
+      compactionId: 0
 
   Stage: Stage-1
     Fetch Operator

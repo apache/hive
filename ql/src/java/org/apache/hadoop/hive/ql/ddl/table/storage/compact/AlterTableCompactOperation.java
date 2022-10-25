@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -39,6 +38,8 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+
+import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftType;
 
 /**
  * Operation process of compacting a table.
@@ -95,7 +96,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
 
   private CompactionResponse compact(Table table, String partitionName) throws HiveException {
     CompactionRequest req = new CompactionRequest(table.getDbName(), table.getTableName(),
-        CompactionType.valueOf(desc.getCompactionType().toUpperCase()));
+        compactionTypeStr2ThriftType(desc.getCompactionType()));
     req.setPartitionname(partitionName);
     req.setPoolName(desc.getPoolName());
     req.setProperties(desc.getProperties());
