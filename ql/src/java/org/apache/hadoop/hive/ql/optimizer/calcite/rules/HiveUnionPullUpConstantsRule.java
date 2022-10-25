@@ -31,8 +31,12 @@ import org.apache.calcite.rel.core.Union;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -67,8 +71,8 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    if (Bug.CALCITE_5337_FIXED) {
-      throw new IllegalStateException("Class redundant when the fix for CALCITE-5337 is merged into Calcite");
+    if (Bug.CALCITE_5337_FIXED && Bug.CALCITE_5345_FIXED) {
+      throw new IllegalStateException("Class redundant when the fixes for CALCITE-5337/CALCITE-5345 are merged into Calcite");
     }
 
     final Union union = call.rel(0);
@@ -87,11 +91,16 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
       return;
     }
 
-    Map<RexNode, RexNode> constants = new HashMap<>();
-    for (int i = 0; i < count ; i++) {
-      RexNode expr = rexBuilder.makeInputRef(union, i);
-      if (predicates.constantMap.containsKey(expr)) {
-        constants.put(expr, predicates.constantMap.get(expr));
+    final Map<Integer, RexNode> constants = new HashMap<>();
+    for (Map.Entry<RexNode, RexNode> e : predicates.constantMap.entrySet()) {
+      if (e.getKey() instanceof RexInputRef) {
+        constants.put(((RexInputRef) e.getKey()).getIndex(), e.getValue());
+      } else if (RexUtil.isCallTo(e.getKey(), SqlStdOperatorTable.CAST)) {
+        final RexCall rexCall = (RexCall) e.getKey();
+        final List<RexNode> operands = rexCall.operands;
+        if (operands.size() == 1 && operands.get(0).isA(SqlKind.INPUT_REF)) {
+          constants.put(((RexInputRef) operands.get(0)).getIndex(), e.getValue());
+        }
       }
     }
 
@@ -106,21 +115,21 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
     List<String> topChildExprsFields = new ArrayList<>();
     List<RexNode> refs = new ArrayList<>();
     ImmutableBitSet.Builder refsIndexBuilder = ImmutableBitSet.builder();
-    for (int i = 0; i < count ; i++) {
-      RexNode expr = rexBuilder.makeInputRef(union, i);
-      RelDataTypeField field = fields.get(i);
-      if (constants.containsKey(expr)) {
-        if (constants.get(expr).getType().equals(field.getType())) {
-          topChildExprs.add(constants.get(expr));
+    for (RelDataTypeField field : fields) {
+      final RexNode constant = constants.get(field.getIndex());
+      if (constant != null) {
+        if (constant.getType().equals(field.getType())) {
+          topChildExprs.add(constant);
         } else {
-          topChildExprs.add(rexBuilder.makeCast(field.getType(), constants.get(expr), true));
+          topChildExprs.add(rexBuilder.makeCast(field.getType(), constant, true));
         }
         topChildExprsFields.add(field.getName());
       } else {
+        final RexNode expr = rexBuilder.makeInputRef(union, field.getIndex());
         topChildExprs.add(expr);
         topChildExprsFields.add(field.getName());
         refs.add(expr);
-        refsIndexBuilder.set(i);
+        refsIndexBuilder.set(field.getIndex());
       }
     }
     ImmutableBitSet refsIndex = refsIndexBuilder.build();

@@ -127,4 +127,84 @@ public class TestHiveUnionPullUpConstantsRule {
 
     assertPlans(planner, plan, prePlan, postPlan);
   }
+
+  @Test
+  public void testPullConstantThroughUnionCastNeeded() {
+    before(MyRecord.class);
+    /*
+    select f1, f2 from t where f1 = 1.0
+    union all
+    select f1, f2 from t where f1 = 1.0
+    */
+    final RelNode plan = relBuilder
+        .scan("t")
+        .filter(eq(relBuilder, "f1",1.0))
+        .project(relBuilder.field("f1"), relBuilder.field("f2"))
+        .scan("t")
+        .filter(eq(relBuilder, "f1",1.0))
+        .project(relBuilder.field("f1"), relBuilder.field("f2"))
+        .union(false)
+        .build();
+
+    String prePlan = "HiveUnion(all=[true])\n"
+        + "  HiveProject(f1=[$0], f2=[$1])\n"
+        + "    HiveFilter(condition=[=($0, 1.0E0:DOUBLE)])\n"
+        + "      LogicalTableScan(table=[[]])\n"
+        + "  HiveProject(f1=[$0], f2=[$1])\n"
+        + "    HiveFilter(condition=[=($0, 1.0E0:DOUBLE)])\n"
+        + "      LogicalTableScan(table=[[]])\n";
+
+    String postPlan = "HiveProject(f1=[1.0E0], f2=[$0])\n"
+        + "  HiveUnion(all=[true])\n"
+        + "    HiveProject(f2=[$1])\n"
+        + "      HiveProject(f1=[$0], f2=[$1])\n"
+        + "        HiveFilter(condition=[=($0, 1.0E0:DOUBLE)])\n"
+        + "          LogicalTableScan(table=[[]])\n"
+        + "    HiveProject(f2=[$1])\n"
+        + "      HiveProject(f1=[$0], f2=[$1])\n"
+        + "        HiveFilter(condition=[=($0, 1.0E0:DOUBLE)])\n"
+        + "          LogicalTableScan(table=[[]])\n";
+
+    assertPlans(planner, plan, prePlan, postPlan);
+  }
+
+  @Test
+  public void testPullConstantThroughUnionCastNeededNullableField() {
+    before(MyRecordWithNullableField.class);
+    /*
+    select f1, f2 from t where f1 = 1.0
+    union all
+    select f1, f2 from t where f1 = 1.0
+    */
+    final RelNode plan = relBuilder
+        .scan("t")
+        .filter(eq(relBuilder, "f1",1.0))
+        .project(relBuilder.field("f1"), relBuilder.field("f2"))
+        .scan("t")
+        .filter(eq(relBuilder, "f1",1.0))
+        .project(relBuilder.field("f1"), relBuilder.field("f2"))
+        .union(false)
+        .build();
+
+    String prePlan = "HiveUnion(all=[true])\n"
+        + "  HiveProject(f1=[$0], f2=[$1])\n"
+        + "    HiveFilter(condition=[=($0, 1.0E0:DOUBLE)])\n"
+        + "      LogicalTableScan(table=[[]])\n"
+        + "  HiveProject(f1=[$0], f2=[$1])\n"
+        + "    HiveFilter(condition=[=($0, 1.0E0:DOUBLE)])\n"
+        + "      LogicalTableScan(table=[[]])\n";
+
+    String postPlan = "HiveProject(f1=[CAST(1.0E0):JavaType(class java.lang.Integer)], f2=[$0])\n"
+        + "  HiveUnion(all=[true])\n"
+        + "    HiveProject(f2=[$1])\n"
+        + "      HiveProject(f1=[$0], f2=[$1])\n"
+        + "        HiveFilter(condition=[=($0, 1.0E0:DOUBLE)])\n"
+        + "          LogicalTableScan(table=[[]])\n"
+        + "    HiveProject(f2=[$1])\n"
+        + "      HiveProject(f1=[$0], f2=[$1])\n"
+        + "        HiveFilter(condition=[=($0, 1.0E0:DOUBLE)])\n"
+        + "          LogicalTableScan(table=[[]])\n";
+
+    assertPlans(planner, plan, prePlan, postPlan);
+  }
 }
