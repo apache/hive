@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -90,7 +91,7 @@ public class CompressionUtils {
       throws IOException {
     ZipOutputStream output = null;
     try {
-      output = new ZipOutputStream(new FileOutputStream(new File(parentDir, outputFile)));
+      output = new ZipOutputStream(Files.newOutputStream(new File(parentDir, outputFile).toPath()));
       for (int i = 0; i < inputFiles.length; i++) {
         File f = new File(parentDir, inputFiles[i]);
         FileInputStream input = new FileInputStream(f);
