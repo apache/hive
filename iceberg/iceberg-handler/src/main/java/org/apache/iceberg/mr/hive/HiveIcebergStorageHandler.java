@@ -873,8 +873,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       HiveCatalog hiveCatalog = (HiveCatalog) Catalogs.loadCatalog(configuration, catalogName).get();
       String ioStr = SerializationUtil.serializeToBase64(hiveCatalog.getFileIO());
       map.put(InputFormatConfig.FILE_IO, ioStr);
+      map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
+              SerializationUtil.serializeToBase64(null));
 
       try {
+
         AbstractSerDe serDe = tableDesc.getDeserializer(configuration);
         HiveIcebergSerDe icebergSerDe = (HiveIcebergSerDe) serDe;
         schema = icebergSerDe.getTableSchema();
