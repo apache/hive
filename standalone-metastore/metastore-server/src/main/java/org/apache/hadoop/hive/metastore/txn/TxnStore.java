@@ -104,6 +104,18 @@ public interface TxnStore extends Configurable {
   String DID_NOT_INITIATE_RESPONSE = "did not initiate";
   String REFUSED_RESPONSE = "refused";
 
+  char INITIATED_STATE = 'i';
+  char WORKING_STATE = 'w';
+  char READY_FOR_CLEANING = 'r';
+  char FAILED_STATE = 'f';
+  char SUCCEEDED_STATE = 's';
+  char DID_NOT_INITIATE = 'a';
+  char REFUSED_STATE = 'c';
+
+  // Compactor types
+  char MAJOR_TYPE = 'a';
+  char MINOR_TYPE = 'i';
+
   String[] COMPACTION_STATES = new String[] {INITIATED_RESPONSE, WORKING_RESPONSE, CLEANING_RESPONSE, FAILED_RESPONSE,
       SUCCEEDED_RESPONSE, DID_NOT_INITIATE_RESPONSE, REFUSED_RESPONSE };
 
