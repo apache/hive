@@ -3447,7 +3447,62 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     } catch (CommandProcessorException e) {
     }
   }
+  @Test
+  public void testShowCompactWithFilterOption() throws Exception {
+    CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MAJOR);
+    rqst.setPartitionname("ds=today");
+    rqst.setPoolName("mypool");
+    txnHandler.compact(rqst);
+    CompactionRequest rqst1 = new CompactionRequest("foo", "bar1", CompactionType.MAJOR);
+    rqst1.setPartitionname("ds=today");
+    txnHandler.compact(rqst1);
+    CompactionRequest rqst2 = new CompactionRequest("bar", "bar1", CompactionType.MAJOR);
+    rqst2.setPartitionname("ds=today");
+    txnHandler.compact(rqst2);
+    CompactionRequest rqst3 = new CompactionRequest("xxx", "yyy", CompactionType.MINOR);
+    rqst3.setPartitionname("ds=today");
+    txnHandler.compact(rqst3);
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(4, compacts.size());
+    ShowCompactRequest scr = new ShowCompactRequest();
+    scr.setDbname("bar");
+    Assert.assertEquals(1, txnHandler.showCompact(scr).getCompacts().size());
+    scr = new ShowCompactRequest();
+    scr.setTablename("bar");
+    scr.setPoolName("mypool");
+    List<ShowCompactResponseElement>  compRsp =txnHandler.showCompact(scr).getCompacts();
+    Assert.assertEquals(1, compRsp.size());
+    Assert.assertEquals("mypool", compRsp.get(0).getPoolName());
+    scr = new ShowCompactRequest();
+    scr.setTablename("bar1");
+    Assert.assertEquals(2, txnHandler.showCompact(scr).getCompacts().size());
+    scr = new ShowCompactRequest();
+    scr.setDbname("bar22");
+    scr.setTablename("bar1");
+    Assert.assertEquals(0, txnHandler.showCompact(scr).getCompacts().size());
+    scr = new ShowCompactRequest();
+    scr.setDbname("bar");
+    scr.setTablename("bar1");
+    Assert.assertEquals(1, txnHandler.showCompact(scr).getCompacts().size());
+    scr = new ShowCompactRequest();
+    scr.setState("i");
+    Assert.assertEquals(4, txnHandler.showCompact(scr).getCompacts().size());
+    scr = new ShowCompactRequest();
+    scr.setState("f");
+    Assert.assertEquals(0, txnHandler.showCompact(scr).getCompacts().size());
+    scr = new ShowCompactRequest();
+    scr.setType(CompactionType.MAJOR);
+    Assert.assertEquals(3, txnHandler.showCompact(scr).getCompacts().size());
+    scr = new ShowCompactRequest();
+    scr.setType(CompactionType.MINOR);
+    Assert.assertEquals(1, txnHandler.showCompact(scr).getCompacts().size());
 
+    scr = new ShowCompactRequest();
+    scr.setPartitionname("ds=today");
+    Assert.assertEquals(4, txnHandler.showCompact(scr).getCompacts().size());
+
+  }
   private void assertUniqueID(Table table) throws Exception {
     String partCols = table.getPartitionColumns();
     //check to make sure there are no duplicate ROW__IDs - HIVE-16832

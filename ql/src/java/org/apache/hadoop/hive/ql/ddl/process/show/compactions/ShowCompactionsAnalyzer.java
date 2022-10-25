@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.process.show.compactions;
 
-import org.antlr.runtime.tree.Tree;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -28,6 +28,9 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+
+
+import java.util.Map;
 
 /**
  * Analyzer for show compactions commands.
@@ -40,20 +43,51 @@ public class ShowCompactionsAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
+    ctx.setResFile(ctx.getLocalTmpPath());
+    String dbName = null;
+    String tblName = null;
     String poolName = null;
-    Tree pool = root.getChild(0);
-    if (pool != null) {
-      if (pool.getType() != HiveParser.TOK_COMPACT_POOL) {
-        throw new SemanticException("Unknown token, 'POOL' expected.");
-      } else {
-        poolName = unescapeSQLString(pool.getChild(0).getText());
+    String compactionType = null;
+    String compactionStatus = null;
+    long compactionId = 0;
+    Map<String, String> partitionSpec = null;
+    if (root.getChildCount() > 6) {
+      throw new SemanticException(ErrorMsg.INVALID_AST_TREE.getMsg(root.toStringTree()));
+    }
+    for (int i = 0; i < root.getChildCount(); i++) {
+      ASTNode child = (ASTNode) root.getChild(i);
+      switch (child.getType()) {
+        case HiveParser.TOK_TABTYPE:
+          tblName = child.getChild(0).getText();
+          if (child.getChild(0).getChildCount() == 2) {
+            dbName = child.getChild(0).getChild(0).getText();
+            tblName = child.getChild(0).getChild(1).getText();
+          }
+          if (child.getChildCount() == 2) {
+            ASTNode partitionSpecNode = (ASTNode) child.getChild(1);
+            partitionSpec = getValidatedPartSpec(getTable(dbName, tblName, true), partitionSpecNode, conf, false);
+          }
+          break;
+        case HiveParser.TOK_COMPACT_POOL:
+          poolName = unescapeSQLString(child.getChild(0).getText());
+          break;
+        case HiveParser.TOK_COMPACTION_TYPE:
+          compactionType = unescapeSQLString(child.getChild(0).getText());
+          break;
+        case HiveParser.TOK_COMPACTION_STATUS:
+          compactionStatus = unescapeSQLString(child.getChild(0).getText());
+          break;
+        case HiveParser.TOK_COMPACT_ID:
+          compactionId = Long.parseLong(child.getChild(0).getText());
+          break;
+        default:
+          dbName = stripQuotes(child.getText());
       }
     }
-    ctx.setResFile(ctx.getLocalTmpPath());
-    ShowCompactionsDesc desc = new ShowCompactionsDesc(ctx.getResFile(), poolName);
+    ShowCompactionsDesc desc = new ShowCompactionsDesc(ctx.getResFile(), compactionId, dbName, tblName, poolName, compactionType,
+      compactionStatus, partitionSpec);
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(task);
-
     task.setFetchSource(true);
     setFetchTask(createFetchTask(ShowCompactionsDesc.SCHEMA));
   }

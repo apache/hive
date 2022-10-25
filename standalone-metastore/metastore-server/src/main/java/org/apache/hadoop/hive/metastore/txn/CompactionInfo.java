@@ -192,7 +192,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.tableName = rs.getString(3);
     fullCi.partName = rs.getString(4);
     fullCi.state = rs.getString(5).charAt(0);//cq_state
-    fullCi.type = TxnHandler.dbCompactionType2ThriftType(rs.getString(6).charAt(0));
+    fullCi.type = TxnUtils.dbCompactionType2ThriftType(rs.getString(6).charAt(0));
     fullCi.properties = rs.getString(7);
     fullCi.workerId = rs.getString(8);
     fullCi.start = rs.getLong(9);
@@ -218,7 +218,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     pStmt.setString(3, ci.tableName);
     pStmt.setString(4, ci.partName);
     pStmt.setString(5, Character.toString(ci.state));
-    pStmt.setString(6, Character.toString(TxnHandler.thriftCompactionType2DbType(ci.type)));
+    pStmt.setString(6, Character.toString(TxnUtils.thriftCompactionType2DbType(ci.type)));
     pStmt.setString(7, ci.properties);
     pStmt.setString(8, ci.workerId);
     pStmt.setLong(9, ci.start);

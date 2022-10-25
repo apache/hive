@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -564,5 +565,27 @@ public class TxnUtils {
     LOG.error("Unable to stat file {} as either current user({}) or table owner({}), giving up", p,
         UserGroupInformation.getLoginUser(), t.getOwner());
     throw new IOException("Unable to stat file: " + p);
+  }
+
+  public static CompactionType dbCompactionType2ThriftType(char dbValue) throws MetaException {
+    switch (dbValue) {
+      case TxnStore.MAJOR_TYPE:
+        return CompactionType.MAJOR;
+      case TxnStore.MINOR_TYPE:
+        return CompactionType.MINOR;
+      default:
+        throw new MetaException("Unexpected compaction type " + dbValue);
+    }
+  }
+
+  public static Character thriftCompactionType2DbType(CompactionType ct) throws MetaException {
+    switch (ct) {
+      case MAJOR:
+        return TxnStore.MAJOR_TYPE;
+      case MINOR:
+        return TxnStore.MINOR_TYPE;
+      default:
+        throw new MetaException("Unexpected compaction type " + ct);
+    }
   }
 }
