@@ -337,9 +337,9 @@ STAGE PLANS:
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
                     Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                     Top N Key Operator
-                      sort order: ++
-                      keys: d_datekey (type: bigint), d_id (type: bigint)
-                      null sort order: zz
+                      sort order: +
+                      keys: d_datekey (type: bigint)
+                      null sort order: z
                       Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: NONE
                       top n: 10
                       Select Operator
@@ -603,9 +603,9 @@ STAGE PLANS:
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
                     Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                     Top N Key Operator
-                      sort order: ++
-                      keys: d_datekey (type: bigint), d_sellingseason (type: string)
-                      null sort order: zz
+                      sort order: +
+                      keys: d_datekey (type: bigint)
+                      null sort order: z
                       Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 10
                       Select Operator

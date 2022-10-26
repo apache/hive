@@ -1753,9 +1753,9 @@ STAGE PLANS:
                   filterExpr: (ds = '103') (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
-                    sort order: ++
-                    keys: key (type: string), value (type: string)
-                    null sort order: zz
+                    sort order: +
+                    keys: key (type: string)
+                    null sort order: z
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 10
                     Select Operator

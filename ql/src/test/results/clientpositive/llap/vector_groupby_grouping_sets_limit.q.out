@@ -716,14 +716,14 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Top N Key Operator
-                    sort order: +++
-                    keys: a (type: string), b (type: string), c (type: string)
-                    null sort order: zzz
+                    sort order: +
+                    keys: a (type: string)
+                    null sort order: z
                     Statistics: Num rows: 6 Data size: 1530 Basic stats: COMPLETE Column stats: COMPLETE
                     top n: 10
                     Top N Key Vectorization:
                         className: VectorTopNKeyOperator
-                        keyExpressions: col 0:string, col 1:string, col 2:string
+                        keyExpressions: col 0:string
                         native: true
                     Select Operator
                       expressions: a (type: string), b (type: string), c (type: string)
