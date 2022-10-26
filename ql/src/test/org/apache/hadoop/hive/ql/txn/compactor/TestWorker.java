@@ -22,7 +22,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -41,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -324,7 +324,7 @@ public class TestWorker extends CompactorTest {
     for (int i = 0; i < stat.length; i++) {
       if (stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(21, 24) + "_v0000026")) {
         sawNewDelta = true;
-        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
@@ -333,7 +333,7 @@ public class TestWorker extends CompactorTest {
       }
       if (stat[i].getPath().getName().equals(makeDeleteDeltaDirNameCompacted(21, 24) + "_v0000026")) {
         sawNewDelta = true;
-        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
@@ -456,7 +456,7 @@ public class TestWorker extends CompactorTest {
     for (int i = 0; i < stat.length; i++) {
       if (stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(21, 24) + "_v0000026")) {
         sawNewDelta = true;
-        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
@@ -465,7 +465,7 @@ public class TestWorker extends CompactorTest {
       }
       if (stat[i].getPath().getName().equals(makeDeleteDeltaDirNameCompacted(21, 24))) {
         sawNewDelta = true;
-        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
@@ -508,7 +508,7 @@ public class TestWorker extends CompactorTest {
     for (int i = 0; i < stat.length; i++) {
       if (stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(1, 4) + "_v0000006")) {
         sawNewDelta = true;
-        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
@@ -517,7 +517,7 @@ public class TestWorker extends CompactorTest {
       }
       if (stat[i].getPath().getName().equals(makeDeleteDeltaDirNameCompacted(1, 4) + "_v0000006")) {
         sawNewDelta = true;
-        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
@@ -840,7 +840,7 @@ public class TestWorker extends CompactorTest {
     for (int i = 0; i < stat.length; i++) {
       if (stat[i].getPath().getName().equals(makeDeltaDirNameCompacted(21, 24) + "_v0000026")) {
         sawNewDelta = true;
-        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), AcidUtils.hiddenFileFilter);
+        FileStatus[] buckets = fs.listStatus(stat[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Assert.assertEquals(2, buckets.length);
         Assert.assertTrue(buckets[0].getPath().getName().matches("bucket_0000[01]"));
         Assert.assertTrue(buckets[1].getPath().getName().matches("bucket_0000[01]"));
@@ -1024,6 +1024,31 @@ public class TestWorker extends CompactorTest {
     worker.findNextCompactionAndExecute(true, true);
 
     verify(msc, times(0)).markFailed(any());
+  }
+
+  @Test
+  public void testDoesNotGatherStatsIfCompactionFails() throws Exception {
+    StatsUpdater statsUpdater = Mockito.mock(StatsUpdater.class);
+
+    Table t = newTable("default", "mtwb", false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
+
+    burnThroughTransactions("default", "mtwb", 25);
+
+    txnHandler.compact(new CompactionRequest("default", "mtwb", CompactionType.MINOR));
+
+    Worker worker = Mockito.spy(new Worker());
+    Mockito.when(worker.getMrCompactor()).thenThrow(RuntimeException.class);
+    worker.setConf(conf);
+    worker.init(new AtomicBoolean(true));
+    Worker.statsUpdater = statsUpdater;
+
+    worker.findNextCompactionAndExecute(true, true);
+
+    Mockito.verify(statsUpdater, Mockito.never()).gatherStats(any(), any(), any(), any());
   }
 
   @Test

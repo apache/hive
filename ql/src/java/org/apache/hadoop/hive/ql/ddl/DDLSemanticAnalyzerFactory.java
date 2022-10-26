@@ -65,17 +65,17 @@ public final class DDLSemanticAnalyzerFactory {
       new HashMap<>();
 
   static {
-    Set<Class<? extends BaseSemanticAnalyzer>> analyzerClasses1 =
+    Set<Class<? extends BaseSemanticAnalyzer>> analyzerClasses =
         new Reflections(DDL_ROOT).getSubTypesOf(BaseSemanticAnalyzer.class);
-    Set<Class<? extends CalcitePlanner>> analyzerClasses2 =
-        new Reflections(DDL_ROOT).getSubTypesOf(CalcitePlanner.class);
-    Set<Class<? extends BaseSemanticAnalyzer>> analyzerClasses = Sets.union(analyzerClasses1, analyzerClasses2);
     for (Class<? extends BaseSemanticAnalyzer> analyzerClass : analyzerClasses) {
       if (Modifier.isAbstract(analyzerClass.getModifiers())) {
         continue;
       }
 
       DDLType ddlType = analyzerClass.getAnnotation(DDLType.class);
+      if (ddlType == null) {
+        continue;
+      }
       for (int type : ddlType.types()) {
         if (TYPE_TO_ANALYZER.containsKey(type)) {
           throw new IllegalStateException(
@@ -93,6 +93,9 @@ public final class DDLSemanticAnalyzerFactory {
       }
 
       DDLType ddlType = analyzerCategoryClass.getAnnotation(DDLType.class);
+      if (ddlType == null) {
+        continue;
+      }
       for (int type : ddlType.types()) {
         if (TYPE_TO_ANALYZERCATEGORY.containsKey(type)) {
           throw new IllegalStateException(

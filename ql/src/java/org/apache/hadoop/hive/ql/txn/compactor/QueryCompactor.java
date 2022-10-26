@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
@@ -40,6 +41,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Common interface for query based compactions.
@@ -47,6 +51,7 @@ import java.util.List;
 abstract class QueryCompactor {
 
   private static final Logger LOG = LoggerFactory.getLogger(QueryCompactor.class.getName());
+  private static final String COMPACTOR_PREFIX = "compactor.";
 
   /**
    * Start a query based compaction.
@@ -93,8 +98,8 @@ abstract class QueryCompactor {
    */
   void runCompactionQueries(HiveConf conf, String tmpTableName, StorageDescriptor storageDescriptor,
       ValidWriteIdList writeIds, CompactionInfo compactionInfo, List<Path> resultDirs,
-      List<String> createQueries, List<String> compactionQueries, List<String> dropQueries)
-      throws IOException {
+      List<String> createQueries, List<String> compactionQueries, List<String> dropQueries,
+      Map<String, String> tblProperties) throws IOException {
     String queueName = HiveConf.getVar(conf, HiveConf.ConfVars.COMPACTOR_JOB_QUEUE);
     if (queueName != null && queueName.length() > 0) {
       conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
@@ -102,6 +107,7 @@ abstract class QueryCompactor {
     Util.disableLlapCaching(conf);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON, false);
+    Util.overrideConfProps(conf, compactionInfo, tblProperties);
     String user = compactionInfo.runAs;
     SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
     long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
@@ -271,6 +277,17 @@ abstract class QueryCompactor {
         LOG.debug("Going to delete path " + dead.toString());
         fs.delete(dead, true);
       }
+    }
+
+    static void overrideConfProps(HiveConf conf, CompactionInfo ci, Map<String, String> properties) {
+      Stream.of(properties, new StringableMap(ci.properties))
+              .filter(Objects::nonNull)
+              .flatMap(map -> map.entrySet().stream())
+              .filter(entry -> entry.getKey().startsWith(COMPACTOR_PREFIX))
+              .forEach(entry -> {
+                String property = entry.getKey().substring(COMPACTOR_PREFIX.length());
+                conf.set(property, entry.getValue());
+              });
     }
   }
 }

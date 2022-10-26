@@ -25,12 +25,12 @@ import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -54,6 +54,8 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
+import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY;
+import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
 
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
@@ -145,13 +147,7 @@ public class TxnUtils {
    * @return true if table is a transactional table, false otherwise
    */
   public static boolean isTransactionalTable(Table table) {
-    if (table == null) {
-      return false;
-    }
-    Map<String, String> parameters = table.getParameters();
-    if (parameters == null) return false;
-    String tableIsTransactional = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+    return table != null && isTransactionalTable(table.getParameters());
   }
 
   public static boolean isTransactionalTable(Map<String, String> parameters) {
@@ -159,7 +155,7 @@ public class TxnUtils {
       return false;
     }
     String tableIsTransactional = parameters.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
+    return Boolean.parseBoolean(tableIsTransactional);
   }
 
   /**
@@ -167,15 +163,17 @@ public class TxnUtils {
    * org.apache.hadoop.hive.ql.io.AcidUtils#isAcidTable.
    */
   public static boolean isAcidTable(Table table) {
-    return TxnUtils.isTransactionalTable(table) &&
-      TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY.equals(table.getParameters()
-      .get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
+    return table != null && isAcidTable(table.getParameters());
   }
 
   public static boolean isAcidTable(Map<String, String> parameters) {
-    return isTransactionalTable(parameters) &&
-            TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY.
-                    equals(parameters.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
+    return isTransactionalTable(parameters) && DEFAULT_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(
+        parameters.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
+  }
+
+  public static boolean isInsertOnlyTable(Table table) {
+    return TxnUtils.isTransactionalTable(table) && INSERTONLY_TRANSACTIONAL_PROPERTY.equalsIgnoreCase(
+        table.getParameters().get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
   }
 
   public static boolean isTableSoftDeleteEnabled(Table table, boolean isSoftDelete) {
@@ -450,7 +448,7 @@ public class TxnUtils {
         if (queryCounter % batchSize == 0) {
           sb.append("end;");
           String batch = sb.toString();
-          LOG.debug("Going to execute queries in oracle anonymous statement. " + batch);
+          LOG.debug("Going to execute queries in oracle anonymous statement. {}", batch);
           stmt.execute(batch);
           sb.setLength(0);
           sb.append("begin ");
@@ -459,7 +457,7 @@ public class TxnUtils {
       if (queryCounter % batchSize != 0) {
         sb.append("end;");
         String batch = sb.toString();
-        LOG.debug("Going to execute queries in oracle anonymous statement. " + batch);
+        LOG.debug("Going to execute queries in oracle anonymous statement. {}", batch);
         stmt.execute(batch);
       }
     } else {
@@ -478,17 +476,17 @@ public class TxnUtils {
     List<Integer> affectedRowsByQuery = new ArrayList<>();
     int queryCounter = 0;
     for (String query : queries) {
-      LOG.debug("Adding query to batch: <" + query + ">");
+      LOG.debug("Adding query to batch: <{}>", query);
       queryCounter++;
       stmt.addBatch(query);
       if (queryCounter % batchSize == 0) {
-        LOG.debug("Going to execute queries in batch. Batch size: " + batchSize);
+        LOG.debug("Going to execute queries in batch. Batch size: {}", batchSize);
         int[] affectedRecordsByQuery = stmt.executeBatch();
         Arrays.stream(affectedRecordsByQuery).forEach(affectedRowsByQuery::add);
       }
     }
     if (queryCounter % batchSize != 0) {
-      LOG.debug("Going to execute queries in batch. Batch size: " + queryCounter % batchSize);
+      LOG.debug("Going to execute queries in batch. Batch size: {}", queryCounter % batchSize);
       int[] affectedRecordsByQuery = stmt.executeBatch();
       Arrays.stream(affectedRecordsByQuery).forEach(affectedRowsByQuery::add);
     }
@@ -535,7 +533,7 @@ public class TxnUtils {
 
     try {
       FileStatus stat = fs.getFileStatus(p);
-      LOG.debug("Running job as " + stat.getOwner());
+      LOG.debug("Running job as {}", stat.getOwner());
       return stat.getOwner();
     } catch (AccessControlException e) {
       // TODO not sure this is the right exception
@@ -560,12 +558,34 @@ public class TxnUtils {
         LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
       }
       if (wrapper.size() == 1) {
-        LOG.debug("Running job as " + wrapper.get(0));
+        LOG.debug("Running job as {}", wrapper.get(0));
         return wrapper.get(0);
       }
     }
-    LOG.error("Unable to stat file " + p + " as either current user(" + 
-        UserGroupInformation.getLoginUser() + ") or table owner(" + t.getOwner() + "), giving up");
+    LOG.error("Unable to stat file {} as either current user({}) or table owner({}), giving up", p,
+        UserGroupInformation.getLoginUser(), t.getOwner());
     throw new IOException("Unable to stat file: " + p);
+  }
+
+  public static CompactionType dbCompactionType2ThriftType(char dbValue) throws MetaException {
+    switch (dbValue) {
+      case TxnStore.MAJOR_TYPE:
+        return CompactionType.MAJOR;
+      case TxnStore.MINOR_TYPE:
+        return CompactionType.MINOR;
+      default:
+        throw new MetaException("Unexpected compaction type " + dbValue);
+    }
+  }
+
+  public static Character thriftCompactionType2DbType(CompactionType ct) throws MetaException {
+    switch (ct) {
+      case MAJOR:
+        return TxnStore.MAJOR_TYPE;
+      case MINOR:
+        return TxnStore.MINOR_TYPE;
+      default:
+        throw new MetaException("Unexpected compaction type " + ct);
+    }
   }
 }

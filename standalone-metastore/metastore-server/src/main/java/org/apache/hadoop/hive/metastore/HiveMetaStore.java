@@ -903,6 +903,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           // actual compaction work. So it can run on a non-leader HMS with sufficient capacity
           // or a configured HS2 instance.
           if (MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("metastore")) {
+            LOG.warn("Running compaction workers on HMS side is not suggested because compaction pools are not supported in HMS " +
+                "(HIVE-26443). Consider removing the hive.metastore.runworker.in configuration setting, as it will be " +
+                "comletely removed in future releases.");
             startCompactorWorkers(conf);
           }
         } catch (Throwable e) {

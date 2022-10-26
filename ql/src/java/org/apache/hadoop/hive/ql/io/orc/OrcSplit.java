@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -35,7 +36,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
-import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.ColumnarSplit;
 import org.apache.hadoop.hive.ql.io.LlapAwareSplit;
@@ -47,7 +47,6 @@ import org.apache.orc.OrcProto;
 import org.apache.orc.impl.OrcTail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * OrcFileSplit. Holds file meta info
@@ -104,7 +103,15 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     this.isOriginal = isOriginal;
     this.hasBase = hasBase;
     this.rootDir = rootDir;
-    this.deltas.addAll(filterDeltasByBucketId(deltas, AcidUtils.parseBucketId(path)));
+    int bucketId = AcidUtils.parseBucketId(path);
+    long minWriteId = !deltas.isEmpty() ?
+            AcidUtils.parseBaseOrDeltaBucketFilename(path, null).getMinimumWriteId() : -1;
+    this.deltas.addAll(
+            deltas.stream()
+            // filtering out delete deltas with transactions happened before the transactions of the split
+            .filter(delta -> delta.getMaxWriteId() >= minWriteId)
+            .flatMap(delta -> filterDeltasByBucketId(delta, bucketId))
+            .collect(Collectors.toList()));
     this.projColsUncompressedSize = projectedDataSize <= 0 ? length : projectedDataSize;
     // setting file length to Long.MAX_VALUE will let orc reader read file length from file system
     this.fileLen = fileLen <= 0 ? Long.MAX_VALUE : fileLen;
@@ -114,18 +121,16 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   /**
    * For every split we only want to keep the delete deltas, that contains files for that bucket.
    * If we filter out files, we might need to filter out statementIds from multistatement transactions.
-   * @param deltas
+   * @param dmd
    * @param bucketId
    * @return
    */
-  private List<AcidInputFormat.DeltaMetaData> filterDeltasByBucketId(List<AcidInputFormat.DeltaMetaData> deltas, int bucketId) {
-    List<AcidInputFormat.DeltaMetaData> results = new ArrayList<>();
-    for (AcidInputFormat.DeltaMetaData dmd : deltas) {
+  private Stream<AcidInputFormat.DeltaMetaData> filterDeltasByBucketId(AcidInputFormat.DeltaMetaData dmd, int bucketId) {
       Map<Integer, AcidInputFormat.DeltaFileMetaData> bucketFilesbyStmtId =
           dmd.getDeltaFiles().stream().filter(deltaFileMetaData -> deltaFileMetaData.getBucketId() == bucketId)
               .collect(Collectors.toMap(AcidInputFormat.DeltaFileMetaData::getStmtId, Function.identity()));
       if (bucketFilesbyStmtId.isEmpty()) {
-        continue;
+        return Stream.empty();
       }
       // Keep only the relevant stmtIds
       List<Integer> stmtIds = dmd.getStmtIds().stream()
@@ -137,10 +142,8 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
               file.getFileId(), stmtIds.size() > 1 ? file.getStmtId() : null, bucketId))
           .collect(Collectors.toList());
 
-      results.add(new AcidInputFormat.DeltaMetaData(dmd.getMinWriteId(), dmd.getMaxWriteId(), stmtIds,
+      return Stream.of(new AcidInputFormat.DeltaMetaData(dmd.getMinWriteId(), dmd.getMaxWriteId(), stmtIds,
           dmd.getVisibilityTxnId(), bucketFiles));
-    }
-    return results;
   }
 
   @Override

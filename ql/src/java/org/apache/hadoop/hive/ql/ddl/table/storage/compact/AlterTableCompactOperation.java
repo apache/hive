@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
@@ -35,6 +38,8 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+
+import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftType;
 
 /**
  * Operation process of compacting a table.
@@ -90,8 +95,14 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
   }
 
   private CompactionResponse compact(Table table, String partitionName) throws HiveException {
-    CompactionResponse resp = context.getDb().compact2(table.getDbName(), table.getTableName(), partitionName,
-        desc.getCompactionType(), desc.getProperties());
+    CompactionRequest req = new CompactionRequest(table.getDbName(), table.getTableName(),
+        compactionTypeStr2ThriftType(desc.getCompactionType()));
+    req.setPartitionname(partitionName);
+    req.setPoolName(desc.getPoolName());
+    req.setProperties(desc.getProperties());
+    req.setInitiatorId(JavaUtils.hostname() + "-" + HiveMetaStoreClient.MANUALLY_INITIATED_COMPACTION);
+    req.setInitiatorVersion(HiveMetaStoreClient.class.getPackage().getImplementationVersion());
+    CompactionResponse resp = context.getDb().compact(req);
     if (resp.isAccepted()) {
       context.getConsole().printInfo("Compaction enqueued with id " + resp.getId());
     } else {

@@ -132,7 +132,7 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
   @Test
   public void testLockAcquisitionAtFirstTime() throws TException, InterruptedException {
     doReturn(acquiredLockResponse).when(spyClient).lock(any());
-    doNothing().when(spyOps).doUnlock(eq(dummyLockId));
+    doNothing().when(spyClient).unlock(eq(dummyLockId));
 
     spyOps.doCommit(metadataV2, metadataV1);
 
@@ -150,7 +150,7 @@ public class TestHiveCommitLocks extends HiveTableBaseTest {
         .doReturn(acquiredLockResponse)
         .when(spyClient)
         .checkLock(eq(dummyLockId));
-    doNothing().when(spyOps).doUnlock(eq(dummyLockId));
+    doNothing().when(spyClient).unlock(eq(dummyLockId));
 
     spyOps.doCommit(metadataV2, metadataV1);
 

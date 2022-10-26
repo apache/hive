@@ -42,6 +42,15 @@ public class HiveCharWritable extends HiveBaseCharWritable
     set(hcw);
   }
 
+  public HiveCharWritable(byte[] bytes, int maxLength) {
+    set(bytes, maxLength);
+  }
+
+  public void set(byte[] bytes, int maxLength) {
+    value.set(bytes);
+    enforceMaxLength(maxLength);
+  }
+
   public void set(HiveChar val) {
     set(val.getValue(), -1);
   }

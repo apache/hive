@@ -524,6 +524,7 @@ public enum ErrorMsg {
   CTLF_MISSING_STORAGE_FORMAT_DESCRIPTOR(20021, "Failed to find StorageFormatDescriptor for file format ''{0}''", true),
   PARQUET_FOOTER_ERROR(20022, "Failed to read parquet footer:"),
   PARQUET_UNHANDLED_TYPE(20023, "Unhandled type {0}", true),
+  ORC_FOOTER_ERROR(20024, "Failed to read orc footer:"),
 
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),

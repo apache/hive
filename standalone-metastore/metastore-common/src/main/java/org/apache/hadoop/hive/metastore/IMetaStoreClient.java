@@ -3237,6 +3237,16 @@ public interface IMetaStoreClient {
   long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException;
 
   /**
+   * Allocate a per table write ID and associate it with the given transaction.
+   * @param txnId id of transaction to which the allocated write ID to be associated.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the write ID to be allocated
+   * @param reallocate should we reallocate already mapped writeId (if true) or reuse (if false)
+   * @throws TException
+   */
+  long allocateTableWriteId(long txnId, String dbName, String tableName, boolean reallocate) throws TException;
+
+  /**
    * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
    * @param validWriteIdList Snapshot of writeid list when the table/partition is dumped.
    * @param dbName Database name
@@ -3437,10 +3447,15 @@ public interface IMetaStoreClient {
    * @param partitionName Name of the partition to be compacted
    * @param type Whether this is a major or minor compaction.
    * @throws TException
+   * @deprecated use {@link #compact2(CompactionRequest)}
    */
   @Deprecated
   void compact(String dbname, String tableName, String partitionName,  CompactionType type)
       throws TException;
+
+  /**
+   * @deprecated use {@link #compact2(CompactionRequest)}
+   */
   @Deprecated
   void compact(String dbname, String tableName, String partitionName, CompactionType type,
                Map<String, String> tblproperties) throws TException;
@@ -3459,18 +3474,37 @@ public interface IMetaStoreClient {
    * @param tblproperties the list of tblproperties to override for this compact. Can be null.
    * @return id of newly scheduled compaction or id/state of one which is already scheduled/running
    * @throws TException
+   * @deprecated use {@link #compact2(CompactionRequest)}
    */
+  @Deprecated
   CompactionResponse compact2(String dbname, String tableName, String partitionName, CompactionType type,
                               Map<String, String> tblproperties) throws TException;
 
   /**
+   * Send a request to compact a table or partition.  This will not block until the compaction is
+   * complete.  It will instead put a request on the queue for that table or partition to be
+   * compacted.  No checking is done on the dbname, tableName, or partitionName to make sure they
+   * refer to valid objects.  It is assumed this has already been done by the caller.  At most one
+   * Compaction can be scheduled/running for any given resource at a time.
+   * @param request The {@link CompactionRequest} object containing the details required to enqueue
+   *                a compaction request.
+   * @throws TException
+   */
+  CompactionResponse compact2(CompactionRequest request) throws TException;
+
+  /**
    * Get a list of all compactions.
-   * @return List of all current compactions.  This includes compactions waiting to happen,
+   * @return List of all current compactions. This includes compactions waiting to happen,
    * in progress, and finished but waiting to clean the existing files.
    * @throws TException
    */
   ShowCompactResponse showCompactions() throws TException;
-
+  
+  /**
+   * Get a list of compactions for the given request object.
+   */
+  ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException;
+  
   /**
    * Submit a request for performing cleanup of output directory. This is particularly
    * useful for CTAS when the query fails after write and before creation of table.

@@ -33,6 +33,7 @@ import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.thrift.TException;
@@ -49,6 +50,57 @@ import org.mockito.Mockito;
  * verified by a select query.
  */
 public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Test
+  public void testMigrateHiveTableWithPrimitiveTypeColumnsToIceberg() throws TException, InterruptedException {
+    shell.setHiveSessionValue(InputFormatConfig.SCHEMA_AUTO_CONVERSION, "true");
+    TableIdentifier identifier = TableIdentifier.of("default", "tbl_alltypes");
+    shell.executeStatement(String.format("CREATE EXTERNAL TABLE %s (" +
+        "a INT, " +
+        "decimal_col DECIMAL(30, 3), " +
+        "tinyint_col TINYINT, " +
+        "boolean_col BOOLEAN, " +
+        "float_col FLOAT, " +
+        "bigint_col BIGINT, " +
+        "double_col DOUBLE, " +
+        "string_col STRING, " +
+        "int_col INT, " +
+        "smallint_col SMALLINT) " +
+        "STORED AS %s %s %s",
+        identifier.name(), fileFormat.name(), testTables.locationForCreateTableSQL(identifier),
+        testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
+
+    shell.executeStatement(String.format("INSERT INTO TABLE %s VALUES(" +
+        "1, " +
+        "13.234, " +
+        "8, " +
+        "false, " +
+        "0.7896, " +
+        "543643275, " +
+        "5462435243, " +
+        "'wfewjifwejfoewfnvewokfow', " +
+        "43221, " +
+        "129 " +
+        ")", identifier.name()));
+
+    validateMigration(identifier.name());
+  }
+
+  @Test
+  public void testMigrateHiveTableWithUnsupportedPrimitiveTypeColumnToIceberg() {
+    // enough to test once
+    Assume.assumeTrue(fileFormat == FileFormat.ORC && isVectorized &&
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    TableIdentifier identifier = TableIdentifier.of("default", "tbl_unsupportedtypes");
+    shell.executeStatement(String.format("CREATE EXTERNAL TABLE %s (" +
+        "char_col CHAR(10)) STORED AS %s %s %s", identifier.name(), fileFormat.name(),
+        testTables.locationForCreateTableSQL(identifier), testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
+    AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
+        "Cannot convert hive table to iceberg that", () -> {
+          shell.executeStatement(String.format("ALTER TABLE %s SET TBLPROPERTIES " +
+              "('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')", identifier.name()));
+        });
+  }
 
   @Test
   public void testMigrateHiveTableWithComplexTypeColumnsToIceberg() throws TException, InterruptedException {
@@ -221,7 +273,10 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
     List<Object[]> alterResult = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY a");
     Assert.assertEquals(originalResult.size(), alterResult.size());
     for (int i = 0; i < originalResult.size(); i++) {
-      Assert.assertTrue(Arrays.equals(originalResult.get(i), alterResult.get(i)));
+      Assert.assertEquals(originalResult.get(i).length, alterResult.get(i).length);
+      for (int j = 0; j < originalResult.get(i).length; j++) {
+        Assert.assertEquals(String.valueOf(originalResult.get(i)[j]), String.valueOf(alterResult.get(i)[j]));
+      }
     }
     Table hmsTable = shell.metastore().getTable("default", tableName);
     validateSd(hmsTable, "iceberg");

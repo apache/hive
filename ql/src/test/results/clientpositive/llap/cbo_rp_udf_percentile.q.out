@@ -424,19 +424,23 @@ POSTHOOK: Input: default@src
 9	NULL	NULL
 PREHOOK: query: select percentile(cast(key as bigint), 0.5) from src where false
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select percentile(cast(key as bigint), 0.5) from src where false
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 NULL
 PREHOOK: query: select percentile(cast(key as bigint), array()) from src where false
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select percentile(cast(key as bigint), array()) from src where false
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 NULL

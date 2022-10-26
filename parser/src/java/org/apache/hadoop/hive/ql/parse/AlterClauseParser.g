@@ -432,11 +432,16 @@ blocking
   -> TOK_BLOCKING
   ;
 
+compactPool
+  : KW_POOL poolName=StringLiteral
+  -> ^(TOK_COMPACT_POOL $poolName)
+  ;
+
 alterStatementSuffixCompact
 @init { gParent.msgs.push("compaction request"); }
 @after { gParent.msgs.pop(); }
-    : KW_COMPACT compactType=StringLiteral blocking? (KW_WITH KW_OVERWRITE KW_TBLPROPERTIES tableProperties)?
-    -> ^(TOK_ALTERTABLE_COMPACT $compactType blocking? tableProperties?)
+    : KW_COMPACT compactType=StringLiteral blocking? compactPool? (KW_WITH KW_OVERWRITE KW_TBLPROPERTIES tableProperties)?
+    -> ^(TOK_ALTERTABLE_COMPACT $compactType blocking?  compactPool? tableProperties?)
     ;
 
 alterStatementSuffixSetOwner

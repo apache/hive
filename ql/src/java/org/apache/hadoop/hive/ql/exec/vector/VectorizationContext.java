@@ -2834,6 +2834,9 @@ import com.google.common.annotations.VisibleForTesting;
   private VectorExpression getInExpression(List<ExprNodeDesc> childExpr,
       VectorExpressionDescriptor.Mode mode, TypeInfo returnType) throws HiveException {
     ExprNodeDesc colExpr = childExpr.get(0);
+    if (colExpr instanceof ExprNodeConstantDesc) {
+      return null;
+    }
     List<ExprNodeDesc> inChildren = childExpr.subList(1, childExpr.size());
 
     String colType = colExpr.getTypeString();

@@ -98,7 +98,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
@@ -106,9 +105,11 @@ import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -158,7 +159,6 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
@@ -194,6 +194,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.database.drop.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
@@ -1967,8 +1968,7 @@ public class Hive {
           // if rewriting with outdated materialized views is enabled (currently
           // disabled by default).
           materialization = HiveMaterializedViewUtils.augmentMaterializationWithTimeInformation(
-              materialization, validTxnsList, new ValidTxnWriteIdList(
-                          materializedViewTable.getMVMetadata().getValidTxnList()));
+              materialization, validTxnsList, materializedViewTable.getMVMetadata().getSnapshot());
         }
         result.addAll(HiveMaterializedViewUtils.deriveGroupingSetsMaterializedViews(materialization));
       }
@@ -1986,7 +1986,7 @@ public class Hive {
    */
   public Boolean isOutdatedMaterializedView(
           Table materializedViewTable, Set<TableName> tablesUsed,
-          boolean forceMVContentsUpToDate, HiveTxnManager txnMgr) throws LockException {
+          boolean forceMVContentsUpToDate, HiveTxnManager txnMgr) throws HiveException {
 
     String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     if (validTxnsList == null) {
@@ -2012,7 +2012,7 @@ public class Hive {
       if (forceMVContentsUpToDate || timeWindow == 0L ||
               mvMetadata.getMaterializationTime() < System.currentTimeMillis() - timeWindow) {
         return HiveMaterializedViewUtils.isOutdatedMaterializedView(
-                validTxnsList, txnMgr, tablesUsed, materializedViewTable);
+                validTxnsList, txnMgr, this, tablesUsed, materializedViewTable);
       }
     }
     return outdated;
@@ -2033,7 +2033,7 @@ public class Hive {
     }
 
     return HiveMaterializedViewUtils.isOutdatedMaterializedView(
-        validTxnsList, txnManager, table.getMVMetadata().getSourceTableNames(), table);
+        validTxnsList, txnManager, this, table.getMVMetadata().getSourceTableNames(), table);
   }
 
   /**
@@ -2200,8 +2200,7 @@ public class Hive {
               // We will rewrite it to include the filters on transaction list
               // so we can produce partial rewritings
               relOptMaterialization = HiveMaterializedViewUtils.augmentMaterializationWithTimeInformation(
-                  relOptMaterialization, validTxnsList, new ValidTxnWriteIdList(
-                      metadata.getValidTxnList()));
+                  relOptMaterialization, validTxnsList, metadata.getSnapshot());
             }
             addToMaterializationList(expandGroupingSets, invalidationInfo, relOptMaterialization, result);
             continue;
@@ -2223,8 +2222,7 @@ public class Hive {
             // We will rewrite it to include the filters on transaction list
             // so we can produce partial rewritings
             relOptMaterialization = HiveMaterializedViewUtils.augmentMaterializationWithTimeInformation(
-                    hiveRelOptMaterialization, validTxnsList, new ValidTxnWriteIdList(
-                    metadata.getValidTxnList()));
+                    hiveRelOptMaterialization, validTxnsList, metadata.getSnapshot());
           }
           addToMaterializationList(expandGroupingSets, invalidationInfo, relOptMaterialization, result);
         }
@@ -5811,6 +5809,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                       Map<String, String> tblproperties) throws HiveException {
     compact2(dbname, tableName, partName, compactType, tblproperties);
   }
+
   /**
    * Enqueue a compaction request.  Only 1 compaction for a given resource (db/table/partSpec) can
    * be scheduled/running at any given time.
@@ -5822,12 +5821,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param tblproperties the list of tblproperties to overwrite for this compaction
    * @return id of new request or id already existing request for specified resource
    * @throws HiveException
+   * @deprecated use {@link #compact(CompactionRequest)}
    */
+  @Deprecated
   public CompactionResponse compact2(String dbname, String tableName, String partName, String compactType,
                                      Map<String, String> tblproperties)
       throws HiveException {
-    try {
-      CompactionType cr = null;
+      CompactionType cr;
       if ("major".equalsIgnoreCase(compactType)) {
         cr = CompactionType.MAJOR;
       } else if ("minor".equalsIgnoreCase(compactType)) {
@@ -5835,15 +5835,41 @@ private void constructOneLBLocationMap(FileStatus fSta,
       } else {
         throw new RuntimeException("Unknown compaction type " + compactType);
       }
-      return getMSC().compact2(dbname, tableName, partName, cr, tblproperties);
+      CompactionRequest request = new CompactionRequest(dbname, tableName, cr);
+      request.setPartitionname(partName);
+      request.setProperties(tblproperties);
+      return compact(request);
+  }
+
+  /**
+   * Enqueue a compaction request.  Only 1 compaction for a given resource (db/table/partSpec) can
+   * be scheduled/running at any given time.
+   * @param request The {@link CompactionRequest} object containing the details required to enqueue
+   *                a compaction request.
+   * @throws HiveException
+   */
+  public CompactionResponse compact(CompactionRequest request)
+      throws HiveException {
+    try {
+      return getMSC().compact2(request);
     } catch (Exception e) {
-      LOG.error("Failed compact2", e);
+      LOG.error("Failed compact3", e);
       throw new HiveException(e);
     }
   }
+
   public ShowCompactResponse showCompactions() throws HiveException {
     try {
       return getMSC().showCompactions();
+    } catch (Exception e) {
+      LOG.error("Failed showCompactions", e);
+      throw new HiveException(e);
+    }
+  }
+
+  public ShowCompactResponse showCompactions(ShowCompactRequest request) throws HiveException {
+    try {
+      return getMSC().showCompactions(request);
     } catch (Exception e) {
       LOG.error("Failed showCompactions", e);
       throw new HiveException(e);

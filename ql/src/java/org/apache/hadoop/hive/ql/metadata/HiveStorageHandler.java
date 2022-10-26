@@ -26,13 +26,16 @@ import java.util.Collections;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Context.Operation;
+import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
@@ -290,7 +293,7 @@ public interface HiveStorageHandler extends Configurable {
    *
    * @return the table's ACID support type
    */
-  default AcidSupportType supportsAcidOperations() {
+  default AcidSupportType supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table table) {
     return AcidSupportType.NONE;
   }
 
@@ -298,7 +301,8 @@ public interface HiveStorageHandler extends Configurable {
    * Specifies which additional virtual columns should be added to the virtual column registry during compilation
    * for tables that support ACID operations.
    *
-   * Should only return a non-empty list if {@link HiveStorageHandler#supportsAcidOperations()} ()} returns something
+   * Should only return a non-empty list if
+   * {@link HiveStorageHandler#supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table)} ()} returns something
    * other NONE.
    *
    * @return the list of ACID virtual columns
@@ -317,7 +321,8 @@ public interface HiveStorageHandler extends Configurable {
    *
    * This method specifies which columns should be injected into the &lt;selectCols&gt; part of the rewritten query.
    *
-   * Should only return a non-empty list if {@link HiveStorageHandler#supportsAcidOperations()} returns something
+   * Should only return a non-empty list if
+   * {@link HiveStorageHandler#supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table)} returns something
    * other NONE.
    *
    * @param table the table which is being deleted/updated/merged into
@@ -335,7 +340,8 @@ public interface HiveStorageHandler extends Configurable {
    *
    * This method specifies which columns should be injected into the &lt;sortCols&gt; part of the rewritten query.
    *
-   * Should only return a non-empty list if {@link HiveStorageHandler#supportsAcidOperations()} returns something
+   * Should only return a non-empty list if
+   * {@link HiveStorageHandler#supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table)} returns something
    * other NONE.
    *
    * @param table the table which is being deleted/updated/merged into
@@ -488,5 +494,32 @@ public interface HiveStorageHandler extends Configurable {
    * @param executeSpec operation specification
    */
   default void executeOperation(org.apache.hadoop.hive.ql.metadata.Table table, AlterTableExecuteSpec executeSpec) {
+  }
+
+  /**
+   * Gets whether this storage handler supports snapshots.
+   * @return true means snapshots are supported false otherwise
+   */
+  default boolean areSnapshotsSupported() {
+    return false;
+  }
+
+  /**
+   * Query the most recent unique snapshot's context of the passed table.
+   * @param table - {@link org.apache.hadoop.hive.ql.metadata.Table} which snapshot context should be returned.
+   * @return {@link SnapshotContext} wraps the snapshotId or null if no snapshot present.
+   */
+  default SnapshotContext getCurrentSnapshotContext(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return null;
+  }
+
+  /**
+   * Alter table operations can rely on this to customize the EnvironmentContext to be used during the alter table
+   * invocation (both on client and server side of HMS)
+   * @param alterTableDesc the alter table desc (e.g.: AlterTableSetPropertiesDesc) containing the work to do
+   * @param environmentContext an existing EnvironmentContext created prior, now to be filled/amended
+   */
+  default void prepareAlterTableEnvironmentContext(AbstractAlterTableDesc alterTableDesc,
+      EnvironmentContext environmentContext) {
   }
 }

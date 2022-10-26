@@ -165,6 +165,7 @@ public class Utils {
     // Create external purge table by default
     static final String CREATE_TABLE_AS_EXTERNAL = "hiveCreateAsExternalLegacy";
     public static final String SOCKET_TIMEOUT = "socketTimeout";
+    static final String THRIFT_CLIENT_MAX_MESSAGE_SIZE = "thrift.client.max.message.size";
 
     // We support ways to specify application name modeled after some existing DBs, since
     // there's no standard approach.

@@ -77,6 +77,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   private Collection<String> partitionColumns;
   private Map<ObjectInspector, Deserializer> deserializers = Maps.newHashMapWithExpectedSize(1);
   private Container<Record> row = new Container<>();
+  private Map<String, String> jobConf =  Maps.newHashMap();
 
   @Override
   public void initialize(@Nullable Configuration configuration, Properties serDeProperties,
@@ -130,14 +131,14 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       }
     }
 
-    this.projectedSchema = projectedSchema(configuration, serDeProperties.getProperty(Catalogs.NAME), tableSchema);
+    this.projectedSchema =
+        projectedSchema(configuration, serDeProperties.getProperty(Catalogs.NAME), tableSchema, jobConf);
 
     // Currently ClusteredWriter is used which requires that records are ordered by partition keys.
     // Here we ensure that SortedDynPartitionOptimizer will kick in and do the sorting.
     // TODO: remove once we have both Fanout and ClusteredWriter available: HIVE-25948
     HiveConf.setIntVar(configuration, HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITIONTHRESHOLD, 1);
     HiveConf.setVar(configuration, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
-
     try {
       this.inspector = IcebergObjectInspector.create(projectedSchema);
     } catch (Exception e) {
@@ -145,7 +146,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     }
   }
 
-  private static Schema projectedSchema(Configuration configuration, String tableName, Schema tableSchema) {
+  private static Schema projectedSchema(Configuration configuration, String tableName, Schema tableSchema,
+      Map<String, String> jobConfs) {
     Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(configuration, tableName);
     if (operation != null) {
       switch (operation) {
@@ -159,7 +161,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
           throw new IllegalArgumentException("Unsupported operation " + operation);
       }
     } else {
-      configuration.setBoolean(InputFormatConfig.CASE_SENSITIVE, false);
+      jobConfs.put(InputFormatConfig.CASE_SENSITIVE, "false");
       String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(configuration);
       // When same table is joined multiple times, it is possible some selected columns are duplicated,
       // in this case wrong recordStructField position leads wrong value or ArrayIndexOutOfBoundException
@@ -255,6 +257,13 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   @Override
   public SerDeStats getSerDeStats() {
     return null;
+  }
+
+  @Override
+  public void handleJobLevelConfiguration(HiveConf conf) {
+    for (Map.Entry<String, String> confs : jobConf.entrySet()) {
+      conf.set(confs.getKey(), confs.getValue());
+    }
   }
 
   @Override

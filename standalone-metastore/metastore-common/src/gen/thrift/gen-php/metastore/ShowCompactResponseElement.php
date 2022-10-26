@@ -117,6 +117,31 @@ class ShowCompactResponseElement
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        20 => array(
+            'var' => 'poolName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        21 => array(
+            'var' => 'nextTxnId',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
+        22 => array(
+            'var' => 'txnId',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
+        23 => array(
+            'var' => 'commitTime',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
+        24 => array(
+            'var' => 'hightestWriteId',
+            'isRequired' => false,
+            'type' => TType::I64,
+        ),
     );
 
     /**
@@ -195,6 +220,26 @@ class ShowCompactResponseElement
      * @var int
      */
     public $cleanerStart = null;
+    /**
+     * @var string
+     */
+    public $poolName = null;
+    /**
+     * @var int
+     */
+    public $nextTxnId = null;
+    /**
+     * @var int
+     */
+    public $txnId = null;
+    /**
+     * @var int
+     */
+    public $commitTime = null;
+    /**
+     * @var int
+     */
+    public $hightestWriteId = null;
 
     public function __construct($vals = null)
     {
@@ -255,6 +300,21 @@ class ShowCompactResponseElement
             }
             if (isset($vals['cleanerStart'])) {
                 $this->cleanerStart = $vals['cleanerStart'];
+            }
+            if (isset($vals['poolName'])) {
+                $this->poolName = $vals['poolName'];
+            }
+            if (isset($vals['nextTxnId'])) {
+                $this->nextTxnId = $vals['nextTxnId'];
+            }
+            if (isset($vals['txnId'])) {
+                $this->txnId = $vals['txnId'];
+            }
+            if (isset($vals['commitTime'])) {
+                $this->commitTime = $vals['commitTime'];
+            }
+            if (isset($vals['hightestWriteId'])) {
+                $this->hightestWriteId = $vals['hightestWriteId'];
             }
         }
     }
@@ -411,6 +471,41 @@ class ShowCompactResponseElement
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 20:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->poolName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 21:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->nextTxnId);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 22:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->txnId);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 23:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->commitTime);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 24:
+                    if ($ftype == TType::I64) {
+                        $xfer += $input->readI64($this->hightestWriteId);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -518,6 +613,31 @@ class ShowCompactResponseElement
         if ($this->cleanerStart !== null) {
             $xfer += $output->writeFieldBegin('cleanerStart', TType::I64, 19);
             $xfer += $output->writeI64($this->cleanerStart);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->poolName !== null) {
+            $xfer += $output->writeFieldBegin('poolName', TType::STRING, 20);
+            $xfer += $output->writeString($this->poolName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->nextTxnId !== null) {
+            $xfer += $output->writeFieldBegin('nextTxnId', TType::I64, 21);
+            $xfer += $output->writeI64($this->nextTxnId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->txnId !== null) {
+            $xfer += $output->writeFieldBegin('txnId', TType::I64, 22);
+            $xfer += $output->writeI64($this->txnId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->commitTime !== null) {
+            $xfer += $output->writeFieldBegin('commitTime', TType::I64, 23);
+            $xfer += $output->writeI64($this->commitTime);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->hightestWriteId !== null) {
+            $xfer += $output->writeFieldBegin('hightestWriteId', TType::I64, 24);
+            $xfer += $output->writeI64($this->hightestWriteId);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

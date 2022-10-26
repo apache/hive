@@ -14,3 +14,9 @@ SELECT 1 IN (1, 2, 3),
        (1+3) IN (5, 6, (1+2) + 1) FROM src tablesample (1 rows);
 
 SELECT key FROM src WHERE key IN ("238", 86);
+
+-- test case(s) for HIVE-26320
+CREATE EXTERNAL TABLE hive26230_parq_in(kob varchar(2), code int) STORED AS PARQUET;
+INSERT INTO hive26230_parq_in VALUES('BB',18),('BC',18),('AB',18);
+SELECT (kob, code) IN ((cast('BB' as varchar(2)), 18), (cast('BC' as varchar(2)), 18)) FROM hive26230_parq_in;
+DROP TABLE hive26230_parq_in;

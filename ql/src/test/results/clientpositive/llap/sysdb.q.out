@@ -46,12 +46,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@scr_txn_2
 PREHOOK: query: alter table scr_txn compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@scr_txn
+PREHOOK: Output: default@scr_txn
 POSTHOOK: query: alter table scr_txn compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@scr_txn
+POSTHOOK: Output: default@scr_txn
 PREHOOK: query: alter table scr_txn_2 compact 'minor'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@scr_txn_2
+PREHOOK: Output: default@scr_txn_2
 POSTHOOK: query: alter table scr_txn_2 compact 'minor'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@scr_txn_2
+POSTHOOK: Output: default@scr_txn_2
 PREHOOK: query: CREATE TEMPORARY TABLE src_tmp (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -481,6 +489,7 @@ compaction_queue	cq_initiator_id
 compaction_queue	cq_initiator_version
 compaction_queue	cq_next_txn_id
 compaction_queue	cq_partition
+compaction_queue	cq_pool_name
 compaction_queue	cq_run_as
 compaction_queue	cq_start
 compaction_queue	cq_state
@@ -495,12 +504,14 @@ compactions	c_catalog
 compactions	c_cleaner_start
 compactions	c_cleaner_start
 compactions	c_commit_time
+compactions	c_commit_time
 compactions	c_database
 compactions	c_database
 compactions	c_duration
 compactions	c_duration
 compactions	c_enqueue_time
 compactions	c_enqueue_time
+compactions	c_error_message
 compactions	c_error_message
 #### A masked pattern was here ####
 compactions	c_highest_write_id
@@ -514,8 +525,11 @@ compactions	c_initiator_id
 compactions	c_initiator_version
 compactions	c_initiator_version
 compactions	c_next_txn_id
+compactions	c_next_txn_id
 compactions	c_partition
 compactions	c_partition
+compactions	c_pool_name
+compactions	c_pool_name
 compactions	c_run_as
 compactions	c_run_as
 compactions	c_start
@@ -525,6 +539,8 @@ compactions	c_state
 compactions	c_table
 compactions	c_table
 compactions	c_tblproperties
+compactions	c_tblproperties
+compactions	c_txn_id
 compactions	c_txn_id
 compactions	c_type
 compactions	c_type
@@ -546,6 +562,7 @@ completed_compactions	cc_initiator_id
 completed_compactions	cc_initiator_version
 completed_compactions	cc_next_txn_id
 completed_compactions	cc_partition
+completed_compactions	cc_pool_name
 completed_compactions	cc_run_as
 completed_compactions	cc_start
 completed_compactions	cc_state
@@ -1415,7 +1432,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: sys@version
 #### A masked pattern was here ####
-4.0.0-alpha-2
+4.0.0
 PREHOOK: query: select func_name, func_type from funcs order by func_name, func_type limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@funcs
@@ -1573,8 +1590,8 @@ POSTHOOK: Input: sys@compaction_queue
 POSTHOOK: Input: sys@compactions
 POSTHOOK: Input: sys@completed_compactions
 #### A masked pattern was here ####
-1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-alpha-2-SNAPSHOT	NULL	NULL
-2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-alpha-2-SNAPSHOT	NULL	NULL
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL
 PREHOOK: query: use INFORMATION_SCHEMA
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:information_schema
@@ -1803,5 +1820,5 @@ POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-alpha-2-SNAPSHOT	NULL
-2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-alpha-2-SNAPSHOT	NULL
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL

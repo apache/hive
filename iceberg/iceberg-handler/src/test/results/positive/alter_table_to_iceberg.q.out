@@ -99,6 +99,7 @@ Table Parameters:
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
+	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	1                   
@@ -247,6 +248,7 @@ Table Parameters:
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
+	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	1                   
@@ -395,6 +397,7 @@ Table Parameters:
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
 	engine.hive.enabled 	true                
+	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	1                   

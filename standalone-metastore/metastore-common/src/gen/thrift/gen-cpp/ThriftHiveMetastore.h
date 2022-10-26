@@ -24921,8 +24921,8 @@ typedef struct _ThriftHiveMetastore_show_compact_args__isset {
 class ThriftHiveMetastore_show_compact_args {
  public:
 
-  ThriftHiveMetastore_show_compact_args(const ThriftHiveMetastore_show_compact_args&) noexcept;
-  ThriftHiveMetastore_show_compact_args& operator=(const ThriftHiveMetastore_show_compact_args&) noexcept;
+  ThriftHiveMetastore_show_compact_args(const ThriftHiveMetastore_show_compact_args&);
+  ThriftHiveMetastore_show_compact_args& operator=(const ThriftHiveMetastore_show_compact_args&);
   ThriftHiveMetastore_show_compact_args() noexcept {
   }
 

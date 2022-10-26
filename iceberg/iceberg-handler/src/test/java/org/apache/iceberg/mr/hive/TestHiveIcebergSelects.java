@@ -189,7 +189,6 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
 
   @Test
   public void testScanTableCaseInsensitive() throws IOException {
-    shell.setHiveSessionValue(InputFormatConfig.CASE_SENSITIVE, false);
     testTables.createTable(shell, "customers",
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA_WITH_UPPERCASE, fileFormat,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);

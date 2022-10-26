@@ -855,9 +855,6 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
 
               decimalIsNull = !currentHiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
               if (!decimalIsNull) {
-                if (HiveDecimalWritable.isPrecisionDecimal64(precision)) {
-                  currentDecimal64 = currentHiveDecimalWritable.serialize64(scale);
-                }
                 return true;
               }
             }

@@ -239,7 +239,7 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
     for (String notSupportedType : notSupportedTypes.keySet()) {
       shell.executeStatement(String.format("CREATE TABLE source (s %s) STORED AS ORC", notSupportedType));
       AssertHelpers.assertThrows("should throw exception", IllegalArgumentException.class,
-          "Unsupported Hive type: ", () -> {
+          "Unsupported Hive type ", () -> {
             shell.executeStatement(String.format(
                 "CREATE TABLE target STORED BY ICEBERG %s %s AS SELECT * FROM source",
                 testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),

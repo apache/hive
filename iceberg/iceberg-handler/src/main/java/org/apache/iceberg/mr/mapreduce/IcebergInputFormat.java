@@ -96,6 +96,7 @@ import org.apache.iceberg.util.SerializationUtil;
  * @param <T> T is the in memory data model which can either be Pig tuples, Hive rows. Default is Iceberg records
  */
 public class IcebergInputFormat<T> extends InputFormat<Void, T> {
+
   /**
    * Configures the {@code Job} to use the {@code IcebergInputFormat} and
    * returns a helper to add further configuration.
@@ -223,7 +224,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
                 Path.class,
                 FileScanTask.class,
                 Map.class,
-                TaskAttemptContext.class)
+                TaskAttemptContext.class,
+                Expression.class)
             .buildStatic();
       } else {
         HIVE_VECTORIZED_READER_BUILDER = null;
@@ -324,7 +326,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       Expression residual = HiveIcebergInputFormat.residualForTask(task, context.getConfiguration());
 
       // TODO: We have to take care of the EncryptionManager when LLAP and vectorization is used
-      CloseableIterable<T> iterator = HIVE_VECTORIZED_READER_BUILDER.invoke(path, task, idToConstant, context);
+      CloseableIterable<T> iterator = HIVE_VECTORIZED_READER_BUILDER.invoke(path, task,
+          idToConstant, context, residual);
 
       return applyResidualFiltering(iterator, residual, readSchema);
     }

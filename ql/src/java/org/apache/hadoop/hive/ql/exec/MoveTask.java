@@ -347,6 +347,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   @Override
   public int execute() {
+    try {
+      initializeFromDeferredContext();
+    } catch (HiveException he) {
+      return processHiveException(he);
+    }
+
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("Executing MoveWork " + System.identityHashCode(work)
         + " with " + work.getLoadFileWork() + "; " + work.getLoadTableWork() + "; "
@@ -514,23 +520,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
       return 0;
     } catch (HiveException he) {
-      int errorCode = 1;
-
-      if (he.getCanonicalErrorMsg() != ErrorMsg.GENERIC_ERROR) {
-        errorCode = he.getCanonicalErrorMsg().getErrorCode();
-        if (he.getCanonicalErrorMsg() == ErrorMsg.UNRESOLVED_RT_EXCEPTION) {
-          console.printError("Failed with exception " + he.getMessage(), "\n"
-              + StringUtils.stringifyException(he));
-        } else {
-          console.printError("Failed with exception " + he.getMessage()
-              + "\nRemote Exception: " + he.getRemoteErrorMsg());
-          console.printInfo("\n", StringUtils.stringifyException(he),false);
-        }
-      }
-      setException(he);
-      errorCode = ReplUtils.handleException(work.isReplication(), he, work.getDumpDirectory(),
-                                            work.getMetricCollector(), getName(), conf);
-      return errorCode;
+      return processHiveException(he);
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
@@ -541,6 +531,31 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
   }
 
+  private int processHiveException(HiveException he) {
+    int errorCode = 1;
+
+    if (he.getCanonicalErrorMsg() != ErrorMsg.GENERIC_ERROR) {
+      errorCode = he.getCanonicalErrorMsg().getErrorCode();
+      if (he.getCanonicalErrorMsg() == ErrorMsg.UNRESOLVED_RT_EXCEPTION) {
+        console.printError("Failed with exception " + he.getMessage(), "\n"
+            + StringUtils.stringifyException(he));
+      } else {
+        console.printError("Failed with exception " + he.getMessage()
+            + "\nRemote Exception: " + he.getRemoteErrorMsg());
+        console.printInfo("\n", StringUtils.stringifyException(he),false);
+      }
+    }
+    setException(he);
+    errorCode = ReplUtils.handleException(work.isReplication(), he, work.getDumpDirectory(),
+        work.getMetricCollector(), getName(), conf);
+    return errorCode;
+  }
+
+  private void initializeFromDeferredContext() throws HiveException {
+    if (null != getDeferredWorkContext()) {
+      work.initializeFromDeferredContext(getDeferredWorkContext());
+    }
+  }
   public void logMessage(LoadTableDesc tbd) {
     StringBuilder mesg = new StringBuilder("Loading data to table ")
         .append( tbd.getTable().getTableName());

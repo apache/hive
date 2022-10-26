@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
@@ -140,6 +141,7 @@ public class HiveServer2 extends CompositeService {
   private static final Logger LOG = LoggerFactory.getLogger(HiveServer2.class);
   public static final String INSTANCE_URI_CONFIG = "hive.server2.instance.uri";
   private static final int SHUTDOWN_TIME = 60;
+
   private static CountDownLatch zkDeleteSignal;
   private static volatile KeeperException.Code zkDeleteResultCode;
 
@@ -439,7 +441,10 @@ public class HiveServer2 extends CompositeService {
     }
 
     // Add a shutdown hook for catching SIGTERM & SIGINT
-    ShutdownHookManager.addShutdownHook(() -> graceful_stop());
+    long timeout = HiveConf.getTimeVar(getHiveConf(),
+        HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.SECONDS);
+    // Extra time for releasing the resources if timeout sets to 0
+    ShutdownHookManager.addGracefulShutDownHook(() -> graceful_stop(),  timeout == 0 ? 30 : timeout);
   }
 
   private void logCompactionParameters(HiveConf hiveConf) {
@@ -918,9 +923,9 @@ public class HiveServer2 extends CompositeService {
   public synchronized void graceful_stop() {
     try {
       decommission();
+      // Need 30s for stop() to release server's resources
       long maxTimeForWait = HiveConf.getTimeVar(getHiveConf(),
-          HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS);
-
+          HiveConf.ConfVars.HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT, TimeUnit.MILLISECONDS) - 30000;
       long timeout = maxTimeForWait, startTime = System.currentTimeMillis();
       try {
         // The service should be started before when reaches here, as decommissioning would throw
@@ -1137,11 +1142,59 @@ public class HiveServer2 extends CompositeService {
   private void maybeStartCompactorThreads(HiveConf hiveConf) throws Exception {
     if (MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("hs2")) {
       int numWorkers = MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS);
-      for (int i = 0; i < numWorkers; i++) {
-        Worker w = new Worker();
-        CompactorThread.initializeAndStartThread(w, hiveConf);
+      List<Map.Entry<String, String>> entries = hiveConf.getMatchingEntries(Constants.COMPACTION_POOLS_PATTERN);
+
+      StringBuilder sb = new StringBuilder(2048);
+      sb.append("This HS2 instance will act as Compactor with the following worker pool configuration:\n");
+      sb.append("Global pool size: ").append(numWorkers).append("\n");
+
+      LOG.info("Initializing the compaction pools with using the global worker limit: {} ", numWorkers);
+      while (numWorkers > 0 && entries.size() > 0) {
+        Map.Entry<String, String> entry = entries.remove(0);
+        String poolName = entry.getValue();
+        int poolWorkers = hiveConf.getInt(entry.getKey(), 0);
+
+        if (poolWorkers == 0) {
+          LOG.warn("Compaction pool ({}) configured with zero workers. Skipping pool initialization", poolName);
+          sb.append("Pool not initialized, 0 size: ").append(poolName).append("\n");
+          continue;
+        }
+        if (poolWorkers > numWorkers) {
+          LOG.warn("Global worker pool exhausted, compaction pool ({}) will be configured with less workers than the " +
+              "required number. ({} -> {})", poolName, poolWorkers, numWorkers);
+          poolWorkers = numWorkers;
+        }
+
+        LOG.info("Initializing compaction pool ({}) with {} workers.", poolName, poolWorkers);
+        for (int i = 0; i < poolWorkers; i++) {
+          Worker w = new Worker();
+          w.setPoolName(poolName);
+          CompactorThread.initializeAndStartThread(w, hiveConf);
+          sb.append("Worker - Name: ").append(w.getName()).append(", Pool: ").append(poolName)
+              .append(", Priority: ").append(w.getPriority()).append("\n");
+        }
+        numWorkers -= poolWorkers;
       }
-      LOG.info("This HS2 instance will act as Compactor Worker with {} threads", numWorkers);
+
+      if (numWorkers == 0) {
+        LOG.warn("No default compaction pool configured, all non-labeled compaction requests will remain unprocessed!");
+        if (entries.size() > 0) {
+          for (Map.Entry<String, String> entry : entries) {
+            String poolName = entry.getValue();
+            LOG.warn("There are no available workers for the following compaction pool: {} ", poolName);
+            sb.append("Pool not initialized, no remaining free workers: ").append(poolName).append("\n");
+          }
+          sb.append("Pool not initialized, no remaining free workers: default\n");
+        }
+      } else {
+        LOG.info("Initializing default compaction pool with {} workers.", numWorkers);
+        for (int i = 0; i < numWorkers; i++) {
+          Worker w = new Worker();
+          CompactorThread.initializeAndStartThread(w, hiveConf);
+          sb.append("Worker - Name: ").append(w.getName()).append(", Pool: default, Priority: ").append(w.getPriority()).append("\n");
+        }
+      }
+      LOG.info(sb.toString());
     }
   }
 

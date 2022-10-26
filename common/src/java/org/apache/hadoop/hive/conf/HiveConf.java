@@ -61,6 +61,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -1656,13 +1657,6 @@ public class HiveConf extends Configuration {
      */
     @Deprecated
     METASTORE_METRICS("hive.metastore.metrics.enabled", false, "Enable metrics on the metastore."),
-    /**
-     * @deprecated Use MetastoreConf.INIT_METADATA_COUNT_ENABLED
-     */
-    @Deprecated
-    METASTORE_INIT_METADATA_COUNT_ENABLED("hive.metastore.initial.metadata.count.enabled", true,
-      "Enable a metadata count at metastore startup for metrics."),
-
     // Metastore SSL settings
     /**
      * @deprecated Use MetastoreConf.USE_SSL
@@ -2912,7 +2906,10 @@ public class HiveConf extends Configuration {
     HIVE_STATS_MAX_NUM_STATS("hive.stats.max.num.stats", (long) 10000,
         "When the number of stats to be updated is huge, this value is used to control the number of \n" +
         " stats to be sent to HMS for update."),
-
+    HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE("hive.thrift.client.max.message.size", "1gb",
+        new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
+        "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
+        "library. The upper limit is 2147483648 bytes (or 2gb)."),
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false,
         "Whether Hive supports concurrency control or not. \n" +
@@ -3067,7 +3064,7 @@ public class HiveConf extends Configuration {
         "Enables non-blocking DROP TABLE operation.\n" +
         "If enabled, every table directory would be suffixed with the corresponding table creation txnId."),
     
-    HIVE_ACID_TRUNCATE_USE_BASE("hive.acid.truncate.usebase", false,
+    HIVE_ACID_TRUNCATE_USE_BASE("hive.acid.truncate.usebase", true,
         "If enabled, truncate for transactional tables will not delete the data directories,\n" +
         "rather create a new base directory with no datafiles."),
     
@@ -3362,12 +3359,6 @@ public class HiveConf extends Configuration {
     @Deprecated
     COMPACTOR_HISTORY_REAPER_INTERVAL("hive.compactor.history.reaper.interval", "2m",
       new TimeValidator(TimeUnit.MILLISECONDS), "Determines how often compaction history reaper runs"),
-    /**
-     * @deprecated Use MetastoreConf.ACID_HOUSEKEEPER_SERVICE_START
-     */
-    @Deprecated
-    HIVE_TIMEDOUT_TXN_REAPER_START("hive.timedout.txn.reaper.start", "100s",
-      new TimeValidator(TimeUnit.MILLISECONDS), "Time delay of 1st reaper run after metastore start"),
     /**
      * @deprecated Use MetastoreConf.ACID_HOUSEKEEPER_SERVICE_INTERVAL
      */
@@ -4412,8 +4403,9 @@ public class HiveConf extends Configuration {
         "credential providers for jobs run using Tez, MR execution engines."),
     HIVE_SERVER2_GRACEFUL_STOP_TIMEOUT("hive.server2.graceful.stop.timeout", "1800s",
         new TimeValidator(TimeUnit.SECONDS),
-        "Maximum time waiting for the current live operations being finished before shutting down HiveServer2 gracefully.\n" +
-        "  With value less than or equal to 0, it does not check for the operations regardless of state to shut down HiveServer2."),
+        "Maximum time waiting for live queries being finished and stopping HiveServer2. "
+         + "With value not greater than 30s(the overhead to stop HiveServer2), it will not wait for the live queries to be done, "
+         + "instead call stop directly to shutdown HiveServer2 gracefully"),
     HIVE_MOVE_FILES_THREAD_COUNT("hive.mv.files.thread", 15, new  SizeValidator(0L, true, 1024L, true), "Number of threads"
          + " used to move files in move task. Set it to 0 to disable multi-threaded file moves. This parameter is also used by"
          + " MSCK to check tables."),
@@ -7034,5 +7026,16 @@ public class HiveConf extends Configuration {
       Map.Entry<String, String> e = iter.next();
       set(e.getKey(), e.getValue());
     }
+  }
+
+  public List<Map.Entry<String, String>> getMatchingEntries(Pattern regex) {
+    List<Map.Entry<String, String>> matchingEntries = new ArrayList<>();
+    for (Map.Entry<String, String> entry : this) {
+      Matcher matcher = regex.matcher(entry.getKey());
+      if (matcher.matches()) {
+        matchingEntries.add(new AbstractMap.SimpleEntry<>(entry.getKey(), matcher.group(0)));
+      }
+    }
+    return matchingEntries;
   }
 }

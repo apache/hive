@@ -66,7 +66,6 @@ import org.apache.hadoop.hive.ql.udf.esri.ST_GeomFromShape;
 import org.apache.hadoop.hive.ql.udf.esri.ST_GeomFromText;
 import org.apache.hadoop.hive.ql.udf.esri.ST_GeomFromWKB;
 import org.apache.hadoop.hive.ql.udf.esri.ST_GeometryN;
-import org.apache.hadoop.hive.ql.udf.esri.ST_GeometryProcessing;
 import org.apache.hadoop.hive.ql.udf.esri.ST_GeometryType;
 import org.apache.hadoop.hive.ql.udf.esri.ST_InteriorRingN;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Intersection;
@@ -250,6 +249,7 @@ public final class FunctionRegistry {
   public static final String UNARY_PLUS_FUNC_NAME = "positive";
   public static final String UNARY_MINUS_FUNC_NAME = "negative";
 
+  public static final String BLOOM_FILTER_FUNCTION = "bloom_filter";
   public static final String WINDOWING_TABLE_FUNCTION = "windowingtablefunction";
   private static final String NOOP_TABLE_FUNCTION = "noop";
   private static final String NOOP_MAP_TABLE_FUNCTION = "noopwithmap";
@@ -554,7 +554,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("ndv_compute_bit_vector", GenericUDFNDVComputeBitVector.class);
     system.registerGenericUDAF("compute_bit_vector_hll", new GenericUDAFComputeBitVectorHLL());
     system.registerGenericUDAF("compute_bit_vector_fm", new GenericUDAFComputeBitVectorFMSketch());
-    system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
+    system.registerGenericUDAF(BLOOM_FILTER_FUNCTION, new GenericUDAFBloomFilter());
     system.registerGenericUDAF("approx_distinct", new GenericUDAFApproximateDistinct());
     system.registerUDAF("percentile", UDAFPercentile.class);
     system.registerGenericUDAF("percentile_cont", new GenericUDAFPercentileCont());
@@ -703,7 +703,6 @@ public final class FunctionRegistry {
     system.registerFunction("ST_GeodesicLengthWGS84", ST_GeodesicLengthWGS84.class);
     system.registerFunction("ST_GeomCollection", ST_GeomCollection.class);
     system.registerFunction("ST_GeometryN", ST_GeometryN.class);
-    system.registerFunction("ST_GeometryProcessing", ST_GeometryProcessing.class);
     system.registerFunction("ST_GeomFromGeoJson", ST_GeomFromGeoJson.class);
     system.registerFunction("ST_GeomFromJson", ST_GeomFromJson.class);
     system.registerFunction("ST_GeomFromShape", ST_GeomFromShape.class);

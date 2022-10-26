@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.0.0-alpha-2-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-serde</artifactId>
@@ -81,7 +81,7 @@
       <version>${hppc.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.davidmoten</groupId>
+      <groupId>com.google.flatbuffers</groupId>
       <artifactId>flatbuffers-java</artifactId>
       <version>${flatbuffers.version}</version>
     </dependency>
@@ -116,6 +116,14 @@
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
         </exclusion>
         <exclusion>
           <groupId>commons-beanutils</groupId>
@@ -166,6 +174,14 @@
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
         </exclusion>
         <exclusion>
           <groupId>commons-logging</groupId>

@@ -4034,13 +4034,15 @@ class AllocateTableWriteIdsRequest
   TXNIDS = 3
   REPLPOLICY = 4
   SRCTXNTOWRITEIDLIST = 5
+  REALLOCATE = 6
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
     TXNIDS => {:type => ::Thrift::Types::LIST, :name => 'txnIds', :element => {:type => ::Thrift::Types::I64}, :optional => true},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
-    SRCTXNTOWRITEIDLIST => {:type => ::Thrift::Types::LIST, :name => 'srcTxnToWriteIdList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TxnToWriteId}, :optional => true}
+    SRCTXNTOWRITEIDLIST => {:type => ::Thrift::Types::LIST, :name => 'srcTxnToWriteIdList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TxnToWriteId}, :optional => true},
+    REALLOCATE => {:type => ::Thrift::Types::BOOL, :name => 'reallocate', :default => false, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4450,6 +4452,7 @@ class CompactionRequest
   PROPERTIES = 6
   INITIATORID = 7
   INITIATORVERSION = 8
+  POOLNAME = 9
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4459,7 +4462,8 @@ class CompactionRequest
     RUNAS => {:type => ::Thrift::Types::STRING, :name => 'runas', :optional => true},
     PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true},
     INITIATORID => {:type => ::Thrift::Types::STRING, :name => 'initiatorId', :optional => true},
-    INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true}
+    INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true},
+    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4494,6 +4498,7 @@ class CompactionInfoStruct
   HASOLDABORT = 14
   ENQUEUETIME = 15
   RETRYRETENTION = 16
+  POOLNAME = 17
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id'},
@@ -4511,7 +4516,8 @@ class CompactionInfoStruct
     ERRORMESSAGE => {:type => ::Thrift::Types::STRING, :name => 'errorMessage', :optional => true},
     HASOLDABORT => {:type => ::Thrift::Types::BOOL, :name => 'hasoldabort', :optional => true},
     ENQUEUETIME => {:type => ::Thrift::Types::I64, :name => 'enqueueTime', :optional => true},
-    RETRYRETENTION => {:type => ::Thrift::Types::I64, :name => 'retryRetention', :optional => true}
+    RETRYRETENTION => {:type => ::Thrift::Types::I64, :name => 'retryRetention', :optional => true},
+    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolname', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4653,14 +4659,34 @@ end
 
 class ShowCompactRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
+  ID = 1
+  POOLNAME = 2
+  DBNAME = 3
+  TABLENAME = 4
+  PARTITIONNAME = 5
+  TYPE = 6
+  STATE = 7
 
   FIELDS = {
-
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
+    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
+    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionType},
+    STATE => {:type => ::Thrift::Types::STRING, :name => 'state'}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbname is unset!') unless @dbname
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablename is unset!') unless @tablename
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field state is unset!') unless @state
+    unless @type.nil? || ::CompactionType::VALID_VALUES.include?(@type)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -4687,6 +4713,11 @@ class ShowCompactResponseElement
   INITIATORID = 17
   INITIATORVERSION = 18
   CLEANERSTART = 19
+  POOLNAME = 20
+  NEXTTXNID = 21
+  TXNID = 22
+  COMMITTIME = 23
+  HIGHTESTWRITEID = 24
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -4707,7 +4738,12 @@ class ShowCompactResponseElement
     WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion', :optional => true},
     INITIATORID => {:type => ::Thrift::Types::STRING, :name => 'initiatorId', :optional => true},
     INITIATORVERSION => {:type => ::Thrift::Types::STRING, :name => 'initiatorVersion', :optional => true},
-    CLEANERSTART => {:type => ::Thrift::Types::I64, :name => 'cleanerStart', :optional => true}
+    CLEANERSTART => {:type => ::Thrift::Types::I64, :name => 'cleanerStart', :optional => true},
+    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true},
+    NEXTTXNID => {:type => ::Thrift::Types::I64, :name => 'nextTxnId', :optional => true},
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId', :optional => true},
+    COMMITTIME => {:type => ::Thrift::Types::I64, :name => 'commitTime', :optional => true},
+    HIGHTESTWRITEID => {:type => ::Thrift::Types::I64, :name => 'hightestWriteId', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4787,10 +4823,12 @@ class FindNextCompactRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   WORKERID = 1
   WORKERVERSION = 2
+  POOLNAME = 3
 
   FIELDS = {
     WORKERID => {:type => ::Thrift::Types::STRING, :name => 'workerId', :optional => true},
-    WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion', :optional => true}
+    WORKERVERSION => {:type => ::Thrift::Types::STRING, :name => 'workerVersion', :optional => true},
+    POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true}
   }
 
   def struct_fields; FIELDS; end

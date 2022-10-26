@@ -36,7 +36,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -51,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
@@ -801,7 +801,6 @@ public class CompactorMR {
                   writeIdList, split.getBaseDir(), split.getDeltaDirs(), split.getDeltasToAttemptId());
       RecordIdentifier identifier = reader.createKey();
       V value = reader.createValue();
-      getWriter(reporter, reader.getObjectInspector(), split.getBucket());
 
       AcidUtils.AcidOperationalProperties acidOperationalProperties = AcidUtils.getAcidOperationalProperties(jobConf);
 
@@ -811,13 +810,12 @@ public class CompactorMR {
           continue;
         }
         if (sawDeleteRecord && acidOperationalProperties.isSplitUpdate()) {
-          if (deleteEventWriter == null) {
-            getDeleteEventWriter(reporter, reader.getObjectInspector(), split.getBucket());
-          }
-          deleteEventWriter.write(value);
+          getDeleteEventWriter(reporter, reader.getObjectInspector(), split.getBucket())
+                  .write(value);
           reporter.progress();
         } else {
-          writer.write(value);
+          getWriter(reporter, reader.getObjectInspector(), split.getBucket())
+                  .write(value);
           reporter.progress();
         }
       }
@@ -848,7 +846,7 @@ public class CompactorMR {
       //this is id of the current (compactor) txn
       return validTxnList.getHighWatermark();
     }
-    private void getWriter(Reporter reporter, ObjectInspector inspector,
+    private RecordWriter getWriter(Reporter reporter, ObjectInspector inspector,
                            int bucket) throws IOException {
       if (writer == null) {
         AcidOutputFormat.Options options = new AcidOutputFormat.Options(jobConf);
@@ -873,6 +871,7 @@ public class CompactorMR {
         cleanupTmpLocationOnTaskRetry(options, rootDir);
         writer = aof.getRawRecordWriter(rootDir, options);
       }
+      return writer;
     }
 
     @VisibleForTesting
@@ -887,29 +886,30 @@ public class CompactorMR {
       }
     }
 
-    private void getDeleteEventWriter(Reporter reporter, ObjectInspector inspector,
+    private RecordWriter getDeleteEventWriter(Reporter reporter, ObjectInspector inspector,
         int bucket) throws IOException {
+      if (deleteEventWriter == null) {
+        AcidOutputFormat.Options options = new AcidOutputFormat.Options(jobConf);
+        options.inspector(inspector).writingBase(false)
+                .writingDeleteDelta(true)   // this is the option which will make it a delete writer
+                .isCompressed(jobConf.getBoolean(IS_COMPRESSED, false))
+                .tableProperties(new StringableMap(jobConf.get(TABLE_PROPS)).toProperties()).reporter(reporter)
+                .minimumWriteId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
+                .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE)).bucket(bucket)
+                .statementId(-1)//setting statementId == -1 makes compacted delta files use
+                // delta_xxxx_yyyy format
+                .visibilityTxnId(getCompactorTxnId(jobConf));
 
-      AcidOutputFormat.Options options = new AcidOutputFormat.Options(jobConf);
-      options.inspector(inspector).writingBase(false)
-          .writingDeleteDelta(true)   // this is the option which will make it a delete writer
-          .isCompressed(jobConf.getBoolean(IS_COMPRESSED, false))
-          .tableProperties(new StringableMap(jobConf.get(TABLE_PROPS)).toProperties()).reporter(reporter)
-          .minimumWriteId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
-          .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE)).bucket(bucket)
-          .statementId(-1)//setting statementId == -1 makes compacted delta files use
-          // delta_xxxx_yyyy format
-          .visibilityTxnId(getCompactorTxnId(jobConf));
+        // Instantiate the underlying output format
+        @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
+        AcidOutputFormat<WritableComparable, V> aof =
+                instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
 
-      // Instantiate the underlying output format
-      @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
-          AcidOutputFormat<WritableComparable, V> aof =
-          instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
-
-      Path rootDir = new Path(jobConf.get(TMP_LOCATION));
-      cleanupTmpLocationOnTaskRetry(options, rootDir);
-      deleteEventWriter = aof.getRawRecordWriter(rootDir, options);
-
+        Path rootDir = new Path(jobConf.get(TMP_LOCATION));
+        cleanupTmpLocationOnTaskRetry(options, rootDir);
+        deleteEventWriter = aof.getRawRecordWriter(rootDir, options);
+      }
+      return deleteEventWriter;
     }
   }
 
