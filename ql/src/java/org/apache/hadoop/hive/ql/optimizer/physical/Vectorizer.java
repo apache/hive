@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -249,7 +250,7 @@ import com.google.common.base.Preconditions;
 
 public class Vectorizer implements PhysicalPlanResolver {
 
-  protected static transient final Logger LOG = LoggerFactory.getLogger(Vectorizer.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(Vectorizer.class);
 
   private static final Pattern supportedDataTypesPattern;
 
@@ -288,15 +289,35 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedDataTypesPattern = Pattern.compile(patternBuilder.toString());
   }
 
-  private Set<Class<?>> supportedGenericUDFs = new HashSet<>();
+  private final Set<Class<?>> supportedGenericUDFs = new HashSet<>();
 
-  private Set<String> supportedAggregationUdfs = new HashSet<>();
+  private final Set<String> supportedAggregationUdfs = Arrays.stream(VECTORIZABLE_UDAF.values())
+      .map(e -> e.name().toLowerCase())
+      .collect(Collectors.toSet());
 
   // The set of virtual columns that vectorized readers *MAY* support.
   public static final ImmutableSet<VirtualColumn> vectorizableVirtualColumns =
       ImmutableSet.of(VirtualColumn.ROWID, VirtualColumn.ROWISDELETED);
 
   private HiveConf hiveConf;
+
+  private enum VECTORIZABLE_UDAF {
+    MIN,
+    MAX,
+    COUNT,
+    SUM,
+    AVG,
+    VARIANCE,
+    VAR_POP,
+    VAR_SAMP,
+    STD,
+    STDDEV,
+    STDDEV_POP,
+    STDDEV_SAMP,
+    BLOOM_FILTER,
+    COMPUTE_BIT_VECTOR_HLL,
+    DS_KLL_SKETCH
+  }
 
   public enum EnabledOverride {
     NONE,
@@ -309,7 +330,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         nameMap.put(
             vectorizationEnabledOverride.name().toLowerCase(), vectorizationEnabledOverride);
       }
-    };
+    }
   }
 
   private boolean isVectorizationEnabled;
@@ -512,22 +533,6 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     // For conditional expressions
     supportedGenericUDFs.add(GenericUDFIf.class);
-
-    supportedAggregationUdfs.add("min");
-    supportedAggregationUdfs.add("max");
-    supportedAggregationUdfs.add("count");
-    supportedAggregationUdfs.add("sum");
-    supportedAggregationUdfs.add("avg");
-    supportedAggregationUdfs.add("variance");
-    supportedAggregationUdfs.add("var_pop");
-    supportedAggregationUdfs.add("var_samp");
-    supportedAggregationUdfs.add("std");
-    supportedAggregationUdfs.add("stddev");
-    supportedAggregationUdfs.add("stddev_pop");
-    supportedAggregationUdfs.add("stddev_samp");
-    supportedAggregationUdfs.add(BLOOM_FILTER_FUNCTION);
-    supportedAggregationUdfs.add("compute_bit_vector_hll");
-    supportedAggregationUdfs.add("ds_kll_sketch");
   }
 
   private class VectorTaskColumnInfo {
@@ -4474,7 +4479,9 @@ public class Vectorizer implements PhysicalPlanResolver {
           throws HiveException {
 
     Class<? extends VectorAggregateExpression>[] vecAggrClasses;
-    if (aggregationName.equals("ds_kll_sketch")) {
+    // "ds_kll_sketch" needs special treatment because the UDAF is coming from data
+    // sketches library, we cannot add annotations there
+    if (aggregationName.equals(VECTORIZABLE_UDAF.DS_KLL_SKETCH.name().toLowerCase())) {
       vecAggrClasses = new Class[] {
           VectorUDAFComputeKLLDouble.class, VectorUDAFComputeKLLFinal.class
       };
