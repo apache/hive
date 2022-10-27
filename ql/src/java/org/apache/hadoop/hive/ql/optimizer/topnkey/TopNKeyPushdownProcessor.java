@@ -347,12 +347,14 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
       if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
         // TNK keys are subset of the parent TNK keys
         pushdownThroughParent(topNKey);
-        LOG.debug("Removing {} since child {} supersedes it", parent.getName(), topNKey.getName());
-        parent.getParentOperators().get(0).removeChildAndAdoptItsChildren(parent);
+        if (topNKey.getChildOperators().get(0).getType() == OperatorType.TOPNKEY) {
+          LOG.debug("Removing {} since child {} supersedes it", parent.getName(), topNKey.getName());
+          topNKey.getParentOperators().get(0).removeChildAndAdoptItsChildren(topNKey);
+        }
       } else if (parentTopNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
         // parent TNK keys are subset of TNK keys
         LOG.debug("Removing parent of {} since it supersedes", topNKey.getName());
-        topNKey.getParentOperators().get(0).removeChildAndAdoptItsChildren(topNKey);
+        parent.getParentOperators().get(0).removeChildAndAdoptItsChildren(parent);
       }
     } else if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size() &&
             parentTopNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
