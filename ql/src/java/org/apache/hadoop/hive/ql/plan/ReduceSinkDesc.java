@@ -430,6 +430,18 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.distinctColumnIndices = distinctColumnIndices;
   }
 
+  public boolean hasADistinctColumnIndex() {
+    if (this.distinctColumnIndices == null) {
+      return false;
+    }
+    for (List<Integer> distinctColumnIndex : this.distinctColumnIndices) {
+      if (distinctColumnIndex != null && distinctColumnIndex.size() > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Explain(displayName = "outputname", explainLevels = { Level.USER })
   public String getOutputName() {
     return outputName;
