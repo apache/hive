@@ -26,7 +26,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
 import org.apache.hadoop.io.Writable;
-import org.apache.hive.storage.jdbc.conf.DatabaseType;
 
 /**
  * DBRecordWritable writes serialized row by row data to the underlying database.
@@ -72,10 +71,10 @@ public class DBRecordWritable implements Writable,
   }
 
   private Boolean checkParamMeta(PreparedStatement statement) throws SQLException {
-    DatabaseType dbType = DatabaseType.valueOf(statement.getConnection().toString().split(":")[1].toUpperCase());
+    String dbType = statement.getConnection().toString().split(":")[1].toUpperCase();
     Boolean requireParamMeta;
     switch (dbType) {
-    case DERBY:
+    case "DERBY":
       requireParamMeta = true;
       break;
     default:
