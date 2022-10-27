@@ -20,13 +20,13 @@ package org.apache.hive.storage.jdbc;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
 import org.apache.hadoop.io.Writable;
+import org.apache.hive.storage.jdbc.conf.DatabaseType;
 
 /**
  * DBRecordWritable writes serialized row by row data to the underlying database.
@@ -61,14 +61,28 @@ public class DBRecordWritable implements Writable,
     if (columnValues == null) {
       throw new SQLException("No data available to be written");
     }
-    ParameterMetaData parameterMetaData = statement.getParameterMetaData();
     for (int i = 0; i < columnValues.length; i++) {
       Object value = columnValues[i];
-      if ((parameterMetaData.getParameterType(i + 1) == Types.CHAR) && value != null && value instanceof Boolean) {
+      if ((checkParamMeta(statement) && statement.getParameterMetaData().getParameterType(i + 1) == Types.CHAR)
+          && value != null && value instanceof Boolean) {
         value = ((Boolean) value).booleanValue() ? "1" : "0";
       }
       statement.setObject(i + 1, value);
     }
+  }
+
+  private Boolean checkParamMeta(PreparedStatement statement) throws SQLException {
+    DatabaseType dbType = DatabaseType.valueOf(statement.getConnection().toString().split(":")[1].toUpperCase());
+    Boolean requireParamMeta;
+    switch (dbType) {
+    case DERBY:
+      requireParamMeta = true;
+      break;
+    default:
+      requireParamMeta = false;
+      break;
+    }
+    return requireParamMeta;
   }
 
   @Override
