@@ -1,5 +1,4 @@
 --! qt:dataset:src
---! qt:disabled:flaky HIVE-23709
 
 set hive.strict.checks.cartesian.product= false;
 
