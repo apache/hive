@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.storage.jdbc;
+package org.apache.hive.storage.jdbc.writer;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.lib.db.DBOutputFormat.DBRecordWriter;
-import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.storage.jdbc.conf.DatabaseType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,16 +35,32 @@ public class JdbcRecordWriter implements RecordWriter {
 
   @SuppressWarnings("rawtypes")
   private final DBRecordWriter dbRecordWriter;
+  private final DatabaseType dbType;
 
   @SuppressWarnings("rawtypes")
   public JdbcRecordWriter(DBRecordWriter writer) {
     this.dbRecordWriter = writer;
+    this.dbType = DatabaseType.valueOf(dbRecordWriter.getConnection().toString().split(":")[1].toUpperCase());
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public void write(Writable w) throws IOException {
-    dbRecordWriter.write((DBRecordWritable) w, null);
+    DBRecordWritable dbRecordWritable = getRecordWritable(w, dbType);
+    dbRecordWriter.write(dbRecordWritable, null);
+  }
+
+  public DBRecordWritable getRecordWritable(Writable w, DatabaseType dbType) {
+    DBRecordWritable dbRecordWritable;
+      switch (dbType) {
+      case DERBY:
+        dbRecordWritable = (DerbyRecordWritable) w;
+        break;
+      default:
+        dbRecordWritable = (DBRecordWritable) w;
+        break;
+      }
+    return dbRecordWritable;
   }
 
   @Override

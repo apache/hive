@@ -15,47 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.storage.jdbc;
+package org.apache.hive.storage.jdbc.writer;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.Arrays;
-import org.apache.hadoop.io.Writable;
 
 /**
- * DBRecordWritable writes serialized row by row data to the underlying database.
+ * DerbyRecordWritable writes serialized row by row data to the underlying database.
  */
-public class DBRecordWritable implements Writable,
-        org.apache.hadoop.mapreduce.lib.db.DBWritable {
-
-  private Object[] columnValues;
-
-  public DBRecordWritable() {
-  }
-
-  public DBRecordWritable(int numColumns) {
-    this.columnValues = new Object[numColumns];
-  }
-
-  public void clear() {
-    Arrays.fill(columnValues, null);
-  }
-
-  public void set(int i, Object columnObject) {
-    columnValues[i] = columnObject;
-  }
-
-  @Override
-  public void readFields(ResultSet rs) throws SQLException {
-    // do nothing
-  }
-
+public class DerbyRecordWritable extends DBRecordWritable {
   @Override
   public void write(PreparedStatement statement) throws SQLException {
     if (columnValues == null) {
@@ -70,15 +40,4 @@ public class DBRecordWritable implements Writable,
       statement.setObject(i + 1, value);
     }
   }
-
-  @Override
-  public void readFields(DataInput in) throws IOException {
-    // do nothing
-  }
-
-  @Override
-  public void write(DataOutput out) throws IOException {
-    // do nothing
-  }
-
 }

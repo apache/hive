@@ -28,6 +28,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessor;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessorFactory;
+import org.apache.hive.storage.jdbc.writer.JdbcRecordWriter;
 
 import java.io.IOException;
 import java.util.Properties;

@@ -43,6 +43,7 @@ import org.apache.hive.storage.jdbc.dao.DatabaseAccessor;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessorFactory;
 
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
+import org.apache.hive.storage.jdbc.writer.DBRecordWritable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
