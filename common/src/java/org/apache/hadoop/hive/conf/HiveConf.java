@@ -1510,6 +1510,11 @@ public class HiveConf extends Configuration {
 
     NEWTABLEDEFAULTPARA("hive.table.parameters.default", "",
         "Default property values for newly created tables"),
+    /**
+     * @deprecated With HIVE-25813 table properties of source tables will not be copied over to dest table.
+     * see HIVE-25813 jira for details..
+     */
+    @Deprecated
     DDL_CTL_PARAMETERS_WHITELIST("hive.ddl.createtablelike.properties.whitelist", "",
         "Table Properties to copy over when executing a Create Table Like."),
     /**

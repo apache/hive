@@ -148,18 +148,9 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
   }
 
   private void setTableParameters(Table tbl) throws HiveException {
-    Set<String> retainer = new HashSet<String>();
-
-    Class<? extends Deserializer> serdeClass;
-    try {
-      serdeClass = tbl.getDeserializerClass();
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
-    // We should copy only those table parameters that are specified in the config.
-    SerDeSpec spec = AnnotationUtils.getAnnotation(serdeClass, SerDeSpec.class);
-    //With Hive-25813, we'll not copy over table properties from the source.
-    //CTLT should should copy column schema but not table properties. It is also consistent with other query engines like mysql, redshift.
+    // With Hive-25813, we'll not copy over table properties from the source.
+    // CTLT should should copy column schema but not table properties. It is also consistent
+    // with other query engines like mysql, redshift.
     tbl.getParameters().clear();
 
     if (desc.getTblProps() != null) {
