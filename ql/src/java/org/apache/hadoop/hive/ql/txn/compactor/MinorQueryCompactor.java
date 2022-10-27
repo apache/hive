@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -147,8 +148,9 @@ final class MinorQueryCompactor extends QueryCompactor {
   private String buildCreateTableQuery(Table table, String newTableName, boolean isPartitioned,
       boolean isBucketed, String location) {
     return new CompactionQueryBuilder(
-        CompactionQueryBuilder.CompactionType.MINOR_CRUD,
+        CompactionType.MINOR,
         CompactionQueryBuilder.Operation.CREATE,
+        true,
         newTableName)
         .setSourceTab(table)
         .setBucketed(isBucketed)
@@ -169,8 +171,9 @@ final class MinorQueryCompactor extends QueryCompactor {
   private String buildAlterTableQuery(String tableName, AcidDirectory dir,
       ValidWriteIdList validWriteIdList, boolean isDeleteDelta) {
     return new CompactionQueryBuilder(
-        CompactionQueryBuilder.CompactionType.MINOR_CRUD,
+        CompactionType.MINOR,
         CompactionQueryBuilder.Operation.ALTER,
+        true,
         tableName)
         .setDir(dir)
         .setValidWriteIdList(validWriteIdList)
@@ -209,8 +212,9 @@ final class MinorQueryCompactor extends QueryCompactor {
   private String buildCompactionQuery(String sourceTableName, String resultTableName, Table table,
       ValidWriteIdList validWriteIdList) {
     return new CompactionQueryBuilder(
-        CompactionQueryBuilder.CompactionType.MINOR_CRUD,
+        CompactionType.MINOR,
         CompactionQueryBuilder.Operation.INSERT,
+        true,
         resultTableName)
         .setSourceTabForInsert(sourceTableName)
         .setSourceTab(table)
@@ -233,8 +237,9 @@ final class MinorQueryCompactor extends QueryCompactor {
 
   private String getDropQuery(String tableToDrop) {
     return new CompactionQueryBuilder(
-        CompactionQueryBuilder.CompactionType.MINOR_CRUD,
+        CompactionType.MINOR,
         CompactionQueryBuilder.Operation.DROP,
+        true,
         tableToDrop).build();
   }
 }

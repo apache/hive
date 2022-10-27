@@ -133,9 +133,6 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     }
     return fullTableName;
   }
-  public boolean isMajorCompaction() {
-    return CompactionType.MAJOR == type;
-  }
 
   @Override
   public int compareTo(CompactionInfo o) {

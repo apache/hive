@@ -80,6 +80,12 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private long SLEEP_TIME = 10000;
 
   private String workerName;
+  private final CompactorFactory compactorFactory;
+
+  public Worker() {
+    //This is for better testability (no static mocking required)
+    compactorFactory = CompactorFactory.getInstance();
+  }
 
   static StatsUpdater statsUpdater = new StatsUpdater();
 
@@ -148,20 +154,22 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
   /**
    * Determine if compaction can run in a specified directory.
-   * @param isMajorCompaction type of compaction.
+   * @param ci  {@link CompactionInfo}
    * @param dir the delta directory
    * @param sd resolved storage descriptor
    * @return true, if compaction can run.
    */
-  static boolean isEnoughToCompact(boolean isMajorCompaction, AcidDirectory dir,
-      StorageDescriptor sd) {
+  static boolean isEnoughToCompact(CompactionInfo ci, AcidDirectory dir, StorageDescriptor sd) {
     int deltaCount = dir.getCurrentDirectories().size();
     int origCount = dir.getOriginalFiles().size();
 
     StringBuilder deltaInfo = new StringBuilder().append(deltaCount);
     boolean isEnoughToCompact;
 
-    if (isMajorCompaction) {
+    if (ci.type.equals(CompactionType.REBALANCE)) {
+      //For now, we are allowing rebalance compaction regardless of the table state. Thresholds will be added later.
+      return true;
+    } else if (ci.type.equals(CompactionType.MAJOR)) {
       isEnoughToCompact =
           (origCount > 0 || deltaCount + (dir.getBaseDirectory() == null ? 0 : 1) > 1);
 
@@ -295,6 +303,13 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         return false;
       }
 
+      if (ci.type.equals(CompactionType.REBALANCE) && t1.getSd().isSetNumBuckets() && t1.getSd().getNumBuckets() > 0) {
+        LOG.error("Cannot execute rebalancing compaction on bucketed tables.");
+        ci.errorMessage = "Cannot execute rebalancing compaction on bucketed tables.";
+        msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
+        return false;
+      }
+
       checkInterrupt();
 
       // This chicanery is to get around the fact that the table needs to be final in order to
@@ -361,10 +376,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
       checkInterrupt();
 
-      final StringBuilder jobName = new StringBuilder(workerName);
-      jobName.append("-compactor-");
-      jobName.append(ci.getFullPartitionName());
-
       // Don't start compaction or cleaning if not necessary
       if (isDynPartAbort(t, ci)) {
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
@@ -372,7 +383,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         return false;
       }
       AcidDirectory dir = getAcidStateForWorker(ci, sd, tblValidWriteIds);
-      if (!isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
+      if (!isEnoughToCompact(ci, dir, sd)) {
         if (needsCleaning(dir, sd)) {
           msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
         } else {
@@ -384,7 +395,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         compactionTxn.wasSuccessful();
         return false;
       }
-      if (!ci.isMajorCompaction() && !isMinorCompactionSupported(t.getParameters(), dir)) {
+      if (ci.type.equals(CompactionType.MINOR) && !isMinorCompactionSupported(t.getParameters(), dir)) {
         ci.errorMessage = "Query based Minor compaction is not possible for full acid tables having raw format " +
             "(non-acid) data in them.";
         LOG.error(ci.errorMessage + " Compaction info: {}", ci);
@@ -406,20 +417,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         todo Find a more generic approach to collecting files in the same logical bucket to compact within the same
         task (currently we're using Tez split grouping).
         */
-        QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
-        computeStats = (queryCompactor == null && collectMrStats) || collectGenericStats;
+        Compactor compactor = compactorFactory.getQueryCompactor(msc, t, conf, ci);
+        computeStats = (compactor == null && collectMrStats) || collectGenericStats;
 
         LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + ", id:" +
                 ci.id + " in " + compactionTxn + " with compute stats set to " + computeStats);
+        LOG.info("Will compact id: " + ci.id + " with compactor class: " + compactor.getClass().getName());
 
-        if (queryCompactor != null) {
-          LOG.info("Will compact id: " + ci.id + " with query-based compactor class: "
-              + queryCompactor.getClass().getName());
-          queryCompactor.runCompaction(conf, t, p, sd, tblValidWriteIds, ci, dir);
-        } else {
-          LOG.info("Will compact id: " + ci.id + " via MR job");
-          runCompactionViaMrJob(ci, t, p, sd, tblValidWriteIds, jobName, dir);
-        }
+        compactor.runCompaction(conf, t, p, sd, tblValidWriteIds, ci, dir);
 
         LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in "
             + compactionTxn + ", marking as compacted.");
@@ -529,32 +534,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
       throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
     }
-  }
-
-  private void runCompactionViaMrJob(CompactionInfo ci, Table t, Partition p, StorageDescriptor sd,
-      ValidCompactorWriteIdList tblValidWriteIds, StringBuilder jobName, AcidDirectory dir)
-      throws IOException, InterruptedException {
-    final CompactorMR mr = getMrCompactor();
-    if (runJobAsSelf(ci.runAs)) {
-      mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, msc, dir);
-    } else {
-      UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs, UserGroupInformation.getLoginUser());
-      ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
-        mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, msc, dir);
-        return null;
-      });
-      try {
-        FileSystem.closeAllForUGI(ugi);
-      } catch (IOException exception) {
-        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + ci.getFullPartitionName(),
-            exception);
-      }
-    }
-  }
-
-  @VisibleForTesting
-  public CompactorMR getMrCompactor() {
-    return new CompactorMR();
   }
 
   private void markFailed(CompactionInfo ci, String errorMessage) {

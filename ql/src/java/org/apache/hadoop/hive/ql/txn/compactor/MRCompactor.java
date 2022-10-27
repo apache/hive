@@ -22,6 +22,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +42,6 @@ import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -80,6 +81,7 @@ import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.mapreduce.security.TokenCache;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.Ref;
 import org.apache.parquet.Strings;
 import org.apache.thrift.TException;
@@ -92,9 +94,9 @@ import org.slf4j.LoggerFactory;
  * and output formats, which are in ql.  ql depends on metastore and we can't have a circular
  * dependency.
  */
-public class CompactorMR {
+public class MRCompactor extends Compactor {
 
-  static final private String CLASS_NAME = CompactorMR.class.getName();
+  static final private String CLASS_NAME = MRCompactor.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   static final private String INPUT_FORMAT_CLASS_NAME = "hive.compactor.input.format.class.name";
@@ -115,8 +117,30 @@ public class CompactorMR {
   static final private String COMPACTOR_PREFIX = "compactor.";
 
   private JobConf mrJob;  // the MR job for compaction
+  private IMetaStoreClient msc;
+  public MRCompactor(IMetaStoreClient msc) {
+    this.msc = msc;
+  }
 
-  public CompactorMR() {
+   @Override
+  void runCompaction(HiveConf conf, Table table, Partition partition, StorageDescriptor sd,
+                     ValidWriteIdList writeIds, CompactionInfo ci, AcidDirectory dir)
+       throws IOException, HiveException, InterruptedException {
+    if (ci.runAs.equals(System.getProperty("user.name"))) {
+      run(conf, table, sd, writeIds, ci, msc, dir);
+    } else {
+      UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs, UserGroupInformation.getLoginUser());
+      ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
+        run(conf, table, sd, writeIds, ci, msc, dir);
+        return null;
+      });
+      try {
+        FileSystem.closeAllForUGI(ugi);
+      } catch (IOException exception) {
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + ci.getFullPartitionName(),
+            exception);
+      }
+    }
   }
 
   @VisibleForTesting
@@ -126,7 +150,7 @@ public class CompactorMR {
     job.setJobName(jobName);
     job.setOutputKeyClass(NullWritable.class);
     job.setOutputValueClass(NullWritable.class);
-    job.setJarByClass(CompactorMR.class);
+    job.setJarByClass(MRCompactor.class);
     LOG.debug("User jar set to " + job.getJar());
     job.setMapperClass(CompactorMap.class);
     job.setNumReduceTasks(0);
@@ -207,16 +231,16 @@ public class CompactorMR {
   /**
    * Run Compaction which may consist of several jobs on the cluster.
    * @param conf Hive configuration file
-   * @param jobName name to run this job with
    * @param t metastore table
    * @param sd metastore storage descriptor
    * @param writeIds list of valid write ids
    * @param ci CompactionInfo
    * @throws java.io.IOException if the job fails
    */
-  public void run(HiveConf conf, String jobName, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
+  public void run(HiveConf conf, Table t, StorageDescriptor sd, ValidWriteIdList writeIds,
            CompactionInfo ci, IMetaStoreClient msc, AcidDirectory dir) throws IOException {
 
+    String jobName = ci.workerId + "-compactor-" + ci.getFullPartitionName();
     JobConf job = createBaseJobConf(conf, jobName, t, sd, writeIds, ci);
 
     List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
@@ -261,7 +285,7 @@ public class CompactorMR {
 
     StringableList dirsToSearch = new StringableList();
     Path baseDir = null;
-    if (ci.isMajorCompaction()) {
+    if (ci.type.equals(CompactionType.MAJOR)) {
       // There may not be a base dir if the partition was empty before inserts or if this
       // partition is just now being converted to ACID.
       baseDir = dir.getBaseDirectory();

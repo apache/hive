@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -81,8 +82,9 @@ final class MmMajorQueryCompactor extends QueryCompactor {
       StorageDescriptor storageDescriptor, String baseLocation) {
     return Lists.newArrayList(
         new CompactionQueryBuilder(
-            CompactionQueryBuilder.CompactionType.MAJOR_INSERT_ONLY,
+            CompactionType.MAJOR,
             CompactionQueryBuilder.Operation.CREATE,
+            false,
             tmpTableName)
             .setSourceTab(table)
             .setStorageDescriptor(storageDescriptor)
@@ -94,8 +96,9 @@ final class MmMajorQueryCompactor extends QueryCompactor {
   private List<String> getCompactionQueries(Table t, Partition p, String tmpName) {
     return Lists.newArrayList(
         new CompactionQueryBuilder(
-            CompactionQueryBuilder.CompactionType.MAJOR_INSERT_ONLY,
+            CompactionType.MAJOR,
             CompactionQueryBuilder.Operation.INSERT,
+            false,
             tmpName)
             .setSourceTab(t)
             .setSourcePartition(p)
@@ -106,8 +109,9 @@ final class MmMajorQueryCompactor extends QueryCompactor {
   private List<String> getDropQueries(String tmpTableName) {
     return Lists.newArrayList(
         new CompactionQueryBuilder(
-            CompactionQueryBuilder.CompactionType.MAJOR_INSERT_ONLY,
+            CompactionType.MAJOR,
             CompactionQueryBuilder.Operation.DROP,
+            false,
             tmpTableName).build());
   }
 }

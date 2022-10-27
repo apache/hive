@@ -126,7 +126,8 @@ std::string to_string(const LockType::type& val);
 struct CompactionType {
   enum type {
     MINOR = 1,
-    MAJOR = 2
+    MAJOR = 2,
+    REBALANCE = 3
   };
 };
 

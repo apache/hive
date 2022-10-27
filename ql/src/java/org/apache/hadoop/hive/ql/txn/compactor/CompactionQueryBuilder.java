@@ -15,13 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -62,7 +62,7 @@ class CompactionQueryBuilder {
 
   // required fields, set in constructor
   private final Operation operation;
-  private String resultTableName;
+  private final String resultTableName;
 
   // required for some types of compaction. Required...
   private Table sourceTab; // for Create and for Insert in CRUD and insert-only major
@@ -72,6 +72,7 @@ class CompactionQueryBuilder {
   private AcidDirectory dir; // for Alter in minor
   private Partition sourcePartition; // for Insert in major and insert-only minor
   private String sourceTabForInsert; // for Insert
+  private int numberOfBuckets;  //for rebalance
 
   // settable booleans
   private boolean isPartitioned; // for Create
@@ -81,12 +82,10 @@ class CompactionQueryBuilder {
   // internal use only, for legibility
   private final boolean major;
   private final boolean minor;
+  private final boolean rebalance;
   private final boolean crud;
   private final boolean insertOnly;
-
-  enum CompactionType {
-    MAJOR_CRUD, MINOR_CRUD, MAJOR_INSERT_ONLY, MINOR_INSERT_ONLY
-  }
+  private final CompactionType compactionType;
 
   enum Operation {
     CREATE, ALTER, INSERT, DROP
@@ -169,6 +168,15 @@ class CompactionQueryBuilder {
   }
 
   /**
+   * Sets the target number of implicit buckets for a rebalancing compaction
+   * @param numberOfBuckets The target number of buckets
+   */
+  public CompactionQueryBuilder setNumberOfBuckets(int numberOfBuckets) {
+    this.numberOfBuckets = numberOfBuckets;
+    return this;
+  }
+
+  /**
    * If true, Create operations will result in a table with partition column `file_name`.
    */
   CompactionQueryBuilder setPartitioned(boolean partitioned) {
@@ -180,6 +188,9 @@ class CompactionQueryBuilder {
    * If true, Create operations for CRUD minor compaction will result in a bucketed table.
    */
   CompactionQueryBuilder setBucketed(boolean bucketed) {
+    if(rebalance && bucketed) {
+      throw new IllegalArgumentException("Rebalance compaction is supported only on non-bucketed tables!");
+    }
     isBucketed = bucketed;
     return this;
   }
@@ -203,19 +214,23 @@ class CompactionQueryBuilder {
    * @param resultTableName the name of the table we are running the operation on
    * @throws IllegalArgumentException if compactionType is null
    */
-  CompactionQueryBuilder(CompactionType compactionType, Operation operation,
+  CompactionQueryBuilder(CompactionType compactionType, Operation operation, boolean crud,
       String resultTableName) {
     if (compactionType == null) {
       throw new IllegalArgumentException("CompactionQueryBuilder.CompactionType cannot be null");
     }
+    this.compactionType = compactionType;
     this.operation = operation;
     this.resultTableName = resultTableName;
-    major = compactionType == CompactionType.MAJOR_CRUD
-        || compactionType == CompactionType.MAJOR_INSERT_ONLY;
-    crud =
-        compactionType == CompactionType.MAJOR_CRUD || compactionType == CompactionType.MINOR_CRUD;
-    minor = !major;
+    this.crud = crud;
     insertOnly = !crud;
+    major = compactionType.equals(CompactionType.MAJOR);
+    minor = compactionType.equals(CompactionType.MINOR);
+    rebalance = compactionType.equals(CompactionType.REBALANCE);
+
+    if(rebalance && !crud) {
+      throw new IllegalArgumentException("Rebalance compaction is supported only on ACID tables!");
+    }
   }
 
   /**
@@ -287,7 +302,7 @@ class CompactionQueryBuilder {
   private void buildSelectClauseForInsert(StringBuilder query) {
     // Need list of columns for major crud, mmmajor partitioned, mmminor
     List<FieldSchema> cols;
-    if (major && crud || major && insertOnly && sourcePartition != null || minor && insertOnly) {
+    if (rebalance || major && crud || major && insertOnly && sourcePartition != null || minor && insertOnly) {
       if (sourceTab == null) {
         return; // avoid NPEs, don't throw an exception but skip this part of the query
       }
@@ -295,8 +310,19 @@ class CompactionQueryBuilder {
     } else {
       cols = null;
     }
-
-    if (crud) {
+    if (rebalance) {
+      query.append("0, t2.writeId, t2.rowId / CEIL(numRows / ");
+      query.append(numberOfBuckets);
+      query.append("), t2.rowId, t2.writeId, t2.data from (select ");
+      query.append("count(ROW__ID.writeId) over() as numRows, ROW__ID.writeId as writeId, " +
+          "(row_number() OVER (order by ROW__ID.writeId ASC, ROW__ID.bucketId ASC, ROW__ID.rowId ASC)) -1 AS rowId, " +
+          "NAMED_STRUCT(");
+      for (int i = 0; i < cols.size(); ++i) {
+        query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', ")
+            .append(cols.get(i).getName());
+      }
+      query.append(") as data");
+    } else if (crud) {
       if (major) {
         query.append(
             "validate_acid_sort_order(ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId), "
@@ -311,7 +337,6 @@ class CompactionQueryBuilder {
         query.append(
             "`operation`, `originalTransaction`, `bucket`, `rowId`, `currentTransaction`, `row`");
       }
-
     } else { // mm
       if (major) {
         if (sourcePartition != null) { //mmmajor and partitioned
@@ -334,6 +359,9 @@ class CompactionQueryBuilder {
       query.append(sourceTabForInsert);
     } else {
       query.append(sourceTab.getDbName()).append(".").append(sourceTab.getTableName());
+    }
+    if (rebalance) {
+      query.append(" order by ROW__ID.writeId ASC, ROW__ID.bucketId ASC, ROW__ID.rowId ASC) t2");
     }
   }
 
@@ -544,7 +572,7 @@ class CompactionQueryBuilder {
     Map<String, String> tblProperties = new HashMap<>();
     tblProperties.put("transactional", "false");
     if (crud) {
-      tblProperties.put(AcidUtils.COMPACTOR_TABLE_PROPERTY, "true");
+      tblProperties.put(AcidUtils.COMPACTOR_TABLE_PROPERTY, compactionType.name());
     }
     if (crud && minor && isBucketed) {
       tblProperties.put("bucketing_version", String.valueOf(bucketingVersion));

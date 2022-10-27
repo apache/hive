@@ -23,8 +23,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
@@ -48,25 +47,10 @@ import java.util.stream.Stream;
 /**
  * Common interface for query based compactions.
  */
-abstract class QueryCompactor {
+abstract class QueryCompactor extends Compactor {
 
   private static final Logger LOG = LoggerFactory.getLogger(QueryCompactor.class.getName());
   private static final String COMPACTOR_PREFIX = "compactor.";
-
-  /**
-   * Start a query based compaction.
-   * @param hiveConf hive configuration
-   * @param table the table, where the compaction should run
-   * @param partition the partition, where the compaction should run
-   * @param storageDescriptor this is the resolved storage descriptor
-   * @param writeIds valid write IDs used to filter rows while they're being read for compaction
-   * @param compactionInfo provides info about the type of compaction
-   * @param dir provides ACID directory layout information
-   * @throws IOException compaction cannot be finished.
-   */
-  abstract void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException,
-      HiveException;
 
   /**
    * This is the final step of the compaction, which can vary based on compaction type. Usually this involves some file
@@ -110,12 +94,11 @@ abstract class QueryCompactor {
     Util.overrideConfProps(conf, compactionInfo, tblProperties);
     String user = compactionInfo.runAs;
     SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
-    long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
+    long compactorTxnId = MRCompactor.CompactorMap.getCompactorTxnId(conf);
     try {
       for (String query : createQueries) {
         try {
-          LOG.info("Running {} compaction query into temp table with query: {}",
-              compactionInfo.isMajorCompaction() ? "major" : "minor", query);
+          LOG.info("Running {} compaction query into temp table with query: {}", compactionInfo.type, query);
           DriverUtils.runOnDriver(conf, sessionState, query);
         } catch (Exception ex) {
           Throwable cause = ex;
@@ -128,8 +111,8 @@ abstract class QueryCompactor {
         }
       }
       for (String query : compactionQueries) {
-        LOG.info("Running {} compaction via query: {}", compactionInfo.isMajorCompaction() ? "major" : "minor", query);
-        if (!compactionInfo.isMajorCompaction()) {
+        LOG.info("Running {} compaction via query: {}", compactionInfo.type, query);
+        if (compactionInfo.type.equals(CompactionType.MINOR)) {
           // There was an issue with the query-based MINOR compaction (HIVE-23763), that the row distribution between the FileSinkOperators
           // was not correlated correctly with the bucket numbers. So we could end up with files containing rows from
           // multiple buckets or rows from the same bucket could end up in different FileSinkOperator. This behaviour resulted
@@ -145,19 +128,18 @@ abstract class QueryCompactor {
       }
       commitCompaction(storageDescriptor.getLocation(), tmpTableName, conf, writeIds, compactorTxnId);
     } catch (HiveException e) {
-      LOG.error("Error doing query based {} compaction", compactionInfo.isMajorCompaction() ? "major" : "minor", e);
+      LOG.error("Error doing query based {} compaction", compactionInfo.type, e);
       removeResultDirs(resultDirs, conf);
       throw new IOException(e);
     } finally {
       try {
         for (String query : dropQueries) {
-          LOG.info("Running {} compaction query into temp table with query: {}",
-              compactionInfo.isMajorCompaction() ? "major" : "minor", query);
+          LOG.info("Running {} compaction query into temp table with query: {}", compactionInfo.type, query);
           DriverUtils.runOnDriver(conf, sessionState, query);
         }
       } catch (HiveException e) {
         LOG.error("Unable to drop temp table {} which was created for running {} compaction", tmpTableName,
-            compactionInfo.isMajorCompaction() ? "major" : "minor");
+            compactionInfo.type);
         LOG.error(ExceptionUtils.getStackTrace(e));
       }
     }
@@ -200,7 +182,7 @@ abstract class QueryCompactor {
         boolean writingBase, boolean createDeleteDelta, boolean bucket0, AcidDirectory directory) {
       long minWriteID = writingBase ? 1 : getMinWriteID(directory);
       long highWatermark = writeIds.getHighWatermark();
-      long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
+      long compactorTxnId = MRCompactor.CompactorMap.getCompactorTxnId(conf);
       AcidOutputFormat.Options options =
           new AcidOutputFormat.Options(conf).isCompressed(false).minimumWriteId(minWriteID)
               .maximumWriteId(highWatermark).statementId(-1).visibilityTxnId(compactorTxnId)

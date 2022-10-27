@@ -32,56 +32,48 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * Class responsible of running query based major compaction.
- */
-final class MajorQueryCompactor extends QueryCompactor {
-
+final class RebalanceQueryCompactor extends QueryCompactor {
   @Override
   void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
+                     ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir)
+      throws IOException, HiveException {
     AcidUtils
         .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
 
     HiveConf conf = new HiveConf(hiveConf);
     // Set up the session for driver.
     conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
-    /*
-     * For now, we will group splits on tez so that we end up with all bucket files,
-     * with same bucket number in one map task.
-     */
-    conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
 
     String tmpPrefix = table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_";
     String tmpTableName = tmpPrefix + System.currentTimeMillis();
     Path tmpTablePath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
         conf, true, false, false, null);
 
+    //TODO: This is quite expensive, a better way should be found to get the number of buckets for an implicitly bucketed table
+    int numBuckets = dir.getFiles().stream()
+        .filter(f -> AcidUtils.bucketFileFilter.accept(f.getHdfsFileStatusWithId().getFileStatus().getPath()))
+        .map(f -> AcidUtils.parseBucketId(f.getHdfsFileStatusWithId().getFileStatus().getPath()))
+        .collect(Collectors.toSet()).size();
+
     List<String> createQueries = getCreateQueries(tmpTableName, table, tmpTablePath.toString());
-    List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName);
+    List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName, numBuckets);
     List<String> dropQueries = getDropQueries(tmpTableName);
     runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
         Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries,
-            table.getParameters());
+        table.getParameters());
   }
 
   @Override
-  protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
-      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
+  protected void commitCompaction(String dest, String tmpTableName, HiveConf conf, ValidWriteIdList actualWriteIds,
+                                  long compactorTxnId) throws IOException, HiveException {
     // We don't need to delete the empty directory, as empty base is a valid scenario.
   }
 
-  /**
-   * Note on ordering of rows in the temp table:
-   * We need each final bucket file sorted by original write id (ascending), bucket (ascending) and row id (ascending).
-   * (current write id will be the same as original write id).
-   * We will be achieving the ordering via a custom split grouper for compactor.
-   * See {@link org.apache.hadoop.hive.conf.HiveConf.ConfVars#SPLIT_GROUPING_MODE} for the config description.
-   */
   private List<String> getCreateQueries(String fullName, Table t, String tmpTableLocation) {
     return Lists.newArrayList(new CompactionQueryBuilder(
-        CompactionType.MAJOR,
+        CompactionType.REBALANCE,
         CompactionQueryBuilder.Operation.CREATE,
         true,
         fullName)
@@ -90,22 +82,23 @@ final class MajorQueryCompactor extends QueryCompactor {
         .build());
   }
 
-  private List<String> getCompactionQueries(Table t, Partition p, String tmpName) {
+  private List<String> getCompactionQueries(Table t, Partition p, String tmpName, int numberOfBuckets) {
     return Lists.newArrayList(
         new CompactionQueryBuilder(
-            CompactionType.MAJOR,
+            CompactionType.REBALANCE,
             CompactionQueryBuilder.Operation.INSERT,
             true,
             tmpName)
             .setSourceTab(t)
             .setSourcePartition(p)
-        .build());
+            .setNumberOfBuckets(numberOfBuckets)
+            .build());
   }
 
   private List<String> getDropQueries(String tmpTableName) {
     return Lists.newArrayList(
         new CompactionQueryBuilder(
-            CompactionType.MAJOR,
+            CompactionType.REBALANCE,
             CompactionQueryBuilder.Operation.DROP,
             true,
             tmpTableName).build());

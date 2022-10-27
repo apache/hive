@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -106,8 +107,9 @@ final class MmMinorQueryCompactor extends QueryCompactor {
   private String getCreateQuery(String newTableName, Table t, StorageDescriptor sd,
       String location, boolean isPartitioned) {
     return new CompactionQueryBuilder(
-        CompactionQueryBuilder.CompactionType.MINOR_INSERT_ONLY,
+        CompactionType.MINOR,
         CompactionQueryBuilder.Operation.CREATE,
+        false,
         newTableName)
         .setSourceTab(t)
         .setStorageDescriptor(sd)
@@ -126,8 +128,11 @@ final class MmMinorQueryCompactor extends QueryCompactor {
    */
   private String buildAlterTableQuery(String tableName, AcidDirectory dir,
       ValidWriteIdList validWriteIdList) {
-    return new CompactionQueryBuilder(CompactionQueryBuilder.CompactionType.MINOR_INSERT_ONLY,
-        CompactionQueryBuilder.Operation.ALTER, tableName)
+    return new CompactionQueryBuilder(
+        CompactionType.MINOR,
+        CompactionQueryBuilder.Operation.ALTER,
+        false,
+        tableName)
         .setDir(dir)
         .setValidWriteIdList(validWriteIdList)
         .build();
@@ -148,8 +153,9 @@ final class MmMinorQueryCompactor extends QueryCompactor {
       Table sourceTable) {
     return Lists.newArrayList(
         new CompactionQueryBuilder(
-            CompactionQueryBuilder.CompactionType.MINOR_INSERT_ONLY,
+            CompactionType.MINOR,
             CompactionQueryBuilder.Operation.INSERT,
+            false,
             resultTmpTableName)
         .setSourceTabForInsert(sourceTmpTableName)
         .setSourceTab(sourceTable)
@@ -171,8 +177,9 @@ final class MmMinorQueryCompactor extends QueryCompactor {
 
   private String getDropQuery(String tableToDrop) {
     return new CompactionQueryBuilder(
-        CompactionQueryBuilder.CompactionType.MINOR_INSERT_ONLY,
+        CompactionType.MINOR,
         CompactionQueryBuilder.Operation.DROP,
+        false,
         tableToDrop).build();
   }
 

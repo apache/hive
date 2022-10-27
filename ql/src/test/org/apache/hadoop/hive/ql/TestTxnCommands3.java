@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HMSMetricsListener;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -34,12 +35,14 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.orc.TestVectorizedOrcAcidRowBatchReader;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
-import org.apache.hadoop.hive.ql.txn.compactor.CompactorMR;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorFactory;
+import org.apache.hadoop.hive.ql.txn.compactor.MRCompactor;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
+import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +55,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2.swapTxnManager;
 import static org.mockito.Matchers.any;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   static final private Logger LOG = LoggerFactory.getLogger(TestTxnCommands3.class);
@@ -482,18 +486,21 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("alter table T compact 'minor'");
     //create failed compaction attempt so that compactor txn is aborted
-    CompactorMR compactorMr = Mockito.spy(new CompactorMR());
+    MRCompactor mrCompactor = Mockito.spy(new MRCompactor(HiveMetaStoreUtils.getHiveMetastoreClient(hiveConf)));
 
     Mockito.doAnswer((Answer<Void>) invocationOnMock -> {
       invocationOnMock.callRealMethod();
       throw new RuntimeException(
         "Will cause CompactorMR to fail all opening txn and creating directories for compaction.");
-    }).when(compactorMr).run(any(), any(), any(), any(), any(), any(), any(), any(), any());
+    }).when(mrCompactor).run(any(), any(), any(), any(), any(), any(), any());
+
+    CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
+    when(mockedFactory.getQueryCompactor(any(), any(), any(), any())).thenReturn(mrCompactor);
 
     Worker worker = Mockito.spy(new Worker());
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
-    Mockito.doReturn(compactorMr).when(worker).getMrCompactor();
+    Whitebox.setInternalState(worker, "compactorFactory", mockedFactory);
     worker.run();
 
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
@@ -537,18 +544,21 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("alter table T compact 'minor'");
     //create failed compaction attempt so that compactor txn is aborted
-    CompactorMR compactorMr = Mockito.spy(new CompactorMR());
+    MRCompactor mrCompactor = Mockito.spy(new MRCompactor(HiveMetaStoreUtils.getHiveMetastoreClient(hiveConf)));
 
     Mockito.doAnswer((Answer<Void>) invocationOnMock -> {
       invocationOnMock.callRealMethod();
       throw new RuntimeException(
         "Will cause CompactorMR to fail all opening txn and creating directories for compaction.");
-    }).when(compactorMr).run(any(), any(), any(), any(), any(), any(), any(), any(), any());
+    }).when(mrCompactor).run(any(), any(), any(), any(), any(), any(), any());
+
+    CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
+    when(mockedFactory.getQueryCompactor(any(), any(), any(), any())).thenReturn(mrCompactor);
 
     Worker worker = Mockito.spy(new Worker());
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
-    Mockito.doReturn(compactorMr).when(worker).getMrCompactor();
+    Whitebox.setInternalState(worker, "compactorFactory", mockedFactory);
     worker.run();
 
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
