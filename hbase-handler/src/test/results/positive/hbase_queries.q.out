@@ -993,8 +993,6 @@ CREATE EXTERNAL TABLE `hbase_table_1_like`(
   `value` string COMMENT 'It is the column string value')
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
-WITH SERDEPROPERTIES ( 
-  'hbase.columns.mapping'='cf:string') 
 STORED AS INPUTFORMAT 
   'org.apache.hadoop.mapred.TextInputFormat' 
 OUTPUTFORMAT 

@@ -163,7 +163,10 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     table.setOutputFormatClass(desc.getDefaultOutputFormat());
     table.getTTable().getSd().setInputFormat(table.getInputFormatClass().getName());
     table.getTTable().getSd().setOutputFormat(table.getOutputFormatClass().getName());
-
+    if (table.getTTable().getSd().getSerdeInfo() != null &&
+            table.getTTable().getSd().getSerdeInfo().getParameters() != null) {
+      table.getTTable().getSd().getSerdeInfo().getParameters().clear();
+    }
     if (desc.getDefaultSerName() == null) {
       LOG.info("Default to LazySimpleSerDe for table {}", desc.getTableName());
       table.setSerializationLib(LazySimpleSerDe.class.getName());
