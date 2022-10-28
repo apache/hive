@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -154,10 +155,14 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
     } else {
       throw new SerDeException(getClass() + ": expects either BytesWritable or Text object!");
     }
-    byteArrayRef.setData(rowStr.replaceAll(Pattern.quote(fieldDelimited), REPLACEMENT_DELIM_SEQUENCE).getBytes());
+
+    // at this point, rowStr is supposed to be encoded with UTF8 (not with the serde's charset)
+    byteArrayRef.setData(
+        rowStr.replaceAll(Pattern.quote(fieldDelimited), REPLACEMENT_DELIM_SEQUENCE).getBytes(StandardCharsets.UTF_8));
     cachedLazyStruct.init(byteArrayRef, 0, byteArrayRef.getData().length);
     // use the multi-char delimiter to parse the lazy struct
-    cachedLazyStruct.parseMultiDelimit(rowStr.getBytes(), fieldDelimited.getBytes());
+    cachedLazyStruct.parseMultiDelimit(rowStr.getBytes(StandardCharsets.UTF_8),
+        fieldDelimited.getBytes(StandardCharsets.UTF_8));
     return cachedLazyStruct;
   }
 

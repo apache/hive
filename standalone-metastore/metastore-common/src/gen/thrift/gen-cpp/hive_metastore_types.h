@@ -11155,8 +11155,10 @@ void swap(CompactionResponse &a, CompactionResponse &b);
 std::ostream& operator<<(std::ostream& out, const CompactionResponse& obj);
 
 typedef struct _ShowCompactRequest__isset {
-  _ShowCompactRequest__isset() : poolName(false) {}
+  _ShowCompactRequest__isset() : id(false), poolName(false), partitionname(false) {}
+  bool id :1;
   bool poolName :1;
+  bool partitionname :1;
 } _ShowCompactRequest__isset;
 
 class ShowCompactRequest : public virtual ::apache::thrift::TBase {
@@ -11165,21 +11167,65 @@ class ShowCompactRequest : public virtual ::apache::thrift::TBase {
   ShowCompactRequest(const ShowCompactRequest&);
   ShowCompactRequest& operator=(const ShowCompactRequest&);
   ShowCompactRequest() noexcept
-                     : poolName() {
+                     : id(0),
+                       poolName(),
+                       dbname(),
+                       tablename(),
+                       partitionname(),
+                       type(static_cast<CompactionType::type>(0)),
+                       state() {
   }
 
   virtual ~ShowCompactRequest() noexcept;
+  int64_t id;
   std::string poolName;
+  std::string dbname;
+  std::string tablename;
+  std::string partitionname;
+  /**
+   * 
+   * @see CompactionType
+   */
+  CompactionType::type type;
+  std::string state;
 
   _ShowCompactRequest__isset __isset;
 
+  void __set_id(const int64_t val);
+
   void __set_poolName(const std::string& val);
+
+  void __set_dbname(const std::string& val);
+
+  void __set_tablename(const std::string& val);
+
+  void __set_partitionname(const std::string& val);
+
+  void __set_type(const CompactionType::type val);
+
+  void __set_state(const std::string& val);
 
   bool operator == (const ShowCompactRequest & rhs) const
   {
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
+      return false;
     if (__isset.poolName != rhs.__isset.poolName)
       return false;
     else if (__isset.poolName && !(poolName == rhs.poolName))
+      return false;
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(tablename == rhs.tablename))
+      return false;
+    if (__isset.partitionname != rhs.__isset.partitionname)
+      return false;
+    else if (__isset.partitionname && !(partitionname == rhs.partitionname))
+      return false;
+    if (!(type == rhs.type))
+      return false;
+    if (!(state == rhs.state))
       return false;
     return true;
   }

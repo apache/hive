@@ -20,20 +20,29 @@ package org.apache.hadoop.hive.ql.ddl.process.show.compactions;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
+import static org.apache.commons.collections.MapUtils.isNotEmpty;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.NO_VAL;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getHostFromId;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getThreadIdFromId;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
+import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionStateStr2Enum;
+import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftType;
 
 /**
  * Operation process of showing compactions.
@@ -47,8 +56,8 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
   public int execute() throws HiveException {
     SessionState sessionState = SessionState.get();
     // Call the metastore to get the status of all known compactions (completed get purged eventually)
-    ShowCompactResponse rsp = context.getDb().showCompactions(desc.getPoolName());
-
+    ShowCompactRequest request = getShowCompactioRequest(desc);
+    ShowCompactResponse rsp = context.getDb().showCompactions(request);
     // Write the results into the file
     try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       // Write a header for cliDriver
@@ -66,6 +75,34 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
       return 1;
     }
     return 0;
+  }
+
+  private ShowCompactRequest getShowCompactioRequest(ShowCompactionsDesc desc) throws SemanticException {
+    ShowCompactRequest request = new ShowCompactRequest();
+    if (isBlank(desc.getDbName()) && isNotBlank(desc.getTbName())) {
+      request.setDbname(SessionState.get().getCurrentDatabase());
+    } else {
+      request.setDbname(desc.getDbName());
+    }
+    if (isNotBlank(desc.getTbName())) {
+      request.setTablename(desc.getTbName());
+    }
+    if (isNotBlank(desc.getPoolName())) {
+      request.setPoolName(desc.getPoolName());
+    }
+    if (isNotBlank(desc.getCompactionType())) {
+      request.setType(compactionTypeStr2ThriftType(desc.getCompactionType()));
+    }
+    if (isNotBlank(desc.getCompactionStatus())) {
+      request.setState(compactionStateStr2Enum(desc.getCompactionStatus()).getSqlConst());
+    }
+    if (isNotEmpty(desc.getPartSpec())) {
+      request.setPartitionname(AcidUtils.getPartitionName(desc.getPartSpec()));
+    }
+    if(desc.getCompactionId()>0){
+     request.setId(desc.getCompactionId());
+    }
+    return request;
   }
 
   private void writeHeader(DataOutputStream os) throws IOException {
