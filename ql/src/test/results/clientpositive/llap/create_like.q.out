@@ -575,8 +575,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: drop table table6_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table6_n4
@@ -623,8 +621,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: drop table table5_n5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table5_n5
