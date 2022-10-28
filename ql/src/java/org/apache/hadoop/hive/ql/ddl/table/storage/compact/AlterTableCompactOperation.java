@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -29,9 +29,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.metastore.api.CompactionResponse;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
-import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -127,14 +124,10 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
         break;
       }
 
-      //this could be expensive when there are a lot of compactions....
-      //todo: update to search by ID once HIVE-13353 is done
-      ShowCompactResponse allCompactions = context.getDb().showCompactions();
+      ShowCompactRequest request = new ShowCompactRequest();
+      request.setId(resp.getId());
+      ShowCompactResponse allCompactions = context.getDb().showCompactions(request);
       for (ShowCompactResponseElement compaction : allCompactions.getCompacts()) {
-        if (resp.getId() != compaction.getId()) {
-          continue;
-        }
-
         switch (compaction.getState()) {
           case TxnStore.WORKING_RESPONSE:
           case TxnStore.INITIATED_RESPONSE:
