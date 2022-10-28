@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncTanhLongToDoubl
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 @Description(name = "tanh",
-        value = "_FUNC_(x) - returns the tangent hyperbolic of x (x is in radians)",
+        value = "_FUNC_(x) - returns the hyperbolic tangent of x (x is in radians)",
         extended = "Example:\n "
                 + "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n"
                 + "  1"

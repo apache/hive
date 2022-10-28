@@ -2,12 +2,12 @@ PREHOOK: query: DESCRIBE FUNCTION tanh
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION tanh
 POSTHOOK: type: DESCFUNCTION
-tanh(x) - returns the tangent hyperbolic of x (x is in radians)
+tanh(x) - returns the hyperbolic tangent of x (x is in radians)
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED tanh
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED tanh
 POSTHOOK: type: DESCFUNCTION
-tanh(x) - returns the tangent hyperbolic of x (x is in radians)
+tanh(x) - returns the hyperbolic tangent of x (x is in radians)
 Example:
    > SELECT tanh(0) FROM src LIMIT 1;
   1

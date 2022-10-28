@@ -2,12 +2,12 @@ PREHOOK: query: DESCRIBE FUNCTION cosh
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION cosh
 POSTHOOK: type: DESCFUNCTION
-cosh(x) - returns the cosineh of x (x is in radians)
+cosh(x) - returns the hyperbolic cosine of x (x is in radians)
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED cosh
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED cosh
 POSTHOOK: type: DESCFUNCTION
-cosh(x) - returns the cosineh of x (x is in radians)
+cosh(x) - returns the hyperbolic cosine of x (x is in radians)
 Example:
    > SELECT cosh(0) FROM src LIMIT 1;
   1

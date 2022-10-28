@@ -2,12 +2,12 @@ PREHOOK: query: DESCRIBE FUNCTION sinh
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION sinh
 POSTHOOK: type: DESCFUNCTION
-sinh(x) - returns the Sin hyperbolic  of x (x is in radians)
+sinh(x) - returns the hyperbolic sin of x (x is in radians)
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED sinh
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED sinh
 POSTHOOK: type: DESCFUNCTION
-sinh(x) - returns the Sin hyperbolic  of x (x is in radians)
+sinh(x) - returns the hyperbolic sin of x (x is in radians)
 Example:
    > SELECT sinh(0) FROM src LIMIT 1;
   0

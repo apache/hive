@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
  * UDFCosh.
  */
 @Description(name = "cosh",
-        value = "_FUNC_(x) - returns the cosineh of x (x is in radians)",
+        value = "_FUNC_(x) - returns the hyperbolic cosine of x (x is in radians)",
         extended = "Example:\n "
                 + "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n"
                 + "  1"
