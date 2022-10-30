@@ -65,4 +65,12 @@ SELECT a, b FROM t_test GROUP BY a, b ORDER BY a, b LIMIT 3;
 SET hive.optimize.topnkey=false;
 SELECT a, b FROM t_test GROUP BY a, b ORDER BY a, b LIMIT 3;
 
+SET hive.optimize.topnkey=true;
+EXPLAIN
+SELECT a, count(distinct b), min(c) FROM t_test GROUP BY a ORDER BY a LIMIT 3;
+SELECT a, count(distinct b), min(c) FROM t_test GROUP BY a ORDER BY a LIMIT 3;
+
+SET hive.optimize.topnkey=false;
+SELECT a, count(distinct b), min(c) FROM t_test GROUP BY a ORDER BY a LIMIT 3;
+
 DROP TABLE t_test;
