@@ -249,7 +249,11 @@ public class MetastoreConf {
       ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
       ConfVars.CAPABILITY_CHECK,
       ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
-      ConfVars.EXPRESSION_PROXY_CLASS
+      ConfVars.EXPRESSION_PROXY_CLASS,
+      ConfVars.EXPRESSION_PROXY_CLASS,
+      ConfVars.HIVE_FS_S3A_ACCESS_KEY,
+      ConfVars.HIVE_FS_S3A_SECRET_KEY,
+      ConfVars.HIVE_FS_S3A_ENDPOINT
   };
 
   static {
@@ -1612,6 +1616,12 @@ public class MetastoreConf {
             "pools (HIVE-26443), running workers on HMS side is still supported but not suggested anymore. " +
             "This config value will be removed in the future.\n" +
             "Chooses where the compactor worker threads should run, Only possible values are \"metastore\" and \"hs2\""),
+    HIVE_FS_S3A_ACCESS_KEY("fs.s3a.access.key", "fs.s3a.access.key", "",
+        "AccessKey for accessing S3A-compatible blobstore."),
+    HIVE_FS_S3A_SECRET_KEY("fs.s3a.secret.key", "fs.s3a.secret.key", "",
+        "SecretKey for accessing S3A-compatible blobstore."),
+    HIVE_FS_S3A_ENDPOINT("fs.s3a.endpoint", "fs.s3a.endpoint", "s3.amazonaws.com",
+        "AWS S3 endpoint means where the data is stored."),
     // Hive values we have copied and use as is
     // These two are used to indicate that we are running tests
     HIVE_IN_TEST("hive.in.test", "hive.in.test", false, "internal usage only, true in test mode"),

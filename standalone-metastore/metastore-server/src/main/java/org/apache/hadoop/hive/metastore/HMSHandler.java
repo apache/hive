@@ -189,6 +189,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         handler.notifyMetaListenersOnShutDown();
       });
       HMSHandlerContext.clear();
+      Warehouse.removeWhThreadConf();
       logAndAudit("Done cleaning up thread local RawStore");
     }
   }
@@ -582,6 +583,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (ConfVars.TRY_DIRECT_SQL == confVar) {
       HMSHandler.LOG.info("Direct SQL optimization = {}",  value);
     }
+    wh.setWhConf(configuration);
   }
 
   @Override

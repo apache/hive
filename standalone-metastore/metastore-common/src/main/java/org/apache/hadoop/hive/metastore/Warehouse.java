@@ -99,6 +99,28 @@ public class Warehouse {
     isTenantBasedStorage = MetastoreConf.getBoolVar(conf, ConfVars.ALLOW_TENANT_BASED_STORAGE);
   }
 
+  // Thread local configuration is needed as many threads could make changes
+  // to the conf using the connection hook
+  private static final ThreadLocal<Configuration> threadLocalWhConf =
+      ThreadLocal.withInitial(() -> null);
+
+  public void setWhConf(Configuration conf) {
+    threadLocalWhConf.set(conf);
+  }
+
+  public Configuration getWhConf() {
+    Configuration conf = threadLocalWhConf.get();
+    if (conf == null) {
+      conf = new Configuration(this.conf);
+      threadLocalWhConf.set(conf);
+    }
+    return conf;
+  }
+
+  public static void removeWhThreadConf() {
+    threadLocalWhConf.remove();
+  }
+
   private MetaStoreFS getMetaStoreFsHandler(Configuration conf)
       throws MetaException {
     String handlerClassStr = MetastoreConf.getVar(conf, ConfVars.FS_HANDLER_CLS);
@@ -127,7 +149,7 @@ public class Warehouse {
   }
 
   public FileSystem getFs(Path f) throws MetaException {
-    return getFs(f, conf);
+    return getFs(f, getWhConf());
   }
 
 
