@@ -1388,6 +1388,10 @@ class MetaStoreDirectSql {
       filterBuffer.append(node.isReverseOrder
           ? "(" + nodeValue0 + " " + node.operator.getSqlOp() + " " + tableValue + ")"
           : "(" + tableValue + " " + node.operator.getSqlOp() + " " + nodeValue0 + ")");
+
+      if(partColIndex == 0 && "EQUALS".equals(node.operator.name())){
+        filterBuffer.append(" and PARTITIONS.PART_NAME like '" + node.keyName + node.operator + node.value + "%'" );
+      }
     }
   }
 
