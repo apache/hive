@@ -100,7 +100,7 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>net.sf.opencsv</groupId>
+      <groupId>com.opencsv</groupId>
       <artifactId>opencsv</artifactId>
       <version>${opencsv.version}</version>
     </dependency>
