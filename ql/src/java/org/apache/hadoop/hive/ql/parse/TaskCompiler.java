@@ -473,10 +473,10 @@ public abstract class TaskCompiler {
     } else {
       CreateMaterializedViewDesc cmv = pCtx.getCreateViewDesc();
       dataSink = cmv.getAndUnsetWriter();
-      txnId = cmv.getInitialMmWriteId();
+      txnId = cmv.getInitialWriteId();
       loc = cmv.getLocation();
     }
-    Path location = (loc == null) ? getDefaultCtasLocation(pCtx) : new Path(loc);
+    Path location = (loc == null) ? getDefaultCtasOrCMVLocation(pCtx) : new Path(loc);
     if (pCtx.getQueryProperties().isCTAS()) {
       CreateTableDesc ctd = pCtx.getCreateTable();
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL)) {
@@ -511,7 +511,7 @@ public abstract class TaskCompiler {
     lfd.setTargetDir(location);
   }
 
-  private Path getDefaultCtasLocation(final ParseContext pCtx) throws SemanticException {
+  private Path getDefaultCtasOrCMVLocation(final ParseContext pCtx) throws SemanticException {
     try {
       String protoName = null, suffix = "";
       boolean isExternal = false;

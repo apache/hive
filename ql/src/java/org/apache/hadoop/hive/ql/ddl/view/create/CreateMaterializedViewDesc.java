@@ -75,7 +75,7 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
   private List<FieldSchema> sortCols;
   private List<String> distributeColNames;
   private List<FieldSchema> distributeCols;
-  private Long initialMmWriteId; // Initial MM write ID for CMV and import.
+  private Long initialWriteId; // Initial write ID for CMV and import.
   // The FSOP configuration for the FSOP that is going to write initial data during cmv.
   // This is not needed beyond compilation, so it is transient.
   private transient FileSinkDesc writer;
@@ -389,12 +389,12 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
     return tbl;
   }
 
-  public void setInitialMmWriteId(Long mmWriteId) {
-    this.initialMmWriteId = mmWriteId;
+  public void setInitialWriteId(Long writeId) {
+    this.initialWriteId = writeId;
   }
 
-  public Long getInitialMmWriteId() {
-    return initialMmWriteId;
+  public Long getInitialWriteId() {
+    return initialWriteId;
   }
 
   public FileSinkDesc getAndUnsetWriter() {
