@@ -568,7 +568,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         throw new SemanticException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
       }
       if (table.currentSnapshot() != null) {
-        if (table.currentSnapshot().allManifests().parallelStream().map(ManifestFile::partitionSpecId)
+        if (table.currentSnapshot().allManifests(table.io()).parallelStream().map(ManifestFile::partitionSpecId)
             .anyMatch(id -> id < table.spec().specId())) {
           throw new SemanticException(
               "Cannot perform insert overwrite query on Iceberg table where partition evolution happened. In order " +
