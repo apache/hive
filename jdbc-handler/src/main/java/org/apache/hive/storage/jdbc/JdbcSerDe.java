@@ -43,6 +43,7 @@ import org.apache.hive.storage.jdbc.dao.DatabaseAccessor;
 import org.apache.hive.storage.jdbc.dao.DatabaseAccessorFactory;
 
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
+import org.apache.hive.storage.jdbc.dao.DerbyDatabaseAccessor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -113,7 +114,11 @@ public class JdbcSerDe extends AbstractSerDe {
         }
 
         numColumns = hiveColumnNames.length;
-        dbRecordWritable = new DBRecordWritable(numColumns);
+        if (dbAccessor instanceof DerbyDatabaseAccessor) {
+          dbRecordWritable = new DerbyRecordWritable(numColumns);
+        } else {
+          dbRecordWritable = new DBRecordWritable(numColumns);
+        }
 
         // Populate column types and inspector
         hiveColumnTypes = new PrimitiveTypeInfo[hiveColumnTypesList.size()];

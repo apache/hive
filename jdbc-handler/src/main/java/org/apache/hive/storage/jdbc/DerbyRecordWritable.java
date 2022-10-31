@@ -17,61 +17,31 @@
  */
 package org.apache.hive.storage.jdbc;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import org.apache.hadoop.io.Writable;
+import java.sql.Types;
 
 /**
- * DBRecordWritable writes serialized row by row data to the underlying database.
+ * DerbyRecordWritable writes serialized row by row data to the underlying database.
  */
-public class DBRecordWritable implements Writable,
-        org.apache.hadoop.mapreduce.lib.db.DBWritable {
+public class DerbyRecordWritable extends DBRecordWritable {
 
-  public Object[] columnValues;
-
-  public DBRecordWritable() {
-  }
-
-  public DBRecordWritable(int numColumns) {
+  public DerbyRecordWritable(int numColumns) {
     this.columnValues = new Object[numColumns];
   }
-
-  public void clear() {
-    Arrays.fill(columnValues, null);
-  }
-
-  public void set(int i, Object columnObject) {
-    columnValues[i] = columnObject;
-  }
-
-  @Override
-  public void readFields(ResultSet rs) throws SQLException {
-    // do nothing
-  }
-
   @Override
   public void write(PreparedStatement statement) throws SQLException {
     if (columnValues == null) {
       throw new SQLException("No data available to be written");
     }
+    ParameterMetaData parameterMetaData = statement.getParameterMetaData();
     for (int i = 0; i < columnValues.length; i++) {
-      statement.setObject(i + 1, columnValues[i]);
+      Object value = columnValues[i];
+      if ((parameterMetaData.getParameterType(i + 1) == Types.CHAR) && value != null && value instanceof Boolean) {
+        value = ((Boolean) value).booleanValue() ? "1" : "0";
+      }
+      statement.setObject(i + 1, value);
     }
   }
-
-  @Override
-  public void readFields(DataInput in) throws IOException {
-    // do nothing
-  }
-
-  @Override
-  public void write(DataOutput out) throws IOException {
-    // do nothing
-  }
-
 }
