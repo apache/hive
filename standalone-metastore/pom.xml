@@ -420,6 +420,12 @@
         <artifactId>apacheds-server-integ</artifactId>
         <version>${apache-directory-server.version}</version>
         <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.directory.server</groupId>
