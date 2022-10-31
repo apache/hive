@@ -134,18 +134,33 @@ public final class PcrOpProcFactory {
       PcrExprProcFactory.NodeInfoWrapper wrapper = PcrExprProcFactory.walkExprTree(
           alias, partitions, top.getConf().getVirtualCols(), predicate);
 
+      ExprNodeDesc tableScanFilterExpr = top.getConf().getFilterExpr();
+      boolean isTSHasSameExpr = tableScanFilterExpr != null && tableScanFilterExpr.equals(predicate);
       if (wrapper.state == PcrExprProcFactory.WalkState.TRUE) {
         owc.getOpToRemove().add(new PcrOpWalkerCtx.OpToDeleteInfo(pop, fop));
-      } else if (wrapper.state == PcrExprProcFactory.WalkState.CONSTANT && wrapper.outExpr instanceof ExprNodeGenericFuncDesc) {
+        if(isTSHasSameExpr) {
+          top.getConf().setFilterExpr(null);
+        }
+      } else if (wrapper.state == PcrExprProcFactory.WalkState.CONSTANT
+          && wrapper.outExpr instanceof ExprNodeGenericFuncDesc) {
         ExprNodeDesc desc = ConstantPropagateProcFactory.foldExpr((ExprNodeGenericFuncDesc)wrapper.outExpr);
-        if (desc != null && desc instanceof ExprNodeConstantDesc && Boolean.TRUE.equals(((ExprNodeConstantDesc)desc).getValue())) {
+        if (desc instanceof ExprNodeConstantDesc && Boolean.TRUE.equals(((ExprNodeConstantDesc) desc).getValue())) {
           owc.getOpToRemove().add(new PcrOpWalkerCtx.OpToDeleteInfo(pop, fop));
+          if(isTSHasSameExpr) {
+            top.getConf().setFilterExpr(null);
+          }
         } else {
           fop.getConf().setPredicate(wrapper.outExpr);
+          if(isTSHasSameExpr && wrapper.outExpr instanceof ExprNodeGenericFuncDesc) {
+            top.getConf().setFilterExpr((ExprNodeGenericFuncDesc)wrapper.outExpr);
+          }
         }
       }
       else if (wrapper.state != PcrExprProcFactory.WalkState.FALSE) {
         fop.getConf().setPredicate(wrapper.outExpr);
+        if(isTSHasSameExpr && wrapper.outExpr instanceof ExprNodeGenericFuncDesc) {
+          top.getConf().setFilterExpr((ExprNodeGenericFuncDesc)wrapper.outExpr);
+        }
       } else {
         LOG.warn("Filter passes no row");
         fop.getConf().setPredicate(wrapper.outExpr);
