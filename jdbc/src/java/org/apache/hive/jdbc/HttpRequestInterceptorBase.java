@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.util.Time;
 import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
@@ -94,7 +95,7 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
         LOG.info("{}:{}", Constants.HTTP_HEADER_REQUEST_TRACK, trackHeader);
         additionalHeaders.put(Constants.HTTP_HEADER_REQUEST_TRACK, trackHeader);
         httpContext.setAttribute(Constants.HTTP_HEADER_REQUEST_TRACK, trackHeader);
-        httpContext.setAttribute(trackHeader + Constants.TIME_POSTFIX_REQUEST_TRACK, System.currentTimeMillis());
+        httpContext.setAttribute(trackHeader + Constants.TIME_POSTFIX_REQUEST_TRACK, Time.monotonicNow());
       }
       // Insert the additional http headers
       if (additionalHeaders != null) {

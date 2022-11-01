@@ -20,6 +20,7 @@ package org.apache.hive.jdbc;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.util.Time;
 import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
 import org.apache.http.protocol.HttpContext;
@@ -32,9 +33,10 @@ public class HttpDefaultResponseInterceptor extends HttpResponseInterceptorBase 
     if (trackHeader == null) {
       return;
     }
-    long elapsed = System.currentTimeMillis() - (long) context.getAttribute(trackHeader + "_TIME");
+    String trackTimeHeader = trackHeader + Constants.TIME_POSTFIX_REQUEST_TRACK;
+    long elapsed = Time.monotonicNow() - (long) context.getAttribute(trackTimeHeader);
     LOG.info("Response to {} in {} ms", trackHeader, elapsed);
     context.removeAttribute(Constants.HTTP_HEADER_REQUEST_TRACK);
-    context.removeAttribute(trackHeader + "_TIME");
+    context.removeAttribute(trackTimeHeader);
   }
 }

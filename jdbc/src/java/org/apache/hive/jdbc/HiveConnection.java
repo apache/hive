@@ -818,7 +818,7 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private boolean isRequestTrackingEnabled() {
-    return Boolean.valueOf(sessConfMap.get(JdbcConnectionParams.JDBC_PARAM_REQUEST_TRACK));
+    return Boolean.parseBoolean(sessConfMap.get(JdbcConnectionParams.JDBC_PARAM_REQUEST_TRACK));
   }
 
   /**
