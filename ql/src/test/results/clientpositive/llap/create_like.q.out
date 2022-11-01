@@ -423,28 +423,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"first_name\":\"true\",\"last_name\":\"true\",\"number\":\"true\"}}
-	avro.schema.literal 	{                   
-	                    	  \"namespace\": \"testing.hive.avro.serde\",
-	                    	  \"name\": \"doctors_n2\",
-	                    	  \"type\": \"record\",
-	                    	  \"fields\": [     
-	                    	    {               
-	                    	      \"name\":\"number\",
-	                    	      \"type\":\"int\",
-	                    	      \"doc\":\"Order of playing the role\"
-	                    	    },              
-	                    	    {               
-	                    	      \"name\":\"first_name\",
-	                    	      \"type\":\"string\",
-	                    	      \"doc\":\"first name of actor playing role\"
-	                    	    },              
-	                    	    {               
-	                    	      \"name\":\"last_name\",
-	                    	      \"type\":\"string\",
-	                    	      \"doc\":\"last name of actor playing role\"
-	                    	    }               
-	                    	  ]                 
-	                    	}                   
 	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
@@ -499,7 +477,6 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
-	parquet.compression 	LZO                 
 	rawDataSize         	0                   
 	totalSize           	0                   
 #### A masked pattern was here ####
@@ -598,8 +575,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: drop table table6_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table6_n4
@@ -646,8 +621,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: drop table table5_n5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table5_n5
@@ -696,7 +669,6 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	0                   
 	numRows             	0                   
-	orc.compress        	SNAPPY              
 	rawDataSize         	0                   
 	totalSize           	0                   
 #### A masked pattern was here ####
