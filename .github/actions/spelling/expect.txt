@@ -1,4 +1,5 @@
 AAAAABJRU
+aarry
 abcd
 abcde
 abcdef
@@ -55,6 +56,7 @@ buf
 byoi
 bytearrayinput
 bytebuffer
+bytecode
 byteinfo
 BYTEINT
 byw
@@ -364,6 +366,7 @@ TFrozen
 threebytes
 Throwable
 timelabel
+timestamplocal
 TIMESTAMPLOCALTZ
 timestamptz
 timezone
@@ -445,5 +448,6 @@ xmlns
 xsi
 yadda
 yes'okay
+yyyy
 YYYYMMDD
 zid
