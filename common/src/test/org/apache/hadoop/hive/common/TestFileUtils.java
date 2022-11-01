@@ -303,6 +303,14 @@ public class TestFileUtils {
     assertEquals(1, assertExpectedFilePaths(itr, Collections.singletonList("mock:/tmp/dummy")));
   }
 
+  @Test
+  public void testPathEscapeChars() {
+    StringBuilder sb = new StringBuilder();
+    FileUtils.charToEscape.stream().forEach(integer -> sb.append((char) integer));
+    String path = sb.toString();
+    assertEquals(path, FileUtils.unescapePathName(FileUtils.escapePathName(path)));
+  }
+
   private int assertExpectedFilePaths(RemoteIterator<? extends FileStatus> lfs, List<String> expectedPaths)
       throws Exception {
     int count = 0;
