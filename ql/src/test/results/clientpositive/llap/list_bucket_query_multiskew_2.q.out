@@ -135,7 +135,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n2
-          filterExpr: ((value = 'val_484') and (ds = '1') and (hr = '4')) (type: boolean)
+          filterExpr: (value = 'val_484') (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
@@ -215,7 +215,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n2
-          filterExpr: ((key = '406') and (ds = '1') and (hr = '4')) (type: boolean)
+          filterExpr: (key = '406') (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
@@ -298,7 +298,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n2
-          filterExpr: ((struct(key,value)) IN (const struct('484','val_484'), const struct('238','val_238')) and (ds = '1') and (hr = '4')) (type: boolean)
+          filterExpr: (struct(key,value)) IN (const struct('484','val_484'), const struct('238','val_238')) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false

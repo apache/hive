@@ -306,7 +306,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partition_mv_1
-          filterExpr: (238.0D = 238.0D) (type: boolean)
           Select Operator
             expressions: value (type: string), key (type: string)
             outputColumnNames: _col0, _col1
@@ -425,7 +424,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partition_mv_2
-          filterExpr: (value = 'val_238') (type: boolean)
           Select Operator
             expressions: key (type: string), 'val_238' (type: string)
             outputColumnNames: _col0, _col1

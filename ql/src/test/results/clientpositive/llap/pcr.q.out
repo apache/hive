@@ -80,7 +80,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: pcr_t1
-                  filterExpr: ((key < 5) and (ds <= '2000-04-09')) (type: boolean)
+                  filterExpr: (key < 5) (type: boolean)
                   Statistics: Num rows: 40 Data size: 11120 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -1441,7 +1441,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: pcr_t1
-                  filterExpr: ((key = 14) and (ds) IN ('2000-04-08', '2000-04-09')) (type: boolean)
+                  filterExpr: (key = 14) (type: boolean)
                   Statistics: Num rows: 40 Data size: 3760 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -1624,7 +1624,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: pcr_t1
-                  filterExpr: (ds) IN ('2000-04-08', '2000-04-09') (type: boolean)
                   Statistics: Num rows: 40 Data size: 3760 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -1845,7 +1844,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: pcr_t1
-                  filterExpr: ((ds >= '2000-04-08') or (ds < '2000-04-10')) (type: boolean)
                   Statistics: Num rows: 60 Data size: 5640 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -2123,7 +2121,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: pcr_t1
-                  filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
+                  filterExpr: (struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) (type: boolean)
                   Statistics: Num rows: 40 Data size: 11120 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -4160,7 +4158,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Top N Key Operator
@@ -4310,7 +4307,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((UDFToDouble(key) = 11.0D) and (ds = '2008-04-08') and (hr) IN ('11', '12')) (type: boolean)
+                  filterExpr: (UDFToDouble(key) = 11.0D) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -4499,7 +4496,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((UDFToDouble(key) = 11.0D) and (hr = '11')) (type: boolean)
+                  filterExpr: (UDFToDouble(key) = 11.0D) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -4905,7 +4902,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
-          filterExpr: (11.0D = 11.0D) (type: boolean)
           Select Operator
             expressions: key (type: string), value (type: string)
             outputColumnNames: _col0, _col1
@@ -4933,7 +4929,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
-          filterExpr: (11.0D = 11.0D) (type: boolean)
           Select Operator
             expressions: key (type: string), value (type: string)
             outputColumnNames: _col0, _col1
@@ -4961,7 +4956,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
-          filterExpr: (11.0D = 11.0D) (type: boolean)
           Select Operator
             expressions: key (type: string), value (type: string)
             outputColumnNames: _col0, _col1

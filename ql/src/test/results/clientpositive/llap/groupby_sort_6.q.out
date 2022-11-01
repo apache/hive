@@ -494,7 +494,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1_n61
-                  filterExpr: (ds = '2') (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: PARTIAL Column stats: NONE
                   GatherStats: false
                   Select Operator

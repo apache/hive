@@ -120,7 +120,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: testa
-          filterExpr: ((part1 = 'CA') and (part2 = 'ABC')) (type: boolean)
           Select Operator
             expressions: rand() (type: double)
             outputColumnNames: _col0
@@ -159,7 +158,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: testa
-          filterExpr: ((part1 = 'CA') and (part2 = 'ABC')) (type: boolean)
           Select Operator
             expressions: rand() (type: double)
             outputColumnNames: _col0

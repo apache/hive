@@ -74,7 +74,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sourcetable_temp
-                  filterExpr: (ds = '2011-11-11') (type: boolean)
                   Statistics: Num rows: 123 Data size: 40112 Basic stats: PARTIAL Column stats: NONE
                   Top N Key Operator
                     sort order: --
@@ -233,7 +232,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sourcetable_temp
-                  filterExpr: (ds = '2011-11-11') (type: boolean)
                   Statistics: Num rows: 123 Data size: 40112 Basic stats: PARTIAL Column stats: NONE
                   Top N Key Operator
                     sort order: --

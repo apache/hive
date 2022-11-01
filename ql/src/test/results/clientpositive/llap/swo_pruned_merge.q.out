@@ -65,7 +65,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 500 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
@@ -224,10 +223,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((ds is not null and UDFToDouble(hr) is not null) or (key > '3')) (type: boolean)
+                  filterExpr: (UDFToDouble(hr) is not null or (key > '3')) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 757248 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) is not null and ds is not null) (type: boolean)
+                    predicate: UDFToDouble(hr) is not null (type: boolean)
                     Statistics: Num rows: 2000 Data size: 736000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ds (type: string), UDFToDouble(hr) (type: double)

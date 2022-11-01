@@ -389,7 +389,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.mv1_part_n2
-                  filterExpr: deptno is not null (type: boolean)
                   Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: deptno (type: int), name (type: varchar(256)), salary (type: float), commission (type: int)

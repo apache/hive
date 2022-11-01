@@ -177,7 +177,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: agg
-                  filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
@@ -363,7 +362,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: agg
-                  filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
@@ -523,7 +521,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: agg
-                  filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 63 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: dim_shops_id (type: int)
@@ -649,7 +646,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: agg
-                  filterExpr: (dim_shops_id = 1) (type: boolean)
                   Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: amount (type: decimal(10,0))
@@ -776,7 +772,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: agg
-                  filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
@@ -954,7 +949,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: agg_01
-                  filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
@@ -983,7 +977,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: agg_01
-                  filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 1044 Basic stats: COMPLETE Column stats: PARTIAL
                   Select Operator
                     expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
@@ -1162,7 +1155,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
-                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
@@ -1194,7 +1186,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s2
-                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)

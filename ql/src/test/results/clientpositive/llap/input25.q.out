@@ -59,7 +59,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (d = '2009-01-01') (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Limit
                     Number of rows: 10
@@ -80,7 +79,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (d = '2009-02-02') (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: NONE
                   Limit
                     Number of rows: 10

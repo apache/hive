@@ -214,7 +214,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_returns
-                  filterExpr: cr_returned_date_sk is not null (type: boolean)
                   Statistics: Num rows: 4320980099 Data size: 983085386936 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: cr_return_amount (type: decimal(7,2)), cr_net_loss (type: decimal(7,2)), cr_returned_date_sk (type: bigint)
@@ -364,7 +363,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
-                  filterExpr: cs_sold_date_sk is not null (type: boolean)
                   Statistics: Num rows: 43005109025 Data size: 10308318973576 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: cs_call_center_sk (type: bigint), cs_ext_sales_price (type: decimal(7,2)), cs_net_profit (type: decimal(7,2)), cs_sold_date_sk (type: bigint)

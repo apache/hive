@@ -227,7 +227,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-                  filterExpr: (c21 = 'test1') (type: boolean)
                   Statistics: Num rows: 475011 Data size: 684263810 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: c21 (type: string)

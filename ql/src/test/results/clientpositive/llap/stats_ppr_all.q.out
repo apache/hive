@@ -94,7 +94,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss
-                  filterExpr: ((country = 'US') and (year = 2015) and (month = 2) and (day = 1)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: order_amount (type: float)
@@ -229,7 +228,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: ss
-                  filterExpr: (201511.0D = 201511.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: order_amount (type: float)

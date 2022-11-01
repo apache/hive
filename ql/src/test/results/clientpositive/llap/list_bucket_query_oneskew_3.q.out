@@ -210,7 +210,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n0
-          filterExpr: ((ds = '1') and (x <> 86)) (type: boolean)
+          filterExpr: (x <> 86) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false

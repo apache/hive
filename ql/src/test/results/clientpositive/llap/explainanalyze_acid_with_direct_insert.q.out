@@ -678,7 +678,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_part_table
-                  filterExpr: (b = 3) (type: boolean)
                   Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -817,7 +816,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_part_table
-                  filterExpr: (b = 1) (type: boolean)
                   Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -1638,7 +1636,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_part_table
-                  filterExpr: (b = 3) (type: boolean)
                   Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
@@ -1777,7 +1774,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: analyze_part_table
-                  filterExpr: (b = 1) (type: boolean)
                   Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)

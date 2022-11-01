@@ -163,7 +163,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: calendarp_n0
-          filterExpr: (p = 1) (type: boolean)
           Select Operator
             expressions: year (type: int), 1 (type: int)
             outputColumnNames: _col0, _col1
@@ -198,7 +197,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: calendarp_n0
-          filterExpr: (p = 1) (type: boolean)
           Select Operator
             expressions: year (type: int), 1 (type: int)
             outputColumnNames: _col0, _col1
@@ -268,7 +266,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_stat_part_two_n0
-          filterExpr: ((px = 1) and (py = 'a')) (type: boolean)
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), 'a' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
@@ -296,7 +293,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_stat_part_two_n0
-          filterExpr: (px = 1) (type: boolean)
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), py (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
@@ -331,7 +327,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_stat_part_two_n0
-          filterExpr: ((px = 1) and (py = 'a')) (type: boolean)
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), 'a' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
@@ -359,7 +354,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_stat_part_two_n0
-          filterExpr: (px = 1) (type: boolean)
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), py (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
@@ -397,7 +391,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_stat_part_two_n0
-          filterExpr: ((px = 1) and (py = 'a')) (type: boolean)
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), 'a' (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
@@ -425,7 +418,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_stat_part_two_n0
-          filterExpr: (px = 1) (type: boolean)
           Select Operator
             expressions: key (type: string), value (type: string), 1 (type: int), py (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3

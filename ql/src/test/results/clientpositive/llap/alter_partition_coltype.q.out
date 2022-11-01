@@ -329,7 +329,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alter_coltype
-          filterExpr: dt is not null (type: boolean)
           GatherStats: false
           Select Operator
             expressions: key (type: string), value (type: string), dt (type: string), ts (type: double)
@@ -517,7 +516,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alterdynamic_part_table
-          filterExpr: ((partcol1 = 1) and (partcol2 = '1')) (type: boolean)
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)
@@ -583,7 +581,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: alterdynamic_part_table
-          filterExpr: (struct(partcol1,partcol2)) IN (const struct(2,'1'), const struct(1,'__HIVE_DEFAULT_PARTITION__')) (type: boolean)
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)

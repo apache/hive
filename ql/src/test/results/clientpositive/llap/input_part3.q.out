@@ -20,7 +20,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: x
-          filterExpr: ((ds = '2008-04-08') and (11.0D = 11.0D)) (type: boolean)
           Select Operator
             expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3

@@ -108,7 +108,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
-          filterExpr: (((value like 'aaa%') or (value like 'vvv%')) and (ds = '2008-04-08')) (type: boolean)
+          filterExpr: ((value like 'aaa%') or (value like 'vvv%')) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false

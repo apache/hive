@@ -68,7 +68,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: clustergroupby
-                  filterExpr: (ds = '100') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +
@@ -209,7 +208,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: clustergroupby
-                  filterExpr: (ds = '101') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +
@@ -325,7 +323,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: clustergroupby
-                  filterExpr: (ds = '101') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +
@@ -434,7 +431,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: clustergroupby
-                  filterExpr: (ds = '101') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +
@@ -543,7 +539,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: clustergroupby
-                  filterExpr: (ds = '101') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +
@@ -659,7 +654,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: clustergroupby
-                  filterExpr: (ds = '101') (type: boolean)
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +
@@ -1293,7 +1287,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: clustergroupby
-                  filterExpr: (ds = '102') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +
@@ -1410,7 +1403,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: clustergroupby
-                  filterExpr: (ds = '102') (type: boolean)
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +
@@ -1519,7 +1511,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: clustergroupby
-          filterExpr: (ds = '102') (type: boolean)
           Select Operator
             expressions: key (type: string), value (type: string)
             outputColumnNames: key, value
@@ -1633,7 +1624,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: clustergroupby
-                  filterExpr: (ds = '103') (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +
@@ -1750,7 +1740,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: clustergroupby
-                  filterExpr: (ds = '103') (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: ++

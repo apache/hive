@@ -50,7 +50,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((key = '27') and (ds = '2008-04-08')) (type: boolean)
+                  filterExpr: (key = '27') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 546000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key = '27') and (ds = '2008-04-08')) (type: boolean)
@@ -70,7 +70,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: ((key = '27') and (ds = '2008-04-08')) (type: boolean)
+                  filterExpr: (key = '27') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 546000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key = '27') and (ds = '2008-04-08')) (type: boolean)
@@ -212,7 +212,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((key = '27') and (ds = '2008-04-08')) (type: boolean)
+                  filterExpr: (key = '27') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key = '27') (type: boolean)
@@ -232,7 +232,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: ((key = '27') and (ds = '2008-04-08')) (type: boolean)
+                  filterExpr: (key = '27') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key = '27') (type: boolean)

@@ -966,7 +966,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c/b/o_t1
-                  filterExpr: (dt = '2014') (type: boolean)
                   Statistics: Num rows: 20 Data size: 2022 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: '2014' (type: string)
@@ -996,7 +995,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: //cbo_t2
-                  filterExpr: (dt = '2014') (type: boolean)
                   Statistics: Num rows: 20 Data size: 2022 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: '2014' (type: string)

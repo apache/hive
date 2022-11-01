@@ -757,7 +757,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: calendarp
-                  filterExpr: (p = 1) (type: boolean)
                   Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: year (type: int)
@@ -948,7 +947,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: calendarp
-                  filterExpr: (p = 1) (type: boolean)
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: year (type: int)

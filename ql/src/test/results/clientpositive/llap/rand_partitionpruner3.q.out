@@ -137,7 +137,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: a
-          filterExpr: (UDFToDouble(key) BETWEEN 10.0D AND 50.0D and (ds = '2008-04-08') and (hr like '%2')) (type: boolean)
+          filterExpr: UDFToDouble(key) BETWEEN 10.0D AND 50.0D (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false

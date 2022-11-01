@@ -90,7 +90,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: z
-            filterExpr: (key is not null and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator
@@ -678,7 +678,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: z
-            filterExpr: (UDFToDouble(key) is not null and (ds = '2008-04-08') and (hr = 11)) (type: boolean)
+            filterExpr: UDFToDouble(key) is not null (type: boolean)
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
             GatherStats: false
             Filter Operator

@@ -209,7 +209,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_part_n0
-          filterExpr: (deptno >= 20) (type: boolean)
           Select Operator
             expressions: empid (type: int)
             outputColumnNames: _col0
@@ -295,7 +294,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_part_n0
-          filterExpr: (deptno >= 20) (type: boolean)
           Select Operator
             expressions: empid (type: int)
             outputColumnNames: _col0
@@ -381,7 +379,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_part_n0
-          filterExpr: (deptno >= 20) (type: boolean)
           Select Operator
             expressions: empid (type: int)
             outputColumnNames: _col0

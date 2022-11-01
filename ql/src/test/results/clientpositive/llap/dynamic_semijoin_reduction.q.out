@@ -520,7 +520,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_small_n3
-                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 7280 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
@@ -3133,7 +3132,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_small_n3
-                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 7280 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
@@ -3310,7 +3308,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_small_n3
-                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 20 Data size: 7280 Basic stats: PARTIAL Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
@@ -3516,7 +3513,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n7
-                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 728000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
@@ -3710,7 +3706,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n7
-                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 728000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
@@ -3917,7 +3912,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n7
-                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 728000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)
@@ -4087,7 +4081,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_n7
-                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 728000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string)

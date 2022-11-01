@@ -111,7 +111,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dst_union22_delta
-                  filterExpr: ((UDFToDouble(k0) <= 50.0D) and (ds = '1')) (type: boolean)
+                  filterExpr: (UDFToDouble(k0) <= 50.0D) (type: boolean)
                   Statistics: Num rows: 500 Data size: 221500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator

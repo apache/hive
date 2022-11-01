@@ -210,7 +210,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket_big_n17
-                  filterExpr: (day = 'day1') (type: boolean)
                   Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: bigint), value (type: string)
@@ -394,7 +393,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket_big_n17
-                  filterExpr: (day = 'day1') (type: boolean)
                   Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: bigint), value (type: string)
@@ -656,7 +654,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: bucket_big_n17
-                  filterExpr: (day = 'day1') (type: boolean)
                   Statistics: Num rows: 5 Data size: 495 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: bigint), value (type: string)

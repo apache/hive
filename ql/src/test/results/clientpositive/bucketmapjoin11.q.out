@@ -251,7 +251,7 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-            filterExpr: (part is not null and key is not null) (type: boolean)
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 218 Data size: 86456 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -276,7 +276,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            filterExpr: (part is not null and key is not null) (type: boolean)
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 218 Data size: 86456 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -573,7 +573,7 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-            filterExpr: (part is not null and key is not null) (type: boolean)
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 218 Data size: 126568 Basic stats: PARTIAL Column stats: PARTIAL
             GatherStats: false
             Filter Operator
@@ -598,7 +598,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a
-            filterExpr: (part is not null and key is not null) (type: boolean)
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 218 Data size: 126568 Basic stats: PARTIAL Column stats: PARTIAL
             GatherStats: false
             Filter Operator

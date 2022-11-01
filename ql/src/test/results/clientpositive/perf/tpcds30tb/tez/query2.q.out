@@ -24,7 +24,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
-                  filterExpr: ws_sold_date_sk is not null (type: boolean)
                   Statistics: Num rows: 21594638446 Data size: 2591054005984 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ws_sold_date_sk (type: bigint), ws_ext_sales_price (type: decimal(7,2))
@@ -64,7 +63,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: web_sales
-                  filterExpr: ws_sold_date_sk is not null (type: boolean)
                   Statistics: Num rows: 21594638446 Data size: 2591054005984 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ws_sold_date_sk (type: bigint), ws_ext_sales_price (type: decimal(7,2))
@@ -104,7 +102,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
-                  filterExpr: cs_sold_date_sk is not null (type: boolean)
                   Statistics: Num rows: 43005109025 Data size: 5148566336008 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: cs_sold_date_sk (type: bigint), cs_ext_sales_price (type: decimal(7,2))
@@ -144,7 +141,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: catalog_sales
-                  filterExpr: cs_sold_date_sk is not null (type: boolean)
                   Statistics: Num rows: 43005109025 Data size: 5148566336008 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: cs_sold_date_sk (type: bigint), cs_ext_sales_price (type: decimal(7,2))

@@ -32,7 +32,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_union_1_n0
-          filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
+          filterExpr: (key = 86) (type: boolean)
           Filter Operator
             predicate: (key = 86) (type: boolean)
             Select Operator
@@ -50,7 +50,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_union_2_n0
-          filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
+          filterExpr: (key = 86) (type: boolean)
           Filter Operator
             predicate: (key = 86) (type: boolean)
             Select Operator
@@ -68,7 +68,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_union_3_n0
-          filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
+          filterExpr: (key = 86) (type: boolean)
           Filter Operator
             predicate: (key = 86) (type: boolean)
             Select Operator
@@ -132,7 +132,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_union_1_n0
-                  filterExpr: ((key = 86) and (ds = '1')) (type: boolean)
+                  filterExpr: (key = 86) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key = 86) (type: boolean)
@@ -259,7 +259,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_union_2_n0
-                  filterExpr: ((key = 86) and (ds = '2')) (type: boolean)
+                  filterExpr: (key = 86) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 95000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key = 86) (type: boolean)
@@ -386,7 +386,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_union_3_n0
-                  filterExpr: ((key = 86) and (ds = '3')) (type: boolean)
+                  filterExpr: (key = 86) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 95000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key = 86) (type: boolean)
@@ -435,7 +435,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_union_1_n0
-                  filterExpr: ((key = 86) and ds is not null) (type: boolean)
+                  filterExpr: (key = 86) (type: boolean)
                   Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key = 86) (type: boolean)
@@ -461,7 +461,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_union_2_n0
-                  filterExpr: ((key = 86) and ds is not null) (type: boolean)
+                  filterExpr: (key = 86) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 279000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key = 86) (type: boolean)
@@ -487,7 +487,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_union_3_n0
-                  filterExpr: ((key = 86) and ds is not null) (type: boolean)
+                  filterExpr: (key = 86) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 279000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key = 86) (type: boolean)
@@ -547,7 +547,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_union_1_n0
-                  filterExpr: (ds = '1') (type: boolean)
                   Statistics: Num rows: 500 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -687,7 +686,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_union_2_n0
-                  filterExpr: (ds = '2') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 18624 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -827,7 +825,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_union_3_n0
-                  filterExpr: (ds = '3') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 18624 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -943,7 +940,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_union_3_n0
-                  filterExpr: ((key = 86) and (ds = '4')) (type: boolean)
+                  filterExpr: (key = 86) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key = 86) (type: boolean)
@@ -1046,7 +1043,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_union_3_n0
-                  filterExpr: (ds = '4') (type: boolean)
                   Statistics: Num rows: 500 Data size: 9312 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE

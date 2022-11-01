@@ -245,7 +245,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n3
-          filterExpr: ((key = '145') and (ds = '1') and (hr = '1')) (type: boolean)
+          filterExpr: (key = '145') (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false

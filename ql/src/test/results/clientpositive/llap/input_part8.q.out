@@ -22,7 +22,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: x
-          filterExpr: (ds = '2008-04-08') (type: boolean)
           Limit
             Number of rows: 10
             Select Operator

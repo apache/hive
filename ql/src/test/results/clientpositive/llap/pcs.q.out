@@ -118,7 +118,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: pcs_t1
-                  filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
+                  filterExpr: (struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) (type: boolean)
                   Statistics: Num rows: 40 Data size: 11120 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -364,7 +364,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: pcs_t1
-          filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
+          filterExpr: (struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
@@ -481,7 +481,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: pcs_t1
-          filterExpr: ((struct(ds,(key + 2))) IN (const struct('2000-04-08',3), const struct('2000-04-09',4)) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
+          filterExpr: (struct(ds,(key + 2))) IN (const struct('2000-04-08',3), const struct('2000-04-09',4)) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
@@ -654,7 +654,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (ds) IN ('2000-04-09', '2000-04-08') (type: boolean)
                   Statistics: Num rows: 40 Data size: 7520 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -907,7 +906,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: pcs_t1
-          filterExpr: ((struct(ds,(key + key))) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
+          filterExpr: (struct(ds,(key + key))) IN (const struct('2000-04-08',1), const struct('2000-04-09',2)) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
@@ -959,7 +958,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: pcs_t1
-                  filterExpr: ((struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) and (struct(ds)) IN (struct('2000-04-08'), struct('2000-04-09'))) (type: boolean)
+                  filterExpr: (struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) (type: boolean)
                   Statistics: Num rows: 40 Data size: 7520 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (struct(key,ds)) IN (const struct(1,'2000-04-08'), const struct(2,'2000-04-09')) (type: boolean)
@@ -1240,7 +1239,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: pcs_t1
-          filterExpr: (ds = '2000-04-08') (type: boolean)
           GatherStats: false
           Select Operator
             expressions: '2000-04-08' (type: string)

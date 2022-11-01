@@ -96,7 +96,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: x
-          filterExpr: ((ds = '2008-04-08') and key is not null) (type: boolean)
+          filterExpr: key is not null (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false

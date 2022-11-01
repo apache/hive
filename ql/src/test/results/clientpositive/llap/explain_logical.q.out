@@ -80,7 +80,6 @@ LOGICAL PLAN:
 srcpart 
   TableScan (TS_0)
     alias: srcpart
-    filterExpr: ds is not null (type: boolean)
     Select Operator (SEL_2)
       expressions: key (type: string)
       outputColumnNames: key
@@ -182,7 +181,6 @@ $hdt$_0-subquery1:src
 $hdt$_0-subquery2:srcpart 
   TableScan (TS_2)
     alias: srcpart
-    filterExpr: ds is not null (type: boolean)
     Select Operator (SEL_4)
       expressions: key (type: string), value (type: string)
       outputColumnNames: _col0, _col1
@@ -297,7 +295,6 @@ LOGICAL PLAN:
 srcpart 
   TableScan (TS_0)
     alias: srcpart
-    filterExpr: ds is not null (type: boolean)
     properties:
       insideView TRUE
     Select Operator (SEL_2)

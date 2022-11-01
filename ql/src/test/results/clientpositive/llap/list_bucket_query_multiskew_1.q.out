@@ -296,7 +296,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily
-          filterExpr: ((value = '3') and (ds = '1') and (hr = '4')) (type: boolean)
+          filterExpr: (value = '3') (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
@@ -375,7 +375,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily
-          filterExpr: ((key = '495') and (ds = '1') and (hr = '4')) (type: boolean)
+          filterExpr: (key = '495') (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false

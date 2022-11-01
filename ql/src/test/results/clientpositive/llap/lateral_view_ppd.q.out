@@ -134,7 +134,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
-          filterExpr: ((ds = '2008-04-08') and (hr = '12')) (type: boolean)
           Lateral View Forward
             Select Operator
               expressions: value (type: string)

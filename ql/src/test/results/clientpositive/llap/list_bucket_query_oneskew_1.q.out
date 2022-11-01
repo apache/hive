@@ -187,7 +187,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n4
-          filterExpr: ((x = 484) and (ds = '1')) (type: boolean)
+          filterExpr: (x = 484) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
@@ -267,7 +267,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n4
-          filterExpr: ((x = 495) and (ds = '1')) (type: boolean)
+          filterExpr: (x = 495) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
@@ -347,7 +347,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: fact_daily_n4
-          filterExpr: ((x = 1) and (ds = '1')) (type: boolean)
+          filterExpr: (x = 1) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false

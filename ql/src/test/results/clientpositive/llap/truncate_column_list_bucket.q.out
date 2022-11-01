@@ -107,7 +107,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: test_tab_n3
-          filterExpr: ((key = '484') and (part = '1')) (type: boolean)
+          filterExpr: (key = '484') (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
@@ -186,7 +186,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: test_tab_n3
-          filterExpr: ((key = '0') and (part = '1')) (type: boolean)
+          filterExpr: (key = '0') (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false

@@ -105,7 +105,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dynamic_part_table
-          filterExpr: ((partcol1 = '1') and (partcol2 = '1')) (type: boolean)
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)
@@ -171,7 +170,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dynamic_part_table
-          filterExpr: ((partcol1 = '1') and (partcol2 = '1')) (type: boolean)
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)
@@ -274,7 +272,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dynamic_part_table
-          filterExpr: ((partcol1 = '1') and (partcol2) IN ('1', '__HIVE_DEFAULT_PARTITION__')) (type: boolean)
           GatherStats: false
           Select Operator
             expressions: intcol (type: string)

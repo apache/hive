@@ -2561,7 +2561,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t3
-                  filterExpr: (col567 is not null and col23455 is not null) (type: boolean)
+                  filterExpr: col23455 is not null (type: boolean)
                   Statistics: Num rows: 133916775 Data size: 995509712093 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: col23455 is not null (type: boolean)

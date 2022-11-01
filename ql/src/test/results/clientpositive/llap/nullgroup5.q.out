@@ -95,7 +95,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
-                  filterExpr: (ds = '2009-04-09') (type: boolean)
                   Statistics: Num rows: 119 Data size: 39008 Basic stats: PARTIAL Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string)

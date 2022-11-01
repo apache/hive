@@ -175,7 +175,7 @@ STAGE PLANS:
         $hdt$_1:b 
           TableScan
             alias: b
-            filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 78 Data size: 12220 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator
@@ -604,7 +604,7 @@ STAGE PLANS:
         $hdt$_1:b 
           TableScan
             alias: b
-            filterExpr: (key is not null and (ds = '2008-04-08')) (type: boolean)
+            filterExpr: key is not null (type: boolean)
             Statistics: Num rows: 78 Data size: 12220 Basic stats: PARTIAL Column stats: NONE
             GatherStats: false
             Filter Operator

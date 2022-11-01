@@ -142,7 +142,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_acid
-                  filterExpr: ((UDFToInteger(key)) IN (413, 43) and (hr = '11')) (type: boolean)
+                  filterExpr: (UDFToInteger(key)) IN (413, 43) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (UDFToInteger(key)) IN (413, 43) (type: boolean)
@@ -846,7 +846,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_acidb
-                  filterExpr: ((UDFToInteger(key)) IN (413, 43) and (hr = '11')) (type: boolean)
+                  filterExpr: (UDFToInteger(key)) IN (413, 43) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: (UDFToInteger(key)) IN (413, 43) (type: boolean)

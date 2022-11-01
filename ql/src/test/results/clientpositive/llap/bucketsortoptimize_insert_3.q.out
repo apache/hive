@@ -61,7 +61,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (ds = '1') (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: value (type: string), key (type: int)
@@ -193,7 +192,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (ds = '1') (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: CAST( key AS STRING) (type: string), UDFToInteger(value) (type: int)

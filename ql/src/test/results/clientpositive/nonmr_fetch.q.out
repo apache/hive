@@ -64,7 +64,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
-          filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
           Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
@@ -163,7 +162,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: srcpart
-            filterExpr: ((UDFToDouble(key) > 100.0D) and (ds = '2008-04-08')) (type: boolean)
+            filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
             Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
@@ -416,7 +415,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
-          filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
           Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
@@ -563,7 +561,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
-          filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
           Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
           Limit
             Number of rows: 10
@@ -1064,7 +1061,6 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: srcpart
-          filterExpr: ((ds = '2008-04-08') and (hr = '11')) (type: boolean)
           Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
           Lateral View Forward
             Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE

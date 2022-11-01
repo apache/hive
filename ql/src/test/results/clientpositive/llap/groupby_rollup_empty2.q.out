@@ -132,7 +132,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_sales_s0
-                  filterExpr: ss_store_sk is not null (type: boolean)
                   Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ss_item_sk (type: int), ss_store_sk (type: int)
