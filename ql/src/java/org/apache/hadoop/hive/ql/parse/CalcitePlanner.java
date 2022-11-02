@@ -594,7 +594,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             // 2. Regen OP plan from optimized AST
             if (forViewCreation) {
               // the reset would remove the translations
-              executeUnparseTranlations();
+              executeUnParseTranslations();
               // save the resultSchema before rewriting it
               originalResultSchema = resultSchema;
             }
