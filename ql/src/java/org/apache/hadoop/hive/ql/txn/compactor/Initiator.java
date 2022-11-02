@@ -349,7 +349,7 @@ public class Initiator extends MetaStoreCompactorThread {
     ShowCompactRequest request =  new ShowCompactRequest();
     request.setDbname(ci.dbname);
     request.setTablename(ci.tableName);
-    request.setPartitionname(ci.getFullPartitionName());
+    request.setPartitionname(ci.partName);
     final ShowCompactResponse currentCompactions = txnHandler.showCompact(request);
     if (currentCompactions.getCompacts() == null) {
       return false;
