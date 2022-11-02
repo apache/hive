@@ -24,7 +24,6 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.security.SecureRandom;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
@@ -45,6 +44,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
@@ -152,6 +152,8 @@ public class ThriftHttpServlet extends TServlet {
     String clientUserName = null;
     String clientIpAddress;
     boolean requireNewCookie = false;
+
+    logTrackingHeaderIfAny(request);
 
     try {
       if (hiveConf.getBoolean(ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname,false)){
@@ -307,6 +309,13 @@ public class ThriftHttpServlet extends TServlet {
       SessionManager.clearIpAddress();
       SessionManager.clearProxyUserName();
       SessionManager.clearForwardedAddresses();
+    }
+  }
+
+  private void logTrackingHeaderIfAny(HttpServletRequest request) {
+    if (request.getHeader(Constants.HTTP_HEADER_REQUEST_TRACK) != null) {
+      String requestTrackHeader = request.getHeader(Constants.HTTP_HEADER_REQUEST_TRACK);
+      LOG.info("{}:{}", Constants.HTTP_HEADER_REQUEST_TRACK, requestTrackHeader);
     }
   }
 

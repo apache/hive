@@ -1926,7 +1926,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       } catch (NoSuchObjectException e) {
         // expected
       }
-      firePreEvent(new PreCreateDataConnectorEvent(connector, this));
       if (testTimeoutEnabled) {
         try {
           Thread.sleep(testTimeoutValue);

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
@@ -428,6 +429,18 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   public void setDistinctColumnIndices(
       List<List<Integer>> distinctColumnIndices) {
     this.distinctColumnIndices = distinctColumnIndices;
+  }
+
+  public boolean hasADistinctColumnIndex() {
+    if (this.distinctColumnIndices == null) {
+      return false;
+    }
+    for (List<Integer> distinctColumnIndex : this.distinctColumnIndices) {
+      if (CollectionUtils.isNotEmpty(distinctColumnIndex)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Explain(displayName = "outputname", explainLevels = { Level.USER })

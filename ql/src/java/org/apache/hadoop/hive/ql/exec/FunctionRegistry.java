@@ -198,6 +198,9 @@ import org.apache.hadoop.hive.ql.udf.UDFUnhex;
 import org.apache.hadoop.hive.ql.udf.UDFVersion;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
+import org.apache.hadoop.hive.ql.udf.UDFSinh;
+import org.apache.hadoop.hive.ql.udf.UDFCosh;
+import org.apache.hadoop.hive.ql.udf.UDFTanh;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.ql.udf.ptf.MatchPath.MatchPathResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.Noop.NoopResolver;
@@ -304,8 +307,10 @@ public final class FunctionRegistry {
     system.registerUDF("log2", UDFLog2.class, false);
     system.registerUDF("sin", UDFSin.class, false);
     system.registerUDF("asin", UDFAsin.class, false);
+    system.registerUDF("sinh", UDFSinh.class, false);
     system.registerUDF("cos", UDFCos.class, false);
     system.registerUDF("acos", UDFAcos.class, false);
+    system.registerUDF("cosh", UDFCosh.class, false);
     system.registerUDF("log10", UDFLog10.class, false);
     system.registerUDF("log", UDFLog.class, false);
     system.registerUDF("exp", UDFExp.class, false);
@@ -317,6 +322,7 @@ public final class FunctionRegistry {
     system.registerUDF("radians", UDFRadians.class, false);
     system.registerUDF("atan", UDFAtan.class, false);
     system.registerUDF("tan", UDFTan.class, false);
+    system.registerUDF("tanh", UDFTanh.class, false);
     system.registerUDF("e", UDFE.class, false);
     system.registerGenericUDF("factorial", GenericUDFFactorial.class);
     system.registerUDF("crc32", UDFCrc32.class, false);
