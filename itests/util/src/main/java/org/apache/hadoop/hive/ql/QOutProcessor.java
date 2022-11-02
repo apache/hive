@@ -133,7 +133,8 @@ public class QOutProcessor {
       "at com.sun.proxy",
       "at com.jolbox",
       "at com.zaxxer",
-      "at com.google"
+      "at com.google",
+      "uuid"
   };
 
   // Using String.contains instead of pattern, as it is much faster

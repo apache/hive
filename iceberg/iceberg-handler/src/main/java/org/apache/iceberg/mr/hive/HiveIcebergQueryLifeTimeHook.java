@@ -21,8 +21,10 @@ package org.apache.iceberg.mr.hive;
 import java.util.Optional;
 import java.util.Properties;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -43,6 +45,15 @@ public class HiveIcebergQueryLifeTimeHook implements QueryLifeTimeHook {
     if (hasError) {
       checkAndRollbackIcebergCTAS(ctx);
     }
+
+    if (!(ctx.getHookContext() instanceof PrivateHookContext)) {
+      return;
+    }
+
+    PrivateHookContext pCtx = (PrivateHookContext) ctx.getHookContext();
+    if (pCtx.getContext().isExplainPlan()) {
+      checkAndRollbackIcebergCTAS(ctx);
+    }
   }
 
   @Override
@@ -58,6 +69,11 @@ public class HiveIcebergQueryLifeTimeHook implements QueryLifeTimeHook {
   }
 
   private void checkAndRollbackIcebergCTAS(QueryLifeTimeHookContext ctx) {
+    if (!(HiveOperation.CREATETABLE_AS_SELECT.getOperationName().equals(
+            ctx.getHookContext().getQueryState().getCommandType()))) {
+      return;
+    }
+
     HiveConf conf = ctx.getHiveConf();
     Optional<String> tableName = SessionStateUtil.getProperty(conf, InputFormatConfig.CTAS_TABLE_NAME);
     if (tableName.isPresent()) {
