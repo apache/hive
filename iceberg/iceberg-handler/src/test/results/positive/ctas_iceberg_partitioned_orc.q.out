@@ -177,6 +177,7 @@ Table Parameters:
 	table_type          	ICEBERG             
 	totalSize           	812                 
 #### A masked pattern was here ####
+	uuid                	#Masked#
 	write.format.default	orc                 
 	 	 
 # Storage Information	 	 
