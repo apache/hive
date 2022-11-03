@@ -330,9 +330,4 @@
   <name>hive.txn.xlock.ctas</name>
   <value>false</value>
 </property>
-
-<property>
-  <name>hive.explain.user</name>
-  <value>false</value>
-</property>
 </configuration>

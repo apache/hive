@@ -1,5 +1,6 @@
 set hive.query.lifetime.hooks=org.apache.iceberg.mr.hive.HiveIcebergQueryLifeTimeHook;
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
+set hive.explain.user=false;
 
 create table source(a int, b string, c int);
 
