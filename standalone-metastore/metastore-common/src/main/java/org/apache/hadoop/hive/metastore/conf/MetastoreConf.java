@@ -286,9 +286,6 @@ public class MetastoreConf {
     ACID_HOUSEKEEPER_SERVICE_INTERVAL("metastore.acid.housekeeper.interval",
         "hive.metastore.acid.housekeeper.interval", 60, TimeUnit.SECONDS,
         "Time interval describing how often the acid housekeeper runs."),
-    ACID_HOUSEKEEPER_SERVICE_START("metastore.acid.housekeeper.start",
-        "hive.metastore.acid.housekeeper.start", 60, TimeUnit.SECONDS,
-        "Time delay of 1st acid housekeeper run after metastore has started."),
     ACID_TXN_CLEANER_INTERVAL("metastore.acid.txn.cleaner.interval",
         "hive.metastore.acid.txn.cleaner.interval", 10, TimeUnit.SECONDS,
         "Time interval describing how often aborted and committed txns are cleaned."),
@@ -856,9 +853,6 @@ public class MetastoreConf {
     INIT_HOOKS("metastore.init.hooks", "hive.metastore.init.hooks", "",
         "A comma separated list of hooks to be invoked at the beginning of HMSHandler initialization. \n" +
             "An init hook is specified as the name of Java class which extends org.apache.riven.MetaStoreInitListener."),
-    INIT_METADATA_COUNT_ENABLED("metastore.initial.metadata.count.enabled",
-        "hive.metastore.initial.metadata.count.enabled", true,
-        "Enable a metadata count at metastore startup for metrics."),
     INTEGER_JDO_PUSHDOWN("metastore.integral.jdo.pushdown",
         "hive.metastore.integral.jdo.pushdown", false,
         "Allow JDO query pushdown for integral partition columns in metastore. Off by default. This\n" +
@@ -1405,6 +1399,10 @@ public class MetastoreConf {
                 "If dynamic service discovery mode is set, the URIs are used to connect to the" +
                 " corresponding service discovery servers e.g. a zookeeper. Otherwise they are " +
                 "used as URIs for remote metastore."),
+    THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE("metastore.thrift.client.max.message.size",
+        "hive.thrift.client.max.message.size", "1gb", new SizeValidator(-1L, true, (long) Integer.MAX_VALUE, true),
+        "Thrift client configuration for max message size. 0 or -1 will use the default defined in the Thrift " +
+        "library. The upper limit is 2147483648 bytes (or 2gb)."),
     THRIFT_SERVICE_DISCOVERY_MODE("metastore.service.discovery.mode",
             "hive.metastore.service.discovery.mode",
             "",

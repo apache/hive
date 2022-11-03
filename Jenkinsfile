@@ -321,12 +321,12 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
   }
   branches['sonar'] = {
       executorNode {
-          if(env.CHANGE_BRANCH == 'master') {
+          if(env.BRANCH_NAME == 'master') {
               stage('Prepare') {
                   loadWS();
               }
               stage('Sonar') {
-                  sonarAnalysis("-Dsonar.branch.name=${CHANGE_BRANCH}")
+                  sonarAnalysis("-Dsonar.branch.name=${BRANCH_NAME}")
               }
           } else if(env.CHANGE_ID) {
               stage('Prepare') {
@@ -340,7 +340,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
                                    -Dsonar.pullrequest.provider=GitHub""")
               }
           } else {
-              echo "Skipping sonar analysis, we only run it on PRs and on the master branch"
+              echo "Skipping sonar analysis, we only run it on PRs and on the master branch, found ${env.BRANCH_NAME}"
           }
       }
   }

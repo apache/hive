@@ -91,6 +91,7 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionSpecParser;
+import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SerializableTable;
@@ -109,6 +110,7 @@ import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
@@ -566,7 +568,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         throw new SemanticException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
       }
       if (table.currentSnapshot() != null) {
-        if (table.currentSnapshot().allManifests().parallelStream().map(ManifestFile::partitionSpecId)
+        if (table.currentSnapshot().allManifests(table.io()).parallelStream().map(ManifestFile::partitionSpecId)
             .anyMatch(id -> id < table.spec().specId())) {
           throw new SemanticException(
               "Cannot perform insert overwrite query on Iceberg table where partition evolution happened. In order " +
@@ -580,10 +582,32 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public AcidSupportType supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table table) {
     if (table.getParameters() != null && "2".equals(table.getParameters().get(TableProperties.FORMAT_VERSION))) {
+      checkDMLOperationMode(table);
       return AcidSupportType.WITHOUT_TRANSACTIONS;
     }
 
     return AcidSupportType.NONE;
+  }
+
+  // TODO: remove the checks as copy-on-write mode implementation for these DML ops get added
+  private static void checkDMLOperationMode(org.apache.hadoop.hive.ql.metadata.Table table) {
+    Map<String, String> opTypes = ImmutableMap.of(
+        TableProperties.DELETE_MODE, TableProperties.DELETE_MODE_DEFAULT,
+        TableProperties.MERGE_MODE, TableProperties.MERGE_MODE_DEFAULT,
+        TableProperties.UPDATE_MODE, TableProperties.UPDATE_MODE_DEFAULT);
+
+    for (Map.Entry<String, String> opType : opTypes.entrySet()) {
+      String mode = table.getParameters().get(opType.getKey());
+      RowLevelOperationMode rowLevelOperationMode = RowLevelOperationMode.fromName(
+          mode != null ? mode : opType.getValue()
+      );
+      if (RowLevelOperationMode.COPY_ON_WRITE.equals(rowLevelOperationMode)) {
+        throw new UnsupportedOperationException(
+            String.format("Hive doesn't support copy-on-write mode as %s. Please set '%s'='merge-on-read' on %s " +
+                "before running ACID operations on it.", opType.getKey(), opType.getKey(), table.getTableName())
+        );
+      }
+    }
   }
 
   @Override

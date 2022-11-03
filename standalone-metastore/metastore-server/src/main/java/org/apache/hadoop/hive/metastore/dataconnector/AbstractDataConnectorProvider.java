@@ -36,7 +36,6 @@ import java.util.Map;
 public abstract class AbstractDataConnectorProvider implements IDataConnectorProvider {
   protected String scoped_db = null;
   protected Object  handle = null;
-  protected boolean isOpen = false;
   protected DataConnector connector = null;
   protected String driverClassName = null;
 

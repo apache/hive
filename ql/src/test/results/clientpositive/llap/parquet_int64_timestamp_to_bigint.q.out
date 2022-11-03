@@ -1,0 +1,26 @@
+PREHOOK: query: CREATE TABLE ts_as_bigint_pq (typeid int, eventtime BIGINT) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ts_as_bigint_pq
+POSTHOOK: query: CREATE TABLE ts_as_bigint_pq (typeid int, eventtime BIGINT) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ts_as_bigint_pq
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/hive_26612.parquet' into table ts_as_bigint_pq
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@ts_as_bigint_pq
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/hive_26612.parquet' into table ts_as_bigint_pq
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@ts_as_bigint_pq
+PREHOOK: query: SELECT * FROM ts_as_bigint_pq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ts_as_bigint_pq
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ts_as_bigint_pq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ts_as_bigint_pq
+#### A masked pattern was here ####
+1	1388617201000
+1	1417351232000

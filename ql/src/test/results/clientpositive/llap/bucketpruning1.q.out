@@ -1655,9 +1655,9 @@ select * from srcbucket_pruned where key = 'x11'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_pruned
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, `ds`
-FROM `default`.`srcbucket_pruned`
-LIMIT 0
+OPTIMIZED SQL: SELECT *
+FROM (VALUES  (NULL, NULL, NULL)) AS `t` (`key`, `value`, `ds`)
+WHERE 1 = 0
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

@@ -270,7 +270,7 @@ class CompactionTxnHandler extends TxnHandler {
           info.dbname = rs.getString(2);
           info.tableName = rs.getString(3);
           info.partName = rs.getString(4);
-          info.type = dbCompactionType2ThriftType(rs.getString(5).charAt(0));
+          info.type = TxnUtils.dbCompactionType2ThriftType(rs.getString(5).charAt(0));
           info.poolName = rs.getString(6);
           info.properties = rs.getString(7);
 
@@ -413,7 +413,7 @@ class CompactionTxnHandler extends TxnHandler {
             info.dbname = rs.getString(2);
             info.tableName = rs.getString(3);
             info.partName = rs.getString(4);
-            info.type = dbCompactionType2ThriftType(rs.getString(5).charAt(0));
+            info.type = TxnUtils.dbCompactionType2ThriftType(rs.getString(5).charAt(0));
             info.runAs = rs.getString(6);
             info.highestWriteId = rs.getLong(7);
             info.properties = rs.getString(8);
@@ -1221,7 +1221,7 @@ class CompactionTxnHandler extends TxnHandler {
               rs.getLong(1), rs.getString(2), rs.getString(3),
               rs.getString(4), rs.getString(5).charAt(0));
           ci.start = rs.getLong(6);
-          ci.type = TxnHandler.dbCompactionType2ThriftType(rs.getString(7).charAt(0));
+          ci.type = TxnUtils.dbCompactionType2ThriftType(rs.getString(7).charAt(0));
           if(!ci.getFullPartitionName().equals(lastCompactedEntity)) {
             lastCompactedEntity = ci.getFullPartitionName();
             rc = new RetentionCounters(didNotInitiateRetention, failedRetention, succeededRetention, refusedRetention);
@@ -1360,7 +1360,7 @@ class CompactionTxnHandler extends TxnHandler {
 
 
   private void updateStatus(CompactionInfo ci) throws MetaException {
-    String strState = compactorStateToResponse(ci.state);
+    String strState = CompactionState.fromSqlConst(ci.state).toString();
     LOG.debug("Marking as {}: CompactionInfo: {}", strState, ci);
     try {
       Connection dbConn = null;

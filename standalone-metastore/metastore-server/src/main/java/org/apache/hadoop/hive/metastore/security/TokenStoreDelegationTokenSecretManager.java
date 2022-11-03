@@ -198,6 +198,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
     String keyStr = encodeWritable(keyWithSeq);
     this.tokenStore.updateMasterKey(keySeq, keyStr);
     decodeWritable(key, keyStr);
+    setCurrentKeyId(key.getKeyId());
     LOGGER.info("New master key with key id={}", key.getKeyId());
     super.logUpdateMasterKey(key);
   }

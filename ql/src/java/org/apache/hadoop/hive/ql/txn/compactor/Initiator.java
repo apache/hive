@@ -519,11 +519,6 @@ public class Initiator extends MetaStoreCompactorThread {
           + ". Found: " + deltas.size() + " deltas, threshold is " + deltaNumThreshold);
       return null;
     }
-    if (AcidUtils.isInsertOnlyTable(tblproperties)) {
-      LOG.debug("Requesting a major compaction for a MM table; found " + deltas.size() + " deltas, threshold is "
-          + deltaNumThreshold);
-      return CompactionType.MAJOR;
-    }
     // If there's no base file, do a major compaction
     LOG.debug("Found " + deltas.size() + " delta files, and " + (noBase ? "no" : "has") + " base," +
         "requesting " + (noBase ? "major" : "minor") + " compaction");

@@ -75,7 +75,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
   private static final BiMap<String, String> ICEBERG_TO_HMS_TRANSLATION = ImmutableBiMap.of(
       // gc.enabled in Iceberg and external.table.purge in Hive are meant to do the same things but with different names
       GC_ENABLED, "external.table.purge",
-      TableProperties.PARQUET_COMPRESSION, ParquetOutputFormat.COMPRESSION);
+      TableProperties.PARQUET_COMPRESSION, ParquetOutputFormat.COMPRESSION,
+      TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES, ParquetOutputFormat.BLOCK_SIZE);
 
   /**
    * Provides key translation where necessary between Iceberg and HMS props. This translation is needed because some

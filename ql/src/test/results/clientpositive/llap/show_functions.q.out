@@ -81,6 +81,7 @@ context_ngrams
 conv
 corr
 cos
+cosh
 count
 covar_pop
 covar_samp
@@ -333,6 +334,7 @@ shiftright
 shiftrightunsigned
 sign
 sin
+sinh
 size
 sort_array
 sort_array_by
@@ -438,6 +440,7 @@ substring_index
 sum
 surrogate_key
 tan
+tanh
 to_date
 to_epoch_milli
 to_unix_timestamp
@@ -524,6 +527,7 @@ context_ngrams
 conv
 corr
 cos
+cosh
 count
 covar_pop
 covar_samp
@@ -692,6 +696,7 @@ context_ngrams
 conv
 corr
 cos
+cosh
 count
 covar_pop
 covar_samp
@@ -944,6 +949,7 @@ shiftright
 shiftrightunsigned
 sign
 sin
+sinh
 size
 sort_array
 sort_array_by
@@ -1049,6 +1055,7 @@ substring_index
 sum
 surrogate_key
 tan
+tanh
 to_date
 to_epoch_milli
 to_unix_timestamp

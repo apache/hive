@@ -422,7 +422,7 @@ public class ObjectStore implements RawStore, Configurable {
     isInitialized = pm != null;
     if (isInitialized) {
       dbType = determineDatabaseProduct();
-      expressionProxy = createExpressionProxy(conf);
+      expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
       if (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)) {
         String schema = PersistenceManagerProvider.getProperty("javax.jdo.mapping.Schema");
         schema = org.apache.commons.lang3.StringUtils.defaultIfBlank(schema, null);
@@ -444,25 +444,6 @@ public class ObjectStore implements RawStore, Configurable {
       return null;
     } finally {
       jdoConn.close(); // We must release the connection before we call other pm methods.
-    }
-  }
-
-  /**
-   * Creates the proxy used to evaluate expressions. This is here to prevent circular
-   * dependency - ql -&gt; metastore client &lt;-&gt metastore server -&gt ql. If server and
-   * client are split, this can be removed.
-   * @param conf Configuration.
-   * @return The partition expression proxy.
-   */
-  private static PartitionExpressionProxy createExpressionProxy(Configuration conf) {
-    String className = MetastoreConf.getVar(conf, ConfVars.EXPRESSION_PROXY_CLASS);
-    try {
-      Class<? extends PartitionExpressionProxy> clazz =
-           JavaUtils.getClass(className, PartitionExpressionProxy.class);
-      return JavaUtils.newInstance(clazz, new Class<?>[0], new Object[0]);
-    } catch (MetaException e) {
-      LOG.error("Error loading PartitionExpressionProxy", e);
-      throw new RuntimeException("Error loading PartitionExpressionProxy: " + e.getMessage());
     }
   }
 

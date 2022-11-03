@@ -11155,8 +11155,10 @@ void swap(CompactionResponse &a, CompactionResponse &b);
 std::ostream& operator<<(std::ostream& out, const CompactionResponse& obj);
 
 typedef struct _ShowCompactRequest__isset {
-  _ShowCompactRequest__isset() : poolName(false) {}
+  _ShowCompactRequest__isset() : id(false), poolName(false), partitionname(false) {}
+  bool id :1;
   bool poolName :1;
+  bool partitionname :1;
 } _ShowCompactRequest__isset;
 
 class ShowCompactRequest : public virtual ::apache::thrift::TBase {
@@ -11165,21 +11167,65 @@ class ShowCompactRequest : public virtual ::apache::thrift::TBase {
   ShowCompactRequest(const ShowCompactRequest&);
   ShowCompactRequest& operator=(const ShowCompactRequest&);
   ShowCompactRequest() noexcept
-                     : poolName() {
+                     : id(0),
+                       poolName(),
+                       dbname(),
+                       tablename(),
+                       partitionname(),
+                       type(static_cast<CompactionType::type>(0)),
+                       state() {
   }
 
   virtual ~ShowCompactRequest() noexcept;
+  int64_t id;
   std::string poolName;
+  std::string dbname;
+  std::string tablename;
+  std::string partitionname;
+  /**
+   * 
+   * @see CompactionType
+   */
+  CompactionType::type type;
+  std::string state;
 
   _ShowCompactRequest__isset __isset;
 
+  void __set_id(const int64_t val);
+
   void __set_poolName(const std::string& val);
+
+  void __set_dbname(const std::string& val);
+
+  void __set_tablename(const std::string& val);
+
+  void __set_partitionname(const std::string& val);
+
+  void __set_type(const CompactionType::type val);
+
+  void __set_state(const std::string& val);
 
   bool operator == (const ShowCompactRequest & rhs) const
   {
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
+      return false;
     if (__isset.poolName != rhs.__isset.poolName)
       return false;
     else if (__isset.poolName && !(poolName == rhs.poolName))
+      return false;
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(tablename == rhs.tablename))
+      return false;
+    if (__isset.partitionname != rhs.__isset.partitionname)
+      return false;
+    else if (__isset.partitionname && !(partitionname == rhs.partitionname))
+      return false;
+    if (!(type == rhs.type))
+      return false;
+    if (!(state == rhs.state))
       return false;
     return true;
   }
@@ -11200,7 +11246,7 @@ void swap(ShowCompactRequest &a, ShowCompactRequest &b);
 std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj);
 
 typedef struct _ShowCompactResponseElement__isset {
-  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false), workerVersion(false), initiatorId(false), initiatorVersion(false), cleanerStart(false), poolName(false) {}
+  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false), errorMessage(false), enqueueTime(false), workerVersion(false), initiatorId(false), initiatorVersion(false), cleanerStart(false), poolName(false), nextTxnId(false), txnId(false), commitTime(false), hightestWriteId(false) {}
   bool partitionname :1;
   bool workerid :1;
   bool start :1;
@@ -11217,6 +11263,10 @@ typedef struct _ShowCompactResponseElement__isset {
   bool initiatorVersion :1;
   bool cleanerStart :1;
   bool poolName :1;
+  bool nextTxnId :1;
+  bool txnId :1;
+  bool commitTime :1;
+  bool hightestWriteId :1;
 } _ShowCompactResponseElement__isset;
 
 class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
@@ -11243,7 +11293,11 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
                                  initiatorId(),
                                  initiatorVersion(),
                                  cleanerStart(0),
-                                 poolName() {
+                                 poolName(),
+                                 nextTxnId(0),
+                                 txnId(0),
+                                 commitTime(0),
+                                 hightestWriteId(0) {
   }
 
   virtual ~ShowCompactResponseElement() noexcept;
@@ -11271,6 +11325,10 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   std::string initiatorVersion;
   int64_t cleanerStart;
   std::string poolName;
+  int64_t nextTxnId;
+  int64_t txnId;
+  int64_t commitTime;
+  int64_t hightestWriteId;
 
   _ShowCompactResponseElement__isset __isset;
 
@@ -11313,6 +11371,14 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
   void __set_cleanerStart(const int64_t val);
 
   void __set_poolName(const std::string& val);
+
+  void __set_nextTxnId(const int64_t val);
+
+  void __set_txnId(const int64_t val);
+
+  void __set_commitTime(const int64_t val);
+
+  void __set_hightestWriteId(const int64_t val);
 
   bool operator == (const ShowCompactResponseElement & rhs) const
   {
@@ -11387,6 +11453,22 @@ class ShowCompactResponseElement : public virtual ::apache::thrift::TBase {
     if (__isset.poolName != rhs.__isset.poolName)
       return false;
     else if (__isset.poolName && !(poolName == rhs.poolName))
+      return false;
+    if (__isset.nextTxnId != rhs.__isset.nextTxnId)
+      return false;
+    else if (__isset.nextTxnId && !(nextTxnId == rhs.nextTxnId))
+      return false;
+    if (__isset.txnId != rhs.__isset.txnId)
+      return false;
+    else if (__isset.txnId && !(txnId == rhs.txnId))
+      return false;
+    if (__isset.commitTime != rhs.__isset.commitTime)
+      return false;
+    else if (__isset.commitTime && !(commitTime == rhs.commitTime))
+      return false;
+    if (__isset.hightestWriteId != rhs.__isset.hightestWriteId)
+      return false;
+    else if (__isset.hightestWriteId && !(hightestWriteId == rhs.hightestWriteId))
       return false;
     return true;
   }

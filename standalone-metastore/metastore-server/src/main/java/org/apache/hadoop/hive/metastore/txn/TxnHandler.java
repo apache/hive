@@ -167,7 +167,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Splitter;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.repeat;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatchNoCount;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.executeQueriesInBatch;
@@ -233,22 +236,8 @@ import com.google.common.annotations.VisibleForTesting;
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
 abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
-
-  static final protected char INITIATED_STATE = 'i';
-  static final protected char WORKING_STATE = 'w';
-  static final protected char READY_FOR_CLEANING = 'r';
-  static final char FAILED_STATE = 'f';
-  static final char SUCCEEDED_STATE = 's';
-  static final char DID_NOT_INITIATE = 'a';
-  static final char REFUSED_STATE = 'c';
-
-  // Compactor types
-  static final protected char MAJOR_TYPE = 'a';
-  static final protected char MINOR_TYPE = 'i';
-
-
+  
   private static final String TXN_TMP_STATE = "_";
-
   private static final String DEFAULT_POOL_NAME = "default";
 
   // Lock states
@@ -257,7 +246,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   private static final int ALLOWED_REPEATED_DEADLOCKS = 10;
   private static final Logger LOG = LoggerFactory.getLogger(TxnHandler.class.getName());
-
 
   private static DataSource connPool;
   private static DataSource connPoolMutex;
@@ -3725,7 +3713,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               try (ResultSet rs = pst.executeQuery()) {
                 if(rs.next()) {
                   long enqueuedId = rs.getLong(1);
-                  String state = compactorStateToResponse(rs.getString(2).charAt(0));
+                  String state = CompactionState.fromSqlConst(rs.getString(2)).toString();
                   LOG.info("Ignoring request to compact {}/{}/{} since it is already {} with id={}", rqst.getDbname(),
                       rqst.getTablename(), rqst.getPartitionname(), quoteString(state), enqueuedId);
                   CompactionResponse resp = new CompactionResponse(-1, REFUSED_RESPONSE, false);
@@ -3768,7 +3756,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             }
             buf.append(INITIATED_STATE);
             buf.append("', '");
-            buf.append(thriftCompactionType2DbType(rqst.getType()));
+            buf.append(TxnUtils.thriftCompactionType2DbType(rqst.getType()));
             buf.append("',");
             buf.append(getEpochFn(dbProduct));
             buf.append(", ?");
@@ -3847,7 +3835,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         buf.append("\"CQ_STATE\", \"CQ_TYPE\"");
         params.add(String.valueOf(READY_FOR_CLEANING));
-        params.add(thriftCompactionType2DbType(rqst.getType()).toString());
+        params.add(TxnUtils.thriftCompactionType2DbType(rqst.getType()).toString());
 
         if (rqst.getProperties() != null) {
           buf.append(", \"CQ_TBLPROPERTIES\"");
@@ -3888,125 +3876,141 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
   
-  protected static String compactorStateToResponse(char s) {
-    switch (s) {
-      case INITIATED_STATE: return INITIATED_RESPONSE;
-      case WORKING_STATE: return WORKING_RESPONSE;
-      case READY_FOR_CLEANING: return CLEANING_RESPONSE;
-      case FAILED_STATE: return FAILED_RESPONSE;
-      case SUCCEEDED_STATE: return SUCCEEDED_RESPONSE;
-      case DID_NOT_INITIATE: return DID_NOT_INITIATE_RESPONSE;
-      case REFUSED_STATE: return REFUSED_RESPONSE;
-      default:
-        return Character.toString(s);
-    }
-  }
-
   @RetrySemantics.ReadOnly
   @SuppressWarnings("squid:S2095")
   public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException {
-    ShowCompactResponse response = new ShowCompactResponse(new ArrayList<>());
-    Connection dbConn = null;
-    PreparedStatement stmt = null;
     try {
-      try {
-        StringBuilder sb =new StringBuilder(2048);
-        sb.append(
-            "SELECT " +
-            "  \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", \"CQ_STATE\", \"CQ_TYPE\", \"CQ_WORKER_ID\", " +
-            "  \"CQ_START\", -1 \"CC_END\", \"CQ_RUN_AS\", \"CQ_HADOOP_JOB_ID\", \"CQ_ID\", \"CQ_ERROR_MESSAGE\", " +
-            "  \"CQ_ENQUEUE_TIME\", \"CQ_WORKER_VERSION\", \"CQ_INITIATOR_ID\", \"CQ_INITIATOR_VERSION\", " +
-            "  \"CQ_CLEANER_START\", \"CQ_POOL_NAME\"" +
-            "FROM " +
-                "  \"COMPACTION_QUEUE\" "
-        );
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(rqst.getPoolName())) {
-          sb.append("WHERE \"CQ_POOL_NAME\" = ? ");
-        }
-        sb.append(
-            "UNION ALL " +
-            "SELECT " +
-            "  \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_WORKER_ID\", " +
-            "  \"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HADOOP_JOB_ID\", \"CC_ID\", \"CC_ERROR_MESSAGE\", " +
-            "  \"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\", " +
-            "  -1 , \"CC_POOL_NAME\"" +
-            "FROM " +
-            "  \"COMPLETED_COMPACTIONS\" "
-        );
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(rqst.getPoolName())) {
-          sb.append("WHERE \"CC_POOL_NAME\" = ?");
-        }
-        //todo: sort by cq_id?
-        //what I want is order by cc_end desc, cc_start asc (but derby has a bug https://issues.apache.org/jira/browse/DERBY-6013)
-        //to sort so that currently running jobs are at the end of the list (bottom of screen)
-        //and currently running ones are in sorted by start time
-        //w/o order by likely currently running compactions will be first (LHS of Union)
+      ShowCompactResponse response = new ShowCompactResponse(new ArrayList<>());
+      String query = TxnQueries.SHOW_COMPACTION_QUERY + getShowCompactFilterClause(rqst) + 
+        TxnQueries.SHOW_COMPACTION_ORDERBY_CLAUSE;
+      List<String> params = getShowCompactParamList(rqst);
 
-        String query = sb.toString();
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.prepareStatement(query);
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(rqst.getPoolName())) {
-          stmt.setString(1, rqst.getPoolName());
-          stmt.setString(2, rqst.getPoolName());
+      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        PreparedStatement stmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params)) {
+        if (rqst.isSetId()) {
+          stmt.setLong(1, rqst.getId());
         }
-
-        LOG.debug("Going to execute query <{}>", query);
-        ResultSet rs = stmt.executeQuery();
-        while (rs.next()) {
-          ShowCompactResponseElement e = new ShowCompactResponseElement();
-          e.setDbname(rs.getString(1));
-          e.setTablename(rs.getString(2));
-          e.setPartitionname(rs.getString(3));
-          e.setState(compactorStateToResponse(rs.getString(4).charAt(0)));
-          try {
-            e.setType(dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
-          } catch (MetaException ex) {
-            //do nothing to handle RU/D if we add another status
+        LOG.debug("Going to execute query <" + query + ">");
+        try (ResultSet rs = stmt.executeQuery()) {
+          while (rs.next()) {
+            ShowCompactResponseElement e = new ShowCompactResponseElement();
+            e.setDbname(rs.getString(1));
+            e.setTablename(rs.getString(2));
+            e.setPartitionname(rs.getString(3));
+            e.setState(CompactionState.fromSqlConst(rs.getString(4)).toString());
+            try {
+              e.setType(TxnUtils.dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
+            } catch (MetaException ex) {
+              //do nothing to handle RU/D if we add another status
+            }
+            e.setWorkerid(rs.getString(6));
+            long start = rs.getLong(7);
+            if (!rs.wasNull()) {
+              e.setStart(start);
+            }
+            long endTime = rs.getLong(8);
+            if (endTime != -1) {
+              e.setEndTime(endTime);
+            }
+            e.setRunAs(rs.getString(9));
+            e.setHadoopJobId(rs.getString(10));
+            e.setId(rs.getLong(11));
+            e.setErrorMessage(rs.getString(12));
+            long enqueueTime = rs.getLong(13);
+            if (!rs.wasNull()) {
+              e.setEnqueueTime(enqueueTime);
+            }
+            e.setWorkerVersion(rs.getString(14));
+            e.setInitiatorId(rs.getString(15));
+            e.setInitiatorVersion(rs.getString(16));
+            long cleanerStart = rs.getLong(17);
+            if (!rs.wasNull() && (cleanerStart != -1)) {
+              e.setCleanerStart(cleanerStart);
+            }
+            String poolName = rs.getString(18);
+            if (isBlank(poolName)) {
+              e.setPoolName(DEFAULT_POOL_NAME);
+            } else {
+              e.setPoolName(poolName);
+            }
+            e.setTxnId(rs.getLong(19));
+            e.setNextTxnId(rs.getLong(20));
+            e.setCommitTime(rs.getLong(21));
+            e.setHightestTxnId(rs.getLong(22));
+            response.addToCompacts(e);
           }
-          e.setWorkerid(rs.getString(6));
-          long start = rs.getLong(7);
-          if (!rs.wasNull()) {
-            e.setStart(start);
-          }
-          long endTime = rs.getLong(8);
-          if (endTime != -1) {
-            e.setEndTime(endTime);
-          }
-          e.setRunAs(rs.getString(9));
-          e.setHadoopJobId(rs.getString(10));
-          e.setId(rs.getLong(11));
-          e.setErrorMessage(rs.getString(12));
-          long enqueueTime = rs.getLong(13);
-          if (!rs.wasNull()) {
-            e.setEnqueueTime(enqueueTime);
-          }
-          e.setWorkerVersion(rs.getString(14));
-          e.setInitiatorId(rs.getString(15));
-          e.setInitiatorVersion(rs.getString(16));
-          long cleanerStart = rs.getLong(17);
-          if (!rs.wasNull() && (cleanerStart != -1)) {
-            e.setCleanerStart(cleanerStart);
-          }
-          String poolName = rs.getString(18);
-          if (org.apache.commons.lang3.StringUtils.isBlank(poolName)) {
-            e.setPoolName(DEFAULT_POOL_NAME);
-          } else {
-            e.setPoolName(poolName);
-          }
-          response.addToCompacts(e);
         }
       } catch (SQLException e) {
         checkRetryable(e, "showCompact(" + rqst + ")");
         throw new MetaException("Unable to select from transaction database " +
             StringUtils.stringifyException(e));
-      } finally {
-        closeStmt(stmt);
-        closeDbConn(dbConn);
       }
       return response;
     } catch (RetryException e) {
       return showCompact(rqst);
     }
+  }
+
+  private List<String> getShowCompactParamList(ShowCompactRequest request) throws MetaException {
+    if (request.getId() > 0) {
+      return Collections.emptyList();
+    }
+    String poolName = request.getPoolName();
+    String dbName = request.getDbname();
+    String tableName = request.getTablename();
+    String partName = request.getPartitionname();
+    CompactionType type = request.getType();
+    String state = request.getState();
+  
+    List<String> params = new ArrayList<>();
+    if (isNotBlank(dbName)) {
+      params.add(dbName);
+    }
+    if (isNotBlank(tableName)) {
+      params.add(tableName);
+    }
+    if (isNotBlank(partName)) {
+      params.add(partName);
+    }
+    if (isNotBlank(state)) {
+      params.add(state);
+    }
+    if (type != null) {
+      params.add(TxnUtils.thriftCompactionType2DbType(type).toString());
+    }
+    if (isNotBlank(poolName)) {
+      params.add(poolName);
+    }
+    return params;
+  }
+
+  private String getShowCompactFilterClause(ShowCompactRequest request) {
+    List<String> params = new ArrayList<>();
+    
+    if (request.getId() > 0) {
+      params.add("\"CC_ID\"=?");
+    } else {
+      if (isNotBlank(request.getDbname())) {
+        params.add("\"CC_DATABASE\"=?");
+      }
+      if (isNotBlank(request.getTablename())) {
+        params.add("\"CC_TABLE\"=?");
+      }
+      if (isNotBlank(request.getPartitionname())) {
+        params.add("\"CC_PARTITION\"=?");
+      }
+      if (isNotBlank(request.getState())) {
+        params.add("\"CC_STATE\"=?");
+      }
+      if (request.getType() != null) {
+        params.add("\"CC_TYPE\"=?");
+      }
+      if (isNotBlank(request.getPoolName())) {
+        params.add("\"CC_POOL_NAME\"=?");
+      }
+    }
+    return !params.isEmpty() ? 
+      " WHERE " + StringUtils.join(" AND ", params) : EMPTY;
   }
 
   /**
@@ -4074,7 +4078,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if (!rs.wasNull()) {
             lci.setPartitionname(partition);
           }
-          lci.setType(dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
+          lci.setType(TxnUtils.dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
           // Only put the latest record of each partition into response
           if (!partitionSet.contains(partition)) {
             response.addToCompactions(lci);
@@ -5943,27 +5947,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
   static String quoteChar(char c) {
     return "'" + c + "'";
-  }
-
-  static CompactionType dbCompactionType2ThriftType(char dbValue) throws MetaException {
-    switch (dbValue) {
-      case MAJOR_TYPE:
-        return CompactionType.MAJOR;
-      case MINOR_TYPE:
-        return CompactionType.MINOR;
-      default:
-        throw new MetaException("Unexpected compaction type " + dbValue);
-    }
-  }
-  static Character thriftCompactionType2DbType(CompactionType ct) throws MetaException {
-    switch (ct) {
-      case MAJOR:
-        return MAJOR_TYPE;
-      case MINOR:
-        return MINOR_TYPE;
-      default:
-        throw new MetaException("Unexpected compaction type " + ct);
-    }
   }
 
   /**

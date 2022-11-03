@@ -37,8 +37,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnectorProvider {
   private static Logger LOG = LoggerFactory.getLogger(AbstractJDBCConnectorProvider.class);
@@ -66,6 +68,9 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   public static final String JDBC_NUM_PARTITIONS = JDBC_CONFIG_PREFIX + ".numPartitions";
   public static final String JDBC_LOW_BOUND = JDBC_CONFIG_PREFIX + ".lowerBound";
   public static final String JDBC_UPPER_BOUND = JDBC_CONFIG_PREFIX + ".upperBound";
+  // JDBC_CONNECTOR_PREFIX is used for indicating connection properties for different connectors,
+  // such as hive.connector.autoReconnect in which autoReconnect is the jdbc connection property.
+  public static final String JDBC_CONNECTOR_PREFIX = "hive.connector.";
 
   private static final String JDBC_INPUTFORMAT_CLASS = "org.apache.hive.storage.jdbc.JdbcInputFormat".intern();
   private static final String JDBC_OUTPUTFORMAT_CLASS = "org.apache.hive.storage.jdbc.JdbcOutputFormat".intern();
@@ -74,6 +79,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   String jdbcUrl = null;
   String username = null;
   String password = null; // TODO convert to byte array
+  Map<String, String> connectorPropMap = new HashMap<>();
 
   public AbstractJDBCConnectorProvider(String dbName, DataConnector dataConn, String driverClass) {
     super(dbName, dataConn, driverClass);
@@ -81,6 +87,11 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     this.jdbcUrl = connector.getUrl();
     this.username = connector.getParameters().get(JDBC_USERNAME);
     this.password = connector.getParameters().get(JDBC_PASSWORD);
+    connector.getParameters().forEach((k, v) -> {
+      if (k.startsWith(JDBC_CONNECTOR_PREFIX))
+        connectorPropMap.put(k.substring(15), v);
+    });
+
     if (this.password == null) {
       String keystore = connector.getParameters().get(JDBC_KEYSTORE);
       String key = connector.getParameters().get(JDBC_KEY);
@@ -107,8 +118,8 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   @Override public void open() throws ConnectException {
     try {
-      handle = DriverManager.getConnection(jdbcUrl, username, password);
-      isOpen = true;
+      close();
+      handle = DriverManager.getDriver(jdbcUrl).connect(jdbcUrl, getConnectionProperties());
     } catch (SQLException sqle) {
       LOG.warn("Could not connect to remote data source at " + jdbcUrl);
       throw new ConnectException("Could not connect to remote datasource at " + jdbcUrl + ",cause:" + sqle.getMessage());
@@ -117,7 +128,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   protected Connection getConnection() {
     try {
-      if (!isOpen)
+      if (!isOpen())
         open();
     } catch (ConnectException ce) {
       throw new RuntimeException(ce.getMessage(), ce);
@@ -129,8 +140,28 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     throw new RuntimeException("unexpected type for connection handle");
   }
 
+  protected boolean isOpen() {
+    try {
+      if (handle instanceof Connection)
+        return ((Connection) handle).isValid(3);
+    } catch (SQLException e) {
+      LOG.warn("Could not validate jdbc connection to "+ jdbcUrl, e);
+    }
+    return false;
+  }
+
+  protected boolean isClosed() {
+    try {
+      if (handle instanceof Connection)
+        return ((Connection) handle).isClosed();
+    } catch (SQLException e) {
+      LOG.warn("Could not determine whether jdbc connection is closed or not to "+ jdbcUrl, e);
+    }
+    return true;
+  }
+
   @Override public void close() {
-    if (isOpen) {
+    if (!isClosed()) {
       try {
         ((Connection)handle).close();
       } catch (SQLException sqle) {
@@ -372,5 +403,13 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       }
     }
     return "some_dummy_path";
+  }
+
+  protected Properties getConnectionProperties() {
+    Properties connectionProperties = new Properties();
+    connectionProperties.setProperty("user", username);
+    connectionProperties.setProperty("password", password);
+    connectorPropMap.forEach((k, v) -> connectionProperties.put(k, v));
+    return connectionProperties;
   }
 }

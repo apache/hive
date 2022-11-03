@@ -65,7 +65,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReentrantLock;
@@ -120,7 +119,6 @@ import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenResp;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.HttpStatus;
@@ -144,6 +142,7 @@ import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.Args;
+import org.apache.thrift.TBaseHelper;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.THttpClient;
@@ -151,6 +150,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.function.Supplier;
 
 /**
  * HiveConnection.
@@ -534,6 +534,7 @@ public class HiveConnection implements java.sql.Connection {
     validateSslForBrowserMode();
     httpClient = getHttpClient(useSsl);
     transport = new THttpClient(getServerHttpUrl(useSsl), httpClient);
+    HiveAuthUtils.configureThriftMaxMessageSize(transport, getMaxMessageSize());
     return transport;
   }
 
@@ -558,7 +559,7 @@ public class HiveConnection implements java.sql.Connection {
     CookieStore cookieStore = isCookieEnabled ? new BasicCookieStore() : null;
     HttpClientBuilder httpClientBuilder = null;
     // Request interceptor for any request pre-processing logic
-    HttpRequestInterceptor requestInterceptor;
+    HttpRequestInterceptorBase requestInterceptor;
     Map<String, String> additionalHttpHeaders = new HashMap<String, String>();
     Map<String, String> customCookies = new HashMap<String, String>();
 
@@ -751,8 +752,12 @@ public class HiveConnection implements java.sql.Connection {
       httpClientBuilder
           .setRedirectStrategy(new HiveJdbcSamlRedirectStrategy(browserClient));
     }
+
+    requestInterceptor.setRequestTrackingEnabled(isRequestTrackingEnabled());
+
     // Add the request interceptor to the client builder
-    httpClientBuilder.addInterceptorFirst(requestInterceptor);
+    httpClientBuilder.addInterceptorFirst(requestInterceptor.sessionId(getSessionId()));
+    httpClientBuilder.addInterceptorLast(new HttpDefaultResponseInterceptor());
 
     // Add an interceptor to add in an XSRF header
     httpClientBuilder.addInterceptorLast(new XsrfHttpRequestInterceptor());
@@ -812,6 +817,27 @@ public class HiveConnection implements java.sql.Connection {
     return httpClientBuilder.build();
   }
 
+  private boolean isRequestTrackingEnabled() {
+    return Boolean.parseBoolean(sessConfMap.get(JdbcConnectionParams.JDBC_PARAM_REQUEST_TRACK));
+  }
+
+  /**
+   * Creates a sessionId Supplier for interceptors. When interceptors are instantiated,
+   * there is no session yet (sessHandle is null) so this Supplier can take care
+   * of the sessionId in a lazy way.
+   */
+  private Supplier<String> getSessionId() {
+    Supplier<String> sessionId = () -> {
+      if (sessHandle == null) {
+        return "NO_SESSION";
+      }
+      StringBuilder b = new StringBuilder();
+      TBaseHelper.toString(sessHandle.getSessionId().bufferForGuid(), b);
+      return b.toString().replaceAll("\\s", "");
+    };
+    return sessionId;
+  }
+
   private String getJWT() {
     String jwtCredential = getJWTStringFromSession();
     if (jwtCredential == null || jwtCredential.isEmpty()) {
@@ -849,8 +875,10 @@ public class HiveConnection implements java.sql.Connection {
    *
    * @return TTransport
    * @throws TTransportException
+   * @throws SQLException
    */
-  private TTransport createUnderlyingTransport() throws TTransportException {
+  private TTransport createUnderlyingTransport() throws TTransportException, SQLException {
+    int maxMessageSize = getMaxMessageSize();
     TTransport transport = null;
     // Note: Thrift returns an SSL socket that is already bound to the specified host:port
     // Therefore an open called on this would be a no-op later
@@ -864,7 +892,7 @@ public class HiveConnection implements java.sql.Connection {
         JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
 
       if (sslTrustStore == null || sslTrustStore.isEmpty()) {
-        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout);
+        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout, maxMessageSize);
       } else {
         String trustStoreType =
                 sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
@@ -876,14 +904,30 @@ public class HiveConnection implements java.sql.Connection {
         if (trustStoreAlgorithm == null) {
           trustStoreAlgorithm = "";
         }
-        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout,
-            sslTrustStore, sslTrustStorePassword, trustStoreType, trustStoreAlgorithm);
+        transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout, sslTrustStore, sslTrustStorePassword,
+            trustStoreType, trustStoreAlgorithm, maxMessageSize);
       }
     } else {
       // get non-SSL socket transport
-      transport = HiveAuthUtils.getSocketTransport(host, port, loginTimeout);
+      transport = HiveAuthUtils.getSocketTransport(host, port, loginTimeout, maxMessageSize);
     }
     return transport;
+  }
+
+  private int getMaxMessageSize() throws SQLException {
+    String maxMessageSize = sessConfMap.get(JdbcConnectionParams.THRIFT_CLIENT_MAX_MESSAGE_SIZE);
+    if (maxMessageSize == null) {
+      return -1;
+    }
+
+    try {
+      return Integer.parseInt(maxMessageSize);
+    } catch (Exception e) {
+      String errFormat = "Invalid {} configuration of '{}'. Expected an integer specifying number of bytes. " +
+          "A configuration of <= 0 uses default max message size.";
+      String errMsg = String.format(errFormat, JdbcConnectionParams.THRIFT_CLIENT_MAX_MESSAGE_SIZE, maxMessageSize);
+      throw new SQLException(errMsg, "42000", e);
+    }
   }
 
   /**

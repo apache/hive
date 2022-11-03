@@ -1345,7 +1345,13 @@ struct CompactionResponse {
 }
 
 struct ShowCompactRequest {
-    1: optional string poolName
+    1: optional i64 id,
+    2: optional string poolName,
+    3: required string dbname,
+    4: required string tablename,
+    5: optional string partitionname,
+    6: required CompactionType type,
+    7: required string state
 }
 
 struct ShowCompactResponseElement {
@@ -1367,8 +1373,13 @@ struct ShowCompactResponseElement {
     16: optional string workerVersion,
     17: optional string initiatorId,
     18: optional string initiatorVersion,
-    19: optional i64 cleanerStart
-    20: optional string poolName
+    19: optional i64 cleanerStart,
+    20: optional string poolName,
+    21: optional i64 nextTxnId,
+    22: optional i64 txnId,
+    23: optional i64 commitTime,
+    24: optional i64 hightestWriteId
+
 }
 
 struct ShowCompactResponse {

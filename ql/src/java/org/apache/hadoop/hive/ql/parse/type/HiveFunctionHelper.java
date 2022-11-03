@@ -64,7 +64,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -87,6 +86,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.IntWritable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -368,20 +368,30 @@ public class HiveFunctionHelper implements FunctionHelper {
    */
   @Override
   public AggregateInfo getAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns,
-      String aggregateName, List<RexNode> aggregateParameters)
+                                                String aggregateName, List<RexNode> aggregateParameters,
+                                                List<FieldCollation> fieldCollations)
       throws SemanticException {
     Mode udafMode = SemanticAnalyzer.groupByDescModeToUDAFMode(
         GroupByDesc.Mode.COMPLETE, isDistinct);
     List<ObjectInspector> aggParameterOIs = new ArrayList<>();
+    Iterator<FieldCollation> obKeyIterator = fieldCollations.iterator();
     for (RexNode aggParameter : aggregateParameters) {
       aggParameterOIs.add(createObjectInspector(aggParameter));
+      if (obKeyIterator.hasNext()) {
+        FieldCollation fieldCollation = obKeyIterator.next();
+        aggParameterOIs.add(createObjectInspector(fieldCollation.getSortExpression()));
+        aggParameterOIs.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+                TypeInfoFactory.intTypeInfo, new IntWritable(fieldCollation.getSortDirection())));
+        aggParameterOIs.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+                TypeInfoFactory.intTypeInfo, new IntWritable(fieldCollation.getNullOrdering().getCode())));
+      }
     }
     GenericUDAFEvaluator genericUDAFEvaluator = SemanticAnalyzer.getGenericUDAFEvaluator2(
         aggregateName, aggParameterOIs, null, isDistinct, isAllColumns);
     assert (genericUDAFEvaluator != null);
     GenericUDAFInfo udaf = SemanticAnalyzer.getGenericUDAFInfo2(
         genericUDAFEvaluator, udafMode, aggParameterOIs);
-    return new AggregateInfo(aggregateParameters, udaf.returnType, aggregateName, isDistinct);
+    return new AggregateInfo(aggregateParameters, udaf.returnType, aggregateName, isDistinct, fieldCollations);
   }
 
   /**

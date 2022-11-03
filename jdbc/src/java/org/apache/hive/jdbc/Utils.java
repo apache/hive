@@ -156,6 +156,8 @@ public class Utils {
     static final String DEFAULT_COOKIE_NAMES_HS2 = "hive.server2.auth";
     // The http header prefix for additional headers which have to be appended to the request
     static final String HTTP_HEADER_PREFIX = "http.header.";
+    // Request tracking
+    static final String JDBC_PARAM_REQUEST_TRACK = "requestTrack";
     // Set the fetchSize
     static final String FETCH_SIZE = "fetchSize";
     static final String INIT_FILE = "initFile";
@@ -165,6 +167,7 @@ public class Utils {
     // Create external purge table by default
     static final String CREATE_TABLE_AS_EXTERNAL = "hiveCreateAsExternalLegacy";
     public static final String SOCKET_TIMEOUT = "socketTimeout";
+    static final String THRIFT_CLIENT_MAX_MESSAGE_SIZE = "thrift.client.max.message.size";
 
     // We support ways to specify application name modeled after some existing DBs, since
     // there's no standard approach.

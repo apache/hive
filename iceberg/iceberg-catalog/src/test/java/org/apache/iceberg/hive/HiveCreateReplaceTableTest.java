@@ -128,7 +128,7 @@ public class HiveCreateReplaceTableTest extends HiveMetastoreTest {
 
     Table table = catalog.loadTable(TABLE_IDENTIFIER);
     Snapshot snapshot = table.currentSnapshot();
-    Assert.assertTrue("Table should have one manifest file", snapshot.allManifests().size() == 1);
+    Assert.assertTrue("Table should have one manifest file", snapshot.allManifests(table.io()).size() == 1);
   }
 
   @Test
@@ -168,7 +168,7 @@ public class HiveCreateReplaceTableTest extends HiveMetastoreTest {
     AssertHelpers.assertThrows(
         "Should not be possible to start a new replace table txn",
         NoSuchTableException.class,
-        "No such table: hivedb.tbl",
+        "Table does not exist: hivedb.tbl",
         () -> catalog.newReplaceTableTransaction(TABLE_IDENTIFIER, SCHEMA, SPEC, false));
   }
 

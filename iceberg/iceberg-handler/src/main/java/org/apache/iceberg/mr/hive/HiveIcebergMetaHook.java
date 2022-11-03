@@ -387,6 +387,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       assertNotMigratedTable(hmsTable.getParameters(), "CHANGE COLUMN");
       handleChangeColumn(hmsTable);
     } else {
+      setDeleteModeOnTableProperties(icebergTable, hmsTable.getParameters());
       assertNotCrossTableMetadataLocationChange(hmsTable.getParameters(), context);
     }
 
@@ -658,6 +659,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
     // Remove creation related properties
     PARAMETERS_TO_REMOVE.forEach(hmsParams::remove);
+
+    setDeleteModeOnTableProperties(null, hmsParams);
   }
 
   /**
@@ -894,6 +897,18 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
                 .equalsIgnoreCase(hmsTable.getSd().getSerdeInfo().getParameters().get("write.format.default")) ||
             org.apache.iceberg.FileFormat.ORC.name()
                 .equalsIgnoreCase(hmsTable.getParameters().get("write.format.default")));
+  }
+
+  // TODO: remove this if copy-on-write mode gets implemented in Hive
+  private static void setDeleteModeOnTableProperties(Table icebergTable, Map<String, String> newProps) {
+    // Hive only supports merge-on-read delete mode, it will actually throw an error if DML operations are attempted on
+    // tables that don't have this (the default is copy-on-write). We set this at table creation and v1->v2 conversion.
+    if ((icebergTable == null || ((BaseTable) icebergTable).operations().current().formatVersion() == 1) &&
+        "2".equals(newProps.get(TableProperties.FORMAT_VERSION))) {
+      newProps.put(TableProperties.DELETE_MODE, "merge-on-read");
+      newProps.put(TableProperties.UPDATE_MODE, "merge-on-read");
+      newProps.put(TableProperties.MERGE_MODE, "merge-on-read");
+    }
   }
 
   private class PreAlterTableProperties {

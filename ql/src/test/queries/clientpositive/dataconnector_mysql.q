@@ -6,7 +6,10 @@ URL 'jdbc:mysql://localhost:3306/qtestDB'
 COMMENT 'test connector'
 WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="root",
-"hive.sql.dbcp.password"="qtestpassword");
+"hive.sql.dbcp.password"="qtestpassword",
+"hive.connector.autoReconnect"="true",
+"hive.connector.maxReconnects"="3",
+"hive.connector.connectTimeout"="10000");
 SHOW CONNECTORS;
 
 CREATE REMOTE DATABASE db_mysql USING mysql_qtest with DBPROPERTIES("connector.remoteDbName"="qtestDB");
