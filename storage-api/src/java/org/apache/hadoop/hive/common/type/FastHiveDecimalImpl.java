@@ -480,9 +480,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
         multiplier /= 10;
         digitNum--;
         precision++;
-        if (digitValue != 0) {
+//        if (digitValue != 0) {
           nonTrailingZeroScale = precision - integerDigitCount;
-        }
+//        }
         if (++index >= end) {
           break;
         }
