@@ -1448,9 +1448,10 @@ public class DagUtils {
         // Only log on the first wait, and check after wait on the last iteration.
         if (!checkOrWaitForTheFile(
             srcFs, src, dest, conf, notifierOld, waitAttempts, sleepInterval, true)) {
-          LOG.error("Could not find the jar that was being uploaded");
-          throw new IOException("Previous writer likely failed to write " + dest +
-              ". Failing because I am unlikely to write too.");
+          LOG.error("Could not find the jar that was being uploaded: src = {}, dest = {}, type = {}", src, dest, type);
+          throw new IOException("Could not find jar while attempting to localize resource. Previous writer may have " +
+              "failed to write " + dest + ". Failing because I am unlikely to write too. Refer to exception for more " +
+              "troubleshooting details.", e);
         }
       } finally {
         if (notifier == notifierNew) {
