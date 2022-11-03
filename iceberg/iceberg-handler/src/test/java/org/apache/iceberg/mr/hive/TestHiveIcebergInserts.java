@@ -21,7 +21,11 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.List;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.iceberg.AssertHelpers;
+import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
@@ -29,12 +33,16 @@ import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.hadoop.ConfigProperties;
+import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -503,5 +511,45 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     shell.executeStatement("INSERT INTO target SELECT * FROM source WHERE first_name = 'Nobody'");
     HiveIcebergTestUtils.validateData(target, ImmutableList.of(), 0);
+  }
+
+  @Test
+  public void testCreateInsertWithEngineHiveDisabled() throws TException, InterruptedException {
+    Assume.assumeTrue("This must be a HiveCatalog table", testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    String tblName =  "tbl";
+    String dbName = "hivedb";
+    TableIdentifier tableIdentifier = TableIdentifier.of(dbName, tblName);
+    Schema schema = new Schema(Types.StructType.of(required(1, "id", Types.LongType.get())).fields());
+    String dbPath = shell.metastore().getDatabasePath(dbName);
+    Database db = new Database(dbName, "description", dbPath, Maps.newHashMap());
+    HiveMetaStoreClient metastoreClient = new HiveMetaStoreClient(shell.getHiveConf());
+    metastoreClient.createDatabase(db);
+
+    HiveCatalog catalog = (HiveCatalog)
+        CatalogUtil.loadCatalog(HiveCatalog.class.getName(), CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE, ImmutableMap.of(),
+            shell.getHiveConf());
+
+    // Disable ENGINE_HIVE_ENABLED by hive-conf or keep it default value(false)
+    catalog.getConf().set(ConfigProperties.ENGINE_HIVE_ENABLED, "false");
+    catalog.createTable(tableIdentifier, schema, PartitionSpec.unpartitioned());
+
+    // Check hms iceberg table props
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable(tableIdentifier.namespace()
+        .level(0), tableIdentifier.name());
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergStorageHandler",
+        hmsTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE));
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergSerDe",
+        hmsTable.getSd().getSerdeInfo().getSerializationLib());
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergInputFormat",
+        hmsTable.getSd().getInputFormat());
+    Assert.assertEquals("org.apache.iceberg.mr.hive.HiveIcebergOutputFormat",
+        hmsTable.getSd().getOutputFormat());
+
+    // Insert and Query iceberg table
+    shell.executeStatement("INSERT INTO " + tableIdentifier +  " VALUES (123)");
+    String query = "SELECT * FROM " + tableIdentifier;
+    List<Object[]> result = shell.executeStatement(query);
+    Assert.assertEquals(1, result.size());
   }
 }

@@ -2688,6 +2688,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         getTableRequest.setProcessorIdentifier(processorIdentifier);
 
       Table t = getTableInternal(getTableRequest).getTable();
+      if (("ICEBERG").equalsIgnoreCase(t.getParameters().get("table_type")) &&
+          !("org.apache.iceberg.mr.hive.HiveIcebergStorageHandler").equals(t.getParameters().get("storage_handler"))) {
+        t.getSd().setInputFormat("org.apache.iceberg.mr.hive.HiveIcebergInputFormat");
+        t.getSd().setOutputFormat("org.apache.iceberg.mr.hive.HiveIcebergOutputFormat");
+        t.getSd().getSerdeInfo().setSerializationLib("org.apache.iceberg.mr.hive.HiveIcebergSerDe");
+        t.getParameters().put("storage_handler", "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler");
+        t.getParameters().put("engine.hive.enabled", "true");
+      }
       return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
     } finally {
       long diff = System.currentTimeMillis() - t1;
