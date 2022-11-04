@@ -138,7 +138,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
 
     // delete one of the rows
-    DataFile dataFile = StreamSupport.stream(tbl.currentSnapshot().addedFiles().spliterator(), false)
+    DataFile dataFile = StreamSupport.stream(tbl.currentSnapshot().addedDataFiles(tbl.io()).spliterator(), false)
         .findFirst()
         .orElseThrow(() -> new RuntimeException("Did not find any data files for test table"));
     List<PositionDelete<Record>> deletes = ImmutableList.of(positionDelete(
@@ -172,7 +172,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
     tbl.refresh();
 
     // delete the first and third rows from the newly-added data file - with row supplied
-    DataFile dataFile = StreamSupport.stream(tbl.currentSnapshot().addedFiles().spliterator(), false)
+    DataFile dataFile = StreamSupport.stream(tbl.currentSnapshot().addedDataFiles(tbl.io()).spliterator(), false)
         .filter(file -> file.partition().get(0, Long.class) == 0L)
         .filter(file -> file.recordCount() == 3)
         .findAny()
@@ -210,7 +210,7 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
     tbl.refresh();
 
     // delete the first and third rows from the newly-added data file
-    DataFile dataFile = StreamSupport.stream(tbl.currentSnapshot().addedFiles().spliterator(), false)
+    DataFile dataFile = StreamSupport.stream(tbl.currentSnapshot().addedDataFiles(tbl.io()).spliterator(), false)
         .filter(file -> file.partition().get(0, Long.class) == 0L)
         .filter(file -> file.recordCount() == 3)
         .findAny()

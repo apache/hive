@@ -1,0 +1,37 @@
+PREHOOK: query: DESCRIBE FUNCTION sinh
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION sinh
+POSTHOOK: type: DESCFUNCTION
+sinh(x) - returns the hyperbolic sin of x (x is in radians)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED sinh
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED sinh
+POSTHOOK: type: DESCFUNCTION
+sinh(x) - returns the hyperbolic sin of x (x is in radians)
+Example:
+   > SELECT sinh(0) FROM src LIMIT 1;
+  0
+Function class:org.apache.hadoop.hive.ql.udf.UDFSinh
+Function type:BUILTIN
+PREHOOK: query: SELECT sinh(null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sinh(null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT sinh(0.98), sinh(1.57), sinh(-0.5)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sinh(0.98), sinh(1.57), sinh(-0.5)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1.1445725715390087	2.299301505709079	-0.5210953054937474
