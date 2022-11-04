@@ -76,8 +76,9 @@ public class HiveVectorizedReader {
 
   }
 
-  public static <D> CloseableIterable<D> reader(Path path, FileScanTask task, Map<Integer, ?> idToConstant,
-      TaskAttemptContext context, Expression residual) {
+  public static CloseableIterable<HiveBatchContext> reader(Path path, FileScanTask task,
+      Map<Integer, ?> idToConstant, TaskAttemptContext context, Expression residual) {
+
     // Tweaks on jobConf here are relevant for this task only, so we need to copy it first as context's conf is reused..
     JobConf job = new JobConf(context.getConfiguration());
     FileFormat format = task.file().format();
@@ -171,8 +172,9 @@ public class HiveVectorizedReader {
         VectorizedReadUtils.deserializeToShadedOrcTail(serializedOrcTail).getSchema(), residual);
 
     // If LLAP enabled, try to retrieve an LLAP record reader - this might yield to null in some special cases
+    // TODO: add support for reading files with positional deletes with LLAP (LLAP would need to provide file row num)
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
-        LlapProxy.getIo() != null) {
+        LlapProxy.getIo() != null && task.deletes().isEmpty()) {
       recordReader = LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, path, null, readColumnIds,
           job, start, length, reporter);
     }
@@ -220,14 +222,14 @@ public class HiveVectorizedReader {
     return inputFormat.getRecordReader(split, job, reporter);
   }
 
-  private static <D> CloseableIterable<D> createVectorizedRowBatchIterable(
+  private static CloseableIterable<HiveBatchContext> createVectorizedRowBatchIterable(
       RecordReader<NullWritable, VectorizedRowBatch> hiveRecordReader, JobConf job, int[] partitionColIndices,
       Object[] partitionValues) {
 
-    VectorizedRowBatchIterator iterator =
-        new VectorizedRowBatchIterator(hiveRecordReader, job, partitionColIndices, partitionValues);
+    HiveBatchIterator iterator =
+        new HiveBatchIterator(hiveRecordReader, job, partitionColIndices, partitionValues);
 
-    return new CloseableIterable<D>() {
+    return new CloseableIterable<HiveBatchContext>() {
 
       @Override
       public CloseableIterator iterator() {
