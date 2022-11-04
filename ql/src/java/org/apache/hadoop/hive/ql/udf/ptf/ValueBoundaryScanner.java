@@ -759,7 +759,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     switch (typeString) {
     case "int":
     case "bigint":
-    case "smallint":
+    case "tinyint":
       return new LongPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
     case "timestamp":
       return new TimestampPrimitiveValueBoundaryScanner(start, end, exprDef, nullsLast);
