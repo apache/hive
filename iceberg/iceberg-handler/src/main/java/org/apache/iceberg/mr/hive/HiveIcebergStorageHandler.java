@@ -561,7 +561,8 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return new URI(authURI.toString());
   }
 
-  private String encodeString(String rawString) {
+  @VisibleForTesting
+  static String encodeString(String rawString) {
     if (rawString == null) {
       return null;
     }
