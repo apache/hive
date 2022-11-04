@@ -14184,10 +14184,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     unparseTranslator.enable();
 
+    tblProps = new HashMap<>();
     if (makeAcid()) {
-      if (tblProps == null) {
-        tblProps = new HashMap<>();
-      }
       tblProps = convertToAcidByDefault(storageFormat, dbDotTable, null, tblProps);
     }
     tblProps.put(TABLE_IS_CTAS, "true");
