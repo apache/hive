@@ -196,6 +196,7 @@ public class PlanModifierForASTConv {
         // this should only happen when newParent is constant.
         if (isEmptyGrpAggr(rel)) {
           replaceEmptyGroupAggr(rel, newParent);
+          rel = newParent.getInputs().get(0);
         }
       }
     }
