@@ -27,6 +27,7 @@
   <name>Hive Upgrade Acid</name>
   <packaging>pom</packaging>
   <properties>
+    <project.build.outputTimestamp>2022-07-10T09:19:36Z</project.build.outputTimestamp>
     <!-- Build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>

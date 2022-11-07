@@ -62,6 +62,7 @@
     <module>kafka-handler</module>
   </modules>
   <properties>
+    <project.build.outputTimestamp>2022-07-10T09:19:36Z</project.build.outputTimestamp>
     <standalone-metastore.version>4.0.0-alpha-2</standalone-metastore.version>
     <hive.version.shortname>4.0.0-alpha-2</hive.version.shortname>
     <!-- Build Properties -->
