@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketIdentifier;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.RowPositionAwareVectorizedRecordReader;
 import org.apache.hadoop.hive.ql.io.SelfDescribingInputFormatInterface;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
@@ -55,7 +56,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     SelfDescribingInputFormatInterface {
 
   static class VectorizedOrcRecordReader
-      implements RecordReader<NullWritable, VectorizedRowBatch> {
+      implements RecordReader<NullWritable, VectorizedRowBatch>, RowPositionAwareVectorizedRecordReader {
     private final org.apache.hadoop.hive.ql.io.orc.RecordReader reader;
     private final long offset;
     private final long length;
@@ -170,6 +171,11 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
     @Override
     public float getProgress() throws IOException {
       return progress;
+    }
+
+    @Override
+    public long getRowNumber() throws IOException {
+      return reader.getRowNumber();
     }
   }
 
