@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.BucketIdentifier;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.io.RowPositionAwareVectorizedRecordReader;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
@@ -78,8 +79,10 @@ import java.io.IOException;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -90,7 +93,7 @@ import static org.apache.parquet.format.converter.ParquetMetadataConverter.NO_FI
  * from Apache Spark and Apache Parquet.
  */
 public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
-  implements RecordReader<NullWritable, VectorizedRowBatch> {
+  implements RecordReader<NullWritable, VectorizedRowBatch>, RowPositionAwareVectorizedRecordReader {
   public static final Logger LOG = LoggerFactory.getLogger(VectorizedParquetRecordReader.class);
 
   private List<Integer> colsToInclude;
@@ -127,6 +130,17 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   protected long totalRowCount = 0;
   private ZoneId writerTimezone;
   private final BucketIdentifier bucketIdentifier;
+
+  // number of rows returned with the last batch
+  private int lastReturnedRowCount = -1;
+
+  // row number (in the file) of the first row returned in the last batch
+  private long currentRowNumInRowGroup = -1;
+
+  // index of the current rowgroup, incremented after reader.readNextRowGroup() calls
+  private int currentRowGroupIndex = -1;
+
+  private Map<Integer, Long> rowGroupNumToRowPos = new HashMap<>();
 
   // LLAP cache integration
   // TODO: also support fileKey in splits, like OrcSplit does
@@ -216,7 +230,11 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       offsets.add(offset);
     }
     blocks = new ArrayList<>();
+    long allRowsInFile = 0;
+    int blockIndex = 0;
     for (BlockMetaData block : parquetMetadata.getBlocks()) {
+      rowGroupNumToRowPos.put(blockIndex++, allRowsInFile);
+      allRowsInFile += block.getRowCount();
       if (offsets.contains(block.getStartingPos())) {
         blocks.add(block);
       }
@@ -365,10 +383,17 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     return 0;
   }
 
+  @Override
+  public long getRowNumber() throws IOException {
+    return rowGroupNumToRowPos.get(currentRowGroupIndex) + currentRowNumInRowGroup;
+  }
+
   /**
    * Advances to the next batch of rows. Returns false if there are no more.
    */
   private boolean nextBatch(VectorizedRowBatch columnarBatch) throws IOException {
+    currentRowNumInRowGroup += lastReturnedRowCount;
+
     columnarBatch.reset();
     if (rowsReturned >= totalRowCount) {
       return false;
@@ -391,6 +416,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
             columnTypesList.get(colsToInclude.get(i)));
       }
     }
+    lastReturnedRowCount = num;
     rowsReturned += num;
     columnarBatch.size = num;
     return true;
@@ -429,6 +455,9 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
           legacyConversionEnabled, 0);
       }
     }
+
+    currentRowNumInRowGroup = 0;
+    currentRowGroupIndex++;
 
     totalCountLoadedSoFar += pages.getRowCount();
   }
