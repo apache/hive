@@ -30,15 +30,6 @@ public class KllHistogramEstimatorFactory {
   /**
    * This function deserializes the serialized KLL histogram estimator from a byte array.
    * @param buf to deserialize
-   * @return KLL histogram estimator
-   */
-  public static KllHistogramEstimator getKllHistogramEstimator(byte[] buf) {
-    return new KllHistogramEstimator(KllUtils.deserializeKll(buf, 0, buf.length));
-  }
-
-  /**
-   * This function deserializes the serialized KLL histogram estimator from a byte array.
-   * @param buf to deserialize
    * @param start start index for deserialization
    * @param len start+len is deserialized
    * @return KLL histogram estimator
@@ -48,28 +39,11 @@ public class KllHistogramEstimatorFactory {
   }
 
   /**
-   * This method creates an empty histogram estimator with a KLL sketch with k=200.
-   * @return an empty histogram estimator with a KLL sketch with k=200
-   */
-  public static KllHistogramEstimator getEmptyHistogramEstimator() {
-    return new KllHistogramEstimator();
-  }
-
-  /**
    * This method creates an empty histogram estimator with a KLL sketch of a given k parameter.
    * @param k the KLL parameter k for initializing the sketch
    * @return an empty histogram estimator with a KLL sketch of a given k parameter
    */
   public static KllHistogramEstimator getEmptyHistogramEstimator(int k) {
     return new KllHistogramEstimator(k);
-  }
-
-  /**
-   * This method creates an empty KLL histogram estimator, using the k parameter from the given estimator.
-   * @param kllHistogramEstimator the estimator used to build the new one
-   * @return an empty KLL histogram estimator, using the k parameter from the given estimator
-   */
-  public static KllHistogramEstimator getEmptyHistogramEstimator(KllHistogramEstimator kllHistogramEstimator) {
-    return getEmptyHistogramEstimator(kllHistogramEstimator.getSketch().getK());
   }
 }
