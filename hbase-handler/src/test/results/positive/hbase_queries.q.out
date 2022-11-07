@@ -925,6 +925,9 @@ POSTHOOK: query: INSERT OVERWRITE TABLE hbase_table_3_like SELECT * FROM hbase_t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_3
 POSTHOOK: Output: default@hbase_table_3_like
+POSTHOOK: Lineage: hbase_table_3_like.count SIMPLE [(hbase_table_3)hbase_table_3.FieldSchema(name:count, type:int, comment:), ]
+POSTHOOK: Lineage: hbase_table_3_like.key SIMPLE [(hbase_table_3)hbase_table_3.FieldSchema(name:key, type:int, comment:), ]
+POSTHOOK: Lineage: hbase_table_3_like.value SIMPLE [(hbase_table_3)hbase_table_3.FieldSchema(name:value, type:string, comment:), ]
 PREHOOK: query: SELECT * FROM hbase_table_3_like ORDER BY key, value LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_3_like
@@ -968,6 +971,8 @@ POSTHOOK: query: INSERT OVERWRITE TABLE hbase_table_1_like SELECT * FROM hbase_t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_1
 POSTHOOK: Output: default@hbase_table_1_like
+POSTHOOK: Lineage: hbase_table_1_like.key SIMPLE [(hbase_table_1)hbase_table_1.FieldSchema(name:key, type:int, comment:It is a column key), ]
+POSTHOOK: Lineage: hbase_table_1_like.value SIMPLE [(hbase_table_1)hbase_table_1.FieldSchema(name:value, type:string, comment:It is the column string value), ]
 PREHOOK: query: SELECT COUNT(*) FROM hbase_table_1_like
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_1_like
@@ -987,15 +992,15 @@ CREATE EXTERNAL TABLE `hbase_table_1_like`(
   `key` int COMMENT 'It is a column key', 
   `value` string COMMENT 'It is the column string value')
 ROW FORMAT SERDE 
-  'org.apache.hadoop.hive.hbase.HBaseSerDe' 
-STORED BY 
-  'org.apache.hadoop.hive.hbase.HBaseStorageHandler' 
-WITH SERDEPROPERTIES ( 
-  'hbase.columns.mapping'='cf:string', 
-  'serialization.format'='1')
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
-  'hbase.table.name'='hbase_table_0', 
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE IF EXISTS hbase_table_9
 PREHOOK: type: DROPTABLE

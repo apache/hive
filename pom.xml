@@ -95,6 +95,7 @@
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.build-helper.plugin.version>1.12</maven.build-helper.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
+    <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
     <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
     <!-- Library Dependency Versions -->
     <accumulo.version>1.10.1</accumulo.version>
@@ -160,9 +161,9 @@
     <joda.version>2.9.9</joda.version>
     <jodd.version>6.0.0</jodd.version>
     <json.version>1.8</json.version>
-    <junit.version>4.13</junit.version>
+    <junit.version>4.13.2</junit.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
-    <junit.vintage.version>5.6.2</junit.vintage.version>
+    <junit.vintage.version>5.6.3</junit.vintage.version>
     <kafka.version>2.5.0</kafka.version>
     <kryo.version>5.0.3</kryo.version>
     <reflectasm.version>1.11.9</reflectasm.version>
@@ -1422,6 +1423,11 @@
           <groupId>org.apache.felix</groupId>
           <artifactId>maven-bundle-plugin</artifactId>
           <version>${felix.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>${maven.shade.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
