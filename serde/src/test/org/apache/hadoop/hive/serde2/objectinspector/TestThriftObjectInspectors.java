@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -150,6 +152,11 @@ public class TestThriftObjectInspectors {
       assertEquals(Category.STRUCT, oi1.getCategory());
       StructObjectInspector soi = (StructObjectInspector) oi1;
       List<? extends StructField> fields = soi.getAllStructFieldRefs();
+      Collections.sort(fields, new Comparator<StructField>() {
+        public int compare(StructField a, StructField b) {
+          return b.getFieldName().compareTo(a.getFieldName());
+        }
+      });
       assertEquals(2, fields.size());
       assertEquals(fields.get(0), soi.getStructFieldRef("sIntString"));
       assertEquals(fields.get(1), soi.getStructFieldRef("aString"));
@@ -176,6 +183,11 @@ public class TestThriftObjectInspectors {
       assertEquals("setString", soi.getStructFieldData(s, fields.get(1)));
 
       // sub fields
+      Collections.sort(fields, new Comparator<StructField>() {
+        public int compare(StructField a, StructField b) {
+          return a.getFieldObjectInspector().toString().compareTo(b.getFieldObjectInspector().toString());
+        }
+      });
       assertEquals(
           ObjectInspectorFactory
           .getStandardListObjectInspector(ObjectInspectorFactory
