@@ -20,14 +20,16 @@
 package org.apache.iceberg.mr.hive.vector;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.NoSuchElementException;
+import java.util.stream.IntStream;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExtractRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.io.CloseableIterator;
 
-/**
- * Wraps a Hive VRB and holds corresponding metadata information about it, such as VRB context (e.g. type infos) and
- * file row offset.
- */
 public class HiveBatchContext {
 
   private final VectorizedRowBatch batch;
@@ -47,25 +49,82 @@ public class HiveBatchContext {
     return batch;
   }
 
-  public RowIterator rowIterator() throws IOException {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public CloseableIterator<HiveRow> rowIterator() throws IOException {
+    return new RowIterator();
   }
 
-  // TODO: implement row iterator
-  class RowIterator implements CloseableIterator {
+  class RowIterator implements CloseableIterator<HiveRow> {
 
-    @Override
-    public void close() throws IOException {
+    private final VectorExtractRow vectorExtractRow;
+    private final int originalSize;
+    private final int[] originalIndices;
+    private int currentPosition = 0;
+
+    RowIterator() throws IOException {
+      try {
+        this.vectorExtractRow = new VectorExtractRow();
+        this.vectorExtractRow.init(vrbCtx.getRowColumnTypeInfos());
+        this.originalSize = batch.size;
+        if (batch.isSelectedInUse()) {
+          // copy, as further operations working on this batch might change what rows are selected
+          originalIndices = Arrays.copyOf(batch.selected, batch.size);
+        } else {
+          originalIndices = IntStream.range(0, batch.size).toArray();
+        }
+      } catch (HiveException e) {
+        throw new IOException(e);
+      }
     }
 
     @Override
     public boolean hasNext() {
-      return false;
+      return currentPosition < originalSize;
     }
 
     @Override
-    public Object next() {
-      return null;
+    public HiveRow next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+
+      // position of the row as this batch is intended to be read (e.g. if batch is already filtered this
+      // can be different from the physical position)
+      int logicalPosition = currentPosition++;
+      // real position of this row within the original (i.e unfiltered) batch
+      int physicalPosition = originalIndices[logicalPosition];
+
+      HiveRow row = new HiveRow() {
+
+        @Override
+        public Object get(int rowIndex) {
+
+          if (rowIndex == MetadataColumns.ROW_POSITION.fieldId()) {
+            if (fileRowOffset == Long.MIN_VALUE) {
+              throw new UnsupportedOperationException("Can't provide row position for batch.");
+            }
+            return fileRowOffset + physicalPosition;
+          } else {
+            return vectorExtractRow.accessor(batch).apply(physicalPosition).apply(rowIndex);
+          }
+        }
+
+        @Override
+        public int physicalBatchIndex() {
+          return physicalPosition;
+        }
+
+      };
+      return row;
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void close() throws IOException {
+      // no-op
     }
   }
 }
