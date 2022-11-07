@@ -316,7 +316,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     STDDEV_SAMP,
     BLOOM_FILTER,
     COMPUTE_BIT_VECTOR_HLL,
-    DS_KLL_SKETCH
+    DS_KLL_SKETCH;
+
+    @Override
+    public String toString() {
+      return name().toLowerCase();
+    }
   }
 
   public enum EnabledOverride {
@@ -324,12 +329,17 @@ public class Vectorizer implements PhysicalPlanResolver {
     DISABLE,
     ENABLE;
 
-    public static final Map<String, EnabledOverride> nameMap = new HashMap<>();
+    public static final Map<String, EnabledOverride> NAME_MAP = new HashMap<>();
     static {
       for (EnabledOverride vectorizationEnabledOverride : values()) {
-        nameMap.put(
-            vectorizationEnabledOverride.name().toLowerCase(), vectorizationEnabledOverride);
+        NAME_MAP.put(
+            vectorizationEnabledOverride.toString(), vectorizationEnabledOverride);
       }
+    }
+
+    @Override
+    public String toString() {
+      return name().toLowerCase();
     }
   }
 
@@ -2403,7 +2413,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         HiveConf.getVar(hiveConf,
             HiveConf.ConfVars.HIVE_TEST_VECTORIZATION_ENABLED_OVERRIDE);
     vectorizationEnabledOverride =
-        EnabledOverride.nameMap.get(vectorizationEnabledOverrideString);
+        EnabledOverride.NAME_MAP.get(vectorizationEnabledOverrideString);
 
     isVectorizationEnabled = HiveConf.getBoolVar(hiveConf,
         HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
@@ -4481,7 +4491,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     Class<? extends VectorAggregateExpression>[] vecAggrClasses;
     // "ds_kll_sketch" needs special treatment because the UDAF is coming from data
     // sketches library, we cannot add annotations there
-    if (aggregationName.equals(VECTORIZABLE_UDAF.DS_KLL_SKETCH.name().toLowerCase())) {
+    if (aggregationName.equals(VECTORIZABLE_UDAF.DS_KLL_SKETCH.toString())) {
       vecAggrClasses = new Class[] {
           VectorUDAFComputeDsKllSketchDouble.class, VectorUDAFComputeDsKllSketchFinal.class
       };
