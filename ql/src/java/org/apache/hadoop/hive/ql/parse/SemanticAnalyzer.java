@@ -7265,7 +7265,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LoadTableDesc ltd = null;
     ListBucketingCtx lbCtx = null;
     Map<String, String> partSpec = null;
-    boolean isMmTable = false, isMmCreate = false, isDirectInsertCreate = false, isNonNativeTable = false;
+    boolean isMmTable = false, isMmCreate = false, isNonNativeTable = false;
     Long writeId = null;
     HiveTxnManager txnMgr = getTxnMgr();
 
@@ -7626,7 +7626,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (!isNonNativeTable && !destTableIsTemporary && (isCtas || isCMV)) {
           destTableIsFullAcid = AcidUtils.isFullAcidTable(tblProps);
           acidOperation = getAcidType(dest);
-          isDirectInsert = isDirectInsertCreate = isDirectInsert(destTableIsFullAcid, acidOperation);
+          isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOperation);
           if (isDirectInsert || isMmTable) {
             destinationPath = getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix);
             if (createTableUseSuffix) {
@@ -7929,7 +7929,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         destinationPath, currentTableId, destTableIsFullAcid, destTableIsTemporary,//this was 1/4 acid
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
         canBeMerged, destinationTable, writeId, isMmCreate, destType, qb, isDirectInsert, acidOperation, moveTaskId);
-    if (isMmCreate || isDirectInsertCreate) {
+    if (isMmCreate || ((qb.isCTAS() || qb.isMaterializedView()) && isDirectInsert)) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
       if (tableDesc != null) {
         tableDesc.setWriter(fileSinkDesc);
