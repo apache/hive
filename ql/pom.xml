@@ -880,6 +880,11 @@
       <scope>compile</scope>
       <version>${esri.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.roaringbitmap</groupId>
+      <artifactId>RoaringBitmap</artifactId>
+      <version>0.9.22</version>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>
@@ -1095,6 +1100,8 @@
                   <include>org.apache.calcite:*</include>
                   <include>org.apache.calcite.avatica:avatica</include>
                   <include>com.esri.geometry:esri-geometry-api</include>
+                  <include>org.roaringbitmap:RoaringBitmap</include>
+                  <include>org.roaringbitmap:shims</include>
                 </includes>
               </artifactSet>
               <filters>
