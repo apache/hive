@@ -908,7 +908,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   /**
    * If any of the following checks is true we fall back to non vectorized mode:
    * <ul>
-   *   <li>iceberg format-version is "2"</li>
    *   <li>fileformat is set to avro</li>
    *   <li>querying metadata tables</li>
    *   <li>fileformat is set to ORC, and table schema has time type column</li>
@@ -918,8 +917,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   private void fallbackToNonVectorizedModeBasedOnProperties(Properties tableProps) {
     Schema tableSchema = SchemaParser.fromJson(tableProps.getProperty(InputFormatConfig.TABLE_SCHEMA));
-    if ("2".equals(tableProps.get(TableProperties.FORMAT_VERSION)) ||
-        FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
+    if (FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
         (tableProps.containsKey("metaTable") && isValidMetadataTable(tableProps.getProperty("metaTable"))) ||
         hasOrcTimeInSchema(tableProps, tableSchema) ||
         !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema)) {
