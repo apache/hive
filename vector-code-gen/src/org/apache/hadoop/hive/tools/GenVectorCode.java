@@ -1220,8 +1220,8 @@ public class GenVectorCode extends Task {
       {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorDouble", "double", "COMPLETE"},
 
       // "double" as <ValueType> for "MERGING" is ignored
-      {"VectorUDAFComputeKLL", "VectorUDAFComputeKLLFinal", "double", "MERGING"},
-      {"VectorUDAFComputeKLL", "VectorUDAFComputeKLLDouble", "double", "COMPLETE"},
+      {"VectorUDAFComputeDsKllSketch", "VectorUDAFComputeDsKllSketchFinal", "double", "MERGING"},
+      {"VectorUDAFComputeDsKllSketch", "VectorUDAFComputeDsKllSketchDouble", "double", "COMPLETE"},
 
 
       // Template, <ClassName>, <ValueType>, <IfDefined>
@@ -1477,7 +1477,7 @@ public class GenVectorCode extends Task {
         generateVectorUDAFAvgMerge(tdesc);
       } else if (tdesc[0].equals("VectorUDAFComputeBitVector")) {
         generateVectorUDAFDataSummary(tdesc);
-      } else if (tdesc[0].equals("VectorUDAFComputeKLL")) {
+      } else if (tdesc[0].equals("VectorUDAFComputeDsKllSketch")) {
         generateVectorUDAFDataSummary(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVar")) {
         generateVectorUDAFVar(tdesc);

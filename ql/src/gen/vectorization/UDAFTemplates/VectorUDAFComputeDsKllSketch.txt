@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 
 /**
- * Generated from template VectorUDAFComputeKLL.txt.
+ * Generated from template VectorUDAFComputeDsKllSketch.txt.
  */
 @Description(name = "ds_kll_sketch", value = "_FUNC_(x) "
     + "Returns a KllFloatsSketch in a serialized form as a binary blob."

@@ -46,8 +46,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorCoalesce;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFComputeKLLDouble;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFComputeKLLFinal;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFComputeDsKllSketchDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFComputeDsKllSketchFinal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColDivideDecimalScalar;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinAntiJoinLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinAntiJoinMultiKeyOperator;
@@ -4483,7 +4483,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     // sketches library, we cannot add annotations there
     if (aggregationName.equals(VECTORIZABLE_UDAF.DS_KLL_SKETCH.name().toLowerCase())) {
       vecAggrClasses = new Class[] {
-          VectorUDAFComputeKLLDouble.class, VectorUDAFComputeKLLFinal.class
+          VectorUDAFComputeDsKllSketchDouble.class, VectorUDAFComputeDsKllSketchFinal.class
       };
     } else {
       VectorizedUDAFs annotation =
