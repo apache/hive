@@ -145,6 +145,14 @@ public abstract class TaskCompiler {
         throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
       }
     }
+    if (pCtx.getCreateViewDesc() != null && pCtx.getCreateViewDesc().getStorageHandler() != null) {
+      try {
+        directInsertCtas =
+            HiveUtils.getStorageHandler(conf, pCtx.getCreateViewDesc().getStorageHandler()).directInsertCTAS();
+      } catch (HiveException e) {
+        throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
+      }
+    }
 
     if (pCtx.getFetchTask() != null) {
       if (pCtx.getFetchTask().getTblDesc() == null) {
@@ -304,13 +312,21 @@ public abstract class TaskCompiler {
     }
 
     if (directInsertCtas) {
-      CreateTableDesc crtTblDesc = pCtx.getCreateTable();
-      crtTblDesc.validate(conf);
-      Task<?> crtTblTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
-      for (Task<?> rootTask : rootTasks) {
-        crtTblTask.addDependentTask(rootTask);
-        rootTasks.clear();
-        rootTasks.add(crtTblTask);
+      Task<?> crtTask = null;
+      if (pCtx.getCreateTable() != null) {
+        CreateTableDesc crtTblDesc = pCtx.getCreateTable();
+        crtTblDesc.validate(conf);
+         crtTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
+      } else if (pCtx.getCreateViewDesc() != null) {
+        CreateMaterializedViewDesc createMaterializedViewDesc = pCtx.getCreateViewDesc();
+        crtTask = TaskFactory.get(new DDLWork(inputs, outputs, createMaterializedViewDesc));
+      }
+      if (crtTask != null) {
+        for (Task<?> rootTask : rootTasks) {
+          crtTask.addDependentTask(rootTask);
+          rootTasks.clear();
+          rootTasks.add(crtTask);
+        }
       }
     }
 
@@ -391,7 +407,7 @@ public abstract class TaskCompiler {
       Task<?> crtTblTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
       patchUpAfterCTASorMaterializedView(rootTasks, inputs, outputs, crtTblTask,
           CollectionUtils.isEmpty(crtTblDesc.getPartColNames()));
-    } else if (pCtx.getQueryProperties().isMaterializedView()) {
+    } else if (pCtx.getQueryProperties().isMaterializedView() && !directInsertCtas) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateMaterializedViewDesc viewDesc = pCtx.getCreateViewDesc();
       Task<?> crtViewTask = TaskFactory.get(new DDLWork(

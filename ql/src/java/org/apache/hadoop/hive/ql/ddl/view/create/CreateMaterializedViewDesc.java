@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.view.create;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -375,6 +376,15 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
     }
     if (getOutputFormat() != null && !getOutputFormat().isEmpty()) {
       tbl.getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
+    }
+
+    if (getSerdeProps() != null) {
+      Iterator<Map.Entry<String, String>> iter = getSerdeProps().entrySet()
+              .iterator();
+      while (iter.hasNext()) {
+        Map.Entry<String, String> m = iter.next();
+        tbl.setSerdeParam(m.getKey(), m.getValue());
+      }
     }
 
     if (ownerName != null) {
