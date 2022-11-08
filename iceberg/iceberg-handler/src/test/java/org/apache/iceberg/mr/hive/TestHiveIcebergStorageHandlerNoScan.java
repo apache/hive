@@ -1437,6 +1437,13 @@ public class TestHiveIcebergStorageHandlerNoScan {
     storageHandler.setConf(shell.getHiveConf());
     URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
 
+    Assert.assertEquals("iceberg://" +
+            HiveIcebergStorageHandler.encodeString(target.namespace().toString()) + "/" +
+            HiveIcebergStorageHandler.encodeString(target.name()) + "?snapshot=" +
+            HiveIcebergStorageHandler.encodeString(
+            URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath()),
+        uriForAuth.toString());
+
     Assert.assertEquals("iceberg://" + target.namespace() + "/" + target.name() + "?snapshot=" +
         URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath(),
         HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(uriForAuth.toString()));
