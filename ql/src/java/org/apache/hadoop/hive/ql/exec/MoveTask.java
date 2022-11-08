@@ -1073,6 +1073,10 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         storageHandlerClass = createTableDesc.getStorageHandler();
         commitProperties = new Properties();
         commitProperties.put(hive_metastoreConstants.META_TABLE_NAME, createTableDesc.getDbTableName());
+      } else if (moveWork.getLoadFileWork().getCreateViewDesc() != null) {
+        storageHandlerClass = moveWork.getLoadFileWork().getCreateViewDesc().getStorageHandler();
+        commitProperties = new Properties();
+        commitProperties.put(hive_metastoreConstants.META_TABLE_NAME, moveWork.getLoadFileWork().getCreateViewDesc().getViewName());
       }
     }
 
