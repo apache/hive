@@ -342,7 +342,15 @@ public class StringExpr {
           }
           s_tmp--;
         }
-        next += shift[input[next] & MAX_BYTE];
+
+        // if the character string contains control characters,
+        // overflow occurs.
+        int shiftIndex = input[next] & MAX_BYTE;
+        if (shiftIndex >= MAX_BYTE) {
+          next++;
+        } else {
+          next += shift[shiftIndex];
+        }
       }
       return -1;
     }
