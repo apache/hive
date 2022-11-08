@@ -400,7 +400,7 @@ public class VectorExtractRow {
               }
             }
             if (outputType == OutputType.WRITABLES) {
-              return primitiveWritable;
+              return hiveVarcharWritable;
             } else {
               return hiveVarcharWritable.getHiveVarchar();
             }
@@ -434,7 +434,7 @@ public class VectorExtractRow {
               }
             }
             if (outputType == OutputType.WRITABLES) {
-              return primitiveWritable;
+              return hiveCharWritable;
             } else {
               return hiveCharWritable.getHiveChar();
             }
