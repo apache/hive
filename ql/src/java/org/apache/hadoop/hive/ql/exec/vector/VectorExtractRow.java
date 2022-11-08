@@ -330,6 +330,7 @@ public class VectorExtractRow {
               } else {
                 bytesWritable.set(bytes, start, length);
               }
+              return bytesWritable;
             } else {
               byte[] ret = new byte[length];
               System.arraycopy(bytes, start, ret, 0, length);
@@ -354,17 +355,16 @@ public class VectorExtractRow {
                 ((Text) primitiveWritable).set(EMPTY_BYTES, 0, 0);
               }
             } else {
-
               // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
-              try {
-                result = Text.decode(bytes, start, length);
-              } catch (CharacterCodingException e) {
-                throw new RuntimeException("Could not decode to String object.", e);
-              }
               if (outputType == OutputType.WRITABLES) {
                 ((Text) primitiveWritable).set(bytes, start, length);
+              } else {
+                try {
+                  result = Text.decode(bytes, start, length);
+                } catch (CharacterCodingException e) {
+                  throw new RuntimeException("Could not decode to String object.", e);
+                }
               }
-
             }
             if (outputType == OutputType.WRITABLES) {
               return primitiveWritable;
@@ -451,7 +451,7 @@ public class VectorExtractRow {
             decimalWritable.set(((DecimalColumnVector) colVector).vector[adjustedIndex]);
           }
           if (outputType == OutputType.WRITABLES) {
-            return primitiveWritable;
+            return decimalWritable;
           } else {
             return decimalWritable.getHiveDecimal();
           }
