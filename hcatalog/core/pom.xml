@@ -322,6 +322,10 @@
           <artifactId>jasper-compiler</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>hsqldb</groupId>
+          <artifactId>hsqldb</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>tomcat</groupId>
           <artifactId>jasper-runtime</artifactId>
         </exclusion>
