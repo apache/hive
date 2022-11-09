@@ -116,7 +116,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     StringBuilder progressDots = new StringBuilder();
     long waitTimeMs = 1000;
     long waitTimeOut = HiveConf.getLongVar(context.getConf(), HiveConf.ConfVars.HIVE_COMPACTOR_WAIT_TIMEOUT);
-    wait:while (true) {
+    wait: while (true) {
       //double wait time until 5min
       waitTimeMs = waitTimeMs*2;
       waitTimeMs = Math.min(waitTimeMs, waitTimeOut);
@@ -140,7 +140,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
           default:
             //done
             context.getConsole().printInfo("Compaction with id " + resp.getId() + " finished with status: " +
-                    compaction.getCompacts().get(0).getState());
+              compaction.getCompacts().get(0).getState());
             break wait;
         }
       }else {
