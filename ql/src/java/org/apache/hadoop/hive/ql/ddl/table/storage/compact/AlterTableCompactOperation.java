@@ -117,9 +117,10 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     StringBuilder progressDots = new StringBuilder();
     long waitTimeMs = 1000;
     long waitTimeOut = HiveConf.getLongVar(context.getConf(), HiveConf.ConfVars.HIVE_COMPACTOR_WAIT_TIMEOUT);
-    wait: while (true) {
+    wait:
+    while (true) {
       //double wait time until 5min
-      waitTimeMs = waitTimeMs*2;
+      waitTimeMs = waitTimeMs * 2;
       waitTimeMs = Math.min(waitTimeMs, waitTimeOut);
       try {
         Thread.sleep(waitTimeMs);
@@ -127,12 +128,11 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
         context.getConsole().printInfo("Interrupted while waiting for compaction with id=" + resp.getId());
         break;
       }
-
       ShowCompactRequest request = new ShowCompactRequest();
       request.setId(resp.getId());
-      ShowCompactResponse allCompactions = context.getDb().showCompactions(request);
-      for (ShowCompactResponseElement compaction : allCompactions.getCompacts()) {
-        switch (compaction.getState()) {
+      ShowCompactResponse compaction = context.getDb().showCompactions(request);
+      if (compaction.getCompactsSize() == 1) {
+        switch (compaction.getCompacts().get(0).getState()) {
           case TxnStore.WORKING_RESPONSE:
           case TxnStore.INITIATED_RESPONSE:
             //still working
@@ -142,10 +142,13 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
           default:
             //done
             context.getConsole().printInfo("Compaction with id " + resp.getId() + " finished with status: " +
-                compaction.getState());
+                    compaction.getCompacts().get(0).getState());
             break wait;
         }
+      } else {
+        throw new HiveException("No suitable compaction found");
       }
     }
   }
+
 }

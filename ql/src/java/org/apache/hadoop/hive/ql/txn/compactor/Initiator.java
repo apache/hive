@@ -151,6 +151,7 @@ public class Initiator extends MetaStoreCompactorThread {
                         TimeUnit.MILLISECONDS)));
           }
 
+          final ShowCompactResponse currentCompactions = txnHandler.showCompact(new ShowCompactRequest());
 
           // Currently we invalidate all entries after each cycle, because the bootstrap replication is marked via
           // table property hive.repl.first.inc.pending which would be cached.
@@ -161,7 +162,7 @@ public class Initiator extends MetaStoreCompactorThread {
           Set<CompactionInfo> potentials = compactionExecutor.submit(() ->
             txnHandler.findPotentialCompactions(abortedThreshold, abortedTimeThreshold, prevStart)
               .parallelStream()
-              .filter(ci -> isEligibleForCompaction(ci, skipDBs, skipTables))
+              .filter(ci -> isEligibleForCompaction(ci, currentCompactions, skipDBs, skipTables))
               .collect(Collectors.toSet())).get();
           LOG.debug("Found " + potentials.size() + " potential compactions, " +
               "checking to see if we should compact any of them");
@@ -344,17 +345,23 @@ public class Initiator extends MetaStoreCompactorThread {
         HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS));
   }
 
-  private boolean foundCurrentOrFailedCompactions(CompactionInfo ci) throws MetaException {
-
-    ShowCompactRequest request =  new ShowCompactRequest();
-    request.setDbname(ci.dbname);
-    request.setTablename(ci.tableName);
-    request.setPartitionname(ci.partName);
-    final ShowCompactResponse currentCompactions = txnHandler.showCompact(request);
-    if (currentCompactions.getCompacts() == null) {
+  private boolean foundCurrentOrFailedCompactions(ShowCompactResponse compactions, CompactionInfo ci) throws MetaException {
+    if (compactions.getCompacts() == null) {
       return false;
     }
-    List<ShowCompactResponseElement> filteredElements = currentCompactions.getCompacts().stream().collect(Collectors.toList());
+
+    //In case of an aborted Dynamic partition insert, the created entry in the compaction queue does not contain
+    //a partition name even for partitioned tables. As a result it can happen that the ShowCompactResponse contains
+    //an element without partition name for partitioned tables. Therefore, it is necessary to null check the partition
+    //name of the ShowCompactResponseElement even if the CompactionInfo.partName is not null. These special compaction
+    //requests are skipped by the worker, and only cleaner will pick them up, so we should allow to schedule a 'normal'
+    //compaction for partitions of those tables which has special (DP abort) entry with undefined partition name.
+    List<ShowCompactResponseElement> filteredElements = compactions.getCompacts().stream()
+      .filter(e -> e.getDbname().equals(ci.dbname)
+        && e.getTablename().equals(ci.tableName)
+        && (e.getPartitionname() == null && ci.partName == null ||
+              (Objects.equals(e.getPartitionname(),ci.partName))))
+      .collect(Collectors.toList());
 
     // Figure out if there are any currently running compactions on the same table or partition.
     if (filteredElements.stream().anyMatch(
@@ -565,7 +572,8 @@ public class Initiator extends MetaStoreCompactorThread {
     return false;
   }
 
-  private boolean isEligibleForCompaction(CompactionInfo ci, Set<String> skipDBs, Set<String> skipTables) {
+  private boolean isEligibleForCompaction(CompactionInfo ci,
+      ShowCompactResponse currentCompactions, Set<String> skipDBs, Set<String> skipTables) {
     try {
       if (skipDBs.contains(ci.dbname)) {
         LOG.info("Skipping {}::{}, skipDBs::size:{}", ci.dbname, ci.tableName, skipDBs.size());
@@ -589,7 +597,7 @@ public class Initiator extends MetaStoreCompactorThread {
       // Also make sure we haven't exceeded configured number of consecutive failures.
       // If any of the above applies, skip it.
       // Note: if we are just waiting on cleaning we can still check, as it may be time to compact again even though we haven't cleaned.
-      if (foundCurrentOrFailedCompactions(ci)) {
+      if (foundCurrentOrFailedCompactions(currentCompactions, ci)) {
         return false;
       }
 
