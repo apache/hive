@@ -40,14 +40,18 @@ import org.apache.parquet.hadoop.metadata.FileMetaData;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
+import org.apache.parquet.schema.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class ParquetRecordReaderBase {
   public static final Logger LOG = LoggerFactory.getLogger(ParquetRecordReaderBase.class);
@@ -196,7 +200,8 @@ public abstract class ParquetRecordReaderBase {
 
     // Create the Parquet FilterPredicate without including columns that do not exist
     // on the schema (such as partition columns).
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema, columns);
+    MessageType newSchema = getSchemaWithoutPartitionAndVirtualColumns(conf, names, schema);
+    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, newSchema, columns);
     if (p != null) {
       // Filter may have sensitive information. Do not send to debug.
       LOG.debug("PARQUET predicate push down generated.");
@@ -207,6 +212,21 @@ public abstract class ParquetRecordReaderBase {
       LOG.debug("No PARQUET predicate push down is generated.");
       return null;
     }
+  }
+
+  private MessageType getSchemaWithoutPartitionAndVirtualColumns(JobConf conf, String[] names, MessageType schema) {
+    String schemaEvolutionColumnNames = conf.get(IOConstants.SCHEMA_EVOLUTION_COLUMNS);
+    Set<String> partitionAndVirtualColumns = new HashSet<>(Arrays.asList(names));
+    partitionAndVirtualColumns.removeAll(new HashSet<>(Arrays.asList(schemaEvolutionColumnNames.split(","))));
+
+    List<Type> newFields = new ArrayList<>();
+    for (Type field: schema.getFields()) {
+      if(!partitionAndVirtualColumns.contains(field.getName())) {
+        newFields.add(field);
+      }
+    }
+
+    return new MessageType(schema.getName(), newFields);
   }
 
   public List<BlockMetaData> getFilteredBlocks() {
