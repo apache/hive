@@ -190,11 +190,17 @@
     <dependency>
       <groupId>org.pac4j</groupId>
       <artifactId>pac4j-saml-opensamlv3</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcprov-jdk15on</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.bouncycastle</groupId>-->
+<!--      <artifactId>bcprov-jdk15on</artifactId>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>org.apache.santuario</groupId>
       <artifactId>xmlsec</artifactId>
