@@ -4272,6 +4272,18 @@ public final class Utilities {
       LOG.info("schema.evolution.columns and schema.evolution.columns.types not available");
     }
   }
+  public static void setPartitionColumnsToConf(Configuration conf, TableScanOperator tableScanOp) {
+    List<String> partitionColsList = tableScanOp.getConf().getTableMetadata().getPartColNames();
+    if (partitionColsList.size() > 0) {
+      conf.set(IOConstants.PARTITION_COLUMNS, String.join(",", partitionColsList));
+    } else {
+      LOG.info(IOConstants.PARTITION_COLUMNS + " not available");
+    }
+  }
+
+  public static void unsetPartitionColumnsInConf(Configuration conf) {
+    conf.unset(IOConstants.PARTITION_COLUMNS);
+  }
 
   /**
    * Create row key and value object inspectors for reduce vectorization.

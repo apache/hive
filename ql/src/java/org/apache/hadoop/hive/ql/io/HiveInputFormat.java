@@ -911,6 +911,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     jobConf.unset(TableScanDesc.FILTER_EXPR_CONF_STR);
 
     Utilities.unsetSchemaEvolution(jobConf);
+    Utilities.unsetPartitionColumnsInConf(jobConf);
 
     TableScanDesc scanDesc = tableScan.getConf();
     if (scanDesc == null) {
@@ -918,6 +919,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     Utilities.addTableSchemaToConf(jobConf, tableScan);
+    Utilities.setPartitionColumnsToConf(jobConf, tableScan);
 
     // construct column name list and types for reference by filter push down
     Utilities.setColumnNameList(jobConf, tableScan);

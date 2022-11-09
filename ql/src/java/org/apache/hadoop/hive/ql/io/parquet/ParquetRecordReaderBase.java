@@ -200,7 +200,7 @@ public abstract class ParquetRecordReaderBase {
 
     // Create the Parquet FilterPredicate without including columns that do not exist
     // on the schema (such as partition columns).
-    MessageType newSchema = getSchemaWithoutPartitionAndVirtualColumns(conf, names, schema);
+    MessageType newSchema = getSchemaWithoutPartitionColumns(conf, schema);
     FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, newSchema, columns);
     if (p != null) {
       // Filter may have sensitive information. Do not send to debug.
@@ -214,19 +214,20 @@ public abstract class ParquetRecordReaderBase {
     }
   }
 
-  private MessageType getSchemaWithoutPartitionAndVirtualColumns(JobConf conf, String[] names, MessageType schema) {
-    String schemaEvolutionColumnNames = conf.get(IOConstants.SCHEMA_EVOLUTION_COLUMNS);
-    Set<String> partitionAndVirtualColumns = new HashSet<>(Arrays.asList(names));
-    partitionAndVirtualColumns.removeAll(new HashSet<>(Arrays.asList(schemaEvolutionColumnNames.split(","))));
+  private MessageType getSchemaWithoutPartitionColumns(JobConf conf, MessageType schema) {
+    String partCols = conf.get(IOConstants.PARTITION_COLUMNS);
+    if (partCols != null && partCols.length() > 0) {
+      Set<String> partitionColumns = new HashSet<>(Arrays.asList(partCols.split(",")));
+      List<Type> newFields = new ArrayList<>();
 
-    List<Type> newFields = new ArrayList<>();
-    for (Type field: schema.getFields()) {
-      if(!partitionAndVirtualColumns.contains(field.getName())) {
-        newFields.add(field);
+      for (Type field: schema.getFields()) {
+        if(!partitionColumns.contains(field.getName())) {
+          newFields.add(field);
+        }
       }
+      return new MessageType(schema.getName(), newFields);
     }
-
-    return new MessageType(schema.getName(), newFields);
+    return schema;
   }
 
   public List<BlockMetaData> getFilteredBlocks() {
