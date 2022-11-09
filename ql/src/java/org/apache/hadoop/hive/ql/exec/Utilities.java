@@ -161,6 +161,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.secrets.URISecretSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
@@ -4273,9 +4274,12 @@ public final class Utilities {
     }
   }
   public static void setPartitionColumnsToConf(Configuration conf, TableScanOperator tableScanOp) {
-    List<String> partitionColsList = tableScanOp.getConf().getTableMetadata().getPartColNames();
-    if (partitionColsList.size() > 0) {
-      conf.set(IOConstants.PARTITION_COLUMNS, String.join(",", partitionColsList));
+    TableScanDesc scanDesc = tableScanOp.getConf();
+    if (scanDesc != null && scanDesc.getTableMetadata() != null) {
+      List<String> partitionColsList = scanDesc.getTableMetadata().getPartColNames();
+      if (!partitionColsList.isEmpty()) {
+        conf.set(IOConstants.PARTITION_COLUMNS, String.join(",", partitionColsList));
+      }
     } else {
       LOG.info(IOConstants.PARTITION_COLUMNS + " not available");
     }
