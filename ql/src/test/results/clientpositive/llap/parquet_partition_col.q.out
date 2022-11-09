@@ -1,0 +1,61 @@
+PREHOOK: query: create external table test(
+  strcol string,
+  intcol integer
+) partitioned by (pcol int)
+stored as parquet
+location '../../data/files/parquet_partition'
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create external table test(
+  strcol string,
+  intcol integer
+) partitioned by (pcol int)
+stored as parquet
+location '../../data/files/parquet_partition'
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: msck repair table test
+PREHOOK: type: MSCK
+PREHOOK: Output: default@test
+POSTHOOK: query: msck repair table test
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@test
+Partitions not in metastore:	test:pcol=100	test:pcol=200	test:pcol=300
+#### A masked pattern was here ####
+PREHOOK: query: select * from test where pcol=100 and intcol=2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Input: default@test@pcol=100
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test where pcol=100 and intcol=2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test@pcol=100
+#### A masked pattern was here ####
+b	2	100
+PREHOOK: query: select * from test where PCOL=200 and intcol=3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Input: default@test@pcol=200
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test where PCOL=200 and intcol=3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test@pcol=200
+#### A masked pattern was here ####
+c	3	200
+PREHOOK: query: select * from test where `pCol`=300 and intcol=5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Input: default@test@pcol=300
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test where `pCol`=300 and intcol=5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test@pcol=300
+#### A masked pattern was here ####
+e	5	300
