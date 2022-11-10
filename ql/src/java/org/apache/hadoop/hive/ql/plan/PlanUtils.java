@@ -1223,6 +1223,8 @@ public final class PlanUtils {
     return LazySimpleSerDe.class;
   }
 
+  private static final String[] FILTER_OUT_FROM_EXPLAIN = {TABLE_IS_CTAS, "explain"};
+
   /**
    * Get a Map of table or partition properties to be used in explain extended output.
    * Do some filtering to make output readable and/or concise.
@@ -1244,16 +1246,31 @@ public final class PlanUtils {
         }
         clone.remove(StatsSetupConst.NUM_ERASURE_CODED_FILES);
       }
-      if (properties.containsKey(TABLE_IS_CTAS)) {
-        if (clone == null) {
-          clone = new HashMap<>(properties);
+      for (String key : FILTER_OUT_FROM_EXPLAIN) {
+        if (properties.containsKey(key)) {
+          if (clone == null) {
+            clone = new HashMap<>(properties);
+          }
+          clone.remove(key);
         }
-        clone.remove(TABLE_IS_CTAS);
       }
       if (clone != null) {
         return clone;
       }
     }
     return properties;
+  }
+
+  public static Map<String, String> getPropertiesExplain(Map<String, String> properties, String... propertiesToRemove) {
+    if (properties == null) {
+      return null;
+    }
+
+    Map<String, String> clone = new HashMap<>(properties);
+    for (String key : propertiesToRemove) {
+      clone.remove(key);
+    }
+
+    return clone;
   }
 }

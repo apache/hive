@@ -143,7 +143,7 @@ public class TableDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "jobProperties", explainLevels = { Level.EXTENDED })
   public Map<String, String> getJobProperties() {
-    return jobProperties;
+    return PlanUtils.getPropertiesExplain(jobProperties, "explain");
   }
 
   public void setJobSecrets(Map<String, String> jobSecrets) {
