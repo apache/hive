@@ -21,7 +21,7 @@
  */
 package org.apache.hadoop.hive.metastore.model;
 
-import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -174,9 +174,9 @@ public class MDatabase {
     Set<String> keys = new HashSet<>(parameters.keySet());
     for(String key : keys) {
       // Normalize the case for source of replication parameter
-      if (ReplChangeManager.SOURCE_OF_REPLICATION.equalsIgnoreCase(key)) {
+      if (ReplConst.SOURCE_OF_REPLICATION.equalsIgnoreCase(key)) {
         // TODO :  Some extra validation can also be added as this is a user provided parameter.
-        this.parameters.put(ReplChangeManager.SOURCE_OF_REPLICATION, parameters.get(key));
+        this.parameters.put(ReplConst.SOURCE_OF_REPLICATION, parameters.get(key));
       } else {
         this.parameters.put(key, parameters.get(key));
       }

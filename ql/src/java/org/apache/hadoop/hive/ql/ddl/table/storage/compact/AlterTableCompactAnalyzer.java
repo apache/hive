@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 
 import java.util.Map;
 
+import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -53,20 +54,26 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
 
     Map<String, String> mapProp = null;
     boolean isBlocking = false;
+    String poolName = null;
     for (int i = 0; i < command.getChildCount(); i++) {
-      switch (command.getChild(i).getType()) {
-      case HiveParser.TOK_TABLEPROPERTIES:
-        mapProp = getProps((ASTNode) (command.getChild(i)).getChild(0));
-        break;
-      case HiveParser.TOK_BLOCKING:
-        isBlocking = true;
-        break;
-      default:
-        break;
+      Tree node = command.getChild(i);
+      switch (node.getType()) {
+        case HiveParser.TOK_TABLEPROPERTIES:
+          mapProp = getProps((ASTNode)node.getChild(0));
+          break;
+        case HiveParser.TOK_BLOCKING:
+          isBlocking = true;
+          break;
+        case HiveParser.TOK_COMPACT_POOL:
+          poolName = unescapeSQLString(node.getChild(0).getText());
+          break;
+        default:
+          break;
       }
     }
 
-    AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, type, isBlocking, mapProp);
+    AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, type, isBlocking, poolName, mapProp);
+    addInputsOutputsAlterTable(tableName, partitionSpec, desc, desc.getType(), false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 }

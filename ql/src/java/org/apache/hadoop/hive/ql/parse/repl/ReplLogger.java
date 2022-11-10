@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.parse.repl;
 
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.ql.exec.repl.NoOpReplStatsTracker;
+import org.apache.hadoop.hive.ql.exec.repl.ReplStatsTracker;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.state.DataCopyEnd;
 
 /**
@@ -46,5 +48,9 @@ public abstract class ReplLogger<T> {
   }
 
   public void setParams(String dbName, String dumpDirectory, long numTables, long numFunctions) {
+  }
+
+  public ReplStatsTracker getReplStatsTracker() {
+    return new NoOpReplStatsTracker();
   }
 }

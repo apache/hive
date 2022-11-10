@@ -78,7 +78,7 @@ class MetastoreDirectSqlUtils {
       }
       LOG.warn(errorBuilder.toString() + "]", ex);
       // We just logged an exception with (in case of JDO) a humongous callstack. Make a new one.
-      throw new MetaException("See previous errors; " + ex.getMessage());
+      throw new MetaException("See previous errors; " + ex.getMessage() + errorBuilder.toString() + "]");
     }
   }
 
@@ -399,7 +399,7 @@ class MetastoreDirectSqlUtils {
     String queryText;
     queryText =
           "select " + SKEWED_COL_VALUE_LOC_MAP + ".\"SD_ID\","
-        + " " + SKEWED_STRING_LIST_VALUES + ".STRING_LIST_ID,"
+        + " " + SKEWED_STRING_LIST_VALUES + ".\"STRING_LIST_ID\","
         + " " + SKEWED_COL_VALUE_LOC_MAP + ".\"LOCATION\","
         + " " + SKEWED_STRING_LIST_VALUES + ".\"STRING_LIST_VALUE\" "
         + "from " + SKEWED_COL_VALUE_LOC_MAP + ""

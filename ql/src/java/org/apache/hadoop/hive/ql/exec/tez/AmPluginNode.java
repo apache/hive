@@ -21,9 +21,9 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hive.common.util.Ref;
 import org.apache.tez.common.security.JobTokenIdentifier;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize
 public interface AmPluginNode {

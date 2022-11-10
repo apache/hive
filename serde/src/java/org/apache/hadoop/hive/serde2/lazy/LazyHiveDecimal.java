@@ -58,7 +58,7 @@ public class LazyHiveDecimal extends LazyPrimitive<LazyHiveDecimalObjectInspecto
   }
 
   /**
-   * Initilizes LazyHiveDecimal object by interpreting the input bytes
+   * Initializes LazyHiveDecimal object by interpreting the input bytes
    * as a numeric string
    *
    * @param bytes

@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
@@ -76,6 +77,8 @@ public  class ShowPartitionAnalyzer extends BaseSemanticAnalyzer {
 
     Table table = getTable(HiveTableName.of(tableName));
     inputs.add(new ReadEntity(table));
+    setColumnAccessInfo(new ColumnAccessInfo());
+    table.getPartColNames().forEach(col -> getColumnAccessInfo().add(table.getCompleteName(), col));
 
     ExprNodeDesc filter = getShowPartitionsFilter(table, ast);
     String orderBy = getShowPartitionsOrder(table, ast);

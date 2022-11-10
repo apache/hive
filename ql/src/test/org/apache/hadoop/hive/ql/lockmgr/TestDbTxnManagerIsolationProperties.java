@@ -197,6 +197,51 @@ public class TestDbTxnManagerIsolationProperties extends DbTxnManagerEndToEndTes
     Assert.assertEquals("Dirty read!", 1, res.size());
 
   }
+
+  @Test
+  public void testRebuildMVWhenOpenTxnPresents() throws Exception {
+    driver.run(("drop table if exists t1"));
+    driver.run("create table t1 (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into t1 values(1,2),(2,2)");
+    driver.run("create materialized view mat1 stored as orc " +
+        "TBLPROPERTIES ('transactional'='true') as " +
+        "select a,b from t1 where a > 1");
+
+    driver.run("insert into t1 values(3,3)");
+
+    // Simulate starting a transaction by another client
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("delete from t1 where a = 2");
+
+    // Switch back to client #1 and rebuild the MV, the transaction with the delete statement still open
+    swapTxnManager(txnMgr);
+    driver.run("alter materialized view mat1 rebuild");
+
+    driver.run("select * from mat1 order by a");
+    FetchTask fetchTask = driver.getFetchTask();
+    List res = new ArrayList();
+    fetchTask.fetch(res);
+    Assert.assertEquals(2, res.size());
+    Assert.assertEquals("2\t2", res.get(0));
+    Assert.assertEquals("3\t3", res.get(1));
+
+    // execute the delete statement and commit the transaction
+    swapTxnManager(txnMgr2);
+    driver2.run();
+
+    // Rebuild the view again.
+    swapTxnManager(txnMgr);
+    driver.run("alter materialized view mat1 rebuild");
+
+    driver.run("select * from mat1");
+    fetchTask = driver.getFetchTask();
+    res = new ArrayList();
+    fetchTask.fetch(res);
+    Assert.assertEquals(1, res.size());
+    Assert.assertEquals("3\t3", res.get(0));
+  }
+
   private void silentCommitTxn(CommitTxnRequest commitTxnRequest) {
     try {
       txnHandler.commitTxn(commitTxnRequest);

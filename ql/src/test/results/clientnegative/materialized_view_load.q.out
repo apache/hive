@@ -16,4 +16,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@lmv_basetable
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@lmv_mat_view
+POSTHOOK: Lineage: lmv_mat_view.a SIMPLE [(lmv_basetable)lmv_basetable.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: lmv_mat_view.b SIMPLE [(lmv_basetable)lmv_basetable.FieldSchema(name:b, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: lmv_mat_view.c SIMPLE [(lmv_basetable)lmv_basetable.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 FAILED: SemanticException [Error 10090]: A view cannot be used as target table for LOAD or INSERT

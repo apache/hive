@@ -63,12 +63,19 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     super(queryState);
   }
 
-  protected void analyze(ASTNode tree) throws SemanticException {
+  @Override
+  protected ASTNode getTargetTableNode(ASTNode tree) {
+    ASTNode tableTree = (ASTNode)tree.getChild(0);
+    assert tableTree != null && tableTree.getType() == HiveParser.TOK_TAB;
+    return (ASTNode) tableTree.getChild(0);
+  }
+
+  protected void analyze(ASTNode tree, Table table, ASTNode tableNameNode) throws SemanticException {
     if (tree.getToken().getType() != HiveParser.TOK_EXPORT) {
       throw new RuntimeException("Asked to parse token " + tree.getName() + " in " +
           "AcidExportSemanticAnalyzer");
     }
-    analyzeAcidExport(tree);
+    analyzeAcidExport(tree, table, tableNameNode);
   }
 
   /**
@@ -80,7 +87,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
    * insert into tmpTable select * from &lt;export table&gt; to filter/apply the events in current
    * context and then export the tmpTable.  This export artifact can now be imported into any
    * table on any cluster (subject to schema checks etc).
-   * See {@link #analyzeAcidExport(ASTNode)}
+   * See {@link #analyzeAcidExport(ASTNode, Table , ASTNode)}
    * @param tree Export statement
    * @return true if exporting an Acid table.
    */
@@ -115,13 +122,9 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
    * Using a true temp (session level) table means it should not affect replication and the table
    * is not visible outside the Session that created for security
    */
-  private void analyzeAcidExport(ASTNode ast) throws SemanticException {
+  private void analyzeAcidExport(ASTNode ast, Table exportTable, ASTNode tokRefOrNameExportTable) throws SemanticException {
     assert ast != null && ast.getToken() != null && ast.getToken().getType() == HiveParser.TOK_EXPORT;
-    ASTNode tableTree = (ASTNode)ast.getChild(0);
-    assert tableTree != null && tableTree.getType() == HiveParser.TOK_TAB;
-    ASTNode tokRefOrNameExportTable = (ASTNode) tableTree.getChild(0);
-    Table exportTable = getTargetTable(tokRefOrNameExportTable);
-    
+
     if (exportTable != null && (exportTable.isView() || exportTable.isMaterializedView())) {
       throw new SemanticException("Views and Materialized Views can not be exported.");
     }
@@ -169,19 +172,14 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
     //now generate insert statement
     //insert into newTableName select * from ts <where partition spec>
-    StringBuilder rewrittenQueryStr = generateExportQuery(newTable.getPartCols(), tokRefOrNameExportTable, tableTree,
-        newTableName);
+    StringBuilder rewrittenQueryStr = generateExportQuery(
+            newTable.getPartCols(), tokRefOrNameExportTable, (ASTNode) tokRefOrNameExportTable.parent, newTableName);
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
     rewrittenCtx.setIsUpdateDeleteMerge(false); //it's set in parseRewrittenQuery()
     ASTNode rewrittenTree = rr.rewrittenTree;
-    try {
-      useSuper = true;
-      //newTable has to exist at this point to compile
-      super.analyze(rewrittenTree, rewrittenCtx);
-    } finally {
-      useSuper = false;
-    }
+    //newTable has to exist at this point to compile
+    analyzeRewrittenTree(rewrittenTree, rewrittenCtx);
     //now we have the rootTasks set up for Insert ... Select
     removeStatsTasks(rootTasks);
     //now make an ExportTask from temp table

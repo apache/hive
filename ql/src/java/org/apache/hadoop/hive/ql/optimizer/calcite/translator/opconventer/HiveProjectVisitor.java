@@ -70,12 +70,12 @@ class HiveProjectVisitor extends HiveRelNodeVisitor<HiveProject> {
     List<String> exprNames = new ArrayList<String>(projectRel.getRowType().getFieldNames());
     List<ExprNodeDesc> exprCols = new ArrayList<ExprNodeDesc>();
     Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
-    for (int pos = 0; pos < projectRel.getChildExps().size(); pos++) {
+    for (int pos = 0; pos < projectRel.getProjects().size(); pos++) {
       ExprNodeConverter converter = new ExprNodeConverter(inputOpAf.tabAlias, projectRel
           .getRowType().getFieldNames().get(pos), projectRel.getInput().getRowType(),
           projectRel.getRowType(), inputOpAf.vcolsInCalcite, projectRel.getCluster().getTypeFactory(),
           true);
-      ExprNodeDesc exprCol = projectRel.getChildExps().get(pos).accept(converter);
+      ExprNodeDesc exprCol = projectRel.getProjects().get(pos).accept(converter);
       colExprMap.put(exprNames.get(pos), exprCol);
       exprCols.add(exprCol);
       //TODO: Cols that come through PTF should it retain (VirtualColumness)?
@@ -91,7 +91,7 @@ class HiveProjectVisitor extends HiveRelNodeVisitor<HiveProject> {
     }
     // TODO: is this a safe assumption (name collision, external names...)
     SelectDesc sd = new SelectDesc(exprCols, exprNames);
-    Pair<ArrayList<ColumnInfo>, Set<Integer>> colInfoVColPair = createColInfos(projectRel.getChildExps(), exprCols,
+    Pair<ArrayList<ColumnInfo>, Set<Integer>> colInfoVColPair = createColInfos(projectRel.getProjects(), exprCols,
         exprNames, inputOpAf);
     SelectOperator selOp = (SelectOperator) OperatorFactory.getAndMakeChild(sd, new RowSchema(
         colInfoVColPair.getKey()), inputOpAf.inputs.get(0));

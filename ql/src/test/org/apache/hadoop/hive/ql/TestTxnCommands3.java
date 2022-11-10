@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HMSMetricsListener;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -33,10 +34,12 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.orc.TestVectorizedOrcAcidRowBatchReader;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorMR;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,8 +85,8 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     String[][] expected = new String[][] {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
             "s/delta_0000001_0000001_0000/bucket_00000_0"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
-            "s/delta_0000002_0000002_0000/bucket_00000_0"}};
+        {"{\"writeid\":2,\"bucketid\":536870913,\"rowid\":0}\t4\t6",
+            "s/delta_0000002_0000002_0001/bucket_00000_0"}};
     checkResult(expected, testQuery, false, "check data", LOG);
 
 
@@ -221,7 +224,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     Assert.assertEquals(stringifyValues(dataAll), rs);
 
     runStatementOnDriver("alter table T compact 'major'");
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
 
     //check status of compaction job
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
@@ -262,7 +265,6 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   private void testSdpoBucketed(boolean isVectorized, boolean isSdpo, int bucketing_version)
       throws Exception {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTSORTDYNAMICPARTITION, isSdpo);
     runStatementOnDriver("drop table if exists acid_uap");
     runStatementOnDriver("create transactional table acid_uap(a int, b varchar(128)) " +
         "partitioned by (ds string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES " +
@@ -291,15 +293,15 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("update acid_uap set b = 'fred'");
 
     String[][] expected2 = new String[][]{
-        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t1\tfred\ttoday",
-            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0000/bucket_00001_0"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\tfred\ttoday",
-            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0000/bucket_00000_0"},
+        {"{\"writeid\":3,\"bucketid\":536936449,\"rowid\":0}\t1\tfred\ttoday",
+            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0001/bucket_00001_0"},
+        {"{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t2\tfred\ttoday",
+            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0001/bucket_00000_0"},
 
-        {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t1\tfred\ttomorrow",
-            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0000/bucket_00001_0"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\tfred\ttomorrow",
-            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0000/bucket_00000_0"}};
+        {"{\"writeid\":3,\"bucketid\":536936449,\"rowid\":0}\t1\tfred\ttomorrow",
+            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0001/bucket_00001_0"},
+        {"{\"writeid\":3,\"bucketid\":536870913,\"rowid\":0}\t2\tfred\ttomorrow",
+            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0001/bucket_00000_0"}};
     checkResult(expected2, testQuery, isVectorized, "after update", LOG);
   }
   @Test
@@ -338,13 +340,13 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     txnMgr2 = swapTxnManager(txnMgr1);
     driver2 = swapDrivers(driver1);
     runStatementOnDriver("alter table T compact 'minor'");//T4
-    TestTxnCommands2.runWorker(hiveConf);//makes delta_1_2
+    runWorker(hiveConf);//makes delta_1_2
          /* Now we should have
      target/warehouse/t/
      ├── delta_0000001_0000001_0000
      │   ├── _orc_acid_version
      │   └── bucket_00000
-     ├── delta_0000001_0000002_v0000018
+     ├── delta_0000001_0000002_v0000020
      │   ├── _orc_acid_version
      │   └── bucket_00000
      └── delta_0000002_0000002_0000
@@ -356,7 +358,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         FileUtils.HIDDEN_FILES_PATH_FILTER);
 
     String[] expectedList = new String[] {
-        "/t/delta_0000001_0000002_v0000018",
+        "/t/delta_0000001_0000002_v0000020",
         "/t/delta_0000001_0000001_0000",
         "/t/delta_0000002_0000002_0000",
     };
@@ -367,7 +369,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     T3 is still running and cannot see anything compactor produces with v0000019 suffix
     so it may be reading delta_1_1 & delta_2_2 and so cleaner cannot delete any files
      at this point*/
-    TestTxnCommands2.runCleaner(hiveConf);
+    runCleaner(hiveConf);
     actualList = fs.listStatus(new Path(warehousePath + "/t"),
         FileUtils.HIDDEN_FILES_PATH_FILTER);
     checkExpectedFiles(actualList, expectedList, warehousePath.toString());
@@ -383,13 +385,14 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'minor'");
     runWorker(hiveConf);
     /*
-    at this point delta_0000001_0000003_v0000020 is visible to everyone
+    at this point delta_0000001_0000003_v0000022 is visible to everyone
     so cleaner removes all files shadowed by it (which is everything in this case)
     */
     runCleaner(hiveConf);
+    runCleaner(hiveConf);
 
     expectedList = new String[] {
-        "/t/delta_0000001_0000003_v0000020"
+        "/t/delta_0000001_0000003_v0000022"
     };
     actualList = fs.listStatus(new Path(warehousePath + "/t"),
         FileUtils.HIDDEN_FILES_PATH_FILTER);
@@ -479,12 +482,18 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("alter table T compact 'minor'");
     //create failed compaction attempt so that compactor txn is aborted
+    CompactorMR compactorMr = Mockito.spy(new CompactorMR());
+
+    Mockito.doAnswer((Answer<Void>) invocationOnMock -> {
+      invocationOnMock.callRealMethod();
+      throw new RuntimeException(
+        "Will cause CompactorMR to fail all opening txn and creating directories for compaction.");
+    }).when(compactorMr).run(any(), any(), any(), any(), any(), any(), any(), any(), any());
+
     Worker worker = Mockito.spy(new Worker());
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
-    Mockito.doThrow(new RuntimeException(
-      "Will cause CompactorMR to fail all opening txn and creating directories for compaction."))
-      .when(worker).verifyTableIdHasNotChanged(any(), any());
+    Mockito.doReturn(compactorMr).when(worker).getMrCompactor();
     worker.run();
 
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
@@ -497,6 +506,8 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     Assert.assertEquals(openResp.toString(), 1, openResp.getOpen_txnsSize());
     //check that the compactor txn is aborted
     Assert.assertTrue(openResp.toString(), BitSet.valueOf(openResp.getAbortedBits()).get(0));
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(hiveConf,
+        "SELECT count(*) FROM hive_locks WHERE hl_txnid=" + openResp.getOpen_txns().get(0)));
 
     FileSystem fs = FileSystem.get(hiveConf);
     Path warehousePath = new Path(getWarehouseDir());
@@ -526,12 +537,18 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     runStatementOnDriver("alter table T compact 'minor'");
     //create failed compaction attempt so that compactor txn is aborted
+    CompactorMR compactorMr = Mockito.spy(new CompactorMR());
+
+    Mockito.doAnswer((Answer<Void>) invocationOnMock -> {
+      invocationOnMock.callRealMethod();
+      throw new RuntimeException(
+        "Will cause CompactorMR to fail all opening txn and creating directories for compaction.");
+    }).when(compactorMr).run(any(), any(), any(), any(), any(), any(), any(), any(), any());
+
     Worker worker = Mockito.spy(new Worker());
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
-    Mockito.doThrow(new RuntimeException(
-      "Will cause CompactorMR to fail all opening txn and creating directories for compaction."))
-      .when(worker).verifyTableIdHasNotChanged(any(), any());
+    Mockito.doReturn(compactorMr).when(worker).getMrCompactor();
     worker.run();
 
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
@@ -544,6 +561,8 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     Assert.assertEquals(openResp.toString(), 1, openResp.getOpen_txnsSize());
     //check that the compactor txn is aborted
     Assert.assertTrue(openResp.toString(), BitSet.valueOf(openResp.getAbortedBits()).get(0));
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(hiveConf,
+       "SELECT count(*) FROM hive_locks WHERE hl_txnid=" + openResp.getOpen_txns().get(0)));
 
     FileSystem fs = FileSystem.get(hiveConf);
     Path warehousePath = new Path(getWarehouseDir());
@@ -555,7 +574,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         "/t/delta_0000001_0000001_0000",
         "/t/delta_0000002_0000002_0000",
         "/t/delete_delta_0000003_0000003_0000",
-        "/t/delta_0000003_0000003_0000",
+        "/t/delta_0000003_0000003_0001",
     };
     checkExpectedFiles(actualList, expectedList, warehousePath.toString());
     //delete metadata about aborted txn from txn_components and files (if any)
@@ -568,7 +587,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   @Test public void testNotEnoughToCompact() throws Exception {
     int[][] tableData = {{1, 2}, {3, 4}};
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData));
-    runStatementOnDriver("alter table " + TestTxnCommands2.Table.ACIDTBL + " compact 'MAJOR'");
+    runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'MAJOR'");
 
     runWorker(hiveConf);
     assertTableIsEmpty("TXN_COMPONENTS");
@@ -587,7 +606,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver(
         "insert overwrite table " + Table.ACIDTBL + " " + makeValuesClause(tableData));
 
-    runStatementOnDriver("alter table " + TestTxnCommands2.Table.ACIDTBL + " compact 'MAJOR'");
+    runStatementOnDriver("alter table " + Table.ACIDTBL + " compact 'MAJOR'");
 
     runWorker(hiveConf);
     assertTableIsEmpty("TXN_COMPONENTS");
@@ -600,8 +619,15 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from " + table), 0,
         TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from " + table));
   }
-  private void assertOneTxn() throws Exception {
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXNS"), 1,
-        TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXNS"));
+
+  @Test
+  public void testWritesToDisabledCompactionTableCtas() throws Exception {
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS,
+        HMSMetricsListener.class.getName());
+
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " values(1,1)");
+    runStatementOnDriver("create table mytable stored as orc tblproperties ('transactional'='true')"
+        + "as select * from " + Table.ACIDTBL);
   }
 }

@@ -252,9 +252,7 @@ public interface IMetaStoreClient {
    * @param dbName Name of the database to fetch tables from.
    * @param tablePattern pattern to match the tables names.
    * @param requestedFields An int bitmask to indicate the depth of the returned objects
-   * @param processorCapabilities A list of "capabilities" possessed by the caller, to be matched with table's params
-   * @param processorId Any string id to identify the caller/client, for logging purposes only.
-   * @param limit Maximum size of the result set. <=0 indicates no limit
+   * @param limit Maximum size of the result set. &lt;=0 indicates no limit
    * @return List of ExtendedTableInfo that match the input arguments.
    * @throws MetaException Thrown if there is error on fetching from DBMS.
    * @throws TException Thrown if there is a thrift transport exception.
@@ -443,9 +441,8 @@ public interface IMetaStoreClient {
    *           A thrift communication error occurred
    *
    */
-  void dropTable(String dbname, String tableName, boolean deleteData,
-      boolean ignoreUnknownTab) throws MetaException, TException,
-      NoSuchObjectException;
+  void dropTable(String dbname, String tableName, boolean deleteData, boolean ignoreUnknownTab) 
+      throws MetaException, TException, NoSuchObjectException;
 
   /**
    * Drop the table.
@@ -469,8 +466,11 @@ public interface IMetaStoreClient {
    */
   @Deprecated // TODO: deprecate all methods without a catalog here; a single layer (e.g. Hive.java) should handle current-catalog
   void dropTable(String dbname, String tableName, boolean deleteData,
-      boolean ignoreUnknownTab, boolean ifPurge) throws MetaException, TException,
-      NoSuchObjectException;
+      boolean ignoreUnknownTab, boolean ifPurge) 
+      throws MetaException, TException, NoSuchObjectException;
+
+  void dropTable(Table table, boolean deleteData, boolean ignoreUnknownTab, boolean ifPurge) 
+      throws TException;
 
   /**
    * Drop the table.
@@ -560,6 +560,8 @@ public interface IMetaStoreClient {
   void truncateTable(String dbName, String tableName, List<String> partNames,
       String validWriteIds, long writeId) throws TException;
 
+  void truncateTable(String dbName, String tableName, List<String> partNames,
+      String validWriteIds, long writeId, boolean deleteData) throws TException;
   /**
    * Truncate the table/partitions in the DEFAULT database.
    * @param catName catalog name
@@ -807,7 +809,7 @@ public interface IMetaStoreClient {
    * Returns the invalidation information for the materialized views given as input.
    */
   Materialization getMaterializationInvalidationInfo(CreationMetadata cm, String validTxnList)
-      throws MetaException, InvalidOperationException, UnknownDBException, TException;
+          throws MetaException, InvalidOperationException, UnknownDBException, TException;
 
   /**
    * Updates the creation metadata for the materialized view.
@@ -1283,24 +1285,6 @@ public interface IMetaStoreClient {
 
   /**
    * Get a list of partition names matching the specified filter and return in order if specified.
-   * @param dbName database name.
-   * @param tblName table name.
-   * @param defaultPartName default partition name.
-   * @param exprBytes expression, serialized from ExprNodeDesc.
-   * @param order ordered the resulting list.
-   * @param maxParts maximum number of partition names to return, or -1 to return all that are
-   *                  found.
-   * @return list of matching partition names.
-   * @throws MetaException error accessing the RDBMS.
-   * @throws TException thrift transport error.
-   * @throws NoSuchObjectException no such table.
-   */
-  List<String> listPartitionNames(String catName, String dbName, String tblName,
-      String defaultPartName, byte[] exprBytes, String order, short maxParts)
-      throws MetaException, TException, NoSuchObjectException;
-
-  /**
-   * Get a list of partition names matching the specified filter and return in order if specified.
    * @param request request
    * @return list of matching partition names.
    * @throws MetaException error accessing the RDBMS.
@@ -1519,9 +1503,28 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException No such partitions
    * @throws MetaException error accessing the RDBMS.
    * @throws TException thrift transport error
+   * @deprecated Use {@link #getPartitionsByNames(GetPartitionsByNamesRequest)} instead
    */
+  @Deprecated
   List<Partition> getPartitionsByNames(String db_name, String tbl_name,
       List<String> part_names) throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Get partitions by a list of partition names.
+   * @param catName catalog name
+   * @param db_name database name
+   * @param tbl_name table name
+   * @param part_names list of partition names
+   * @return list of Partition objects
+   * @throws NoSuchObjectException No such partitions
+   * @throws MetaException error accessing the RDBMS.
+   * @throws TException thrift transport error
+   * @deprecated Use {@link #getPartitionsByNames(GetPartitionsByNamesRequest)} instead
+   */
+  @Deprecated
+  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
+                                       List<String> part_names)
+      throws NoSuchObjectException, MetaException, TException;
 
   /**
    * Get partitions by a list of partition names.
@@ -1533,115 +1536,6 @@ public interface IMetaStoreClient {
    */
   PartitionsResponse getPartitionsRequest(PartitionsRequest req)
           throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * Get partitions by a list of partition names.
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @param getColStats if true include statistics in the Partition object
-   * @param engine engine sending the request
-   * @return list of Partition objects
-   * @throws NoSuchObjectException No such partitionscatName
-   * @throws MetaException error accessing the RDBMS.
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
-      boolean getColStats, String engine) throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * Get partitions by a list of partition names.
-   * @param catName catalog name
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @return list of Partition objects
-   * @throws NoSuchObjectException No such partitions
-   * @throws MetaException error accessing the RDBMS.
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                       List<String> part_names)
-      throws NoSuchObjectException, MetaException, TException;
-
-    /**
-     * Get partitions by a list of partition names.
-     * @param catName catalog name
-     * @param db_name database name
-     * @param tbl_name table name
-     * @param part_names list of partition names
-     * @param getColStats if true, column statistics is added to the Partition objects
-     * @param engine engine sending the request
-     * @return list of Partition objects
-     * @throws NoSuchObjectException No such partitions
-     * @throws MetaException error accessing the RDBMS.
-     * @throws TException thrift transport error
-     */
-    List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-            List<String> part_names, boolean getColStats, String engine)
-            throws NoSuchObjectException, MetaException, TException;
-
-   /**
-   * Get partitions by a list of partition names.
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @param getColStats if true include statistics in the Partition object
-   * @param engine engine sending the request
-   * @return list of Partition objects
-   * @param validWriteIdList valid write Ids
-   * @param tableId table id
-   * @throws NoSuchObjectException No such partitionscatName
-   * @throws MetaException error accessing the RDBMS.
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names, boolean getColStats,
-      String engine, String validWriteIdList, Long tableId) throws NoSuchObjectException, MetaException, TException;
-
-  /**
-   * Get partitions by a list of partition names.
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @param validWriteIdList valid write Ids
-   * @param tableId table id
-   * @return list of Partition objects
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String db_name, String tbl_name, List<String> part_names,
-      String validWriteIdList, Long tableId) throws TException;
-
-   /**
-     * Get partitions by a list of partition names.
-     * @param catName catalog name
-     * @param db_name database name
-     * @param tbl_name table name
-     * @param part_names list of partition names
-     * @param getColStats if true, column statistics is added to the Partition objects
-     * @param engine engine sending the request
-     * @param validWriteIdList valid write Ids
-     * @param tableId table id
-     * @return list of Partition objects
-     * @throws TException thrift transport error
-     */
-    List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name, List<String> part_names,
-        boolean getColStats, String engine, String validWriteIdList, Long tableId)
-        throws TException;
-
-  /**
-   * Get partitions by a list of partition names.
-   * @param catName catalog name
-   * @param db_name database name
-   * @param tbl_name table name
-   * @param part_names list of partition names
-   * @param validWriteIdList valid write Ids
-   * @param tableId table id
-   * @return list of Partition objects
-   * @throws TException thrift transport error
-   */
-  List<Partition> getPartitionsByNames(String catName, String db_name, String tbl_name,
-                                       List<String> part_names, String validWriteIdList, Long tableId)
-      throws TException;
 
     /**
    * Get partitions by a list of partition names.
@@ -1770,15 +1664,23 @@ public interface IMetaStoreClient {
   void validatePartitionNameCharacters(List<String> partVals) throws TException, MetaException;
 
   /**
+   * Dry run that translates table
+   *    *
+   *    * @param tbl
+   *    *          a table object
+   *    * @throws HiveException
+   */
+  public Table getTranslateTableDryrun(Table tbl) throws AlreadyExistsException,
+          InvalidObjectException, MetaException, NoSuchObjectException, TException;
+
+  /**
    * @param tbl
    * @throws AlreadyExistsException
    * @throws InvalidObjectException
    * @throws MetaException
    * @throws NoSuchObjectException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_table(org.apache.hadoop.hive.metastore.api.CreateTableRequest)
    */
-
   void createTable(Table tbl) throws AlreadyExistsException,
       InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
@@ -1790,7 +1692,6 @@ public interface IMetaStoreClient {
    * @throws NoSuchObjectException
    * @throws TException
    */
-
   void createTable(CreateTableRequest request) throws AlreadyExistsException,
           InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
@@ -1943,10 +1844,21 @@ public interface IMetaStoreClient {
    * @throws MetaException something went wrong, usually either in the RDBMS or storage.
    * @throws TException general thrift error.
    */
-  void dropDatabase(String catName, String dbName, boolean deleteData, boolean ignoreUnknownDb,
-                    boolean cascade)
-      throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
+  @Deprecated
+  default void dropDatabase(String catName, String dbName, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+    DropDatabaseRequest req = new DropDatabaseRequest();
+    req.setName(dbName);
+    req.setCatalogName(catName);
+    req.setIgnoreUnknownDb(ignoreUnknownDb);
+    req.setDeleteData(deleteData);
+    req.setCascade(cascade);
 
+    dropDatabase(req);
+  }
+
+  void dropDatabase(DropDatabaseRequest req) throws TException;
+  
   /**
    * Drop a database.  Equivalent to
    * {@link #dropDatabase(String, String, boolean, boolean, boolean)} with cascade = false.
@@ -1961,8 +1873,8 @@ public interface IMetaStoreClient {
    * @throws MetaException something went wrong, usually either in the RDBMS or storage.
    * @throws TException general thrift error.
    */
-  default void dropDatabase(String catName, String dbName, boolean deleteData,
-                            boolean ignoreUnknownDb)
+  @Deprecated
+  default void dropDatabase(String catName, String dbName, boolean deleteData, boolean ignoreUnknownDb)
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
     dropDatabase(catName, dbName, deleteData, ignoreUnknownDb, false);
   }
@@ -2512,9 +2424,15 @@ public interface IMetaStoreClient {
    * @throws TException
    *          if error in communicating with metastore server
    */
+  default void renamePartition(String catName, String dbname, String tableName, List<String> part_vals, 
+                               Partition newPart, String validWriteIds) 
+        throws TException {
+    renamePartition(catName, dbname, tableName, part_vals, newPart, validWriteIds, 0, false);
+  }
+
   void renamePartition(String catName, String dbname, String tableName, List<String> part_vals,
-                       Partition newPart, String validWriteIds)
-      throws InvalidOperationException, MetaException, TException;
+                       Partition newPart, String validWriteIds, long txnId, boolean makeCopy)
+    throws TException;
 
   /**
    * Get schema for a table, excluding the partition columns.
@@ -2664,7 +2582,7 @@ public interface IMetaStoreClient {
   /**
    * Get the column statistics for a set of columns in a table.  This should only be used for
    * non-partitioned tables.  For partitioned tables use
-   * {@link #getPartitionColumnStatistics(String, String, List, List)}.
+   * {@link #getPartitionColumnStatistics(String, String, List, List, String)}.
    * @param dbName database name
    * @param tableName table name
    * @param colNames list of column names
@@ -2684,7 +2602,7 @@ public interface IMetaStoreClient {
   /**
    * Get the column statistics for a set of columns in a table.  This should only be used for
    * non-partitioned tables.  For partitioned tables use
-   * {@link #getPartitionColumnStatistics(String, String, String, List, List)}.
+   * {@link #getPartitionColumnStatistics(String, String, String, List, List, String)}.
    * @param catName catalog name
    * @param dbName database name
    * @param tableName table name
@@ -2819,6 +2737,8 @@ public interface IMetaStoreClient {
    */
   boolean deleteTableColumnStatistics(String catName, String dbName, String tableName, String colName, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, TException, InvalidInputException;
+
+  void updateTransactionalStatistics(UpdateTransactionalStatsRequest req) throws TException;
 
   /**
    * @param role
@@ -3317,6 +3237,16 @@ public interface IMetaStoreClient {
   long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException;
 
   /**
+   * Allocate a per table write ID and associate it with the given transaction.
+   * @param txnId id of transaction to which the allocated write ID to be associated.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the write ID to be allocated
+   * @param reallocate should we reallocate already mapped writeId (if true) or reuse (if false)
+   * @throws TException
+   */
+  long allocateTableWriteId(long txnId, String dbName, String tableName, boolean reallocate) throws TException;
+
+  /**
    * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
    * @param validWriteIdList Snapshot of writeid list when the table/partition is dumped.
    * @param dbName Database name
@@ -3441,7 +3371,7 @@ public interface IMetaStoreClient {
 
   /**
    * Unlock a set of locks.  This can only be called when the locks are not
-   * assocaited with a transaction.
+   * associated with a transaction.
    * @param lockid lock id returned by
    * {@link #lock(org.apache.hadoop.hive.metastore.api.LockRequest)}
    * @throws NoSuchLockException if the requested lockid does not exist.
@@ -3517,10 +3447,15 @@ public interface IMetaStoreClient {
    * @param partitionName Name of the partition to be compacted
    * @param type Whether this is a major or minor compaction.
    * @throws TException
+   * @deprecated use {@link #compact2(CompactionRequest)}
    */
   @Deprecated
   void compact(String dbname, String tableName, String partitionName,  CompactionType type)
       throws TException;
+
+  /**
+   * @deprecated use {@link #compact2(CompactionRequest)}
+   */
   @Deprecated
   void compact(String dbname, String tableName, String partitionName, CompactionType type,
                Map<String, String> tblproperties) throws TException;
@@ -3539,17 +3474,49 @@ public interface IMetaStoreClient {
    * @param tblproperties the list of tblproperties to override for this compact. Can be null.
    * @return id of newly scheduled compaction or id/state of one which is already scheduled/running
    * @throws TException
+   * @deprecated use {@link #compact2(CompactionRequest)}
    */
+  @Deprecated
   CompactionResponse compact2(String dbname, String tableName, String partitionName, CompactionType type,
                               Map<String, String> tblproperties) throws TException;
 
   /**
+   * Send a request to compact a table or partition.  This will not block until the compaction is
+   * complete.  It will instead put a request on the queue for that table or partition to be
+   * compacted.  No checking is done on the dbname, tableName, or partitionName to make sure they
+   * refer to valid objects.  It is assumed this has already been done by the caller.  At most one
+   * Compaction can be scheduled/running for any given resource at a time.
+   * @param request The {@link CompactionRequest} object containing the details required to enqueue
+   *                a compaction request.
+   * @throws TException
+   */
+  CompactionResponse compact2(CompactionRequest request) throws TException;
+
+  /**
    * Get a list of all compactions.
-   * @return List of all current compactions.  This includes compactions waiting to happen,
+   * @return List of all current compactions. This includes compactions waiting to happen,
    * in progress, and finished but waiting to clean the existing files.
    * @throws TException
    */
   ShowCompactResponse showCompactions() throws TException;
+  
+  /**
+   * Get a list of compactions for the given request object.
+   */
+  ShowCompactResponse showCompactions(ShowCompactRequest request) throws TException;
+  
+  /**
+   * Submit a request for performing cleanup of output directory. This is particularly
+   * useful for CTAS when the query fails after write and before creation of table.
+   * @return Status of whether the request was successfully submitted. True indicates
+   * the request was successfully submitted and false indicates failure of request submitted.
+   * @param rqst Request containing the table directory which needs to be cleaned up.
+   * @param highestWriteId The highest write ID that was used while writing the table directory.
+   * @param txnId The transaction ID of the query.
+   * @throws TException
+   */
+  boolean submitForCleanup(CompactionRequest rqst, long highestWriteId,
+                           long txnId) throws TException;
 
   /**
    * Get one latest record of SUCCEEDED or READY_FOR_CLEANING compaction for a table/partition.
@@ -3627,6 +3594,27 @@ public interface IMetaStoreClient {
                                                 NotificationFilter filter) throws TException;
 
   /**
+   * Get the next set of notifications from the database.
+   * @param request The {@link NotificationEventRequest} request to be sent to the server
+   *                to fetch the next set of events.
+   * @param allowGapsInEventIds If this flag is true, the returned event ids may contain
+   *                            gaps in the event ids. This could happen if on the server
+   *                            side some of the events since the requested eventId have
+   *                            been garbage collected. If the flag is false, the method
+   *                            will throw {@link MetaException} if the returned events
+   *                            from the server are not in sequence from the requested
+   *                            event id.
+   * @param filter User provided filter to remove unwanted events.  If null, all events will be
+   *               returned.
+   * @return list of notifications, sorted by eventId.  It is guaranteed that the events are in
+   * the order that the operations were done on the database.
+   * @throws TException
+   */
+  @InterfaceAudience.LimitedPrivate({"HCatalog"})
+  NotificationEventResponse getNextNotification(NotificationEventRequest request,
+      boolean allowGapsInEventIds, NotificationFilter filter) throws TException;
+
+  /**
    * Get the last used notification event id.
    * @return last used id
    * @throws TException
@@ -3661,6 +3649,14 @@ public interface IMetaStoreClient {
    */
   @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
   void addWriteNotificationLog(WriteNotificationLogRequest rqst) throws TException;
+
+  /**
+   * Add a batch of event related to write operations in an ACID table.
+   * @param rqst message containing information for acid write operations.
+   * @throws TException
+   */
+  @InterfaceAudience.LimitedPrivate({"Apache Hive, HCatalog"})
+  void addWriteNotificationLogInBatch(WriteNotificationLogBatchRequest rqst) throws TException;
 
   class IncompatibleMetastoreException extends MetaException {
     IncompatibleMetastoreException(String message) {
@@ -4201,20 +4197,20 @@ public interface IMetaStoreClient {
    * @return next compaction job encapsulated in a {@link CompactionInfoStruct}.
    * @throws MetaException
    * @throws TException
-   * @deprecated Use findNextCompact(workerId, workerVersion) instead
+   * @deprecated Use
+   *     {@link IMetaStoreClient#findNextCompact(org.apache.hadoop.hive.metastore.api.FindNextCompactRequest)} instead
    */
   @Deprecated
   OptionalCompactionInfoStruct findNextCompact(String workerId) throws MetaException, TException;
 
   /**
    * Get the next compaction job to do.
-   * @param workerId id of the worker requesting.
-   * @param workerVersion runtime version of the Worker
+   * @param rqst Information about the worker id and version
    * @return next compaction job encapsulated in a {@link CompactionInfoStruct}.
    * @throws MetaException
    * @throws TException
    */
-  OptionalCompactionInfoStruct findNextCompact(String workerId, String workerVersion) throws MetaException, TException;
+  OptionalCompactionInfoStruct findNextCompact(FindNextCompactRequest rqst) throws MetaException, TException;
 
   /**
    * Set the compaction highest write id.
@@ -4256,6 +4252,41 @@ public interface IMetaStoreClient {
    */
   void markFailed(CompactionInfoStruct cr) throws MetaException, TException;
 
+  /**
+   * Mark a compaction as refused (to run).
+   * @param cr compaction job.
+   * @throws MetaException
+   * @throws TException
+   */
+  void markRefused(CompactionInfoStruct cr) throws MetaException, TException;
+
+  /**
+   * Create, update or delete one record in the compaction metrics cache.
+   * <p>
+   * If the metric is not found in the metrics cache, it will be created.
+   * </p>
+   * <p>
+   * If the metric is found, it will be updated. This operation uses an optimistic locking mechanism, meaning if another
+   * operation changed the value of this metric, the update will abort and won't be retried.
+   * </p>
+   * <p>
+   * If the new metric value is below {@link CompactionMetricsDataStruct#getThreshold()}, it will be deleted.
+   * </p>
+   * @param struct the object that is used for the update, always non-null
+   * @return true, if update finished successfully
+   * @throws MetaException
+   * @throws TException
+   */
+  boolean updateCompactionMetricsData(CompactionMetricsDataStruct struct) throws MetaException, TException;
+
+
+  /**
+   * Remove records from the compaction metrics cache matching the filter criteria passed in as parameters
+   * @param request the request object, that contains the filter parameters, must be non-null
+   * @throws MetaException
+   * @throws TException
+   */
+  void removeCompactionMetricsData(CompactionMetricsDataRequest request) throws MetaException, TException;
   /**
    * Set the hadoop id for a compaction.
    * @param jobId mapreduce job id that will do the compaction.
@@ -4321,4 +4352,10 @@ public interface IMetaStoreClient {
   List<String> listPackages(ListPackageRequest request) throws TException;
 
   void dropPackage(DropPackageRequest request) throws TException;
+
+  /**
+   * Get acid write events of a specific transaction.
+   * @throws TException
+   */
+  List<WriteEventInfo> getAllWriteEventInfo(GetAllWriteEventInfoRequest request) throws TException;
 }

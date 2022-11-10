@@ -37,25 +37,19 @@ public class <ClassName> extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int colNum;
-
   // The comparison is of the form "column BETWEEN leftValue AND rightValue"
   // NOTE: These can be set later by FilterColumnBetweenDynamicValue.txt so they are not final.
   private HiveDecimal leftValue;
   private HiveDecimal rightValue;
 
   public <ClassName>(int colNum, HiveDecimal leftValue, HiveDecimal rightValue) {
-    super();
-    this.colNum = colNum;
+    super(colNum, -1);
     this.leftValue = leftValue;
     this.rightValue = rightValue;
   }
 
   public <ClassName>() {
     super();
-
-    // Dummy final assignments.
-    colNum = -1;
   }
 
   @Override
@@ -71,7 +65,7 @@ public class <ClassName> extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[colNum];
+    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
 
@@ -164,7 +158,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum) + ", left " + leftValue.toString() + ", right " + rightValue.toString();
+    return getColumnParamString(0, inputColumnNum[0]) + ", left " + leftValue.toString() + ", right " + rightValue.toString();
   }
 
   @Override

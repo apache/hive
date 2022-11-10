@@ -212,10 +212,8 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     }
     queryTracker.registerDag(identifier.getApplicationIdString(),
         identifier.getDagIndex(), request.getUser(), credentials);
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Application with  id={}, dagId={} registered",
-          identifier.getApplicationIdString(), identifier.getDagIndex());
-    }
+    LOG.info("Application with  id={}, dagId={} registered", identifier.getApplicationIdString(),
+        identifier.getDagIndex());
     return RegisterDagResponseProto.newBuilder().build();
   }
 
@@ -240,10 +238,8 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
     verifyJwtForExternalClient(request, qIdProto.getApplicationIdString(), fragmentIdString);
 
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Queueing container for execution: fragemendId={}, {}",
-          fragmentIdString, stringifySubmitRequest(request, vertex));
-    }
+    LOG.info("Queueing container for execution: fragemendId={}, {}", fragmentIdString,
+        stringifySubmitRequest(request, vertex));
 
     HistoryLogger.logFragmentStart(qIdProto.getApplicationIdString(), request.getContainerIdString(),
         localAddress.get().getHostName(),
@@ -252,7 +248,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
         vertex.getVertexName(), request.getFragmentNumber(), request.getAttemptNumber());
 
     // This is the start of container-annotated logging.
-    final String dagId = attemptId.getTaskID().getVertexID().getDAGId().toString();
+    final String dagId = attemptId.getDAGID().toString();
     final String queryId = vertex.getHiveQueryId();
     final String fragmentId = LlapTezUtils.stripAttemptPrefix(fragmentIdString);
     MDC.put("dagId", dagId);
@@ -274,7 +270,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       env.put(ApplicationConstants.Environment.USER.name(), vertex.getUser());
 
       TezTaskAttemptID taskAttemptId = TezTaskAttemptID.fromString(fragmentIdString);
-      int dagIdentifier = taskAttemptId.getTaskID().getVertexID().getDAGId().getId();
+      int dagIdentifier = taskAttemptId.getDAGID().getId();
 
       QueryIdentifier queryIdentifier = new QueryIdentifier(
           qIdProto.getApplicationIdString(), dagIdentifier);
@@ -327,9 +323,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
           completionListener, socketFactory, isGuaranteed, wmCounters);
       submissionState = executorService.schedule(callable);
 
-      if (LOG.isInfoEnabled()) {
-        LOG.info("SubmissionState for {} : {} ", fragmentIdString, submissionState);
-      }
+      LOG.info("SubmissionState for {} : {} ", fragmentIdString, submissionState);
 
       if (submissionState.equals(Scheduler.SubmissionState.REJECTED)) {
         // Stop tracking the fragment and re-throw the error.

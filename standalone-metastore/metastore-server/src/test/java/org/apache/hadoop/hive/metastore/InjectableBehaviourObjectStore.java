@@ -19,8 +19,12 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
+import java.util.Map;
+
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
@@ -95,6 +99,8 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
 
   private static com.google.common.base.Function<List<Partition>, Boolean> addPartitionsModifier = null;
 
+  private static com.google.common.base.Function<Table, Boolean> updatePartColStatsModifier = null;
+
   // Methods to set/reset getTable modifier
   public static void setGetTableBehaviour(com.google.common.base.Function<Table, Table> modifier){
     getTableModifier = (modifier == null) ? com.google.common.base.Functions.identity() : modifier;
@@ -168,6 +174,9 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
     addPartitionsModifier = modifier;
   }
 
+  public static void setUpdatePartColStatsBehaviour(com.google.common.base.Function<Table, Boolean> modifier){
+    updatePartColStatsModifier = modifier;
+  }
 
   // ObjectStore methods to be overridden with injected behavior
   @Override
@@ -339,5 +348,21 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
       }
     }
     return super.addPartitions(catName, dbName, tblName, parts);
+  }
+
+  @Override
+  public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+          Map<String, ColumnStatistics> partColStatsMap,
+          Table tbl, List<TransactionalMetaStoreEventListener> listeners,
+          String validWriteIds, long writeId)
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    if (updatePartColStatsModifier != null) {
+      Boolean success = updatePartColStatsModifier.apply(tbl);
+      if ((success != null) && !success) {
+        throw new MetaException("InjectableBehaviourObjectStore: Invalid updatePartitionColumnStatisticsInBatch  : "
+          + "operation on Catalog : " + tbl.getCatName() + " DB: " + tbl.getDbName() + " table: " + tbl.getTableName());
+      }
+    }
+    return super.updatePartitionColumnStatisticsInBatch(partColStatsMap, tbl, listeners, validWriteIds, writeId);
   }
 }

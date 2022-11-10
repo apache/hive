@@ -280,7 +280,7 @@ public class TestVectorizedListColumnReader extends VectorizedColumnReaderTestBa
           long length = vector.lengths[i];
           boolean isNull = isNull(row);
           if (isNull) {
-            assertEquals(vector.isNull[i], true);
+            assertEquals("vector.isNull[" + i + "] is expected to be true", true, vector.isNull[i]);
           } else {
             for (long j = 0; j < length; j++) {
               assertValue(type, vector.child, isDictionaryEncoding, index, (int) (start + j));

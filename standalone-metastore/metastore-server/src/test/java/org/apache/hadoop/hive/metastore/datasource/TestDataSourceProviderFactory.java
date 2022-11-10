@@ -55,6 +55,21 @@ public class TestDataSourceProviderFactory {
   }
 
   @Test
+  public void testSetHikariCpLeakDetectionThresholdProperty() throws SQLException {
+
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".leakDetectionThreshold", "3600");
+    conf.set(HikariCPDataSourceProvider.HIKARI + ".initializationFailTimeout", "-1");
+
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
+    Assert.assertNotNull(dsp);
+
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof HikariDataSource);
+    Assert.assertEquals(3600L, ((HikariDataSource)ds).getLeakDetectionThreshold());
+  }
+
+  @Test
   public void testCreateHikariCpDataSource() throws SQLException {
 
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, HikariCPDataSourceProvider.HIKARI);

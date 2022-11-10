@@ -43,10 +43,11 @@ import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.http.HttpServer;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 public class LlapWebServices extends AbstractService {
 
@@ -214,7 +215,7 @@ public class LlapWebServices extends AbstractService {
     public void init() throws ServletException {
       jsonFactory = new JsonFactory();
     }
-    
+
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
       JsonGenerator jg = null;

@@ -1,0 +1,86 @@
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: CREATE CONNECTOR IF NOT EXISTS mysql_auth_dc
+TYPE 'mysql'
+URL 'jdbc:mysql://nightly1.apache.org:3306/hive1'
+COMMENT 'test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="hive1",
+"hive.sql.dbcp.password"="hive1")
+PREHOOK: type: CREATEDATACONNECTOR
+PREHOOK: Output: connector:mysql_auth_dc
+POSTHOOK: query: CREATE CONNECTOR IF NOT EXISTS mysql_auth_dc
+TYPE 'mysql'
+URL 'jdbc:mysql://nightly1.apache.org:3306/hive1'
+COMMENT 'test connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="hive1",
+"hive.sql.dbcp.password"="hive1")
+POSTHOOK: type: CREATEDATACONNECTOR
+POSTHOOK: Output: connector:mysql_auth_dc
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS
+mysql_auth_dc
+PREHOOK: query: alter connector mysql_auth_dc set URL 'jdbc:mysql://nightly1.apache.org:3306/hive2'
+PREHOOK: type: ALTERDATACONNECTOR_
+PREHOOK: Output: connector:mysql_auth_dc
+POSTHOOK: query: alter connector mysql_auth_dc set URL 'jdbc:mysql://nightly1.apache.org:3306/hive2'
+POSTHOOK: type: ALTERDATACONNECTOR_
+POSTHOOK: Output: connector:mysql_auth_dc
+PREHOOK: query: DESCRIBE CONNECTOR extended mysql_auth_dc
+PREHOOK: type: DESCDATACONNECTOR
+PREHOOK: Input: connector:mysql_auth_dc
+POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_auth_dc
+POSTHOOK: type: DESCDATACONNECTOR
+POSTHOOK: Input: connector:mysql_auth_dc
+mysql_auth_dc	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	hive_admin_user	USER	test connector	{hive.sql.dbcp.password=hive1, hive.sql.dbcp.username=hive1}
+PREHOOK: query: alter connector mysql_auth_dc set DCPROPERTIES("hive.sql.dbcp.username"="hive2","hive.sql.dbcp.password"="hive2")
+PREHOOK: type: ALTERDATACONNECTOR
+PREHOOK: Output: connector:mysql_auth_dc
+POSTHOOK: query: alter connector mysql_auth_dc set DCPROPERTIES("hive.sql.dbcp.username"="hive2","hive.sql.dbcp.password"="hive2")
+POSTHOOK: type: ALTERDATACONNECTOR
+POSTHOOK: Output: connector:mysql_auth_dc
+PREHOOK: query: DESCRIBE CONNECTOR extended mysql_auth_dc
+PREHOOK: type: DESCDATACONNECTOR
+PREHOOK: Input: connector:mysql_auth_dc
+POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_auth_dc
+POSTHOOK: type: DESCDATACONNECTOR
+POSTHOOK: Input: connector:mysql_auth_dc
+mysql_auth_dc	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	hive_admin_user	USER	test connector	{hive.sql.dbcp.password=hive2, hive.sql.dbcp.username=hive2}
+PREHOOK: query: alter connector mysql_auth_dc set OWNER USER newuser
+PREHOOK: type: ALTERDATABASE_OWNER
+PREHOOK: Output: connector:mysql_auth_dc
+POSTHOOK: query: alter connector mysql_auth_dc set OWNER USER newuser
+POSTHOOK: type: ALTERDATABASE_OWNER
+POSTHOOK: Output: connector:mysql_auth_dc
+PREHOOK: query: DESCRIBE CONNECTOR extended mysql_auth_dc
+PREHOOK: type: DESCDATACONNECTOR
+PREHOOK: Input: connector:mysql_auth_dc
+POSTHOOK: query: DESCRIBE CONNECTOR extended mysql_auth_dc
+POSTHOOK: type: DESCDATACONNECTOR
+POSTHOOK: Input: connector:mysql_auth_dc
+mysql_auth_dc	mysql	jdbc:mysql://nightly1.apache.org:3306/hive2	newuser	USER	test connector	{hive.sql.dbcp.password=hive2, hive.sql.dbcp.username=hive2}
+PREHOOK: query: CREATE REMOTE DATABASE db_mysql_auth USING mysql_auth_dc with DBPROPERTIES("connector.remoteDbName"="hive1")
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Input: connector:mysql_auth_dc
+PREHOOK: Output: database:db_mysql_auth
+POSTHOOK: query: CREATE REMOTE DATABASE db_mysql_auth USING mysql_auth_dc with DBPROPERTIES("connector.remoteDbName"="hive1")
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Input: connector:mysql_auth_dc
+POSTHOOK: Output: database:db_mysql_auth
+PREHOOK: query: DROP CONNECTOR mysql_auth_dc
+PREHOOK: type: DROPDATACONNECTOR
+PREHOOK: Input: connector:mysql_auth_dc
+PREHOOK: Output: connector:mysql_auth_dc
+POSTHOOK: query: DROP CONNECTOR mysql_auth_dc
+POSTHOOK: type: DROPDATACONNECTOR
+POSTHOOK: Input: connector:mysql_auth_dc
+POSTHOOK: Output: connector:mysql_auth_dc
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS

@@ -162,9 +162,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
           schema.addField(columnNames.get(i),
               OrcInputFormat.convertTypeInfo(columnTypes.get(i)));
         }
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("ORC schema = " + schema);
-        }
+        LOG.debug("ORC schema = {}", schema);
         result.setSchema(schema);
       }
     }
@@ -307,7 +305,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
       }
     }
     final OrcRecordUpdater.KeyIndexBuilder watcher =
-        new OrcRecordUpdater.KeyIndexBuilder("compactor");
+        new OrcRecordUpdater.KeyIndexBuilder();
     opts.inspector(options.getInspector())
         .callback(watcher);
     final Writer writer = OrcFile.createWriter(filename, opts);

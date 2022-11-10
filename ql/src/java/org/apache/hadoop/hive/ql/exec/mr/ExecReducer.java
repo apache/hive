@@ -172,9 +172,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
           groupKey = new BytesWritable();
         } else {
           // If a operator wants to do some work at the end of a group
-          if (LOG.isTraceEnabled()) {
-            LOG.trace("End Group");
-          }
+          LOG.trace("End Group");
           reducer.endGroup();
         }
 
@@ -189,9 +187,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         }
 
         groupKey.set(keyWritable.get(), 0, keyWritable.getSize());
-        if (LOG.isTraceEnabled()) {
-          LOG.trace("Start Group");
-        }
+        LOG.trace("Start Group");
         reducer.startGroup();
         reducer.setGroupKeyObject(keyObject);
       }
@@ -250,16 +246,14 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   public void close() {
 
     // No row was processed
-    if (oc == null && LOG.isTraceEnabled()) {
+    if (oc == null) {
       LOG.trace("Close called without any rows processed");
     }
 
     try {
       if (groupKey != null) {
         // If a operator wants to do some work at the end of a group
-        if (LOG.isTraceEnabled()) {
-          LOG.trace("End Group");
-        }
+        LOG.trace("End Group");
         reducer.endGroup();
       }
 

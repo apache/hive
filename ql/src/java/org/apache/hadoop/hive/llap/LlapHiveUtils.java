@@ -18,16 +18,18 @@
 package org.apache.hadoop.hive.llap;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -52,7 +54,7 @@ public final class LlapHiveUtils {
   }
 
   /**
-   * Takes a Path and looks up the PartitionDesc instance associated with it in a map of Path->PartitionDesc entries.
+   * Takes a Path and looks up the PartitionDesc instance associated with it in a map of Path-&gt;PartitionDesc entries.
    * If it is not found (e.g. Path denotes a partition path, but map contains table level instances only) we will try
    * to do the same with the parent of this path, traversing up until there's a match, if any.
    * @param path the absolute path used for the look up
@@ -104,13 +106,11 @@ public final class LlapHiveUtils {
    * Returns MapWork based what is serialized in the JobConf instance provided.
    * @param job
    * @return the MapWork instance. Might be null if missing.
-   * @throws HiveException
    */
   public static MapWork findMapWork(JobConf job) {
     String inputName = job.get(Utilities.INPUT_NAME, null);
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Initializing for input " + inputName);
-    }
+    LOG.debug("Initializing for input {}", inputName);
+
     String prefixes = job.get(DagUtils.TEZ_MERGE_WORK_FILE_PREFIXES);
     if (prefixes != null && !StringUtils.isBlank(prefixes)) {
       // Currently SMB is broken, so we cannot check if it's  compatible with IO elevator.
@@ -145,6 +145,32 @@ public final class LlapHiveUtils {
 
   public static boolean isLlapMode(Configuration conf) {
     return "llap".equalsIgnoreCase(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
+  }
+
+  /**
+   * Determines the fileID for the given path using the FileSystem type provided while considering daemon configuration.
+   * Invokes HdfsUtils.getFileId(), the resulting file ID can be of types Long (inode) or SyntheticFileId depending
+   * on the FS type and the actual daemon configuration.
+   * Can be costly on cloud file systems.
+   * @param fs FileSystem type
+   * @param path Path associated to this file
+   * @param daemonConf Llap daemon configuration
+   * @return the generated fileID, can be null in special cases (e.g. conf disallows synthetic ID on a non-HDFS FS)
+   * @throws IOException
+   */
+  public static Object createFileIdUsingFS(FileSystem fs, Path path, Configuration daemonConf) throws IOException {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Will invoke HdfsUtils.getFileId - this is costly on cloud file systems. " +
+          "Turn on TRACE level logging to show call trace.");
+      if (LOG.isTraceEnabled()) {
+        LOG.trace(Arrays.deepToString(Thread.currentThread().getStackTrace()));
+      }
+    }
+    boolean allowSynthetic = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID);
+    boolean checkDefaultFs = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID);
+    boolean forceSynthetic = !HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_USE_FILEID_PATH);
+
+    return HdfsUtils.getFileId(fs, path, allowSynthetic, checkDefaultFs, forceSynthetic);
   }
 
 }

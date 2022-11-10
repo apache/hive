@@ -85,7 +85,6 @@ public class HiveVolcanoPlanner extends VolcanoPlanner {
       addRule(HiveDruidRules.FILTER_PROJECT_TRANSPOSE);
       addRule(HiveDruidRules.SORT_PROJECT_TRANSPOSE);
       addRule(HiveDruidRules.SORT);
-      addRule(HiveDruidRules.PROJECT_SORT_TRANSPOSE);
       return;
     }
     super.registerClass(node);

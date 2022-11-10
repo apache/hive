@@ -1,0 +1,153 @@
+PREHOOK: query: create table t1(col0 int) STORED AS ORC
+                          TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(col0 int) STORED AS ORC
+                          TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: create table t2(col0 int) STORED AS ORC
+                          TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create table t2(col0 int) STORED AS ORC
+                          TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: insert into t1(col0) values (1), (NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1(col0) values (1), (NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.col0 SCRIPT []
+PREHOOK: query: insert into t2(col0) values (1), (2), (3), (NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2
+POSTHOOK: query: insert into t2(col0) values (1), (2), (3), (NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.col0 SCRIPT []
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
+PREHOOK: query: create materialized view mat1 as
+select col0 from t1 where col0 = 1 union select col0 from t1 where col0 = 2
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat1
+POSTHOOK: query: create materialized view mat1 as
+select col0 from t1 where col0 = 1 union select col0 from t1 where col0 = 2
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat1
+POSTHOOK: Lineage: mat1.col0 EXPRESSION []
+PREHOOK: query: create materialized view mat2 as
+select col0 from t1 where col0 = 3
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat2
+POSTHOOK: query: create materialized view mat2 as
+select col0 from t1 where col0 = 3
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat2
+POSTHOOK: Lineage: mat2.col0 SIMPLE []
+Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo
+select col0 from t2 where exists (
+ select col0 from t1 where col0 = 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col0 from t2 where exists (
+ select col0 from t1 where col0 = 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSemiJoin(condition=[true], joinType=[semi])
+  HiveProject(col0=[$0])
+    HiveTableScan(table=[[default, t2]], table:alias=[t2])
+  HiveProject($f0=[$0])
+    HiveAggregate(group=[{0}])
+      HiveProject($f0=[true])
+        HiveFilter(condition=[=($0, 3)])
+          HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+Warning: Shuffle Join MERGEJOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo
+select col0 from t2 where exists (select col0 from t1 where col0 = 1 union select col0 from t1 where col0 = 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col0 from t2 where exists (select col0 from t1 where col0 = 1 union select col0 from t1 where col0 = 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSemiJoin(condition=[true], joinType=[semi])
+  HiveProject(col0=[$0])
+    HiveTableScan(table=[[default, t2]], table:alias=[t2])
+  HiveProject($f0=[$0])
+    HiveAggregate(group=[{0}])
+      HiveProject($f0=[true])
+        HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+
+PREHOOK: query: explain cbo
+select col0 from t2 where col0 in (select col0 from t1 where col0 = 1 union select col0 from t1 where col0 = 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col0 from t2 where col0 in (select col0 from t1 where col0 = 1 union select col0 from t1 where col0 = 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+  HiveProject(col0=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, t2]], table:alias=[t2])
+  HiveProject(col0=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+
+PREHOOK: query: drop materialized view mat1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mat1
+PREHOOK: Output: default@mat1
+POSTHOOK: query: drop materialized view mat1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mat1
+POSTHOOK: Output: default@mat1
+PREHOOK: query: drop materialized view mat2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mat2
+PREHOOK: Output: default@mat2
+POSTHOOK: query: drop materialized view mat2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mat2
+POSTHOOK: Output: default@mat2

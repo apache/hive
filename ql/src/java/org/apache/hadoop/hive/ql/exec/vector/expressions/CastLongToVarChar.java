@@ -49,6 +49,6 @@ public class CastLongToVarChar extends CastLongToString implements TruncStringOu
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumn) + ", maxLength " + maxLength;
+    return getColumnParamString(0, inputColumnNum[0]) + ", maxLength " + maxLength;
   }
 }

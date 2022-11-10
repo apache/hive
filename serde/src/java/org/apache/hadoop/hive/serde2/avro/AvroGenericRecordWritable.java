@@ -53,6 +53,8 @@ public class AvroGenericRecordWritable implements Writable{
   private ZoneId writerTimezone = null;
 
   private Boolean writerProleptic = null;
+  
+  private final Boolean writerZoneConversionLegacy;
 
   /**
    * Unique Id determine which record reader created this record
@@ -74,15 +76,19 @@ public class AvroGenericRecordWritable implements Writable{
     this.record = record;
   }
 
-  public AvroGenericRecordWritable() {}
+  public AvroGenericRecordWritable() {
+    this.writerZoneConversionLegacy = null;
+  }
 
   public AvroGenericRecordWritable(GenericRecord record) {
     this.record = record;
+    this.writerZoneConversionLegacy = null;
   }
 
-  public AvroGenericRecordWritable(ZoneId writerTimezone, Boolean writerProleptic) {
+  public AvroGenericRecordWritable(ZoneId writerTimezone, Boolean writerProleptic, Boolean writerZoneConversionLegacy) {
     this.writerTimezone = writerTimezone;
     this.writerProleptic = writerProleptic;
+    this.writerZoneConversionLegacy = writerZoneConversionLegacy;
   }
 
   @Override
@@ -159,5 +165,9 @@ public class AvroGenericRecordWritable implements Writable{
 
   public Boolean getWriterProleptic() {
     return writerProleptic;
+  }
+  
+  Boolean getWriterZoneConversionLegacy() {
+    return writerZoneConversionLegacy;
   }
 }

@@ -16,28 +16,37 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TimeZone;
 
+import com.google.common.base.MoreObjects;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.ParquetTimestampUtils;
 import org.apache.hadoop.hive.common.type.CalendarUtils;
+import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriteSupport;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -477,7 +486,32 @@ public enum ETypeConverter {
   },
   ESTRING_CONVERTER(String.class) {
     @Override
-    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent,
+                                    TypeInfo hiveTypeInfo) {
+      // If we have type information, we should return properly typed strings. However, there are a variety
+      // of code paths that do not provide the typeInfo in those cases we default to Text. This idiom is also
+      // followed by for example the BigDecimal converter in which if there is no type information,
+      // it defaults to the widest representation
+      if (hiveTypeInfo instanceof PrimitiveTypeInfo) {
+        PrimitiveTypeInfo t = (PrimitiveTypeInfo) hiveTypeInfo;
+        switch (t.getPrimitiveCategory()) {
+          case CHAR:
+            return new BinaryConverter<HiveCharWritable>(type, parent, index) {
+              @Override
+              protected HiveCharWritable convert(Binary binary) {
+                return new HiveCharWritable(binary.getBytes(), ((CharTypeInfo) hiveTypeInfo).getLength());
+              }
+            };
+          case VARCHAR:
+            return new BinaryConverter<HiveVarcharWritable>(type, parent, index) {
+              @Override
+              protected HiveVarcharWritable convert(Binary binary) {
+                return new HiveVarcharWritable(binary.getBytes(), ((VarcharTypeInfo) hiveTypeInfo).getLength());
+              }
+            };
+        }
+      }
+      // STRING type
       return new BinaryConverter<Text>(type, parent, index) {
         @Override
         protected Text convert(Binary binary) {
@@ -699,10 +733,11 @@ public enum ETypeConverter {
           // time zone in order to emulate time zone agnostic behavior.
           boolean skipConversion = Boolean.parseBoolean(
               metadata.get(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname));
-          boolean legacyConversion = Boolean.parseBoolean(
-              metadata.get(ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED.varname));
-          Timestamp ts = NanoTimeUtils.getTimestamp(nt, skipConversion,
-              DataWritableReadSupport.getWriterTimeZoneId(metadata), legacyConversion);
+          String legacyConversion = metadata.get(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY);
+          assert legacyConversion != null;
+          ZoneId targetZone = skipConversion ? ZoneOffset.UTC : MoreObjects
+              .firstNonNull(DataWritableReadSupport.getWriterTimeZoneId(metadata), TimeZone.getDefault().toZoneId());
+          Timestamp ts = NanoTimeUtils.getTimestamp(nt, targetZone, Boolean.parseBoolean(legacyConversion));
           return new TimestampWritableV2(ts);
         }
       };
@@ -714,18 +749,21 @@ public enum ETypeConverter {
         TypeInfo hiveTypeInfo) {
       if (hiveTypeInfo != null) {
         String typeName = TypeInfoUtils.getBaseName(hiveTypeInfo.getTypeName());
+        final long min = getMinValue(type, typeName, Long.MIN_VALUE);
+        final long max = getMaxValue(typeName, Long.MAX_VALUE);
+
         switch (typeName) {
-          case serdeConstants.BIGINT_TYPE_NAME:
-            return new BinaryConverter<LongWritable>(type, parent, index) {
-              @Override
-              protected LongWritable convert(Binary binary) {
-                Preconditions.checkArgument(binary.length() == 8, "Must be 8 bytes");
-                ByteBuffer buf = binary.toByteBuffer();
-                buf.order(ByteOrder.LITTLE_ENDIAN);
-                long longVal = buf.getLong();
-                return new LongWritable(longVal);
+        case serdeConstants.BIGINT_TYPE_NAME:
+          return new PrimitiveConverter() {
+            @Override
+            public void addLong(long value) {
+              if ((value >= min) && (value <= max)) {
+                parent.set(index, new LongWritable(value));
+              } else {
+                parent.set(index, null);
               }
-            };
+            }
+          };
         }
       }
       return new PrimitiveConverter() {

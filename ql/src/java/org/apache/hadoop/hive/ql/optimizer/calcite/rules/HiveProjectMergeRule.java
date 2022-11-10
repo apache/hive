@@ -56,11 +56,11 @@ public class HiveProjectMergeRule extends ProjectMergeRule {
     // other
     final Project topProject = call.rel(0);
     final Project bottomProject = call.rel(1);
-    for (RexNode expr : topProject.getChildExps()) {
+    for (RexNode expr : topProject.getProjects()) {
       if (expr instanceof RexOver) {
         Set<Integer> positions = HiveCalciteUtil.getInputRefs(expr);
         for (int pos : positions) {
-          if (bottomProject.getChildExps().get(pos) instanceof RexOver) {
+          if (bottomProject.getProjects().get(pos) instanceof RexOver) {
             return false;
           }
         }
@@ -76,11 +76,11 @@ public class HiveProjectMergeRule extends ProjectMergeRule {
     // If top project does not reference any column at the bottom project,
     // we can just remove botton project
     final ImmutableBitSet topRefs =
-        RelOptUtil.InputFinder.bits(topProject.getChildExps(), null);
+        RelOptUtil.InputFinder.bits(topProject.getProjects(), null);
     if (topRefs.isEmpty()) {
       RelBuilder relBuilder = call.builder();
       relBuilder.push(bottomProject.getInput());
-      relBuilder.project(topProject.getChildExps());
+      relBuilder.project(topProject.getProjects());
       call.transformTo(relBuilder.build());
       return;
     }

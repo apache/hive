@@ -19,7 +19,6 @@
 
 package org.apache.iceberg.mr;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -35,35 +34,46 @@ import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
-import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Streams;
 
 /**
  * Class for catalog resolution and accessing the common functions for {@link Catalog} API.
  * <p>
- * Catalog resolution happens in this order:
- * <ol>
- * <li>Custom catalog if specified by {@link InputFormatConfig#CATALOG_LOADER_CLASS}
- * <li>Hadoop or Hive catalog if specified by {@link InputFormatConfig#CATALOG}
- * <li>Hadoop Tables
- * </ol>
+ * If the catalog name is provided, get the catalog type from iceberg.catalog.<code>catalogName</code>.type config.
+ * <p>
+ * In case the catalog name is {@link #ICEBERG_HADOOP_TABLE_NAME location_based_table},
+ * type is ignored and tables will be loaded using {@link HadoopTables}.
+ * <p>
+ * In case the value of catalog type is null, iceberg.catalog.<code>catalogName</code>.catalog-impl config
+ * is used to determine the catalog implementation class.
+ * <p>
+ * If catalog name is null, get the catalog type from {@link InputFormatConfig#CATALOG iceberg.mr.catalog} config:
+ * <ul>
+ *   <li>hive: HiveCatalog</li>
+ *   <li>location: HadoopTables</li>
+ *   <li>hadoop: HadoopCatalog</li>
+ * </ul>
+ * <p>
+ * In case the value of catalog type is null,
+ * {@link InputFormatConfig#CATALOG_LOADER_CLASS iceberg.mr.catalog.loader.class} is used to determine
+ * the catalog implementation class.
+ * <p>
+ * Note: null catalog name mode is only supported for backwards compatibility. Using this mode is NOT RECOMMENDED.
  */
 public final class Catalogs {
 
   public static final String ICEBERG_DEFAULT_CATALOG_NAME = "default_iceberg";
   public static final String ICEBERG_HADOOP_TABLE_NAME = "location_based_table";
 
-  private static final String HIVE_CATALOG_TYPE = "hive";
-  private static final String HADOOP_CATALOG_TYPE = "hadoop";
-  private static final String NO_CATALOG_TYPE = "no catalog";
-
   public static final String NAME = "name";
   public static final String LOCATION = "location";
 
+  private static final String NO_CATALOG_TYPE = "no catalog";
   private static final Set<String> PROPERTIES_TO_REMOVE =
       ImmutableSet.of(InputFormatConfig.TABLE_SCHEMA, InputFormatConfig.PARTITION_SPEC, LOCATION, NAME,
               InputFormatConfig.CATALOG_NAME);
@@ -87,8 +97,8 @@ public final class Catalogs {
    * The table identifier ({@link Catalogs#NAME}) and the catalog name ({@link InputFormatConfig#CATALOG_NAME}),
    * or table path ({@link Catalogs#LOCATION}) should be specified by the controlling properties.
    * <p>
-   * Used by HiveIcebergSerDe and HiveIcebergStorageHandler
-   * @param conf a Hadoop
+   * Used by HiveIcebergSerDe and HiveIcebergStorageHandler.
+   * @param conf a Hadoop configuration
    * @param props the controlling properties
    * @return an Iceberg table
    */
@@ -127,26 +137,12 @@ public final class Catalogs {
    * @return the created Iceberg table
    */
   public static Table createTable(Configuration conf, Properties props) {
-    String schemaString = props.getProperty(InputFormatConfig.TABLE_SCHEMA);
-    Preconditions.checkNotNull(schemaString, "Table schema not set");
-    Schema schema = SchemaParser.fromJson(props.getProperty(InputFormatConfig.TABLE_SCHEMA));
-
-    String specString = props.getProperty(InputFormatConfig.PARTITION_SPEC);
-    PartitionSpec spec = PartitionSpec.unpartitioned();
-    if (specString != null) {
-      spec = PartitionSpecParser.fromJson(schema, specString);
-    }
-
+    Schema schema = schema(props);
+    PartitionSpec spec = spec(props, schema);
     String location = props.getProperty(LOCATION);
     String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
 
-    // Create a table property map without the controlling properties
-    Map<String, String> map = new HashMap<>(props.size());
-    for (Object key : props.keySet()) {
-      if (!PROPERTIES_TO_REMOVE.contains(key)) {
-        map.put(key.toString(), props.get(key).toString());
-      }
-    }
+    Map<String, String> map = filterIcebergTableProperties(props);
 
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
 
@@ -193,16 +189,45 @@ public final class Catalogs {
    */
   public static boolean hiveCatalog(Configuration conf, Properties props) {
     String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-    return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(getCatalogType(conf, catalogName));
+    String catalogType = getCatalogType(conf, catalogName);
+    if (catalogType != null) {
+      return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(catalogType);
+    }
+    catalogType = getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME);
+    if (catalogType != null) {
+      return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(catalogType);
+    }
+    return getCatalogProperties(conf, catalogName, catalogType).get(CatalogProperties.CATALOG_IMPL) == null;
+  }
+
+  /**
+   * Register a table with the configured catalog if it does not exist.
+   * @param conf a Hadoop conf
+   * @param props the controlling properties
+   * @param metadataLocation the location of a metadata file
+   * @return the created Iceberg table
+   */
+  public static Table registerTable(Configuration conf, Properties props, String metadataLocation) {
+    Schema schema = schema(props);
+    PartitionSpec spec = spec(props, schema);
+    Map<String, String> map = filterIcebergTableProperties(props);
+    String location = props.getProperty(LOCATION);
+    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+
+    Optional<Catalog> catalog = loadCatalog(conf, catalogName);
+    if (catalog.isPresent()) {
+      String name = props.getProperty(NAME);
+      Preconditions.checkNotNull(name, "Table identifier not set");
+      return catalog.get().registerTable(TableIdentifier.parse(name), metadataLocation);
+    }
+
+    Preconditions.checkNotNull(location, "Table location not set");
+    return new HadoopTables(conf).create(schema, spec, map, location);
   }
 
   @VisibleForTesting
   static Optional<Catalog> loadCatalog(Configuration conf, String catalogName) {
     String catalogType = getCatalogType(conf, catalogName);
-    if (catalogType == null) {
-      throw new NoSuchNamespaceException("Catalog definition for %s is not found.", catalogName);
-    }
-
     if (NO_CATALOG_TYPE.equalsIgnoreCase(catalogType)) {
       return Optional.empty();
     } else {
@@ -238,10 +263,18 @@ public final class Catalogs {
    */
   private static Map<String, String> addCatalogPropertiesIfMissing(Configuration conf, String catalogType,
                                                                    Map<String, String> catalogProperties) {
-    catalogProperties.putIfAbsent(CatalogUtil.ICEBERG_CATALOG_TYPE, catalogType);
-    if (catalogType.equalsIgnoreCase(HADOOP_CATALOG_TYPE)) {
-      catalogProperties.putIfAbsent(CatalogProperties.WAREHOUSE_LOCATION,
-              conf.get(InputFormatConfig.HADOOP_CATALOG_WAREHOUSE_LOCATION));
+    if (catalogType != null) {
+      catalogProperties.putIfAbsent(CatalogUtil.ICEBERG_CATALOG_TYPE, catalogType);
+    }
+
+    String legacyCatalogImpl = conf.get(InputFormatConfig.CATALOG_LOADER_CLASS);
+    if (legacyCatalogImpl != null) {
+      catalogProperties.putIfAbsent(CatalogProperties.CATALOG_IMPL, legacyCatalogImpl);
+    }
+
+    String legacyWarehouseLocation = conf.get(InputFormatConfig.HADOOP_CATALOG_WAREHOUSE_LOCATION);
+    if (legacyWarehouseLocation != null) {
+      catalogProperties.putIfAbsent(CatalogProperties.WAREHOUSE_LOCATION, legacyWarehouseLocation);
     }
     return catalogProperties;
   }
@@ -249,39 +282,69 @@ public final class Catalogs {
   /**
    * Return the catalog type based on the catalog name.
    * <p>
-   * If the catalog name is provided get the catalog type from 'iceberg.catalog.<code>catalogName</code>.type' config.
-   * In case the value of this property is null, return with no catalog definition (Hadoop Table)
-   * </p>
-   * <p>
-   * If catalog name is null, check the global conf for 'iceberg.mr.catalog' property. If the value of the property is:
-   * <ul>
-   *     <li>null/hive -> Hive Catalog</li>
-   *     <li>location -> Hadoop Table</li>
-   *     <li>hadoop -> Hadoop Catalog</li>
-   *     <li>any other value -> Custom Catalog</li>
-   * </ul>
-   * </p>
+   * See {@link Catalogs} documentation for catalog type resolution strategy.
+   *
    * @param conf global hive configuration
    * @param catalogName name of the catalog
    * @return type of the catalog, can be null
    */
   private static String getCatalogType(Configuration conf, String catalogName) {
     if (catalogName != null) {
-      String catalogType = conf.get(String.format(InputFormatConfig.CATALOG_TYPE_TEMPLATE, catalogName));
-      if (catalogName.equals(ICEBERG_HADOOP_TABLE_NAME) || catalogType == null) {
+      String catalogType = conf.get(InputFormatConfig.catalogPropertyConfigKey(
+          catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE));
+      if (catalogName.equals(ICEBERG_HADOOP_TABLE_NAME)) {
         return NO_CATALOG_TYPE;
       } else {
         return catalogType;
       }
     } else {
       String catalogType = conf.get(InputFormatConfig.CATALOG);
-      if (catalogType == null) {
-        return HIVE_CATALOG_TYPE;
-      } else if (catalogType.equals(LOCATION)) {
+      if (catalogType != null && catalogType.equals(LOCATION)) {
         return NO_CATALOG_TYPE;
       } else {
         return catalogType;
       }
     }
+  }
+
+  /**
+   * Parse the table schema from the properties
+   * @param props the controlling properties
+   * @return schema instance
+   */
+  private static Schema schema(Properties props) {
+    String schemaString = props.getProperty(InputFormatConfig.TABLE_SCHEMA);
+    Preconditions.checkNotNull(schemaString, "Table schema not set");
+    return SchemaParser.fromJson(props.getProperty(InputFormatConfig.TABLE_SCHEMA));
+  }
+
+  /**
+   * Get the partition spec from the properties
+   * @param props the controlling properties
+   * @param schema instance of the iceberg schema
+   * @return  instance of the partition spec
+   */
+  private static PartitionSpec spec(Properties props, Schema schema) {
+    String specString = props.getProperty(InputFormatConfig.PARTITION_SPEC);
+    PartitionSpec spec = PartitionSpec.unpartitioned();
+    if (specString != null) {
+      spec = PartitionSpecParser.fromJson(schema, specString);
+    }
+    return spec;
+  }
+
+  /**
+   * Create the iceberg table properties without the {@link Catalogs#PROPERTIES_TO_REMOVE}
+   * @param props the controlling properties
+   * @return map of iceberg table properties
+   */
+  private static Map<String, String> filterIcebergTableProperties(Properties props) {
+    Map<String, String> map = Maps.newHashMapWithExpectedSize(props.size());
+    for (Object key : props.keySet()) {
+      if (!PROPERTIES_TO_REMOVE.contains(key)) {
+        map.put(key.toString(), props.get(key).toString());
+      }
+    }
+    return map;
   }
 }

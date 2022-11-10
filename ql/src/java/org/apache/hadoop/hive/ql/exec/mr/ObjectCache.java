@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.mr;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -26,40 +28,45 @@ import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * ObjectCache. No-op implementation on MR we don't have a means to reuse
- * Objects between runs of the same task.
+ * ObjectCache. Simple implementation on MR we don't have a means to reuse
+ * Objects between runs of the same task, this acts as a local cache.
  *
  */
 public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
 
   private static final Logger LOG = LoggerFactory.getLogger(ObjectCache.class.getName());
 
+  private final Map<String, Object> cache = new ConcurrentHashMap<>();
+
   @Override
   public void release(String key) {
-    // nothing to do
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(key + " no longer needed");
-    }
+    LOG.debug("{} no longer needed", key);
+    cache.remove(key);
   }
 
   @Override
   public <T> T retrieve(String key) throws HiveException {
-    return retrieve(key, null);
+    return (T) cache.get(key);
   }
 
   @Override
   public <T> T retrieve(String key, Callable<T> fn) throws HiveException {
+    T value = (T) cache.get(key);
+    if (value != null || fn == null) {
+      return value;
+    }
     try {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Creating " + key);
-      }
-      return fn.call();
+      LOG.debug("Creating {}", key);
+      value = fn.call();
     } catch (Exception e) {
       throw new HiveException(e);
     }
+    T previous = (T) cache.putIfAbsent(key, value);
+    return previous != null ? previous : value;
   }
 
   @Override
@@ -98,6 +105,6 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
 
   @Override
   public void remove(String key) {
-    // nothing to do
+    cache.remove(key);
   }
 }

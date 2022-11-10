@@ -107,11 +107,12 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
    */
   public enum HivePrivilegeObjectType {
     GLOBAL, DATABASE, TABLE_OR_VIEW, PARTITION, COLUMN, LOCAL_URI, DFS_URI, COMMAND_PARAMS, FUNCTION,
+    DATACONNECTOR,
     // HIVE_SERVICE refers to a logical service name. For now hiveserver2 hostname will be
     // used to give service actions a name. This is used by kill query command so it can
     // be authorized specifically to a service if necessary.
     SERVICE_NAME,
-    SCHEDULED_QUERY,
+    SCHEDULED_QUERY, STORAGEHANDLER_URI
   }
 
   /**
@@ -279,6 +280,7 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
     case COLUMN:
     case LOCAL_URI:
     case DFS_URI:
+    case STORAGEHANDLER_URI:
       name = objectName;
       break;
     case COMMAND_PARAMS:
@@ -286,6 +288,10 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
       break;
     case SERVICE_NAME:
       name = objectName;
+      break;
+    case DATACONNECTOR:
+      name = objectName;
+      break;
     }
 
     // get the string representing action type if its non default action type

@@ -21,6 +21,42 @@ Example:
   'facebook'
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTrim
 Function type:BUILTIN
+PREHOOK: query: SELECT trim(null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT trim(null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT '"' || trim(null, null) || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || trim(null, null) || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT trim(null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT trim(null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT '"' || trim(null, null) || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || trim(null, null) || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
 PREHOOK: query: SELECT '"' || trim('   tech   ') || '"'
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

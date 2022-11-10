@@ -50,7 +50,7 @@ public class DropViewAnalyzer extends BaseSemanticAnalyzer {
     Table view = getTable(viewName, throwException);
     if (view != null) {
       inputs.add(new ReadEntity(view));
-      outputs.add(new WriteEntity(view, WriteEntity.WriteType.DDL_EXCLUSIVE));
+      outputs.add(new WriteEntity(view, WriteEntity.WriteType.DDL_NO_LOCK)); // see AcidUtils.needsLock(output)
     }
 
     DropViewDesc desc = new DropViewDesc(viewName, ifExists);

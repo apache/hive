@@ -126,18 +126,20 @@ public class PrivilegeSynchronizer implements Runnable {
       }
     }
   }
-
-  private HiveObjectRef getObjToRefresh(HiveObjectType type, String dbName, String tblName) throws Exception {
+  private HiveObjectRef getObjToRefresh(HiveObjectType type, String dbName, String objectName) throws Exception {
     HiveObjectRef objToRefresh = null;
     switch (type) {
+    case DATACONNECTOR:
+      objToRefresh = new HiveObjectRef(HiveObjectType.DATACONNECTOR, null, objectName, null, null);
+      break;
     case DATABASE:
       objToRefresh = new HiveObjectRef(HiveObjectType.DATABASE, dbName, null, null, null);
       break;
     case TABLE:
-      objToRefresh = new HiveObjectRef(HiveObjectType.TABLE, dbName, tblName, null, null);
+      objToRefresh = new HiveObjectRef(HiveObjectType.TABLE, dbName, objectName, null, null);
       break;
     case COLUMN:
-      objToRefresh = new HiveObjectRef(HiveObjectType.COLUMN, dbName, tblName, null, null);
+      objToRefresh = new HiveObjectRef(HiveObjectType.COLUMN, dbName, objectName, null, null);
       break;
     default:
       throw new RuntimeException("Get unknown object type " + type);
@@ -146,11 +148,16 @@ public class PrivilegeSynchronizer implements Runnable {
   }
 
   private void addGrantPrivilegesToBag(HivePolicyProvider policyProvider, PrivilegeBag privBag, HiveObjectType type,
-      String dbName, String tblName, String columnName, String authorizer) throws Exception {
+      String dbName, String objName, String columnName, String authorizer) throws Exception {
 
     HiveResourceACLs objectAcls = null;
 
     switch (type) {
+    case DATACONNECTOR:
+      objectAcls = policyProvider
+              .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.DATACONNECTOR, null, objName));
+      break;
+
     case DATABASE:
       objectAcls = policyProvider
           .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, dbName, null));
@@ -158,12 +165,12 @@ public class PrivilegeSynchronizer implements Runnable {
 
     case TABLE:
       objectAcls = policyProvider
-          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, dbName, tblName));
+          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, dbName, objName));
       break;
 
     case COLUMN:
       objectAcls = policyProvider
-          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.COLUMN, dbName, tblName, null, columnName));
+          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.COLUMN, dbName, objName, null, columnName));
       break;
 
     default:
@@ -174,9 +181,9 @@ public class PrivilegeSynchronizer implements Runnable {
       return;
     }
 
-    addACLsToBag(objectAcls.getUserPermissions(), privBag, type, dbName, tblName, columnName,
+    addACLsToBag(objectAcls.getUserPermissions(), privBag, type, dbName, objName, columnName,
         PrincipalType.USER, authorizer);
-    addACLsToBag(objectAcls.getGroupPermissions(), privBag, type, dbName, tblName, columnName,
+    addACLsToBag(objectAcls.getGroupPermissions(), privBag, type, dbName, objName, columnName,
         PrincipalType.GROUP, authorizer);
   }
 
@@ -192,7 +199,18 @@ public class PrivilegeSynchronizer implements Runnable {
             LOG.info("Not selected as leader, skip");
             continue;
           }
-          int numDb = 0, numTbl = 0;
+          int numDc = 0, numDb = 0, numTbl = 0;
+          for (String dcName : hiveClient.getAllDataConnectorNames()) {
+            numDc++;
+            HiveObjectRef dcToRefresh = getObjToRefresh(HiveObjectType.DATACONNECTOR, null, dcName);
+            PrivilegeBag grantDataConnectorBag = new PrivilegeBag();
+            addGrantPrivilegesToBag(policyProvider, grantDataConnectorBag, HiveObjectType.DATACONNECTOR,
+                    null, dcName, null, authorizer);
+            hiveClient.refresh_privileges(dcToRefresh, authorizer, grantDataConnectorBag);
+            LOG.debug("processing data connector: " + dcName);
+          }
+          LOG.info("Success synchronize privilege " + policyProvider.getClass().getName() + ":" + numDc + " dataconnectors");
+
           for (String dbName : hiveClient.getAllDatabases()) {
             numDb++;
             HiveObjectRef dbToRefresh = getObjToRefresh(HiveObjectType.DATABASE, dbName, null);

@@ -19,20 +19,27 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.Package;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 
 import java.nio.ByteBuffer;
@@ -499,6 +506,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partVals)
+      throws MetaException, NoSuchObjectException {
+    return -1;
+  }
+
+  @Override
   public Table markPartitionForEvent(String catName, String dbName, String tblName, Map<String, String> partVals,
       PartitionEventType evtType) throws MetaException, UnknownTableException,
       InvalidPartitionException, UnknownPartitionException {
@@ -557,6 +570,13 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public PrincipalPrivilegeSet getConnectorPrivilegeSet(String catName, String connectorName, String userName,
+      List<String> groupNames) throws InvalidObjectException, MetaException {
+
+    return null;
+  }
+
+  @Override
   public PrincipalPrivilegeSet getTablePrivilegeSet(String catName, String dbName, String tableName,
       String userName, List<String> groupNames) throws InvalidObjectException, MetaException {
 
@@ -589,6 +609,13 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName,
       PrincipalType principalType, String catName, String dbName) {
+
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listPrincipalDCGrants(String principalName,
+      PrincipalType principalType, String dcName) {
 
     return Collections.emptyList();
   }
@@ -755,6 +782,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public List<HiveObjectPrivilege> listPrincipalDCGrantsAll(
+          String principalName, PrincipalType principalType) {
+    return Collections.emptyList();
+  }
+
+  @Override
   public List<HiveObjectPrivilege> listPrincipalTableGrantsAll(
       String principalName, PrincipalType principalType) {
     return Collections.emptyList();
@@ -785,6 +818,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> listDCGrantsAll(String dcName) {
     return Collections.emptyList();
   }
 
@@ -1044,10 +1082,20 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request) throws MetaException {
+    return null;
+  }
+
+  @Override
   public List<SQLForeignKey> getForeignKeys(String catName, String parent_db_name,
     String parent_tbl_name, String foreign_db_name, String foreign_tbl_name)
     throws MetaException {
     // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request) throws MetaException {
     return null;
   }
 
@@ -1059,9 +1107,19 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException {
+    return null;
+  }
+
+  @Override
   public List<SQLNotNullConstraint> getNotNullConstraints(String catName, String db_name, String tbl_name)
     throws MetaException {
     // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException {
     return null;
   }
 
@@ -1073,6 +1131,11 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException {
+    return null;
+  }
+
+  @Override
   public List<SQLCheckConstraint> getCheckConstraints(String catName, String db_name, String tbl_name)
       throws MetaException {
     // TODO Auto-generated method stub
@@ -1080,7 +1143,18 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException {
+    return null;
+  }
+
+  @Override
   public SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
+      throws MetaException, NoSuchObjectException {
+    return null;
+  }
+
+  @Override
+  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
       throws MetaException, NoSuchObjectException {
     return null;
   }
@@ -1449,5 +1523,14 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public void dropPackage(DropPackageRequest request) {
+  }
+
+  @Override
+  public Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+          Map<String, ColumnStatistics> partColStatsMap,
+          Table tbl, List<TransactionalMetaStoreEventListener> listeners,
+          String validWriteIds, long writeId)
+          throws MetaException, InvalidObjectException {
+    return null;
   }
 }

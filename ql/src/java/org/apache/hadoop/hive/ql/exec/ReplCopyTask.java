@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
@@ -64,6 +64,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     Path toPath = null;
 
     try {
+      initializeFromDeferredContext();
+
       // Note: CopyWork supports copying multiple files, but ReplCopyWork doesn't.
       //       Not clear of ReplCopyWork should inherit from CopyWork.
       if (work.getFromPaths().length > 1 || work.getToPaths().length > 1) {
@@ -166,6 +168,12 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     }
   }
 
+  private void initializeFromDeferredContext() throws HiveException {
+    if (null != getDeferredWorkContext()) {
+      work.initializeFromDeferredContext(getDeferredWorkContext());
+    }
+  }
+
   private List<ReplChangeManager.FileInfo> filesInFileListing(FileSystem fs, Path dataPath)
       throws IOException {
     Path fileListing = new Path(dataPath, EximUtil.FILES_NAME);
@@ -189,10 +197,10 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           ReplChangeManager.FileInfo f = ReplChangeManager
               .getFileInfo(new Path(fragments[0]), fragments[1], fragments[2], fragments[3], conf);
           filePaths.add(f);
-        } catch (MetaException e) {
+        } catch (IOException ioe) {
           // issue warning for missing file and throw exception
           LOG.warn("Cannot find {} in source repo or cmroot", fragments[0]);
-          throw new IOException(e.getMessage());
+          throw ioe;
         }
         // Note - we need srcFs rather than fs, because it is possible that the _files lists files
         // which are from a different filesystem than the fs where the _files file itself was loaded

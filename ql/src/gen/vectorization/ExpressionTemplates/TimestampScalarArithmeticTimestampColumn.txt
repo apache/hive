@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.ql.util.DateTimeMath;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
- * Generated from template TimestampScalarArithmeticTimestampColumnBase.txt.
+ * Generated from template TimestampScalarArithmeticTimestampColumn.txt.
  * Implements a vectorized arithmetic operator with a scalar on the left and a
  * column vector on the right. The result is output to an output column vector.
  */
@@ -47,14 +47,12 @@ public class <ClassName> extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private final <HiveOperandType1> value;
-  private final int colNum;
 
   private transient final DateTimeMath dtm = new DateTimeMath();
 
   public <ClassName>(<HiveOperandType1> value, int colNum, int outputColumnNum) {
-    super(outputColumnNum);
+    super(colNum, outputColumnNum);
     this.value = value;
-    this.colNum = colNum;
   }
 
   public <ClassName>() {
@@ -62,7 +60,6 @@ public class <ClassName> extends VectorExpression {
 
     // Dummy final assignments.
     value = null;
-    colNum = -1;
   }
 
   @Override
@@ -84,7 +81,7 @@ public class <ClassName> extends VectorExpression {
     }
 
     // Input #2 is type <OperandType2>.
-    <InputColumnVectorType2> inputColVector2 = (<InputColumnVectorType2>) batch.cols[colNum];
+    <InputColumnVectorType2> inputColVector2 = (<InputColumnVectorType2>) batch.cols[inputColumnNum[0]];
 
     // Output is type <ReturnType>.
     <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
@@ -185,7 +182,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + TimestampUtils.timestampScalarTypeToString(value) + ", " + getColumnParamString(1, colNum);
+    return "val " + TimestampUtils.timestampScalarTypeToString(value) + ", " + getColumnParamString(1, inputColumnNum[0]);
   }
 
   @Override

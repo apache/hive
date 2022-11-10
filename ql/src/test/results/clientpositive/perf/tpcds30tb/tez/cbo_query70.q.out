@@ -1,7 +1,7 @@
 CBO PLAN:
 HiveProject(total_sum=[$0], s_state=[$1], s_county=[$2], lochierarchy=[$3], rank_within_parent=[$4])
   HiveSortLimit(sort0=[$3], sort1=[$5], sort2=[$4], dir0=[DESC], dir1=[ASC], dir2=[ASC], fetch=[100])
-    HiveProject(total_sum=[$2], s_state=[$0], s_county=[$1], lochierarchy=[+(grouping($3, 1:BIGINT), grouping($3, 0:BIGINT))], rank_within_parent=[rank() OVER (PARTITION BY +(grouping($3, 1:BIGINT), grouping($3, 0:BIGINT)), CASE(=(grouping($3, 0:BIGINT), CAST(0):BIGINT), $0, null:CHAR(2) CHARACTER SET "UTF-16LE") ORDER BY $2 DESC NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col s_state))=[CASE(=(+(grouping($3, 1:BIGINT), grouping($3, 0:BIGINT)), 0), $0, null:CHAR(2) CHARACTER SET "UTF-16LE")])
+    HiveProject(total_sum=[$2], s_state=[$0], s_county=[$1], lochierarchy=[+(grouping($3, 1:BIGINT), grouping($3, 0:BIGINT))], rank_within_parent=[rank() OVER (PARTITION BY +(grouping($3, 1:BIGINT), grouping($3, 0:BIGINT)), CASE(=(grouping($3, 0:BIGINT), CAST(0):BIGINT), $0, null:CHAR(2) CHARACTER SET "UTF-16LE") ORDER BY $2 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col s_state))=[CASE(=(+(grouping($3, 1:BIGINT), grouping($3, 0:BIGINT)), 0), $0, null:CHAR(2) CHARACTER SET "UTF-16LE")])
       HiveProject($f0=[$0], $f1=[$1], $f2=[$2], GROUPING__ID=[$3])
         HiveAggregate(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], GROUPING__ID=[GROUPING__ID()])
           HiveProject($f0=[$7], $f1=[$6], $f2=[$1])
@@ -19,7 +19,7 @@ HiveProject(total_sum=[$0], s_state=[$1], s_county=[$2], lochierarchy=[$3], rank
                     HiveTableScan(table=[[default, store]], table:alias=[store])
               HiveProject(s_state=[$0])
                 HiveFilter(condition=[<=($1, 5)])
-                  HiveProject((tok_table_or_col s_state)=[$0], rank_window_0=[rank() OVER (PARTITION BY $0 ORDER BY $1 DESC NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
+                  HiveProject((tok_table_or_col s_state)=[$0], rank_window_0=[rank() OVER (PARTITION BY $0 ORDER BY $1 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
                     HiveProject(s_state=[$0], $f1=[$1])
                       HiveAggregate(group=[{5}], agg#0=[sum($1)])
                         HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])

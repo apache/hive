@@ -43,7 +43,7 @@ public class Decimal64ColumnInList extends LongColumnInList {
     final int scale = decimalTypeInfo.scale();
     HiveDecimalWritable writable = new HiveDecimalWritable();
     StringBuilder sb = new StringBuilder();
-    sb.append(getColumnParamString(0, colNum));
+    sb.append(getColumnParamString(0, inputColumnNum[0]));
     sb.append(", values [");
     for (long value : inListValues) {
       writable.deserialize64(value, scale);
@@ -61,5 +61,10 @@ public class Decimal64ColumnInList extends LongColumnInList {
 
     // return null since this will be handled as a special case in VectorizationContext
     return null;
+  }
+
+  @Override
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return false;
   }
 }

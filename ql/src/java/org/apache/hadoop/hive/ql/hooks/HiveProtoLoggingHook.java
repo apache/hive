@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import static org.apache.hadoop.hive.ql.hooks.Entity.Type.PARTITION;
+import static org.apache.hadoop.hive.ql.hooks.Entity.Type.TABLE;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERDATABASE;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERDATABASE_OWNER;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERPARTITION_BUCKETNUM;
@@ -170,7 +172,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
   }
 
   public enum ExecutionMode {
-    MR, TEZ, LLAP, SPARK, NONE
+    MR, TEZ, LLAP, NONE
   }
 
   static class EventLogger {
@@ -313,9 +315,10 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       for (int retryCount = 0; retryCount <= MAX_RETRIES; ++retryCount) {
         try {
           if (eventPerFile) {
-            if (!maybeRolloverWriterForDay()) {
-              writer = logger.getWriter(logFileName + "_" + ++logFileCount);
+            if (writer != null) {
+              IOUtils.closeQuietly(writer);
             }
+            writer = logger.getWriter(logFileName + "_" + ++logFileCount);
             LOG.debug("Event per file enabled. New proto event file: {}", writer.getPath());
             writer.writeProto(event);
             IOUtils.closeQuietly(writer);
@@ -333,7 +336,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
           if (retryCount < MAX_RETRIES) {
             LOG.warn("Error writing proto message for query {}, eventType: {}, retryCount: {}," +
                 " error: {} ", event.getHiveQueryId(), event.getEventType(), retryCount,
-                e.getMessage());
+                e.getMessage(), e);
             LOG.trace("Exception", e);
           } else {
             LOG.error("Error writing proto message for query {}, eventType: {}: ",
@@ -477,7 +480,6 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
         return conf.get(MRJobConfig.QUEUE_NAME);
       case TEZ:
         return conf.get(TezConfiguration.TEZ_QUEUE_NAME);
-      case SPARK:
       case NONE:
       default:
         return null;
@@ -487,7 +489,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     private List<String> getTablesFromEntitySet(Set<? extends Entity> entities) {
       List<String> tableNames = new ArrayList<>();
       for (Entity entity : entities) {
-        if (entity.getType() == Entity.Type.TABLE) {
+        if (entity.getType() == TABLE || entity.getType() == PARTITION) {
           tableNames.add(entity.getTable().getDbName() + "." + entity.getTable().getTableName());
         }
       }
@@ -506,8 +508,6 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
         return ExecutionMode.TEZ;
       } else if (mrTasks.size() > 0) {
         return ExecutionMode.MR;
-      } else if (Utilities.getSparkTasks(plan.getRootTasks()).size() > 0) {
-        return ExecutionMode.SPARK;
       } else {
         return ExecutionMode.NONE;
       }

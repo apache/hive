@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -240,21 +241,13 @@ public class HiveSessionImpl implements HiveSession {
    * @throws HiveSQLException
    */
   private void setSessionHive() throws HiveSQLException {
-    Hive newSessionHive;
     try {
-      newSessionHive = Hive.get(getHiveConf());
-
-      // HMS connections from sessionHive shouldn't be closed by any query execution thread when it
-      // recreates the Hive object. It is allowed to be closed only when session is closed/released.
-      newSessionHive.setAllowClose(false);
+      sessionHive = sessionState.getHiveDb();
     } catch (HiveException e) {
-      throw new HiveSQLException("Failed to get metastore connection", e);
+      String msg = "Failed to create Hive Object: " + e;
+      LOG.error(msg, e);
+      throw new HiveSQLException(msg, e);
     }
-
-    // The previous sessionHive object might still be referred by any async query execution thread.
-    // So, it shouldn't be closed here explicitly. Anyways, Hive object will auto-close HMS connection
-    // when it is garbage collected. So, it is safe to just overwrite sessionHive here.
-    sessionHive = newSessionHive;
   }
 
   private void processGlobalInitFile() {
@@ -408,18 +401,10 @@ public class HiveSessionImpl implements HiveSession {
     // set the thread name with the logging prefix.
     sessionState.updateThreadName();
 
-    // If the thread local Hive is different from sessionHive, it means, the previous query execution in
-    // master thread has re-created Hive object due to changes in MS related configurations in sessionConf.
-    // So, it is necessary to reset sessionHive object based on new sessionConf. Here, we cannot,
-    // directly set sessionHive with thread local Hive because if the previous command was REPL LOAD, then
-    // the config changes lives only within command execution not in session level.
-    // So, the safer option is to invoke Hive.get() which decides if to reuse Thread local Hive or re-create it.
-    if (Hive.getThreadLocal() != sessionHive) {
-      try {
-        setSessionHive();
-      } catch (HiveSQLException e) {
-        throw new RuntimeException(e);
-      }
+    try {
+      setSessionHive();
+    } catch (HiveSQLException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -1072,4 +1057,49 @@ public class HiveSessionImpl implements HiveSession {
       "TRANSLATION", "TRIM", "TRUE", "UNION", "UNIQUE", "UNKNOWN", "UPDATE", "UPPER", "USAGE",
       "USER", "USING", "VALUE", "VALUES", "VARCHAR", "VARYING", "VIEW", "WHEN", "WHENEVER",
       "WHERE", "WITH", "WORK", "WRITE", "YEAR", "ZONE")));
+
+  @Override
+  public OperationHandle uploadData(
+      ByteBuffer values, String tableName, String path) throws HiveSQLException {
+    acquire(true, true);
+
+    OperationManager operationManager = getOperationManager();
+    Operation operation = operationManager.newUploadDataOperation(
+        getSession(), values, tableName, path);
+    OperationHandle opHandle = operation.getHandle();
+    try {
+      operation.run();
+      opHandleSet.add(opHandle);
+      return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle);
+      throw e;
+    } finally {
+      release(true, true);
+    }
+  }
+
+  @Override
+  public OperationHandle downloadData(
+      String tableName,
+      String query,
+      String format,
+      Map<String, String> options) throws HiveSQLException {
+    acquire(true, true);
+
+    OperationManager operationManager = getOperationManager();
+    Operation operation = operationManager.newDownloadDataOperation(
+        getSession(), tableName, query, format, options);
+    OperationHandle opHandle = operation.getHandle();
+    try {
+      operation.run();
+      opHandleSet.add(opHandle);
+      return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle);
+      throw e;
+    } finally {
+      release(true, true);
+    }
+  }
 }

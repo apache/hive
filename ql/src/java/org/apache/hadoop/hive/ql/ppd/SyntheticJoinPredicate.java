@@ -78,9 +78,6 @@ public class SyntheticJoinPredicate extends Transform {
     if (queryEngine.equals("tez")
         && pctx.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING)) {
       enabled = true;
-    } else if ((queryEngine.equals("spark")
-        && pctx.getConf().isSparkDPPAny())) {
-      enabled = true;
     }
 
     if (!enabled) {
@@ -264,9 +261,7 @@ public class SyntheticJoinPredicate extends Transform {
               ExprNodeGenericFuncDesc.newInstance(FunctionRegistry.getFunctionInfo(getFuncText(funcDesc.getFuncText(), srcPos)).getGenericUDF(), funcArgs);
 
             // TODO : deduplicate the code below.
-            if (LOG.isDebugEnabled()) {
-              LOG.debug(" Non-Equi Join Predicate " + funcExpr);
-            }
+            LOG.debug(" Non-Equi Join Predicate {}", funcExpr);
 
             List<ExprNodeDesc> andArgs = new ArrayList<>();
             if (syntheticExpr != null) {

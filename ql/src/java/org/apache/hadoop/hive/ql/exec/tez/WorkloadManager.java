@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -81,9 +85,6 @@ import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.Ref;
 import org.apache.tez.dag.api.TezConfiguration;
-import org.codehaus.jackson.annotate.JsonAutoDetect;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -262,9 +263,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     updateResourcePlanAsync(plan).get(); // Wait for the initial resource plan to be applied.
 
     objectMapper = new ObjectMapper();
-    objectMapper.configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
+    objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     // serialize json based on field annotations only
-    objectMapper.setVisibilityChecker(objectMapper.getSerializationConfig().getDefaultVisibilityChecker()
+    objectMapper.setVisibility(objectMapper.getSerializationConfig().getDefaultVisibilityChecker()
       .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
       .withSetterVisibility(JsonAutoDetect.Visibility.NONE));
   }
@@ -2200,9 +2201,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         }
       }
       if (!wasCanceled) {
-        if (LOG.isDebugEnabled()) {
-          LOG.info("Queueing the initialization failure with " + session);
-        }
+        LOG.debug("Queueing the initialization failure with {}", session);
         notifyInitializationCompleted(this); // Report failure to the main thread.
       }
       future.setException(t);

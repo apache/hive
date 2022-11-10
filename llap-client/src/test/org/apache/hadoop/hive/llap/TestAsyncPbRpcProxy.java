@@ -61,6 +61,7 @@ public class TestAsyncPbRpcProxy {
     assertEquals(0, requestManager.currentLoopDisabledNodes.size());
   }
 
+  @org.junit.Ignore("HIVE-26089")
   @Test(timeout = 5000)
   public void testSingleInvocationPerNode() throws Exception {
     RequestManagerForTest requestManager = new RequestManagerForTest(1);

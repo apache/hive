@@ -103,7 +103,7 @@ POSTHOOK: Input: default@my_table_0003
 OPTIMIZED SQL: SELECT `t0`.`col_7`, `t0`.`CAST` AS `col_3`, `t0`.`col_20`, `t2`.`col_21` AS `col_21_1232`, `t0`.`col_1`, `t4`.`col_22`, `t6`.`col_21` AS `col_21_879`, `t4`.`col_23`
 FROM (SELECT `col_1`, `col_7`, `col_20`, CAST(`col_3` AS DATE) AS `CAST`
 FROM `default`.`my_table_0001`
-WHERE (CAST(`col_7` AS DOUBLE) IS NOT NULL OR `col_7` IS NULL) AND `col_20` IN ('part1', 'part2', 'part3') AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23') AS `t0`
+WHERE (CAST(`col_7` AS DOUBLE) IS NOT NULL OR `col_7` IS NULL) AND (`col_20` IN ('part1', 'part2', 'part3') AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23')) AS `t0`
 LEFT JOIN (SELECT `col_24`, `col_21`
 FROM `default`.`my_table_0003`
 WHERE `col_24` IN ('part1', 'part2', 'part3')) AS `t2` ON `t0`.`col_20` = `t2`.`col_24`
@@ -588,27 +588,26 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `p_name`
-FROM (SELECT `t`.`p_name`, `t`.`p_type`, `t`.`size`, `t5`.`$f0` AS `size0`, `t2`.`$f1` AS `c`, `t2`.`$f2` AS `ck`, `t12`.`p_type` AS `p_type0`, `t12`.`size` AS `size1`, `t12`.`$f2`
+FROM (SELECT `t`.`p_name`, `t`.`p_type`, `t`.`size`, `t7`.`$f0` AS `size0`, `t3`.`$f1` AS `c`, `t3`.`$f2` AS `ck`, `t16`.`p_type` AS `p_type0`, `t16`.`size` AS `size1`, `t16`.`$f2`
 FROM (SELECT `p_name`, `p_type`, `p_size` + 1 AS `size`
 FROM `default`.`part`) AS `t`
 LEFT JOIN ((SELECT `p_size` + 1 AS `$f0`, COUNT(*) AS `$f1`, COUNT(`p_type`) AS `$f2`
 FROM `default`.`part`
 WHERE `p_size` IS NOT NULL
-GROUP BY `p_size` + 1) AS `t2`
-INNER JOIN (SELECT `p_size` + 1 AS `$f0`
+GROUP BY `p_size` + 1) AS `t3` INNER JOIN (SELECT `p_size` + 1 AS `$f0`
 FROM `default`.`part`
 WHERE `p_size` IS NOT NULL
-GROUP BY `p_size` + 1) AS `t5` ON `t2`.`$f0` = `t5`.`$f0`) ON `t`.`size` = `t5`.`$f0`
-LEFT JOIN (SELECT `t8`.`$f0` AS `p_type`, `t11`.`$f0` AS `size`, TRUE AS `$f2`
+GROUP BY `p_size` + 1) AS `t7` ON `t3`.`$f0` = `t7`.`$f0`) ON `t`.`size` = `t7`.`$f0`
+LEFT JOIN (SELECT `t11`.`$f0` AS `p_type`, `t15`.`$f0` AS `size`, TRUE AS `$f2`
 FROM (SELECT `p_type` AS `$f0`, `p_size` + 1 AS `$f1`
 FROM `default`.`part`
 WHERE `p_size` IS NOT NULL AND `p_type` IS NOT NULL
-GROUP BY `p_type`, `p_size` + 1) AS `t8`
+GROUP BY `p_type`, `p_size` + 1) AS `t11`
 INNER JOIN (SELECT `p_size` + 1 AS `$f0`
 FROM `default`.`part`
 WHERE `p_size` IS NOT NULL
-GROUP BY `p_size` + 1) AS `t11` ON `t8`.`$f1` = `t11`.`$f0`) AS `t12` ON `t`.`p_type` = `t12`.`p_type` AND `t`.`size` = `t12`.`size`) AS `t13`
-WHERE (`t13`.`$f2` IS NULL OR `t13`.`c` = 0 OR `t13`.`c` IS NULL) AND (`t13`.`ck` < `t13`.`c` IS NOT TRUE OR `t13`.`c` = 0 OR `t13`.`c` IS NULL OR `t13`.`$f2` IS NOT NULL OR `t13`.`p_type` IS NULL) AND (`t13`.`p_type` IS NOT NULL OR `t13`.`c` = 0 OR `t13`.`c` IS NULL OR `t13`.`$f2` IS NOT NULL)
+GROUP BY `p_size` + 1) AS `t15` ON `t11`.`$f1` = `t15`.`$f0`) AS `t16` ON `t`.`p_type` = `t16`.`p_type` AND `t`.`size` = `t16`.`size`) AS `t17`
+WHERE (`t17`.`$f2` IS NULL OR (`t17`.`c` = 0 OR `t17`.`c` IS NULL)) AND ((`t17`.`ck` < `t17`.`c` IS NOT TRUE OR `t17`.`c` = 0 OR (`t17`.`c` IS NULL OR (`t17`.`$f2` IS NOT NULL OR `t17`.`p_type` IS NULL))) AND (`t17`.`p_type` IS NOT NULL OR `t17`.`c` = 0 OR (`t17`.`c` IS NULL OR `t17`.`$f2` IS NOT NULL)))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

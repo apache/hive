@@ -100,9 +100,7 @@ public class PartitionColumnsSeparator extends Transform {
       ExprNodeDesc newPredicate = generateInClauses(predicate);
       if (newPredicate != null) {
         // Replace filter in current FIL with new FIL
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Generated new predicate with IN clause: " + newPredicate);
-        }
+        LOG.debug("Generated new predicate with IN clause: {}", newPredicate);
         final List<ExprNodeDesc> subExpr =
                 new ArrayList<ExprNodeDesc>(2);
         subExpr.add(predicate);
@@ -348,9 +346,7 @@ public class PartitionColumnsSeparator extends Transform {
       /***************************************************************************************/
       // 1. If the input node is not an IN operator, we bail out.
       if (fd == null) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Partition columns not separated for " + fd + ", is not IN operator : ");
-        }
+        LOG.debug("Partition columns not separated for {}, is not IN operator : ", fd);
         return null;
       }
 
@@ -372,10 +368,9 @@ public class PartitionColumnsSeparator extends Transform {
       // where T1.A and T2.B are both partitioning columns.
       // However, these expressions should not be considered as valid expressions for separation.
       if (!hasAtleastOneSubExprWithPartColOrVirtualColWithOneTableAlias(children.get(0))) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Partition columns not separated for " + fd +
-            ", there are no expression containing partition columns in struct fields");
-        }
+        LOG.debug(
+            "Partition columns not separated for {}, there are no expression containing partition columns in struct fields",
+            fd);
         return null;
       }
 
@@ -383,11 +378,9 @@ public class PartitionColumnsSeparator extends Transform {
       // containing constants or only partition columns coming from same table.
       // If so, we need not perform this optimization and we should bail out.
       if (hasAllSubExprWithConstOrPartColOrVirtualColWithOneTableAlias(children.get(0))) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Partition columns not separated for " + fd +
+          LOG.debug("Partition columns not separated for {}" +
           ", all fields are expressions containing constants or only partition columns"
-          + "coming from same table");
-        }
+          + "coming from same table", fd);
         return null;
       }
 

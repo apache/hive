@@ -165,10 +165,10 @@ public class ImportTableDesc {
   }
 
   public Task<?> getCreateTableTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs, HiveConf conf,
-                                    boolean isReplication,
-                                    String dumpRoot, ReplicationMetricCollector metricCollector) {
+                                    boolean isReplication, String dumpRoot,
+                                    ReplicationMetricCollector metricCollector, boolean executeInParallel) {
     return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc, isReplication,
-            dumpRoot, metricCollector), conf);
+            dumpRoot, metricCollector, executeInParallel), conf);
   }
 
   public TableType tableType() {
@@ -189,5 +189,9 @@ public class ImportTableDesc {
 
   public Long getReplWriteId() {
     return this.createTblDesc.getReplWriteId();
+  }
+
+  public void setForceOverwriteTable(){
+    this.createTblDesc.getReplicationSpec().setForceOverwrite(true);
   }
 }

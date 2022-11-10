@@ -167,6 +167,15 @@ public class TableDesc implements Serializable, Cloneable {
     return properties.getProperty(hive_metastoreConstants.META_TABLE_NAME);
   }
 
+  public String getFullTableName() {
+    String tableName = getTableName();
+    String metaTable = properties.getProperty("metaTable");
+    if (metaTable != null && tableName != null) {
+      return tableName + "." + metaTable;
+    }
+    return tableName;
+  }
+
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDbName() {
     return properties.getProperty(hive_metastoreConstants.META_TABLE_DB);

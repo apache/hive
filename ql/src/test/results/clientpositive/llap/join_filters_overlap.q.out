@@ -21,10 +21,10 @@ POSTHOOK: Input: default@a_n4
 OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
 FROM (SELECT `key`, `value`, `value` = 60 AS `=`, `value` = 50 AS `=3`
 FROM `default`.`a_n4`) AS `t`
-LEFT JOIN (SELECT `key`, CAST(50 AS INTEGER) AS `value`
+LEFT JOIN (SELECT `key`, CAST(50 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 50 AND `key` IS NOT NULL) AS `t1` ON `t`.`=3` AND `t`.`key` = `t1`.`key`
-LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+LEFT JOIN (SELECT `key`, CAST(60 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t`.`=` AND `t`.`key` = `t3`.`key`
 STAGE DEPENDENCIES:
@@ -297,12 +297,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
-FROM (SELECT `key`, CAST(50 AS INTEGER) AS `value`
+FROM (SELECT `key`, CAST(50 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 50 AND `key` IS NOT NULL) AS `t0`
 RIGHT JOIN (SELECT `key`, `value`, `value` = 60 AS `=`, `value` = 50 AS `=3`
 FROM `default`.`a_n4`) AS `t1` ON `t1`.`=3` AND `t0`.`key` = `t1`.`key`
-LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+LEFT JOIN (SELECT `key`, CAST(60 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t1`.`=` AND `t1`.`key` = `t3`.`key`
 STAGE DEPENDENCIES:
@@ -575,12 +575,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
-FROM (SELECT `key`, CAST(50 AS INTEGER) AS `value`
+FROM (SELECT `key`, CAST(50 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 50 AND `key` IS NOT NULL) AS `t0`
 RIGHT JOIN (SELECT `key`, `value`, `value` = 60 AS `=`, `value` = 50 AS `=3`
 FROM `default`.`a_n4`) AS `t1` ON `t1`.`=3` AND `t0`.`key` = `t1`.`key`
-LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+LEFT JOIN (SELECT `key`, CAST(60 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t1`.`=` AND `t1`.`key` = `t3`.`key`
 STAGE DEPENDENCIES:
@@ -857,10 +857,10 @@ FROM (SELECT `key`, `value`, `value` = 40 AS `=`, `value` = 50 AS `=3`
 FROM `default`.`a_n4`) AS `t`
 FULL JOIN (SELECT `key`, `value`, `value` = 60 AS `=`, `value` = 50 AS `=3`
 FROM `default`.`a_n4`) AS `t0` ON `t`.`=3` AND `t0`.`=3` AND `t`.`key` = `t0`.`key`
-LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+LEFT JOIN (SELECT `key`, CAST(60 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 60 AND `key` IS NOT NULL) AS `t2` ON `t0`.`=` AND `t0`.`key` = `t2`.`key`
-LEFT JOIN (SELECT `key`, CAST(40 AS INTEGER) AS `value`
+LEFT JOIN (SELECT `key`, CAST(40 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 40 AND `key` IS NOT NULL) AS `t4` ON `t`.`=` AND `t`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
@@ -1171,13 +1171,13 @@ POSTHOOK: Input: default@a_n4
 OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`, `t5`.`key` AS `key3`, `t5`.`value` AS `value3`
 FROM (SELECT `key`, `value`, `value` = 40 AS `=`, `value` = 60 AS `=3`, `value` = 50 AS `=4`
 FROM `default`.`a_n4`) AS `t`
-LEFT JOIN (SELECT `key`, CAST(50 AS INTEGER) AS `value`
+LEFT JOIN (SELECT `key`, CAST(50 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 50 AND `key` IS NOT NULL) AS `t1` ON `t`.`=4` AND `t`.`key` = `t1`.`key`
-LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
+LEFT JOIN (SELECT `key`, CAST(60 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t`.`=3` AND `t`.`key` = `t3`.`key`
-LEFT JOIN (SELECT `key`, CAST(40 AS INTEGER) AS `value`
+LEFT JOIN (SELECT `key`, CAST(40 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 40 AND `key` IS NOT NULL) AS `t5` ON `t`.`=` AND `t`.`key` = `t5`.`key`
 STAGE DEPENDENCIES:

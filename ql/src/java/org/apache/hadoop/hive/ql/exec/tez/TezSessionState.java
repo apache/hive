@@ -48,6 +48,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
@@ -85,12 +86,12 @@ import org.apache.tez.serviceplugins.api.ContainerLauncherDescriptor;
 import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
 import org.apache.tez.serviceplugins.api.TaskCommunicatorDescriptor;
 import org.apache.tez.serviceplugins.api.TaskSchedulerDescriptor;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
@@ -350,6 +351,16 @@ public class TezSessionState {
 
     setupSessionAcls(tezConfig, conf);
 
+    /*
+     * Update HADOOP_CREDSTORE_PASSWORD for the TezAM.
+     * If there is a job specific credential store, it will be set.
+     * HiveConfUtil.updateJobCredentialProviders should not be used here,
+     * as it changes the credential store path too, which causes the dag submission fail,
+     * as this config has an effect in HS2 (on TezClient codepath), and the original hadoop
+     * credential store should be used.
+     */
+    HiveConfUtil.updateCredentialProviderPasswordForJobs(tezConfig);
+
     String tezJobNameFormat = HiveConf.getVar(conf, ConfVars.HIVETEZJOBNAME);
     final TezClient session = TezClient.newBuilder(String.format(tezJobNameFormat, sessionId), tezConfig)
         .setIsSession(true).setLocalResources(commonLocalResources)
@@ -434,9 +445,7 @@ public class TezSessionState {
       // We are not in HS2; always create a new client for now.
       token = new LlapTokenClient(conf).getDelegationToken(null);
     }
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Obtained a LLAP token: " + token);
-    }
+    LOG.info("Obtained a LLAP token: " + token);
     return token;
   }
 
@@ -821,9 +830,7 @@ public class TezSessionState {
     destFileName = FilenameUtils.removeExtension(destFileName) + "-" + sha
         + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(destFileName);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("The destination file name for [" + localJarPath + "] is " + destFileName);
-    }
+    LOG.debug("The destination file name for [{}] is {}", localJarPath, destFileName);
 
     // TODO: if this method is ever called on more than one jar, getting the dir and the
     //       list need to be refactored out to be done only once.

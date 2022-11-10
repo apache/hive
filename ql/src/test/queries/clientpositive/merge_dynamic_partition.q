@@ -20,7 +20,6 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 set hive.merge.smallfiles.avgsize=1000000000;
-set hive.optimize.sort.dynamic.partition=false;
 explain
 insert overwrite table merge_dynamic_part_n1 partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp_n1 where ds='2008-04-08';
 insert overwrite table merge_dynamic_part_n1 partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp_n1 where ds='2008-04-08';

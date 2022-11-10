@@ -1,0 +1,553 @@
+PREHOOK: query: drop table if exists tbl_src
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_src
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists tbl_target_identity
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_target_identity
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists tbl_target_bucket
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_target_bucket
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists tbl_target_mixed
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tbl_target_mixed
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table tbl_src (a int, b string, c bigint) stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_src
+POSTHOOK: query: create external table tbl_src (a int, b string, c bigint) stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_src
+PREHOOK: query: insert into tbl_src values (1, 'EUR', 10), (2, 'EUR', 10), (3, 'USD', 11), (4, 'EUR', 12), (5, 'HUF', 30), (6, 'USD', 10), (7, 'USD', 100), (8, 'PLN', 20), (9, 'PLN', 11), (10, 'CZK', 5), (12, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src
+POSTHOOK: query: insert into tbl_src values (1, 'EUR', 10), (2, 'EUR', 10), (3, 'USD', 11), (4, 'EUR', 12), (5, 'HUF', 30), (6, 'USD', 10), (7, 'USD', 100), (8, 'PLN', 20), (9, 'PLN', 11), (10, 'CZK', 5), (12, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src
+PREHOOK: query: insert into tbl_src values (10, 'EUR', 12), (20, 'EUR', 11), (30, 'USD', 100), (40, 'EUR', 10), (50, 'HUF', 30), (60, 'USD', 12), (70, 'USD', 20), (80, 'PLN', 100), (90, 'PLN', 18), (100, 'CZK', 12), (110, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src
+POSTHOOK: query: insert into tbl_src values (10, 'EUR', 12), (20, 'EUR', 11), (30, 'USD', 100), (40, 'EUR', 10), (50, 'HUF', 30), (60, 'USD', 12), (70, 'USD', 20), (80, 'PLN', 100), (90, 'PLN', 18), (100, 'CZK', 12), (110, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src
+PREHOOK: query: create external table tbl_target_identity (a int) partitioned by (ccy string) stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_target_identity
+POSTHOOK: query: create external table tbl_target_identity (a int) partitioned by (ccy string) stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_target_identity
+PREHOOK: query: explain insert overwrite table tbl_target_identity select a, b from tbl_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_src
+PREHOOK: Output: default@tbl_target_identity
+POSTHOOK: query: explain insert overwrite table tbl_target_identity select a, b from tbl_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_src
+POSTHOOK: Output: default@tbl_target_identity
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-3
+  Stats Work{}
+    Stage-0
+      Move Operator
+        table:{"name:":"default.tbl_target_identity"}
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Reducer 2 vectorized
+              File Output Operator [FS_18]
+                table:{"name:":"default.tbl_target_identity"}
+                Select Operator [SEL_17]
+                  Output:["_col0","_col1","_col1"]
+                <-Map 1 [SIMPLE_EDGE] vectorized
+                  PARTITION_ONLY_SHUFFLE [RS_13]
+                    PartitionCols:_col1
+                    Select Operator [SEL_12] (rows=22 width=87)
+                      Output:["_col0","_col1"]
+                      TableScan [TS_0] (rows=22 width=87)
+                        default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
+              Reducer 3 vectorized
+              File Output Operator [FS_21]
+                Select Operator [SEL_20] (rows=1 width=530)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
+                  Group By Operator [GBY_19] (rows=1 width=332)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"]
+                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
+                    PARTITION_ONLY_SHUFFLE [RS_16]
+                      Group By Operator [GBY_15] (rows=1 width=400)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)"]
+                        Select Operator [SEL_14] (rows=22 width=87)
+                          Output:["a","ccy"]
+                           Please refer to the previous Select Operator [SEL_12]
+
+PREHOOK: query: insert overwrite table tbl_target_identity select a, b from tbl_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_src
+PREHOOK: Output: default@tbl_target_identity
+POSTHOOK: query: insert overwrite table tbl_target_identity select a, b from tbl_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_src
+POSTHOOK: Output: default@tbl_target_identity
+PREHOOK: query: select * from tbl_target_identity order by a, ccy
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_target_identity
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_target_identity order by a, ccy
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_target_identity
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	EUR
+2	EUR
+3	USD
+4	EUR
+5	HUF
+6	USD
+7	USD
+8	PLN
+9	PLN
+10	CZK
+10	EUR
+12	NULL
+20	EUR
+30	USD
+40	EUR
+50	HUF
+60	USD
+70	USD
+80	PLN
+90	PLN
+100	CZK
+110	NULL
+PREHOOK: query: create external table tbl_target_bucket (a int, ccy string) partitioned by spec (bucket (2, ccy)) stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_target_bucket
+POSTHOOK: query: create external table tbl_target_bucket (a int, ccy string) partitioned by spec (bucket (2, ccy)) stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_target_bucket
+PREHOOK: query: explain insert into table tbl_target_bucket select a, b from tbl_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_src
+PREHOOK: Output: default@tbl_target_bucket
+POSTHOOK: query: explain insert into table tbl_target_bucket select a, b from tbl_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_src
+POSTHOOK: Output: default@tbl_target_bucket
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-3
+  Stats Work{}
+    Stage-0
+      Move Operator
+        table:{"name:":"default.tbl_target_bucket"}
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Reducer 2 vectorized
+              File Output Operator [FS_18]
+                table:{"name:":"default.tbl_target_bucket"}
+                Select Operator [SEL_17]
+                  Output:["_col0","_col1","iceberg_bucket(_col1, 2)"]
+                <-Map 1 [SIMPLE_EDGE] vectorized
+                  PARTITION_ONLY_SHUFFLE [RS_13]
+                    PartitionCols:iceberg_bucket(_col1, 2)
+                    Select Operator [SEL_12] (rows=22 width=87)
+                      Output:["_col0","_col1"]
+                      TableScan [TS_0] (rows=22 width=87)
+                        default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
+              Reducer 3 vectorized
+              File Output Operator [FS_21]
+                Select Operator [SEL_20] (rows=1 width=530)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
+                  Group By Operator [GBY_19] (rows=1 width=332)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"]
+                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
+                    PARTITION_ONLY_SHUFFLE [RS_16]
+                      Group By Operator [GBY_15] (rows=1 width=400)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)"]
+                        Select Operator [SEL_14] (rows=22 width=87)
+                          Output:["a","ccy"]
+                           Please refer to the previous Select Operator [SEL_12]
+
+PREHOOK: query: insert into table tbl_target_bucket select a, b from tbl_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_src
+PREHOOK: Output: default@tbl_target_bucket
+POSTHOOK: query: insert into table tbl_target_bucket select a, b from tbl_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_src
+POSTHOOK: Output: default@tbl_target_bucket
+PREHOOK: query: select * from tbl_target_bucket order by a, ccy
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_target_bucket
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_target_bucket order by a, ccy
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_target_bucket
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	EUR
+2	EUR
+3	USD
+4	EUR
+5	HUF
+6	USD
+7	USD
+8	PLN
+9	PLN
+10	CZK
+10	EUR
+12	NULL
+20	EUR
+30	USD
+40	EUR
+50	HUF
+60	USD
+70	USD
+80	PLN
+90	PLN
+100	CZK
+110	NULL
+PREHOOK: query: create external table tbl_target_mixed (a int, ccy string, c bigint) partitioned by spec (ccy, bucket (3, c)) stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_target_mixed
+POSTHOOK: query: create external table tbl_target_mixed (a int, ccy string, c bigint) partitioned by spec (ccy, bucket (3, c)) stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_target_mixed
+PREHOOK: query: explain insert into table tbl_target_mixed select * from tbl_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_src
+PREHOOK: Output: default@tbl_target_mixed
+POSTHOOK: query: explain insert into table tbl_target_mixed select * from tbl_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_src
+POSTHOOK: Output: default@tbl_target_mixed
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-3
+  Stats Work{}
+    Stage-0
+      Move Operator
+        table:{"name:":"default.tbl_target_mixed"}
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Reducer 2 vectorized
+              File Output Operator [FS_18]
+                table:{"name:":"default.tbl_target_mixed"}
+                Select Operator [SEL_17]
+                  Output:["_col0","_col1","_col2","_col1","iceberg_bucket(_col2, 3)"]
+                <-Map 1 [SIMPLE_EDGE] vectorized
+                  PARTITION_ONLY_SHUFFLE [RS_13]
+                    PartitionCols:_col1, iceberg_bucket(_col2, 3)
+                    Select Operator [SEL_12] (rows=22 width=94)
+                      Output:["_col0","_col1","_col2"]
+                      TableScan [TS_0] (rows=22 width=94)
+                        default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b","c"]
+              Reducer 3 vectorized
+              File Output Operator [FS_21]
+                Select Operator [SEL_20] (rows=1 width=794)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
+                  Group By Operator [GBY_19] (rows=1 width=500)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
+                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
+                    PARTITION_ONLY_SHUFFLE [RS_16]
+                      Group By Operator [GBY_15] (rows=1 width=568)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)","min(c)","max(c)","count(c)","compute_bit_vector_hll(c)"]
+                        Select Operator [SEL_14] (rows=22 width=94)
+                          Output:["a","ccy","c"]
+                           Please refer to the previous Select Operator [SEL_12]
+
+PREHOOK: query: insert into table tbl_target_mixed select * from tbl_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_src
+PREHOOK: Output: default@tbl_target_mixed
+POSTHOOK: query: insert into table tbl_target_mixed select * from tbl_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_src
+POSTHOOK: Output: default@tbl_target_mixed
+PREHOOK: query: select * from tbl_target_mixed order by a, ccy
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_target_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_target_mixed order by a, ccy
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_target_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	EUR	10
+2	EUR	10
+3	USD	11
+4	EUR	12
+5	HUF	30
+6	USD	10
+7	USD	100
+8	PLN	20
+9	PLN	11
+10	CZK	5
+10	EUR	12
+12	NULL	NULL
+20	EUR	11
+30	USD	100
+40	EUR	10
+50	HUF	30
+60	USD	12
+70	USD	20
+80	PLN	100
+90	PLN	18
+100	CZK	12
+110	NULL	NULL
+PREHOOK: query: select * from default.tbl_target_mixed.partitions order by `partition`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_target_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.tbl_target_mixed.partitions order by `partition`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_target_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"ccy":"CZK","c_bucket":1}	1	1	0
+{"ccy":"CZK","c_bucket":2}	1	1	0
+{"ccy":"EUR","c_bucket":0}	1	1	0
+{"ccy":"EUR","c_bucket":1}	2	1	0
+{"ccy":"EUR","c_bucket":2}	3	1	0
+{"ccy":"HUF","c_bucket":1}	2	1	0
+{"ccy":"PLN","c_bucket":0}	2	1	0
+{"ccy":"PLN","c_bucket":1}	1	1	0
+{"ccy":"PLN","c_bucket":2}	1	1	0
+{"ccy":"USD","c_bucket":0}	2	1	0
+{"ccy":"USD","c_bucket":1}	3	1	0
+{"ccy":"USD","c_bucket":2}	1	1	0
+{"ccy":null,"c_bucket":null}	2	1	0
+PREHOOK: query: select * from default.tbl_target_mixed.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_target_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.tbl_target_mixed.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_target_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":null,"c_bucket":null}	2	417	{1:7,2:5,3:5}	{1:2,2:2,3:2}	{1:0,2:2,3:2}	{}	{1:   }	{1:n   }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"CZK","c_bucket":1}	1	449	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:d   ,2:CZK,3:       }	{1:d   ,2:CZK,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"CZK","c_bucket":2}	1	432	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:
+   ,2:CZK,3:       }	{1:
+   ,2:CZK,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"EUR","c_bucket":0}	1	432	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:   ,2:EUR,3:       }	{1:   ,2:EUR,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"EUR","c_bucket":1}	2	448	{1:7,2:18,3:7}	{1:2,2:2,3:2}	{1:0,2:0,3:0}	{}	{1:   ,2:EUR,3:       }	{1:
+   ,2:EUR,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"EUR","c_bucket":2}	3	448	{1:8,2:17,3:5}	{1:3,2:3,3:3}	{1:0,2:0,3:0}	{}	{1:   ,2:EUR,3:
+       }	{1:(   ,2:EUR,3:
+       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"HUF","c_bucket":1}	2	448	{1:7,2:18,3:7}	{1:2,2:2,3:2}	{1:0,2:0,3:0}	{}	{1:   ,2:HUF,3:       }	{1:2   ,2:HUF,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"PLN","c_bucket":0}	2	448	{1:7,2:18,3:7}	{1:2,2:2,3:2}	{1:0,2:0,3:0}	{}	{1:   ,2:PLN,3:       }	{1:	   ,2:PLN,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"PLN","c_bucket":1}	1	448	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:P   ,2:PLN,3:d       }	{1:P   ,2:PLN,3:d       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"PLN","c_bucket":2}	1	449	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:Z   ,2:PLN,3:       }	{1:Z   ,2:PLN,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"USD","c_bucket":0}	2	462	{1:7,2:18,3:7}	{1:2,2:2,3:2}	{1:0,2:0,3:0}	{}	{1:   ,2:USD,3:       }	{1:F   ,2:USD,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"USD","c_bucket":1}	3	470	{1:8,2:17,3:8}	{1:3,2:3,3:3}	{1:0,2:0,3:0}	{}	{1:   ,2:USD,3:       }	{1:<   ,2:USD,3:d       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"USD","c_bucket":2}	1	432	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:   ,2:USD,3:
+       }	{1:   ,2:USD,3:
+       }	NULL	[3]	NULL	0
+PREHOOK: query: explain insert into table tbl_target_mixed select * from tbl_src where b = 'EUR'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_src
+PREHOOK: Output: default@tbl_target_mixed
+POSTHOOK: query: explain insert into table tbl_target_mixed select * from tbl_src where b = 'EUR'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_src
+POSTHOOK: Output: default@tbl_target_mixed
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-3
+  Stats Work{}
+    Stage-0
+      Move Operator
+        table:{"name:":"default.tbl_target_mixed"}
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Reducer 2 vectorized
+              File Output Operator [FS_21]
+                table:{"name:":"default.tbl_target_mixed"}
+                Select Operator [SEL_20]
+                  Output:["_col0","_col1","_col2","_col1","iceberg_bucket(_col2, 3)"]
+                <-Map 1 [SIMPLE_EDGE] vectorized
+                  PARTITION_ONLY_SHUFFLE [RS_16]
+                    PartitionCols:_col1, iceberg_bucket(_col2, 3)
+                    Select Operator [SEL_15] (rows=4 width=99)
+                      Output:["_col0","_col1","_col2"]
+                      Filter Operator [FIL_14] (rows=4 width=99)
+                        predicate:(b = 'EUR')
+                        TableScan [TS_0] (rows=22 width=94)
+                          default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b","c"]
+              Reducer 3 vectorized
+              File Output Operator [FS_24]
+                Select Operator [SEL_23] (rows=1 width=794)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
+                  Group By Operator [GBY_22] (rows=1 width=500)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
+                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
+                    PARTITION_ONLY_SHUFFLE [RS_19]
+                      Group By Operator [GBY_18] (rows=1 width=568)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)","min(c)","max(c)","count(c)","compute_bit_vector_hll(c)"]
+                        Select Operator [SEL_17] (rows=4 width=99)
+                          Output:["a","ccy","c"]
+                           Please refer to the previous Select Operator [SEL_15]
+
+PREHOOK: query: insert into table tbl_target_mixed select * from tbl_src where b = 'EUR'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_src
+PREHOOK: Output: default@tbl_target_mixed
+POSTHOOK: query: insert into table tbl_target_mixed select * from tbl_src where b = 'EUR'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_src
+POSTHOOK: Output: default@tbl_target_mixed
+PREHOOK: query: explain insert into table tbl_target_mixed select * from tbl_src where b = 'USD' and c = 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_src
+PREHOOK: Output: default@tbl_target_mixed
+POSTHOOK: query: explain insert into table tbl_target_mixed select * from tbl_src where b = 'USD' and c = 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_src
+POSTHOOK: Output: default@tbl_target_mixed
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-3
+  Stats Work{}
+    Stage-0
+      Move Operator
+        table:{"name:":"default.tbl_target_mixed"}
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Reducer 2 vectorized
+              File Output Operator [FS_20]
+                Select Operator [SEL_19] (rows=1 width=794)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
+                  Group By Operator [GBY_18] (rows=1 width=500)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"]
+                  <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
+                    File Output Operator [FS_14]
+                      table:{"name:":"default.tbl_target_mixed"}
+                      Select Operator [SEL_13] (rows=1 width=99)
+                        Output:["_col0","_col1","_col2"]
+                        Filter Operator [FIL_12] (rows=1 width=99)
+                          predicate:((c = 100L) and (b = 'USD'))
+                          TableScan [TS_0] (rows=22 width=94)
+                            default@tbl_src,tbl_src,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b","c"]
+                    PARTITION_ONLY_SHUFFLE [RS_17]
+                      Group By Operator [GBY_16] (rows=1 width=568)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"],aggregations:["min(a)","max(a)","count(1)","count(a)","compute_bit_vector_hll(a)","max(length(ccy))","avg(COALESCE(length(ccy),0))","count(ccy)","compute_bit_vector_hll(ccy)","min(c)","max(c)","count(c)","compute_bit_vector_hll(c)"]
+                        Select Operator [SEL_15] (rows=1 width=99)
+                          Output:["a","ccy","c"]
+                           Please refer to the previous Select Operator [SEL_13]
+
+PREHOOK: query: insert into table tbl_target_mixed select * from tbl_src where b = 'USD' and c = 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_src
+PREHOOK: Output: default@tbl_target_mixed
+POSTHOOK: query: insert into table tbl_target_mixed select * from tbl_src where b = 'USD' and c = 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_src
+POSTHOOK: Output: default@tbl_target_mixed
+PREHOOK: query: select * from tbl_target_mixed order by a, ccy
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_target_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_target_mixed order by a, ccy
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_target_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	EUR	10
+1	EUR	10
+2	EUR	10
+2	EUR	10
+3	USD	11
+4	EUR	12
+4	EUR	12
+5	HUF	30
+6	USD	10
+7	USD	100
+7	USD	100
+8	PLN	20
+9	PLN	11
+10	CZK	5
+10	EUR	12
+10	EUR	12
+12	NULL	NULL
+20	EUR	11
+20	EUR	11
+30	USD	100
+30	USD	100
+40	EUR	10
+40	EUR	10
+50	HUF	30
+60	USD	12
+70	USD	20
+80	PLN	100
+90	PLN	18
+100	CZK	12
+110	NULL	NULL
+PREHOOK: query: select * from default.tbl_target_mixed.files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_target_mixed
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.tbl_target_mixed.files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_target_mixed
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"USD","c_bucket":1}	2	466	{1:7,2:18,3:7}	{1:2,2:2,3:2}	{1:0,2:0,3:0}	{}	{1:   ,2:USD,3:d       }	{1:   ,2:USD,3:d       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"EUR","c_bucket":0}	1	432	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:   ,2:EUR,3:       }	{1:   ,2:EUR,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"EUR","c_bucket":1}	2	448	{1:7,2:18,3:7}	{1:2,2:2,3:2}	{1:0,2:0,3:0}	{}	{1:   ,2:EUR,3:       }	{1:
+   ,2:EUR,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"EUR","c_bucket":2}	3	448	{1:8,2:17,3:5}	{1:3,2:3,3:3}	{1:0,2:0,3:0}	{}	{1:   ,2:EUR,3:
+       }	{1:(   ,2:EUR,3:
+       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":null,"c_bucket":null}	2	417	{1:7,2:5,3:5}	{1:2,2:2,3:2}	{1:0,2:2,3:2}	{}	{1:   }	{1:n   }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"CZK","c_bucket":1}	1	449	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:d   ,2:CZK,3:       }	{1:d   ,2:CZK,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"CZK","c_bucket":2}	1	432	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:
+   ,2:CZK,3:       }	{1:
+   ,2:CZK,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"EUR","c_bucket":0}	1	432	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:   ,2:EUR,3:       }	{1:   ,2:EUR,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"EUR","c_bucket":1}	2	448	{1:7,2:18,3:7}	{1:2,2:2,3:2}	{1:0,2:0,3:0}	{}	{1:   ,2:EUR,3:       }	{1:
+   ,2:EUR,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"EUR","c_bucket":2}	3	448	{1:8,2:17,3:5}	{1:3,2:3,3:3}	{1:0,2:0,3:0}	{}	{1:   ,2:EUR,3:
+       }	{1:(   ,2:EUR,3:
+       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"HUF","c_bucket":1}	2	448	{1:7,2:18,3:7}	{1:2,2:2,3:2}	{1:0,2:0,3:0}	{}	{1:   ,2:HUF,3:       }	{1:2   ,2:HUF,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"PLN","c_bucket":0}	2	448	{1:7,2:18,3:7}	{1:2,2:2,3:2}	{1:0,2:0,3:0}	{}	{1:   ,2:PLN,3:       }	{1:	   ,2:PLN,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"PLN","c_bucket":1}	1	448	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:P   ,2:PLN,3:d       }	{1:P   ,2:PLN,3:d       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"PLN","c_bucket":2}	1	449	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:Z   ,2:PLN,3:       }	{1:Z   ,2:PLN,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"USD","c_bucket":0}	2	462	{1:7,2:18,3:7}	{1:2,2:2,3:2}	{1:0,2:0,3:0}	{}	{1:   ,2:USD,3:       }	{1:F   ,2:USD,3:       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"USD","c_bucket":1}	3	470	{1:8,2:17,3:8}	{1:3,2:3,3:3}	{1:0,2:0,3:0}	{}	{1:   ,2:USD,3:       }	{1:<   ,2:USD,3:d       }	NULL	[3]	NULL	0
+0	hdfs://### HDFS PATH ###	ORC	0	{"ccy":"USD","c_bucket":2}	1	432	{1:6,2:12,3:6}	{1:1,2:1,3:1}	{1:0,2:0,3:0}	{}	{1:   ,2:USD,3:
+       }	{1:   ,2:USD,3:
+       }	NULL	[3]	NULL	0

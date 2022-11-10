@@ -26,14 +26,13 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -107,7 +106,14 @@ public class TestParseUtils {
 
           {"CREATE MATERIALIZED VIEW matview AS SELECT * FROM b", TxnType.DEFAULT},
           {"ALTER MATERIALIZED VIEW matview REBUILD", TxnType.MATER_VIEW_REBUILD},
-          {"ALTER MATERIALIZED VIEW matview DISABLE REWRITE", TxnType.DEFAULT}
+          {"ALTER MATERIALIZED VIEW matview DISABLE REWRITE", TxnType.DEFAULT},
+
+          {"DROP DATABASE dummy CASCADE", TxnType.SOFT_DELETE},
+          {"DROP TABLE a", TxnType.SOFT_DELETE},
+          {"DROP MATERIALIZED VIEW matview", TxnType.SOFT_DELETE},
+          {"ALTER TABLE TAB_ACID DROP PARTITION (P='FOO')", TxnType.SOFT_DELETE},
+          {"ALTER TABLE a RENAME TO b", TxnType.DEFAULT},
+          {"ALTER TABLE a PARTITION (p='foo') RENAME TO PARTITION (p='baz')", TxnType.SOFT_DELETE}
       });
   }
 
@@ -124,7 +130,25 @@ public class TestParseUtils {
         txnType == TxnType.READ_ONLY ? TxnType.DEFAULT : txnType);
   }
 
+  @Test
+  public void testTxnTypeWithLocklessReadsEnabled() throws Exception {
+    enableLocklessReadsFeature(true);
+    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query,new Context(conf))), txnType);
+  }
+
+  @Test
+  public void testTxnTypeWithLocklessReadsDisabled() throws Exception {
+    enableLocklessReadsFeature(false);
+    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query,new Context(conf))), TxnType.DEFAULT);
+  }
+  
   private void enableReadOnlyTxnFeature(boolean featureFlag) {
-    conf.setBoolean(HiveConf.ConfVars.HIVE_TXN_READONLY_ENABLED.varname, featureFlag);
+    Assume.assumeTrue(txnType == TxnType.READ_ONLY || txnType == TxnType.DEFAULT);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TXN_READONLY_ENABLED, featureFlag);
+  }
+
+  private void enableLocklessReadsFeature(boolean featureFlag) {
+    Assume.assumeTrue(txnType == TxnType.SOFT_DELETE);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED, featureFlag);
   }
 }

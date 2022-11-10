@@ -95,11 +95,11 @@ NULL	NULL
 PREHOOK: query: insert overwrite directory "target/warehouse/null_columns.out" select null, null from temp_null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_null
-PREHOOK: Output: target/warehouse/null_columns.out
+#### A masked pattern was here ####
 POSTHOOK: query: insert overwrite directory "target/warehouse/null_columns.out" select null, null from temp_null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null
-POSTHOOK: Output: target/warehouse/null_columns.out
+#### A masked pattern was here ####
 \N\N
 \N\N
 \N\N

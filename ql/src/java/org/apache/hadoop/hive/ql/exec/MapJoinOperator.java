@@ -52,8 +52,6 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.exec.persistence.MatchTracker;
 import org.apache.hadoop.hive.ql.exec.persistence.ObjectContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.UnwrapRowContainer;
-import org.apache.hadoop.hive.ql.exec.spark.SmallTableCache;
-import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.exec.tez.LlapObjectCache;
 import org.apache.hadoop.hive.ql.exec.tez.LlapObjectSubCache;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -229,9 +227,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
        * requires changes in the Tez API with regard to finding bucket id and
        * also ability to schedule tasks to re-use containers that have cached the specific bucket.
        */
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("This is not bucket map join, so cache");
-      }
+      LOG.debug("This is not bucket map join, so cache");
 
       Future<Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]>> future =
           cache.retrieveAsync(
@@ -384,9 +380,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     try {
       loader.load(mapJoinTables, mapJoinTableSerdes);
     } catch (HiveException e) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Exception loading hash tables. Clearing partially loaded hash table containers.");
-      }
+      LOG.info("Exception loading hash tables. Clearing partially loaded hash table containers");
 
       // there could be some spilled partitions which needs to be cleaned up
       clearAllTableContainers();
@@ -731,21 +725,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   @Override
   public void closeOp(boolean abort) throws HiveException {
 
-    // Call the small table cache cache method, this way when a task finishes, we still keep the small table around
-    // for at least 30 seconds, which gives any tasks scheduled in the future a chance to re-use the small table.
-    if (HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE).equals("spark") &&
-            SparkUtilities.isDedicatedCluster(hconf)) {
-
-      for (byte pos = 0; pos < mapJoinTables.length; pos++) {
-        if (pos != conf.getPosBigTable()) {
-          MapJoinTableContainer container = mapJoinTables[pos];
-          if (container != null && container.getKey() != null) {
-            SmallTableCache.cache(container.getKey(), container);
-          }
-        }
-      }
-    }
-
     if (isFullOuterMapJoin) {
 
       // FULL OUTER MapJoin: After matching the Big Table row keys against the Small Table, we now
@@ -831,9 +810,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         }
       }
 
-      if (LOG.isInfoEnabled()) {
-        LOG.info("spilled: " + spilled + " abort: " + abort + ". Clearing spilled partitions.");
-      }
+      LOG.info("spilled: " + spilled + " abort: " + abort + ". Clearing spilled partitions.");
 
       // spilled tables are loaded always (no sharing), so clear it
       clearAllTableContainers();
@@ -842,12 +819,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     // in mapreduce case, we need to always clear up as mapreduce doesn't have object registry.
     if ((this.getExecContext() != null) && (this.getExecContext().getLocalWork() != null)
-        && (this.getExecContext().getLocalWork().getInputFileChangeSensitive())
-        && !(HiveConf.getVar(hconf, ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")
-            && SparkUtilities.isDedicatedCluster(hconf))) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("MR: Clearing all map join table containers.");
-      }
+        && (this.getExecContext().getLocalWork().getInputFileChangeSensitive())) {
+      LOG.info("MR: Clearing all map join table containers.");
       clearAllTableContainers();
     }
 

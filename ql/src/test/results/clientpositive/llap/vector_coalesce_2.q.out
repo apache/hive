@@ -66,18 +66,18 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: str2 (type: string), UDFToInteger(CASE WHEN (str1 is not null) THEN (str1) ELSE ('0') END) (type: int)
+                    expressions: str2 (type: string), UDFToInteger(if(str1 is not null, str1, '0')) (type: int)
                     outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 5]
-                        selectExpressions: CastStringToLong(col 4:string)(children: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 5:int
+                        projectedOutputColumnNums: [1, 6]
+                        selectExpressions: CastStringToLong(col 5:string)(children: IfExprStringGroupColumnStringScalar(col 4:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 4:boolean) -> 5:string) -> 6:int
                     Statistics: Num rows: 5 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+                          aggregators: VectorUDAFSumLong(col 6:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 1:string
@@ -97,7 +97,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
@@ -115,7 +115,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -210,20 +210,20 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: CASE WHEN (str1 is not null) THEN (str1) ELSE ('0') END (type: string)
+                    expressions: if(str1 is not null, str1, '0') (type: string)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string
-                    Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: IfExprStringGroupColumnStringScalar(col 4:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 4:boolean) -> 5:string
+                    Statistics: Num rows: 5 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -301,18 +301,18 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: str2 (type: string), UDFToInteger(CASE WHEN (str1 is not null) THEN (str1) ELSE ('0') END) (type: int)
+                    expressions: str2 (type: string), UDFToInteger(if(str1 is not null, str1, '0')) (type: int)
                     outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [1, 5]
-                        selectExpressions: CastStringToLong(col 4:string)(children: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string) -> 5:int
+                        projectedOutputColumnNums: [1, 6]
+                        selectExpressions: CastStringToLong(col 5:string)(children: IfExprStringGroupColumnStringScalar(col 4:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 4:boolean) -> 5:string) -> 6:int
                     Statistics: Num rows: 5 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 5:int) -> bigint
+                          aggregators: VectorUDAFSumLong(col 6:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 1:string
@@ -332,7 +332,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
@@ -350,7 +350,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -445,20 +445,20 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: CASE WHEN (str1 is not null) THEN (str1) ELSE ('0') END (type: string)
+                    expressions: if(str1 is not null, str1, '0') (type: string)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [4]
-                        selectExpressions: IfExprStringGroupColumnStringScalar(col 3:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 3:boolean) -> 4:string
-                    Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: IfExprStringGroupColumnStringScalar(col 4:boolean, col 0:string, val 0)(children: IsNotNull(col 0:string) -> 4:boolean) -> 5:string
+                    Statistics: Num rows: 5 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 5 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 5 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

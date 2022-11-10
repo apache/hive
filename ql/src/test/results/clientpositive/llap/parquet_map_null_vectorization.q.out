@@ -1,0 +1,318 @@
+PREHOOK: query: CREATE TABLE parquet_map_type_boolean (
+id int,
+booleanMap map<boolean, boolean>
+) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_map_type_boolean
+POSTHOOK: query: CREATE TABLE parquet_map_type_boolean (
+id int,
+booleanMap map<boolean, boolean>
+) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_map_type_boolean
+PREHOOK: query: insert into parquet_map_type_boolean SELECT 1, MAP(true, null, false, true)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_map_type_boolean
+POSTHOOK: query: insert into parquet_map_type_boolean SELECT 1, MAP(true, null, false, true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_map_type_boolean
+POSTHOOK: Lineage: parquet_map_type_boolean.booleanmap EXPRESSION []
+POSTHOOK: Lineage: parquet_map_type_boolean.id SIMPLE []
+PREHOOK: query: -- NULL as value
+insert into parquet_map_type_boolean (id) VALUES (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_map_type_boolean
+POSTHOOK: query: -- NULL as value
+insert into parquet_map_type_boolean (id) VALUES (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_map_type_boolean
+POSTHOOK: Lineage: parquet_map_type_boolean.booleanmap SIMPLE []
+POSTHOOK: Lineage: parquet_map_type_boolean.id SCRIPT []
+PREHOOK: query: select id, booleanMap from parquet_map_type_boolean
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type_boolean
+#### A masked pattern was here ####
+POSTHOOK: query: select id, booleanMap from parquet_map_type_boolean
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type_boolean
+#### A masked pattern was here ####
+1	{true:false,false:true}
+2	{false:false}
+PREHOOK: query: select id, booleanMap[true] from parquet_map_type_boolean group by id, booleanMap[true]
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type_boolean
+#### A masked pattern was here ####
+POSTHOOK: query: select id, booleanMap[true] from parquet_map_type_boolean group by id, booleanMap[true]
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type_boolean
+#### A masked pattern was here ####
+2	NULL
+1	false
+PREHOOK: query: CREATE TABLE parquet_map_type_string (
+id int,
+stringMap map<string, string>
+) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_map_type_string
+POSTHOOK: query: CREATE TABLE parquet_map_type_string (
+id int,
+stringMap map<string, string>
+) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_map_type_string
+PREHOOK: query: insert into parquet_map_type_string SELECT 1, MAP('k1', null, 'k2', 'v2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_map_type_string
+POSTHOOK: query: insert into parquet_map_type_string SELECT 1, MAP('k1', null, 'k2', 'v2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_map_type_string
+POSTHOOK: Lineage: parquet_map_type_string.id SIMPLE []
+POSTHOOK: Lineage: parquet_map_type_string.stringmap EXPRESSION []
+PREHOOK: query: -- NULL as value
+
+
+
+select id, stringMap from parquet_map_type_string
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type_string
+#### A masked pattern was here ####
+POSTHOOK: query: -- NULL as value
+
+
+
+select id, stringMap from parquet_map_type_string
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type_string
+#### A masked pattern was here ####
+1	{"k1":null,"k2":"v2"}
+PREHOOK: query: select id, stringMap['k1'] from parquet_map_type_string group by id, stringMap['k1']
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type_string
+#### A masked pattern was here ####
+POSTHOOK: query: select id, stringMap['k1'] from parquet_map_type_string group by id, stringMap['k1']
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type_string
+#### A masked pattern was here ####
+1	NULL
+PREHOOK: query: CREATE TABLE parquet_map_type_int (
+id int,
+intMap map<int, int>
+) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_map_type_int
+POSTHOOK: query: CREATE TABLE parquet_map_type_int (
+id int,
+intMap map<int, int>
+) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_map_type_int
+PREHOOK: query: insert into parquet_map_type_int SELECT 1, MAP(1, null, 2, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_map_type_int
+POSTHOOK: query: insert into parquet_map_type_int SELECT 1, MAP(1, null, 2, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_map_type_int
+POSTHOOK: Lineage: parquet_map_type_int.id SIMPLE []
+POSTHOOK: Lineage: parquet_map_type_int.intmap EXPRESSION []
+PREHOOK: query: -- NULL as value
+insert into parquet_map_type_int (id) VALUES (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_map_type_int
+POSTHOOK: query: -- NULL as value
+insert into parquet_map_type_int (id) VALUES (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_map_type_int
+POSTHOOK: Lineage: parquet_map_type_int.id SCRIPT []
+POSTHOOK: Lineage: parquet_map_type_int.intmap SIMPLE []
+PREHOOK: query: -- NULL as map
+
+
+select id, intMap from parquet_map_type_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type_int
+#### A masked pattern was here ####
+POSTHOOK: query: -- NULL as map
+
+
+select id, intMap from parquet_map_type_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type_int
+#### A masked pattern was here ####
+1	{1:0,2:3}
+2	{0:0}
+PREHOOK: query: select id, intMap[1] from parquet_map_type_int group by id, intMap[1]
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type_int
+#### A masked pattern was here ####
+POSTHOOK: query: select id, intMap[1] from parquet_map_type_int group by id, intMap[1]
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type_int
+#### A masked pattern was here ####
+1	0
+2	NULL
+PREHOOK: query: CREATE TABLE parquet_map_type_double (
+id int,
+doubleMap map<double, double>
+) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_map_type_double
+POSTHOOK: query: CREATE TABLE parquet_map_type_double (
+id int,
+doubleMap map<double, double>
+) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_map_type_double
+PREHOOK: query: insert into parquet_map_type_double (id) VALUES (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_map_type_double
+POSTHOOK: query: insert into parquet_map_type_double (id) VALUES (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_map_type_double
+POSTHOOK: Lineage: parquet_map_type_double.doublemap SIMPLE []
+POSTHOOK: Lineage: parquet_map_type_double.id SCRIPT []
+PREHOOK: query: select id, doubleMap from parquet_map_type_double
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type_double
+#### A masked pattern was here ####
+POSTHOOK: query: select id, doubleMap from parquet_map_type_double
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type_double
+#### A masked pattern was here ####
+2	{0.0:0.0}
+PREHOOK: query: select id, doubleMap[1.0] from parquet_map_type_double group by id, doubleMap[1.0]
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type_double
+#### A masked pattern was here ####
+POSTHOOK: query: select id, doubleMap[1.0] from parquet_map_type_double group by id, doubleMap[1.0]
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type_double
+#### A masked pattern was here ####
+2	NULL
+PREHOOK: query: CREATE TABLE parquet_map_type_decimal (
+id int,
+decimalMap map<decimal(1,0), decimal(1,0)>
+) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_map_type_decimal
+POSTHOOK: query: CREATE TABLE parquet_map_type_decimal (
+id int,
+decimalMap map<decimal(1,0), decimal(1,0)>
+) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_map_type_decimal
+PREHOOK: query: insert into parquet_map_type_decimal SELECT 1, MAP(1.0, NULL, 2.0, 3.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_map_type_decimal
+POSTHOOK: query: insert into parquet_map_type_decimal SELECT 1, MAP(1.0, NULL, 2.0, 3.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_map_type_decimal
+POSTHOOK: Lineage: parquet_map_type_decimal.decimalmap EXPRESSION []
+POSTHOOK: Lineage: parquet_map_type_decimal.id SIMPLE []
+PREHOOK: query: insert into parquet_map_type_decimal (id) VALUES (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_map_type_decimal
+POSTHOOK: query: insert into parquet_map_type_decimal (id) VALUES (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_map_type_decimal
+POSTHOOK: Lineage: parquet_map_type_decimal.decimalmap SIMPLE []
+POSTHOOK: Lineage: parquet_map_type_decimal.id SCRIPT []
+PREHOOK: query: select id, decimalMap from parquet_map_type_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: select id, decimalMap from parquet_map_type_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type_decimal
+#### A masked pattern was here ####
+1	{1:0,2:3}
+2	{0:0}
+PREHOOK: query: select id, decimalMap[1.0] from parquet_map_type_decimal group by id, decimalMap[1.0]
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: select id, decimalMap[1.0] from parquet_map_type_decimal group by id, decimalMap[1.0]
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type_decimal
+#### A masked pattern was here ####
+1	0
+2	NULL
+PREHOOK: query: CREATE TABLE parquet_map_type_date (
+id int,
+dateMap map<date, date>
+) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_map_type_date
+POSTHOOK: query: CREATE TABLE parquet_map_type_date (
+id int,
+dateMap map<date, date>
+) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_map_type_date
+PREHOOK: query: insert into parquet_map_type_date SELECT 1, MAP(CAST('2015-11-29' AS DATE), NULL, CAST('2016-11-29' AS DATE), CAST('2017-11-29' AS DATE))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_map_type_date
+POSTHOOK: query: insert into parquet_map_type_date SELECT 1, MAP(CAST('2015-11-29' AS DATE), NULL, CAST('2016-11-29' AS DATE), CAST('2017-11-29' AS DATE))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_map_type_date
+POSTHOOK: Lineage: parquet_map_type_date.datemap EXPRESSION []
+POSTHOOK: Lineage: parquet_map_type_date.id SIMPLE []
+PREHOOK: query: insert into parquet_map_type_date (id) VALUES (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_map_type_date
+POSTHOOK: query: insert into parquet_map_type_date (id) VALUES (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_map_type_date
+POSTHOOK: Lineage: parquet_map_type_date.datemap SIMPLE []
+POSTHOOK: Lineage: parquet_map_type_date.id SCRIPT []
+PREHOOK: query: select id, dateMap from parquet_map_type_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type_date
+#### A masked pattern was here ####
+POSTHOOK: query: select id, dateMap from parquet_map_type_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type_date
+#### A masked pattern was here ####
+1	{"2015-11-29":"1970-01-01","2016-11-29":"2017-11-29"}
+2	{"1970-01-01":"1970-01-01"}
+PREHOOK: query: select id, dateMap[CAST('2015-11-29' AS DATE)] from parquet_map_type_date group by id, dateMap[CAST('2015-11-29' AS DATE)]
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_type_date
+#### A masked pattern was here ####
+POSTHOOK: query: select id, dateMap[CAST('2015-11-29' AS DATE)] from parquet_map_type_date group by id, dateMap[CAST('2015-11-29' AS DATE)]
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_type_date
+#### A masked pattern was here ####
+1	1970-01-01
+2	NULL

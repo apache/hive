@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
@@ -68,6 +70,10 @@ public class PlanModifierForASTConv {
 
   public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema, boolean alignColumns)
       throws CalciteSemanticException {
+    if (rel instanceof HiveValues) {
+      return rel;
+    }
+
     RelNode newTopNode = rel;
     if (LOG.isDebugEnabled()) {
       LOG.debug("Original plan for PlanModifier\n " + RelOptUtil.toString(newTopNode));
@@ -210,7 +216,7 @@ public class PlanModifierForASTConv {
 
     // Assumption: top portion of tree could only be
     // (limit)?(OB)?(Project)....
-    List<RexNode> rootChildExps = originalProjRel.getChildExps();
+    List<RexNode> rootChildExps = originalProjRel.getProjects();
     if (resultSchema.size() != rootChildExps.size()) {
       // Safeguard against potential issues in CBO RowResolver construction. Disable CBO for now.
       LOG.error(PlanModifierUtil.generateInvalidSchemaMessage(originalProjRel, resultSchema, 0));
@@ -226,7 +232,7 @@ public class PlanModifierForASTConv {
     }
 
     HiveProject replacementProjectRel = HiveProject.create(originalProjRel.getInput(),
-        originalProjRel.getChildExps(), newSelAliases);
+        originalProjRel.getProjects(), newSelAliases);
 
     if (rootRel == originalProjRel) {
       return replacementProjectRel;
@@ -250,7 +256,7 @@ public class PlanModifierForASTConv {
     List<RexNode> projectList = HiveCalciteUtil.getProjsFromBelowAsInputRef(rel);
 
     HiveProject select = HiveProject.create(rel.getCluster(), rel, projectList,
-        rel.getRowType(), rel.getCollationList());
+        rel.getRowType(), Collections.emptyList());
 
     return select;
   }
@@ -329,7 +335,7 @@ public class PlanModifierForASTConv {
     }
 
     if (parent instanceof Project) {
-      for (RexNode child : parent.getChildExps()) {
+      for (RexNode child : ((Project) parent).getProjects()) {
         if (child instanceof RexOver || child instanceof RexWinAggCall) {
           // Hive can't handle select rank() over(order by sum(c1)/sum(c2)) from t1 group by c3
           // but can handle    select rank() over (order by c4) from
@@ -401,7 +407,8 @@ public class PlanModifierForASTConv {
 
   private static void replaceEmptyGroupAggr(final RelNode rel, RelNode parent) {
     // If this function is called, the parent should only include constant
-    List<RexNode> exps = parent.getChildExps();
+    List<RexNode> exps = parent instanceof Project ?
+        ((Project) parent).getProjects() : Collections.emptyList();
     for (RexNode rexNode : exps) {
       if (!rexNode.accept(new HiveCalciteUtil.ConstantFinder())) {
         throw new RuntimeException("We expect " + parent.toString()

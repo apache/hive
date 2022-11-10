@@ -99,7 +99,7 @@ public class TestReplDumpTask {
     }
 
     @Override
-    void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot, Hive hiveDb) {
+    void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot, Hive hiveDb, long tableId) {
     }
   }
 

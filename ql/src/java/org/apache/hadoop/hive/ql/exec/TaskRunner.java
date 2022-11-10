@@ -109,11 +109,11 @@ public class TaskRunner extends Thread {
       }
       LOG.error("Error in executeTask", t);
     }
-    result.setExitVal(exitVal);
-    taskQueue.releaseRunnable();
     if (tsk.getException() != null) {
       result.setTaskError(tsk.getException());
     }
+    result.setExitVal(exitVal);
+    taskQueue.releaseRunnable();
   }
 
   public static long getTaskRunnerID () {

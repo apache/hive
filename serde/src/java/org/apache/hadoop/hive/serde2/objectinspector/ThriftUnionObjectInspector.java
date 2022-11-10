@@ -102,6 +102,7 @@ public class ThriftUnionObjectInspector extends ReflectionStructObjectInspector 
           final ObjectInspector reflectionObjectInspector = ObjectInspectorFactory.getReflectionObjectInspector(fieldType, options, false);
           fields.add(new StandardStructObjectInspector.MyField(fieldId, fieldName, reflectionObjectInspector));
           this.ois.add(reflectionObjectInspector);
+          this.notifyAll();
         }
         inited = true;
       }

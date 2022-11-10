@@ -35,8 +35,6 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.log.LogDivertAppender;
-import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -229,10 +227,8 @@ public abstract class Operation {
   protected void createOperationLog() {
     if (parentSession.isOperationLogEnabled()) {
       File operationLogFile = new File(parentSession.getOperationLogSessionDir(), queryState.getQueryId());
-      isOperationLogEnabled = true;
-
-      // create OperationLog object with above log file
       operationLog = new OperationLog(opHandle.toString(), operationLogFile, parentSession.getHiveConf());
+      isOperationLogEnabled = true;
     }
   }
 
@@ -292,8 +288,10 @@ public abstract class Operation {
   private static class OperationLogCleaner implements Runnable {
     public static final Logger LOG = LoggerFactory.getLogger(OperationLogCleaner.class.getName());
     private OperationLog operationLog;
+    private Operation operation;
 
-    public OperationLogCleaner(OperationLog operationLog) {
+    public OperationLogCleaner(Operation operation, OperationLog operationLog) {
+      this.operation = operation;
       this.operationLog = operationLog;
     }
 
@@ -302,15 +300,12 @@ public abstract class Operation {
       if (operationLog != null) {
         LOG.info("Closing operation log {}", operationLog);
         operationLog.close();
+        OperationLogManager.closeOperation(operation);
       }
     }
   }
 
   protected synchronized void cleanupOperationLog(final long operationLogCleanupDelayMs) {
-    // stop the appenders for the operation log
-    String queryId = queryState.getQueryId();
-    LogUtils.stopQueryAppender(LogDivertAppender.QUERY_ROUTING_APPENDER, queryId);
-    LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     if (isOperationLogEnabled) {
       if (opHandle == null) {
         log.warn("Operation seems to be in invalid state, opHandle is null");
@@ -323,12 +318,13 @@ public abstract class Operation {
       } else {
         if (operationLogCleanupDelayMs > 0) {
           ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-          scheduledExecutorService.schedule(new OperationLogCleaner(operationLog), operationLogCleanupDelayMs,
+          scheduledExecutorService.schedule(new OperationLogCleaner(this, operationLog), operationLogCleanupDelayMs,
             TimeUnit.MILLISECONDS);
           scheduledExecutorService.shutdown();
         } else {
           log.info("Closing operation log {} without delay", operationLog);
           operationLog.close();
+          OperationLogManager.closeOperation(this);
         }
       }
     }

@@ -83,7 +83,7 @@ import com.google.common.annotations.VisibleForTesting;
  *   If a filename is 2019-04-02-21-00_0.log.gz and timeslice is 300s then the file 2019-04-02-21-00_0.log.gz is
  *   expected to have log lines from timestamp 2019:04:02 21:00:00 to 2019:04:02 21:05:00 timestamp.
  * - Logs table should have 'ts' as timestamp column.
- * - Only simple BETWEEN filter predicate is supported for 'ts' column. There cannot be >1 predicates on 'ts' column.
+ * - Only simple BETWEEN filter predicate is supported for 'ts' column. There cannot be &gt;1 predicates on 'ts' column.
  */
 public class SyslogInputFormat extends TextInputFormat {
   private static final Logger LOG = LoggerFactory.getLogger(SyslogInputFormat.class);

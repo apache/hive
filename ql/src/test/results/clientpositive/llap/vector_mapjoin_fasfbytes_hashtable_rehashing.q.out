@@ -1,0 +1,432 @@
+PREHOOK: query: create table tbl1_mst
+(
+    ID                          String,
+    OWNERID                     String,
+    ISDELETED                   String,
+    NAME                        String,
+    RECORDTYPEID                String,
+    CREATEDDATE                 String,
+    LASTMODIFIEDDATE            String,
+    fld1                        String,
+    fld2                String,
+    fld3 String,
+    fld4 String,
+    fld5            String,
+    fld6               String,
+    fld7                  String,
+    fld8                String,
+    fld9             String,
+    fld10               String,
+    fld11             String,
+    fld12               String,
+    fld13                     String,
+    fld14             String,
+    fld15               String,
+    fld16   String,
+    fld17   String,
+    fld18            String,
+    fld19           String,
+    fld20            String,
+    fld21                String,
+    fld22          String,
+    fld23         String,
+    fld24               String,
+    fld25                     String,
+    fld26 String,
+    fld27            String,
+    fld28           String,
+    fld29          String,
+    fld30  String,
+    fld31               String,
+    fld32         String,
+    fld33               String
+)
+    row format delimited fields terminated by "\t"
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl1_mst
+POSTHOOK: query: create table tbl1_mst
+(
+    ID                          String,
+    OWNERID                     String,
+    ISDELETED                   String,
+    NAME                        String,
+    RECORDTYPEID                String,
+    CREATEDDATE                 String,
+    LASTMODIFIEDDATE            String,
+    fld1                        String,
+    fld2                String,
+    fld3 String,
+    fld4 String,
+    fld5            String,
+    fld6               String,
+    fld7                  String,
+    fld8                String,
+    fld9             String,
+    fld10               String,
+    fld11             String,
+    fld12               String,
+    fld13                     String,
+    fld14             String,
+    fld15               String,
+    fld16   String,
+    fld17   String,
+    fld18            String,
+    fld19           String,
+    fld20            String,
+    fld21                String,
+    fld22          String,
+    fld23         String,
+    fld24               String,
+    fld25                     String,
+    fld26 String,
+    fld27            String,
+    fld28           String,
+    fld29          String,
+    fld30  String,
+    fld31               String,
+    fld32         String,
+    fld33               String
+)
+    row format delimited fields terminated by "\t"
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl1_mst
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/engesc8151.txt' OVERWRITE INTO TABLE tbl1_mst
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@tbl1_mst
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/engesc8151.txt' OVERWRITE INTO TABLE tbl1_mst
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tbl1_mst
+PREHOOK: query: create table tbl1_mst2 row format delimited fields terminated by "\t" as
+select ID
+     , OWNERID
+     , ISDELETED
+     , NAME
+     , RECORDTYPEID
+     , CREATEDDATE
+     , LASTMODIFIEDDATE
+     , fld1
+     , fld2
+     , fld3
+     , fld4
+     , fld5
+     , fld6
+     , fld7
+     , fld8
+     , fld9
+     , fld10
+     , fld11
+     , fld12
+     , fld13
+     , fld14
+     , fld15
+     , fld16
+     , fld17
+     , fld18
+     , fld19
+     , fld20
+     , fld21
+     , fld22
+     , fld23
+     , fld24
+     , fld25
+     , fld26
+     , fld27
+     , fld28
+     , fld29
+     , fld30
+     , fld31
+     , fld32
+     , fld33
+from tbl1_mst
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@tbl1_mst
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl1_mst2
+POSTHOOK: query: create table tbl1_mst2 row format delimited fields terminated by "\t" as
+select ID
+     , OWNERID
+     , ISDELETED
+     , NAME
+     , RECORDTYPEID
+     , CREATEDDATE
+     , LASTMODIFIEDDATE
+     , fld1
+     , fld2
+     , fld3
+     , fld4
+     , fld5
+     , fld6
+     , fld7
+     , fld8
+     , fld9
+     , fld10
+     , fld11
+     , fld12
+     , fld13
+     , fld14
+     , fld15
+     , fld16
+     , fld17
+     , fld18
+     , fld19
+     , fld20
+     , fld21
+     , fld22
+     , fld23
+     , fld24
+     , fld25
+     , fld26
+     , fld27
+     , fld28
+     , fld29
+     , fld30
+     , fld31
+     , fld32
+     , fld33
+from tbl1_mst
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@tbl1_mst
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl1_mst2
+POSTHOOK: Lineage: tbl1_mst2.createddate SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:createddate, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld1 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld1, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld10 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld10, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld11 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld11, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld12 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld12, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld13 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld13, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld14 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld14, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld15 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld15, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld16 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld16, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld17 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld17, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld18 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld18, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld19 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld19, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld2 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld2, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld20 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld20, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld21 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld21, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld22 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld22, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld23 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld23, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld24 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld24, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld25 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld25, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld26 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld26, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld27 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld27, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld28 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld28, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld29 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld29, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld3 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld3, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld30 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld30, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld31 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld31, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld32 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld32, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld33 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld33, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld4 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld4, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld5 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld5, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld6 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld6, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld7 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld7, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld8 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld8, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.fld9 SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:fld9, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.id SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:id, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.isdeleted SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:isdeleted, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.lastmodifieddate SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:lastmodifieddate, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl1_mst2.name SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:name, type:string, comment:null), ]
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tbl1_mst2.recordtypeid SIMPLE [(tbl1_mst)tbl1_mst.FieldSchema(name:recordtypeid, type:string, comment:null), ]
+PREHOOK: query: SELECT *
+FROM tbl1_mst T1
+WHERE NOT EXISTS (SELECT *
+                  FROM tbl1_mst2 T2
+                  WHERE NVL(T1.id, '') = NVL(T2.id, '')
+#### A masked pattern was here ####
+                    AND NVL(T1.isdeleted, '') = NVL(T2.isdeleted, '')
+                    AND NVL(T1.name, '') = NVL(T2.name, '')
+                    AND NVL(T1.recordtypeid, '') = NVL(T2.recordtypeid, '')
+                    AND NVL(T1.createddate, '') = NVL(T2.createddate, '')
+                    AND NVL(T1.lastmodifieddate, '') = NVL(T2.lastmodifieddate, '')
+                    AND NVL(T1.fld1, '') = NVL(T2.fld1, '')
+                    AND NVL(T1.fld2, '') = NVL(T2.fld2, '')
+                    AND NVL(T1.fld3, '') = NVL(T2.fld3, '')
+                    AND NVL(T1.fld4, '') = NVL(T2.fld4, '')
+                    AND NVL(T1.fld5, '') = NVL(T2.fld5, '')
+                    AND NVL(T1.fld6, '') = NVL(T2.fld6, '')
+                    AND NVL(T1.fld7, '') = NVL(T2.fld7, '')
+                    AND NVL(T1.fld8, '') = NVL(T2.fld8, '')
+                    AND NVL(T1.fld9, '') = NVL(T2.fld9, '')
+                    AND NVL(T1.fld10, '') = NVL(T2.fld10, '')
+                    AND NVL(T1.fld11, '') = NVL(T2.fld11, '')
+                    AND NVL(T1.fld12, '') = NVL(T2.fld12, '')
+                    AND NVL(T1.fld13, '') = NVL(T2.fld13, '')
+                    AND NVL(T1.fld14, '') = NVL(T2.fld14, '')
+                    AND NVL(T1.fld15, '') = NVL(T2.fld15, '')
+                    AND NVL(T1.fld16, '') = NVL(T2.fld16, '')
+                    AND NVL(T1.fld17, '') = NVL(T2.fld17, '')
+                    AND NVL(T1.fld18, '') = NVL(T2.fld18, '')
+                    AND NVL(T1.fld19, '') = NVL(T2.fld19, '')
+                    AND NVL(T1.fld20, '') = NVL(T2.fld20, '')
+                    AND NVL(T1.fld21, '') = NVL(T2.fld21, '')
+                    AND NVL(T1.fld22, '') = NVL(T2.fld22, '')
+                    AND NVL(T1.fld23, '') = NVL(T2.fld23, '')
+                    AND NVL(T1.fld24, '') = NVL(T2.fld24, '')
+                    AND NVL(T1.fld25, '') = NVL(T2.fld25, '')
+                    AND NVL(T1.fld26, '') = NVL(T2.fld26, '')
+                    AND NVL(T1.fld27, '') = NVL(T2.fld27, '')
+                    AND NVL(T1.fld28, '') = NVL(T2.fld28, '')
+                    AND NVL(T1.fld29, '') = NVL(T2.fld29, '')
+                    AND NVL(T1.fld30, '') = NVL(T2.fld30, '')
+                    AND NVL(T1.fld31, '') = NVL(T2.fld31, '')
+                    AND NVL(T1.fld32, '') = NVL(T2.fld32, '')
+                    AND NVL(T1.fld33, '') = NVL(T2.fld33, '')
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_mst
+PREHOOK: Input: default@tbl1_mst2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM tbl1_mst T1
+WHERE NOT EXISTS (SELECT *
+                  FROM tbl1_mst2 T2
+                  WHERE NVL(T1.id, '') = NVL(T2.id, '')
+#### A masked pattern was here ####
+                    AND NVL(T1.isdeleted, '') = NVL(T2.isdeleted, '')
+                    AND NVL(T1.name, '') = NVL(T2.name, '')
+                    AND NVL(T1.recordtypeid, '') = NVL(T2.recordtypeid, '')
+                    AND NVL(T1.createddate, '') = NVL(T2.createddate, '')
+                    AND NVL(T1.lastmodifieddate, '') = NVL(T2.lastmodifieddate, '')
+                    AND NVL(T1.fld1, '') = NVL(T2.fld1, '')
+                    AND NVL(T1.fld2, '') = NVL(T2.fld2, '')
+                    AND NVL(T1.fld3, '') = NVL(T2.fld3, '')
+                    AND NVL(T1.fld4, '') = NVL(T2.fld4, '')
+                    AND NVL(T1.fld5, '') = NVL(T2.fld5, '')
+                    AND NVL(T1.fld6, '') = NVL(T2.fld6, '')
+                    AND NVL(T1.fld7, '') = NVL(T2.fld7, '')
+                    AND NVL(T1.fld8, '') = NVL(T2.fld8, '')
+                    AND NVL(T1.fld9, '') = NVL(T2.fld9, '')
+                    AND NVL(T1.fld10, '') = NVL(T2.fld10, '')
+                    AND NVL(T1.fld11, '') = NVL(T2.fld11, '')
+                    AND NVL(T1.fld12, '') = NVL(T2.fld12, '')
+                    AND NVL(T1.fld13, '') = NVL(T2.fld13, '')
+                    AND NVL(T1.fld14, '') = NVL(T2.fld14, '')
+                    AND NVL(T1.fld15, '') = NVL(T2.fld15, '')
+                    AND NVL(T1.fld16, '') = NVL(T2.fld16, '')
+                    AND NVL(T1.fld17, '') = NVL(T2.fld17, '')
+                    AND NVL(T1.fld18, '') = NVL(T2.fld18, '')
+                    AND NVL(T1.fld19, '') = NVL(T2.fld19, '')
+                    AND NVL(T1.fld20, '') = NVL(T2.fld20, '')
+                    AND NVL(T1.fld21, '') = NVL(T2.fld21, '')
+                    AND NVL(T1.fld22, '') = NVL(T2.fld22, '')
+                    AND NVL(T1.fld23, '') = NVL(T2.fld23, '')
+                    AND NVL(T1.fld24, '') = NVL(T2.fld24, '')
+                    AND NVL(T1.fld25, '') = NVL(T2.fld25, '')
+                    AND NVL(T1.fld26, '') = NVL(T2.fld26, '')
+                    AND NVL(T1.fld27, '') = NVL(T2.fld27, '')
+                    AND NVL(T1.fld28, '') = NVL(T2.fld28, '')
+                    AND NVL(T1.fld29, '') = NVL(T2.fld29, '')
+                    AND NVL(T1.fld30, '') = NVL(T2.fld30, '')
+                    AND NVL(T1.fld31, '') = NVL(T2.fld31, '')
+                    AND NVL(T1.fld32, '') = NVL(T2.fld32, '')
+                    AND NVL(T1.fld33, '') = NVL(T2.fld33, '')
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_mst
+POSTHOOK: Input: default@tbl1_mst2
+#### A masked pattern was here ####
+PREHOOK: query: SELECT *
+FROM tbl1_mst T1
+WHERE EXISTS (SELECT *
+                  FROM tbl1_mst2 T2
+                  WHERE NVL(T1.id, '') = NVL(T2.id, '')
+#### A masked pattern was here ####
+                    AND NVL(T1.isdeleted, '') = NVL(T2.isdeleted, '')
+                    AND NVL(T1.name, '') = NVL(T2.name, '')
+                    AND NVL(T1.recordtypeid, '') = NVL(T2.recordtypeid, '')
+                    AND NVL(T1.createddate, '') = NVL(T2.createddate, '')
+                    AND NVL(T1.lastmodifieddate, '') = NVL(T2.lastmodifieddate, '')
+                    AND NVL(T1.fld1, '') = NVL(T2.fld1, '')
+                    AND NVL(T1.fld2, '') = NVL(T2.fld2, '')
+                    AND NVL(T1.fld3, '') = NVL(T2.fld3, '')
+                    AND NVL(T1.fld4, '') = NVL(T2.fld4, '')
+                    AND NVL(T1.fld5, '') = NVL(T2.fld5, '')
+                    AND NVL(T1.fld6, '') = NVL(T2.fld6, '')
+                    AND NVL(T1.fld7, '') = NVL(T2.fld7, '')
+                    AND NVL(T1.fld8, '') = NVL(T2.fld8, '')
+                    AND NVL(T1.fld9, '') = NVL(T2.fld9, '')
+                    AND NVL(T1.fld10, '') = NVL(T2.fld10, '')
+                    AND NVL(T1.fld11, '') = NVL(T2.fld11, '')
+                    AND NVL(T1.fld12, '') = NVL(T2.fld12, '')
+                    AND NVL(T1.fld13, '') = NVL(T2.fld13, '')
+                    AND NVL(T1.fld14, '') = NVL(T2.fld14, '')
+                    AND NVL(T1.fld15, '') = NVL(T2.fld15, '')
+                    AND NVL(T1.fld16, '') = NVL(T2.fld16, '')
+                    AND NVL(T1.fld17, '') = NVL(T2.fld17, '')
+                    AND NVL(T1.fld18, '') = NVL(T2.fld18, '')
+                    AND NVL(T1.fld19, '') = NVL(T2.fld19, '')
+                    AND NVL(T1.fld20, '') = NVL(T2.fld20, '')
+                    AND NVL(T1.fld21, '') = NVL(T2.fld21, '')
+                    AND NVL(T1.fld22, '') = NVL(T2.fld22, '')
+                    AND NVL(T1.fld23, '') = NVL(T2.fld23, '')
+                    AND NVL(T1.fld24, '') = NVL(T2.fld24, '')
+                    AND NVL(T1.fld25, '') = NVL(T2.fld25, '')
+                    AND NVL(T1.fld26, '') = NVL(T2.fld26, '')
+                    AND NVL(T1.fld27, '') = NVL(T2.fld27, '')
+                    AND NVL(T1.fld28, '') = NVL(T2.fld28, '')
+                    AND NVL(T1.fld29, '') = NVL(T2.fld29, '')
+                    AND NVL(T1.fld30, '') = NVL(T2.fld30, '')
+                    AND NVL(T1.fld31, '') = NVL(T2.fld31, '')
+                    AND NVL(T1.fld32, '') = NVL(T2.fld32, '')
+                    AND NVL(T1.fld33, '') = NVL(T2.fld33, '')
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_mst
+PREHOOK: Input: default@tbl1_mst2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM tbl1_mst T1
+WHERE EXISTS (SELECT *
+                  FROM tbl1_mst2 T2
+                  WHERE NVL(T1.id, '') = NVL(T2.id, '')
+#### A masked pattern was here ####
+                    AND NVL(T1.isdeleted, '') = NVL(T2.isdeleted, '')
+                    AND NVL(T1.name, '') = NVL(T2.name, '')
+                    AND NVL(T1.recordtypeid, '') = NVL(T2.recordtypeid, '')
+                    AND NVL(T1.createddate, '') = NVL(T2.createddate, '')
+                    AND NVL(T1.lastmodifieddate, '') = NVL(T2.lastmodifieddate, '')
+                    AND NVL(T1.fld1, '') = NVL(T2.fld1, '')
+                    AND NVL(T1.fld2, '') = NVL(T2.fld2, '')
+                    AND NVL(T1.fld3, '') = NVL(T2.fld3, '')
+                    AND NVL(T1.fld4, '') = NVL(T2.fld4, '')
+                    AND NVL(T1.fld5, '') = NVL(T2.fld5, '')
+                    AND NVL(T1.fld6, '') = NVL(T2.fld6, '')
+                    AND NVL(T1.fld7, '') = NVL(T2.fld7, '')
+                    AND NVL(T1.fld8, '') = NVL(T2.fld8, '')
+                    AND NVL(T1.fld9, '') = NVL(T2.fld9, '')
+                    AND NVL(T1.fld10, '') = NVL(T2.fld10, '')
+                    AND NVL(T1.fld11, '') = NVL(T2.fld11, '')
+                    AND NVL(T1.fld12, '') = NVL(T2.fld12, '')
+                    AND NVL(T1.fld13, '') = NVL(T2.fld13, '')
+                    AND NVL(T1.fld14, '') = NVL(T2.fld14, '')
+                    AND NVL(T1.fld15, '') = NVL(T2.fld15, '')
+                    AND NVL(T1.fld16, '') = NVL(T2.fld16, '')
+                    AND NVL(T1.fld17, '') = NVL(T2.fld17, '')
+                    AND NVL(T1.fld18, '') = NVL(T2.fld18, '')
+                    AND NVL(T1.fld19, '') = NVL(T2.fld19, '')
+                    AND NVL(T1.fld20, '') = NVL(T2.fld20, '')
+                    AND NVL(T1.fld21, '') = NVL(T2.fld21, '')
+                    AND NVL(T1.fld22, '') = NVL(T2.fld22, '')
+                    AND NVL(T1.fld23, '') = NVL(T2.fld23, '')
+                    AND NVL(T1.fld24, '') = NVL(T2.fld24, '')
+                    AND NVL(T1.fld25, '') = NVL(T2.fld25, '')
+                    AND NVL(T1.fld26, '') = NVL(T2.fld26, '')
+                    AND NVL(T1.fld27, '') = NVL(T2.fld27, '')
+                    AND NVL(T1.fld28, '') = NVL(T2.fld28, '')
+                    AND NVL(T1.fld29, '') = NVL(T2.fld29, '')
+                    AND NVL(T1.fld30, '') = NVL(T2.fld30, '')
+                    AND NVL(T1.fld31, '') = NVL(T2.fld31, '')
+                    AND NVL(T1.fld32, '') = NVL(T2.fld32, '')
+                    AND NVL(T1.fld33, '') = NVL(T2.fld33, '')
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_mst
+POSTHOOK: Input: default@tbl1_mst2
+#### A masked pattern was here ####
+a011000000IA6T2AAL	00510000001nDVpAAM	false	１２３４５６７８９０１２３４５６	01210000000AJfrAAG	2014-01-30T05:30:45.000Z	2016-05-17T04:55:23.000Z	040				30.0					100.0						200.0		50.0															
+a011000000IA6MMAA1	00510000001nDVpAAM	false	１２３４５６７８９０１２３４５６	01210000000AJJhAAO	2014-01-30T05:15:45.000Z	2016-07-08T01:49:01.000Z	102	00510000001oaG0AAI	80.0						100.0	100.0						150.0																	

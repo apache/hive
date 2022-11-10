@@ -50,7 +50,7 @@ POSTHOOK: type: SHOWDATACONNECTORS
 mysql_test
 PREHOOK: query: CREATE CONNECTOR IF NOT EXISTS derby_test
 TYPE 'derby'
-#### A masked pattern was here ####
+URL 'jdbc:derby:./target/db_for_connectortest.db;create=true'
 COMMENT 'test derby connector'
 WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="APP",
@@ -59,7 +59,7 @@ PREHOOK: type: CREATEDATACONNECTOR
 PREHOOK: Output: connector:derby_test
 POSTHOOK: query: CREATE CONNECTOR IF NOT EXISTS derby_test
 TYPE 'derby'
-#### A masked pattern was here ####
+URL 'jdbc:derby:./target/db_for_connectortest.db;create=true'
 COMMENT 'test derby connector'
 WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="APP",
@@ -114,12 +114,12 @@ derby_test
 mysql_test
 PREHOOK: query: CREATE REMOTE DATABASE db_derby USING derby_test with DBPROPERTIES("connector.remoteDbName"="APP")
 PREHOOK: type: CREATEDATABASE
+PREHOOK: Input: connector:derby_test
 PREHOOK: Output: database:db_derby
-#### A masked pattern was here ####
 POSTHOOK: query: CREATE REMOTE DATABASE db_derby USING derby_test with DBPROPERTIES("connector.remoteDbName"="APP")
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Input: connector:derby_test
 POSTHOOK: Output: database:db_derby
-#### A masked pattern was here ####
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -138,6 +138,8 @@ PREHOOK: Input: database:db_derby
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:db_derby
+TESTTABLE1
+TESTTABLE2
 PREHOOK: query: alter connector mysql_test set URL 'jdbc:mysql://nightly1.apache.org:3306/hive2'
 PREHOOK: type: ALTERDATACONNECTOR_
 PREHOOK: Output: connector:mysql_test
@@ -203,3 +205,15 @@ PREHOOK: type: SHOWDATACONNECTORS
 POSTHOOK: query: SHOW CONNECTORS
 POSTHOOK: type: SHOWDATACONNECTORS
 derby_test
+PREHOOK: query: DROP CONNECTOR derby_test
+PREHOOK: type: DROPDATACONNECTOR
+PREHOOK: Input: connector:derby_test
+PREHOOK: Output: connector:derby_test
+POSTHOOK: query: DROP CONNECTOR derby_test
+POSTHOOK: type: DROPDATACONNECTOR
+POSTHOOK: Input: connector:derby_test
+POSTHOOK: Output: connector:derby_test
+PREHOOK: query: SHOW CONNECTORS
+PREHOOK: type: SHOWDATACONNECTORS
+POSTHOOK: query: SHOW CONNECTORS
+POSTHOOK: type: SHOWDATACONNECTORS

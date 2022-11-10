@@ -67,12 +67,17 @@ class AvroSerializer {
   private static final Schema STRING_SCHEMA = Schema.create(Schema.Type.STRING);
   private AvroGenericRecordWritable cache = new AvroGenericRecordWritable();
   private boolean defaultProleptic;
+  private final boolean legacyConversion;
 
-  AvroSerializer() {}
+  AvroSerializer() {
+    this.legacyConversion = ConfVars.HIVE_AVRO_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED.defaultBoolVal;
+  }
 
   AvroSerializer(Configuration configuration) {
     this.defaultProleptic = HiveConf.getBoolVar(
         configuration, ConfVars.HIVE_AVRO_PROLEPTIC_GREGORIAN);
+    this.legacyConversion =
+        HiveConf.getBoolVar(configuration, ConfVars.HIVE_AVRO_TIMESTAMP_WRITE_LEGACY_CONVERSION_ENABLED);
   }
 
   // Hive is pretty simple (read: stupid) in writing out values via the serializer.
@@ -156,7 +161,7 @@ class AvroSerializer {
 
   /** private cache to avoid lots of EnumSymbol creation while serializing.
    *  Two levels because the enum symbol is specific to a schema.
-   *  Object because we want to avoid the overhead of repeated toString calls while maintaining compatability.
+   *  Object because we want to avoid the overhead of repeated toString calls while maintaining compatibility.
    *  Provided there are few enum types per record, and few symbols per enum, memory use should be moderate.
    *  eg 20 types with 50 symbols each as length-10 Strings should be on the order of 100KB per AvroSerializer.
    */
@@ -229,7 +234,7 @@ class AvroSerializer {
       long millis = defaultProleptic ? timestamp.toEpochMilli() :
           CalendarUtils.convertTimeToHybrid(timestamp.toEpochMilli());
       timestamp = TimestampTZUtil.convertTimestampToZone(
-          Timestamp.ofEpochMilli(millis), TimeZone.getDefault().toZoneId(), ZoneOffset.UTC);
+          Timestamp.ofEpochMilli(millis), TimeZone.getDefault().toZoneId(), ZoneOffset.UTC, legacyConversion);
       return timestamp.toEpochMilli();
     case UNKNOWN:
       throw new AvroSerdeException("Received UNKNOWN primitive category.");

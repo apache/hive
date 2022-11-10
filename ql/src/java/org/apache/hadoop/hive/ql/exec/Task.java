@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.DeferredWorkContext;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.mapreduce.MRJobConfig;
@@ -68,6 +69,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected List<Task<?>> backupChildrenTasks = new ArrayList<Task<?>>();
   protected static transient Logger LOG = LoggerFactory.getLogger(Task.class);
   protected int taskTag;
+  protected DeferredWorkContext deferredWorkContext;
   private boolean isLocalMode =false;
 
   public static final int NO_TAG = 0;
@@ -142,7 +144,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected List<Task<?>> parentTasks;
   /**
    * this can be set by the Task, to provide more info about the failure in TaskResult
-   * where the Driver can find it.  This is checked if {@link Task#execute(org.apache.hadoop.hive.ql.TaskQueue)}
+   * where the Driver can find it.  This is checked if {@link Task#execute()}
    * returns non-0 code.
    */
   private Throwable exception;
@@ -351,8 +353,8 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   public static List<Task<?>>
-      findLeafs(List<Task<? extends Serializable>> rootTasks) {
-    final List<Task<? extends Serializable>> leafTasks = new ArrayList<Task<?>>();
+      findLeafs(List<Task<?>> rootTasks) {
+    final List<Task<?>> leafTasks = new ArrayList<Task<?>>();
 
     NodeUtils.iterateTask(rootTasks, Task.class, new NodeUtils.Function<Task>() {
       @Override
@@ -635,6 +637,14 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public void setFetchSource(boolean fetchSource) {
     this.fetchSource = fetchSource;
+  }
+
+  public DeferredWorkContext getDeferredWorkContext() {
+    return deferredWorkContext;
+  }
+
+  public void setDeferredWorkContext(DeferredWorkContext deferredWorkContext) {
+    this.deferredWorkContext = deferredWorkContext;
   }
 
   @Override

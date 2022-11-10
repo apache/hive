@@ -82,16 +82,28 @@ POSTHOOK: Output: default@depts_n5
 #### A masked pattern was here ####
 PREHOOK: query: alter table emps_n6 add constraint pk1 primary key (empid) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@emps_n6
+PREHOOK: Output: default@emps_n6
 POSTHOOK: query: alter table emps_n6 add constraint pk1 primary key (empid) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@emps_n6
+POSTHOOK: Output: default@emps_n6
 PREHOOK: query: alter table depts_n5 add constraint pk2 primary key (deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@depts_n5
+PREHOOK: Output: default@depts_n5
 POSTHOOK: query: alter table depts_n5 add constraint pk2 primary key (deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@depts_n5
+POSTHOOK: Output: default@depts_n5
 PREHOOK: query: alter table emps_n6 add constraint fk1 foreign key (deptno) references depts_n5(deptno) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@emps_n6
+PREHOOK: Output: default@emps_n6
 POSTHOOK: query: alter table emps_n6 add constraint fk1 foreign key (deptno) references depts_n5(deptno) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@emps_n6
+POSTHOOK: Output: default@emps_n6
 PREHOOK: query: explain
 select empid from emps_n6
 join depts_n5 using (deptno) where depts_n5.deptno >= 20

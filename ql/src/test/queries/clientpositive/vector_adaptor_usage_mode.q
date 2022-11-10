@@ -32,6 +32,10 @@ INSERT OVERWRITE TABLE DECIMAL_UDF_n1 SELECT * FROM DECIMAL_UDF_txt_n0;
 -- Add a single NULL row that will come from ORC as isRepeated.
 insert into DECIMAL_UDF_n1 values (NULL, NULL);
 
+-- concat vectorization
+drop table if exists tbl_dates;
+create table tbl_dates (year string, month string, day string);
+
 drop table if exists count_case_groupby;
 
 create table count_case_groupby (key string, bool boolean) STORED AS orc;
@@ -83,6 +87,9 @@ from varchar_udf_1_n0;
 
 
 set hive.vectorized.adaptor.usage.mode=chosen;
+
+explain vectorization expression
+select count(*) from tbl_dates where to_date(concat(year, '-', month, '-', day)) between to_date('2018-12-01') and to_date('2021-03-01');
 
 explain vectorization expression
 select
@@ -182,6 +189,7 @@ drop table varchar_udf_1_n0;
 
 DROP TABLE DECIMAL_UDF_txt_n0;
 DROP TABLE DECIMAL_UDF_n1;
+DROP TABLE tbl_dates;
 
 drop table count_case_groupby;
 

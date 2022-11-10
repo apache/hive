@@ -1,6 +1,6 @@
 CBO PLAN:
 HiveSortLimit(sort0=[$1], sort1=[$2], sort2=[$3], sort3=[$0], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
-  HiveProject($f0=[$3], $f1=[$2], $f2=[$1], $f3=[$0], $f4=[CAST(/($4, $5)):DECIMAL(16, 6)], $f5=[CAST(/($6, $7)):DECIMAL(16, 6)], $f6=[CAST(/($8, $9)):DECIMAL(16, 6)], $f7=[CAST(/($10, $11)):DECIMAL(16, 6)], $f8=[CAST(/($12, $13)):DECIMAL(16, 6)], $f9=[CAST(/($14, $15)):DECIMAL(16, 6)], $f10=[CAST(/($16, $17)):DECIMAL(16, 6)])
+  HiveProject(i_item_id=[$3], ca_country=[$2], ca_state=[$1], ca_county=[$0], agg1=[CAST(/($4, $5)):DECIMAL(16, 6)], agg2=[CAST(/($6, $7)):DECIMAL(16, 6)], agg3=[CAST(/($8, $9)):DECIMAL(16, 6)], agg4=[CAST(/($10, $11)):DECIMAL(16, 6)], agg5=[CAST(/($12, $13)):DECIMAL(16, 6)], agg6=[CAST(/($14, $15)):DECIMAL(16, 6)], agg7=[CAST(/($16, $17)):DECIMAL(16, 6)])
     HiveAggregate(group=[{17, 18, 19, 21}], groups=[[{17, 18, 19, 21}, {18, 19, 21}, {19, 21}, {21}, {}]], agg#0=[sum($4)], agg#1=[count($4)], agg#2=[sum($5)], agg#3=[count($5)], agg#4=[sum($6)], agg#5=[count($6)], agg#6=[sum($7)], agg#7=[count($7)], agg#8=[sum($8)], agg#9=[count($8)], agg#10=[sum($15)], agg#11=[count($15)], agg#12=[sum($11)], agg#13=[count($11)])
       HiveJoin(condition=[=($13, $22)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveJoin(condition=[=($2, $20)], joinType=[inner], algorithm=[none], cost=[not available])

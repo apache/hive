@@ -34,18 +34,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 public class <ClassName> extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int colNum;
-
   public <ClassName>(int colNum, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum = colNum;
+    super(colNum, outputColumnNum);
   }
 
   public <ClassName>() {
     super();
-
-    // Dummy final assignments.
-    colNum = -1;
   }
 
   @Override
@@ -61,7 +55,7 @@ public class <ClassName> extends VectorExpression {
       this.evaluateChildren(batch);
     }
 
-    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[colNum];
+    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumnNum[0]];
     <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -151,7 +145,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

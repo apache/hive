@@ -97,8 +97,8 @@ public class TestGenericUDFQuarter {
 
     udf.initialize(arguments);
 
-    runAndVerifyStr("2016-03-35", 2, udf);
-    runAndVerifyStr("2014-01-32", 1, udf);
+    runAndVerifyStr("2016-03-35", null, udf);
+    runAndVerifyStr("2014-01-32", null, udf);
     runAndVerifyStr("01/14/2014", null, udf);
     runAndVerifyStr(null, null, udf);
   }

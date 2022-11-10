@@ -30,10 +30,14 @@ PREHOOK: query: update acid_vectorized set b = 'foo' where b = 'bar'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_vectorized
 PREHOOK: Output: default@acid_vectorized
+PREHOOK: Output: default@acid_vectorized
 POSTHOOK: query: update acid_vectorized set b = 'foo' where b = 'bar'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_vectorized
 POSTHOOK: Output: default@acid_vectorized
+POSTHOOK: Output: default@acid_vectorized
+POSTHOOK: Lineage: acid_vectorized.a SIMPLE [(acid_vectorized)acid_vectorized.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_vectorized.b SIMPLE []
 PREHOOK: query: delete from acid_vectorized where b = 'foo'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_vectorized
@@ -92,10 +96,14 @@ PREHOOK: query: update acid_fast_vectorized set b = 'foo' where b = 'bar'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_fast_vectorized
 PREHOOK: Output: default@acid_fast_vectorized
+PREHOOK: Output: default@acid_fast_vectorized
 POSTHOOK: query: update acid_fast_vectorized set b = 'foo' where b = 'bar'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_fast_vectorized
 POSTHOOK: Output: default@acid_fast_vectorized
+POSTHOOK: Output: default@acid_fast_vectorized
+POSTHOOK: Lineage: acid_fast_vectorized.a SIMPLE [(acid_fast_vectorized)acid_fast_vectorized.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_fast_vectorized.b SIMPLE []
 PREHOOK: query: delete from acid_fast_vectorized where b = 'foo'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_fast_vectorized

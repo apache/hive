@@ -36,18 +36,12 @@ import java.util.Arrays;
 public class CastStringToDate extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int inputColumn;
-
   public CastStringToDate() {
     super();
-
-    // Dummy final assignments.
-    inputColumn = -1;
   }
 
   public CastStringToDate(int inputColumn, int outputColumnNum) {
-    super(outputColumnNum);
-    this.inputColumn = inputColumn;
+    super(inputColumn, outputColumnNum);
   }
 
   @Override
@@ -57,7 +51,7 @@ public class CastStringToDate extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inV = (BytesColumnVector) batch.cols[inputColumn];
+    BytesColumnVector inV = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
@@ -167,7 +161,7 @@ public class CastStringToDate extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumn);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.QTestUtil;
  * Provides facilities to invoke {@link QTestOptionHandler}-s.
  *
  * Enables to dispatch option arguments to a specific option handler.
- * The option invocation format is '--! qt:<optionName>:<optionArgs>
+ * The option invocation format is '--! qt:&lt;optionName&gt;:&lt;optionArgs&gt;
  *
  * Please refer to specific implementations of {@link QTestOptionHandler} for more detailed information about them.
  */

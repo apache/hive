@@ -37,26 +37,20 @@ public class IfExprStringScalarStringGroupColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int arg1Column;
   private final byte[] arg2Scalar;
-  private final int arg3Column;
 
 
   public IfExprStringScalarStringGroupColumn(int arg1Column, byte[] arg2Scalar, int arg3Column,
       int outputColumnNum) {
-    super(outputColumnNum);
-    this.arg1Column = arg1Column;
+    super(arg1Column, arg3Column, outputColumnNum);
     this.arg2Scalar = arg2Scalar;
-    this.arg3Column = arg3Column;
   }
 
   public IfExprStringScalarStringGroupColumn() {
     super();
 
     // Dummy final assignments.
-    arg1Column = -1;
     arg2Scalar = null;
-    arg3Column = -1;
   }
 
   @Override
@@ -66,8 +60,8 @@ public class IfExprStringScalarStringGroupColumn extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
-    BytesColumnVector arg3ColVector = (BytesColumnVector) batch.cols[arg3Column];
+    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
+    BytesColumnVector arg3ColVector = (BytesColumnVector) batch.cols[inputColumnNum[1]];
     BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -177,7 +171,7 @@ public class IfExprStringScalarStringGroupColumn extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, arg1Column) + ", val "+ displayUtf8Bytes(arg2Scalar) + getColumnParamString(2, arg3Column);
+    return getColumnParamString(0, inputColumnNum[0]) + ", val "+ displayUtf8Bytes(arg2Scalar) + getColumnParamString(2, inputColumnNum[1]);
   }
 
   @Override

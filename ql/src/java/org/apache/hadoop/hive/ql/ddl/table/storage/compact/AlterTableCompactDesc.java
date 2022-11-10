@@ -22,28 +22,34 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
+import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
- * DDL task description for ALTER TABLE ... [PARTITION ... ] COMPACT 'major|minor' [WITH OVERWRITE TBLPROPERTIES ...]
+ * DDL task description for ALTER TABLE ... [PARTITION ... ] COMPACT 'major|minor' [POOL 'poolname'] [WITH OVERWRITE TBLPROPERTIES ...]
  * commands.
  */
 @Explain(displayName = "Compact", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterTableCompactDesc implements DDLDescWithWriteId {
+public class AlterTableCompactDesc extends AbstractAlterTableDesc implements DDLDescWithWriteId {
   private final String tableName;
   private final Map<String, String> partitionSpec;
   private final String compactionType;
   private final boolean isBlocking;
+  private final String poolName;
   private final Map<String, String> properties;
   private Long writeId;
 
   public AlterTableCompactDesc(TableName tableName, Map<String, String> partitionSpec, String compactionType,
-      boolean isBlocking, Map<String, String> properties) {
+      boolean isBlocking, String poolName, Map<String, String> properties) throws SemanticException{
+    super(AlterTableType.COMPACT, tableName, partitionSpec, null, false, false, properties);
     this.tableName = tableName.getNotEmptyDbTable();
     this.partitionSpec = partitionSpec;
     this.compactionType = compactionType;
     this.isBlocking = isBlocking;
+    this.poolName = poolName;
     this.properties = properties;
   }
 
@@ -66,6 +72,11 @@ public class AlterTableCompactDesc implements DDLDescWithWriteId {
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isBlocking() {
     return isBlocking;
+  }
+
+  @Explain(displayName = "pool", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getPoolName() {
+    return poolName;
   }
 
   @Explain(displayName = "properties", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

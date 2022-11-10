@@ -25,8 +25,8 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.StringConvertibleObject;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -43,7 +42,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.DBSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.ReplicationSpecSerializer;
@@ -369,10 +367,11 @@ public class EximUtil {
     if (parameters != null) {
       Map<String, String> tmpParameters = new HashMap<>(parameters);
       tmpParameters.entrySet()
-                .removeIf(e -> e.getKey().startsWith(Utils.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
-                            || e.getKey().equals(ReplUtils.REPL_CHECKPOINT_KEY)
-                            || e.getKey().equals(ReplChangeManager.SOURCE_OF_REPLICATION)
-                            || e.getKey().equals(ReplUtils.REPL_FIRST_INC_PENDING_FLAG));
+                .removeIf(e -> e.getKey().startsWith(ReplConst.BOOTSTRAP_DUMP_STATE_KEY_PREFIX)
+                            || e.getKey().equals(ReplConst.REPL_TARGET_DB_PROPERTY)
+                            || e.getKey().equals(ReplConst.SOURCE_OF_REPLICATION)
+                            || e.getKey().equals(ReplConst.REPL_FIRST_INC_PENDING_FLAG)
+                            || e.getKey().equals(ReplConst.REPL_FAILOVER_ENDPOINT));
       dbObj.setParameters(tmpParameters);
     }
     try (JsonWriter jsonWriter = new JsonWriter(fs, metadataPath)) {
@@ -389,13 +388,13 @@ public class EximUtil {
               MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE));
       Path dbDerivedLoc = new Path(whLocatoion, database.getName().toLowerCase() + DATABASE_PATH_SUFFIX);
       String defaultDbLoc = Utilities.getQualifiedPath((HiveConf) conf, dbDerivedLoc);
-      database.putToParameters(ReplUtils.REPL_IS_CUSTOM_DB_LOC,
+      database.putToParameters(ReplConst.REPL_IS_CUSTOM_DB_LOC,
               Boolean.toString(!defaultDbLoc.equals(database.getLocationUri())));
       String whManagedLocatoion = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE);
       Path dbDerivedManagedLoc = new Path(whManagedLocatoion, database.getName().toLowerCase()
               + DATABASE_PATH_SUFFIX);
       String defaultDbManagedLoc = Utilities.getQualifiedPath((HiveConf) conf, dbDerivedManagedLoc);
-      database.getParameters().put(ReplUtils.REPL_IS_CUSTOM_DB_MANAGEDLOC, Boolean.toString(
+      database.getParameters().put(ReplConst.REPL_IS_CUSTOM_DB_MANAGEDLOC, Boolean.toString(
               !(database.getManagedLocationUri() == null
                       ||defaultDbManagedLoc.equals(database.getManagedLocationUri()))));
     } catch (HiveException ex) {

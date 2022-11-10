@@ -63,6 +63,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+@org.junit.Ignore("HIVE-25323")
 public class TestVectorCastStatement {
 
   @Test

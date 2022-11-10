@@ -91,7 +91,7 @@ public class FadvisedFileRegion extends DefaultFileRegion {
   /**
    * Since Netty4, deallocate() is called automatically during cleanup, but before the
    * ChannelFutureListeners. Deallocate calls FileChannel.close() and makes the file descriptor
-   * invalid, so every OS cache operation (e.g. posix_fadvice) with the original file descriptor
+   * invalid, so every OS cache operation (e.g. posix_fadvise) with the original file descriptor
    * will fail after this operation, so we need to take care of cleanup operations here (before
    * deallocating) instead of listeners outside.
    */

@@ -10,10 +10,10 @@ set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false; 
 
 CREATE TABLE test_list1 (key INT, value array<int>, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
-INSERT INTO test_list1 VALUES (99, array(0,0), 'Alice'), (99, array(2,2), 'Mat'), (100, array(0,0), 'Bob'), (101, array(2,2), 'Car');
+INSERT INTO test_list1 VALUES (99, array(0,0), 'Alice'), (99, array(2,2), 'Mat'), (100, array(0,0), 'Bob'), (101, array(2,2), 'Car'), (102, array(1, 2, 3, 4), 'Mallory');
 
 CREATE TABLE test_list2 (key INT, value array<int>, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
-INSERT INTO test_list2 VALUES (102, array(2,2), 'Del'), (103, array(2,2), 'Ema'), (104, array(3,3), 'Fli');
+INSERT INTO test_list2 VALUES (102, array(2,2), 'Del'), (103, array(2,2), 'Ema'), (104, array(3,3), 'Fli'), (105, array(1, 2, 3, 4), 'Victor');
 
 EXPLAIN
 SELECT *

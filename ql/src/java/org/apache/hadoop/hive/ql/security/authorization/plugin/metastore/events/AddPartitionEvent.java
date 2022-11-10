@@ -61,9 +61,7 @@ public class AddPartitionEvent extends HiveMetaStoreAuthorizableEvent {
   }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> AddPartitionEvent.getOutputHObjs()");
-    }
+    LOG.debug("==> AddPartitionEvent.getOutputHObjs()");
 
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreAddPartitionEvent      event = (PreAddPartitionEvent) preEventContext;
@@ -85,9 +83,7 @@ public class AddPartitionEvent extends HiveMetaStoreAuthorizableEvent {
 
     COMMAND_STR = buildCommandString(COMMAND_STR, table);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== AddPartitionEvent.getOutputHObjs(): ret=" + ret );
-    }
+    LOG.debug("<== AddPartitionEvent.getOutputHObjs(): ret={}", ret);
 
     return ret;
   }

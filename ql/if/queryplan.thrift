@@ -60,7 +60,6 @@ enum OperatorType {
   ORCFILEMERGE,
   RCFILEMERGE,
   MERGEJOIN,
-  SPARKPRUNINGSINK,
   TOPNKEY,
 }
 
@@ -110,6 +109,7 @@ enum StageType {
   ACK,
   RANGER_DUMP,
   RANGER_LOAD,
+  RANGER_DENY,
   ATLAS_DUMP,
   ATLAS_LOAD
 }

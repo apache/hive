@@ -83,15 +83,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (null or dt1 is not null) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: ScalarNullOrCol(col 4:boolean, val 0:boolean)(children: IsNotNull(col 0:date) -> 4:boolean) -> 5:boolean
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: ScalarNullOrCol(col 5:boolean, val 0:boolean)(children: IsNotNull(col 0:date) -> 5:boolean) -> 6:boolean
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -195,15 +195,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: dt1 is not null (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: IsNotNull(col 0:date) -> 3:boolean
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: IsNotNull(col 0:date) -> 4:boolean
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -307,15 +307,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (null or dt1 is not null) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: ScalarNullOrCol(col 4:boolean, val 0:boolean)(children: IsNotNull(col 0:date) -> 4:boolean) -> 5:boolean
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: ScalarNullOrCol(col 5:boolean, val 0:boolean)(children: IsNotNull(col 0:date) -> 5:boolean) -> 6:boolean
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -428,15 +428,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (null and dt1 is null) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: ScalarNullAndCol(col 4:boolean, val 0:boolean)(children: IsNull(col 0:date) -> 4:boolean) -> 5:boolean
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: ScalarNullAndCol(col 5:boolean, val 0:boolean)(children: IsNull(col 0:date) -> 5:boolean) -> 6:boolean
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -540,15 +540,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: dt1 is null (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3]
-                        selectExpressions: IsNull(col 0:date) -> 3:boolean
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: IsNull(col 0:date) -> 4:boolean
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -652,15 +652,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: (null and dt1 is null) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: ScalarNullAndCol(col 4:boolean, val 0:boolean)(children: IsNull(col 0:date) -> 4:boolean) -> 5:boolean
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: ScalarNullAndCol(col 5:boolean, val 0:boolean)(children: IsNull(col 0:date) -> 5:boolean) -> 6:boolean
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false

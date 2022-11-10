@@ -56,10 +56,15 @@ PREHOOK: query: update acid_uami set de = 3.14 where de = 109.23 or de = 119.23
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uami
 PREHOOK: Output: default@acid_uami
+PREHOOK: Output: default@acid_uami
 POSTHOOK: query: update acid_uami set de = 3.14 where de = 109.23 or de = 119.23
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uami
 POSTHOOK: Output: default@acid_uami
+POSTHOOK: Output: default@acid_uami
+POSTHOOK: Lineage: acid_uami.de EXPRESSION []
+POSTHOOK: Lineage: acid_uami.i SIMPLE [(acid_uami)acid_uami.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_uami.vc SIMPLE [(acid_uami)acid_uami.FieldSchema(name:vc, type:varchar(128), comment:null), ]
 PREHOOK: query: select * from acid_uami order by de
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uami

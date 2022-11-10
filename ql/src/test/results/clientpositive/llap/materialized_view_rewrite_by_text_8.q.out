@@ -1,0 +1,162 @@
+PREHOOK: query: create table t1(col0 int) STORED AS ORC
+                          TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(col0 int) STORED AS ORC
+                          TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+Only query text based automatic rewriting is available for materialized view. LEFT join type is not supported by rewriting algorithm.
+Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: create materialized view mat1 as
+select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat1
+POSTHOOK: query: create materialized view mat1 as
+select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat1
+POSTHOOK: Lineage: mat1.col0 SIMPLE []
+Only query text based automatic rewriting is available for materialized view. LEFT join type is not supported by rewriting algorithm.
+Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: create materialized view mat2 as
+select col0 from
+  (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
+where col0 < 100
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat2
+POSTHOOK: query: create materialized view mat2 as
+select col0 from
+  (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
+where col0 < 100
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat2
+POSTHOOK: Lineage: mat2.col0 SIMPLE []
+PREHOOK: query: explain cbo
+select col0 from
+  (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
+where col0 < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat2
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col0 from
+  (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
+where col0 < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat2
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
+
+PREHOOK: query: explain cbo
+select col0 from (
+select col0 from
+  (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
+where col0 < 100
+) sub2
+where col0 = 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat2
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col0 from (
+select col0 from
+  (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
+where col0 < 100
+) sub2
+where col0 = 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat2
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(col0=[CAST(10):INTEGER])
+  HiveFilter(condition=[=($0, 10)])
+    HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
+
+PREHOOK: query: explain cbo
+select col0 from (
+    select col0 from
+      (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
+    where col0 < 100
+) sub2
+where col0 = 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat2
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col0 from (
+    select col0 from
+      (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
+    where col0 < 100
+) sub2
+where col0 = 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat2
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(col0=[CAST(10):INTEGER])
+  HiveFilter(condition=[=($0, 10)])
+    HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
+
+PREHOOK: query: explain cbo
+select col0 from t1 where col0 in (
+  select col0 from
+    (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
+where col0 < 100
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat2
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col0 from t1 where col0 in (
+  select col0 from
+    (select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20) sub
+where col0 < 100
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat2
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+  HiveProject(col0=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, t1]], table:alias=[t1])
+  HiveProject(col0=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, mat2]], table:alias=[default.mat2])
+
+PREHOOK: query: drop materialized view mat2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mat2
+PREHOOK: Output: default@mat2
+POSTHOOK: query: drop materialized view mat2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mat2
+POSTHOOK: Output: default@mat2
+PREHOOK: query: drop materialized view mat1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mat1
+PREHOOK: Output: default@mat1
+POSTHOOK: query: drop materialized view mat1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mat1
+POSTHOOK: Output: default@mat1

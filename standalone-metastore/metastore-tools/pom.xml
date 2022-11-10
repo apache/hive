@@ -12,28 +12,21 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>hive-standalone-metastore</artifactId>
     <version>4.0.0-SNAPSHOT</version>
     <groupId>org.apache.hive</groupId>
   </parent>
-
   <artifactId>hive-metastore-tools</artifactId>
   <name>Hive Metastore Tools</name>
   <packaging>pom</packaging>
-
   <modules>
     <module>metastore-benchmarks</module>
     <module>tools-common</module>
   </modules>
-
   <properties>
-    <hive.version>4.0.0-SNAPSHOT</hive.version>
-    <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
     <javac.errorprone.version>2.8</javac.errorprone.version>
     <errorprone.core.version>2.3.1</errorprone.core.version>
     <picocli.version>3.1.0</picocli.version>
@@ -45,7 +38,6 @@
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <junit.vintage.version>5.6.2</junit.vintage.version>
   </properties>
-
   <!-- why the f*ck this pom.xml has a dependencyManagement block? -->
   <dependencyManagement>
     <dependencies>
@@ -94,7 +86,7 @@
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-standalone-metastore-common</artifactId>
-        <version>${hive.version}</version>
+        <version>${project.version}</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
       <dependency>
@@ -106,7 +98,7 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
-	<version>1.7.30</version>
+        <version>1.7.30</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
       <dependency>
@@ -145,17 +137,7 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
   <build>
-    <pluginManagement>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven.surefire.plugin.version}</version>
-      </plugin>
-    </plugins>
-    </pluginManagement>
     <plugins>
       <!-- Suppress source assembly -->
       <plugin>
@@ -173,5 +155,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>

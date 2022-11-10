@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ResultFileFormat;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -97,6 +98,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -268,7 +270,8 @@ public abstract class TaskCompiler {
     } else if (!isCStats) {
       for (LoadTableDesc ltd : loadTableWork) {
         Task<MoveWork> tsk = TaskFactory
-            .get(new MoveWork(null, null, ltd, null, false));
+            .get(new MoveWork(pCtx.getQueryProperties().isCTAS() && pCtx.getCreateTable().isExternal(),
+                    null, null, ltd, null, false));
         mvTask.add(tsk);
       }
 
@@ -282,11 +285,9 @@ public abstract class TaskCompiler {
           setLoadFileLocation(pCtx, lfd);
           oneLoadFileForCtas = false;
         }
-        // for direct insert CTAS, we don't need this MoveTask since the data will be inserted into its final location
-        if (!directInsertCtas) {
-          mvTask.add(TaskFactory
-              .get(new MoveWork(null, null, null, lfd, false)));
-        }
+        mvTask.add(TaskFactory.get(
+            new MoveWork(pCtx.getQueryProperties().isCTAS() && pCtx.getCreateTable().isExternal(), null, null, null,
+                lfd, false)));
       }
     }
 
@@ -467,7 +468,7 @@ public abstract class TaskCompiler {
     if (pCtx.getQueryProperties().isCTAS()) {
       CreateTableDesc ctd = pCtx.getCreateTable();
       dataSink = ctd.getAndUnsetWriter();
-      txnId = ctd.getInitialMmWriteId();
+      txnId = ctd.getInitialWriteId();
       loc = ctd.getLocation();
     } else {
       CreateMaterializedViewDesc cmv = pCtx.getCreateViewDesc();
@@ -476,6 +477,25 @@ public abstract class TaskCompiler {
       loc = cmv.getLocation();
     }
     Path location = (loc == null) ? getDefaultCtasLocation(pCtx) : new Path(loc);
+    if (pCtx.getQueryProperties().isCTAS()) {
+      CreateTableDesc ctd = pCtx.getCreateTable();
+      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL)) {
+        ctd.getTblProps().put(hive_metastoreConstants.CTAS_LEGACY_CONFIG, "true"); // create as external table
+      }
+      try {
+        Table table = ctd.toTable(conf);
+        table = db.getTranslateTableDryrun(table.getTTable());
+        org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
+        if (tTable.getSd() != null && tTable.getSd().getLocation() != null) {
+          location = new Path(tTable.getSd().getLocation());
+        }
+        ctd.getTblProps().remove(hive_metastoreConstants.CTAS_LEGACY_CONFIG);
+        ctd.fromTable(tTable);
+      } catch (HiveException ex) {
+        throw new SemanticException(ex);
+      }
+      pCtx.setCreateTable(ctd);
+    }
     if (txnId != null) {
       dataSink.setDirName(location);
       location = new Path(location, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
@@ -493,25 +513,42 @@ public abstract class TaskCompiler {
 
   private Path getDefaultCtasLocation(final ParseContext pCtx) throws SemanticException {
     try {
-      String protoName = null;
+      String protoName = null, suffix = "";
       boolean isExternal = false;
+      boolean createTableOrMVUseSuffix = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+              || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
+
       if (pCtx.getQueryProperties().isCTAS()) {
         protoName = pCtx.getCreateTable().getDbTableName();
         isExternal = pCtx.getCreateTable().isExternal();
+        createTableOrMVUseSuffix &= AcidUtils.isTransactionalTable(pCtx.getCreateTable());
+        suffix = getTableOrMVSuffix(pCtx, createTableOrMVUseSuffix);
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
         protoName = pCtx.getCreateViewDesc().getViewName();
+        createTableOrMVUseSuffix &= AcidUtils.isTransactionalView(pCtx.getCreateViewDesc());
+        suffix = getTableOrMVSuffix(pCtx, createTableOrMVUseSuffix);
       }
       String[] names = Utilities.getDbTableName(protoName);
       if (!db.databaseExists(names[0])) {
         throw new SemanticException("ERROR: The database " + names[0] + " does not exist.");
       }
       Warehouse wh = new Warehouse(conf);
-      return wh.getDefaultTablePath(db.getDatabase(names[0]), names[1], isExternal);
-    } catch (HiveException e) {
-      throw new SemanticException(e);
-    } catch (MetaException e) {
+      return wh.getDefaultTablePath(db.getDatabase(names[0]), names[1] + suffix, isExternal);
+    } catch (HiveException | MetaException e) {
       throw new SemanticException(e);
     }
+  }
+
+  public String getTableOrMVSuffix(ParseContext pCtx, boolean createTableOrMVUseSuffix) {
+    String suffix = "";
+    if (createTableOrMVUseSuffix) {
+      long txnId = Optional.ofNullable(pCtx.getContext())
+              .map(ctx -> ctx.getHiveTxnManager().getCurrentTxnId()).orElse(0L);
+      if (txnId != 0) {
+        suffix = AcidUtils.getPathSuffix(txnId);
+      }
+    }
+    return suffix;
   }
 
   private void patchUpAfterCTASorMaterializedView(List<Task<?>> rootTasks,

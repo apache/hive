@@ -142,16 +142,28 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 add constraints
 PREHOOK: query: alter table orders add constraint pk_o primary key (o_orderkey) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: tpch_0_001@orders
+PREHOOK: Output: tpch_0_001@orders
 POSTHOOK: query: alter table orders add constraint pk_o primary key (o_orderkey) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: tpch_0_001@orders
+POSTHOOK: Output: tpch_0_001@orders
 PREHOOK: query: alter table customer add constraint pk_c primary key (c_custkey) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: tpch_0_001@customer
+PREHOOK: Output: tpch_0_001@customer
 POSTHOOK: query: alter table customer add constraint pk_c primary key (c_custkey) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: tpch_0_001@customer
+POSTHOOK: Output: tpch_0_001@customer
 PREHOOK: query: alter table lineitem add constraint pk_l primary key (l_orderkey,l_linenumber) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: tpch_0_001@lineitem
+PREHOOK: Output: tpch_0_001@lineitem
 POSTHOOK: query: alter table lineitem add constraint pk_l primary key (l_orderkey,l_linenumber) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: tpch_0_001@lineitem
+POSTHOOK: Output: tpch_0_001@lineitem
 PREHOOK: query: alter table lineitem change column L_ORDERKEY L_ORDERKEY int constraint li_ok_nn not null disable novalidate rely
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: tpch_0_001@lineitem
@@ -162,12 +174,20 @@ POSTHOOK: Input: tpch_0_001@lineitem
 POSTHOOK: Output: tpch_0_001@lineitem
 PREHOOK: query: alter table lineitem add constraint li_o foreign key  (l_orderkey) references orders (o_orderkey) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: tpch_0_001@lineitem
+PREHOOK: Output: tpch_0_001@lineitem
 POSTHOOK: query: alter table lineitem add constraint li_o foreign key  (l_orderkey) references orders (o_orderkey) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: tpch_0_001@lineitem
+POSTHOOK: Output: tpch_0_001@lineitem
 PREHOOK: query: alter table orders   add constraint or_c foreign key  (o_custkey) references customer (c_custkey) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: tpch_0_001@orders
+PREHOOK: Output: tpch_0_001@orders
 POSTHOOK: query: alter table orders   add constraint or_c foreign key  (o_custkey) references customer (c_custkey) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: tpch_0_001@orders
+POSTHOOK: Output: tpch_0_001@orders
 PREHOOK: query: explain cbo select
 c_name,
 c_custkey,

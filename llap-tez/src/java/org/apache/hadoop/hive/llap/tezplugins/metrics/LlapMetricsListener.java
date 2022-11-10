@@ -41,7 +41,7 @@ public interface LlapMetricsListener {
 
   /**
    * Handler will be called when new data is arrived for every active Llap Daemon in the cluster.
-   * @param newMetrics The map of the worker indentity -> metrics
+   * @param newMetrics The map of the worker indentity -&gt; metrics
    */
   void newClusterMetrics(Map<String, LlapMetrics> newMetrics);
 }

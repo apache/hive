@@ -155,12 +155,12 @@ POSTHOOK: Input: default@test1_n7
 POSTHOOK: Input: default@test2_n4
 #### A masked pattern was here ####
 99	0	Alice	NULL	NULL	NULL
-100	1	Bob	NULL	NULL	NULL
 99	2	Mat	NULL	NULL	NULL
-101	2	Car	102	2	Del
-101	2	Car	103	2	Ema
+100	1	Bob	NULL	NULL	NULL
 NULL	NULL	None	NULL	NULL	NULL
 98	NULL	None	NULL	NULL	NULL
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT *

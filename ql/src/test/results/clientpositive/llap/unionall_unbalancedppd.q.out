@@ -86,11 +86,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: union_all_bug_test_1
-          filterExpr: (if(true, f1, f2) = 1) (type: boolean)
+          filterExpr: (f1 = 1) (type: boolean)
           Filter Operator
-            predicate: (if(true, f1, f2) = 1) (type: boolean)
+            predicate: (f1 = 1) (type: boolean)
             Select Operator
-              expressions: f1 (type: int)
+              expressions: 1 (type: int)
               outputColumnNames: _col0
               ListSink
 

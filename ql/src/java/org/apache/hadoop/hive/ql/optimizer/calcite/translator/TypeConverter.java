@@ -128,25 +128,29 @@ public class TypeConverter {
     RexBuilder rexBuilder = cluster.getRexBuilder();
     RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
     RowSchema rs = rr.getRowSchema();
-    List<RelDataType> fieldTypes = new LinkedList<RelDataType>();
-    List<String> fieldNames = new LinkedList<String>();
+    List<RelDataType> fieldTypes = new LinkedList<>();
+    List<String> fieldNames = new LinkedList<>();
 
     for (ColumnInfo ci : rs.getSignature()) {
       if (neededCols == null || neededCols.contains(ci.getInternalName())) {
-        fieldTypes.add(convert(ci.getType(), dtFactory));
+        fieldTypes.add(convert(ci.getType(), ci.isNullable(), dtFactory));
         fieldNames.add(ci.getInternalName());
       }
     }
     return dtFactory.createStructType(fieldTypes, fieldNames);
   }
 
-  public static RelDataType convert(TypeInfo type, RelDataTypeFactory dtFactory)
+  public static RelDataType convert(TypeInfo type, RelDataTypeFactory dtFactory) throws CalciteSemanticException {
+    return convert(type, true, dtFactory);
+  }
+
+  public static RelDataType convert(TypeInfo type, boolean nullable, RelDataTypeFactory dtFactory)
       throws CalciteSemanticException {
     RelDataType convertedType = null;
 
     switch (type.getCategory()) {
     case PRIMITIVE:
-      convertedType = convert((PrimitiveTypeInfo) type, dtFactory);
+      convertedType = convert((PrimitiveTypeInfo) type, nullable, dtFactory);
       break;
     case LIST:
       convertedType = convert((ListTypeInfo) type, dtFactory);
@@ -162,10 +166,14 @@ public class TypeConverter {
       break;
     }
     // hive does not have concept of not nullable types
-    return dtFactory.createTypeWithNullability(convertedType, true);
+    return dtFactory.createTypeWithNullability(convertedType, nullable);
   }
 
   public static RelDataType convert(PrimitiveTypeInfo type, RelDataTypeFactory dtFactory) {
+    return convert(type, true, dtFactory);
+  }
+
+  public static RelDataType convert(PrimitiveTypeInfo type, boolean nullable, RelDataTypeFactory dtFactory) {
     RelDataType convertedType = null;
 
     switch (type.getPrimitiveCategory()) {
@@ -242,7 +250,7 @@ public class TypeConverter {
       throw new RuntimeException("Unsupported Type : " + type.getTypeName());
     }
 
-    return dtFactory.createTypeWithNullability(convertedType, true);
+    return dtFactory.createTypeWithNullability(convertedType, nullable);
   }
 
   public static RelDataType convert(ListTypeInfo lstType,

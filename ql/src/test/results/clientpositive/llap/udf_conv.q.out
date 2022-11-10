@@ -181,3 +181,39 @@ POSTHOOK: Input: default@src
 EE	568
 56	134
 137	785
+PREHOOK: query: create table test (a string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create table test (a string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: insert into test values (""),(10),(NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: insert into test values (""),(10),(NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.a SCRIPT []
+PREHOOK: query: select conv(a,16,10) from test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: select conv(a,16,10) from test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+NULL
+16
+NULL
+PREHOOK: query: drop table test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test
+PREHOOK: Output: default@test
+POSTHOOK: query: drop table test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test
+POSTHOOK: Output: default@test

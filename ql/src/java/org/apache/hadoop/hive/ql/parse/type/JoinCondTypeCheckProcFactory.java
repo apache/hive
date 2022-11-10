@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -104,12 +105,17 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
           tblAliasCnt++;
       }
 
+      // we only want to look into the outerRR if we didn't find the table in the inputRRs.
+      if (tblAliasCnt == 0 && ctx.getOuterRR() != null && ctx.getOuterRR().hasTableAlias(tabName)) {
+        tblAliasCnt++;
+      }
+
       if (tblAliasCnt > 1) {
         throw new SemanticException(ASTErrorUtils.getMsg(
             ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(), expr));
       }
 
-      return (tblAliasCnt == 1) ? true : false;
+      return tblAliasCnt == 1;
     }
 
     private ColumnInfo getColInfo(JoinTypeCheckCtx ctx, String tabName, String colAlias,
@@ -175,7 +181,11 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
       }
       ColumnInfo newColumnInfo = new ColumnInfo(colInfo);
       newColumnInfo.setTabAlias(tableAlias);
-      return exprFactory.createColumnRefExpr(newColumnInfo, jctx.getInputRRList());
+      List<RowResolver> listRR = new ArrayList<>(jctx.getInputRRList());
+      if (jctx.getOuterRR() != null) {
+        listRR.add(jctx.getOuterRR());
+      }
+      return exprFactory.createColumnRefExpr(newColumnInfo, listRR);
     }
 
     private ColumnInfo getColInfo(JoinTypeCheckCtx ctx, String tabName, String colAlias,
@@ -192,6 +202,11 @@ public class JoinCondTypeCheckProcFactory<T> extends TypeCheckProcFactory<T> {
           }
           cInfoToRet = tmp;
         }
+      }
+
+      // if we didn't find column info in inputRRs, look into the outerRR
+      if (cInfoToRet == null && ctx.getOuterRR() != null) {
+        cInfoToRet = ctx.getOuterRR().get(tabName, colAlias);
       }
 
       return cInfoToRet;

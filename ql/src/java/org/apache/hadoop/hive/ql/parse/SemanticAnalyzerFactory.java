@@ -94,10 +94,17 @@ public final class SemanticAnalyzerFactory {
         return new ColumnStatsSemanticAnalyzer(queryState);
 
       case HiveParser.TOK_UPDATE_TABLE:
+        if (HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.SPLIT_UPDATE)) {
+          return new SplitUpdateSemanticAnalyzer(queryState);
+        }
       case HiveParser.TOK_DELETE_FROM:
         return new UpdateDeleteSemanticAnalyzer(queryState);
 
       case HiveParser.TOK_MERGE:
+        if (HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.SPLIT_UPDATE) ||
+                HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.MERGE_SPLIT_UPDATE)) {
+          return new SplitMergeSemanticAnalyzer(queryState);
+        }
         return new MergeSemanticAnalyzer(queryState);
 
       case HiveParser.TOK_ALTER_SCHEDULED_QUERY:

@@ -44,6 +44,7 @@ public class QBExpr {
   private QBExpr qbexpr2;
   private QB qb;
   private String alias;
+  private ASTNode subQueryRoot;
 
   public String getAlias() {
     return alias;
@@ -54,7 +55,12 @@ public class QBExpr {
   }
 
   public QBExpr(String alias) {
+    this(alias, null);
+  }
+
+  public QBExpr(String alias, ASTNode subQueryRoot) {
     setAlias(alias);
+    this.subQueryRoot = subQueryRoot;
   }
 
   public QBExpr(QB qb) {
@@ -98,6 +104,10 @@ public class QBExpr {
 
   public QBExpr getQBExpr2() {
     return qbexpr2;
+  }
+
+  public ASTNode getSubQueryRoot() {
+    return subQueryRoot;
   }
 
   public void print(String msg) {

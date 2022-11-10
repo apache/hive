@@ -1,0 +1,412 @@
+PREHOOK: query: CREATE external TABLE tbl_src1(key int, value string, fld1 string) stored as TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_src1
+POSTHOOK: query: CREATE external TABLE tbl_src1(key int, value string, fld1 string) stored as TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_src1
+PREHOOK: query: insert into tbl_src1 values (1,'value11', '2022-01-16 00:00:00.0')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src1
+POSTHOOK: query: insert into tbl_src1 values (1,'value11', '2022-01-16 00:00:00.0')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src1
+POSTHOOK: Lineage: tbl_src1.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src1.key SCRIPT []
+POSTHOOK: Lineage: tbl_src1.value SCRIPT []
+PREHOOK: query: insert into tbl_src1 values (1,'value12', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src1
+POSTHOOK: query: insert into tbl_src1 values (1,'value12', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src1
+POSTHOOK: Lineage: tbl_src1.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src1.key SCRIPT []
+POSTHOOK: Lineage: tbl_src1.value SCRIPT []
+PREHOOK: query: insert into tbl_src1 values (1,'value13', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src1
+POSTHOOK: query: insert into tbl_src1 values (1,'value13', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src1
+POSTHOOK: Lineage: tbl_src1.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src1.key SCRIPT []
+POSTHOOK: Lineage: tbl_src1.value SCRIPT []
+PREHOOK: query: insert into tbl_src1 values (1,'value14', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src1
+POSTHOOK: query: insert into tbl_src1 values (1,'value14', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src1
+POSTHOOK: Lineage: tbl_src1.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src1.key SCRIPT []
+POSTHOOK: Lineage: tbl_src1.value SCRIPT []
+PREHOOK: query: insert into tbl_src1 values (1,'value1', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src1
+POSTHOOK: query: insert into tbl_src1 values (1,'value1', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src1
+POSTHOOK: Lineage: tbl_src1.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src1.key SCRIPT []
+POSTHOOK: Lineage: tbl_src1.value SCRIPT []
+PREHOOK: query: insert into tbl_src1 values (1,'value1', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src1
+POSTHOOK: query: insert into tbl_src1 values (1,'value1', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src1
+POSTHOOK: Lineage: tbl_src1.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src1.key SCRIPT []
+POSTHOOK: Lineage: tbl_src1.value SCRIPT []
+PREHOOK: query: insert into tbl_src1 values (1,'value1', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src1
+POSTHOOK: query: insert into tbl_src1 values (1,'value1', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src1
+POSTHOOK: Lineage: tbl_src1.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src1.key SCRIPT []
+POSTHOOK: Lineage: tbl_src1.value SCRIPT []
+PREHOOK: query: insert into tbl_src1 values (1,'value1', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src1
+POSTHOOK: query: insert into tbl_src1 values (1,'value1', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src1
+POSTHOOK: Lineage: tbl_src1.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src1.key SCRIPT []
+POSTHOOK: Lineage: tbl_src1.value SCRIPT []
+PREHOOK: query: CREATE external TABLE tbl_src2(key int, value string, fld1 string) stored as TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_src2
+POSTHOOK: query: CREATE external TABLE tbl_src2(key int, value string, fld1 string) stored as TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_src2
+PREHOOK: query: insert into tbl_src2 values (1,'value11', '2022-01-16 00:00:00.0')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src2
+POSTHOOK: query: insert into tbl_src2 values (1,'value11', '2022-01-16 00:00:00.0')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src2
+POSTHOOK: Lineage: tbl_src2.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src2.key SCRIPT []
+POSTHOOK: Lineage: tbl_src2.value SCRIPT []
+PREHOOK: query: insert into tbl_src2 values (1,'value12', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src2
+POSTHOOK: query: insert into tbl_src2 values (1,'value12', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src2
+POSTHOOK: Lineage: tbl_src2.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src2.key SCRIPT []
+POSTHOOK: Lineage: tbl_src2.value SCRIPT []
+PREHOOK: query: insert into tbl_src2 values (1,'value13', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src2
+POSTHOOK: query: insert into tbl_src2 values (1,'value13', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src2
+POSTHOOK: Lineage: tbl_src2.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src2.key SCRIPT []
+POSTHOOK: Lineage: tbl_src2.value SCRIPT []
+PREHOOK: query: insert into tbl_src2 values (1,'value14', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src2
+POSTHOOK: query: insert into tbl_src2 values (1,'value14', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src2
+POSTHOOK: Lineage: tbl_src2.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src2.key SCRIPT []
+POSTHOOK: Lineage: tbl_src2.value SCRIPT []
+PREHOOK: query: insert into tbl_src2 values (1,'value1', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src2
+POSTHOOK: query: insert into tbl_src2 values (1,'value1', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src2
+POSTHOOK: Lineage: tbl_src2.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src2.key SCRIPT []
+POSTHOOK: Lineage: tbl_src2.value SCRIPT []
+PREHOOK: query: insert into tbl_src2 values (1,'value1', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src2
+POSTHOOK: query: insert into tbl_src2 values (1,'value1', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src2
+POSTHOOK: Lineage: tbl_src2.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src2.key SCRIPT []
+POSTHOOK: Lineage: tbl_src2.value SCRIPT []
+PREHOOK: query: insert into tbl_src2 values (1,'value1', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src2
+POSTHOOK: query: insert into tbl_src2 values (1,'value1', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src2
+POSTHOOK: Lineage: tbl_src2.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src2.key SCRIPT []
+POSTHOOK: Lineage: tbl_src2.value SCRIPT []
+PREHOOK: query: insert into tbl_src2 values (1,'value1', '2022-01-16 15:10:10.1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_src2
+POSTHOOK: query: insert into tbl_src2 values (1,'value1', '2022-01-16 15:10:10.1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_src2
+POSTHOOK: Lineage: tbl_src2.fld1 SCRIPT []
+POSTHOOK: Lineage: tbl_src2.key SCRIPT []
+POSTHOOK: Lineage: tbl_src2.value SCRIPT []
+PREHOOK: query: CREATE external TABLE tbl_dest1 (key int, value string) partitioned by (fld1 string, fld2 int)
+    ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+    STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+    OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_dest1
+POSTHOOK: query: CREATE external TABLE tbl_dest1 (key int, value string) partitioned by (fld1 string, fld2 int)
+    ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+    STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+    OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_dest1
+PREHOOK: query: insert into table tbl_dest1 partition (fld1, fld2)
+select max(key), value, max(fld1), max(key) from tbl_src1 group by value
+union all
+select max(key), value, max(fld1), max(key) from tbl_src2 group by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_src1
+PREHOOK: Input: default@tbl_src2
+PREHOOK: Output: default@tbl_dest1
+POSTHOOK: query: insert into table tbl_dest1 partition (fld1, fld2)
+select max(key), value, max(fld1), max(key) from tbl_src1 group by value
+union all
+select max(key), value, max(fld1), max(key) from tbl_src2 group by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_src1
+POSTHOOK: Input: default@tbl_src2
+POSTHOOK: Output: default@tbl_dest1
+POSTHOOK: Output: default@tbl_dest1@fld1=2022-01-16 00%3A00%3A00.0/fld2=1
+POSTHOOK: Output: default@tbl_dest1@fld1=2022-01-16 15%3A10%3A10.1/fld2=1
+POSTHOOK: Lineage: tbl_dest1 PARTITION(fld1=2022-01-16 00:00:00.0,fld2=1).key EXPRESSION [(tbl_src1)tbl_src1.FieldSchema(name:key, type:int, comment:null), (tbl_src2)tbl_src2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tbl_dest1 PARTITION(fld1=2022-01-16 00:00:00.0,fld2=1).value EXPRESSION [(tbl_src1)tbl_src1.FieldSchema(name:value, type:string, comment:null), (tbl_src2)tbl_src2.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_dest1 PARTITION(fld1=2022-01-16 15:10:10.1,fld2=1).key EXPRESSION [(tbl_src1)tbl_src1.FieldSchema(name:key, type:int, comment:null), (tbl_src2)tbl_src2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tbl_dest1 PARTITION(fld1=2022-01-16 15:10:10.1,fld2=1).value EXPRESSION [(tbl_src1)tbl_src1.FieldSchema(name:value, type:string, comment:null), (tbl_src2)tbl_src2.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from tbl_dest1 order  by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_dest1
+PREHOOK: Input: default@tbl_dest1@fld1=2022-01-16 00%3A00%3A00.0/fld2=1
+PREHOOK: Input: default@tbl_dest1@fld1=2022-01-16 15%3A10%3A10.1/fld2=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_dest1 order  by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_dest1
+POSTHOOK: Input: default@tbl_dest1@fld1=2022-01-16 00%3A00%3A00.0/fld2=1
+POSTHOOK: Input: default@tbl_dest1@fld1=2022-01-16 15%3A10%3A10.1/fld2=1
+#### A masked pattern was here ####
+1	value1	2022-01-16 15:10:10.1	1
+1	value1	2022-01-16 15:10:10.1	1
+1	value11	2022-01-16 00:00:00.0	1
+1	value11	2022-01-16 00:00:00.0	1
+1	value12	2022-01-16 15:10:10.1	1
+1	value12	2022-01-16 15:10:10.1	1
+1	value13	2022-01-16 15:10:10.1	1
+1	value13	2022-01-16 15:10:10.1	1
+1	value14	2022-01-16 15:10:10.1	1
+1	value14	2022-01-16 15:10:10.1	1
+PREHOOK: query: insert into table tbl_dest1 partition (fld1, fld2)
+select key, value, fld1, key from tbl_src2
+union all
+select key, value, fld1, key from tbl_src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_src1
+PREHOOK: Input: default@tbl_src2
+PREHOOK: Output: default@tbl_dest1
+POSTHOOK: query: insert into table tbl_dest1 partition (fld1, fld2)
+select key, value, fld1, key from tbl_src2
+union all
+select key, value, fld1, key from tbl_src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_src1
+POSTHOOK: Input: default@tbl_src2
+POSTHOOK: Output: default@tbl_dest1
+POSTHOOK: Output: default@tbl_dest1@fld1=2022-01-16 00%3A00%3A00.0/fld2=1
+POSTHOOK: Output: default@tbl_dest1@fld1=2022-01-16 15%3A10%3A10.1/fld2=1
+POSTHOOK: Lineage: tbl_dest1 PARTITION(fld1=2022-01-16 00:00:00.0,fld2=1).key EXPRESSION [(tbl_src2)tbl_src2.FieldSchema(name:key, type:int, comment:null), (tbl_src1)tbl_src1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tbl_dest1 PARTITION(fld1=2022-01-16 00:00:00.0,fld2=1).value EXPRESSION [(tbl_src2)tbl_src2.FieldSchema(name:value, type:string, comment:null), (tbl_src1)tbl_src1.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_dest1 PARTITION(fld1=2022-01-16 15:10:10.1,fld2=1).key EXPRESSION [(tbl_src2)tbl_src2.FieldSchema(name:key, type:int, comment:null), (tbl_src1)tbl_src1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tbl_dest1 PARTITION(fld1=2022-01-16 15:10:10.1,fld2=1).value EXPRESSION [(tbl_src2)tbl_src2.FieldSchema(name:value, type:string, comment:null), (tbl_src1)tbl_src1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from tbl_dest1 order  by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_dest1
+PREHOOK: Input: default@tbl_dest1@fld1=2022-01-16 00%3A00%3A00.0/fld2=1
+PREHOOK: Input: default@tbl_dest1@fld1=2022-01-16 15%3A10%3A10.1/fld2=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_dest1 order  by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_dest1
+POSTHOOK: Input: default@tbl_dest1@fld1=2022-01-16 00%3A00%3A00.0/fld2=1
+POSTHOOK: Input: default@tbl_dest1@fld1=2022-01-16 15%3A10%3A10.1/fld2=1
+#### A masked pattern was here ####
+1	value1	2022-01-16 15:10:10.1	1
+1	value1	2022-01-16 15:10:10.1	1
+1	value1	2022-01-16 15:10:10.1	1
+1	value1	2022-01-16 15:10:10.1	1
+1	value1	2022-01-16 15:10:10.1	1
+1	value1	2022-01-16 15:10:10.1	1
+1	value1	2022-01-16 15:10:10.1	1
+1	value1	2022-01-16 15:10:10.1	1
+1	value1	2022-01-16 15:10:10.1	1
+1	value1	2022-01-16 15:10:10.1	1
+1	value11	2022-01-16 00:00:00.0	1
+1	value11	2022-01-16 00:00:00.0	1
+1	value11	2022-01-16 00:00:00.0	1
+1	value11	2022-01-16 00:00:00.0	1
+1	value12	2022-01-16 15:10:10.1	1
+1	value12	2022-01-16 15:10:10.1	1
+1	value12	2022-01-16 15:10:10.1	1
+1	value12	2022-01-16 15:10:10.1	1
+1	value13	2022-01-16 15:10:10.1	1
+1	value13	2022-01-16 15:10:10.1	1
+1	value13	2022-01-16 15:10:10.1	1
+1	value13	2022-01-16 15:10:10.1	1
+1	value14	2022-01-16 15:10:10.1	1
+1	value14	2022-01-16 15:10:10.1	1
+1	value14	2022-01-16 15:10:10.1	1
+1	value14	2022-01-16 15:10:10.1	1
+PREHOOK: query: CREATE external TABLE tbl_dest2 (key int, value string) partitioned by (fld1 string)
+    ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+    STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+    OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_dest2
+POSTHOOK: query: CREATE external TABLE tbl_dest2 (key int, value string) partitioned by (fld1 string)
+    ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+    STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
+    OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_dest2
+PREHOOK: query: insert into table tbl_dest2 partition (fld1)
+select key, value, fld1 from tbl_dest1
+union all
+select key, value, fld1 from tbl_dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_dest1
+PREHOOK: Input: default@tbl_dest1@fld1=2022-01-16 00%3A00%3A00.0/fld2=1
+PREHOOK: Input: default@tbl_dest1@fld1=2022-01-16 15%3A10%3A10.1/fld2=1
+PREHOOK: Output: default@tbl_dest2
+POSTHOOK: query: insert into table tbl_dest2 partition (fld1)
+select key, value, fld1 from tbl_dest1
+union all
+select key, value, fld1 from tbl_dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_dest1
+POSTHOOK: Input: default@tbl_dest1@fld1=2022-01-16 00%3A00%3A00.0/fld2=1
+POSTHOOK: Input: default@tbl_dest1@fld1=2022-01-16 15%3A10%3A10.1/fld2=1
+POSTHOOK: Output: default@tbl_dest2
+POSTHOOK: Output: default@tbl_dest2@fld1=2022-01-16 00%3A00%3A00.0
+POSTHOOK: Output: default@tbl_dest2@fld1=2022-01-16 15%3A10%3A10.1
+POSTHOOK: Lineage: tbl_dest2 PARTITION(fld1=2022-01-16 00:00:00.0).key EXPRESSION [(tbl_dest1)tbl_dest1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tbl_dest2 PARTITION(fld1=2022-01-16 00:00:00.0).value EXPRESSION [(tbl_dest1)tbl_dest1.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl_dest2 PARTITION(fld1=2022-01-16 15:10:10.1).key EXPRESSION [(tbl_dest1)tbl_dest1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tbl_dest2 PARTITION(fld1=2022-01-16 15:10:10.1).value EXPRESSION [(tbl_dest1)tbl_dest1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from tbl_dest2 order  by value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_dest2
+PREHOOK: Input: default@tbl_dest2@fld1=2022-01-16 00%3A00%3A00.0
+PREHOOK: Input: default@tbl_dest2@fld1=2022-01-16 15%3A10%3A10.1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_dest2 order  by value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_dest2
+POSTHOOK: Input: default@tbl_dest2@fld1=2022-01-16 00%3A00%3A00.0
+POSTHOOK: Input: default@tbl_dest2@fld1=2022-01-16 15%3A10%3A10.1
+#### A masked pattern was here ####
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value1	2022-01-16 15:10:10.1
+1	value11	2022-01-16 00:00:00.0
+1	value11	2022-01-16 00:00:00.0
+1	value11	2022-01-16 00:00:00.0
+1	value11	2022-01-16 00:00:00.0
+1	value11	2022-01-16 00:00:00.0
+1	value11	2022-01-16 00:00:00.0
+1	value11	2022-01-16 00:00:00.0
+1	value11	2022-01-16 00:00:00.0
+1	value12	2022-01-16 15:10:10.1
+1	value12	2022-01-16 15:10:10.1
+1	value12	2022-01-16 15:10:10.1
+1	value12	2022-01-16 15:10:10.1
+1	value12	2022-01-16 15:10:10.1
+1	value12	2022-01-16 15:10:10.1
+1	value12	2022-01-16 15:10:10.1
+1	value12	2022-01-16 15:10:10.1
+1	value13	2022-01-16 15:10:10.1
+1	value13	2022-01-16 15:10:10.1
+1	value13	2022-01-16 15:10:10.1
+1	value13	2022-01-16 15:10:10.1
+1	value13	2022-01-16 15:10:10.1
+1	value13	2022-01-16 15:10:10.1
+1	value13	2022-01-16 15:10:10.1
+1	value13	2022-01-16 15:10:10.1
+1	value14	2022-01-16 15:10:10.1
+1	value14	2022-01-16 15:10:10.1
+1	value14	2022-01-16 15:10:10.1
+1	value14	2022-01-16 15:10:10.1
+1	value14	2022-01-16 15:10:10.1
+1	value14	2022-01-16 15:10:10.1
+1	value14	2022-01-16 15:10:10.1
+1	value14	2022-01-16 15:10:10.1

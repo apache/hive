@@ -53,6 +53,6 @@ public class CastDecimalToChar extends CastDecimalToString implements TruncStrin
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumn) + ", maxLength " + maxLength;
+    return getColumnParamString(0, inputColumnNum[0]) + ", maxLength " + maxLength;
   }
 }

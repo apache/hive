@@ -21,6 +21,6 @@ HiveAggregate(group=[{}], agg#0=[count(DISTINCT $4)], agg#1=[sum($5)], agg#2=[su
       HiveProject(cs_warehouse_sk=[$13], cs_order_number=[$16])
         HiveFilter(condition=[IS NOT NULL($13)])
           HiveTableScan(table=[[default, catalog_sales]], table:alias=[cs2])
-    HiveProject(literalTrue=[true], cr_order_number0=[$15])
+    HiveProject(literalTrue=[true], cr_order_number=[$15])
       HiveTableScan(table=[[default, catalog_returns]], table:alias=[cr1])
 

@@ -1,0 +1,29 @@
+PREHOOK: query: drop table if exists test_truncate_neg2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists test_truncate_neg2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table test_truncate_neg2 (id int, value string) stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_truncate_neg2
+POSTHOOK: query: create external table test_truncate_neg2 (id int, value string) stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_truncate_neg2
+PREHOOK: query: alter table test_truncate_neg2 set tblproperties('external.table.purge'='true')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@test_truncate_neg2
+PREHOOK: Output: default@test_truncate_neg2
+POSTHOOK: query: alter table test_truncate_neg2 set tblproperties('external.table.purge'='true')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@test_truncate_neg2
+POSTHOOK: Output: default@test_truncate_neg2
+PREHOOK: query: insert into test_truncate_neg2 values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_truncate_neg2
+POSTHOOK: query: insert into test_truncate_neg2 values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_truncate_neg2
+FAILED: UnsupportedOperationException Using partition spec in query is unsupported for non-native table backed by: org.apache.iceberg.mr.hive.HiveIcebergStorageHandler

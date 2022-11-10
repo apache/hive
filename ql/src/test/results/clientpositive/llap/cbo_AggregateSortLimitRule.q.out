@@ -1,0 +1,36 @@
+PREHOOK: query: CREATE TABLE person (id INTEGER, country STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@person
+POSTHOOK: query: CREATE TABLE person (id INTEGER, country STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@person
+PREHOOK: query: EXPLAIN CBO SELECT country, count(1) FROM person GROUP BY country LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@person
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT country, count(1) FROM person GROUP BY country LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@person
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$1], dir0=[ASC-nulls-first], fetch=[5])
+  HiveProject(country=[$0], $f1=[$1])
+    HiveAggregate(group=[{1}], agg#0=[count()])
+      HiveTableScan(table=[[default, person]], table:alias=[person])
+
+PREHOOK: query: EXPLAIN CBO SELECT country, count(1) FROM person GROUP BY country LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@person
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT country, count(1) FROM person GROUP BY country LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@person
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$1], dir0=[ASC], fetch=[5])
+  HiveProject(country=[$0], $f1=[$1])
+    HiveAggregate(group=[{1}], agg#0=[count()])
+      HiveTableScan(table=[[default, person]], table:alias=[person])
+

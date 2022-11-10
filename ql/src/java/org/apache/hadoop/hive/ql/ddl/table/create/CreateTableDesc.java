@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.create;
 
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,18 +25,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.PartitionManagementTask;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -56,6 +56,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.PartitionTransform;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -63,6 +65,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ValidationUtility;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -116,12 +119,14 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   List<SQLDefaultConstraint> defaultConstraints;
   List<SQLCheckConstraint> checkConstraints;
   private ColumnStatistics colStats;  // For the sake of replication
-  private Long initialMmWriteId; // Initial MM write ID for CTAS and import.
+  private Long initialWriteId; // Initial write ID for CTAS and import.
   // The FSOP configuration for the FSOP that is going to write initial data during ctas.
   // This is not needed beyond compilation, so it is transient.
   private transient FileSinkDesc writer;
   private Long replWriteId; // to be used by repl task to get the txn and valid write id list
   private String ownerName = null;
+  private String likeFile = null;
+  private String likeFileFormat = null;
 
   public CreateTableDesc() {
   }
@@ -225,6 +230,22 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     return copy == null ? null : new ArrayList<T>(copy);
   }
 
+  public void setLikeFile(String likeFile) {
+    this.likeFile = likeFile;
+  }
+
+  public void setLikeFileFormat(String likeFileFormat) {
+    this.likeFileFormat = likeFileFormat;
+  }
+
+  public String getLikeFile() {
+    return likeFile;
+  }
+
+  public String getLikeFileFormat() {
+    return likeFileFormat;
+  }
+
   @Explain(displayName = "columns")
   public List<String> getColsString() {
     return Utilities.getFieldSchemaString(getCols());
@@ -263,7 +284,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     return cols;
   }
 
-  public void setCols(ArrayList<FieldSchema> cols) {
+  public void setCols(List<FieldSchema> cols) {
     this.cols = cols;
   }
 
@@ -498,7 +519,8 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   @Explain(displayName = "table properties")
   public Map<String, String> getTblPropsExplain() { // only for displaying plan
     HashMap<String, String> copy = new HashMap<>(tblProps);
-    copy.remove(TABLE_IS_CTAS);
+    copy.remove(hive_metastoreConstants.TABLE_IS_CTAS);
+    copy.remove(hive_metastoreConstants.TABLE_BUCKETING_VERSION);
     return copy;
   }
 
@@ -538,13 +560,13 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     this.skewedColValues = skewedColValues;
   }
 
-  public void validate(HiveConf conf)
-      throws SemanticException {
+  public void validate(HiveConf conf) throws SemanticException {
 
     if ((this.getCols() == null) || (this.getCols().size() == 0)) {
-      // for now make sure that serde exists
-      if (Table.hasMetastoreBasedSchema(conf, serName) &&
-              StringUtils.isEmpty(getStorageHandler())) {
+      // if the table has no columns and is a HMS backed SerDe - it should have a storage handler OR
+      // is a CREATE TABLE LIKE FILE statement.
+      if (Table.hasMetastoreBasedSchema(conf, serName) && StringUtils.isEmpty(getStorageHandler())
+          && this.getLikeFile() == null) {
         throw new SemanticException(ErrorMsg.INVALID_TBL_DDL_SERDE.getMsg());
       }
       return;
@@ -740,10 +762,6 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       tbl.getTTable().getParameters().putAll(getTblProps());
     }
 
-    if (getPartCols() != null) {
-      tbl.setPartCols(getPartCols());
-    }
-
     if (getNumBuckets() != -1) {
       tbl.setNumBuckets(getNumBuckets());
     }
@@ -804,9 +822,26 @@ public class CreateTableDesc implements DDLDesc, Serializable {
       }
     }
 
-    if (getCols() != null) {
-      tbl.setFields(getCols());
+    Optional<List<FieldSchema>> cols = Optional.ofNullable(getCols());
+    Optional<List<FieldSchema>> partCols = Optional.ofNullable(getPartCols());
+
+    if (storageHandler != null && storageHandler.alwaysUnpartitioned()) {
+      tbl.getSd().setCols(new ArrayList<>());
+      cols.ifPresent(c -> tbl.getSd().getCols().addAll(c));
+      if (partCols.isPresent() && !partCols.get().isEmpty()) {
+        // Add the partition columns to the normal columns and save the transform to the session state
+        tbl.getSd().getCols().addAll(partCols.get());
+        List<TransformSpec> spec = PartitionTransform.getPartitionTransformSpec(partCols.get());
+        if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC, spec)) {
+          throw new HiveException("Query state attached to Session state must be not null. " +
+                                      "Partition transform metadata cannot be saved.");
+        }
+      }
+    } else {
+      cols.ifPresent(c -> tbl.setFields(c));
+      partCols.ifPresent(c -> tbl.setPartCols(c));
     }
+
     if (getBucketCols() != null) {
       tbl.setBucketCols(getBucketCols());
     }
@@ -908,7 +943,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     // When replicating the statistics for a table will be obtained from the source. Do not
     // reset it on replica.
     if (replicationSpec == null || !replicationSpec.isInReplicationScope()) {
-      if (!this.isCTAS && (tbl.getPath() == null || (tbl.isEmpty() && !isExternal()))) {
+      if (!this.isCTAS && (tbl.getPath() == null || (!isExternal() && tbl.isEmpty()))) {
         if (!tbl.isPartitioned() && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
           StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
                   MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
@@ -925,12 +960,12 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     return tbl;
   }
 
-  public void setInitialMmWriteId(Long mmWriteId) {
-    this.initialMmWriteId = mmWriteId;
+  public void setInitialWriteId(Long writeId) {
+    this.initialWriteId = writeId;
   }
 
-  public Long getInitialMmWriteId() {
-    return initialMmWriteId;
+  public Long getInitialWriteId() {
+    return initialWriteId;
   }
 
   public FileSinkDesc getAndUnsetWriter() {
@@ -957,5 +992,14 @@ public class CreateTableDesc implements DDLDesc, Serializable {
 
   public void setOwnerName(String ownerName) {
     this.ownerName = ownerName;
+  }
+
+  public void fromTable(org.apache.hadoop.hive.metastore.api.Table tTable) {
+    if (tTable.getSd() != null  && tTable.getSd().getLocation() != null) {
+      setLocation(tTable.getSd().getLocation());
+    }
+    setExternal(TableType.EXTERNAL_TABLE.toString().equals(tTable.getTableType()));
+    setTblProps(tTable.getParameters());
+    tblProps.remove(hive_metastoreConstants.CTAS_LEGACY_CONFIG);
   }
 }

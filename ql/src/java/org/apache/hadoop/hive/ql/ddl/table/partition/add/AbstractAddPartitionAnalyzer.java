@@ -59,11 +59,11 @@ abstract class AbstractAddPartitionAnalyzer extends AbstractAlterTableAnalyzer {
 
     boolean ifNotExists = command.getChild(0).getType() == HiveParser.TOK_IFNOTEXISTS;
     outputs.add(new WriteEntity(table,
-        /* use DDL_EXCLUSIVE to cause X lock to prevent races between concurrent add partition calls with IF NOT EXISTS.
+        /* use DDL_EXCL_WRITE to cause X_WRITE lock to prevent races between concurrent add partition calls with IF NOT EXISTS.
          * w/o this 2 concurrent calls to add the same partition may both add data since for transactional tables
          * creating partition metadata and moving data there are 2 separate actions. */
-        ifNotExists && AcidUtils.isTransactionalTable(table) ?
-            WriteType.DDL_EXCLUSIVE : WriteEntity.WriteType.DDL_SHARED));
+      ifNotExists && AcidUtils.isTransactionalTable(table) ?
+          WriteType.DDL_EXCL_WRITE : WriteType.DDL_SHARED));
 
     List<AlterTableAddPartitionDesc.PartitionDesc> partitions = createPartitions(command, table, ifNotExists);
     if (partitions.isEmpty()) { // nothing to do
@@ -131,20 +131,5 @@ abstract class AbstractAddPartitionAnalyzer extends AbstractAlterTableAnalyzer {
 
   protected abstract void postProcess(TableName tableName, Table table, AlterTableAddPartitionDesc desc,
       Task<DDLWork> ddlTask) throws SemanticException;
-
-  // Equivalent to acidSinks, but for DDL operations that change data.
-  private DDLDescWithWriteId ddlDescWithWriteId;
-
-  protected void setAcidDdlDesc(DDLDescWithWriteId descWithWriteId) {
-    if (this.ddlDescWithWriteId != null) {
-      throw new IllegalStateException("ddlDescWithWriteId is already set: " + this.ddlDescWithWriteId);
-    }
-    this.ddlDescWithWriteId = descWithWriteId;
-  }
-
-  @Override
-  public DDLDescWithWriteId getAcidDdlDesc() {
-    return ddlDescWithWriteId;
-  }
 
 }

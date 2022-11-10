@@ -52,8 +52,8 @@ STAGE PLANS:
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
-                            projectedOutputColumnNums: [13, 14]
-                            selectExpressions: ConstantVectorExpression(val null) -> 13:double, ConstantVectorExpression(val 100.0) -> 14:double
+                            projectedOutputColumnNums: [14, 15]
+                            selectExpressions: ConstantVectorExpression(val null) -> 14:double, ConstantVectorExpression(val 100.0) -> 15:double
                         Statistics: Num rows: 10 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
@@ -151,8 +151,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 14]
-                          selectExpressions: VectorCoalesce(columns [4, 13])(children: col 4:float, ConstantVectorExpression(val 1.0) -> 13:float) -> 14:float
+                          projectedOutputColumnNums: [4, 15]
+                          selectExpressions: VectorCoalesce(columns [4, 14])(children: col 4:float, ConstantVectorExpression(val 1.0) -> 14:float) -> 15:float
                       Statistics: Num rows: 10 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -248,8 +248,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [13]
-                          selectExpressions: ConstantVectorExpression(val 10) -> 13:int
+                          projectedOutputColumnNums: [14]
+                          selectExpressions: ConstantVectorExpression(val 10) -> 14:int
                       Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -345,8 +345,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [13]
-                          selectExpressions: ConstantVectorExpression(val null) -> 13:void
+                          projectedOutputColumnNums: [14]
+                          selectExpressions: ConstantVectorExpression(val null) -> 14:void
                       Statistics: Num rows: 10 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false

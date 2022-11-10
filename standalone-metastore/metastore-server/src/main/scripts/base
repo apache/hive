@@ -97,7 +97,7 @@ for f in ${METASTORE_LIB}/*.jar; do
   CLASSPATH=${CLASSPATH}:$f;
 done
 
-# add the auxillary jars such as serdes
+# add the auxiliary jars such as serdes
 if [ -d "${METASTORE_AUX_JARS_PATH}" ]; then
   hive_aux_jars_abspath=`cd ${METASTORE_AUX_JARS_PATH} 2>&1 > /dev/null && pwd`
   for f in $hive_aux_jars_abspath/*.jar; do

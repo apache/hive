@@ -50,6 +50,8 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
   @Override
   public ColumnStatisticsObj aggregate(List<ColStatsObjWithSourceInfo> colStatsWithSourceInfo,
       List<String> partNames, boolean areAllPartsFound) throws MetaException {
+    checkStatisticsList(colStatsWithSourceInfo);
+
     ColumnStatisticsObj statsObj = null;
     String colType = null;
     String colName = null;
@@ -128,7 +130,8 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
         aggregateData.setNumDVs(ndvEstimator.estimateNumDistinctValues());
       } else {
         long estimation;
-        if (useDensityFunctionForNDVEstimation) {
+        if (useDensityFunctionForNDVEstimation && aggregateData != null
+            && aggregateData.isSetLowValue() && aggregateData.isSetHighValue()) {
           // We have estimation, lowerbound and higherbound. We use estimation
           // if it is between lowerbound and higherbound.
           double densityAvg = densityAvgSum / partNames.size();

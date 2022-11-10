@@ -120,7 +120,7 @@ HiveProject(p_mfgr=[$1], p_name=[$0], p_size=[$2])
       HiveFilter(condition=[IS NOT NULL($1)])
         HiveAggregate(group=[{0}], agg#0=[min($1)])
           HiveFilter(condition=[<=($2, 2)])
-            HiveProject(p_mfgr=[$2], p_size=[$5], rank_window_0=[rank() OVER (PARTITION BY $2 ORDER BY $5 NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
+            HiveProject(p_mfgr=[$2], p_size=[$5], rank_window_0=[rank() OVER (PARTITION BY $2 ORDER BY $5 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
               HiveFilter(condition=[IS NOT NULL($2)])
                 HiveTableScan(table=[[default, part]], table:alias=[part])
 

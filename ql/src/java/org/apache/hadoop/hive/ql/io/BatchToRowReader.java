@@ -115,6 +115,8 @@ public abstract class BatchToRowReader<StructType, UnionType>
       if (idx >= 0) {
         included[idx] = true;
         handler.indexInSchema = idx;
+        batch.cols[idx].noNulls = false;
+        Arrays.fill(batch.cols[idx].isNull, true);
       }
     }
 

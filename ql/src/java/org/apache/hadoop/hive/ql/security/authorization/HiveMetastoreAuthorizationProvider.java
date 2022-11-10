@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginEx
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePolicyProvider;
 
 /**
- * HiveMetastoreAuthorizationProvider : An extension of HiveAuthorizaytionProvider
+ * HiveMetastoreAuthorizationProvider : An extension of HiveAuthorizationProvider
  * that is intended to be called from the metastore-side. It will be invoked
  * by AuthorizationPreEventListener.
  *

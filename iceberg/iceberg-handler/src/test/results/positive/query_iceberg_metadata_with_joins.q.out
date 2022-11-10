@@ -1,0 +1,255 @@
+PREHOOK: query: drop table if exists ice_meta_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists ice_meta_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table ice_meta_2 (id int, value string) stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: create external table ice_meta_2 (id int, value string) stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: insert into ice_meta_2 values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: insert into ice_meta_2 values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: truncate table ice_meta_2
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: truncate table ice_meta_2
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: insert into ice_meta_2 values (3,'three'),(4,'four'),(5,'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: insert into ice_meta_2 values (3,'three'),(4,'four'),(5,'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: truncate table ice_meta_2
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: truncate table ice_meta_2
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: insert into ice_meta_2 values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: insert into ice_meta_2 values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: insert into ice_meta_2 values (6, 'six'), (7, 'seven')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: insert into ice_meta_2 values (6, 'six'), (7, 'seven')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: insert into ice_meta_2 values (8, 'eight'), (9, 'nine'), (10, 'ten')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: insert into ice_meta_2 values (8, 'eight'), (9, 'nine'), (10, 'ten')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: insert into ice_meta_2 values (NULL, 'eleven'), (12, NULL), (13, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: insert into ice_meta_2 values (NULL, 'eleven'), (12, NULL), (13, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_meta_2
+PREHOOK: query: select * from ice_meta_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_meta_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one
+10	ten
+12	NULL
+13	NULL
+2	two
+3	three
+4	four
+5	five
+6	six
+7	seven
+8	eight
+9	nine
+NULL	eleven
+PREHOOK: query: select
+    s.operation,
+    h.is_current_ancestor,
+    s.summary['added-records'] as added_records,
+    s.summary['deleted-records'] as deleted_records
+from default.ice_meta_2.history h
+join default.ice_meta_2.snapshots s
+  on h.snapshot_id = s.snapshot_id
+order by s.operation, s.summary['added-records']
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select
+    s.operation,
+    h.is_current_ancestor,
+    s.summary['added-records'] as added_records,
+    s.summary['deleted-records'] as deleted_records
+from default.ice_meta_2.history h
+join default.ice_meta_2.snapshots s
+  on h.snapshot_id = s.snapshot_id
+order by s.operation, s.summary['added-records']
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+append	true	2	NULL
+append	true	3	NULL
+append	true	3	NULL
+append	true	3	NULL
+append	true	5	NULL
+append	true	5	NULL
+delete	true	NULL	3
+delete	true	NULL	5
+PREHOOK: query: select
+  s.operation,
+    h.is_current_ancestor,
+    s.summary['added-records'] as added_records,
+    m.added_data_files_count,
+    e.data_file.content,
+    e.data_file.file_format,
+    e.data_file.record_count,
+    e.status
+from default.ice_meta_2.history h
+join default.ice_meta_2.snapshots s
+  on h.snapshot_id = s.snapshot_id
+join default.ice_meta_2.entries e
+  on e.snapshot_id = h.snapshot_id
+join default.ice_meta_2.manifests m
+  on m.added_snapshot_id = h.snapshot_id
+where s.summary['added-records'] > 2
+order by s.operation, record_count
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select
+  s.operation,
+    h.is_current_ancestor,
+    s.summary['added-records'] as added_records,
+    m.added_data_files_count,
+    e.data_file.content,
+    e.data_file.file_format,
+    e.data_file.record_count,
+    e.status
+from default.ice_meta_2.history h
+join default.ice_meta_2.snapshots s
+  on h.snapshot_id = s.snapshot_id
+join default.ice_meta_2.entries e
+  on e.snapshot_id = h.snapshot_id
+join default.ice_meta_2.manifests m
+  on m.added_snapshot_id = h.snapshot_id
+where s.summary['added-records'] > 2
+order by s.operation, record_count
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+append	true	3	1	0	ORC	3	1
+append	true	3	1	0	ORC	3	1
+append	true	5	1	0	ORC	5	1
+PREHOOK: query: select
+    s.operation,
+    h.is_current_ancestor,
+    s.summary['added-records'] as added_records,
+    s.summary['deleted-records'] as deleted_records
+from default.ice_meta_2.history h
+join default.ice_meta_2.snapshots s
+  on h.snapshot_id = s.snapshot_id
+order by s.operation, added_records
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select
+    s.operation,
+    h.is_current_ancestor,
+    s.summary['added-records'] as added_records,
+    s.summary['deleted-records'] as deleted_records
+from default.ice_meta_2.history h
+join default.ice_meta_2.snapshots s
+  on h.snapshot_id = s.snapshot_id
+order by s.operation, added_records
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+append	true	2	NULL
+append	true	3	NULL
+append	true	3	NULL
+append	true	3	NULL
+append	true	5	NULL
+append	true	5	NULL
+delete	true	NULL	3
+delete	true	NULL	5
+PREHOOK: query: select
+  s.operation,
+    h.is_current_ancestor,
+    s.summary['added-records'] as added_records,
+    m.added_data_files_count,
+    e.data_file.content,
+    e.data_file.file_format,
+    e.data_file.record_count,
+    e.status
+from default.ice_meta_2.history h
+join default.ice_meta_2.snapshots s
+  on h.snapshot_id = s.snapshot_id
+join default.ice_meta_2.entries e
+  on e.snapshot_id = h.snapshot_id
+join default.ice_meta_2.manifests m
+  on m.added_snapshot_id = h.snapshot_id
+where s.summary['added-records'] > 2
+order by s.operation, record_count
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select
+  s.operation,
+    h.is_current_ancestor,
+    s.summary['added-records'] as added_records,
+    m.added_data_files_count,
+    e.data_file.content,
+    e.data_file.file_format,
+    e.data_file.record_count,
+    e.status
+from default.ice_meta_2.history h
+join default.ice_meta_2.snapshots s
+  on h.snapshot_id = s.snapshot_id
+join default.ice_meta_2.entries e
+  on e.snapshot_id = h.snapshot_id
+join default.ice_meta_2.manifests m
+  on m.added_snapshot_id = h.snapshot_id
+where s.summary['added-records'] > 2
+order by s.operation, record_count
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+append	true	3	1	0	ORC	3	1
+append	true	3	1	0	ORC	3	1
+append	true	5	1	0	ORC	5	1
+PREHOOK: query: drop table ice_meta_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: default@ice_meta_2
+POSTHOOK: query: drop table ice_meta_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: default@ice_meta_2

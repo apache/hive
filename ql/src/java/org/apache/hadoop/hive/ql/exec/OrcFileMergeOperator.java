@@ -110,9 +110,7 @@ public class OrcFileMergeOperator extends
       if (prevPath == null) {
         prevPath = k.getInputPath();
         reader = OrcFile.createReader(fs, k.getInputPath());
-        if (LOG.isInfoEnabled()) {
-          LOG.info("ORC merge file input path: " + k.getInputPath());
-        }
+        LOG.info("ORC merge file input path: " + k.getInputPath());
       }
 
       // store the orc configuration from the first file. All other files should
@@ -146,9 +144,7 @@ public class OrcFileMergeOperator extends
           outPath = getOutPath(bucketId);
         }
         outWriters.put(bucketId, OrcFile.createWriter(outPath, options));
-        if (LOG.isDebugEnabled()) {
-          LOG.info("ORC merge file output path: " + outPath);
-        }
+        LOG.info("ORC merge file output path: {}", outPath);
       }
 
       if (!checkCompatibility(k)) {
@@ -158,6 +154,9 @@ public class OrcFileMergeOperator extends
 
       // next file in the path
       if (!k.getInputPath().equals(prevPath)) {
+        if (reader != null) {
+          reader.close();
+        }
         reader = OrcFile.createReader(fs, k.getInputPath());
       }
 
@@ -191,6 +190,15 @@ public class OrcFileMergeOperator extends
     } finally {
       if (exception) {
         closeOp(true);
+      }
+      if (reader != null) {
+        try {
+          reader.close();
+        } catch (IOException e) {
+          throw new HiveException(String.format("Unable to close reader for %s", filePath), e);
+        } finally {
+          reader = null;
+        }
       }
       if (fdis != null) {
         try {

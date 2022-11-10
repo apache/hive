@@ -19,18 +19,19 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToDate;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastTimestampToDate;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.DateConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
+
+
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.DATE_GROUP;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
+import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.VOID_GROUP;
 
 /**
  * GenericUDFToDate
@@ -44,58 +45,27 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 @VectorizedExpressions({CastStringToDate.class, CastTimestampToDate.class})
 public class GenericUDFToDate extends GenericUDF {
 
-  private transient PrimitiveObjectInspector argumentOI;
-  private transient DateConverter dc;
+  private final transient ObjectInspectorConverters.Converter[] dateConverters = new ObjectInspectorConverters.Converter[1];
+  private final transient PrimitiveCategory[] dateInputTypes = new PrimitiveCategory[1];
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length < 1) {
-      throw new UDFArgumentLengthException(
-          "The function CAST as DATE requires at least one argument, got "
-          + arguments.length);
-    }
-    try {
-      argumentOI = (PrimitiveObjectInspector) arguments[0];
-      PrimitiveCategory pc = argumentOI.getPrimitiveCategory();
-      PrimitiveGrouping pg =
-          PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pc);
-      switch (pg) {
-        case DATE_GROUP:
-        case STRING_GROUP:
-        case VOID_GROUP:
-          break;
-        default:
-          throw new UDFArgumentException(
-              "CAST as DATE only allows date,string, or timestamp types");
-      }
-    } catch (ClassCastException e) {
-      throw new UDFArgumentException(
-          "The function CAST as DATE takes only primitive types");
-    }
-
-    dc = new DateConverter(argumentOI,
-        PrimitiveObjectInspectorFactory.writableDateObjectInspector);
+    checkArgsSize(arguments,1,1);
+    checkArgPrimitive(arguments,0);
+    checkArgGroups(arguments,0,dateInputTypes,DATE_GROUP,STRING_GROUP,VOID_GROUP);
+    obtainDateConverter(arguments,0,dateInputTypes,dateConverters);
     return PrimitiveObjectInspectorFactory.writableDateObjectInspector;
   }
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    Object o0 = arguments[0].get();
-    if (o0 == null) {
-      return null;
-    }
-
-    return dc.convert(o0);
+    return dateConverters[0].convert(arguments[0].get());
   }
 
   @Override
   public String getDisplayString(String[] children) {
     assert (children.length == 1);
-    StringBuilder sb = new StringBuilder();
-    sb.append("CAST( ");
-    sb.append(children[0]);
-    sb.append(" AS DATE)");
-    return sb.toString();
+    return "CAST( " + children[0] + " AS DATE)";
   }
 
 }

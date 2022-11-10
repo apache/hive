@@ -29,13 +29,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
@@ -118,7 +119,8 @@ public class CompactorMR {
   public CompactorMR() {
   }
 
-  private JobConf createBaseJobConf(HiveConf conf, String jobName, Table t, StorageDescriptor sd,
+  @VisibleForTesting
+  public JobConf createBaseJobConf(HiveConf conf, String jobName, Table t, StorageDescriptor sd,
                                     ValidWriteIdList writeIds, CompactionInfo ci) {
     JobConf job = new JobConf(conf);
     job.setJobName(jobName);
@@ -145,8 +147,8 @@ public class CompactorMR {
       overrideTblProps(job, t.getParameters(), ci.properties);
     }
 
-    String queueName = HiveConf.getVar(job, ConfVars.COMPACTOR_JOB_QUEUE);
-    if (queueName != null && queueName.length() > 0) {
+    String queueName = CompactorUtil.getCompactorJobQueueName(conf, ci, t);
+    if (!queueName.isEmpty()) {
       job.setQueueName(queueName);
     }
 
@@ -210,11 +212,10 @@ public class CompactorMR {
    * @param sd metastore storage descriptor
    * @param writeIds list of valid write ids
    * @param ci CompactionInfo
-   * @param su StatsUpdater which is null if no stats gathering is needed
    * @throws java.io.IOException if the job fails
    */
-  void run(HiveConf conf, String jobName, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
-           CompactionInfo ci, Worker.StatsUpdater su, IMetaStoreClient msc, AcidDirectory dir) throws IOException {
+  public void run(HiveConf conf, String jobName, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
+           CompactionInfo ci, IMetaStoreClient msc, AcidDirectory dir) throws IOException {
 
     JobConf job = createBaseJobConf(conf, jobName, t, sd, writeIds, ci);
 
@@ -234,12 +235,25 @@ public class CompactorMR {
         "especially if this message repeats.  Check that compaction is running properly.  Check for any " +
         "runaway/mis-configured process writing to ACID tables, especially using Streaming Ingest API.");
       int numMinorCompactions = parsedDeltas.size() / maxDeltasToHandle;
+      parsedDeltas.sort(AcidUtils.ParsedDeltaLight::compareTo);
+
+      int start = 0;
+      int end = maxDeltasToHandle;
+
       for (int jobSubId = 0; jobSubId < numMinorCompactions; jobSubId++) {
+        while (end > 0 && end < parsedDeltas.size() &&
+          parsedDeltas.get(end).getMinWriteId() == parsedDeltas.get(end - 1).getMinWriteId() &&
+          parsedDeltas.get(end).getMaxWriteId() == parsedDeltas.get(end - 1).getMaxWriteId()) {
+          end--;
+        }
+        List<AcidUtils.ParsedDelta> split = parsedDeltas.subList(start, end);
+        start = end;
+        end = start + maxDeltasToHandle;
+
         JobConf jobMinorCompact = createBaseJobConf(conf, jobName + "_" + jobSubId, t, sd, writeIds, ci);
         launchCompactionJob(jobMinorCompact,
           null, CompactionType.MINOR, null,
-            parsedDeltas.subList(jobSubId * maxDeltasToHandle, (jobSubId + 1) * maxDeltasToHandle),
-            maxDeltasToHandle, -1, conf, msc, ci.id, jobName);
+            split, split.size(), -1, conf, msc, ci.id, jobName);
       }
       //now recompute state since we've done minor compactions and have different 'best' set of deltas
       dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf, writeIds, Ref.from(false), false);
@@ -273,10 +287,6 @@ public class CompactorMR {
 
     launchCompactionJob(job, baseDir, ci.type, dirsToSearch, dir.getCurrentDirectories(),
       dir.getCurrentDirectories().size(), dir.getObsolete().size(), conf, msc, ci.id, jobName);
-
-    if (su != null) {
-      su.gatherStats();
-    }
   }
 
   /**
@@ -763,7 +773,8 @@ public class CompactorMR {
     }
   }
 
-  static class CompactorMap<V extends Writable>
+  @VisibleForTesting
+  public static class CompactorMap<V extends Writable>
       implements Mapper<WritableComparable, CompactorInputSplit,  NullWritable,  NullWritable> {
 
     JobConf jobConf;
@@ -790,7 +801,6 @@ public class CompactorMR {
                   writeIdList, split.getBaseDir(), split.getDeltaDirs(), split.getDeltasToAttemptId());
       RecordIdentifier identifier = reader.createKey();
       V value = reader.createValue();
-      getWriter(reporter, reader.getObjectInspector(), split.getBucket());
 
       AcidUtils.AcidOperationalProperties acidOperationalProperties = AcidUtils.getAcidOperationalProperties(jobConf);
 
@@ -800,13 +810,12 @@ public class CompactorMR {
           continue;
         }
         if (sawDeleteRecord && acidOperationalProperties.isSplitUpdate()) {
-          if (deleteEventWriter == null) {
-            getDeleteEventWriter(reporter, reader.getObjectInspector(), split.getBucket());
-          }
-          deleteEventWriter.write(value);
+          getDeleteEventWriter(reporter, reader.getObjectInspector(), split.getBucket())
+                  .write(value);
           reporter.progress();
         } else {
-          writer.write(value);
+          getWriter(reporter, reader.getObjectInspector(), split.getBucket())
+                  .write(value);
           reporter.progress();
         }
       }
@@ -837,7 +846,7 @@ public class CompactorMR {
       //this is id of the current (compactor) txn
       return validTxnList.getHighWatermark();
     }
-    private void getWriter(Reporter reporter, ObjectInspector inspector,
+    private RecordWriter getWriter(Reporter reporter, ObjectInspector inspector,
                            int bucket) throws IOException {
       if (writer == null) {
         AcidOutputFormat.Options options = new AcidOutputFormat.Options(jobConf);
@@ -862,9 +871,11 @@ public class CompactorMR {
         cleanupTmpLocationOnTaskRetry(options, rootDir);
         writer = aof.getRawRecordWriter(rootDir, options);
       }
-   }
+      return writer;
+    }
 
-    private void cleanupTmpLocationOnTaskRetry(AcidOutputFormat.Options options, Path rootDir) throws IOException {
+    @VisibleForTesting
+    public void cleanupTmpLocationOnTaskRetry(AcidOutputFormat.Options options, Path rootDir) throws IOException {
       Path tmpLocation = AcidUtils.createFilename(rootDir, options);
       FileSystem fs = tmpLocation.getFileSystem(jobConf);
 
@@ -875,29 +886,30 @@ public class CompactorMR {
       }
     }
 
-    private void getDeleteEventWriter(Reporter reporter, ObjectInspector inspector,
+    private RecordWriter getDeleteEventWriter(Reporter reporter, ObjectInspector inspector,
         int bucket) throws IOException {
+      if (deleteEventWriter == null) {
+        AcidOutputFormat.Options options = new AcidOutputFormat.Options(jobConf);
+        options.inspector(inspector).writingBase(false)
+                .writingDeleteDelta(true)   // this is the option which will make it a delete writer
+                .isCompressed(jobConf.getBoolean(IS_COMPRESSED, false))
+                .tableProperties(new StringableMap(jobConf.get(TABLE_PROPS)).toProperties()).reporter(reporter)
+                .minimumWriteId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
+                .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE)).bucket(bucket)
+                .statementId(-1)//setting statementId == -1 makes compacted delta files use
+                // delta_xxxx_yyyy format
+                .visibilityTxnId(getCompactorTxnId(jobConf));
 
-      AcidOutputFormat.Options options = new AcidOutputFormat.Options(jobConf);
-      options.inspector(inspector).writingBase(false)
-          .writingDeleteDelta(true)   // this is the option which will make it a delete writer
-          .isCompressed(jobConf.getBoolean(IS_COMPRESSED, false))
-          .tableProperties(new StringableMap(jobConf.get(TABLE_PROPS)).toProperties()).reporter(reporter)
-          .minimumWriteId(jobConf.getLong(MIN_TXN, Long.MAX_VALUE))
-          .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE)).bucket(bucket)
-          .statementId(-1)//setting statementId == -1 makes compacted delta files use
-          // delta_xxxx_yyyy format
-          .visibilityTxnId(getCompactorTxnId(jobConf));
+        // Instantiate the underlying output format
+        @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
+        AcidOutputFormat<WritableComparable, V> aof =
+                instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
 
-      // Instantiate the underlying output format
-      @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
-          AcidOutputFormat<WritableComparable, V> aof =
-          instantiate(AcidOutputFormat.class, jobConf.get(OUTPUT_FORMAT_CLASS_NAME));
-
-      Path rootDir = new Path(jobConf.get(TMP_LOCATION));
-      cleanupTmpLocationOnTaskRetry(options, rootDir);
-      deleteEventWriter = aof.getRawRecordWriter(rootDir, options);
-
+        Path rootDir = new Path(jobConf.get(TMP_LOCATION));
+        cleanupTmpLocationOnTaskRetry(options, rootDir);
+        deleteEventWriter = aof.getRawRecordWriter(rootDir, options);
+      }
+      return deleteEventWriter;
     }
   }
 

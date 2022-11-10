@@ -48,10 +48,12 @@ public class OrcFileFormatProxy implements FileFormatProxy {
     OrcProto.Footer footer = orcTail.getFooter();
     int stripeCount = footer.getStripesCount();
     // Always convert To PROLEPTIC_GREGORIAN
-    org.apache.orc.Reader dummyReader = new org.apache.orc.impl.ReaderImpl(null,
+    List<StripeStatistics> stripeStats;
+    try (org.apache.orc.Reader dummyReader = new org.apache.orc.impl.ReaderImpl(null,
         org.apache.orc.OrcFile.readerOptions(org.apache.orc.OrcFile.readerOptions(conf).getConfiguration())
-            .useUTCTimestamp(true).convertToProlepticGregorian(true).orcTail(orcTail));
-    List<StripeStatistics> stripeStats = dummyReader.getVariantStripeStatistics(null);
+            .useUTCTimestamp(true).convertToProlepticGregorian(true).orcTail(orcTail))) {
+      stripeStats = dummyReader.getVariantStripeStatistics(null);
+    }
     boolean[] result = OrcInputFormat.pickStripesViaTranslatedSarg(
         sarg, orcTail.getWriterVersion(),
         footer.getTypesList(), stripeStats,
@@ -84,6 +86,8 @@ public class OrcFileFormatProxy implements FileFormatProxy {
   public ByteBuffer getMetadataToCache(
       FileSystem fs, Path path, ByteBuffer[] addedVals) throws IOException {
     // For now, there's nothing special to return in addedVals. Just return the footer.
-    return OrcFile.createReader(fs, path).getSerializedFileFooter();
+    try (Reader reader = OrcFile.createReader(fs, path)) {
+      return reader.getSerializedFileFooter();
+    }
   }
 }

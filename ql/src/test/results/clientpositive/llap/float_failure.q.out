@@ -1,0 +1,99 @@
+PREHOOK: query: CREATE TABLE testjfs3(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testjfs3
+POSTHOOK: query: CREATE TABLE testjfs3(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testjfs3
+PREHOOK: query: INSERT INTO testjfs3 values (-1591211872)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@testjfs3
+POSTHOOK: query: INSERT INTO testjfs3 values (-1591211872)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@testjfs3
+POSTHOOK: Lineage: testjfs3.i SCRIPT []
+PREHOOK: query: ALTER TABLE testjfs3 change column i i float
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@testjfs3
+PREHOOK: Output: default@testjfs3
+POSTHOOK: query: ALTER TABLE testjfs3 change column i i float
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@testjfs3
+POSTHOOK: Output: default@testjfs3
+PREHOOK: query: EXPLAIN
+SELECT * FROM testjfs3 WHERE i = -1591211872
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testjfs3
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT * FROM testjfs3 WHERE i = -1591211872
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testjfs3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: testjfs3
+          filterExpr: (i = -1.5912119E9) (type: boolean)
+          Filter Operator
+            predicate: (i = -1.5912119E9) (type: boolean)
+            Select Operator
+              expressions: -1.5912119E9 (type: float)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: SELECT * FROM testjfs3 WHERE i = -1591211872
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testjfs3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM testjfs3 WHERE i = -1591211872
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testjfs3
+#### A masked pattern was here ####
+-1.5912119E9
+PREHOOK: query: EXPLAIN
+SELECT * FROM testjfs3 WHERE i = -1591211872
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testjfs3
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT * FROM testjfs3 WHERE i = -1591211872
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testjfs3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: testjfs3
+          filterExpr: (i = -1.5912119E9) (type: boolean)
+          Filter Operator
+            predicate: (i = -1.5912119E9) (type: boolean)
+            Select Operator
+              expressions: -1.5912119E9 (type: float)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: SELECT * FROM testjfs3 WHERE i = -1591211872
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testjfs3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM testjfs3 WHERE i = -1591211872
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testjfs3
+#### A masked pattern was here ####
+-1.5912119E9

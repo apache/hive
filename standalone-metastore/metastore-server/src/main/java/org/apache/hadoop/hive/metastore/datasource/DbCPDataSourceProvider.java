@@ -57,7 +57,7 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
-  public DataSource create(Configuration hdpConfig) throws SQLException {
+  public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
     LOG.debug("Creating dbcp connection pool for the MetaStore");
 
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
@@ -77,9 +77,6 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
       dbcpDs.setConnectionProperties(kv.getKey() + "=" + kv.getValue());
     }
 
-    int maxPoolSize = hdpConfig.getInt(
-            MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.getVarname(),
-            ((Long) MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS.getDefaultVal()).intValue());
     long connectionTimeout = hdpConfig.getLong(CONNECTION_TIMEOUT_PROPERTY, 30000L);
     int connectionMaxIlde = hdpConfig.getInt(CONNECTION_MAX_IDLE_PROPERTY, 8);
     int connectionMinIlde = hdpConfig.getInt(CONNECTION_MIN_IDLE_PROPERTY, 0);

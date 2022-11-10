@@ -36,10 +36,16 @@ public class DefaultConstraint implements Serializable {
   public class DefaultConstraintCol {
     public String colName;
     public String defaultVal;
+    public String enable;
+    public String validate;
+    public String rely;
 
-    public DefaultConstraintCol(String colName, String defaultVal) {
+    public DefaultConstraintCol(String colName, String defaultVal, String enable, String validate, String rely) {
       this.colName = colName;
       this.defaultVal = defaultVal;
+      this.enable = enable;
+      this.validate = validate;
+      this.rely = rely;
     }
   }
 
@@ -56,8 +62,8 @@ public class DefaultConstraint implements Serializable {
   public DefaultConstraint(List<SQLDefaultConstraint> defaultConstraintList, String tableName, String databaseName) {
     this.tableName = tableName;
     this.databaseName = databaseName;
-    defaultConstraints = new TreeMap<String, List<DefaultConstraintCol>>();
-    colNameToDefaultValueMap = new TreeMap<String, String>();
+    defaultConstraints = new TreeMap<>();
+    colNameToDefaultValueMap = new TreeMap<>();
     if (defaultConstraintList == null) {
       return;
     }
@@ -67,8 +73,11 @@ public class DefaultConstraint implements Serializable {
         String colName = uk.getColumn_name();
         String defVal = uk.getDefault_value();
         colNameToDefaultValueMap.put(colName, defVal);
+        String enable = uk.isEnable_cstr()? "ENABLE": "DISABLE";
+        String validate = uk.isValidate_cstr()? "VALIDATE": "NOVALIDATE";
+        String rely = uk.isRely_cstr()? "RELY": "NORELY";
         DefaultConstraintCol currCol = new DefaultConstraintCol(
-                colName, defVal);
+                colName, defVal, enable, validate, rely);
         String constraintName = uk.getDc_name();
         if (defaultConstraints.containsKey(constraintName)) {
           defaultConstraints.get(constraintName).add(currCol);
@@ -119,7 +128,7 @@ public class DefaultConstraint implements Serializable {
     return sb.toString();
   }
 
-  public static boolean isCheckConstraintNotEmpty(DefaultConstraint info) {
+  public static boolean isNotEmpty(DefaultConstraint info) {
     return info != null && !info.getDefaultConstraints().isEmpty();
   }
 }

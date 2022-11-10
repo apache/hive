@@ -42,7 +42,7 @@ public class <ClassName> extends <BaseClassName> {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum) + ", val " + displayUtf8Bytes(value);
+    return getColumnParamString(0, inputColumnNum[0]) + ", val " + displayUtf8Bytes(value);
   }
 
   @Override

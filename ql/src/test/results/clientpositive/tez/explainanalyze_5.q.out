@@ -293,43 +293,67 @@ PREHOOK: query: update acid_uami_n2 set de = 3.14 where de = 109.23 or de = 119.
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uami_n2
 PREHOOK: Output: default@acid_uami_n2
+PREHOOK: Output: default@acid_uami_n2
 POSTHOOK: query: update acid_uami_n2 set de = 3.14 where de = 109.23 or de = 119.23
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uami_n2
+POSTHOOK: Output: default@acid_uami_n2
 POSTHOOK: Output: default@acid_uami_n2
 PREHOOK: query: explain analyze update acid_uami_n2 set de = 3.14 where de = 109.23 or de = 119.23
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uami_n2
 PREHOOK: Output: default@acid_uami_n2
+PREHOOK: Output: default@acid_uami_n2
 POSTHOOK: query: explain analyze update acid_uami_n2 set de = 3.14 where de = 109.23 or de = 119.23
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uami_n2
 POSTHOOK: Output: default@acid_uami_n2
+POSTHOOK: Output: default@acid_uami_n2
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
 
-Stage-3
+Stage-4
   Stats Work{}
     Stage-0
       Move Operator
         table:{"name:":"default.acid_uami_n2"}
-        Stage-2
+        Stage-3
           Dependency Collection{}
-            Stage-1
+            Stage-2
               Reducer 2
               File Output Operator [FS_8]
                 table:{"name:":"default.acid_uami_n2"}
-                Select Operator [SEL_7] (rows=2/2 width=302)
-                  Output:["_col0","_col1","_col2","_col3"]
+                Select Operator [SEL_7] (rows=2/2 width=76)
+                  Output:["_col0"]
                 <-Map 1 [SIMPLE_EDGE]
                   SHUFFLE [RS_6]
                     PartitionCols:UDFToInteger(_col0)
-                    Select Operator [SEL_2] (rows=2/2 width=190)
-                      Output:["_col0","_col1","_col3"]
-                      Filter Operator [FIL_9] (rows=2/2 width=226)
-                        predicate:(de) IN (109.23, 119.23)
-                        TableScan [TS_0] (rows=4/2 width=226)
-                          default@acid_uami_n2,acid_uami_n2, ACID table,Tbl:COMPLETE,Col:COMPLETE,Output:["i","de","vc"]
+                    Select Operator [SEL_3] (rows=2/2 width=76)
+                      Output:["_col0"]
+                      Select Operator [SEL_2] (rows=2/2 width=190)
+                        Output:["_col0","_col1","_col3"]
+                        Filter Operator [FIL_14] (rows=2/2 width=226)
+                          predicate:(de) IN (109.23, 119.23)
+                          TableScan [TS_0] (rows=4/2 width=226)
+                            default@acid_uami_n2,acid_uami_n2, ACID table,Tbl:COMPLETE,Col:COMPLETE,Output:["i","de","vc"]
+              Reducer 3
+              File Output Operator [FS_13]
+                table:{"name:":"default.acid_uami_n2"}
+                Select Operator [SEL_12] (rows=2/2 width=226)
+                  Output:["_col0","_col1","_col2"]
+                <-Map 1 [SIMPLE_EDGE]
+                  SHUFFLE [RS_11]
+                    PartitionCols:_col0
+                    Select Operator [SEL_9] (rows=2/2 width=226)
+                      Output:["_col0","_col1","_col2"]
+                       Please refer to the previous Select Operator [SEL_2]
+Stage-5
+  Stats Work{}
+    Stage-1
+      Move Operator
+        table:{"name:":"default.acid_uami_n2"}
+         Please refer to the previous Stage-3
 
 PREHOOK: query: select * from acid_uami_n2 order by de
 PREHOOK: type: QUERY
@@ -347,10 +371,15 @@ PREHOOK: query: update acid_uami_n2 set de = 3.14 where de = 109.23 or de = 119.
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uami_n2
 PREHOOK: Output: default@acid_uami_n2
+PREHOOK: Output: default@acid_uami_n2
 POSTHOOK: query: update acid_uami_n2 set de = 3.14 where de = 109.23 or de = 119.23
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uami_n2
 POSTHOOK: Output: default@acid_uami_n2
+POSTHOOK: Output: default@acid_uami_n2
+POSTHOOK: Lineage: acid_uami_n2.de EXPRESSION []
+POSTHOOK: Lineage: acid_uami_n2.i SIMPLE [(acid_uami_n2)acid_uami_n2.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_uami_n2.vc SIMPLE [(acid_uami_n2)acid_uami_n2.FieldSchema(name:vc, type:varchar(128), comment:null), ]
 PREHOOK: query: select * from acid_uami_n2 order by de
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_uami_n2

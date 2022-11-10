@@ -182,7 +182,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   protected final TTransport innerTransport;
 
   /**
-   * Strings used to lookup the various configurable paramaters of this
+   * Strings used to lookup the various configurable parameters of this
    * protocol.
    */
   public static final String ReturnNullsKey = "separators.return_nulls";
@@ -306,6 +306,11 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   public TCTLSeparatedProtocol(TTransport trans) {
     this(trans, defaultPrimarySeparator, defaultSecondarySeparator,
         defaultMapSeparator, defaultRowSeparator, true, 4096);
+  }
+
+  @Override
+  public int getMinSerializedSize(byte b) throws TException {
+    return -1;
   }
 
   public TCTLSeparatedProtocol(TTransport trans, int buffer_size) {

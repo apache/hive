@@ -28,6 +28,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mytable
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.key SIMPLE [(mytable)mytable.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.value SIMPLE [(mytable)mytable.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: drop table mytable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@mytable

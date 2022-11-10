@@ -34,13 +34,22 @@ public class ThrowingTxnHandler extends CompactionTxnHandler {
 
   @Override
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
-                             Iterator<Partition> partitionIterator) throws MetaException {
+      Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException {
     if (doThrow) {
       throw new RuntimeException("during transactional cleanup");
     }
-    super.cleanupRecords(type, db, table, partitionIterator);
+    super.cleanupRecords(type, db, table, partitionIterator, keepTxnToWriteIdMetaData);
   }
 
+  @Override
+  public void cleanupRecords(HiveObjectType type, Database db, Table table,
+      Iterator<Partition> partitionIterator, long txnId) throws MetaException {
+    if (doThrow) {
+      throw new RuntimeException("during transactional cleanup");
+    }
+    super.cleanupRecords(type, db, table, partitionIterator, txnId);
+  }
+  
   @Override
   public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException {
     if (doThrow) {

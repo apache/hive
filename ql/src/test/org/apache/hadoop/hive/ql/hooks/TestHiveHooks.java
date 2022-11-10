@@ -58,12 +58,6 @@ public class TestHiveHooks {
     }
   }
 
-  public static class OomRunner implements Runnable {
-    @Override public void run() {
-      // no op
-    }
-  }
-
   @Test
   public void testLoadHooksFromConf() throws Exception {
     HiveConf hiveConf = new HiveConf();
@@ -73,16 +67,12 @@ public class TestHiveHooks {
         PostExecHook.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK,
         SemanticAnalysisHook.class.getName());
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_OOM_HOOKS,
-        OomRunner.class.getName() + "," + OomRunner.class.getName() + "," + OomRunner.class.getName());
 
     HiveHooks loader = new HiveHooks(hiveConf);
-    verify(HookContext.HookType.HIVE_SERVER2_OOM_HOOKS, loader, OomRunner.class, 0, 3);
     verify(HookContext.HookType.PRE_EXEC_HOOK, loader, PreExecHook.class, 0,2);
     verify(HookContext.HookType.POST_EXEC_HOOK, loader, PostExecHook.class, 0, 1);
     verify(HookContext.HookType.SEMANTIC_ANALYZER_HOOK, loader, SemanticAnalysisHook.class, 0,1);
     // load again
-    verify(HookContext.HookType.HIVE_SERVER2_OOM_HOOKS, loader, OomRunner.class, 3, 3);
     verify(HookContext.HookType.PRE_EXEC_HOOK, loader, PreExecHook.class, 2, 2);
     verify(HookContext.HookType.POST_EXEC_HOOK, loader, PostExecHook.class, 1,1);
     verify(HookContext.HookType.SEMANTIC_ANALYZER_HOOK, loader, SemanticAnalysisHook.class, 1,1);
@@ -109,7 +99,6 @@ public class TestHiveHooks {
   public void testAddHooks() throws Exception {
     HiveConf hiveConf = new HiveConf();
     HiveHooks loader = new HiveHooks(hiveConf);
-    verify(HookContext.HookType.HIVE_SERVER2_OOM_HOOKS, loader, Runnable.class, OomRunner.class);
     verify(HookContext.HookType.PRE_EXEC_HOOK, loader, ExecuteWithHookContext.class, PreExecHook.class);
     verify(HookContext.HookType.POST_EXEC_HOOK, loader, ExecuteWithHookContext.class, PostExecHook.class);
     verify(HookContext.HookType.SEMANTIC_ANALYZER_HOOK, loader, HiveSemanticAnalyzerHook.class, SemanticAnalysisHook.class);

@@ -493,7 +493,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
 
   // Use LinkedHashSet to give predictable display order.
   private static final Set<String> vectorizableMapJoinNativeEngines =
-      new LinkedHashSet<String>(Arrays.asList("tez", "spark"));
+      new LinkedHashSet<String>(Arrays.asList("tez"));
 
   public class MapJoinOperatorExplainVectorization extends OperatorExplainVectorization {
 

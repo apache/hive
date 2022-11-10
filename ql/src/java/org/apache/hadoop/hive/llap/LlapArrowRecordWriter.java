@@ -48,6 +48,7 @@ public class LlapArrowRecordWriter<K extends Writable, V extends Writable>
   public static final Logger LOG = LoggerFactory.getLogger(LlapArrowRecordWriter.class);
 
   ArrowStreamWriter arrowStreamWriter;
+  VectorSchemaRoot vectorSchemaRoot;
   WritableByteChannelAdapter out;
   BufferAllocator allocator;
   NonNullableStructVector rootVector;
@@ -76,11 +77,15 @@ public class LlapArrowRecordWriter<K extends Writable, V extends Writable>
   public void write(K key, V value) throws IOException {
     ArrowWrapperWritable arrowWrapperWritable = (ArrowWrapperWritable) value;
     if (arrowStreamWriter == null) {
-      VectorSchemaRoot vectorSchemaRoot = arrowWrapperWritable.getVectorSchemaRoot();
+      vectorSchemaRoot = arrowWrapperWritable.getVectorSchemaRoot();
       arrowStreamWriter = new ArrowStreamWriter(vectorSchemaRoot, null, out);
       allocator = arrowWrapperWritable.getAllocator();
       this.out.setAllocator(allocator);
       rootVector = arrowWrapperWritable.getRootVector();
+    } else {
+      // We need to set the row count for the current vector
+      // since root is reused by the stream writer.
+      vectorSchemaRoot.setRowCount(rootVector.getValueCount());
     }
     arrowStreamWriter.writeBatch();
   }

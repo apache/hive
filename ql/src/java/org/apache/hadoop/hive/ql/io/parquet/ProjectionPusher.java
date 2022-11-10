@@ -164,7 +164,7 @@ public class ProjectionPusher {
 
   private void pushFilters(final JobConf jobConf, RowSchema rowSchema, ExprNodeGenericFuncDesc filterExpr) {
     // construct column name list for reference by filter push down
-    Utilities.setColumnNameList(jobConf, rowSchema);
+    Utilities.setColumnNameList(jobConf, rowSchema, true);
 
     // push down filters
     if (filterExpr == null) {

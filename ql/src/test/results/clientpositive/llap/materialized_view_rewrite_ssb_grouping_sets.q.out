@@ -646,6 +646,24 @@ POSTHOOK: Input: default@supplier_n3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ssb_mv_n3
 POSTHOOK: Output: default@ssb_mv_n3
+POSTHOOK: Lineage: ssb_mv_n3._c16 EXPRESSION [(lineorder_n3)lineorder_n3.FieldSchema(name:lo_revenue, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.c_city SIMPLE [(customer_n3)customer_n3.FieldSchema(name:c_city, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.c_nation SIMPLE [(customer_n3)customer_n3.FieldSchema(name:c_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.c_region SIMPLE [(customer_n3)customer_n3.FieldSchema(name:c_region, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.d_weeknuminyear SIMPLE [(dates_n3)dates_n3.FieldSchema(name:d_weeknuminyear, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.d_year SIMPLE [(dates_n3)dates_n3.FieldSchema(name:d_year, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.d_yearmonth SIMPLE [(dates_n3)dates_n3.FieldSchema(name:d_yearmonth, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.d_yearmonthnum SIMPLE [(dates_n3)dates_n3.FieldSchema(name:d_yearmonthnum, type:int, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.discounted_price EXPRESSION [(lineorder_n3)lineorder_n3.FieldSchema(name:lo_extendedprice, type:double, comment:null), (lineorder_n3)lineorder_n3.FieldSchema(name:lo_discount, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.lo_discount SIMPLE [(lineorder_n3)lineorder_n3.FieldSchema(name:lo_discount, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.lo_quantity SIMPLE [(lineorder_n3)lineorder_n3.FieldSchema(name:lo_quantity, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.net_revenue EXPRESSION [(lineorder_n3)lineorder_n3.FieldSchema(name:lo_revenue, type:double, comment:null), (lineorder_n3)lineorder_n3.FieldSchema(name:lo_supplycost, type:double, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.p_brand1 SIMPLE [(ssb_part_n3)ssb_part_n3.FieldSchema(name:p_brand1, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.p_category SIMPLE [(ssb_part_n3)ssb_part_n3.FieldSchema(name:p_category, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.p_mfgr SIMPLE [(ssb_part_n3)ssb_part_n3.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.s_city SIMPLE [(supplier_n3)supplier_n3.FieldSchema(name:s_city, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.s_nation SIMPLE [(supplier_n3)supplier_n3.FieldSchema(name:s_nation, type:string, comment:null), ]
+POSTHOOK: Lineage: ssb_mv_n3.s_region SIMPLE [(supplier_n3)supplier_n3.FieldSchema(name:s_region, type:string, comment:null), ]
 PREHOOK: query: explain cbo
 select 
     sum(lo_extendedprice*lo_discount) as revenue
@@ -799,7 +817,7 @@ POSTHOOK: Input: default@supplier_n3
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$1], sort1=[$2], dir0=[ASC], dir1=[ASC])
-  HiveProject($f2=[$2], d_year=[$0], p_brand1=[$1])
+  HiveProject(lo_revenue=[$2], d_year=[$0], p_brand1=[$1])
     HiveAggregate(group=[{4, 9}], agg#0=[sum($15)])
       HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), =($10, _UTF-16LE'MFGR#12'), =($14, _UTF-16LE'AMERICA'))])
         HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
@@ -850,7 +868,7 @@ POSTHOOK: Input: default@supplier_n3
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$1], sort1=[$2], dir0=[ASC], dir1=[ASC])
-  HiveProject($f2=[$2], d_year=[$0], p_brand1=[$1])
+  HiveProject(lo_revenue=[$2], d_year=[$0], p_brand1=[$1])
     HiveAggregate(group=[{4, 9}], agg#0=[sum($15)])
       HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), =($14, _UTF-16LE'ASIA'), BETWEEN(false, $9, _UTF-16LE'MFGR#2221':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MFGR#2228':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))])
         HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])
@@ -902,7 +920,7 @@ POSTHOOK: Input: default@supplier_n3
 CBO PLAN:
 HiveProject(lo_revenue=[$0], d_year=[$1], p_brand1=[CAST(_UTF-16LE'MFGR#2239':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
   HiveSortLimit(sort0=[$1], dir0=[ASC])
-    HiveProject($f1=[$1], d_year=[$0])
+    HiveProject(lo_revenue=[$1], d_year=[$0])
       HiveAggregate(group=[{4}], agg#0=[sum($15)])
         HiveFilter(condition=[AND(=(CAST($18):BIGINT NOT NULL, 2496), =($9, _UTF-16LE'MFGR#2239'), =($14, _UTF-16LE'EUROPE'))])
           HiveTableScan(table=[[default, ssb_mv_n3]], table:alias=[default.ssb_mv_n3])

@@ -862,5 +862,55 @@ public class TestMetaStoreServerUtils {
     assertEquals("-1.01", MetaStoreServerUtils.getNormalisedPartitionValue("-0001.0100", "decimal"));
   }
 
+  @Test
+  public void throwFailExceptionWithHDFSStorageIsRootPath() {
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.setLocation("hdfs://localhost:8020");
+    Assert.assertFalse(MetaStoreUtils.validateTblStorage(sd));
+
+    sd.setLocation("hdfs://localhost:8020/other_path");
+    Assert.assertTrue(MetaStoreUtils.validateTblStorage(sd));
+  }
+
+  @Test
+  public void throwFailExceptionWithS3StorageIsRootPath() {
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.setLocation("s3a://bucket/");
+    Assert.assertFalse(MetaStoreUtils.validateTblStorage(sd));
+
+    sd.setLocation("s3a://bucket");
+    Assert.assertFalse(MetaStoreUtils.validateTblStorage(sd));
+
+    sd.setLocation("s3a://bucket/other_path");
+    Assert.assertTrue(MetaStoreUtils.validateTblStorage(sd));
+  }
+
+  @Test
+  public void testSameColumns() {
+    FieldSchema col1 = new FieldSchema("col1", "string", "col1 comment");
+    FieldSchema Col1 = new FieldSchema("Col1", "string", "col1 comment");
+    FieldSchema col2 = new FieldSchema("col2", "string", "col2 comment");
+    Assert.assertTrue(MetaStoreServerUtils.areSameColumns(null, null));
+    Assert.assertFalse(MetaStoreServerUtils.areSameColumns(Arrays.asList(col1), null));
+    Assert.assertFalse(MetaStoreServerUtils.areSameColumns(null, Arrays.asList(col1)));
+    Assert.assertTrue(MetaStoreServerUtils.areSameColumns(Arrays.asList(col1), Arrays.asList(col1)));
+    Assert.assertTrue(MetaStoreServerUtils.areSameColumns(Arrays.asList(col1, col2), Arrays.asList(col1, col2)));
+    Assert.assertTrue(MetaStoreServerUtils.areSameColumns(Arrays.asList(Col1, col2), Arrays.asList(col1, col2)));
+  }
+
+  @Test
+  public void testPrefixColumns() {
+    FieldSchema col1 = new FieldSchema("col1", "string", "col1 comment");
+    FieldSchema Col1 = new FieldSchema("Col1", "string", "col1 comment");
+    FieldSchema col2 = new FieldSchema("col2", "string", "col2 comment");
+    FieldSchema col3 = new FieldSchema("col3", "string", "col3 comment");
+    Assert.assertTrue(MetaStoreServerUtils.arePrefixColumns(null, null));
+    Assert.assertFalse(MetaStoreServerUtils.arePrefixColumns(Arrays.asList(col1), null));
+    Assert.assertFalse(MetaStoreServerUtils.arePrefixColumns(null, Arrays.asList(col1)));
+    Assert.assertTrue(MetaStoreServerUtils.arePrefixColumns(Arrays.asList(col1), Arrays.asList(col1)));
+    Assert.assertTrue(MetaStoreServerUtils.arePrefixColumns(Arrays.asList(col1, col2), Arrays.asList(col1, col2, col3)));
+    Assert.assertTrue(MetaStoreServerUtils.arePrefixColumns(Arrays.asList(Col1, col2), Arrays.asList(col1, col2, col3)));
+    Assert.assertFalse(MetaStoreServerUtils.arePrefixColumns(Arrays.asList(col1, col2, col3), Arrays.asList(col1, col2)));
+  }
 }
 

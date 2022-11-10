@@ -32,7 +32,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
@@ -86,7 +85,7 @@ public class Utils {
     // Client param names:
 
     // Retry setting
-    static final String RETRIES = "retries";
+    public static final String RETRIES = "retries";
     public static final String RETRY_INTERVAL = "retryInterval";
 
     public static final String AUTH_TYPE = "auth";
@@ -100,6 +99,9 @@ public class Utils {
     public static final String AUTH_PASSWD = "password";
     public static final String AUTH_KERBEROS_AUTH_TYPE = "kerberosAuthType";
     public static final String AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT = "fromSubject";
+    public static final String AUTH_TYPE_JWT = "jwt";
+    public static final String AUTH_TYPE_JWT_KEY = "jwt";
+    public static final String AUTH_JWT_ENV = "JWT";
     // JdbcConnection param which specifies if we need to use a browser to do
     // authentication.
     // JdbcConnectionParam which specifies if the authMode is done via a browser
@@ -154,6 +156,8 @@ public class Utils {
     static final String DEFAULT_COOKIE_NAMES_HS2 = "hive.server2.auth";
     // The http header prefix for additional headers which have to be appended to the request
     static final String HTTP_HEADER_PREFIX = "http.header.";
+    // Request tracking
+    static final String JDBC_PARAM_REQUEST_TRACK = "requestTrack";
     // Set the fetchSize
     static final String FETCH_SIZE = "fetchSize";
     static final String INIT_FILE = "initFile";
@@ -163,6 +167,7 @@ public class Utils {
     // Create external purge table by default
     static final String CREATE_TABLE_AS_EXTERNAL = "hiveCreateAsExternalLegacy";
     public static final String SOCKET_TIMEOUT = "socketTimeout";
+    static final String THRIFT_CLIENT_MAX_MESSAGE_SIZE = "thrift.client.max.message.size";
 
     // We support ways to specify application name modeled after some existing DBs, since
     // there's no standard approach.
@@ -674,8 +679,7 @@ public class Utils {
      */
     int fromIndex = Utils.URL_PREFIX.length();
     int toIndex = -1;
-    ArrayList<String> toIndexChars = new ArrayList<String>(Arrays.asList("/", "?", "#"));
-    for (String toIndexChar : toIndexChars) {
+    for (String toIndexChar : Arrays.asList("/", "?", "#")) {
       toIndex = uri.indexOf(toIndexChar, fromIndex);
       if (toIndex > 0) {
         break;

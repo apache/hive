@@ -54,14 +54,13 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
+import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
@@ -113,9 +112,7 @@ public class CliDriver {
     SessionState ss = SessionState.get();
     conf = (ss != null) ? ss.getConf() : new Configuration();
     Logger LOG = LoggerFactory.getLogger("CliDriver");
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("CliDriver inited with classpath {}", System.getProperty("java.class.path"));
-    }
+    LOG.debug("CliDriver inited with classpath {}", System.getProperty("java.class.path"));
     console = new LogHelper(LOG);
   }
 

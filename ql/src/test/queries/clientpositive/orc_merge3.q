@@ -4,7 +4,6 @@ set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.merge.orcfile.stripe.level=true;
-set hive.merge.sparkfiles=true;
 
 DROP TABLE orcfile_merge3a_n0;
 DROP TABLE orcfile_merge3b_n0;

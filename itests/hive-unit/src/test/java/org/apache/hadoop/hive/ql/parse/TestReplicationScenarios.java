@@ -25,10 +25,19 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.StringAppender;
+import org.apache.hadoop.hive.ql.parse.repl.metric.MetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
@@ -104,24 +113,37 @@ import org.junit.rules.TestName;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.Base64;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
 import static org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData.DUMP_METADATA;
+import static org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector.isMetricsEnabledForTests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -177,7 +199,8 @@ public class TestReplicationScenarios {
       hconf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), metastoreUri);
       return;
     }
-
+    // Disable auth so the call should succeed
+    MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     hconf.set(MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS.getHiveName(),
         DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
     hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
@@ -185,6 +208,7 @@ public class TestReplicationScenarios {
     hconf.setVar(HiveConf.ConfVars.REPLCMDIR, TEST_PATH + "/cmroot/");
     proxySettingName = "hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts";
     hconf.set(proxySettingName, "*");
+    MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     hconf.setVar(HiveConf.ConfVars.REPLDIR,TEST_PATH + "/hrepl/");
     hconf.set(MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES.getHiveName(), "3");
     hconf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
@@ -225,13 +249,16 @@ public class TestReplicationScenarios {
     hconfMirrorServer.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
     MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer, true);
     hconfMirror = new HiveConf(hconf);
+    MetastoreConf.setBoolVar(hconfMirror, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+    hconfMirrorServer.set(proxySettingName, "*");
     String thriftUri = MetastoreConf.getVar(hconfMirrorServer, MetastoreConf.ConfVars.THRIFT_URIS);
     MetastoreConf.setVar(hconfMirror, MetastoreConf.ConfVars.THRIFT_URIS, thriftUri);
-
     driverMirror = DriverFactory.newDriver(hconfMirror);
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 
     PersistenceManagerProvider.setTwoMetastoreTesting(true);
+    MetastoreConf.setTimeVar(hconf, EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL, 0, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconfMirror, EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL, 0, TimeUnit.SECONDS);
   }
 
   @AfterClass
@@ -239,16 +266,19 @@ public class TestReplicationScenarios {
     // FIXME : should clean up TEST_PATH, but not doing it now, for debugging's sake
     //Clean up the warehouse after test run as we are restoring the warehouse path for other metastore creation
     Path warehousePath = new Path(MetastoreConf.getVar(hconf, MetastoreConf.ConfVars.WAREHOUSE));
-    try {
-      warehousePath.getFileSystem(hconf).delete(warehousePath, true);
-    } catch (IOException e) {
-
-    }
     Path warehousePathReplica = new Path(MetastoreConf.getVar(hconfMirror, MetastoreConf.ConfVars.WAREHOUSE));
     try {
+      warehousePath.getFileSystem(hconf).delete(warehousePath, true);
       warehousePathReplica.getFileSystem(hconfMirror).delete(warehousePathReplica, true);
     } catch (IOException e) {
 
+    }
+    Hive.closeCurrent();
+    if (metaStoreClient != null) {
+      metaStoreClient.close();
+    }
+    if (metaStoreClientMirror != null) {
+      metaStoreClientMirror.close();
     }
   }
 
@@ -1069,7 +1099,7 @@ public class TestReplicationScenarios {
     String bootstrapDb = dbName + "_boot";
 
     //insert data in the additional db
-    String[] unptn_data = new String[]{ "eleven" , "twelve" };
+    String[] unptn_data = new String[]{"eleven", "twelve"};
     String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
     createTestDataFile(unptn_locn, unptn_data);
     run("CREATE DATABASE " + bootstrapDb, driver);
@@ -1088,7 +1118,7 @@ public class TestReplicationScenarios {
 
     //create new database and dump all databases again
     String incDbName1 = dbName + "_inc1";
-    run("CREATE DATABASE " + incDbName1 , driver);
+    run("CREATE DATABASE " + incDbName1, driver);
     run("CREATE TABLE " + incDbName1 + ".unptned(a string) STORED AS TEXTFILE", driver);
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + incDbName1 + ".unptned", true, driver);
     verifySetup("SELECT * from " + incDbName1 + ".unptned", unptn_data, driver);
@@ -1102,11 +1132,75 @@ public class TestReplicationScenarios {
 
     //create new database and dump all databases again
     String incDbName2 = dbName + "_inc2";
-    run("CREATE DATABASE " + incDbName2 , driver);
+    run("CREATE DATABASE " + incDbName2, driver);
     run("CREATE TABLE " + incDbName2 + ".unptned(a string) STORED AS TEXTFILE", driver);
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + incDbName2 + ".unptned", true, driver);
     verifySetup("SELECT * from " + incDbName2 + ".unptned", unptn_data, driver);
     replDumpAllDbs(metadataOnlyClause);
+  }
+
+  @Test
+  public void testIncrementalLogs() throws IOException {
+    verifySetupSteps = true;
+    String name = testName.getMethodName();
+    org.apache.logging.log4j.Logger logger = LogManager.getLogger("hive.ql.metadata.HIVE");
+    StringAppender appender = StringAppender.createStringAppender("%m");
+    appender.addToLogger(logger.getName(), Level.INFO);
+    appender.start();
+
+    String dbName = createDB(name, driver);
+    String replDbName = dbName + "_dupe";
+
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    String[] unptn_data = new String[]{ "eleven" , "twelve" };
+    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
+    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[]{};
+
+    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptn_locn, unptn_data);
+    createTestDataFile(ptn_locn_1, ptn_data_1);
+    createTestDataFile(ptn_locn_2, ptn_data_2);
+
+
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", true, driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", true, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", true, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
+
+    run("CREATE TABLE " + dbName + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=1)", true, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=1",ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=2)", true, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptn_data_2, driver);
+
+    // Perform REPL-DUMP/LOAD
+    // Set approx load tasks to a low value to trigger REPL_LOAD execution multiple times
+    List<String> replApproxTasksClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS.varname + "'='1'");
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName, replApproxTasksClause);
+    FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);
+    Path dumpPath = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
+    assertTrue(fs.exists(new Path(dumpPath, LOAD_ACKNOWLEDGEMENT.toString())));
+    verifyIncrementalLogs(appender);
+
+    verifyRun("SELECT * from " + replDbName + ".unptned", unptn_data, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=2", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=1", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=2", ptn_data_2, driverMirror);
+    appender.removeFromLogger(logger.getName());
+    verifySetupSteps = false;
   }
 
   @Test
@@ -2353,7 +2447,7 @@ public class TestReplicationScenarios {
 
     // For next run, CM is enabled, set REPL_EVENT_DB_LISTENER_TTL to low value for events to get deleted
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, cleanerTtlSeconds * 60 * 60, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds , TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds , TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
 
     run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)", driver);
@@ -2381,7 +2475,7 @@ public class TestReplicationScenarios {
     // First check with high ttl
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.REPLCMENABLED, false);
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, cleanerTtlSeconds  * 60 * 60, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds, TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
 
     run("CREATE TABLE " + dbName
@@ -2407,7 +2501,7 @@ public class TestReplicationScenarios {
     //With CM disabled, set a low ttl for events to get deleted
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.REPLCMENABLED, false);
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, cleanerTtlSeconds, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds   * 60 * 60, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds   * 60 * 60, TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
 
     run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=2) SELECT a FROM " + dbName
@@ -2430,10 +2524,70 @@ public class TestReplicationScenarios {
     //restore original values
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.REPLCMENABLED, true);
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, 86400, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, 864000, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, REPL_EVENT_DB_LISTENER_TTL, 864000, TimeUnit.SECONDS);
     MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, 7200, TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
     verifySetupSteps = verifySetupOriginal;
+  }
+
+  @Test
+  public void testCleanerThreadStartupWait() throws Exception {
+    int eventsTtl = 20;
+    HiveConf newConf = new HiveConf(hconf);
+
+    // Set TTL short enough for testing.
+    MetastoreConf.setTimeVar(newConf, REPL_EVENT_DB_LISTENER_TTL, eventsTtl, TimeUnit.SECONDS);
+
+    // Set startup wait interval.
+    MetastoreConf.setTimeVar(newConf, EVENT_DB_LISTENER_CLEAN_STARTUP_WAIT_INTERVAL, eventsTtl * 5, TimeUnit.SECONDS);
+
+    // Set cleaner wait interval.
+    MetastoreConf
+        .setTimeVar(newConf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, 10, TimeUnit.MILLISECONDS);
+    newConf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL, true);
+    // Reset Cleaner to have a initial wait time.
+    DbNotificationListener.resetCleaner(newConf);
+
+    IMetaStoreClient msClient = metaStoreClient;
+    run("create database referenceDb", driver);
+
+    long firstEventId = msClient.getCurrentNotificationEventId().getEventId();;
+
+    run("create database cleanupStartup", driver);
+    run("drop database cleanupStartup", driver);
+
+    LOG.info("Done with creating events.");
+
+    // Check events are pushed into notification logs.
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+
+    // Reset Cleaner to have a initial wait time.
+    DbNotificationListener.resetCleaner(newConf);
+
+    // Sleep for eventsTtl time and see if events are there.
+    Thread.sleep(eventsTtl * 1000);
+
+    // Check events are there in notification logs.
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+
+    // Sleep for some more time and see if events are there.
+    Thread.sleep(eventsTtl * 1000);
+
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+
+    // Sleep more than the initial wait time and see if Events get cleaned up post that
+    Thread.sleep(eventsTtl * 4000);
+
+    // Events should have cleaned up.
+    rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(0, rsp.getEventsSize());
+
+    // Reset with original configuration.
+    DbNotificationListener.resetCleaner(hconf);
+    run("drop database referenceDb", driver);
   }
 
   @Test
@@ -4037,27 +4191,32 @@ public class TestReplicationScenarios {
     NotificationEventResponse rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
     assertEquals(1, rsp.getEventsSize());
     // Test various scenarios
-    // Remove the proxy privilege and the auth should fail (in reality the proxy setting should not be changed on the fly)
-    hconf.unset(proxySettingName);
-    // Need to explicitly update ProxyUsers
-    ProxyUsers.refreshSuperUserGroupsConfiguration(hconf);
-    // Verify if the auth should fail
-    Exception ex = null;
+    // Remove the proxy privilege by reseting proxy configuration to default value.
+    // The auth should fail (in reality the proxy setting should not be changed on the fly)
+    // Pretty hacky: Affects both instances of HMS
+    ProxyUsers.refreshSuperUserGroupsConfiguration();
     try {
+      hconf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, false);
+      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
       rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
+      Assert.fail("Get Next Nofitication should have failed due to no proxy auth");
     } catch (TException e) {
-      ex = e;
+      // Expected to throw an Exception - keep going
     }
-    assertNotNull(ex);
     // Disable auth so the call should succeed
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+    MetastoreConf.setBoolVar(hconfMirror, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     try {
       rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
       assertEquals(1, rsp.getEventsSize());
     } finally {
       // Restore the settings
-      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
+      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+      hconf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, true);
       hconf.set(proxySettingName, "*");
+
+      // Restore Proxy configurations to test values
+      // Pretty hacky: Applies one setting to both instances of HMS
       ProxyUsers.refreshSuperUserGroupsConfiguration(hconf);
     }
   }
@@ -4199,6 +4358,55 @@ public class TestReplicationScenarios {
 
     run("DROP TABLE " + dbName + ".normal", driver);
     run("drop database " + dbName, true, driver);
+  }
+
+
+  @Test
+  public void testDDLTasksInParallel() throws Throwable{
+    Logger logger = null;
+    LoggerContext ctx = null;
+    Level oldLevel = null;
+    StringAppender appender = null;
+    LoggerConfig loggerConfig = null;
+    try {
+      driverMirror.getConf().set(HiveConf.ConfVars.EXECPARALLEL.varname, "true");
+      logger = LogManager.getLogger("hive.ql.metadata.Hive");
+      oldLevel = logger.getLevel();
+      ctx = (LoggerContext) LogManager.getContext(false);
+      Configuration config = ctx.getConfiguration();
+      loggerConfig = config.getLoggerConfig(logger.getName());
+      loggerConfig.setLevel(Level.INFO);
+      ctx.updateLoggers();
+      // Create a String Appender to capture log output
+      appender = StringAppender.createStringAppender("%m");
+      appender.addToLogger(logger.getName(), Level.DEBUG);
+      appender.start();
+      String testName = "testDDLTasksInParallel";
+      String dbName = createDB(testName, driver);
+      String replDbName = dbName + "_dupe";
+
+      run("CREATE TABLE " + dbName + ".t1 (id int)", driver);
+      run("insert into table " + dbName + ".t1 values ('1')", driver);
+      run("CREATE TABLE " + dbName + ".t2 (id int)", driver);
+      run("insert into table " + dbName + ".t2 values ('2')", driver);
+
+      Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+      String logText = appender.getOutput();
+      Pattern pattern = Pattern.compile("Starting task \\[Stage-[0-9]:DDL\\] in parallel");
+      Matcher matcher = pattern.matcher(logText);
+      int count = 0;
+      while(matcher.find()){
+        count++;
+      }
+      assertEquals(count, 2);
+      appender.reset();
+    } finally {
+      driverMirror.getConf().set(HiveConf.ConfVars.EXECPARALLEL.varname, "false");
+      loggerConfig.setLevel(oldLevel);
+      ctx.updateLoggers();
+      appender.removeFromLogger(logger.getName());
+    }
   }
 
   @Test
@@ -4418,6 +4626,99 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testReplicationMetricForSkippedIteration() throws Throwable {
+    String name = testName.getMethodName();
+    String primaryDbName = createDB(name, driver);
+    String replicaDbName = "replicaDb";
+    try {
+      isMetricsEnabledForTests(true);
+      MetricCollector collector = MetricCollector.getInstance();
+      run("create table " + primaryDbName + ".t1 (id int) STORED AS TEXTFILE", driver);
+      run("insert into " + primaryDbName + ".t1 values(1)", driver);
+      run("repl dump " + primaryDbName, driver);
+
+      ReplicationMetric metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+      run("repl dump " + primaryDbName, driver);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+
+      run("repl load " + primaryDbName + " into " + replicaDbName, driverMirror);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+      run("repl load " + primaryDbName + " into " + replicaDbName, driverMirror);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+    } finally {
+      isMetricsEnabledForTests(false);
+    }
+  }
+
+  @Test
+  public void testReplicationMetricForFailedIteration() throws Throwable {
+    String name = testName.getMethodName();
+    String primaryDbName = createDB(name, driver);
+    String replicaDbName = "tgtDb";
+    try {
+      isMetricsEnabledForTests(true);
+      MetricCollector collector = MetricCollector.getInstance();
+      run("create table " + primaryDbName + ".t1 (id int) STORED AS TEXTFILE", driver);
+      run("insert into " + primaryDbName + ".t1 values(1)", driver);
+      Tuple dumpData = replDumpDb(primaryDbName);
+
+      ReplicationMetric metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+      run("repl load " + primaryDbName + " into " + replicaDbName, driverMirror);
+
+      Path nonRecoverableFile = new Path(new Path(dumpData.dumpLocation), ReplAck.NON_RECOVERABLE_MARKER.toString());
+      FileSystem fs = new Path(dumpData.dumpLocation).getFileSystem(hconf);
+      fs.create(nonRecoverableFile);
+
+      verifyFail("REPL DUMP " + primaryDbName, driver);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+      assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+
+      verifyFail("REPL DUMP " + primaryDbName, driver);
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+      assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+
+      fs.delete(nonRecoverableFile, true);
+      dumpData = replDumpDb(primaryDbName);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SUCCESS);
+
+      run("ALTER DATABASE " + replicaDbName + " SET DBPROPERTIES('" + ReplConst.REPL_INCOMPATIBLE + "'='true')", driverMirror);
+
+      verifyFail("REPL LOAD " + primaryDbName + " INTO " + replicaDbName, driverMirror);
+
+      nonRecoverableFile = new Path(new Path(dumpData.dumpLocation), ReplAck.NON_RECOVERABLE_MARKER.toString());
+      assertTrue(fs.exists(nonRecoverableFile));
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.FAILED_ADMIN);
+      assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+
+      verifyFail("REPL LOAD " + primaryDbName + " INTO " + replicaDbName, driverMirror);
+
+      metric = collector.getMetrics().getLast();
+      assertEquals(metric.getProgress().getStatus(), Status.SKIPPED);
+      assertEquals(metric.getProgress().getStages().get(0).getErrorLogPath(), nonRecoverableFile.toString());
+    } finally {
+      isMetricsEnabledForTests(false);
+    }
+  }
+
+  @Test
   public void testAddPartition() throws Throwable{
     // Get the logger at the root level.
     Logger logger = LogManager.getLogger("hive.ql.metadata.Hive");
@@ -4510,6 +4811,132 @@ public class TestReplicationScenarios {
     appender.removeFromLogger(logger.getName());
   }
 
+  @org.junit.Ignore("HIVE-26073")
+  @Test
+  public void testIncrementalStatisticsMetrics() throws Throwable {
+    isMetricsEnabledForTests(true);
+    ReplLoadWork.setMbeansParamsForTesting(true, false);
+    MetricCollector collector = MetricCollector.getInstance();
+    String testName = "testIncrementalStatisticsMetrics";
+    String dbName = createDB(testName, driver);
+    String replDbName = dbName + "_dupe";
+    String nameStri = "Hadoop:" + "service=HiveServer2" + "," + "name=" + "Database-" + replDbName + " Policy-pol";
+
+    // Do a bootstrap dump & load
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+    collector.getMetrics();
+    ReplLoadWork.setMbeansParamsForTesting(true,true);
+
+    // Do some operations at the source side so that the count & metrics can be counted at the load side.
+
+    // 10 create table
+    for (int i = 0; i < 10; i++) {
+      run("CREATE TABLE " + dbName + ".ptned" + i + "(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+      for (int j = 0; j < 5; j++) {
+        // Create 5 partitoins per table.
+        run("ALTER TABLE " + dbName + ".ptned" + i + " ADD PARTITION(b=" + j + ")", driver);
+      }
+    }
+    verifyRun("SHOW PARTITIONS " + dbName + ".ptned1", new String[] {"b=0","b=1","b=2","b=3","b=4"}, driver);
+
+    // Do an incremental load & verify the metrics.
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+
+    String events[] = new String[] { "[[Event Name: EVENT_CREATE_TABLE; " + "Total Number: 10;",
+        "[[Event Name: EVENT_ADD_PARTITION; Total Number: 50;" };
+
+    Iterator<ReplicationMetric> itr = collector.getMetrics().iterator();
+    while (itr.hasNext()) {
+      ReplicationMetric elem = itr.next();
+      assertEquals(Metadata.ReplicationType.INCREMENTAL, elem.getMetadata().getReplicationType());
+      List<Stage> stages = elem.getProgress().getStages();
+      assertTrue(stages.size() != 0);
+      for (Stage stage : stages) {
+        if (stage.getReplStats() == null) {
+          continue;
+        }
+        for (String event : events) {
+          assertTrue(stage.getReplStats(), stage.getReplStats().contains(event));
+        }
+      }
+    }
+
+    verifyMBeanStatistics(testName, replDbName, nameStri, events, incrementalDump);
+
+    // Do some drop table/drop partition & rename table operations.
+    for (int i = 0; i < 3; i++) {
+      // Drop 3 tables
+      run("DROP TABLE " + dbName + ".ptned" + i, driver);
+    }
+
+    for (int i = 3; i < 6; i++) {
+      // Rename 3 tables
+      run("ALTER TABLE " + dbName + ".ptned" + i + " RENAME TO " + dbName + ".ptned" + i + "_renamed", driver);
+    }
+
+    for (int i = 6; i < 10; i++) {
+      // Drop partitions from 4 tables
+      run("ALTER TABLE " + dbName + ".ptned" + i + " DROP PARTITION(b=1)", driver);
+    }
+
+    for (int i = 10; i < 12; i++) {
+      // Create 2 tables
+      run("CREATE TABLE " + dbName + ".ptned" + i + "(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    }
+
+    incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+
+    events = new String[] { "[[Event Name: EVENT_CREATE_TABLE; " + "Total Number: 2;",
+        "[[Event Name: EVENT_DROP_TABLE; " + "Total Number: 3;",
+        "[[Event Name: EVENT_RENAME_TABLE; " + "Total Number: 3;",
+        "[[Event Name: EVENT_DROP_PARTITION; Total Number: 4;" };
+
+      itr = collector.getMetrics().iterator();
+    while (itr.hasNext()) {
+      ReplicationMetric elem = itr.next();
+      assertEquals(Metadata.ReplicationType.INCREMENTAL, elem.getMetadata().getReplicationType());
+      List<Stage> stages = elem.getProgress().getStages();
+      assertTrue(stages.size() != 0);
+      for (Stage stage : stages) {
+        if (stage.getReplStats() == null) {
+          continue;
+        }
+        for (String event : events) {
+          assertTrue(stage.getReplStats(), stage.getReplStats().contains(event));
+        }
+      }
+    }
+    verifyMBeanStatistics(testName, replDbName, nameStri, events, incrementalDump);
+    // Clean up the test setup.
+    ReplLoadWork.setMbeansParamsForTesting(false,false);
+    MBeans.unregister(ObjectName.getInstance(nameStri));
+  }
+
+  private void verifyMBeanStatistics(String testName, String replDbName, String nameStri, String[] events,
+      Tuple incrementalDump)
+      throws MalformedObjectNameException, MBeanException, AttributeNotFoundException, InstanceNotFoundException,
+      ReflectionException {
+    ObjectName name = ObjectName.getInstance(nameStri);
+
+    assertTrue(ManagementFactory.getPlatformMBeanServer().getAttribute(name, "ReplicationType").toString()
+        .contains("INCREMENTAL"));
+    // Check the dump location is set correctly.
+    assertTrue(ManagementFactory.getPlatformMBeanServer().getAttribute(name, "DumpDirectory").toString()
+        .startsWith(incrementalDump.dumpLocation));
+    // The CurrentEventId should be the last dumped repl id, once the load is complete.
+    assertEquals(incrementalDump.lastReplId,
+        ManagementFactory.getPlatformMBeanServer().getAttribute(name, "CurrentEventId"));
+    assertEquals(Long.parseLong(incrementalDump.lastReplId),
+        ManagementFactory.getPlatformMBeanServer().getAttribute(name, "LastEventId"));
+    assertTrue(
+        ManagementFactory.getPlatformMBeanServer().getAttribute(name, "SourceDatabase").toString().contains(testName));
+    assertTrue(ManagementFactory.getPlatformMBeanServer().getAttribute(name, "TargetDatabase").toString()
+        .contains(replDbName));
+    for (String event : events) {
+      assertTrue(ManagementFactory.getPlatformMBeanServer().getAttribute(name, "ReplStats").toString().contains(event));
+    }
+  }
+
   private static String createDB(String name, IDriver myDriver) {
     LOG.info("Testing " + name);
     String mgdLocation = System.getProperty("test.warehouse.dir", "file:/tmp/warehouse/managed");
@@ -4569,7 +4996,7 @@ public class TestReplicationScenarios {
     assertTrue(Long.parseLong(lastReplDumpId) > Long.parseLong(lastDbReplDumpId));
 
     Table tbl = metaStoreClientMirror.getTable(replDbName, tblName);
-    String tblLastReplId = tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+    String tblLastReplId = tbl.getParameters().get(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString());
     assertTrue(Long.parseLong(tblLastReplId) > Long.parseLong(lastDbReplDumpId));
     assertTrue(Long.parseLong(tblLastReplId) <= Long.parseLong(lastReplDumpId));
     return lastReplDumpId;
@@ -4790,6 +5217,22 @@ public class TestReplicationScenarios {
       }
     }
     return null;
+  }
+
+  private void verifyIncrementalLogs(StringAppender appender) {
+    String logStr = appender.getOutput();
+    String eventStr = "REPL::EVENT_LOAD:";
+    String eventDurationStr = "eventDuration";
+    String incLoadStageStr = "REPL_INCREMENTAL_LOAD";
+    String incLoadTaskDurationStr = "REPL_INCREMENTAL_LOAD stage duration";
+    String incTaskBuilderDurationStr = "REPL_INCREMENTAL_LOAD task-builder";
+    assertTrue(logStr, logStr.contains(eventStr));
+    //verify for each loaded event, there is the event duration log
+    assertEquals(StringUtils.countMatches(logStr, eventStr), StringUtils.countMatches(logStr, eventDurationStr));
+    //verify for each repl-load stage, there is one log for entire stage-duration and one log for DAG-duration(builder)
+    assertTrue(StringUtils.countMatches(logStr, incLoadStageStr) > 3);
+    assertEquals(StringUtils.countMatches(logStr, incLoadStageStr) / 3, StringUtils.countMatches(logStr, incTaskBuilderDurationStr));
+    assertEquals(StringUtils.countMatches(logStr, incLoadStageStr) / 3, StringUtils.countMatches(logStr, incLoadTaskDurationStr));
   }
 
   private void deleteNewMetadataFields(Tuple dump) throws SemanticException {

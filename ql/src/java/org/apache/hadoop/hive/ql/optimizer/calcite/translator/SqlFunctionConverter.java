@@ -236,7 +236,7 @@ public class SqlFunctionConverter {
 
   // TODO: 1) handle Agg Func Name translation 2) is it correct to add func
   // args as child of func?
-  public static ASTNode buildAST(SqlOperator op, List<ASTNode> children) {
+  public static ASTNode buildAST(SqlOperator op, List<ASTNode> children, RelDataType type) {
     HiveToken hToken = calciteToHiveToken.get(op);
     ASTNode node;
     if (hToken != null) {
@@ -292,6 +292,8 @@ public class SqlFunctionConverter {
         }
       }
     }
+
+    node.setTypeInfo(TypeConverter.convert(type));
 
     for (ASTNode c : children) {
       ParseDriver.adaptor.addChild(node, c);
@@ -396,6 +398,7 @@ public class SqlFunctionConverter {
       registerDuplicateFunction("<=>", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, hToken(HiveParser.EQUAL_NS, "<=>"));
       registerFunction("when", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerDuplicateFunction("case", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
+      registerDuplicateFunction("if", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerFunction("coalesce", SqlStdOperatorTable.COALESCE, hToken(HiveParser.Identifier, "coalesce"));
 
       // timebased
@@ -563,7 +566,7 @@ public class SqlFunctionConverter {
   }
 
   public static SqlOperator getCalciteFn(String hiveUdfName,
-      ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType,
+      List<RelDataType> calciteArgTypes, RelDataType calciteRetType,
       boolean deterministic, boolean runtimeConstant)
       throws CalciteSemanticException {
 

@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -74,6 +75,7 @@ import org.apache.orc.impl.SchemaEvolution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -118,12 +120,15 @@ public class VectorizedOrcAcidRowBatchReader
    * {@link RecordIdentifier}/{@link VirtualColumn#ROWID} information
    */
   private final StructColumnVector recordIdColumnVector;
+  private final RowIsDeletedColumnVector rowIsDeletedVector;
   private final Reader.Options readerOptions;
   private final boolean isOriginal;
   /**
    * something further in the data pipeline wants {@link VirtualColumn#ROWID}
    */
   private final boolean rowIdProjected;
+  private final boolean rowIsDeletedProjected;
+  private final boolean fetchDeletedRows;
   /**
    * if false, we don't need any acid medadata columns from the file because we
    * know all data in the split is valid (wrt to visible writeIDs/delete events)
@@ -281,16 +286,26 @@ public class VectorizedOrcAcidRowBatchReader
     deleteEventReaderOptions.range(0, Long.MAX_VALUE);
     deleteEventReaderOptions.searchArgument(null, null);
     keyInterval = findMinMaxKeys(orcSplit, conf, deleteEventReaderOptions);
+    fetchDeletedRows = acidOperationalProperties.isFetchDeletedRows();
     DeleteEventRegistry der;
     try {
       // See if we can load all the relevant delete events from all the
       // delete deltas in memory...
+      ColumnizedDeleteEventRegistry.OriginalWriteIdLoader writeIdLoader;
+      if (fetchDeletedRows) {
+        // Deleted rows requires both Current and Original writeId.
+        // Original is for lookup
+        // Current is for updating the writeId in the output record
+        writeIdLoader = new ColumnizedDeleteEventRegistry.OriginalAndCurrentWriteIdLoader();
+      } else {
+        writeIdLoader = new ColumnizedDeleteEventRegistry.OriginalWriteIdLoader();
+      }
       der = new ColumnizedDeleteEventRegistry(conf, orcSplit,
-          deleteEventReaderOptions, keyInterval, cacheTag);
+          deleteEventReaderOptions, keyInterval, cacheTag, writeIdLoader);
     } catch (DeleteEventsOverflowMemoryException e) {
       // If not, then create a set of hanging readers that do sort-merge to find the next smallest
       // delete event on-demand. Caps the memory consumption to (some_const * no. of readers).
-      der = new SortMergedDeleteEventRegistry(conf, orcSplit, deleteEventReaderOptions);
+      der = new SortMergedDeleteEventRegistry(conf, orcSplit, deleteEventReaderOptions, fetchDeletedRows);
     }
     this.deleteEventRegistry = der;
     isOriginal = orcSplit.isOriginal();
@@ -303,6 +318,12 @@ public class VectorizedOrcAcidRowBatchReader
           VectorizedRowBatch.DEFAULT_SIZE, null, null, null);
     }
     rowIdProjected = areRowIdsProjected(rbCtx);
+    rowIsDeletedProjected = isRowIsDeletedProjected(rbCtx);
+    if (rowIsDeletedProjected) {
+      rowIsDeletedVector = new RowIsDeletedColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+    } else {
+      rowIsDeletedVector = null;
+    }
     rootPath = orcSplit.getRootDir();
 
     /**
@@ -444,179 +465,181 @@ public class VectorizedOrcAcidRowBatchReader
       return new OrcRawRecordMerger.KeyInterval(null, null);
     }
 
-    VectorizedOrcAcidRowBatchReader.ReaderData orcReaderData =
-        getOrcReaderData(orcSplit.getPath(), conf, cacheTag, orcSplit.getFileKey());
+    try (VectorizedOrcAcidRowBatchReader.ReaderData orcReaderData =
+        getOrcReaderData(orcSplit.getPath(), conf, cacheTag, orcSplit.getFileKey())) {
 
-    if(orcSplit.isOriginal()) {
-      /**
-       * Among originals we may have files with _copy_N suffix.  To properly
-       * generate a synthetic ROW___ID for them we need
-       * {@link OffsetAndBucketProperty} which could be an expensive computation
-       * if there are lots of copy_N files for a given bucketId. But unless
-       * there are delete events, we often don't need synthetic ROW__IDs at all.
-       * Kind of chicken-and-egg - deal with this later.
-       * See {@link OrcRawRecordMerger#discoverOriginalKeyBounds(Reader, int,
-       * Reader.Options, Configuration, OrcRawRecordMerger.Options)}*/
-      LOG.debug("findMinMaxKeys(original split)");
+      if(orcSplit.isOriginal()) {
+        /**
+         * Among originals we may have files with _copy_N suffix.  To properly
+         * generate a synthetic ROW___ID for them we need
+         * {@link OffsetAndBucketProperty} which could be an expensive computation
+         * if there are lots of copy_N files for a given bucketId. But unless
+         * there are delete events, we often don't need synthetic ROW__IDs at all.
+         * Kind of chicken-and-egg - deal with this later.
+         * See {@link OrcRawRecordMerger#discoverOriginalKeyBounds(Reader, int,
+         * Reader.Options, Configuration, OrcRawRecordMerger.Options)}*/
+        LOG.debug("findMinMaxKeys(original split)");
 
-      return findOriginalMinMaxKeys(orcSplit, orcReaderData.orcTail, deleteEventReaderOptions);
-    }
-
-    List<StripeInformation> stripes = orcReaderData.orcTail.getStripes();
-    final long splitStart = orcSplit.getStart();
-    final long splitEnd = splitStart + orcSplit.getLength();
-    int firstStripeIndex = -1;
-    int lastStripeIndex = -1;
-    for(int i = 0; i < stripes.size(); i++) {
-      StripeInformation stripe = stripes.get(i);
-      long stripeEnd = stripe.getOffset() + stripe.getLength();
-      if(firstStripeIndex == -1 && stripe.getOffset() >= splitStart) {
-        firstStripeIndex = i;
+        return findOriginalMinMaxKeys(orcSplit, orcReaderData.orcTail, deleteEventReaderOptions);
       }
-      if(lastStripeIndex == -1 && splitEnd <= stripeEnd) {
-        lastStripeIndex = i;
+
+      List<StripeInformation> stripes = orcReaderData.orcTail.getStripes();
+      final long splitStart = orcSplit.getStart();
+      final long splitEnd = splitStart + orcSplit.getLength();
+      int firstStripeIndex = -1;
+      int lastStripeIndex = -1;
+      for(int i = 0; i < stripes.size(); i++) {
+        StripeInformation stripe = stripes.get(i);
+        long stripeEnd = stripe.getOffset() + stripe.getLength();
+        if(firstStripeIndex == -1 && stripe.getOffset() >= splitStart) {
+          firstStripeIndex = i;
+        }
+        if(lastStripeIndex == -1 && splitEnd <= stripeEnd) {
+          lastStripeIndex = i;
+        }
       }
-    }
-    if(lastStripeIndex == -1) {
-      //split goes to the EOF which is > end of stripe since file has a footer
-      assert stripes.get(stripes.size() - 1).getOffset() +
-          stripes.get(stripes.size() - 1).getLength() < splitEnd;
-      lastStripeIndex = stripes.size() - 1;
-    }
+      if(lastStripeIndex == -1) {
+        //split goes to the EOF which is > end of stripe since file has a footer
+        assert stripes.get(stripes.size() - 1).getOffset() +
+            stripes.get(stripes.size() - 1).getLength() < splitEnd;
+        lastStripeIndex = stripes.size() - 1;
+      }
 
-    if (firstStripeIndex > lastStripeIndex || firstStripeIndex == -1) {
+      if (firstStripeIndex > lastStripeIndex || firstStripeIndex == -1) {
+        /**
+         * If the firstStripeIndex was set after the lastStripeIndex the split lies entirely within a single stripe.
+         * In case the split lies entirely within the last stripe, the firstStripeIndex will never be found, hence the
+         * second condition.
+         * In this case, the reader for this split will not read any data.
+         * See {@link org.apache.orc.impl.RecordReaderImpl#RecordReaderImpl
+         * Create a KeyInterval such that no delete delta records are loaded into memory in the deleteEventRegistry.
+         */
+
+        long minRowId = 1;
+        long maxRowId = 0;
+        int minBucketProp = 1;
+        int maxBucketProp = 0;
+
+        OrcRawRecordMerger.KeyInterval keyIntervalTmp =
+            new OrcRawRecordMerger.KeyInterval(new RecordIdentifier(1, minBucketProp, minRowId),
+            new RecordIdentifier(0, maxBucketProp, maxRowId));
+
+        setSARG(keyIntervalTmp, deleteEventReaderOptions, minBucketProp, maxBucketProp,
+            minRowId, maxRowId);
+        LOG.info("findMinMaxKeys(): " + keyIntervalTmp +
+            " stripes(" + firstStripeIndex + "," + lastStripeIndex + ")");
+
+        return keyIntervalTmp;
+      }
+
+      if(firstStripeIndex == -1 || lastStripeIndex == -1) {
+        //this should not happen but... if we don't know which stripe(s) are
+        //involved we can't figure out min/max bounds
+        LOG.warn("Could not find stripe (" + firstStripeIndex + "," +
+            lastStripeIndex + ")");
+        return new OrcRawRecordMerger.KeyInterval(null, null);
+      }
+      RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(orcReaderData.orcTail);
+
+      if(keyIndex == null) {
+        LOG.warn("Could not find keyIndex (" + firstStripeIndex + "," +
+            lastStripeIndex + "," + stripes.size() + ")");
+      }
+
+      if(keyIndex != null && keyIndex.length != stripes.size()) {
+        LOG.warn("keyIndex length doesn't match (" +
+            firstStripeIndex + "," + lastStripeIndex + "," + stripes.size() +
+            "," + keyIndex.length + ")");
+        return new OrcRawRecordMerger.KeyInterval(null, null);
+      }
       /**
-       * If the firstStripeIndex was set after the lastStripeIndex the split lies entirely within a single stripe.
-       * In case the split lies entirely within the last stripe, the firstStripeIndex will never be found, hence the
-       * second condition.
-       * In this case, the reader for this split will not read any data.
-       * See {@link org.apache.orc.impl.RecordReaderImpl#RecordReaderImpl
-       * Create a KeyInterval such that no delete delta records are loaded into memory in the deleteEventRegistry.
-       */
+       * If {@link OrcConf.ROW_INDEX_STRIDE} is set to 0 all column stats on
+       * ORC file are disabled though objects for them exist but and have
+       * min/max set to MIN_LONG/MAX_LONG so we only use column stats if they
+       * are actually computed.  Streaming ingest used to set it 0 and Minor
+       * compaction so there are lots of legacy files with no (rather, bad)
+       * column stats*/
+      boolean columnStatsPresent = orcReaderData.orcTail.getFooter().getRowIndexStride() > 0;
+      if(!columnStatsPresent) {
+        LOG.debug("findMinMaxKeys() No ORC column stats");
+      }
 
-      long minRowId = 1;
-      long maxRowId = 0;
-      int minBucketProp = 1;
-      int maxBucketProp = 0;
+      List<StripeStatistics> stats = orcReaderData.reader.getVariantStripeStatistics(null);
+      assert stripes.size() == stats.size() : "str.s=" + stripes.size() +
+          " sta.s=" + stats.size();
 
-      OrcRawRecordMerger.KeyInterval keyIntervalTmp =
-          new OrcRawRecordMerger.KeyInterval(new RecordIdentifier(1, minBucketProp, minRowId),
-          new RecordIdentifier(0, maxBucketProp, maxRowId));
+      RecordIdentifier minKey = null;
+      if(firstStripeIndex > 0 && keyIndex != null) {
+        //valid keys are strictly > than this key
+        minKey = keyIndex[firstStripeIndex - 1];
+        //add 1 to make comparison >= to match the case of 0th stripe
+        minKey.setRowId(minKey.getRowId() + 1);
+      }
+      else {
+        if(columnStatsPresent) {
+          minKey = getKeyInterval(stats.get(firstStripeIndex).getColumnStatistics()).getMinKey();
+        }
+      }
 
-      setSARG(keyIntervalTmp, deleteEventReaderOptions, minBucketProp, maxBucketProp,
-          minRowId, maxRowId);
-      LOG.info("findMinMaxKeys(): " + keyIntervalTmp +
+      RecordIdentifier maxKey = null;
+
+      if (keyIndex != null) {
+        maxKey = keyIndex[lastStripeIndex];
+      } else {
+        if(columnStatsPresent) {
+          maxKey = getKeyInterval(stats.get(lastStripeIndex).getColumnStatistics()).getMaxKey();
+        }
+      }
+      OrcRawRecordMerger.KeyInterval keyInterval =
+          new OrcRawRecordMerger.KeyInterval(minKey, maxKey);
+      LOG.info("findMinMaxKeys(): " + keyInterval +
           " stripes(" + firstStripeIndex + "," + lastStripeIndex + ")");
 
-      return keyIntervalTmp;
-    }
-
-    if(firstStripeIndex == -1 || lastStripeIndex == -1) {
-      //this should not happen but... if we don't know which stripe(s) are
-      //involved we can't figure out min/max bounds
-      LOG.warn("Could not find stripe (" + firstStripeIndex + "," +
-          lastStripeIndex + ")");
-      return new OrcRawRecordMerger.KeyInterval(null, null);
-    }
-    RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(orcReaderData.orcTail);
-
-    if(keyIndex == null) {
-      LOG.warn("Could not find keyIndex (" + firstStripeIndex + "," +
-          lastStripeIndex + "," + stripes.size() + ")");
-    }
-
-    if(keyIndex != null && keyIndex.length != stripes.size()) {
-      LOG.warn("keyIndex length doesn't match (" +
-          firstStripeIndex + "," + lastStripeIndex + "," + stripes.size() +
-          "," + keyIndex.length + ")");
-      return new OrcRawRecordMerger.KeyInterval(null, null);
-    }
-    /**
-     * If {@link OrcConf.ROW_INDEX_STRIDE} is set to 0 all column stats on
-     * ORC file are disabled though objects for them exist but and have
-     * min/max set to MIN_LONG/MAX_LONG so we only use column stats if they
-     * are actually computed.  Streaming ingest used to set it 0 and Minor
-     * compaction so there are lots of legacy files with no (rather, bad)
-     * column stats*/
-    boolean columnStatsPresent = orcReaderData.orcTail.getFooter().getRowIndexStride() > 0;
-    if(!columnStatsPresent) {
-      LOG.debug("findMinMaxKeys() No ORC column stats");
-    }
-
-    List<StripeStatistics> stats = orcReaderData.reader.getVariantStripeStatistics(null);
-    assert stripes.size() == stats.size() : "str.s=" + stripes.size() +
-        " sta.s=" + stats.size();
-
-    RecordIdentifier minKey = null;
-    if(firstStripeIndex > 0 && keyIndex != null) {
-      //valid keys are strictly > than this key
-      minKey = keyIndex[firstStripeIndex - 1];
-      //add 1 to make comparison >= to match the case of 0th stripe
-      minKey.setRowId(minKey.getRowId() + 1);
-    }
-    else {
+      long minBucketProp = Long.MAX_VALUE, maxBucketProp = Long.MIN_VALUE;
+      long minRowId = Long.MAX_VALUE, maxRowId = Long.MIN_VALUE;
       if(columnStatsPresent) {
-        minKey = getKeyInterval(stats.get(firstStripeIndex).getColumnStatistics()).getMinKey();
-      }
-    }
-
-    RecordIdentifier maxKey = null;
-
-    if (keyIndex != null) {
-      maxKey = keyIndex[lastStripeIndex];
-    } else {
-      if(columnStatsPresent) {
-        maxKey = getKeyInterval(stats.get(firstStripeIndex).getColumnStatistics()).getMaxKey();
-      }
-    }
-    OrcRawRecordMerger.KeyInterval keyInterval =
-        new OrcRawRecordMerger.KeyInterval(minKey, maxKey);
-    LOG.info("findMinMaxKeys(): " + keyInterval +
-        " stripes(" + firstStripeIndex + "," + lastStripeIndex + ")");
-
-    long minBucketProp = Long.MAX_VALUE, maxBucketProp = Long.MIN_VALUE;
-    long minRowId = Long.MAX_VALUE, maxRowId = Long.MIN_VALUE;
-    if(columnStatsPresent) {
-      /**
-       * figure out min/max bucket, rowid for push down.  This is different from
-       * min/max ROW__ID because ROW__ID comparison uses dictionary order on two
-       * tuples (a,b,c), but PPD can only do
-       * (a between (x,y) and b between(x1,y1) and c between(x2,y2))
-       * Consider:
-       * (0,536936448,0), (0,536936448,2), (10000001,536936448,0)
-       * 1st is min ROW_ID, 3r is max ROW_ID
-       * and Delete events (0,536936448,2),....,(10000001,536936448,1000000)
-       * So PPD based on min/max ROW_ID would have 0<= rowId <=0 which will
-       * miss this delete event.  But we still want PPD to filter out data if
-       * possible.
-       *
-       * So use stripe stats to find proper min/max for bucketProp and rowId
-       * writeId is the same in both cases
-       */
-      for(int i = firstStripeIndex; i <= lastStripeIndex; i++) {
-        OrcRawRecordMerger.KeyInterval key = getKeyInterval(stats.get(i).getColumnStatistics());
-        if(key.getMinKey().getBucketProperty() < minBucketProp) {
-          minBucketProp = key.getMinKey().getBucketProperty();
-        }
-        if(key.getMaxKey().getBucketProperty() > maxBucketProp) {
-          maxBucketProp = key.getMaxKey().getBucketProperty();
-        }
-        if(key.getMinKey().getRowId() < minRowId) {
-          minRowId = key.getMinKey().getRowId();
-        }
-        if(key.getMaxKey().getRowId() > maxRowId) {
-          maxRowId = key.getMaxKey().getRowId();
+        /**
+         * figure out min/max bucket, rowid for push down.  This is different from
+         * min/max ROW__ID because ROW__ID comparison uses dictionary order on two
+         * tuples (a,b,c), but PPD can only do
+         * (a between (x,y) and b between(x1,y1) and c between(x2,y2))
+         * Consider:
+         * (0,536936448,0), (0,536936448,2), (10000001,536936448,0)
+         * 1st is min ROW_ID, 3r is max ROW_ID
+         * and Delete events (0,536936448,2),....,(10000001,536936448,1000000)
+         * So PPD based on min/max ROW_ID would have 0<= rowId <=0 which will
+         * miss this delete event.  But we still want PPD to filter out data if
+         * possible.
+         *
+         * So use stripe stats to find proper min/max for bucketProp and rowId
+         * writeId is the same in both cases
+         */
+        for(int i = firstStripeIndex; i <= lastStripeIndex; i++) {
+          OrcRawRecordMerger.KeyInterval key = getKeyInterval(stats.get(i).getColumnStatistics());
+          if(key.getMinKey().getBucketProperty() < minBucketProp) {
+            minBucketProp = key.getMinKey().getBucketProperty();
+          }
+          if(key.getMaxKey().getBucketProperty() > maxBucketProp) {
+            maxBucketProp = key.getMaxKey().getBucketProperty();
+          }
+          if(key.getMinKey().getRowId() < minRowId) {
+            minRowId = key.getMinKey().getRowId();
+          }
+          if(key.getMaxKey().getRowId() > maxRowId) {
+            maxRowId = key.getMaxKey().getRowId();
+          }
         }
       }
-    }
-    if(minBucketProp == Long.MAX_VALUE) minBucketProp = Long.MIN_VALUE;
-    if(maxBucketProp == Long.MIN_VALUE) maxBucketProp = Long.MAX_VALUE;
-    if(minRowId == Long.MAX_VALUE) minRowId = Long.MIN_VALUE;
-    if(maxRowId == Long.MIN_VALUE) maxRowId = Long.MAX_VALUE;
+      if(minBucketProp == Long.MAX_VALUE) minBucketProp = Long.MIN_VALUE;
+      if(maxBucketProp == Long.MIN_VALUE) maxBucketProp = Long.MAX_VALUE;
+      if(minRowId == Long.MAX_VALUE) minRowId = Long.MIN_VALUE;
+      if(maxRowId == Long.MIN_VALUE) maxRowId = Long.MAX_VALUE;
 
-    setSARG(keyInterval, deleteEventReaderOptions, minBucketProp, maxBucketProp,
-        minRowId, maxRowId);
-    return keyInterval;
+      setSARG(keyInterval, deleteEventReaderOptions, minBucketProp, maxBucketProp,
+          minRowId, maxRowId);
+
+      return keyInterval;
+    }
   }
 
   private OrcRawRecordMerger.KeyInterval findOriginalMinMaxKeys(OrcSplit orcSplit, OrcTail orcTail,
@@ -681,9 +704,14 @@ public class VectorizedOrcAcidRowBatchReader
     return keyIntervalTmp;
   }
 
-  private static class ReaderData {
+  private static class ReaderData implements Closeable {
     OrcTail orcTail;
     Reader reader;
+
+    @Override
+    public void close() throws IOException {
+      reader.close();
+    }
   }
 
   /**
@@ -815,22 +843,35 @@ public class VectorizedOrcAcidRowBatchReader
   }
 
   private static boolean areRowIdsProjected(VectorizedRowBatchCtx rbCtx) {
+    //The query needs ROW__ID: maybe explicitly asked, maybe it's part of
+    // Update/Delete statement.
+    //Either way, we need to decorate "original" rows with row__id
+    return isVirtualColumnProjected(rbCtx, VirtualColumn.ROWID);
+  }
+
+  private static boolean isRowIsDeletedProjected(VectorizedRowBatchCtx rbCtx) {
+    return isVirtualColumnProjected(rbCtx, VirtualColumn.ROWISDELETED);
+  }
+
+  private static boolean isVirtualColumnProjected(VectorizedRowBatchCtx rbCtx, VirtualColumn virtualColumn) {
     if (rbCtx.getVirtualColumnCount() == 0) {
       return false;
     }
     for(VirtualColumn vc : rbCtx.getNeededVirtualColumns()) {
-      if(vc == VirtualColumn.ROWID) {
-        //The query needs ROW__ID: maybe explicitly asked, maybe it's part of
-        // Update/Delete statement.
-        //Either way, we need to decorate "original" rows with row__id
+      if(vc == virtualColumn) {
         return true;
       }
     }
     return false;
   }
 
+  @Deprecated
+  static Path[] getDeleteDeltaDirsFromSplit(OrcSplit orcSplit) {
+    return getDeleteDeltaDirsFromSplit(orcSplit, null);
+  }
+
   static Path[] getDeleteDeltaDirsFromSplit(OrcSplit orcSplit,
-      Map<String, AcidInputFormat.DeltaMetaData> pathToDeltaMetaData) throws IOException {
+      Map<String, AcidInputFormat.DeltaMetaData> pathToDeltaMetaData) {
     Path path = orcSplit.getPath();
     Path root;
     if (orcSplit.hasBase()) {
@@ -899,6 +940,13 @@ public class VectorizedOrcAcidRowBatchReader
       value.selected = vectorizedRowBatchBase.selected;
       value.selectedInUse = vectorizedRowBatchBase.selectedInUse;
       copyFromBase(value);
+
+      if (rowIsDeletedProjected) {
+        rowIsDeletedVector.fill(false);
+        int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWISDELETED);
+        value.cols[ix] = rowIsDeletedVector;
+      }
+
       progress = baseReader.getProgress();
       return true;
     }
@@ -932,8 +980,13 @@ public class VectorizedOrcAcidRowBatchReader
     }
 
     // Case 2- find rows which have been deleted.
+    // if deleted rows should be fetched we clone the selectedBitSet to notDeletedBitSet.
+    // Records marked by selectedBitSet should be filtered out from the result but notDeletedBitSet
+    // should be appear with ROW__IS__DELETED = false
+    BitSet notDeletedBitSet = fetchDeletedRows ? (BitSet) selectedBitSet.clone() : selectedBitSet;
+
     this.deleteEventRegistry.findDeletedRecords(innerRecordIdColumnVector,
-        vectorizedRowBatchBase.size, selectedBitSet);
+        vectorizedRowBatchBase.size, notDeletedBitSet);
 
     if (selectedBitSet.cardinality() == vectorizedRowBatchBase.size) {
       // None of the cases above matched and everything is selected. Hence, we will use the
@@ -959,6 +1012,16 @@ public class VectorizedOrcAcidRowBatchReader
       int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWID);
       value.cols[ix] = recordIdColumnVector;
     }
+    if (rowIsDeletedProjected) {
+      if (!fetchDeletedRows || notDeletedBitSet.cardinality() == vectorizedRowBatchBase.size) {
+        rowIsDeletedVector.fill(false);
+      } else {
+        rowIsDeletedVector.set(notDeletedBitSet);
+      }
+
+      int ix = rbCtx.findVirtualColumnNum(VirtualColumn.ROWISDELETED);
+      value.cols[ix] = rowIsDeletedVector;
+    }
     progress = baseReader.getProgress();
     return true;
   }
@@ -983,7 +1046,9 @@ public class VectorizedOrcAcidRowBatchReader
       System.arraycopy(payloadStruct.fields, 0, value.cols, 0, value.getDataColumnCount());
     }
     if (rowIdProjected) {
-      recordIdColumnVector.fields[0] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ORIGINAL_WRITEID];
+      // If deleted rows should be fetched the writeId belongs to the deleted record should be the one which actually did
+      // the delete operation. Current and Original writeId of inserted records are equals.
+      recordIdColumnVector.fields[0] = vectorizedRowBatchBase.cols[fetchDeletedRows ? OrcRecordUpdater.CURRENT_WRITEID : OrcRecordUpdater.ORIGINAL_WRITEID];
       recordIdColumnVector.fields[1] = vectorizedRowBatchBase.cols[OrcRecordUpdater.BUCKET];
       recordIdColumnVector.fields[2] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW_ID];
     }
@@ -1166,9 +1231,11 @@ public class VectorizedOrcAcidRowBatchReader
     private OrcStruct deleteRecordValue;
     private Boolean isDeleteRecordAvailable = null;
     private ValidWriteIdList validWriteIdList;
+    private final boolean fetchDeletedRows;
 
     SortMergedDeleteEventRegistry(JobConf conf, OrcSplit orcSplit,
-        Reader.Options readerOptions) throws IOException {
+                                  Reader.Options readerOptions, boolean fetchDeletedRows) throws IOException {
+      this.fetchDeletedRows = fetchDeletedRows;
       Map<String, AcidInputFormat.DeltaMetaData> pathToDeltaMetaData = new HashMap<>();
       final Path[] deleteDeltas = getDeleteDeltaDirsFromSplit(orcSplit, pathToDeltaMetaData);
       if (deleteDeltas.length > 0) {
@@ -1225,7 +1292,7 @@ public class VectorizedOrcAcidRowBatchReader
           : ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector[0];
       long repeatedRowId = (rowId != null) ? -1
           : ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector[0];
-
+      LongColumnVector currentWriteIdVector = (LongColumnVector) cols[OrcRecordUpdater.CURRENT_WRITEID];
 
       // Get the first valid row in the batch still available.
       int firstValidIndex = selectedBitSet.nextSetBit(0);
@@ -1268,6 +1335,10 @@ public class VectorizedOrcAcidRowBatchReader
         if (deleteRecordKey.compareRow(currRecordIdInBatch) == 0) {
           // When deleteRecordId == currRecordIdInBatch, this record in the batch has been deleted.
           selectedBitSet.clear(currIndex);
+          if (fetchDeletedRows) {
+            currentWriteIdVector.vector[currIndex] = deleteRecordKey.getCurrentWriteId();
+            cols[OrcRecordUpdater.CURRENT_WRITEID].isRepeating = false;
+          }
           currIndex = selectedBitSet.nextSetBit(currIndex + 1); // Move to next valid index.
         } else if (deleteRecordKey.compareRow(currRecordIdInBatch) == 1) {
           // When deleteRecordId > currRecordIdInBatch, we have to move on to look at the
@@ -1315,19 +1386,22 @@ public class VectorizedOrcAcidRowBatchReader
      */
     static class DeleteRecordKey implements Comparable<DeleteRecordKey> {
       private long originalWriteId;
+      private long currentWriteId;
       /**
        * see {@link BucketCodec}
        */
-      private int bucketProperty; 
+      private int bucketProperty;
       private long rowId;
       DeleteRecordKey() {
         this.originalWriteId = -1;
+        this.currentWriteId = -1;
         this.rowId = -1;
       }
-      public void set(long owid, int bucketProperty, long rowId) {
+      public void set(long owid, int bucketProperty, long rowId, long cwid) {
         this.originalWriteId = owid;
         this.bucketProperty = bucketProperty;
         this.rowId = rowId;
+        this.currentWriteId = cwid;
       }
 
       @Override
@@ -1376,8 +1450,9 @@ public class VectorizedOrcAcidRowBatchReader
      */
     static class DeleteReaderValue {
 
+      // Produces column indices for all ACID columns, except for the last one, which is the ROW struct.
       private static final List<Integer> DELETE_DELTA_INCLUDE_COLUMNS =
-          IntStream.range(0, OrcInputFormat.getRootColumn(false)).boxed().collect(toList());
+          IntStream.range(0, OrcInputFormat.getRootColumn(false) - 1).boxed().collect(toList());
 
       private static final TypeDescription DELETE_DELTA_EMPTY_STRUCT =
           new TypeDescription(TypeDescription.Category.STRUCT);
@@ -1523,7 +1598,7 @@ public class VectorizedOrcAcidRowBatchReader
                 = batch.cols[OrcRecordUpdater.CURRENT_WRITEID].isRepeating ? 0 : indexPtrInBatch;
         long currentWriteId
                 = ((LongColumnVector) batch.cols[OrcRecordUpdater.CURRENT_WRITEID]).vector[currentWriteIdIndex];
-        deleteRecordKey.set(originalWriteId, bucketProperty, rowId);
+        deleteRecordKey.set(originalWriteId, bucketProperty, rowId, currentWriteId);
         return currentWriteId;
       }
       private void checkBucketId() throws IOException {
@@ -1568,6 +1643,13 @@ public class VectorizedOrcAcidRowBatchReader
         c.unset(TableScanDesc.FILTER_EXPR_CONF_STR);
         c.unset(ConvertAstToSearchArg.SARG_PUSHDOWN);
 
+        // Schema info in this job conf relates to the table schema without ACID cols. Unsetting them forces LLAP to
+        // use the file schema instead which is the correct way to handle delete delta files, as there's no such
+        // thing as logical schema for them.
+        HiveConf.setBoolVar(c, ConfVars.HIVE_SCHEMA_EVOLUTION, false);
+        c.unset(serdeConstants.LIST_COLUMNS);
+        c.unset(serdeConstants.LIST_COLUMN_TYPES);
+
         // Apply delete delta SARG if any
         SearchArgument deleteDeltaSarg = readerOptions.getSearchArgument();
         if (deleteDeltaSarg != null) {
@@ -1575,7 +1657,7 @@ public class VectorizedOrcAcidRowBatchReader
         }
         return wrapLlapVectorizedRecordReader(
             LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, deleteDeltaFile, tag,
-            DELETE_DELTA_INCLUDE_COLUMNS, c, 0L, Long.MAX_VALUE)
+            DELETE_DELTA_INCLUDE_COLUMNS, c, 0L, Long.MAX_VALUE, null)
         );
       }
 
@@ -1640,7 +1722,7 @@ public class VectorizedOrcAcidRowBatchReader
      * the toIndex. These fromIndex and toIndex reference the larger vector formed by
      * concatenating the correspondingly ordered rowIds.
      */
-    private final class CompressedOwid implements Comparable<CompressedOwid> {
+    private static final class CompressedOwid implements Comparable<CompressedOwid> {
       final long originalWriteId;
       final int bucketProperty;
       final int fromIndex; // inclusive
@@ -1679,30 +1761,175 @@ public class VectorizedOrcAcidRowBatchReader
      * Or much simpler, make compaction of delete deltas very aggressive so that
      * we never have move than a few delete files to read.
      */
-    private TreeMap<DeleteRecordKey, DeleteReaderValue> sortMerger;
-    private long rowIds[];
-    private CompressedOwid compressedOwids[];
-    private ValidWriteIdList validWriteIdList;
-    private Boolean isEmpty;
+    private final TreeMap<DeleteRecordKey, DeleteReaderValue> sortMerger;
+    private long[] rowIds;
+    private OriginalWriteIds writeIds;
+    private final Boolean isEmpty;
     private final int maxEventsInMemory;
     private final OrcSplit orcSplit;
     private final boolean testMode;
 
+    static class OriginalWriteIds {
+      private final CompressedOwid[] compressedOwids;
+
+      OriginalWriteIds(CompressedOwid[] compressedOwids) {
+        this.compressedOwids = compressedOwids;
+      }
+
+      boolean isEmpty() {
+        return compressedOwids == null;
+      }
+
+      protected int indexOfRowId(long owid, int bucketProperty, long rowId, long[] rowIds) {
+        if (isEmpty()) {
+          return -1;
+        }
+        // To find if a given (owid, rowId) pair is deleted or not, we perform
+        // two binary searches at most. The first binary search is on the
+        // compressed owids. If a match is found, only then we do the next
+        // binary search in the larger rowId vector between the given toIndex & fromIndex.
+
+        // Check if owid is outside the range of all owids present.
+        if (owid < compressedOwids[0].originalWriteId
+                || owid > compressedOwids[compressedOwids.length - 1].originalWriteId) {
+          return -1;
+        }
+        // Create a dummy key for searching the owid/bucket in the compressed owid ranges.
+        CompressedOwid key = new CompressedOwid(owid, bucketProperty, -1, -1);
+        int pos = Arrays.binarySearch(compressedOwids, key);
+        if (pos >= 0) {
+          // Owid with the given value found! Searching now for rowId...
+          key = compressedOwids[pos]; // Retrieve the actual CompressedOwid that matched.
+          // Check if rowId is outside the range of all rowIds present for this owid.
+          if (rowId < rowIds[key.fromIndex]
+                  || rowId > rowIds[key.toIndex - 1]) {
+            return -1;
+          }
+          return Arrays.binarySearch(rowIds, key.fromIndex, key.toIndex, rowId);
+        }
+        return -1;
+      }
+
+      public void markAsDeleted(long owid, int bucketProperty, long rowId, long[] rowIds, int setBitIndex,
+                                BitSet selectedBitSet, LongColumnVector currentWriteIdVector) {
+        long currentWriteId = indexOfRowId(owid, bucketProperty, rowId, rowIds);
+        if (currentWriteId >= 0) {
+          selectedBitSet.clear(setBitIndex);
+        }
+      }
+    }
+
+    static class BothWriteIds extends OriginalWriteIds {
+      private final TreeMap<Integer, Long> compressedCwids;
+
+      BothWriteIds(CompressedOwid[] compressedOwids, TreeMap<Integer, Long> compressedCwids) {
+        super(compressedOwids);
+        this.compressedCwids = compressedCwids;
+      }
+
+      private long findCurrentWriteId(long owid, int bucketProperty, long rowId, long[] rowIds) {
+        if (isEmpty()) {
+          return -1;
+        }
+
+        int rowIdx = indexOfRowId(owid, bucketProperty, rowId, rowIds);
+        if (rowIdx < 0) {
+          return -1;
+        }
+
+        // rowId also found!
+        Map.Entry<Integer, Long> cEntry = compressedCwids.floorEntry(rowIdx);
+        return cEntry == null ? -1 : cEntry.getValue();
+      }
+
+      @Override
+      public void markAsDeleted(long owid, int bucketProperty, long rowId, long[] rowIds, int setBitIndex,
+                                BitSet selectedBitSet, LongColumnVector currentWriteIdVector) {
+        long currentWriteId = findCurrentWriteId(owid, bucketProperty, rowId, rowIds);
+        if (currentWriteId >= 0) {
+          selectedBitSet.clear(setBitIndex);
+          currentWriteIdVector.vector[setBitIndex] = currentWriteId;
+          currentWriteIdVector.isRepeating = false;
+        }
+      }
+    }
+
+    static class OriginalWriteIdLoader {
+      private final List<CompressedOwid> compressedOwids;
+      private CompressedOwid lastCo;
+
+      OriginalWriteIdLoader() {
+        this.compressedOwids = new ArrayList<>();
+        this.lastCo = null;
+      }
+
+      public void add(int index, DeleteRecordKey deleteRecordKey) {
+        long owid = deleteRecordKey.originalWriteId;
+        int bp = deleteRecordKey.bucketProperty;
+
+        if (lastCo == null || lastCo.originalWriteId != owid || lastCo.bucketProperty != bp) {
+          if (lastCo != null) {
+            lastCo.toIndex = index; // Finalize the previous record.
+          }
+          lastCo = new CompressedOwid(owid, bp, index, -1);
+          compressedOwids.add(lastCo);
+        }
+      }
+
+      public OriginalWriteIds done(int index) {
+        if (lastCo != null) {
+          lastCo.toIndex = index; // Finalize the last record.
+          lastCo = null;
+        }
+
+        return new OriginalWriteIds(compressedOwids.toArray(new CompressedOwid[0]));
+      }
+    }
+
+    static class OriginalAndCurrentWriteIdLoader extends OriginalWriteIdLoader {
+      private final TreeMap<Integer, Long> compressedCwids;
+      private long lastCwid;
+      private int lastBucketProperty;
+
+      OriginalAndCurrentWriteIdLoader() {
+        this.compressedCwids = new TreeMap<>();
+        this.lastCwid = -1;
+        this.lastBucketProperty = -1;
+      }
+
+      @Override
+      public void add(int index, DeleteRecordKey deleteRecordKey) {
+        super.add(index, deleteRecordKey);
+        long cwid = deleteRecordKey.currentWriteId;
+        int bp = deleteRecordKey.bucketProperty;
+
+        if (lastCwid != cwid || lastBucketProperty != bp) {
+          compressedCwids.put(index, cwid);
+          lastCwid = cwid;
+        }
+      }
+
+      public BothWriteIds done(int index) {
+        compressedCwids.put(index, -1L);
+        return new BothWriteIds(super.done(index).compressedOwids, compressedCwids);
+      }
+    }
 
 
     ColumnizedDeleteEventRegistry(JobConf conf, OrcSplit orcSplit,
-        Reader.Options readerOptions,
-        OrcRawRecordMerger.KeyInterval keyInterval, CacheTag cacheTag)
+                                  Reader.Options readerOptions,
+                                  OrcRawRecordMerger.KeyInterval keyInterval,
+                                  CacheTag cacheTag,
+                                  OriginalWriteIdLoader writeIdLoader)
         throws IOException, DeleteEventsOverflowMemoryException {
       this.testMode = conf.getBoolean(ConfVars.HIVE_IN_TEST.varname, false);
       int bucket = AcidUtils.parseBucketId(orcSplit.getPath());
       String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
-      this.validWriteIdList
-              = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+      ValidWriteIdList validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
       LOG.debug("Using ColumnizedDeleteEventRegistry");
       this.sortMerger = new TreeMap<>();
       this.rowIds = null;
-      this.compressedOwids = null;
+      this.writeIds = null;
       maxEventsInMemory = HiveConf
           .getIntVar(conf, ConfVars.HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY);
       final boolean isBucketedTable  = conf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0) > 0;
@@ -1725,45 +1952,46 @@ public class VectorizedOrcAcidRowBatchReader
               for (AcidInputFormat.DeltaFileMetaData fileMetaData : deltaMetaData.getDeltaFilesForStmtId(stmtId)) {
                 Path deleteDeltaFile = fileMetaData.getPath(deleteDeltaPath, bucket);
                 Object fileId = fileMetaData.getFileId(deleteDeltaFile, bucket, conf);
-                ReaderData readerData = getOrcReaderData(deleteDeltaFile, conf, cacheTag, fileId);
-                OrcTail orcTail = readerData.orcTail;
-                long numRows = orcTail.getFooter().getNumberOfRows();
-                if (numRows <= 0) {
-                  continue; // just a safe check to ensure that we are not reading empty delete files.
-                }
-                OrcRawRecordMerger.KeyInterval deleteKeyInterval = findDeleteMinMaxKeys(orcTail, deleteDeltaFile);
-                if (!deleteKeyInterval.isIntersects(keyInterval)) {
-                  // If there is no intersection between data and delete delta, do not read delete file
-                  continue;
-                }
+                try (ReaderData readerData = getOrcReaderData(deleteDeltaFile, conf, cacheTag, fileId)) {
+                  OrcTail orcTail = readerData.orcTail;
+                  long numRows = orcTail.getFooter().getNumberOfRows();
+                  if (numRows <= 0) {
+                    continue; // just a safe check to ensure that we are not reading empty delete files.
+                  }
+                  OrcRawRecordMerger.KeyInterval deleteKeyInterval = findDeleteMinMaxKeys(orcTail, deleteDeltaFile);
+                  if (!deleteKeyInterval.isIntersects(keyInterval)) {
+                    // If there is no intersection between data and delete delta, do not read delete file
+                    continue;
+                  }
 
-                totalDeleteEventCount += numRows;
+                  totalDeleteEventCount += numRows;
 
-                DeleteReaderValue deleteReaderValue = null;
+                  DeleteReaderValue deleteReaderValue = null;
 
-                // If reader is set, then it got set while retrieving the ORC tail, because reading was not possible
-                // with LLAP. In this case we continue with this reader. In other cases we rely on LLAP to read and
-                // cache delete delta files for us, so we won't create a reader instance ourselves here.
-                if (readerData.reader == null) {
-                  assert shouldReadDeleteDeltasWithLlap(conf, true);
-                }
-                deleteReaderValue = new DeleteReaderValue(readerData.reader, deleteDeltaFile, readerOptions, bucket,
-                    validWriteIdList, isBucketedTable, conf, keyInterval, orcSplit, numRows, cacheTag, fileId);
+                  // If reader is set, then it got set while retrieving the ORC tail, because reading was not possible
+                  // with LLAP. In this case we continue with this reader. In other cases we rely on LLAP to read and
+                  // cache delete delta files for us, so we won't create a reader instance ourselves here.
+                  if (readerData.reader == null) {
+                    assert shouldReadDeleteDeltasWithLlap(conf, true);
+                  }
+                  deleteReaderValue = new DeleteReaderValue(readerData.reader, deleteDeltaFile, readerOptions, bucket,
+                      validWriteIdList, isBucketedTable, conf, keyInterval, orcSplit, numRows, cacheTag, fileId);
 
-                DeleteRecordKey deleteRecordKey = new DeleteRecordKey();
-                if (deleteReaderValue.next(deleteRecordKey)) {
-                  sortMerger.put(deleteRecordKey, deleteReaderValue);
-                } else {
-                  deleteReaderValue.close();
+                  DeleteRecordKey deleteRecordKey = new DeleteRecordKey();
+                  if (deleteReaderValue.next(deleteRecordKey)) {
+                    sortMerger.put(deleteRecordKey, deleteReaderValue);
+                  } else {
+                    deleteReaderValue.close();
+                  }
                 }
               }
             }
           }
-          readAllDeleteEventsFromDeleteDeltas();
+          readAllDeleteEventsFromDeleteDeltas(writeIdLoader);
           LOG.debug("Number of delete events(limit, actual)=({},{})",
               totalDeleteEventCount, size());
         }
-        isEmpty = compressedOwids == null || rowIds == null;
+        isEmpty = writeIds == null || writeIds.isEmpty() || rowIds == null;
       } catch(IOException|DeleteEventsOverflowMemoryException e) {
         close(); // close any open readers, if there was some exception during initialization.
         throw e; // rethrow the exception so that the caller can handle.
@@ -1837,7 +2065,7 @@ public class VectorizedOrcAcidRowBatchReader
      * In practice we should be filtering delete evens by min/max ROW_ID from the split.  The later
      * is also not yet implemented: HIVE-16812.
      */
-    private void readAllDeleteEventsFromDeleteDeltas()
+    private void readAllDeleteEventsFromDeleteDeltas(OriginalWriteIdLoader writeIdLoader)
         throws IOException, DeleteEventsOverflowMemoryException {
       if (sortMerger == null || sortMerger.isEmpty()) {
         return; // trivial case, nothing to read.
@@ -1849,8 +2077,6 @@ public class VectorizedOrcAcidRowBatchReader
       int index = 0;
       // We compress the owids into CompressedOwid data structure that records
       // the fromIndex(inclusive) and toIndex(exclusive) for each unique owid.
-      List<CompressedOwid> compressedOwids = new ArrayList<>();
-      CompressedOwid lastCo = null;
       while (!sortMerger.isEmpty()) {
         // The sortMerger is a heap data structure that stores a pair of
         // (deleteRecordKey, deleteReaderValue) at each node and is ordered by deleteRecordKey.
@@ -1864,17 +2090,9 @@ public class VectorizedOrcAcidRowBatchReader
         Entry<DeleteRecordKey, DeleteReaderValue> entry = sortMerger.pollFirstEntry();
         DeleteRecordKey deleteRecordKey = entry.getKey();
         DeleteReaderValue deleteReaderValue = entry.getValue();
-        long owid = deleteRecordKey.originalWriteId;
-        int bp = deleteRecordKey.bucketProperty;
         checkSize(index);
         rowIds[index] = deleteRecordKey.rowId;
-        if (lastCo == null || lastCo.originalWriteId != owid || lastCo.bucketProperty != bp) {
-          if (lastCo != null) {
-            lastCo.toIndex = index; // Finalize the previous record.
-          }
-          lastCo = new CompressedOwid(owid, bp, index, -1);
-          compressedOwids.add(lastCo);
-        }
+        writeIdLoader.add(index, deleteRecordKey);
         ++index;
         if (deleteReaderValue.next(deleteRecordKey)) {
           sortMerger.put(deleteRecordKey, deleteReaderValue);
@@ -1882,49 +2100,12 @@ public class VectorizedOrcAcidRowBatchReader
           deleteReaderValue.close(); // Exhausted reading all records, close the reader.
         }
       }
-      if (lastCo != null) {
-        lastCo.toIndex = index; // Finalize the last record.
-        lastCo = null;
-      }
+      writeIds = writeIdLoader.done(index);
       if (rowIds.length > index) {
         rowIds = Arrays.copyOf(rowIds, index);
       }
-
-      this.compressedOwids = compressedOwids.toArray(new CompressedOwid[compressedOwids.size()]);
     }
 
-
-    private boolean isDeleted(long owid, int bucketProperty, long rowId) {
-      if (compressedOwids == null || rowIds == null) {
-        return false;
-      }
-      // To find if a given (owid, rowId) pair is deleted or not, we perform
-      // two binary searches at most. The first binary search is on the
-      // compressed owids. If a match is found, only then we do the next
-      // binary search in the larger rowId vector between the given toIndex & fromIndex.
-
-      // Check if owid is outside the range of all owids present.
-      if (owid < compressedOwids[0].originalWriteId
-          || owid > compressedOwids[compressedOwids.length - 1].originalWriteId) {
-        return false;
-      }
-      // Create a dummy key for searching the owid/bucket in the compressed owid ranges.
-      CompressedOwid key = new CompressedOwid(owid, bucketProperty, -1, -1);
-      int pos = Arrays.binarySearch(compressedOwids, key);
-      if (pos >= 0) {
-        // Owid with the given value found! Searching now for rowId...
-        key = compressedOwids[pos]; // Retrieve the actual CompressedOwid that matched.
-        // Check if rowId is outside the range of all rowIds present for this owid.
-        if (rowId < rowIds[key.fromIndex]
-            || rowId > rowIds[key.toIndex - 1]) {
-          return false;
-        }
-        if (Arrays.binarySearch(rowIds, key.fromIndex, key.toIndex, rowId) >= 0) {
-          return true; // rowId also found!
-        }
-      }
-      return false;
-    }
     /**
      * @return how many delete events are actually loaded
      */
@@ -1940,7 +2121,7 @@ public class VectorizedOrcAcidRowBatchReader
     }
     @Override
     public void findDeletedRecords(ColumnVector[] cols, int size, BitSet selectedBitSet) {
-      if (rowIds == null || compressedOwids == null) {
+      if (rowIds == null || writeIds == null || writeIds.isEmpty()) {
         return;
       }
       // Iterate through the batch and for each (owid, rowid) in the batch
@@ -1961,6 +2142,7 @@ public class VectorizedOrcAcidRowBatchReader
       long[] rowIdVector =
           ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector;
 
+      LongColumnVector currentWriteIdVector = (LongColumnVector) cols[OrcRecordUpdater.CURRENT_WRITEID];
       for (int setBitIndex = selectedBitSet.nextSetBit(0);
           setBitIndex >= 0;
           setBitIndex = selectedBitSet.nextSetBit(setBitIndex+1)) {
@@ -1969,10 +2151,8 @@ public class VectorizedOrcAcidRowBatchReader
         int bucketProperty = bucketProperties != null ? (int)bucketProperties[setBitIndex]
           : repeatedBucketProperty;
         long rowId = rowIdVector[setBitIndex];
-        if (isDeleted(owid, bucketProperty, rowId)) {
-          selectedBitSet.clear(setBitIndex);
-        }
-     }
+        writeIds.markAsDeleted(owid, bucketProperty, rowId, rowIds, setBitIndex, selectedBitSet, currentWriteIdVector);
+      }
     }
 
     @Override
@@ -2038,5 +2218,30 @@ public class VectorizedOrcAcidRowBatchReader
     columnStatsArray[OrcRecordUpdater.ROW_ID + 1]  =
         deserializeIntColumnStatistics(colStats, OrcRecordUpdater.ROW_ID + 1);
     return getKeyInterval(columnStatsArray);
+  }
+
+  private static class RowIsDeletedColumnVector extends LongColumnVector {
+
+    public RowIsDeletedColumnVector(int defaultSize) {
+      super(defaultSize);
+    }
+
+    void fill(boolean deleted) {
+      fill(deleted ? 1 : 0);
+    }
+
+    void set(BitSet notDeletedBitSet) {
+      if (notDeletedBitSet.cardinality() == 0) {
+        fill(true);
+      } else {
+        Arrays.fill(vector, 1);
+        isRepeating = false;
+        for (int setBitIndex = notDeletedBitSet.nextSetBit(0);
+             setBitIndex >= 0;
+             setBitIndex = notDeletedBitSet.nextSetBit(setBitIndex + 1)) {
+          vector[setBitIndex] = 0;
+        }
+      }
+    }
   }
 }

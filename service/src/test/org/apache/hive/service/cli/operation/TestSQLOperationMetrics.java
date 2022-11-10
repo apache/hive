@@ -24,7 +24,9 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.service.cli.HandleIdentifier;
 import org.apache.hive.service.cli.OperationState;
+import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.junit.After;
 import org.junit.Before;
@@ -51,6 +53,9 @@ public class TestSQLOperationMetrics {
     when(session.getHiveConf()).thenReturn(conf);
     when(session.getSessionState()).thenReturn(mock(SessionState.class));
     when(session.getUserName()).thenReturn("userName");
+    SessionHandle sessionHandle = mock(SessionHandle.class);
+    when(sessionHandle.getHandleIdentifier()).thenReturn(new HandleIdentifier());
+    when(session.getSessionHandle()).thenReturn(sessionHandle);
 
     operation = new SQLOperation(session, "select * from dummy",
         Maps.<String, String>newHashMap(), false, 0L);

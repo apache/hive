@@ -386,7 +386,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: $f0 (type: bigint), $f0 (type: bigint), $f1 (type: bigint), $f2 (type: bigint), $f3 (type: bigint), $f4 (type: bigint), $f5 (type: bigint), $f6 (type: bigint), $f7 (type: bigint), $f8 (type: bigint), $f9 (type: bigint), $f10 (type: bigint), $f11 (type: bigint), $f12 (type: bigint), $f13 (type: bigint), $f14 (type: bigint), $f15 (type: bigint), $f16 (type: bigint), $f17 (type: bigint), $f18 (type: bigint), $f19 (type: bigint)
-                  outputColumnNames: $f0, $f00, $f1, $f2, $f3, $f4, $f5, $f6, $f7, $f8, $f9, $f10, $f11, $f12, $f13, $f14, $f15, $f16, $f17, $f18, $f19
+                  outputColumnNames: _o__c0, _o__c1, _o__c2, _o__c3, _o__c4, _o__c5, _o__c6, _o__c7, _o__c8, _o__c9, _o__c10, _o__c11, _o__c12, _o__c13, _o__c14, _o__c15, _o__c16, _o__c17, _o__c18, _o__c19, _o__c20
                   Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
@@ -961,7 +961,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: $f0 (type: bigint), $f0 (type: bigint), $f1 (type: bigint), $f2 (type: bigint), $f3 (type: bigint), $f4 (type: bigint), $f5 (type: bigint), $f6 (type: bigint), $f7 (type: bigint), $f8 (type: bigint), $f9 (type: bigint), $f10 (type: bigint), $f11 (type: bigint), $f12 (type: bigint), $f13 (type: bigint), $f14 (type: bigint), $f15 (type: bigint), $f16 (type: bigint), $f17 (type: bigint), $f18 (type: bigint), $f19 (type: bigint)
-                  outputColumnNames: $f0, $f00, $f1, $f2, $f3, $f4, $f5, $f6, $f7, $f8, $f9, $f10, $f11, $f12, $f13, $f14, $f15, $f16, $f17, $f18, $f19
+                  outputColumnNames: _o__c0, _o__c1, _o__c2, _o__c3, _o__c4, _o__c5, _o__c6, _o__c7, _o__c8, _o__c9, _o__c10, _o__c11, _o__c12, _o__c13, _o__c14, _o__c15, _o__c16, _o__c17, _o__c18, _o__c19, _o__c20
                   Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false

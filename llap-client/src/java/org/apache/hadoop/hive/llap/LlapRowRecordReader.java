@@ -126,9 +126,7 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
         rowObj = serde.deserialize(data);
         setRowFromStruct(value, rowObj, rowOI);
       } catch (SerDeException err) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Error deserializing row from data: " + data);
-        }
+        LOG.debug("Error deserializing row from data: {}", data);
         throw new IOException("Error deserializing row data", err);
       }
     }

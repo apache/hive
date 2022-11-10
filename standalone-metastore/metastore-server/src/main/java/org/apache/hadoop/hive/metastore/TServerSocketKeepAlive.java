@@ -33,15 +33,4 @@ public class TServerSocketKeepAlive extends TServerSocket {
   public TServerSocketKeepAlive(TServerSocket serverSocket) throws TTransportException {
     super(serverSocket.getServerSocket());
   }
-
-  @Override
-  protected TSocket acceptImpl() throws TTransportException {
-    TSocket ts = super.acceptImpl();
-    try {
-      ts.getSocket().setKeepAlive(true);
-    } catch (SocketException e) {
-      throw new TTransportException(e);
-    }
-    return ts;
-  }
 }

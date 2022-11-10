@@ -1100,10 +1100,16 @@ public class GenVectorCode extends Task {
       {"ColumnUnaryFunc", "FuncAbs", "long", "long", "MathExpr.abs", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncSin", "double", "double", "Math.sin", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncSin", "double", "long", "Math.sin", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSinh", "double", "double", "StrictMath.sinh", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSinh", "double", "long", "StrictMath.sinh", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncCos", "double", "double", "StrictMath.cos", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncCos", "double", "long", "StrictMath.cos", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCosh", "double", "double", "StrictMath.cosh", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCosh", "double", "long", "StrictMath.cosh", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncTan", "double", "double", "Math.tan", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncTan", "double", "long", "Math.tan", "(double)", "", "", ""},
+      {"ColumnUnaryFunc", "FuncTanh", "double", "double", "StrictMath.tanh", "", "", "", ""},
+      {"ColumnUnaryFunc", "FuncTanh", "double", "long", "StrictMath.tanh", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncATan", "double", "double", "Math.atan", "", "", "", ""},
       {"ColumnUnaryFunc", "FuncATan", "double", "long", "Math.atan", "(double)", "", "", ""},
       {"ColumnUnaryFunc", "FuncDegrees", "double", "double", "Math.toDegrees", "", "", "", ""},
@@ -3432,7 +3438,7 @@ public class GenVectorCode extends Task {
     if (type.equals("date")) {
       return
           "Date dt = Date.ofEpochMilli(DateWritableV2.daysToMillis((int) value));\n" +
-          "    return  \"date \" + dt.toString() + \", \" + getColumnParamString(0, colNum);";
+          "    return  \"date \" + dt.toString() + \", \" + getColumnParamString(0, inputColumnNum[0]);";
     } else {
       return
           "    return super.vectorExpressionParameters();";
@@ -3443,7 +3449,7 @@ public class GenVectorCode extends Task {
     if (type.equals("date")) {
       return
           "Date dt = Date.ofEpochMilli(DateWritableV2.daysToMillis((int) value));\n" +
-          "    return getColumnParamString(0, colNum) + \", date \" + dt.toString();";
+          "    return getColumnParamString(0, inputColumnNum[0]) + \", date \" + dt.toString();";
     } else {
       return
           "    return super.vectorExpressionParameters();";

@@ -1,0 +1,1267 @@
+PREHOOK: query: CREATE TABLE vector_ptf_lead_lag_int(name string, rowindex int, mynumber int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vector_ptf_lead_lag_int
+POSTHOOK: query: CREATE TABLE vector_ptf_lead_lag_int(name string, rowindex int, mynumber int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vector_ptf_lead_lag_int
+PREHOOK: query: INSERT INTO vector_ptf_lead_lag_int values
+
+('first', 1, 1),
+('first', 2, 2),
+('first', 3, 2),
+('first', 4, NULL),
+('first', 5, 3),
+('first', 6, 3),
+('first', 7, 4),
+('first', 8, NULL),
+('first', 9, 4),
+('first', 10, 4),
+('first', 11, 5),
+('first', 12, 5),
+('first', 13, NULL),
+('first', 14, 5),
+('first', 15, 5),
+('first', 16, 6),
+('first', 17, 6),
+('first', 18, 6),
+('first', 19, NULL),
+('first', 20, 6),
+('first', 21, 6),
+
+('second', 22, 1),
+('second', 23, 2),
+('second', 24, 2),
+('second', 25, NULL),
+('second', 26, 3),
+('second', 27, 3),
+('second', 28, 4),
+('second', 29, NULL),
+('second', 30, 4),
+('second', 31, 4),
+('second', 32, 5),
+('second', 33, 5),
+('second', 34, NULL),
+('second', 35, 5),
+('second', 36, 5),
+('second', 37, 6),
+('second', 38, 6),
+('second', 39, 6),
+('second', 40, NULL),
+('second', 41, 6),
+('second', 42, 6),
+
+(NULL, 43, 7),
+(NULL, 44, 7)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@vector_ptf_lead_lag_int
+POSTHOOK: query: INSERT INTO vector_ptf_lead_lag_int values
+
+('first', 1, 1),
+('first', 2, 2),
+('first', 3, 2),
+('first', 4, NULL),
+('first', 5, 3),
+('first', 6, 3),
+('first', 7, 4),
+('first', 8, NULL),
+('first', 9, 4),
+('first', 10, 4),
+('first', 11, 5),
+('first', 12, 5),
+('first', 13, NULL),
+('first', 14, 5),
+('first', 15, 5),
+('first', 16, 6),
+('first', 17, 6),
+('first', 18, 6),
+('first', 19, NULL),
+('first', 20, 6),
+('first', 21, 6),
+
+('second', 22, 1),
+('second', 23, 2),
+('second', 24, 2),
+('second', 25, NULL),
+('second', 26, 3),
+('second', 27, 3),
+('second', 28, 4),
+('second', 29, NULL),
+('second', 30, 4),
+('second', 31, 4),
+('second', 32, 5),
+('second', 33, 5),
+('second', 34, NULL),
+('second', 35, 5),
+('second', 36, 5),
+('second', 37, 6),
+('second', 38, 6),
+('second', 39, 6),
+('second', 40, NULL),
+('second', 41, 6),
+('second', 42, 6),
+
+(NULL, 43, 7),
+(NULL, 44, 7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@vector_ptf_lead_lag_int
+POSTHOOK: Lineage: vector_ptf_lead_lag_int.mynumber SCRIPT []
+POSTHOOK: Lineage: vector_ptf_lead_lag_int.name SCRIPT []
+POSTHOOK: Lineage: vector_ptf_lead_lag_int.rowindex SCRIPT []
+PREHOOK: query: select "************ INT, NON-VECTORIZED ************"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select "************ INT, NON-VECTORIZED ************"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+************ INT, NON-VECTORIZED ************
+PREHOOK: query: select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_int
+#### A masked pattern was here ####
+POSTHOOK: query: select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_int
+#### A masked pattern was here ####
+NULL	44	7	NULL	NULL	100	7	7	NULL	100	7
+NULL	43	7	7	NULL	100	7	NULL	NULL	100	7
+first	1	1	NULL	NULL	100	1	2	2	3	3
+first	2	2	1	NULL	100	2	2	3	3	4
+first	3	2	2	1	100	2	3	3	4	4
+first	5	3	2	2	1	3	3	4	4	4
+first	6	3	3	2	2	1	4	4	4	5
+first	7	4	3	3	2	2	4	4	5	5
+first	9	4	4	3	3	2	4	5	5	5
+first	10	4	4	4	3	3	5	5	5	5
+first	14	5	4	4	4	3	5	5	5	6
+first	11	5	5	4	4	4	5	5	6	6
+first	12	5	5	5	4	4	5	6	6	6
+first	15	5	5	5	5	4	6	6	6	6
+first	16	6	5	5	5	5	6	6	6	6
+first	17	6	6	5	5	5	6	6	6	NULL
+first	18	6	6	6	5	5	6	6	NULL	NULL
+first	20	6	6	6	6	5	6	NULL	NULL	NULL
+first	21	6	6	6	6	6	NULL	NULL	NULL	NULL
+first	4	NULL	6	6	6	6	NULL	NULL	NULL	NULL
+first	19	NULL	NULL	6	6	6	NULL	NULL	100	NULL
+first	8	NULL	NULL	NULL	6	6	NULL	NULL	100	NULL
+first	13	NULL	NULL	NULL	NULL	6	NULL	NULL	100	NULL
+second	22	1	NULL	NULL	100	1	2	2	3	3
+second	24	2	1	NULL	100	2	2	3	3	4
+second	23	2	2	1	100	2	3	3	4	4
+second	26	3	2	2	1	3	3	4	4	4
+second	27	3	3	2	2	1	4	4	4	5
+second	30	4	3	3	2	2	4	4	5	5
+second	31	4	4	3	3	2	4	5	5	5
+second	28	4	4	4	3	3	5	5	5	5
+second	36	5	4	4	4	3	5	5	5	6
+second	32	5	5	4	4	4	5	5	6	6
+second	33	5	5	5	4	4	5	6	6	6
+second	35	5	5	5	5	4	6	6	6	6
+second	37	6	5	5	5	5	6	6	6	6
+second	38	6	6	5	5	5	6	6	6	NULL
+second	39	6	6	6	5	5	6	6	NULL	NULL
+second	41	6	6	6	6	5	6	NULL	NULL	NULL
+second	42	6	6	6	6	6	NULL	NULL	NULL	NULL
+second	34	NULL	6	6	6	6	NULL	NULL	NULL	NULL
+second	25	NULL	NULL	6	6	6	NULL	NULL	100	NULL
+second	29	NULL	NULL	NULL	6	6	NULL	NULL	100	NULL
+second	40	NULL	NULL	NULL	NULL	6	NULL	NULL	100	NULL
+PREHOOK: query: explain vectorization detail select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_int
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_int
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_ptf_lead_lag_int
+                  Statistics: Num rows: 44 Data size: 4151 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:name:string, 1:rowindex:int, 2:mynumber:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
+                  Reduce Output Operator
+                    key expressions: name (type: string), mynumber (type: int)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: name (type: string)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkObjectHashOperator
+                        keyColumns: 0:string, 2:int
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: 0:string
+                        valueColumns: 1:int
+                    Statistics: Num rows: 44 Data size: 4151 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: rowindex (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    includeColumns: [0, 1, 2]
+                    dataColumns: name:string, rowindex:int, mynumber:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:int, VALUE._col0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: int), KEY.reducesinkkey1 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 2, 1]
+                Statistics: Num rows: 44 Data size: 4151 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: int, _col2: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS LAST
+                        partition by: _col0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: lag_window_0
+                              arguments: _col2
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lag_window_1
+                              arguments: _col2, 2
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lag_window_2
+                              arguments: _col2, 3, 100
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lag_window_3
+                              arguments: _col2, 4, _col2
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_4
+                              arguments: _col2
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_5
+                              arguments: _col2, 2
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_6
+                              arguments: _col2, 3, 100
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_7
+                              arguments: _col2, 4, _col2
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorLag, VectorPTFEvaluatorLag, VectorPTFEvaluatorLag, VectorPTFEvaluatorLag, VectorPTFEvaluatorLead, VectorPTFEvaluatorLead, VectorPTFEvaluatorLead, VectorPTFEvaluatorLead]
+                      functionInputExpressions: [col 1:int, col 1:int, col 1:int, col 1:int, col 1:int, col 1:int, col 1:int, col 1:int]
+                      functionNames: [lag, lag, lag, lag, lead, lead, lead, lead]
+                      keyInputColumns: [0, 1]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:int]
+                      outputColumns: [3, 4, 5, 6, 7, 8, 9, 10, 0, 2, 1]
+                      outputTypes: [int, int, int, int, int, int, int, int, string, int, int]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: []
+                  Statistics: Num rows: 44 Data size: 4151 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int), lag_window_0 (type: int), lag_window_1 (type: int), lag_window_2 (type: int), lag_window_3 (type: int), lead_window_4 (type: int), lead_window_5 (type: int), lead_window_6 (type: int), lead_window_7 (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 2, 1, 3, 4, 5, 6, 7, 8, 9, 10]
+                    Statistics: Num rows: 44 Data size: 5349 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 44 Data size: 5349 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select "************ INT, VECTORIZED ************"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select "************ INT, VECTORIZED ************"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+************ INT, VECTORIZED ************
+PREHOOK: query: select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_int
+#### A masked pattern was here ####
+POSTHOOK: query: select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_int
+#### A masked pattern was here ####
+NULL	44	7	NULL	NULL	100	7	7	NULL	100	7
+NULL	43	7	7	NULL	100	7	NULL	NULL	100	7
+first	1	1	NULL	NULL	100	1	2	2	3	3
+first	2	2	1	NULL	100	2	2	3	3	4
+first	3	2	2	1	100	2	3	3	4	4
+first	5	3	2	2	1	3	3	4	4	4
+first	6	3	3	2	2	1	4	4	4	5
+first	7	4	3	3	2	2	4	4	5	5
+first	9	4	4	3	3	2	4	5	5	5
+first	10	4	4	4	3	3	5	5	5	5
+first	14	5	4	4	4	3	5	5	5	6
+first	11	5	5	4	4	4	5	5	6	6
+first	12	5	5	5	4	4	5	6	6	6
+first	15	5	5	5	5	4	6	6	6	6
+first	16	6	5	5	5	5	6	6	6	6
+first	17	6	6	5	5	5	6	6	6	NULL
+first	18	6	6	6	5	5	6	6	NULL	NULL
+first	20	6	6	6	6	5	6	NULL	NULL	NULL
+first	21	6	6	6	6	6	NULL	NULL	NULL	NULL
+first	4	NULL	6	6	6	6	NULL	NULL	NULL	NULL
+first	19	NULL	NULL	6	6	6	NULL	NULL	100	NULL
+first	8	NULL	NULL	NULL	6	6	NULL	NULL	100	NULL
+first	13	NULL	NULL	NULL	NULL	6	NULL	NULL	100	NULL
+second	22	1	NULL	NULL	100	1	2	2	3	3
+second	24	2	1	NULL	100	2	2	3	3	4
+second	23	2	2	1	100	2	3	3	4	4
+second	26	3	2	2	1	3	3	4	4	4
+second	27	3	3	2	2	1	4	4	4	5
+second	30	4	3	3	2	2	4	4	5	5
+second	31	4	4	3	3	2	4	5	5	5
+second	28	4	4	4	3	3	5	5	5	5
+second	36	5	4	4	4	3	5	5	5	6
+second	32	5	5	4	4	4	5	5	6	6
+second	33	5	5	5	4	4	5	6	6	6
+second	35	5	5	5	5	4	6	6	6	6
+second	37	6	5	5	5	5	6	6	6	6
+second	38	6	6	5	5	5	6	6	6	NULL
+second	39	6	6	6	5	5	6	6	NULL	NULL
+second	41	6	6	6	6	5	6	NULL	NULL	NULL
+second	42	6	6	6	6	6	NULL	NULL	NULL	NULL
+second	34	NULL	6	6	6	6	NULL	NULL	NULL	NULL
+second	25	NULL	NULL	6	6	6	NULL	NULL	100	NULL
+second	29	NULL	NULL	NULL	6	6	NULL	NULL	100	NULL
+second	40	NULL	NULL	NULL	NULL	6	NULL	NULL	100	NULL
+PREHOOK: query: CREATE TABLE vector_ptf_lead_lag_double(name string, rowindex int, mynumber double) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vector_ptf_lead_lag_double
+POSTHOOK: query: CREATE TABLE vector_ptf_lead_lag_double(name string, rowindex int, mynumber double) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vector_ptf_lead_lag_double
+PREHOOK: query: INSERT INTO vector_ptf_lead_lag_double SELECT * from vector_ptf_lead_lag_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_int
+PREHOOK: Output: default@vector_ptf_lead_lag_double
+POSTHOOK: query: INSERT INTO vector_ptf_lead_lag_double SELECT * from vector_ptf_lead_lag_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_int
+POSTHOOK: Output: default@vector_ptf_lead_lag_double
+POSTHOOK: Lineage: vector_ptf_lead_lag_double.mynumber EXPRESSION [(vector_ptf_lead_lag_int)vector_ptf_lead_lag_int.FieldSchema(name:mynumber, type:int, comment:null), ]
+POSTHOOK: Lineage: vector_ptf_lead_lag_double.name SIMPLE [(vector_ptf_lead_lag_int)vector_ptf_lead_lag_int.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: vector_ptf_lead_lag_double.rowindex SIMPLE [(vector_ptf_lead_lag_int)vector_ptf_lead_lag_int.FieldSchema(name:rowindex, type:int, comment:null), ]
+PREHOOK: query: select "************ DOUBLE, NON-VECTORIZED ************"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select "************ DOUBLE, NON-VECTORIZED ************"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+************ DOUBLE, NON-VECTORIZED ************
+PREHOOK: query: select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_double
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_double
+#### A masked pattern was here ####
+POSTHOOK: query: select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_double
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_double
+#### A masked pattern was here ####
+NULL	44	7.0	NULL	NULL	100.0	7.0	7.0	NULL	100.0	7.0
+NULL	43	7.0	7.0	NULL	100.0	7.0	NULL	NULL	100.0	7.0
+first	1	1.0	NULL	NULL	100.0	1.0	2.0	2.0	3.0	3.0
+first	2	2.0	1.0	NULL	100.0	2.0	2.0	3.0	3.0	4.0
+first	3	2.0	2.0	1.0	100.0	2.0	3.0	3.0	4.0	4.0
+first	5	3.0	2.0	2.0	1.0	3.0	3.0	4.0	4.0	4.0
+first	6	3.0	3.0	2.0	2.0	1.0	4.0	4.0	4.0	5.0
+first	7	4.0	3.0	3.0	2.0	2.0	4.0	4.0	5.0	5.0
+first	9	4.0	4.0	3.0	3.0	2.0	4.0	5.0	5.0	5.0
+first	10	4.0	4.0	4.0	3.0	3.0	5.0	5.0	5.0	5.0
+first	14	5.0	4.0	4.0	4.0	3.0	5.0	5.0	5.0	6.0
+first	11	5.0	5.0	4.0	4.0	4.0	5.0	5.0	6.0	6.0
+first	12	5.0	5.0	5.0	4.0	4.0	5.0	6.0	6.0	6.0
+first	15	5.0	5.0	5.0	5.0	4.0	6.0	6.0	6.0	6.0
+first	16	6.0	5.0	5.0	5.0	5.0	6.0	6.0	6.0	6.0
+first	17	6.0	6.0	5.0	5.0	5.0	6.0	6.0	6.0	NULL
+first	18	6.0	6.0	6.0	5.0	5.0	6.0	6.0	NULL	NULL
+first	20	6.0	6.0	6.0	6.0	5.0	6.0	NULL	NULL	NULL
+first	21	6.0	6.0	6.0	6.0	6.0	NULL	NULL	NULL	NULL
+first	4	NULL	6.0	6.0	6.0	6.0	NULL	NULL	NULL	NULL
+first	19	NULL	NULL	6.0	6.0	6.0	NULL	NULL	100.0	NULL
+first	8	NULL	NULL	NULL	6.0	6.0	NULL	NULL	100.0	NULL
+first	13	NULL	NULL	NULL	NULL	6.0	NULL	NULL	100.0	NULL
+second	22	1.0	NULL	NULL	100.0	1.0	2.0	2.0	3.0	3.0
+second	24	2.0	1.0	NULL	100.0	2.0	2.0	3.0	3.0	4.0
+second	23	2.0	2.0	1.0	100.0	2.0	3.0	3.0	4.0	4.0
+second	26	3.0	2.0	2.0	1.0	3.0	3.0	4.0	4.0	4.0
+second	27	3.0	3.0	2.0	2.0	1.0	4.0	4.0	4.0	5.0
+second	30	4.0	3.0	3.0	2.0	2.0	4.0	4.0	5.0	5.0
+second	31	4.0	4.0	3.0	3.0	2.0	4.0	5.0	5.0	5.0
+second	28	4.0	4.0	4.0	3.0	3.0	5.0	5.0	5.0	5.0
+second	36	5.0	4.0	4.0	4.0	3.0	5.0	5.0	5.0	6.0
+second	32	5.0	5.0	4.0	4.0	4.0	5.0	5.0	6.0	6.0
+second	33	5.0	5.0	5.0	4.0	4.0	5.0	6.0	6.0	6.0
+second	35	5.0	5.0	5.0	5.0	4.0	6.0	6.0	6.0	6.0
+second	37	6.0	5.0	5.0	5.0	5.0	6.0	6.0	6.0	6.0
+second	38	6.0	6.0	5.0	5.0	5.0	6.0	6.0	6.0	NULL
+second	39	6.0	6.0	6.0	5.0	5.0	6.0	6.0	NULL	NULL
+second	41	6.0	6.0	6.0	6.0	5.0	6.0	NULL	NULL	NULL
+second	42	6.0	6.0	6.0	6.0	6.0	NULL	NULL	NULL	NULL
+second	34	NULL	6.0	6.0	6.0	6.0	NULL	NULL	NULL	NULL
+second	25	NULL	NULL	6.0	6.0	6.0	NULL	NULL	100.0	NULL
+second	29	NULL	NULL	NULL	6.0	6.0	NULL	NULL	100.0	NULL
+second	40	NULL	NULL	NULL	NULL	6.0	NULL	NULL	100.0	NULL
+PREHOOK: query: explain vectorization detail select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_double
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_double
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_double
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_double
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_ptf_lead_lag_double
+                  Statistics: Num rows: 44 Data size: 4299 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:name:string, 1:rowindex:int, 2:mynumber:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
+                  Reduce Output Operator
+                    key expressions: name (type: string), mynumber (type: double)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: name (type: string)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkObjectHashOperator
+                        keyColumns: 0:string, 2:double
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: 0:string
+                        valueColumns: 1:int
+                    Statistics: Num rows: 44 Data size: 4299 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: rowindex (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    includeColumns: [0, 1, 2]
+                    dataColumns: name:string, rowindex:int, mynumber:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:double, VALUE._col0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [double, double, double, double, double, double, double, double, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: int), KEY.reducesinkkey1 (type: double)
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 2, 1]
+                Statistics: Num rows: 44 Data size: 4299 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: int, _col2: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS LAST
+                        partition by: _col0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: lag_window_0
+                              arguments: _col2
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lag_window_1
+                              arguments: _col2, 2
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lag_window_2
+                              arguments: _col2, 3, 100
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lag_window_3
+                              arguments: _col2, 4, _col2
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_4
+                              arguments: _col2
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_5
+                              arguments: _col2, 2
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_6
+                              arguments: _col2, 3, 100
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_7
+                              arguments: _col2, 4, _col2
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorLag, VectorPTFEvaluatorLag, VectorPTFEvaluatorLag, VectorPTFEvaluatorLag, VectorPTFEvaluatorLead, VectorPTFEvaluatorLead, VectorPTFEvaluatorLead, VectorPTFEvaluatorLead]
+                      functionInputExpressions: [col 1:double, col 1:double, col 1:double, col 1:double, col 1:double, col 1:double, col 1:double, col 1:double]
+                      functionNames: [lag, lag, lag, lag, lead, lead, lead, lead]
+                      keyInputColumns: [0, 1]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:double]
+                      outputColumns: [3, 4, 5, 6, 7, 8, 9, 10, 0, 2, 1]
+                      outputTypes: [double, double, double, double, double, double, double, double, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: []
+                  Statistics: Num rows: 44 Data size: 4299 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: int), _col2 (type: double), lag_window_0 (type: double), lag_window_1 (type: double), lag_window_2 (type: double), lag_window_3 (type: double), lead_window_4 (type: double), lead_window_5 (type: double), lead_window_6 (type: double), lead_window_7 (type: double)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 2, 1, 3, 4, 5, 6, 7, 8, 9, 10]
+                    Statistics: Num rows: 44 Data size: 6873 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 44 Data size: 6873 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select "************ DOUBLE, VECTORIZED ************"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select "************ DOUBLE, VECTORIZED ************"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+************ DOUBLE, VECTORIZED ************
+PREHOOK: query: select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_double
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_double
+#### A masked pattern was here ####
+POSTHOOK: query: select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_double
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_double
+#### A masked pattern was here ####
+NULL	44	7.0	NULL	NULL	100.0	7.0	7.0	NULL	100.0	7.0
+NULL	43	7.0	7.0	NULL	100.0	7.0	NULL	NULL	100.0	7.0
+first	1	1.0	NULL	NULL	100.0	1.0	2.0	2.0	3.0	3.0
+first	2	2.0	1.0	NULL	100.0	2.0	2.0	3.0	3.0	4.0
+first	3	2.0	2.0	1.0	100.0	2.0	3.0	3.0	4.0	4.0
+first	5	3.0	2.0	2.0	1.0	3.0	3.0	4.0	4.0	4.0
+first	6	3.0	3.0	2.0	2.0	1.0	4.0	4.0	4.0	5.0
+first	7	4.0	3.0	3.0	2.0	2.0	4.0	4.0	5.0	5.0
+first	9	4.0	4.0	3.0	3.0	2.0	4.0	5.0	5.0	5.0
+first	10	4.0	4.0	4.0	3.0	3.0	5.0	5.0	5.0	5.0
+first	14	5.0	4.0	4.0	4.0	3.0	5.0	5.0	5.0	6.0
+first	11	5.0	5.0	4.0	4.0	4.0	5.0	5.0	6.0	6.0
+first	12	5.0	5.0	5.0	4.0	4.0	5.0	6.0	6.0	6.0
+first	15	5.0	5.0	5.0	5.0	4.0	6.0	6.0	6.0	6.0
+first	16	6.0	5.0	5.0	5.0	5.0	6.0	6.0	6.0	6.0
+first	17	6.0	6.0	5.0	5.0	5.0	6.0	6.0	6.0	NULL
+first	18	6.0	6.0	6.0	5.0	5.0	6.0	6.0	NULL	NULL
+first	20	6.0	6.0	6.0	6.0	5.0	6.0	NULL	NULL	NULL
+first	21	6.0	6.0	6.0	6.0	6.0	NULL	NULL	NULL	NULL
+first	4	NULL	6.0	6.0	6.0	6.0	NULL	NULL	NULL	NULL
+first	19	NULL	NULL	6.0	6.0	6.0	NULL	NULL	100.0	NULL
+first	8	NULL	NULL	NULL	6.0	6.0	NULL	NULL	100.0	NULL
+first	13	NULL	NULL	NULL	NULL	6.0	NULL	NULL	100.0	NULL
+second	22	1.0	NULL	NULL	100.0	1.0	2.0	2.0	3.0	3.0
+second	24	2.0	1.0	NULL	100.0	2.0	2.0	3.0	3.0	4.0
+second	23	2.0	2.0	1.0	100.0	2.0	3.0	3.0	4.0	4.0
+second	26	3.0	2.0	2.0	1.0	3.0	3.0	4.0	4.0	4.0
+second	27	3.0	3.0	2.0	2.0	1.0	4.0	4.0	4.0	5.0
+second	30	4.0	3.0	3.0	2.0	2.0	4.0	4.0	5.0	5.0
+second	31	4.0	4.0	3.0	3.0	2.0	4.0	5.0	5.0	5.0
+second	28	4.0	4.0	4.0	3.0	3.0	5.0	5.0	5.0	5.0
+second	36	5.0	4.0	4.0	4.0	3.0	5.0	5.0	5.0	6.0
+second	32	5.0	5.0	4.0	4.0	4.0	5.0	5.0	6.0	6.0
+second	33	5.0	5.0	5.0	4.0	4.0	5.0	6.0	6.0	6.0
+second	35	5.0	5.0	5.0	5.0	4.0	6.0	6.0	6.0	6.0
+second	37	6.0	5.0	5.0	5.0	5.0	6.0	6.0	6.0	6.0
+second	38	6.0	6.0	5.0	5.0	5.0	6.0	6.0	6.0	NULL
+second	39	6.0	6.0	6.0	5.0	5.0	6.0	6.0	NULL	NULL
+second	41	6.0	6.0	6.0	6.0	5.0	6.0	NULL	NULL	NULL
+second	42	6.0	6.0	6.0	6.0	6.0	NULL	NULL	NULL	NULL
+second	34	NULL	6.0	6.0	6.0	6.0	NULL	NULL	NULL	NULL
+second	25	NULL	NULL	6.0	6.0	6.0	NULL	NULL	100.0	NULL
+second	29	NULL	NULL	NULL	6.0	6.0	NULL	NULL	100.0	NULL
+second	40	NULL	NULL	NULL	NULL	6.0	NULL	NULL	100.0	NULL
+PREHOOK: query: CREATE TABLE vector_ptf_lead_lag_decimal(name string, rowindex int, mynumber decimal) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vector_ptf_lead_lag_decimal
+POSTHOOK: query: CREATE TABLE vector_ptf_lead_lag_decimal(name string, rowindex int, mynumber decimal) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vector_ptf_lead_lag_decimal
+PREHOOK: query: INSERT INTO vector_ptf_lead_lag_decimal SELECT * from vector_ptf_lead_lag_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_int
+PREHOOK: Output: default@vector_ptf_lead_lag_decimal
+POSTHOOK: query: INSERT INTO vector_ptf_lead_lag_decimal SELECT * from vector_ptf_lead_lag_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_int
+POSTHOOK: Output: default@vector_ptf_lead_lag_decimal
+POSTHOOK: Lineage: vector_ptf_lead_lag_decimal.mynumber EXPRESSION [(vector_ptf_lead_lag_int)vector_ptf_lead_lag_int.FieldSchema(name:mynumber, type:int, comment:null), ]
+POSTHOOK: Lineage: vector_ptf_lead_lag_decimal.name SIMPLE [(vector_ptf_lead_lag_int)vector_ptf_lead_lag_int.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: vector_ptf_lead_lag_decimal.rowindex SIMPLE [(vector_ptf_lead_lag_int)vector_ptf_lead_lag_int.FieldSchema(name:rowindex, type:int, comment:null), ]
+PREHOOK: query: select "************ DECIMAL, NON-VECTORIZED ************"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select "************ DECIMAL, NON-VECTORIZED ************"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+************ DECIMAL, NON-VECTORIZED ************
+PREHOOK: query: select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_decimal
+#### A masked pattern was here ####
+NULL	44	7	NULL	NULL	100	7	7	NULL	100	7
+NULL	43	7	7	NULL	100	7	NULL	NULL	100	7
+first	1	1	NULL	NULL	100	1	2	2	3	3
+first	2	2	1	NULL	100	2	2	3	3	4
+first	3	2	2	1	100	2	3	3	4	4
+first	5	3	2	2	1	3	3	4	4	4
+first	6	3	3	2	2	1	4	4	4	5
+first	7	4	3	3	2	2	4	4	5	5
+first	9	4	4	3	3	2	4	5	5	5
+first	10	4	4	4	3	3	5	5	5	5
+first	14	5	4	4	4	3	5	5	5	6
+first	11	5	5	4	4	4	5	5	6	6
+first	12	5	5	5	4	4	5	6	6	6
+first	15	5	5	5	5	4	6	6	6	6
+first	16	6	5	5	5	5	6	6	6	6
+first	17	6	6	5	5	5	6	6	6	NULL
+first	18	6	6	6	5	5	6	6	NULL	NULL
+first	20	6	6	6	6	5	6	NULL	NULL	NULL
+first	21	6	6	6	6	6	NULL	NULL	NULL	NULL
+first	4	NULL	6	6	6	6	NULL	NULL	NULL	NULL
+first	19	NULL	NULL	6	6	6	NULL	NULL	100	NULL
+first	8	NULL	NULL	NULL	6	6	NULL	NULL	100	NULL
+first	13	NULL	NULL	NULL	NULL	6	NULL	NULL	100	NULL
+second	22	1	NULL	NULL	100	1	2	2	3	3
+second	24	2	1	NULL	100	2	2	3	3	4
+second	23	2	2	1	100	2	3	3	4	4
+second	26	3	2	2	1	3	3	4	4	4
+second	27	3	3	2	2	1	4	4	4	5
+second	30	4	3	3	2	2	4	4	5	5
+second	31	4	4	3	3	2	4	5	5	5
+second	28	4	4	4	3	3	5	5	5	5
+second	36	5	4	4	4	3	5	5	5	6
+second	32	5	5	4	4	4	5	5	6	6
+second	33	5	5	5	4	4	5	6	6	6
+second	35	5	5	5	5	4	6	6	6	6
+second	37	6	5	5	5	5	6	6	6	6
+second	38	6	6	5	5	5	6	6	6	NULL
+second	39	6	6	6	5	5	6	6	NULL	NULL
+second	41	6	6	6	6	5	6	NULL	NULL	NULL
+second	42	6	6	6	6	6	NULL	NULL	NULL	NULL
+second	34	NULL	6	6	6	6	NULL	NULL	NULL	NULL
+second	25	NULL	NULL	6	6	6	NULL	NULL	100	NULL
+second	29	NULL	NULL	NULL	6	6	NULL	NULL	100	NULL
+second	40	NULL	NULL	NULL	NULL	6	NULL	NULL	100	NULL
+PREHOOK: query: explain vectorization detail select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_decimal
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_ptf_lead_lag_decimal
+                  Statistics: Num rows: 44 Data size: 8147 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:name:string, 1:rowindex:int, 2:mynumber:decimal(10,0)/DECIMAL_64, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
+                  Reduce Output Operator
+                    key expressions: name (type: string), mynumber (type: decimal(10,0))
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: name (type: string)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkObjectHashOperator
+                        keyColumns: 0:string, 2:decimal(10,0)
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumns: 0:string
+                        valueColumns: 1:int
+                    Statistics: Num rows: 44 Data size: 8147 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: rowindex (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    includeColumns: [0, 1, 2]
+                    dataColumns: name:string, rowindex:int, mynumber:decimal(10,0)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:decimal(10,0), VALUE._col0:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: int), KEY.reducesinkkey1 (type: decimal(10,0))
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 2, 1]
+                Statistics: Num rows: 44 Data size: 8147 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: int, _col2: decimal(10,0)
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS LAST
+                        partition by: _col0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: lag_window_0
+                              arguments: _col2
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lag_window_1
+                              arguments: _col2, 2
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lag_window_2
+                              arguments: _col2, 3, 100
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lag_window_3
+                              arguments: _col2, 4, _col2
+                              name: lag
+                              window function: GenericUDAFLagEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_4
+                              arguments: _col2
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_5
+                              arguments: _col2, 2
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_6
+                              arguments: _col2, 3, 100
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                            window function definition
+                              alias: lead_window_7
+                              arguments: _col2, 4, _col2
+                              name: lead
+                              window function: GenericUDAFLeadEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorLag, VectorPTFEvaluatorLag, VectorPTFEvaluatorLag, VectorPTFEvaluatorLag, VectorPTFEvaluatorLead, VectorPTFEvaluatorLead, VectorPTFEvaluatorLead, VectorPTFEvaluatorLead]
+                      functionInputExpressions: [col 1:decimal(10,0), col 1:decimal(10,0), col 1:decimal(10,0), col 1:decimal(10,0), col 1:decimal(10,0), col 1:decimal(10,0), col 1:decimal(10,0), col 1:decimal(10,0)]
+                      functionNames: [lag, lag, lag, lag, lead, lead, lead, lead]
+                      keyInputColumns: [0, 1]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:decimal(10,0)]
+                      outputColumns: [3, 4, 5, 6, 7, 8, 9, 10, 0, 2, 1]
+                      outputTypes: [decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), decimal(10,0), string, int, decimal(10,0)]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: []
+                  Statistics: Num rows: 44 Data size: 8147 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: int), _col2 (type: decimal(10,0)), lag_window_0 (type: decimal(10,0)), lag_window_1 (type: decimal(10,0)), lag_window_2 (type: decimal(10,0)), lag_window_3 (type: decimal(10,0)), lead_window_4 (type: decimal(10,0)), lead_window_5 (type: decimal(10,0)), lead_window_6 (type: decimal(10,0)), lead_window_7 (type: decimal(10,0))
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 2, 1, 3, 4, 5, 6, 7, 8, 9, 10]
+                    Statistics: Num rows: 44 Data size: 46497 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 44 Data size: 46497 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select "************ DECIMAL, VECTORIZED ************"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select "************ DECIMAL, VECTORIZED ************"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+************ DECIMAL, VECTORIZED ************
+PREHOOK: query: select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_ptf_lead_lag_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: select name, rowindex, mynumber,
+lag(mynumber) over (partition by name order by mynumber) as lag1,
+lag(mynumber, 2) over (partition by name order by mynumber) as lag2,
+lag(mynumber, 3, 100) over (partition by name order by mynumber) as lag3_default100,
+lag(mynumber, 4, mynumber) over (partition by name order by mynumber) as lag4_default_col,
+lead(mynumber) over (partition by name order by mynumber) as lead1,
+lead(mynumber, 2) over (partition by name order by mynumber) as lead2,
+lead(mynumber, 3, 100) over (partition by name order by mynumber) as lead3_default100,
+lead(mynumber, 4, mynumber) over (partition by name order by mynumber) as lead4_default_col
+from vector_ptf_lead_lag_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_ptf_lead_lag_decimal
+#### A masked pattern was here ####
+NULL	44	7	NULL	NULL	100	7	7	NULL	100	7
+NULL	43	7	7	NULL	100	7	NULL	NULL	100	7
+first	1	1	NULL	NULL	100	1	2	2	3	3
+first	2	2	1	NULL	100	2	2	3	3	4
+first	3	2	2	1	100	2	3	3	4	4
+first	5	3	2	2	1	3	3	4	4	4
+first	6	3	3	2	2	1	4	4	4	5
+first	7	4	3	3	2	2	4	4	5	5
+first	9	4	4	3	3	2	4	5	5	5
+first	10	4	4	4	3	3	5	5	5	5
+first	14	5	4	4	4	3	5	5	5	6
+first	11	5	5	4	4	4	5	5	6	6
+first	12	5	5	5	4	4	5	6	6	6
+first	15	5	5	5	5	4	6	6	6	6
+first	16	6	5	5	5	5	6	6	6	6
+first	17	6	6	5	5	5	6	6	6	NULL
+first	18	6	6	6	5	5	6	6	NULL	NULL
+first	20	6	6	6	6	5	6	NULL	NULL	NULL
+first	21	6	6	6	6	6	NULL	NULL	NULL	NULL
+first	4	NULL	6	6	6	6	NULL	NULL	NULL	NULL
+first	19	NULL	NULL	6	6	6	NULL	NULL	100	NULL
+first	8	NULL	NULL	NULL	6	6	NULL	NULL	100	NULL
+first	13	NULL	NULL	NULL	NULL	6	NULL	NULL	100	NULL
+second	22	1	NULL	NULL	100	1	2	2	3	3
+second	24	2	1	NULL	100	2	2	3	3	4
+second	23	2	2	1	100	2	3	3	4	4
+second	26	3	2	2	1	3	3	4	4	4
+second	27	3	3	2	2	1	4	4	4	5
+second	30	4	3	3	2	2	4	4	5	5
+second	31	4	4	3	3	2	4	5	5	5
+second	28	4	4	4	3	3	5	5	5	5
+second	36	5	4	4	4	3	5	5	5	6
+second	32	5	5	4	4	4	5	5	6	6
+second	33	5	5	5	4	4	5	6	6	6
+second	35	5	5	5	5	4	6	6	6	6
+second	37	6	5	5	5	5	6	6	6	6
+second	38	6	6	5	5	5	6	6	6	NULL
+second	39	6	6	6	5	5	6	6	NULL	NULL
+second	41	6	6	6	6	5	6	NULL	NULL	NULL
+second	42	6	6	6	6	6	NULL	NULL	NULL	NULL
+second	34	NULL	6	6	6	6	NULL	NULL	NULL	NULL
+second	25	NULL	NULL	6	6	6	NULL	NULL	100	NULL
+second	29	NULL	NULL	NULL	6	6	NULL	NULL	100	NULL
+second	40	NULL	NULL	NULL	NULL	6	NULL	NULL	100	NULL

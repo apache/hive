@@ -119,7 +119,7 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
           projects, nodeToTranslate.getRowType());
     }
     final HiveJdbcImplementor.Result result =
-        jdbcImplementor.visit(topProject);
+        jdbcImplementor.visitRoot(topProject);
     return result.asStatement().toSqlString(dialect).getSql();
   }
 

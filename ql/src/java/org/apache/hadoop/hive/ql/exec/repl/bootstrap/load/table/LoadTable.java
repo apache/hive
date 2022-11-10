@@ -82,7 +82,7 @@ public class LoadTable {
     this.metricCollector = metricCollector;
   }
 
-  public TaskTracker tasks(boolean isBootstrapDuringInc) throws Exception {
+  public TaskTracker tasks(boolean isBootstrapDuringInc, boolean isSecondFailover) throws Exception {
     // Path being passed to us is a table dump location. We go ahead and load it in as needed.
     // If tblName is null, then we default to the table name specified in _metadata, which is good.
     // or are both specified, in which case, that's what we are intended to create the new table as.
@@ -94,6 +94,10 @@ public class LoadTable {
     // Executed if relevant, and used to contain all the other details about the table if not.
     ImportTableDesc tableDesc = event.tableDesc(dbName);
     Table table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
+
+    if (isSecondFailover) {
+      tableDesc.setForceOverwriteTable();
+    }
 
     // Normally, on import, trying to create a table or a partition in a db that does not yet exist
     // is a error condition. However, in the case of a REPL LOAD, it is possible that we are trying
@@ -112,7 +116,7 @@ public class LoadTable {
     }
 
     Task<?> tblRootTask = null;
-    ReplLoadOpType loadTblType = getLoadTableType(table, isBootstrapDuringInc);
+    ReplLoadOpType loadTblType = getLoadTableType(table, isBootstrapDuringInc, isSecondFailover);
     switch (loadTblType) {
       case LOAD_NEW:
         break;
@@ -138,7 +142,7 @@ public class LoadTable {
        or in the case of an unpartitioned table. In all other cases, it should
        behave like a noop or a pure MD alter.
     */
-    newTableTasks(tableDesc, tblRootTask, tableLocationTuple);
+    newTableTasks(tableDesc, tblRootTask, tableLocationTuple, isSecondFailover && table != null);
 
     // Set Checkpoint task as dependant to create table task. So, if same dump is retried for
     // bootstrap, we skip current table update.
@@ -159,9 +163,13 @@ public class LoadTable {
     return tracker;
   }
 
-  private ReplLoadOpType getLoadTableType(Table table, boolean isBootstrapDuringInc)
+  private ReplLoadOpType getLoadTableType(Table table, boolean isBootstrapDuringInc, boolean isSecondFailover)
           throws InvalidOperationException, HiveException {
-    if (table == null) {
+    // In case of second iteration of the optimised bootstrap, we don't drop & re create the table, instead we
+    // re-write the metadata, in order to prevent deletion of the data in the target cluster. So, that while copying
+    // data from the source cluster, we just operate on the modified/missing/additional files and can get rid of
+    // copying the files which are already there on both cluster and are same.
+    if (table == null || isSecondFailover) {
       return ReplLoadOpType.LOAD_NEW;
     }
 
@@ -180,16 +188,16 @@ public class LoadTable {
     return ReplLoadOpType.LOAD_REPLACE;
   }
 
-  private void newTableTasks(ImportTableDesc tblDesc, Task<?> tblRootTask, TableLocationTuple tuple)
+  private void newTableTasks(ImportTableDesc tblDesc, Task<?> tblRootTask, TableLocationTuple tuple, boolean setLoc)
       throws Exception {
     Table table = tblDesc.toTable(context.hiveConf);
     ReplicationSpec replicationSpec = event.replicationSpec();
-    if (!tblDesc.isExternal()) {
+    if (!tblDesc.isExternal() && !setLoc) {
       tblDesc.setLocation(null);
     }
     Task<?> createTableTask =
         tblDesc.getCreateTableTask(new HashSet<>(), new HashSet<>(), context.hiveConf, true,
-                (new Path(context.dumpDirectory)).getParent().toString(), metricCollector);
+                (new Path(context.dumpDirectory)).getParent().toString(), metricCollector, true);
     if (tblRootTask == null) {
       tblRootTask = createTableTask;
     } else {
@@ -286,7 +294,6 @@ public class LoadTable {
     boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf,
             copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(), metricCollector);
-
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false,
                                      (new Path(context.dumpDirectory)).getParent().toString(), metricCollector,
                                       true);

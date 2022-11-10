@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.thrift.TException;
@@ -40,13 +40,15 @@ public class PartitionSerializer implements JsonWriter.Serializer {
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+
     try {
+      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+
       // Remove all the entries from the parameters which are added by repl tasks internally.
       Map<String, String> parameters = partition.getParameters();
       if (parameters != null) {
         parameters.entrySet()
-                .removeIf(e -> e.getKey().equals(ReplUtils.REPL_CHECKPOINT_KEY));
+                .removeIf(e -> e.getKey().equals(ReplConst.REPL_TARGET_DB_PROPERTY));
       }
 
       if (additionalPropertiesProvider.isInReplicationScope()) {
@@ -55,11 +57,11 @@ public class PartitionSerializer implements JsonWriter.Serializer {
         if (additionalPropertiesProvider.getReplSpecType()
                 != ReplicationSpec.Type.INCREMENTAL_DUMP) {
           partition.putToParameters(
-                  ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+                  ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(),
                   additionalPropertiesProvider.getCurrentReplicationState());
         }
       }
-      writer.jsonGenerator.writeString(serializer.toString(partition, UTF_8));
+      writer.jsonGenerator.writeString(serializer.toString(partition));
       writer.jsonGenerator.flush();
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);

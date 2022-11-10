@@ -47,8 +47,6 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.io.WritableComparable;
-import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.PriorityQueue;
@@ -204,13 +202,13 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
       TableScanOperator ts = (TableScanOperator)aliasToWork.get(alias);
       // push down projections
-      ColumnProjectionUtils.appendReadColumns(
-          jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
-      // push down filters
-      HiveInputFormat.pushFilters(jobClone, ts, null);
+      ColumnProjectionUtils.appendReadColumns(jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns(),
+              ts.getNeededNestedColumnPaths(), ts.conf.hasVirtualCols());
+      // push down filters and as of information
+      HiveInputFormat.pushFiltersAndAsOf(jobClone, ts, null);
 
       AcidUtils.setAcidOperationalProperties(jobClone, ts.getConf().isTranscationalTable(),
-          ts.getConf().getAcidOperationalProperties(), ts.getConf().isFetchDeletedRows());
+          ts.getConf().getAcidOperationalProperties());
       AcidUtils.setValidWriteIdList(jobClone, ts.getConf());
 
       ts.passExecContext(getExecContext());
@@ -536,9 +534,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     BucketMatcher bucketMatcher = ReflectionUtil.newInstance(bucketMatcherCls, null);
 
     getExecContext().setFileId(bucketMatcherCxt.createFileId(currentInputPath.toString()));
-    if (LOG.isInfoEnabled()) {
-      LOG.info("set task id: " + getExecContext().getFileId());
-    }
+    LOG.info("set task id: " + getExecContext().getFileId());
 
     bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt
         .getAliasBucketFileNameMapping());
@@ -762,9 +758,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       }
       Integer current = top();
       if (current == null) {
-        if (LOG.isInfoEnabled()) {
-          LOG.info("MergeQueue forwarded " + counter + " rows");
-        }
+        LOG.info("MergeQueue forwarded " + counter + " rows");
         return null;
       }
       counter++;

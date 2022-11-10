@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 /**
 
  */
-public class Decimal64ColumnVector extends LongColumnVector {
+public class Decimal64ColumnVector extends LongColumnVector implements IDecimalColumnVector {
 
   public short scale;
   public short precision;

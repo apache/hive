@@ -8,7 +8,7 @@ set zzz=1;
 set reexec.overlay.zzz=2;
 
 set hive.query.reexecution.enabled=true;
-set hive.query.reexecution.strategies=overlay;
+set hive.query.reexecution.strategies=overlay,recompile_without_cbo;
 set hive.fetch.task.conversion=none;
 set tez.queue.name=default;
 

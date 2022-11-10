@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.metastore.dataconnector.jdbc;
 
 import org.apache.hadoop.hive.metastore.ColumnType;
@@ -19,8 +37,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnectorProvider {
   private static Logger LOG = LoggerFactory.getLogger(AbstractJDBCConnectorProvider.class);
@@ -28,7 +48,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   // duplicate constants from Constants.java to avoid a dependency on hive-common
   public static final String JDBC_HIVE_STORAGE_HANDLER_ID =
-      "org.apache.hive.storage.jdbc.JdbcStorageHandler";
+          "org.apache.hive.storage.jdbc.JdbcStorageHandler";
   public static final String JDBC_CONFIG_PREFIX = "hive.sql";
   public static final String JDBC_CATALOG = JDBC_CONFIG_PREFIX + ".catalog";
   public static final String JDBC_SCHEMA = JDBC_CONFIG_PREFIX + ".schema";
@@ -48,15 +68,18 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   public static final String JDBC_NUM_PARTITIONS = JDBC_CONFIG_PREFIX + ".numPartitions";
   public static final String JDBC_LOW_BOUND = JDBC_CONFIG_PREFIX + ".lowerBound";
   public static final String JDBC_UPPER_BOUND = JDBC_CONFIG_PREFIX + ".upperBound";
+  // JDBC_CONNECTOR_PREFIX is used for indicating connection properties for different connectors,
+  // such as hive.connector.autoReconnect in which autoReconnect is the jdbc connection property.
+  public static final String JDBC_CONNECTOR_PREFIX = "hive.connector.";
 
   private static final String JDBC_INPUTFORMAT_CLASS = "org.apache.hive.storage.jdbc.JdbcInputFormat".intern();
   private static final String JDBC_OUTPUTFORMAT_CLASS = "org.apache.hive.storage.jdbc.JdbcOutputFormat".intern();
 
   String type = null; // MYSQL, POSTGRES, ORACLE, DERBY, MSSQL, DB2 etc.
-  String driverClassName = null;
   String jdbcUrl = null;
   String username = null;
   String password = null; // TODO convert to byte array
+  Map<String, String> connectorPropMap = new HashMap<>();
 
   public AbstractJDBCConnectorProvider(String dbName, DataConnector dataConn, String driverClass) {
     super(dbName, dataConn, driverClass);
@@ -64,6 +87,11 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     this.jdbcUrl = connector.getUrl();
     this.username = connector.getParameters().get(JDBC_USERNAME);
     this.password = connector.getParameters().get(JDBC_PASSWORD);
+    connector.getParameters().forEach((k, v) -> {
+      if (k.startsWith(JDBC_CONNECTOR_PREFIX))
+        connectorPropMap.put(k.substring(15), v);
+    });
+
     if (this.password == null) {
       String keystore = connector.getParameters().get(JDBC_KEYSTORE);
       String key = connector.getParameters().get(JDBC_KEY);
@@ -90,8 +118,8 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   @Override public void open() throws ConnectException {
     try {
-      handle = DriverManager.getConnection(jdbcUrl, username, password);
-      isOpen = true;
+      close();
+      handle = DriverManager.getDriver(jdbcUrl).connect(jdbcUrl, getConnectionProperties());
     } catch (SQLException sqle) {
       LOG.warn("Could not connect to remote data source at " + jdbcUrl);
       throw new ConnectException("Could not connect to remote datasource at " + jdbcUrl + ",cause:" + sqle.getMessage());
@@ -100,7 +128,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   protected Connection getConnection() {
     try {
-      if (!isOpen)
+      if (!isOpen())
         open();
     } catch (ConnectException ce) {
       throw new RuntimeException(ce.getMessage(), ce);
@@ -112,8 +140,28 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     throw new RuntimeException("unexpected type for connection handle");
   }
 
+  protected boolean isOpen() {
+    try {
+      if (handle instanceof Connection)
+        return ((Connection) handle).isValid(3);
+    } catch (SQLException e) {
+      LOG.warn("Could not validate jdbc connection to "+ jdbcUrl, e);
+    }
+    return false;
+  }
+
+  protected boolean isClosed() {
+    try {
+      if (handle instanceof Connection)
+        return ((Connection) handle).isClosed();
+    } catch (SQLException e) {
+      LOG.warn("Could not determine whether jdbc connection is closed or not to "+ jdbcUrl, e);
+    }
+    return true;
+  }
+
   @Override public void close() {
-    if (isOpen) {
+    if (!isClosed()) {
       try {
         ((Connection)handle).close();
       } catch (SQLException sqle) {
@@ -129,7 +177,32 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
    * @throws MetaException To indicate any failures with executing this API
    * @param regex
    */
-  @Override public abstract List<Table> getTables(String regex) throws MetaException;
+  @Override public List<Table> getTables(String regex) throws MetaException {
+    ResultSet rs = null;
+    try {
+      rs = fetchTablesViaDBMetaData(regex);
+      if (rs != null) {
+        List<Table> tables = new ArrayList<Table>();
+        while(rs.next()) {
+          try {
+            tables.add(getTable(rs.getString(3)));
+          } catch (MetaException e) { /* IGNORE */ }
+        }
+        return tables;
+      }
+    } catch (SQLException sqle) {
+      LOG.warn("Could not retrieve tables from remote datasource, cause:" + sqle.getMessage());
+      throw new MetaException("Error retrieving remote table:" + sqle);
+    } finally {
+      try {
+        if (rs != null) {
+          rs.close();
+          rs = null;
+        }
+      } catch(Exception e) { /* ignore */}
+    }
+    return null;
+  }
 
   /**
    * Returns a list of all table names from the remote database.
@@ -139,7 +212,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   @Override public List<String> getTableNames() throws MetaException {
     ResultSet rs = null;
     try {
-      rs = getConnection().getMetaData().getTables(scoped_db, null, null, new String[] { "TABLE" });
+      rs = fetchTablesViaDBMetaData(null);
       if (rs != null) {
         List<String> tables = new ArrayList<String>();
         while(rs.next()) {
@@ -165,6 +238,10 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   protected abstract ResultSet fetchTableNames() throws MetaException;
 
+  protected abstract String getCatalogName();
+
+  protected abstract String getDatabaseName();
+
   /**
    * Fetch a single table with the given name, returns a Hive Table object from the remote database
    * @return Table A Table object for the matching table, null otherwise.
@@ -175,10 +252,10 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     ResultSet rs = null;
     Table table = null;
     try {
-      // rs = fetchTableMetadata(tableName);
-      rs = fetchTableViaDBMetaData(tableName);
+      rs = fetchColumnsViaDBMetaData(tableName);
       List<FieldSchema> cols = new ArrayList<>();
       while (rs.next()) {
+        String typename = rs.getString("TYPE_NAME");
         FieldSchema fs = new FieldSchema();
         fs.setName(rs.getString("COLUMN_NAME"));
         fs.setType(getDataType(rs.getString("TYPE_NAME"), rs.getInt("COLUMN_SIZE")));
@@ -196,6 +273,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       table.getParameters().put(JDBC_DATABASE_TYPE, this.type);
       table.getParameters().put(JDBC_DRIVER, this.driverClassName);
       table.getParameters().put(JDBC_TABLE, tableName);
+      table.getParameters().put(JDBC_SCHEMA, scoped_db);
       table.getParameters().put(JDBC_URL, this.jdbcUrl);
       table.getParameters().put(hive_metastoreConstants.META_TABLE_STORAGE, JDBC_HIVE_STORAGE_HANDLER_ID);
       table.getParameters().put("EXTERNAL", "TRUE");
@@ -208,7 +286,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       return table;
     } catch (Exception e) {
       LOG.warn("Exception retrieving remote table " + scoped_db + "." + tableName + " via data connector "
-          + connector.getName());
+              + connector.getName());
       throw new MetaException("Error retrieving remote table:" + e);
     } finally {
       try {
@@ -219,12 +297,23 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     }
   }
 
-  private ResultSet fetchTableViaDBMetaData(String tableName) throws SQLException {
+  private ResultSet fetchTablesViaDBMetaData(String regex) throws SQLException {
     ResultSet rs = null;
     try {
-      rs = getConnection().getMetaData().getColumns(scoped_db, null, tableName, null);
+      rs = getConnection().getMetaData().getTables(getCatalogName(), getDatabaseName(), regex, new String[]{"TABLE"});
     } catch (SQLException sqle) {
-      LOG.warn("Could not retrieve column names from JDBC table, cause:" + sqle.getMessage());
+      LOG.warn("Could not retrieve tables from JDBC table, cause:" + sqle.getMessage());
+      throw sqle;
+    }
+    return rs;
+  }
+
+  private ResultSet fetchColumnsViaDBMetaData(String tableName) throws SQLException {
+    ResultSet rs = null;
+    try {
+      rs = getConnection().getMetaData().getColumns(getCatalogName(), getDatabaseName(), tableName, null);
+    } catch (SQLException sqle) {
+      LOG.warn("Could not retrieve columns from JDBC table, cause:" + sqle.getMessage());
       throw sqle;
     }
     return rs;
@@ -238,62 +327,63 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   protected String getDataType(String mySqlType, int size) {
     switch(mySqlType.toLowerCase())
     {
-    case "char":
-      return ColumnType.CHAR_TYPE_NAME + wrapSize(size);
-    case "varchar":
-    case "tinytext":
-      return ColumnType.VARCHAR_TYPE_NAME + wrapSize(size);
-    case "text":
-    case "mediumtext":
-    case "enum":
-    case "set":
-    case "tsvector":
-    case "tsquery":
-    case "uuid":
-    case "json":
-      return ColumnType.STRING_TYPE_NAME;
-    case "blob":
-    case "mediumblob":
-    case "longblob":
-    case "bytea":
-      return ColumnType.BINARY_TYPE_NAME;
-    case "tinyint":
-      return ColumnType.TINYINT_TYPE_NAME;
-    case "smallint":
-    case "smallserial":
-      return ColumnType.SMALLINT_TYPE_NAME;
-    case "mediumint":
-    case "int":
-    case "serial":
-      return ColumnType.INT_TYPE_NAME;
-    case "bigint":
-    case "bigserial":
-    case "money":
-      return ColumnType.BIGINT_TYPE_NAME;
-    case "float":
-    case "real":
-      return ColumnType.FLOAT_TYPE_NAME;
-    case "double":
-    case "double precision":
-      return ColumnType.DOUBLE_TYPE_NAME;
-    case "decimal":
-    case "numeric":
-      return ColumnType.DECIMAL_TYPE_NAME;
-    case "date":
-      return ColumnType.DATE_TYPE_NAME;
-    case "datetime":
-      return ColumnType.DATETIME_TYPE_NAME;
-    case "timestamp":
-    case "time":
-    case "interval":
-      return ColumnType.TIMESTAMP_TYPE_NAME;
-    case "timestampz":
-    case "timez":
-      return ColumnType.TIMESTAMPTZ_TYPE_NAME;
-    case "boolean":
-      return ColumnType.BOOLEAN_TYPE_NAME;
-    default:
-      return ColumnType.VOID_TYPE_NAME;
+      case "char":
+        return ColumnType.CHAR_TYPE_NAME + wrapSize(size);
+      case "varchar":
+      case "tinytext":
+        return ColumnType.VARCHAR_TYPE_NAME + wrapSize(size);
+      case "text":
+      case "mediumtext":
+      case "enum":
+      case "set":
+      case "tsvector":
+      case "tsquery":
+      case "uuid":
+      case "json":
+        return ColumnType.STRING_TYPE_NAME;
+      case "blob":
+      case "mediumblob":
+      case "longblob":
+      case "bytea":
+      case "binary":
+        return ColumnType.BINARY_TYPE_NAME;
+      case "tinyint":
+        return ColumnType.TINYINT_TYPE_NAME;
+      case "smallint":
+      case "smallserial":
+        return ColumnType.SMALLINT_TYPE_NAME;
+      case "mediumint":
+      case "int":
+      case "serial":
+        return ColumnType.INT_TYPE_NAME;
+      case "bigint":
+      case "bigserial":
+      case "money":
+        return ColumnType.BIGINT_TYPE_NAME;
+      case "float":
+      case "real":
+        return ColumnType.FLOAT_TYPE_NAME;
+      case "double":
+      case "double precision":
+        return ColumnType.DOUBLE_TYPE_NAME;
+      case "decimal":
+      case "numeric":
+        return ColumnType.DECIMAL_TYPE_NAME;
+      case "date":
+        return ColumnType.DATE_TYPE_NAME;
+      case "datetime":
+        return ColumnType.DATETIME_TYPE_NAME;
+      case "timestamp":
+      case "time":
+      case "interval":
+        return ColumnType.TIMESTAMP_TYPE_NAME;
+      case "timestampz":
+      case "timez":
+        return ColumnType.TIMESTAMPTZ_TYPE_NAME;
+      case "boolean":
+        return ColumnType.BOOLEAN_TYPE_NAME;
+      default:
+        return ColumnType.VOID_TYPE_NAME;
     }
   }
 
@@ -302,7 +392,7 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
   }
 
   @Override protected String getOutputClass() {
-    return JDBC_INPUTFORMAT_CLASS;
+    return JDBC_OUTPUTFORMAT_CLASS;
   }
   @Override protected String getTableLocation(String tableName) {
     if (warehouse != null) {
@@ -313,5 +403,13 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       }
     }
     return "some_dummy_path";
+  }
+
+  protected Properties getConnectionProperties() {
+    Properties connectionProperties = new Properties();
+    connectionProperties.setProperty("user", username);
+    connectionProperties.setProperty("password", password);
+    connectorPropMap.forEach((k, v) -> connectionProperties.put(k, v));
+    return connectionProperties;
   }
 }

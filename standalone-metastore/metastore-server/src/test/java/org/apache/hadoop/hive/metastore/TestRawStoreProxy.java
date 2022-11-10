@@ -53,7 +53,7 @@ public class TestRawStoreProxy {
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.CLIENT_SOCKET_TIMEOUT, 10,
         TimeUnit.MILLISECONDS);
-    RawStoreProxy rsp = new RawStoreProxy(conf, conf, TestStore.class, 1);
+    RawStoreProxy rsp = new RawStoreProxy(conf, conf, TestStore.class);
     try {
       rsp.invoke(null, TestStore.class.getMethod("exceptions"), new Object[] {});
       fail("an exception is expected");

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
@@ -90,24 +91,6 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
   }
 
   /**
-   * Searchs for a fieldName into a parquet GroupType by ignoring string case.
-   * GroupType#getType(String fieldName) is case sensitive, so we use this method.
-   *
-   * @param groupType Group of field types where to search for fieldName
-   * @param fieldName The field what we are searching
-   * @return The Type object of the field found; null otherwise.
-   */
-  private static Type getFieldTypeIgnoreCase(GroupType groupType, String fieldName) {
-    for (Type type : groupType.getFields()) {
-      if (type.getName().equalsIgnoreCase(fieldName)) {
-        return type;
-      }
-    }
-
-    return null;
-  }
-
-  /**
    * Searchs column names by name on a given Parquet schema, and returns its corresponded
    * Parquet schema types.
    *
@@ -120,11 +103,13 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     List<Type> schemaTypes = new ArrayList<Type>();
 
     ListIterator<String> columnIterator = colNames.listIterator();
+    Map<String, Type> schemaTypeMap = new HashMap<>();
+    schema.getFields().forEach(t -> schemaTypeMap.put(t.getName().toLowerCase(), t));
     while (columnIterator.hasNext()) {
       TypeInfo colType = colTypes.get(columnIterator.nextIndex());
       String colName = columnIterator.next();
 
-      Type fieldType = getFieldTypeIgnoreCase(schema, colName);
+      Type fieldType = schemaTypeMap.get(colName.toLowerCase());
       if (fieldType == null) {
         schemaTypes.add(Types.optional(PrimitiveTypeName.BINARY).named(colName));
       } else {
@@ -293,15 +278,29 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       return null;
     }
     String value = metadata.get(DataWritableWriteSupport.WRITER_DATE_PROLEPTIC);
-    try {
-      if (value != null) {
-        return Boolean.valueOf(value);
+    return value == null ? null : Boolean.valueOf(value);
+  }
+  
+  /**
+   * Returns whether legacy zone conversion should be used for transforming timestamps based on file metadata and
+   * configuration.
+   *
+   * @see ConfVars#HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED
+   */
+  public static boolean getZoneConversionLegacy(Map<String, String> metadata, Configuration conf) {
+    assert conf != null : "Configuration must not be null";
+    if (metadata != null) {
+      if (metadata.containsKey(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY)) {
+        return Boolean.parseBoolean(metadata.get(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY));
       }
-    } catch (DateTimeException e) {
-      throw new RuntimeException("Can't parse writer proleptic property stored in file metadata", e);
+      // There are no explicit meta about the legacy conversion
+      if (metadata.containsKey(DataWritableWriteSupport.WRITER_TIMEZONE)) {
+        // There is meta about the timezone thus we can infer that when the file was written, the new APIs were used.
+        return false;
+      }
     }
-
-    return null;
+    // There is no (relevant) metadata in the file, use the configuration
+    return HiveConf.getBoolVar(conf, ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED);
   }
 
   /**
@@ -523,10 +522,17 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
           configuration, HiveConf.ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT)));
     }
 
-    String legacyConversion = ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED.varname;
-    if (!metadata.containsKey(legacyConversion)) {
-      metadata.put(legacyConversion, String.valueOf(HiveConf.getBoolVar(
-          configuration, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED)));
+    if (!metadata.containsKey(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY)) {
+      boolean legacyConversion = getZoneConversionLegacy(keyValueMetaData, configuration);
+      metadata.put(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY, String.valueOf(legacyConversion));
+    } else {
+      String ctxMeta = metadata.get(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY);
+      String fileMeta = keyValueMetaData.get(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY);
+      if (!Objects.equals(ctxMeta, fileMeta)) {
+        throw new IllegalStateException(
+            "Different values for " + DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY + " metadata: context ["
+                + ctxMeta + "], file [" + fileMeta + "].");
+      }
     }
 
     return new DataWritableRecordConverter(readContext.getRequestedSchema(), metadata, hiveTypeInfo);

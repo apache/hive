@@ -26,8 +26,8 @@ import java.util.Objects;
 
 /**
  * Helper class to create UDFClassLoader when running under a security manager. To create a class loader:
- * > AddToClassPathAction addAction = new AddToClassPathAction(parentLoader, newPaths, true);
- * > UDFClassLoader childClassLoader = AccessController.doPrivileged(addAction);
+ * &gt; AddToClassPathAction addAction = new AddToClassPathAction(parentLoader, newPaths, true);
+ * &gt; UDFClassLoader childClassLoader = AccessController.doPrivileged(addAction);
  * To try to add to the class path of the existing class loader; call the above without forceNewClassLoader=true.
  * Note that a class loader might be still created as fallback method.
  * <p>

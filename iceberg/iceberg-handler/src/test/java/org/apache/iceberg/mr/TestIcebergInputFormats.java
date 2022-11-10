@@ -22,13 +22,16 @@ package org.apache.iceberg.mr;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TaskAttemptID;
@@ -37,7 +40,7 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.iceberg.AppendFiles;
-import org.apache.iceberg.AssertHelpers;
+import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.FileFormat;
@@ -51,12 +54,14 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.mr.mapreduce.IcebergInputFormat;
 import org.apache.iceberg.mr.mapreduce.IcebergSplit;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
@@ -69,6 +74,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static org.apache.iceberg.types.Types.NestedField.required;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class TestIcebergInputFormats {
@@ -179,7 +186,7 @@ public class TestIcebergInputFormats {
     writeRecords.get(1).set(1, 456L);
     writeRecords.get(1).set(2, "2020-03-20");
 
-    List<Record> expectedRecords = new ArrayList<>();
+    List<Record> expectedRecords = Lists.newArrayList();
     expectedRecords.add(writeRecords.get(0));
 
     DataFile dataFile1 = helper.writeFile(Row.of("2020-03-20", 0), writeRecords);
@@ -194,34 +201,6 @@ public class TestIcebergInputFormats {
     // skip residual filtering
     builder.skipResidualFiltering();
     testInputFormat.create(builder.conf()).validate(writeRecords);
-  }
-
-  @Test
-  public void testFailedResidualFiltering() throws Exception {
-    helper.createTable();
-
-    List<Record> expectedRecords = helper.generateRandomRecords(2, 0L);
-    expectedRecords.get(0).set(2, "2020-03-20");
-    expectedRecords.get(1).set(2, "2020-03-20");
-
-    helper.appendToTable(Row.of("2020-03-20", 0), expectedRecords);
-
-    builder.useHiveRows()
-           .filter(Expressions.and(
-                   Expressions.equal("date", "2020-03-20"),
-                   Expressions.equal("id", 0)));
-
-    AssertHelpers.assertThrows(
-        "Residuals are not evaluated today for Iceberg Generics In memory model of HIVE",
-        UnsupportedOperationException.class, "Filter expression ref(name=\"id\") == 0 is not completely satisfied.",
-        () -> testInputFormat.create(builder.conf()));
-
-    builder.usePigTuples();
-
-    AssertHelpers.assertThrows(
-        "Residuals are not evaluated today for Iceberg Generics In memory model of PIG",
-        UnsupportedOperationException.class, "Filter expression ref(name=\"id\") == 0 is not completely satisfied.",
-        () -> testInputFormat.create(builder.conf()));
   }
 
   @Test
@@ -351,10 +330,10 @@ public class TestIcebergInputFormats {
     String warehouseLocation = temp.newFolder("hadoop_catalog").getAbsolutePath();
     conf.set("warehouse.location", warehouseLocation);
     conf.set(InputFormatConfig.CATALOG_NAME, Catalogs.ICEBERG_DEFAULT_CATALOG_NAME);
-    conf.set(String.format(InputFormatConfig.CATALOG_TYPE_TEMPLATE, Catalogs.ICEBERG_DEFAULT_CATALOG_NAME),
-            CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP);
-    conf.set(String.format(InputFormatConfig.CATALOG_WAREHOUSE_TEMPLATE, Catalogs.ICEBERG_DEFAULT_CATALOG_NAME),
-            warehouseLocation);
+    conf.set(InputFormatConfig.catalogPropertyConfigKey(Catalogs.ICEBERG_DEFAULT_CATALOG_NAME,
+        CatalogUtil.ICEBERG_CATALOG_TYPE), CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP);
+    conf.set(InputFormatConfig.catalogPropertyConfigKey(Catalogs.ICEBERG_DEFAULT_CATALOG_NAME,
+        CatalogProperties.WAREHOUSE_LOCATION), warehouseLocation);
 
     Catalog catalog = new HadoopCatalog(conf, conf.get("warehouse.location"));
     TableIdentifier identifier = TableIdentifier.of("db", "t");
@@ -368,6 +347,29 @@ public class TestIcebergInputFormats {
     builder.readFrom(identifier);
 
     testInputFormat.create(builder.conf()).validate(expectedRecords);
+  }
+
+  @Test
+  public void testDeriveLlapSetsCacheAffinityForIcebergInputFormat() {
+    MapWork mapWork = new MapWork();
+    PartitionDesc partitionDesc = new PartitionDesc();
+    partitionDesc.setInputFileFormatClass(HiveIcebergInputFormat.class);
+    mapWork.addPathToPartitionInfo(new Path("/tmp"), partitionDesc);
+    Configuration job = new Configuration(false);
+    HiveConf.setVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, "true");
+    HiveConf.setBoolVar(job, HiveConf.ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED, true);
+
+    mapWork.setVectorMode(true);
+    mapWork.deriveLlap(job, false);
+
+    assertTrue("Cache affinity should be set for HiveIcebergInputFormat when LLAP and vectorization is enabled",
+        mapWork.getCacheAffinity());
+
+    mapWork.setVectorMode(false);
+    mapWork.deriveLlap(job, false);
+
+    assertFalse("Cache affinity should be disabled for HiveIcebergInputFormat when LLAP is on, but vectorization not",
+        mapWork.getCacheAffinity());
   }
 
   // TODO - Capture template type T in toString method: https://github.com/apache/iceberg/issues/1542
@@ -431,8 +433,8 @@ public class TestIcebergInputFormats {
       try {
         org.apache.hadoop.mapred.InputSplit[] splits = inputFormat.getSplits(job, 1);
 
-        List<IcebergSplit> iceSplits = new ArrayList<>(splits.length);
-        List<T> records = new ArrayList<>();
+        List<IcebergSplit> iceSplits = Lists.newArrayListWithExpectedSize(splits.length);
+        List<T> records = Lists.newArrayList();
 
         for (org.apache.hadoop.mapred.InputSplit split : splits) {
           iceSplits.add((IcebergSplit) split);
@@ -468,8 +470,8 @@ public class TestIcebergInputFormats {
       IcebergInputFormat<T> inputFormat = new IcebergInputFormat<>();
       List<InputSplit> splits = inputFormat.getSplits(context);
 
-      List<IcebergSplit> iceSplits = new ArrayList<>(splits.size());
-      List<T> records = new ArrayList<>();
+      List<IcebergSplit> iceSplits = Lists.newArrayListWithExpectedSize(splits.size());
+      List<T> records = Lists.newArrayList();
 
       for (InputSplit split : splits) {
         iceSplits.add((IcebergSplit) split);

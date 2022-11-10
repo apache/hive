@@ -26,8 +26,8 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -56,14 +56,7 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
 
   AbstractEventHandler(NotificationEvent event) {
     this.event = event;
-    try {
-      deserializer = MessageFactory.getInstance(event.getMessageFormat()).getDeserializer();
-    } catch (Exception e) {
-      String message =
-          "could not create appropriate messageFactory for format " + event.getMessageFormat();
-      LOG.error(message, e);
-      throw new IllegalStateException(message, e);
-    }
+    deserializer = ReplUtils.getEventDeserializer(event);
     eventMessage = eventMessage(event.getMessage());
     eventMessageAsJSON = eventMessageAsJSON(eventMessage);
   }
@@ -113,7 +106,7 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
   }
 
   protected void writeFileEntry(Table table, Partition ptn, String file, Context withinContext)
-          throws IOException, LoginException, MetaException, HiveFatalException {
+          throws IOException, LoginException, HiveFatalException {
     HiveConf hiveConf = withinContext.hiveConf;
     String distCpDoAsUser = hiveConf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
     if (!Utils.shouldDumpMetaDataOnly(withinContext.hiveConf)) {

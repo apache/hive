@@ -32,10 +32,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.http.HttpServer;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 import io.netty.util.NetUtil;
 

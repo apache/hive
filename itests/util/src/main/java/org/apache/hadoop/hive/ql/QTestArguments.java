@@ -187,7 +187,7 @@ public final class QTestArguments {
       testArguments.setInitScript(initScript);
       testArguments.setCleanupScript(cleanupScript);
       testArguments.setWithLlapIo(withLlapIo);
-
+      
       testArguments.setFsType(
           fsType != null ? fsType : clusterType.getDefaultFsType());
 

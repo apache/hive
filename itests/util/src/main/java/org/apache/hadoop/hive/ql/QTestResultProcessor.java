@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -46,71 +45,75 @@ import org.apache.hive.common.util.StreamPrinter;
  *
  */
 public class QTestResultProcessor {
-  private static final Pattern SORT_BEFORE_DIFF = Pattern.compile("-- SORT_BEFORE_DIFF");
-  private static final Pattern SORT_QUERY_RESULTS = Pattern.compile("-- SORT_QUERY_RESULTS");
-  private static final Pattern HASH_QUERY_RESULTS = Pattern.compile("-- HASH_QUERY_RESULTS");
-  private static final Pattern SORT_AND_HASH_QUERY_RESULTS =
-      Pattern.compile("-- SORT_AND_HASH_QUERY_RESULTS");
-  private static final Pattern NO_SESSION_REUSE = Pattern.compile("-- NO_SESSION_REUSE");
-
   private static final String SORT_SUFFIX = ".sorted";
 
-  private final Set<String> qSortSet = new HashSet<String>();
-  private final Set<String> qSortQuerySet = new HashSet<String>();
-  private final Set<String> qHashQuerySet = new HashSet<String>();
-  private final Set<String> qSortNHashQuerySet = new HashSet<String>();
-  private final Set<String> qNoSessionReuseQuerySet = new HashSet<String>();
+  private enum Operation {
+    /***/
+    PRESORT("-- SORT_BEFORE_DIFF"),
+    /***/
+    SORT("-- SORT_QUERY_RESULTS"),
+    /***/
+    HASH("-- HASH_QUERY_RESULTS"),
+    /***/
+    SORT_N_HASH("-- SORT_AND_HASH_QUERY_RESULTS"),
+    /***/
+    NEW_SESSION("-- NO_SESSION_REUSE");
+    private final Pattern pattern;
 
-  public void add(File qf, String query) {
-    if (matches(SORT_BEFORE_DIFF, query)) {
-      qSortSet.add(qf.getName());
-    } else if (matches(SORT_QUERY_RESULTS, query)) {
-      qSortQuerySet.add(qf.getName());
-    } else if (matches(HASH_QUERY_RESULTS, query)) {
-      qHashQuerySet.add(qf.getName());
-    } else if (matches(SORT_AND_HASH_QUERY_RESULTS, query)) {
-      qSortNHashQuerySet.add(qf.getName());
+    Operation(String pattern) {
+      this.pattern = Pattern.compile(pattern);
     }
 
-    if (matches(NO_SESSION_REUSE, query)) {
-      qNoSessionReuseQuerySet.add(qf.getName());
+    boolean existsIn(String query) {
+      return pattern.matcher(query).find();
     }
   }
 
-  private boolean matches(Pattern pattern, String query) {
-    Matcher matcher = pattern.matcher(query);
-    if (matcher.find()) {
-      return true;
+  /**
+   * Operations present in a given file/test.
+   */
+  private final Set<Operation> operations = new HashSet<>();
+
+  public void init(String query) {
+    operations.clear();
+    for (Operation op : Operation.values()) {
+      if (op.existsIn(query)) {
+        operations.add(op);
+      }
     }
-    return false;
   }
 
-  public boolean shouldSort(String fileName) {
-    return qSortSet.contains(fileName);
+  private boolean shouldSort() {
+    return operations.contains(Operation.PRESORT);
   }
 
-  public void setOutputs(CliSessionState ss, OutputStream fo, String fileName) throws Exception {
-    if (qSortQuerySet.contains(fileName)) {
+  public void setOutputs(CliSessionState ss, OutputStream fo) throws Exception {
+    // Normally, only one of PRESORT, SORT, HASH, SORT_N_HASH, should be present
+    // in a file. If there are multiple then the code will pick one in the order
+    // specified below. This ensures the behavior remains the same as before this
+    // refactoring.
+    // It would be better to throw an error than silently pick one and ignore the
+    // rest but it is out of the scope of the current change. 
+    if (operations.contains(Operation.SORT)) {
       ss.out = new SortPrintStream(fo, "UTF-8");
-    } else if (qHashQuerySet.contains(fileName)) {
+    } else if (operations.contains(Operation.HASH)) {
       ss.out = new DigestPrintStream(fo, "UTF-8");
-    } else if (qSortNHashQuerySet.contains(fileName)) {
+    } else if (operations.contains(Operation.SORT_N_HASH)) {
       ss.out = new SortAndDigestPrintStream(fo, "UTF-8");
     } else {
       ss.out = new SessionStream(fo, true, "UTF-8");
     }
   }
 
-  public boolean shouldNotReuseSession(String fileName) {
-    return qNoSessionReuseQuerySet.contains(fileName);
+  public boolean canReuseSession() {
+    return !operations.contains(Operation.NEW_SESSION);
   }
 
-  public QTestProcessExecResult executeDiffCommand(String inFileName, String outFileName,
-      boolean ignoreWhiteSpace, String tname) throws Exception {
+  public QTestProcessExecResult executeDiffCommand(String inFileName, String outFileName, boolean ignoreWhiteSpace) throws Exception {
 
     QTestProcessExecResult result;
 
-    if (shouldSort(tname)) {
+    if (shouldSort()) {
       String inSorted = inFileName + SORT_SUFFIX;
       String outSorted = outFileName + SORT_SUFFIX;
 
@@ -137,7 +140,7 @@ public class QTestResultProcessor {
 
     result = executeCmd(diffCommandArgs);
 
-    if (shouldSort(tname)) {
+    if (shouldSort()) {
       new File(inFileName).delete();
       new File(outFileName).delete();
     }

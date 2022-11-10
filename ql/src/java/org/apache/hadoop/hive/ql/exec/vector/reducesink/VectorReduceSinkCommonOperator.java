@@ -267,9 +267,7 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     reduceSkipTag = conf.getSkipTag();
     reduceTagByte = (byte) conf.getTag();
 
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Using tag = " + (int) reduceTagByte);
-    }
+    LOG.info("Using tag = " + reduceTagByte);
 
     if (!isEmptyKey) {
       keyBinarySortableSerializeWrite = BinarySortableSerializeWrite.with(
@@ -382,9 +380,7 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
     super.closeOp(abort);
     out = null;
     reducerHash = null;
-    if (LOG.isInfoEnabled()) {
-      LOG.info(toString() + ": records written - " + numRows);
-    }
+    LOG.info(this + ": records written - " + numRows);
     this.runTimeNumRows = numRows;
   }
 

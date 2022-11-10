@@ -43,6 +43,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
+@org.junit.Ignore("HIVE-25389")
 public class TestKillQueryWithAuthorizationDisabled {
   private static final Logger LOG = LoggerFactory.getLogger(TestKillQueryWithAuthorizationDisabled.class);
 

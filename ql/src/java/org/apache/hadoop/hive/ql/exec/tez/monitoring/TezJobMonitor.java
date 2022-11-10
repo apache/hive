@@ -194,9 +194,7 @@ public class TezJobMonitor {
           if (mergedCounters != null && desiredCounters != null && !desiredCounters.isEmpty()) {
             Map<String, Long> currentCounters = getCounterValues(mergedCounters, vertexNames, vertexProgressMap,
               desiredCounters, done);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Requested DAG status. checkInterval: {}. currentCounters: {}", checkInterval, currentCounters);
-            }
+            LOG.debug("Requested DAG status. checkInterval: {}. currentCounters: {}", checkInterval, currentCounters);
             wmContext.setCurrentCounters(currentCounters);
           }
         }
@@ -437,6 +435,7 @@ public class TezJobMonitor {
 
       double duration = (System.currentTimeMillis() - this.executionStartTime) / 1000.0;
       console.printInfo("Status: DAG finished successfully in " + String.format("%.2f seconds", duration));
+      console.printInfo("DAG ID: " + this.dagClient.getDagIdentifierString());
       console.printInfo("");
 
       new QueryExecutionBreakdownSummary(perfLogger).print(console);

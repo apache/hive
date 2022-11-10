@@ -30,6 +30,7 @@ import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -72,6 +73,32 @@ public class TestHiveServer2Acid {
     }
   }
 
+  @Test
+  public void testCancelOperation() throws Exception {
+    String tableName = "TestHiveServer2TestConnection";
+    CLIServiceClient serviceClient = miniHS2.getServiceClient();
+    SessionHandle sessHandle = serviceClient.openSession("foo", "bar");
+    serviceClient.executeStatement(sessHandle, "DROP TABLE IF EXISTS " + tableName, confOverlay);
+    serviceClient.executeStatement(sessHandle, "CREATE TABLE " + tableName + " (id INT)", confOverlay);
+    serviceClient.executeStatement(sessHandle, "insert into " + tableName + " values(5)", confOverlay);
+
+    serviceClient.executeStatement(sessHandle,
+        "create temporary function sleepMsUDF as '" + TestHiveServer2Acid.SleepMsUDF.class.getName() + "'",
+        confOverlay);
+    OperationHandle opHandle = serviceClient
+        .executeStatementAsync(sessHandle, "select sleepMsUDF(id, 1000), id from " + tableName, confOverlay);
+    serviceClient.cancelOperation(opHandle);
+    
+    assertOperationWasCancelled(serviceClient, opHandle);
+    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(
+        miniHS2.getHiveConf(), 
+        "select count(*) from HIVE_LOCKS"));
+    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(
+        miniHS2.getHiveConf(), 
+        "select 1 from TXNS where TXN_ID = (select max(TXN_ID) from TXNS) and TXN_STATE='a'"));
+    serviceClient.closeSession(sessHandle);
+  }
+
   /**
    * Test overlapping async queries in one session.
    * Since TxnManager is shared in the session this can cause all kind of trouble.
@@ -105,16 +132,26 @@ public class TestHiveServer2Acid {
     serviceClient.closeSession(sessHandle);
   }
 
-  private void assertOperationFinished(CLIServiceClient serviceClient, OperationHandle opHandle)
+  private void assertOperationFinished(CLIServiceClient serviceClient, OperationHandle opHandle) 
+      throws HiveSQLException, InterruptedException {
+    assertOperationStatus(serviceClient, opHandle, OperationState.FINISHED);
+  }
+
+  private void assertOperationWasCancelled(CLIServiceClient serviceClient, OperationHandle opHandle)
+    throws HiveSQLException, InterruptedException {
+    assertOperationStatus(serviceClient, opHandle, OperationState.CANCELED);
+  }
+  
+  private void assertOperationStatus(CLIServiceClient serviceClient, OperationHandle opHandle, OperationState opState)
       throws InterruptedException, HiveSQLException {
     OperationState pStatus = OperationState.RUNNING;
     for (int i = 0; i < 10; i++) {
       Thread.sleep(100);
       pStatus = serviceClient.getOperationStatus(opHandle, false).getState();
-      if (pStatus == OperationState.FINISHED) {
+      if (pStatus == opState) {
         break;
       }
     }
-    assertEquals(OperationState.FINISHED, pStatus);
+    assertEquals(opState, pStatus);
   }
 }

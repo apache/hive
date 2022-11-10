@@ -24,8 +24,10 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
+import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
@@ -117,6 +119,6 @@ public final class DDLTask extends Task<DDLWork> implements Serializable {
    */
   @Override
   public boolean canExecuteInParallel() {
-    return false;
+   return work.canExecuteInParallel();
   }
 }

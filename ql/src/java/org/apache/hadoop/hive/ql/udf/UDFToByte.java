@@ -211,7 +211,7 @@ public class UDFToByte extends UDF {
     if (i == null) {
       return null;
     } else {
-      final long longValue = i.getSeconds();
+      final long longValue = UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp()).getEpochSecond();
       final byte byteValue = (byte) longValue;
       if (byteValue != longValue) {
         return null;

@@ -22,15 +22,16 @@ import org.apache.hadoop.hive.ql.QueryInfo;
 import org.apache.hive.service.cli.operation.OperationManager;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.session.SessionManager;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.Version;
-import org.codehaus.jackson.map.JsonSerializer;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializerProvider;
-import org.codehaus.jackson.map.module.SimpleModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -140,7 +141,7 @@ public class QueriesRESTfulAPIServlet extends HttpServlet {
     response.setContentType("application/json");
     response.setStatus(HttpServletResponse.SC_OK);
     ObjectMapper mapper = new ObjectMapper();
-    SimpleModule module = new SimpleModule("CustomSessionModule", new Version(1, 0, 0, null));
+    SimpleModule module = new SimpleModule("CustomSessionModule", new Version(1, 0, 0, null, null, null));
     module.addSerializer(HiveSession.class, new HiveSessionSerializer());
     mapper.registerModule(module);
 

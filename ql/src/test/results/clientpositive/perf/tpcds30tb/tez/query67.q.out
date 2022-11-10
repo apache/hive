@@ -24,7 +24,7 @@ STAGE PLANS:
                     predicate: ss_store_sk is not null (type: boolean)
                     Statistics: Num rows: 80569240632 Data size: 11044454229024 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: ss_item_sk (type: bigint), ss_store_sk (type: bigint), ss_sold_date_sk (type: bigint), CASE WHEN ((ss_sales_price is not null and CAST( ss_quantity AS decimal(10,0)) is not null)) THEN ((ss_sales_price * CAST( ss_quantity AS decimal(10,0)))) ELSE (0) END (type: decimal(18,2))
+                      expressions: ss_item_sk (type: bigint), ss_store_sk (type: bigint), ss_sold_date_sk (type: bigint), if((ss_sales_price is not null and CAST( ss_quantity AS decimal(10,0)) is not null), (ss_sales_price * CAST( ss_quantity AS decimal(10,0))), 0) (type: decimal(18,2))
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 80569240632 Data size: 10942249135488 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator

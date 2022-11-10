@@ -114,7 +114,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 6:ROW__IS__DELETED:boolean]
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
@@ -127,7 +127,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             keyColumns: 4:smallint, 0:int
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 1:bigint
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -151,7 +151,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false
@@ -239,6 +239,7 @@ PREHOOK: Input: default@orc_llap_n1
 PREHOOK: Input: default@orc_llap_n1@csmallint=1
 PREHOOK: Input: default@orc_llap_n1@csmallint=2
 PREHOOK: Input: default@orc_llap_n1@csmallint=3
+PREHOOK: Output: default@orc_llap_n1
 PREHOOK: Output: default@orc_llap_n1@csmallint=1
 PREHOOK: Output: default@orc_llap_n1@csmallint=2
 PREHOOK: Output: default@orc_llap_n1@csmallint=3
@@ -249,6 +250,7 @@ POSTHOOK: Input: default@orc_llap_n1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=2
 POSTHOOK: Input: default@orc_llap_n1@csmallint=3
+POSTHOOK: Output: default@orc_llap_n1
 POSTHOOK: Output: default@orc_llap_n1@csmallint=1
 POSTHOOK: Output: default@orc_llap_n1@csmallint=2
 POSTHOOK: Output: default@orc_llap_n1@csmallint=3
@@ -257,22 +259,25 @@ PLAN VECTORIZATION:
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Tez
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
       Vertices:
         Map 1 
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 6:ROW__IS__DELETED:boolean]
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
@@ -280,15 +285,30 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [5, 2, 3, 4]
-                        Reduce Sink Vectorization:
-                            className: VectorReduceSinkObjectHashOperator
-                            keyColumns: 5:struct<writeid:bigint,bucketid:int,rowid:bigint>
+                          projectedOutputColumnNums: [5, 4, 2, 3]
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            partitionColumns: 8:int
-                            valueColumns: 6:int, 7:bigint, 2:float, 3:double, 4:smallint
-                            valueExpressions: ConstantVectorExpression(val 1) -> 6:int, ConstantVectorExpression(val 2) -> 7:bigint
+                            projectedOutputColumnNums: [5, 4]
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              keyColumns: 5:struct<writeid:bigint,bucketid:int,rowid:bigint>
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              partitionColumns: 9:int
+                              valueColumns: 4:smallint
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [7, 8, 2, 3, 4]
+                            selectExpressions: ConstantVectorExpression(val 1) -> 7:int, ConstantVectorExpression(val 2) -> 8:bigint
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkObjectHashOperator
+                              keyColumns: 7:int
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              partitionColumns: 7:int
+                              valueColumns: 8:bigint, 2:float, 3:double, 4:smallint
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
             Map Vectorization:
@@ -312,31 +332,58 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: z
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 6
-                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:int, VALUE._col1:bigint, VALUE._col2:float, VALUE._col3:double, VALUE._col4:smallint
+                    dataColumnCount: 2
+                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:smallint
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
+                    projectedOutputColumnNums: [0, 1]
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    dataColumns: KEY.reducesinkkey0:int, VALUE._col0:bigint, VALUE._col1:float, VALUE._col2:double, VALUE._col3:smallint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4]
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
 
-  Stage: Stage-2
+  Stage: Stage-3
 
   Stage: Stage-0
 
-  Stage: Stage-3
+  Stage: Stage-4
+
+  Stage: Stage-1
+
+  Stage: Stage-5
 
 PREHOOK: query: update orc_llap_n1 set cbigint = 2 where cint = 1
 PREHOOK: type: QUERY
@@ -344,6 +391,7 @@ PREHOOK: Input: default@orc_llap_n1
 PREHOOK: Input: default@orc_llap_n1@csmallint=1
 PREHOOK: Input: default@orc_llap_n1@csmallint=2
 PREHOOK: Input: default@orc_llap_n1@csmallint=3
+PREHOOK: Output: default@orc_llap_n1
 PREHOOK: Output: default@orc_llap_n1@csmallint=1
 PREHOOK: Output: default@orc_llap_n1@csmallint=2
 PREHOOK: Output: default@orc_llap_n1@csmallint=3
@@ -353,9 +401,15 @@ POSTHOOK: Input: default@orc_llap_n1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=1
 POSTHOOK: Input: default@orc_llap_n1@csmallint=2
 POSTHOOK: Input: default@orc_llap_n1@csmallint=3
+POSTHOOK: Output: default@orc_llap_n1
+POSTHOOK: Output: default@orc_llap_n1@csmallint=1
 POSTHOOK: Output: default@orc_llap_n1@csmallint=1
 POSTHOOK: Output: default@orc_llap_n1@csmallint=2
 POSTHOOK: Output: default@orc_llap_n1@csmallint=3
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cbigint EXPRESSION []
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cdouble SIMPLE [(orc_llap_n1)orc_llap_n1.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cfloat SIMPLE [(orc_llap_n1)orc_llap_n1.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap_n1 PARTITION(csmallint=1).cint SIMPLE []
 PREHOOK: query: explain vectorization only detail
 select cint, csmallint, cbigint from orc_llap_n1 where cint is not null order
 by csmallint, cint
@@ -392,7 +446,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 6:ROW__IS__DELETED:boolean]
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
@@ -405,7 +459,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             keyColumns: 4:smallint, 0:int
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 1:bigint
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -429,7 +483,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: zz
                 reduceColumnSortOrder: ++
                 allNative: false

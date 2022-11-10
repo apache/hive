@@ -5,7 +5,7 @@ FROM (
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.*
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: target/warehouse/union.out
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 FROM (
   FROM src select src.* WHERE src.key < 100
@@ -13,7 +13,7 @@ FROM (
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.*
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: target/warehouse/union.out
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1

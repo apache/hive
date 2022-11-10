@@ -50,6 +50,7 @@ public abstract class MessageFactory {
   static {
     register(GzipJSONMessageEncoder.FORMAT, GzipJSONMessageEncoder.class);
     register(JSONMessageEncoder.FORMAT, JSONMessageEncoder.class);
+    register(supportedCompressionFormats.GZIP.toString().toLowerCase(), GzipJSONMessageEncoder.class);
   }
 
   private static Method requiredMethod(Class clazz) {
@@ -80,19 +81,27 @@ public abstract class MessageFactory {
     throw new IllegalArgumentException(message);
   }
 
-  public static MessageEncoder getInstance(String messageFormat)
+  public static MessageEncoder getInstance(String compressionFormat)
       throws InvocationTargetException, IllegalAccessException {
-    Method methodInstance = registry.get(messageFormat);
+    Method methodInstance = registry.get(compressionFormat.toLowerCase());
     if (methodInstance == null) {
-      LOG.error("received incorrect MessageFormat " + messageFormat);
-      throw new RuntimeException("messageFormat: " + messageFormat + " is not supported ");
+      LOG.error("received incorrect CompressionFormat " + compressionFormat);
+      throw new RuntimeException("compressionFormat: " + compressionFormat + " is not supported.");
     }
     return (MessageEncoder) methodInstance.invoke(null);
   }
 
+  public static MessageEncoder getDefaultInstanceForReplMetrics(Configuration conf) {
+    return getInstance(conf, MetastoreConf.ConfVars.REPL_MESSAGE_FACTORY.getVarname());
+  }
+
   public static MessageEncoder getDefaultInstance(Configuration conf) {
+    return getInstance(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getVarname());
+  }
+
+  public static MessageEncoder getInstance(Configuration conf, String config) {
     String clazz =
-        MetastoreConf.get(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getVarname());
+            MetastoreConf.get(conf, config);
     try {
       Class<?> clazzObject = MessageFactory.class.getClassLoader().loadClass(clazz);
       return (MessageEncoder) requiredMethod(clazzObject).invoke(null);
@@ -101,5 +110,12 @@ public abstract class MessageFactory {
       LOG.error(message, e);
       throw new IllegalStateException(message, e);
     }
+  }
+
+  public enum supportedCompressionFormats {
+    /**
+     * Currently supported compressionFormats for encoding and decoding the messages in backend RDBMS.
+     */
+    GZIP
   }
 }

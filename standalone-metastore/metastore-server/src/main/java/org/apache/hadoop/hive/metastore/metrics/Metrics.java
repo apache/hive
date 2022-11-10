@@ -32,7 +32,6 @@ import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
-import com.codahale.metrics.RatioGauge;
 import com.codahale.metrics.Reporter;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Slf4jReporter;
@@ -58,8 +57,7 @@ public class Metrics {
   private static Metrics self;
   private static final AtomicInteger singletonAtomicInteger = new AtomicInteger();
   private static final Counter dummyCounter = new Counter();
-  private static final Pair<AtomicInteger, AtomicInteger> dummyRatio =
-          Pair.of(singletonAtomicInteger, singletonAtomicInteger);
+  private static final MapMetrics dummyMapMetrics = new MapMetrics();
 
   private final MetricRegistry registry;
   private List<Reporter> reporters;
@@ -162,33 +160,52 @@ public class Metrics {
   }
 
   /**
-   * Get the pair of AtomicIntegers behind an existing ratio gauge, or create a new gauge if it does not already
-   * exist.
-   * @param name Name of gauge.  This should come from MetricConstants
-   * @return Pair<AtomicInteger, AtomicInteger> as the numerator and denominator of the ratio.
+   * Get a Map that represents a multi-field metric,
+   * or create a new one if it does not already exist.
+   * @param name Name of map metric.  This should come from MetricConstants
+   * @return MapMetric .
    */
-  public static Pair<AtomicInteger, AtomicInteger>  getOrCreateRatio(String name) {
-    // We return a garbage value if metrics haven't been initialized so that callers don't have
-    // to keep checking if the resulting value is null.
-    if (self == null) return dummyRatio;
-    Pair<AtomicInteger, AtomicInteger> ratio = self.gaugeRatio.get(name);
-    if (ratio != null) return ratio;
+  public static MapMetrics getOrCreateMapMetrics(String name) {
+    if (self == null) {
+      return dummyMapMetrics;
+    }
+
+    Map<String, Metric> metrics = self.registry.getMetrics();
+    Metric map = metrics.get(name);
+    if (map instanceof MapMetrics) {
+      return (MapMetrics) map;
+    }
+
+    // Looks like it doesn't exist.  Lock so that two threads don't create it at once.
     synchronized (Metrics.class) {
-      ratio = self.gaugeRatio.get(name);
-      if (ratio != null) return ratio;
-      ratio = Pair.of(new AtomicInteger(), new AtomicInteger());
-      final Pair<AtomicInteger, AtomicInteger> forGauge = ratio;
-      self.gaugeRatio.put(name, ratio);
-      self.registry.register(name, new RatioGauge() {
-        @Override
-        protected Ratio getRatio() {
-          return Ratio.of(forGauge.getLeft().get(), forGauge.getRight().get());
+      // Recheck to make sure someone didn't create it while we waited.
+      map = self.registry
+          .getMetrics()
+          .get(name);
+      if (map instanceof MapMetrics) {
+        return (MapMetrics) map;
+      }
+
+      try {
+        self.registry.register(name, new MapMetrics());
+      } catch (IllegalArgumentException e) {
+        // HIVE-25959: The registry's register function will call the MetricRegistry#onMetricAdded
+        //   which forward the call to the MetricRegistry#notifyListenerOfAddedMetric method.
+        // This method will throw an IllegalArgumentException because our custom MapMetrics type not supported
+        //   to avoid this we handle this.
+        if (!e.getMessage().contains("Unknown metric type")) {
+          throw new IllegalArgumentException("Failed to register metric", e);
         }
-      });
-      return ratio;
+      }
+      map = self.registry
+          .getMetrics()
+          .get(name);
+      if (map instanceof MapMetrics) {
+        return (MapMetrics) map;
+      }
+      return dummyMapMetrics;
     }
   }
-
 
   public static Counter getOpenConnectionsCounter() {
     return getOrCreateCounter(MetricsConstants.OPEN_CONNECTIONS);

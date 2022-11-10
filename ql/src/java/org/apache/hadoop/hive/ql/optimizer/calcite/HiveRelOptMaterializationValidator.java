@@ -38,6 +38,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
@@ -88,8 +89,9 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
     if (tab.isTemporary()) {
       fail(tab.getTableName() + " is a temporary table");
     }
-    if (tab.getTableType() == TableType.EXTERNAL_TABLE) {
-      fail(tab.getFullyQualifiedName() + " is an external table");
+    if (tab.getTableType() == TableType.EXTERNAL_TABLE &&
+        !(tab.getStorageHandler() != null && tab.getStorageHandler().areSnapshotsSupported())) {
+      fail(tab.getFullyQualifiedName() + " is an external table and does not support snapshots");
     }
     return hiveScan;
   }

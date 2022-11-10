@@ -32,6 +32,7 @@ import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelCollation;
+import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
@@ -218,10 +219,9 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     final Set<RelDataTypeField> combinedInputExtraFields =
         new LinkedHashSet<RelDataTypeField>(extraFields);
     RelOptUtil.InputFinder inputFinder =
-        new RelOptUtil.InputFinder(combinedInputExtraFields);
-    inputFinder.inputBitSet.addAll(fieldsUsed);
+        new RelOptUtil.InputFinder(combinedInputExtraFields, fieldsUsed);
     conditionExpr.accept(inputFinder);
-    final ImmutableBitSet fieldsUsedPlus = inputFinder.inputBitSet.build();
+    final ImmutableBitSet fieldsUsedPlus = inputFinder.build();
 
     int inputStartPos = 0;
     int changeCount = 0;
@@ -550,12 +550,11 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
     final RelNode input = aggregate.getInput();
 
-
     final RelDataType rowType = input.getRowType();
     RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
     final List<RexNode> newProjects = new ArrayList<>();
 
-    final List<RexNode> inputExprs = input.getChildExps();
+    final List<RexNode> inputExprs = input instanceof Project ? ((Project) input).getProjects() : null;
     if (inputExprs == null || inputExprs.isEmpty()) {
       return aggregate;
     }
@@ -581,7 +580,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       relBuilder.push(input);
       relBuilder.project(newProjects);
       Aggregate newAggregate = new HiveAggregate(aggregate.getCluster(), aggregate.getTraitSet(), relBuilder.build(),
-          aggregate.getGroupSet(), null, aggregate.getAggCallList());
+          aggregate.getGroupSet(), aggregate.getGroupSets(), aggregate.getAggCallList());
       return newAggregate;
     }
     return aggregate;
@@ -616,6 +615,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
       if (aggCall.filterArg >= 0) {
         aggCallFieldsUsedBuilder.set(aggCall.filterArg);
       }
+      aggCallFieldsUsedBuilder.addAll(RelCollations.ordinals(aggCall.collation));
     }
 
     // transform if group by contain constant keys
@@ -719,9 +719,12 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
         final RexNode filterArg = aggCall.filterArg < 0 ? null
             : relBuilder.field(Mappings.apply(inputMapping, aggCall.filterArg));
         RelBuilder.AggCall newAggCall =
-            relBuilder.aggregateCall(aggCall.getAggregation(),
-                aggCall.isDistinct(), aggCall.isApproximate(),
-                filterArg, aggCall.name, args);
+                relBuilder.aggregateCall(aggCall.getAggregation(), args)
+                        .distinct(aggCall.isDistinct())
+                        .filter(filterArg)
+                        .approximate(aggCall.isApproximate())
+                        .sort(relBuilder.fields(aggCall.collation))
+                        .as(aggCall.name);
         mapping.set(j, updatedGroupCount +  newAggCallList.size());
         newAggCallList.add(newAggCall);
       }
@@ -788,7 +791,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     final List<Integer> iRefSet = Lists.newArrayList();
     if (key instanceof Project) {
       final Project project = (Project) key;
-      for (RexNode rx : project.getChildExps()) {
+      for (RexNode rx : project.getProjects()) {
         iRefSet.addAll(HiveCalciteUtil.getInputRefs(rx));
       }
     } else {

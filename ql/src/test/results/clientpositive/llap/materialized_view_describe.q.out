@@ -31,6 +31,8 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n8
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view_n8
+POSTHOOK: Lineage: cmv_mat_view_n8.a SIMPLE [(cmv_basetable_n8)cmv_basetable_n8.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n8.c SIMPLE [(cmv_basetable_n8)cmv_basetable_n8.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: describe cmv_mat_view_n8
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cmv_mat_view_n8
@@ -90,6 +92,10 @@ Original Query:     	select a, c from cmv_basetable_n8
 Expanded Query:     	select `cmv_basetable_n8`.`a`, `cmv_basetable_n8`.`c` from `default`.`cmv_basetable_n8`	 
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	Unknown             	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_n8	0/0/0               	 
 PREHOOK: query: show tblproperties cmv_mat_view_n8
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view_n8
@@ -141,6 +147,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n8
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view2_n3
+POSTHOOK: Lineage: cmv_mat_view2_n3.a SIMPLE [(cmv_basetable_n8)cmv_basetable_n8.FieldSchema(name:a, type:int, comment:null), ]
 PREHOOK: query: describe formatted cmv_mat_view2_n3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cmv_mat_view2_n3
@@ -182,6 +189,10 @@ Original Query:     	select a from cmv_basetable_n8
 Expanded Query:     	select `cmv_basetable_n8`.`a` from `default`.`cmv_basetable_n8`	 
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	Unknown             	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_n8	0/0/0               	 
 PREHOOK: query: select a from cmv_mat_view2_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view2_n3
@@ -221,6 +232,9 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@cmv_basetable_n8
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view3_n0
+POSTHOOK: Lineage: cmv_mat_view3_n0.a SIMPLE [(cmv_basetable_n8)cmv_basetable_n8.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view3_n0.b SIMPLE [(cmv_basetable_n8)cmv_basetable_n8.FieldSchema(name:b, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view3_n0.c SIMPLE [(cmv_basetable_n8)cmv_basetable_n8.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: describe formatted cmv_mat_view3_n0
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cmv_mat_view3_n0
@@ -262,6 +276,10 @@ Original Query:     	select * from cmv_basetable_n8
 Expanded Query:     	select `cmv_basetable_n8`.`a`, `cmv_basetable_n8`.`b`, `cmv_basetable_n8`.`c` from `default`.`cmv_basetable_n8`	 
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	Unknown             	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_n8	0/0/0               	 
 PREHOOK: query: select a, b, c from cmv_mat_view3_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view3_n0
@@ -314,6 +332,7 @@ POSTHOOK: Input: default@cmv_basetable_n8
 #### A masked pattern was here ####
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view4_n0
+POSTHOOK: Lineage: cmv_mat_view4_n0.a SIMPLE [(cmv_basetable_n8)cmv_basetable_n8.FieldSchema(name:a, type:int, comment:null), ]
 PREHOOK: query: describe formatted cmv_mat_view4_n0
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cmv_mat_view4_n0
@@ -353,6 +372,10 @@ Original Query:     	select a from cmv_basetable_n8
 Expanded Query:     	select `cmv_basetable_n8`.`a` from `default`.`cmv_basetable_n8`	 
 Rewrite Enabled:    	No                  	 
 Outdated for Rewriting:	Unknown             	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	I/U/D since last rebuild	 
+hive.default.cmv_basetable_n8	0/0/0               	 
 PREHOOK: query: select a from cmv_mat_view4_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view4_n0

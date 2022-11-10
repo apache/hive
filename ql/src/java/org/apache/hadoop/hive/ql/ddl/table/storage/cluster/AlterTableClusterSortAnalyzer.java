@@ -78,5 +78,7 @@ public class AlterTableClusterSortAnalyzer extends AbstractAlterTableAnalyzer {
 
     addInputsOutputsAlterTable(tableName, partitionSpec, desc, desc.getType(), false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+
+    setAcidDdlDesc(getTable(tableName), desc);
   }
 }

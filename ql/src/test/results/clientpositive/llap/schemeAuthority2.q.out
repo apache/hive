@@ -9,15 +9,19 @@ POSTHOOK: Output: default@dynPart_n0
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####

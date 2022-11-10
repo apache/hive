@@ -50,13 +50,13 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 public class LazySimpleSerDeBench {
   /**
    * This test measures the performance for LazySimpleSerDe.
-   * <p/>
+   * <p>
    * This test uses JMH framework for benchmarking. You may execute this
    * benchmark tool using JMH command line in different ways:
-   * <p/>
+   * <p>
    * To run using default settings, use: 
    * $ java -cp target/benchmarks.jar org.apache.hive.benchmark.serde.LazySimpleSerDeBench
-   * <p/>
+   * <p>
    */
   public static final int DEFAULT_ITER_TIME = 1000000;
   public static final int DEFAULT_DATA_SIZE = 4096;

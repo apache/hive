@@ -353,8 +353,8 @@ public abstract class AbstractThriftHiveMetastore implements Iface {
     }
 
     @Override
-    public Materialization get_materialization_invalidation_info(CreationMetadata creation_metadata,
-                                                                 String validTxnList) throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    public Materialization get_materialization_invalidation_info(CreationMetadata creation_metadata, String validTxnList)
+            throws MetaException, InvalidOperationException, UnknownDBException, TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
 
@@ -1137,8 +1137,14 @@ public abstract class AbstractThriftHiveMetastore implements Iface {
         throw new UnsupportedOperationException("this method is not supported");
     }
 
+    @Deprecated
     @Override
-    public OptionalCompactionInfoStruct find_next_compact(String workerId, String workerVersion)
+    public OptionalCompactionInfoStruct find_next_compact(String workerId) throws MetaException, TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
+    public OptionalCompactionInfoStruct find_next_compact2(FindNextCompactRequest rqst)
             throws MetaException, TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
@@ -1605,6 +1611,12 @@ public abstract class AbstractThriftHiveMetastore implements Iface {
 
     @Override
     public void shutdown() throws TException {
+        throw new UnsupportedOperationException("this method is not supported");
+    }
+
+    @Override
+    public List<WriteEventInfo> get_all_write_event_info(GetAllWriteEventInfoRequest request)
+        throws MetaException, org.apache.thrift.TException {
         throw new UnsupportedOperationException("this method is not supported");
     }
 }

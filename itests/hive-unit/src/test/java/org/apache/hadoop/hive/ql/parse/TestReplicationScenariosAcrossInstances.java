@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -36,11 +37,15 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.WarehouseInstance.Tuple;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.util.DependencyResolver;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -67,7 +72,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_DONT_SET;
+import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_RESET;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -77,6 +84,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcrossInstances {
   private static final String NS_REMOTE = "nsRemote";
@@ -691,8 +699,9 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("alter database default set dbproperties ('hive.repl.ckpt.key'='', 'repl.last.id'='')");
     try {
       replica.load("", "`*`");
-    } catch (SemanticException e) {
-      assertEquals("REPL LOAD * is not supported", e.getMessage());
+      Assert.fail();
+    } catch (HiveException e) {
+      assertEquals("MetaException(message:Database name cannot be null.)", e.getMessage());
     }
   }
 
@@ -958,13 +967,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   }
 
   private void verifyIfCkptSet(Map<String, String> props, String dumpDir) {
-    assertTrue(props.containsKey(ReplUtils.REPL_CHECKPOINT_KEY));
+    assertTrue(props.containsKey(ReplConst.REPL_TARGET_DB_PROPERTY));
     String hiveDumpDir = dumpDir + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;
-    assertTrue(props.get(ReplUtils.REPL_CHECKPOINT_KEY).equals(hiveDumpDir));
+    assertTrue(props.get(ReplConst.REPL_TARGET_DB_PROPERTY).equals(hiveDumpDir));
   }
 
   private void verifyIfCkptPropMissing(Map<String, String> props) {
-    assertFalse(props.containsKey(ReplUtils.REPL_CHECKPOINT_KEY));
+    assertFalse(props.containsKey(ReplConst.REPL_TARGET_DB_PROPERTY));
   }
 
   private void verifyIfSrcOfReplPropMissing(Map<String, String> props) {
@@ -996,13 +1005,14 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .status(replicatedDbName)
             .verifyResult(tuple.lastReplicationId);
 
-    // Bootstrap load from an empty dump directory should return empty load directory error.
-    tuple = primary.dump("someJunkDB", Collections.emptyList());
+    // Bootstrap dump should fail if source database does not exist.
+    String nonExistingDb = "someJunkDB";
+    assertEquals (primary.getDatabase(nonExistingDb), null);
     try {
-      replica.runCommand("REPL LOAD someJunkDB into someJunkDB");
+      primary.run("REPL DUMP " + nonExistingDb);
       assert false;
-    } catch (CommandProcessorException e) {
-      assertTrue(e.getMessage().toLowerCase().contains("semanticException no data to load in path".toLowerCase()));
+    } catch (Exception e) {
+      assertEquals (ErrorMsg.REPL_SOURCE_DATABASE_NOT_FOUND.format(nonExistingDb), e.getMessage());
     }
     primary.run(" drop database if exists " + testDbName + " cascade");
   }
@@ -1075,10 +1085,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .verifyResult(tuplePrimary.lastReplicationId)
             .run("show tblproperties t1('custom.property')")
             .verifyResults(new String[] { "custom.property\tcustom.value" })
-            .dumpFailure(replicatedDbName)
             .run("alter database " + replicatedDbName
-                    + " set dbproperties ('" + SOURCE_OF_REPLICATION + "' = '1, 2, 3')")
-            .dumpFailure(replicatedDbName);   //can not dump the db before first successful incremental load is done.
+                    + " set dbproperties ('" + SOURCE_OF_REPLICATION + "' = '1, 2, 3')");
 
     // do a empty incremental load to allow dump of replicatedDbName
     WarehouseInstance.Tuple temp = primary.dump(primaryDbName, Collections.emptyList());
@@ -1167,12 +1175,10 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     //Perform empty dump and load
     primary.dump(primaryDbName);
     replica.load(replicatedDbName, primaryDbName);
-    assertTrue(ReplUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
-
-    replica.dumpFailure(replicatedDbName);  //can not dump db which is target of replication
+    assertTrue(MetaStoreUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
 
     replica.run("ALTER DATABASE " + replicatedDbName + " Set DBPROPERTIES('repl.target.for' = '')");
-    assertFalse(ReplUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
+    assertFalse(MetaStoreUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
     replica.dump(replicatedDbName);
 
     // do a empty incremental load to allow dump of replicatedDbName
@@ -1181,9 +1187,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     replica.load(replicatedDbName, primaryDbName);
     compareDbProperties(primary.getDatabase(primaryDbName).getParameters(),
             replica.getDatabase(replicatedDbName).getParameters());
-    assertTrue(ReplUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
+    assertTrue(MetaStoreUtils.isTargetOfReplication(replica.getDatabase(replicatedDbName)));
 
-    replica.dumpFailure(replicatedDbName);    //Cannot dump database which is target of replication.
   }
 
   @Test
@@ -1672,7 +1677,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   @Test
   public void testRangerReplication() throws Throwable {
     List<String> clause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
-        "'hive.in.test'='true'");
+        "'hive.in.test'='true'", "'hive.repl.handle.ranger.deny.policy'='true'");
     primary.run("use " + primaryDbName)
         .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
             "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
@@ -2231,6 +2236,53 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     } catch (SemanticException e) {
       assertEquals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode(),
         ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
+  }
+
+  @Test
+  public void testReplicationUtils() throws Throwable {
+    Path testPath = new Path("/tmp/testReplicationUtils" + System.currentTimeMillis());
+    DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.mkdirs(testPath);
+    Path filePath1 = new Path(testPath, "file1");
+    fs.setQuota(testPath, QUOTA_DONT_SET, 0);
+    try {
+      Utils.writeOutput("abc", filePath1, conf);
+      fail("Expected exception due to quota violation");
+    } catch (Exception e) {
+      // Expected.
+    }
+
+    // Remove the quota & retry, this time it should be successful.
+    fs.setQuota(testPath, QUOTA_DONT_SET, QUOTA_RESET);
+    Utils.writeOutput("abc" + Utilities.newLineCode, filePath1, conf);
+
+    // Check the contents of the file are written correctly.
+    try (FSDataInputStream stream = fs.open(filePath1)) {
+      assertEquals("abc" + Utilities.newLineCode + "\n", IOUtils.toString(stream, Charset.defaultCharset()));
+    }
+
+    // Check the Utils with writing a list of entries
+    Path filePath2 = new Path(testPath, "file2");
+    fs.setQuota(testPath, QUOTA_DONT_SET, 0);
+    List<List<String>> data = Arrays.asList(Arrays.asList("a", "b"));
+    try {
+      Utils.writeOutput(data, filePath2, conf, true);
+      fail("Expected exception due to quota violation");
+    } catch (Exception e) {
+      // Expected.
+    }
+
+    // Remove the quota & retry, this time it should be successful.
+    fs.setQuota(testPath, QUOTA_DONT_SET, QUOTA_RESET);
+
+    // Write the contents.
+    Utils.writeOutput(data, filePath2, conf, true);
+
+    // Check the contents of the file are written correctly.
+    try (FSDataInputStream stream = fs.open(filePath2)) {
+      assertEquals("a" + "\t" + "b" + "\n", IOUtils.toString(stream,
+          Charset.defaultCharset()));
     }
   }
 

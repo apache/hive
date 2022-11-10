@@ -57,6 +57,8 @@ POSTHOOK: Input: default@intermediate_n1@p=456
 POSTHOOK: Input: default@intermediate_n1@p=457
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cttas1_mm
+POSTHOOK: Lineage: cttas1_mm.key SIMPLE [(intermediate_n1)intermediate_n1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: cttas1_mm.p SIMPLE [(intermediate_n1)intermediate_n1.FieldSchema(name:p, type:int, comment:null), ]
 PREHOOK: query: select * from cttas1_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cttas1_mm

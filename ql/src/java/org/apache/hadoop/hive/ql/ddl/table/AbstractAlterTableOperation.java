@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
@@ -39,6 +38,7 @@ import org.apache.hadoop.hive.ql.ddl.table.constraint.add.AlterTableAddConstrain
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -69,7 +69,7 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
     // Don't change the table object returned by the metastore, as we'll mess with it's caches.
     Table table = oldTable.copy();
 
-    environmentContext = initializeEnvironmentContext(desc.getEnvironmentContext());
+    environmentContext = initializeEnvironmentContext(oldTable, desc.getEnvironmentContext());
 
     if (partitions == null) {
       doAlteration(table, null);
@@ -107,12 +107,16 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
     return partitions;
   }
 
-  private EnvironmentContext initializeEnvironmentContext(EnvironmentContext environmentContext) {
+  private EnvironmentContext initializeEnvironmentContext(Table table, EnvironmentContext environmentContext) {
     EnvironmentContext result = environmentContext == null ? new EnvironmentContext() : environmentContext;
     // do not need update stats in alter table/partition operations
     if (result.getProperties() == null ||
         result.getProperties().get(StatsSetupConst.DO_NOT_UPDATE_STATS) == null) {
       result.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+    }
+    HiveStorageHandler storageHandler = table.getStorageHandler();
+    if (storageHandler != null) {
+      storageHandler.prepareAlterTableEnvironmentContext(desc, result);
     }
     return result;
   }
@@ -155,8 +159,33 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
       }
       if (partitions == null) {
         long writeId = desc.getWriteId() != null ? desc.getWriteId() : 0;
-        context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true,
-            writeId);
+        try {
+          context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true, writeId);
+        } catch (HiveException ex) {
+          if (Boolean.valueOf(environmentContext.getProperties()
+              .getOrDefault(HiveMetaHook.INITIALIZE_ROLLBACK_MIGRATION, "false"))) {
+            // in case of rollback of alter table do the following:
+            // 1. restore serde info and input/output format
+            // 2. remove table columns which are used to be partition columns
+            // 3. add partition columns
+            table.getSd().setInputFormat(oldTable.getSd().getInputFormat());
+            table.getSd().setOutputFormat(oldTable.getSd().getOutputFormat());
+            table.getSd().setSerdeInfo(oldTable.getSd().getSerdeInfo());
+            table.getSd().getCols().removeAll(oldTable.getPartitionKeys());
+            table.setPartCols(oldTable.getPartitionKeys());
+
+            table.getParameters().clear();
+            table.getParameters().putAll(oldTable.getParameters());
+            context.getDb().alterTable(desc.getDbTableName(), table, desc.isCascade(), environmentContext, true, writeId);
+            throw new HiveException("Error occurred during hive table migration to iceberg. Table properties "
+                + "and serde info was reverted to its original value. Partition info was lost during the migration "
+                + "process, but it can be reverted by running MSCK REPAIR on table/partition level.\n"
+                + "Retrying the migration without issuing MSCK REPAIR on a partitioned table will result in an empty "
+                + "iceberg table.");
+          } else {
+            throw ex;
+          }
+        }
       } else {
         // Note: this is necessary for UPDATE_STATISTICS command, that operates via ADDPROPS (why?).
         //       For any other updates, we don't want to do txn check on partitions when altering table.

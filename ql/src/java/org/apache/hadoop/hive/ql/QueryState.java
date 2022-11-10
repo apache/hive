@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
@@ -27,12 +30,17 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.tez.dag.api.TezConfiguration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * The class to store query level info such as queryId. Multiple queries can run
  * in the same session, so SessionState is to hold common session related info, and
  * each QueryState is to hold query related info.
  */
 public class QueryState {
+  private static final Logger LOG = LoggerFactory.getLogger(QueryState.class);
+
   /**
    * current configuration.
    */
@@ -60,6 +68,27 @@ public class QueryState {
   static public final String USERID_TAG = "userid";
 
   /**
+   * map of resources involved in the query.
+   */
+  private final Map<String, Object> resourceMap = new HashMap<>();
+
+  /**
+   * Cache of HMS requests/responses utilized by SessionHiveMetaStoreClient.
+   */
+  private Map<Object, Object> hmsCache;
+
+  /**
+   * Tracks if HMS cache should be used to answer metadata requests.
+   * In some sections, it makes sense to disable the cache to get fresh responses.
+   */
+  private boolean hmsCacheEnabled;
+
+  /**
+   * query level lock for ConditionalTask#resolveTask.
+   */
+  private final ReentrantLock resolveConditionalTaskLock = new ReentrantLock(true);
+
+  /**
    * Private constructor, use QueryState.Builder instead.
    * @param conf The query specific configuration object
    */
@@ -69,11 +98,34 @@ public class QueryState {
 
   // Get the query id stored in query specific config.
   public String getQueryId() {
-    return (queryConf.getVar(HiveConf.ConfVars.HIVEQUERYID));
+    return queryConf.getVar(HiveConf.ConfVars.HIVEQUERYID);
   }
 
   public String getQueryString() {
     return queryConf.getQueryString();
+  }
+
+  // Returns the HMS cache if it is currently enabled
+  public Map<Object, Object> getHMSCache() {
+    return hmsCacheEnabled ? hmsCache : null;
+  }
+
+  /**
+   * Disable the HMS cache. Useful in situations when you
+   * must not get cached metadata responses.
+   */
+  public void disableHMSCache() {
+    hmsCacheEnabled = false;
+  }
+
+  public void enableHMSCache() {
+    hmsCacheEnabled = true;
+  }
+
+  public void createHMSCache() {
+    LOG.info("Query-level HMS cache created for {}", getQueryId());
+    hmsCache = new HashMap<>();
+    hmsCacheEnabled = true;
   }
 
   public String getCommandType() {
@@ -139,6 +191,18 @@ public class QueryState {
     }
     queryConf.set(MRJobConfig.JOB_TAGS, jobTag);
     queryConf.set(TezConfiguration.TEZ_APPLICATION_TAGS, jobTag);
+  }
+
+  public void addResource(String resourceIdentifier, Object resource) {
+    resourceMap.put(resourceIdentifier, resource);
+  }
+
+  public Object getResource(String resourceIdentifier) {
+    return resourceMap.get(resourceIdentifier);
+  }
+
+  public ReentrantLock getResolveConditionalTaskLock() {
+    return resolveConditionalTaskLock;
   }
 
   /**

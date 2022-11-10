@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriteSupport;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -44,6 +45,7 @@ public class MyConverterParent implements ConverterParent {
   public Map<String, String> getMetadata() {
     Map<String, String> metadata = new HashMap<>();
     metadata.put(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname, "false");
+    metadata.put(DataWritableWriteSupport.WRITER_ZONE_CONVERSION_LEGACY, "false");
     return metadata;
   }
 

@@ -384,7 +384,7 @@ public class TestReadWriteLockMetrics {
                rec.getMetrics().get(ReadLockWaitTimeMax).longValue()
                                     < lhR.getLockMax());
 
-    assertTrue("Max greater or equal to avergae lock time",
+    assertTrue("Max greater or equal to average lock time",
                (rec.getMetrics().get(ReadLockWaitTimeTotal).longValue()
                 / rec.getMetrics().get(ReadLockCount).longValue())
                   <= rec.getMetrics().get(ReadLockWaitTimeMax).longValue());

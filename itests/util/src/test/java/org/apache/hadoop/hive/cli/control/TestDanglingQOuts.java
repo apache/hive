@@ -64,9 +64,6 @@ public class TestDanglingQOuts {
   public TestDanglingQOuts() throws Exception {
 
     for (Class<?> clz : CliConfigs.class.getDeclaredClasses()) {
-      if (clz == CliConfigs.DummyConfig.class) {
-        continue;
-      }
       handleCliConfig((AbstractCliConfig) clz.newInstance());
     }
   }

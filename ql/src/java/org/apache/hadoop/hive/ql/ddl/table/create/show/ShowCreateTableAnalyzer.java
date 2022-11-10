@@ -47,6 +47,9 @@ public class ShowCreateTableAnalyzer extends BaseSemanticAnalyzer {
     ctx.setResFile(ctx.getLocalTmpPath());
 
     Entry<String, String> tableIdentifier = getDbTableNamePair((ASTNode) root.getChild(0));
+    if (tableIdentifier.getValue().contains(".")) {
+      throw new SemanticException("The SHOW CREATE TABLE command is not supported for metadata tables.");
+    }
     Table table = getTable(tableIdentifier.getKey(), tableIdentifier.getValue(), true);
 
     inputs.add(new ReadEntity(table));

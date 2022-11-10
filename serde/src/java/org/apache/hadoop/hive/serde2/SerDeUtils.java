@@ -112,7 +112,7 @@ public final class SerDeUtils {
         escape.append('t');
         break;
       default:
-        // Control characeters! According to JSON RFC u0020
+        // Control characters! According to JSON RFC u0020
         if (c < ' ') {
           String hex = Integer.toHexString(c);
           escape.append('\\');

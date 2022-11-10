@@ -59,8 +59,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 4]
-                        selectExpressions: IfExprLongColumnLongScalar(col 3:boolean, col 1:int, val 0)(children: LongColGreaterLongScalar(col 0:int, val 0) -> 3:boolean) -> 4:int
+                        projectedOutputColumnNums: [0, 5]
+                        selectExpressions: IfExprLongColumnLongScalar(col 4:boolean, col 1:int, val 0)(children: LongColGreaterLongScalar(col 0:int, val 0) -> 4:boolean) -> 5:int
                     Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
@@ -69,7 +69,7 @@ STAGE PLANS:
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: int)
             Execution mode: vectorized, llap
@@ -87,7 +87,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true

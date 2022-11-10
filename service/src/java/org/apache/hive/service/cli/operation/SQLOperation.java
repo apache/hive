@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -80,7 +81,6 @@ import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.server.ThreadWithGarbageCleanup;
-import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * SQLOperation.
@@ -131,7 +131,8 @@ public class SQLOperation extends ExecuteStatementOperation {
     setupSessionIO(parentSession.getSessionState());
 
     queryInfo = new QueryInfo(getState().toString(), getParentSession().getUserName(),
-            getExecutionEngine(), getHandle().getHandleIdentifier().toString());
+        getExecutionEngine(), getParentSession().getSessionHandle().getHandleIdentifier().toString(),
+        getHandle().getHandleIdentifier().toString());
 
     final Metrics metrics = MetricsFactory.getInstance();
     this.submittedQryScp =
@@ -316,7 +317,11 @@ public class SQLOperation extends ExecuteStatementOperation {
         @Override
         public Object run() throws HiveSQLException {
           assert (!parentHive.allowClose());
-          Hive.set(parentHive);
+          try {
+            Hive.set(parentSessionState.getHiveDb());
+          } catch (HiveException e) {
+            throw new HiveSQLException(e);
+          }
           // TODO: can this result in cross-thread reuse of session state?
           SessionState.setCurrentSessionState(parentSessionState);
           PerfLogger.setPerfLogger(SessionState.getPerfLogger());
@@ -490,7 +495,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       return rowSet;
     } catch (Exception e) {
-      throw new HiveSQLException("Unable to get the next row set", e);
+      throw new HiveSQLException("Unable to get the next row set with exception: " + e.getMessage(), e);
     } finally {
       convey.clear();
     }
@@ -502,7 +507,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       List<QueryDisplay.TaskDisplay> statuses = driver.getQueryDisplay().getTaskDisplays();
       if (statuses != null) {
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-          new ObjectMapper().writeValue(out, statuses);
+          QueryDisplay.OBJECT_MAPPER.writeValue(out, statuses);
           return out.toString(StandardCharsets.UTF_8.name());
         } catch (Exception e) {
           throw new HiveSQLException(e);

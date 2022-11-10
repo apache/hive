@@ -265,6 +265,8 @@ POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view
+POSTHOOK: Lineage: cmv_mat_view.a SIMPLE [(cmv_basetable)cmv_basetable.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view.c SIMPLE [(cmv_basetable_2)cmv_basetable_2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)

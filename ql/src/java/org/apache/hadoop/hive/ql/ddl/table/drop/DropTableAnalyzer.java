@@ -26,6 +26,8 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -51,7 +53,10 @@ public class DropTableAnalyzer extends BaseSemanticAnalyzer {
     Table table = getTable(tableName, throwException);
     if (table != null) {
       inputs.add(new ReadEntity(table));
-      outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_EXCLUSIVE));
+
+      boolean tableWithSuffix = AcidUtils.isTableSoftDeleteEnabled(table, conf);
+      outputs.add(new WriteEntity(table, 
+        tableWithSuffix ? WriteType.DDL_EXCL_WRITE : WriteType.DDL_EXCLUSIVE));
     }
 
     boolean purge = (root.getFirstChildWithType(HiveParser.KW_PURGE) != null);

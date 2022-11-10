@@ -1798,7 +1798,7 @@ HiveProject(key=[null:INTEGER], value=[$0], key1=[$1], value1=[$2])
       HiveFilter(condition=[IS NULL($0)])
         HiveTableScan(table=[[default, myinput1_n9]], table:alias=[a])
     HiveProject(key=[$0], value=[$1])
-      HiveFilter(condition=[IS NOT DISTINCT FROM(null:INTEGER, $1)])
+      HiveFilter(condition=[IS NOT DISTINCT FROM(null, $1)])
         HiveTableScan(table=[[default, myinput1_n9]], table:alias=[b])
 
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product

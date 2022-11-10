@@ -44,6 +44,9 @@ public class MapRecordSource implements RecordSource {
   private KeyValueReader reader = null;
   private final boolean grouped = false;
 
+  // Flush the last record when reader is out of records
+  private boolean flushLastRecord = false;
+
   void init(JobConf jconf, AbstractMapOperator mapOp, KeyValueReader reader) throws IOException {
     execContext = mapOp.getExecContext();
     this.mapOp = mapOp;
@@ -60,6 +63,11 @@ public class MapRecordSource implements RecordSource {
   }
 
   @Override
+  public void setFlushLastRecord(boolean flushLastRecord) {
+    this.flushLastRecord = flushLastRecord;
+  }
+
+  @Override
   public boolean pushRecord() throws HiveException {
     execContext.resetRow();
 
@@ -73,6 +81,8 @@ public class MapRecordSource implements RecordSource {
           throw new HiveException(e);
         }
         return processRow(value);
+      } else if (flushLastRecord) {
+        mapOp.flushRecursive();
       }
     } catch (IOException e) {
       closeReader();

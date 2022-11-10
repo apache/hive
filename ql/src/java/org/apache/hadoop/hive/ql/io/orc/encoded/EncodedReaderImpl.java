@@ -639,9 +639,7 @@ class EncodedReaderImpl implements EncodedReader {
             // but have not released the buffers because of that extra refCount. So, this is
             // essentially the "consumer" refcount being released here.
             for (MemoryBuffer buf : sctx.stripeLevelStream.getCacheBuffers()) {
-              if (LOG.isTraceEnabled()) {
-                LOG.trace("Unlocking {} at the end of processing", buf);
-              }
+              LOG.trace("Unlocking {} at the end of processing", buf);
               cacheWrapper.releaseBuffer(buf);
             }
           }
@@ -2055,9 +2053,7 @@ class EncodedReaderImpl implements EncodedReader {
     DiskRangeList indexRanges = planIndexReading(fileSchema, streams, true, physicalFileIncludes,
         sargColumns, version, index.getBloomFilterKinds());
     if (indexRanges == null) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Nothing to read for stripe [" + stripe + "]");
-      }
+      LOG.debug("Nothing to read for stripe [{}]", stripe);
       return;
     }
     ReadContext[] colCtxs = new ReadContext[physicalFileIncludes.length];

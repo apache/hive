@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
-
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
@@ -47,28 +45,21 @@ public class CoreParseNegative extends CliAdapter{
 
   @Override
   @BeforeClass
-  public void beforeClass() {
+  public void beforeClass() throws Exception {
     MiniClusterType miniMR = cliConfig.getClusterType();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
 
-    try {
-      qt = new QTestUtil(
-          QTestArguments.QTestArgumentsBuilder.instance()
-            .withOutDir(cliConfig.getResultsDir())
-            .withLogDir(cliConfig.getLogDir())
-            .withClusterType(miniMR)
-            .withConfDir(null)
-            .withInitScript(initScript)
-            .withCleanupScript(cleanupScript)
-            .withLlapIo(false)
-            .build());
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      throw new RuntimeException("Unexpected exception in static initialization", e);
-    }
+    qt = new QTestUtil(
+        QTestArguments.QTestArgumentsBuilder.instance()
+          .withOutDir(cliConfig.getResultsDir())
+          .withLogDir(cliConfig.getLogDir())
+          .withClusterType(miniMR)
+          .withConfDir(null)
+          .withInitScript(initScript)
+          .withCleanupScript(cleanupScript)
+          .withLlapIo(false)
+          .build());
   }
 
   @Override
@@ -82,19 +73,9 @@ public class CoreParseNegative extends CliAdapter{
 
   @Override
   @AfterClass
-  public void shutdown() {
-    String reason = "clear post test effects";
-    try {
-      qt.clearPostTestEffects();
-      reason = "shutdown";
-      qt.shutdown();
-
-    } catch (Exception e) {
-      System.err.println("Exception: " + e.getMessage());
-      e.printStackTrace();
-      System.err.flush();
-      throw new RuntimeException("Unexpected exception in " + reason, e);
-    }
+  public void shutdown() throws Exception {
+    qt.clearPostTestEffects();
+    qt.shutdown();
   }
 
   protected boolean shouldRunCreateScriptBeforeEveryTest() {
@@ -112,10 +93,10 @@ public class CoreParseNegative extends CliAdapter{
     try {
       System.err.println("Begin query: " + fname);
 
-      qt.addFile(fpath);
-      qt.cliInit(new File(fpath));
+      qt.setInputFile(fpath);
+      qt.cliInit();
 
-      ASTNode tree = qt.parseQuery(fname);
+      ASTNode tree = qt.parseQuery();
       qt.analyzeAST(tree);
       fail("Unexpected success for query: " + fname + QTestUtil.DEBUG_HINT);
     } catch (ParseException pe) {

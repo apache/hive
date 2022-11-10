@@ -60,3 +60,7 @@ ALTER MATERIALIZED VIEW partition_mv_3 REBUILD;
 ALTER MATERIALIZED VIEW partition_mv_3 REBUILD;
 
 SELECT * FROM partition_mv_3 where key = 238;
+
+DROP MATERIALIZED VIEW partition_mv_1;
+DROP MATERIALIZED VIEW partition_mv_2;
+DROP MATERIALIZED VIEW partition_mv_3;

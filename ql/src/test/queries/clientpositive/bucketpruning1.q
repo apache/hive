@@ -10,6 +10,11 @@ CREATE TABLE srcbucket_pruned(key int, value string) partitioned by (ds string) 
 -- cannot prune 2-key scenarios without a smarter optimizer
 CREATE TABLE srcbucket_unpruned(key int, value string) partitioned by (ds string) CLUSTERED BY (key,value) INTO 16 BUCKETS STORED AS TEXTFILE;
 
+-- valid AND cases: when an AND condition is a bucket column, then pruning should work
+
+explain extended
+select * from srcbucket_pruned where key = 1 and value is not null;
+
 -- good cases
 
 explain extended

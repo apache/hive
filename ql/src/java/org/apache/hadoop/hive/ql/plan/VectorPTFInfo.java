@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 
 /**
- * VectorGroupByAggregrationInfo.
+ * VectorGroupByAggregationInfo.
  *
  * A convenience data structure that has information needed to vectorize reduce sink.
  *
@@ -42,8 +42,16 @@ public class VectorPTFInfo {
   private Type[] partitionColumnVectorTypes;
   private VectorExpression[] partitionExpressions;
 
-  private VectorExpression[] evaluatorInputExpressions;
-  private Type[] evaluatorInputColumnVectorTypes;
+  /**
+   * Two dimensional array for storing input vector expressions for all evaluators, so this will
+   * typically look like: evaluatorInputColumnVectorTypes[evaluatorCount][inputExpressionCount]
+   */
+  private VectorExpression[][] evaluatorInputExpressions;
+  /**
+   * Two dimensional array for storing input column vector types for all evaluators, so this will
+   * typically look like: evaluatorInputColumnVectorTypes[evaluatorCount][inputExpressionCount]
+   */
+  private Type[][] evaluatorInputColumnVectorTypes;
 
   private int[] keyInputColumnMap;
   private int[] nonKeyInputColumnMap;
@@ -123,19 +131,19 @@ public class VectorPTFInfo {
     this.partitionExpressions = partitionExpressions;
   }
 
-  public VectorExpression[] getEvaluatorInputExpressions() {
+  public VectorExpression[][] getEvaluatorInputExpressions() {
     return evaluatorInputExpressions;
   }
 
-  public void setEvaluatorInputExpressions(VectorExpression[] evaluatorInputExpressions) {
+  public void setEvaluatorInputExpressions(VectorExpression[][] evaluatorInputExpressions) {
     this.evaluatorInputExpressions = evaluatorInputExpressions;
   }
 
-  public Type[] getEvaluatorInputColumnVectorTypes() {
+  public Type[][] getEvaluatorInputColumnVectorTypes() {
     return evaluatorInputColumnVectorTypes;
   }
 
-  public void setEvaluatorInputColumnVectorTypes(Type[] evaluatorInputColumnVectorTypes) {
+  public void setEvaluatorInputColumnVectorTypes(Type[][] evaluatorInputColumnVectorTypes) {
     this.evaluatorInputColumnVectorTypes = evaluatorInputColumnVectorTypes;
   }
 

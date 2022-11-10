@@ -240,6 +240,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     HepProgram program = HepProgram.builder()
             .addRuleInstance(new AdjustProjectForCountAggregateRule(false))
             .addRuleInstance(new AdjustProjectForCountAggregateRule(true))
+            .addRuleInstance(HiveFilterJoinRule.JOIN)
             .addRuleInstance(HiveFilterJoinRule.FILTER_ON_JOIN)
             .addRuleInstance(HiveFilterProjectTransposeRule.INSTANCE)
             .addRuleInstance(FLATTEN_CORRELATED_CONDITION_RULE)
@@ -1360,6 +1361,11 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     // For SEMI/ANTI join decorrelate it's input directly,
     // because the correlate variables can only be propagated from
     // the left side, which is not supported yet.
+    if (cm != null && cm.mapRefRelToCorRef != null &&
+      cm.mapRefRelToCorRef.containsKey(rel) && rel.getJoinType().isOuterJoin()) {
+      throw new UnsupportedOperationException("Correlated subqueries in outer join conditions not supported yet." +
+        " Join condition: " + rel.getCondition());
+    }
     if (!rel.getJoinType().projectsRight()) {
       return decorrelateRel((RelNode) rel);
     }
@@ -1686,7 +1692,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     return ret.succeed();
   }
 
-  private static RelNode stripHep(RelNode rel) {
+  static RelNode stripHep(RelNode rel) {
     if (rel instanceof HepRelVertex) {
       HepRelVertex hepRelVertex = (HepRelVertex) rel;
       rel = hepRelVertex.getCurrentRel();

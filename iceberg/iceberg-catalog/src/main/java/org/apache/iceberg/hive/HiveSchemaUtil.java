@@ -19,16 +19,22 @@
 
 package org.apache.iceberg.hive;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.Pair;
 
 
 public final class HiveSchemaUtil {
@@ -66,9 +72,9 @@ public final class HiveSchemaUtil {
    * @return An equivalent Iceberg Schema
    */
   public static Schema convert(List<FieldSchema> fieldSchemas, boolean autoConvert) {
-    List<String> names = new ArrayList<>(fieldSchemas.size());
-    List<TypeInfo> typeInfos = new ArrayList<>(fieldSchemas.size());
-    List<String> comments = new ArrayList<>(fieldSchemas.size());
+    List<String> names = Lists.newArrayListWithExpectedSize(fieldSchemas.size());
+    List<TypeInfo> typeInfos = Lists.newArrayListWithExpectedSize(fieldSchemas.size());
+    List<String> comments = Lists.newArrayListWithExpectedSize(fieldSchemas.size());
 
     for (FieldSchema col : fieldSchemas) {
       names.add(col.getName());
@@ -134,6 +140,147 @@ public final class HiveSchemaUtil {
     return HiveSchemaConverter.convert(typeInfo, false);
   }
 
+  /**
+   * Returns a SchemaDifference containing those fields which are present in only one of the collections, as well as
+   * those fields which are present in both (in terms of the name) but their type or comment has changed.
+   * @param minuendCollection Collection of fields to subtract from
+   * @param subtrahendCollection Collection of fields to subtract
+   * @param bothDirections Whether or not to compute the missing fields from the minuendCollection as well
+   * @return the difference between the two schemas
+   */
+  public static SchemaDifference getSchemaDiff(Collection<FieldSchema> minuendCollection,
+                                               Collection<FieldSchema> subtrahendCollection, boolean bothDirections) {
+    SchemaDifference difference = new SchemaDifference();
+
+    for (FieldSchema first : minuendCollection) {
+      boolean found = false;
+      for (FieldSchema second : subtrahendCollection) {
+        if (Objects.equals(first.getName(), second.getName())) {
+          found = true;
+          if (!Objects.equals(first.getType(), second.getType())) {
+            difference.addTypeChanged(first);
+          }
+          if (!Objects.equals(first.getComment(), second.getComment())) {
+            difference.addCommentChanged(first);
+          }
+        }
+      }
+      if (!found) {
+        difference.addMissingFromSecond(first);
+      }
+    }
+
+    if (bothDirections) {
+      SchemaDifference otherWay = getSchemaDiff(subtrahendCollection, minuendCollection, false);
+      otherWay.getMissingFromSecond().forEach(difference::addMissingFromFirst);
+    }
+
+    return difference;
+  }
+
+  /**
+   * Compares two lists of columns to each other to find the (singular) column that was moved. This works ideally for
+   * identifying the column that was moved by an ALTER TABLE ... CHANGE COLUMN command.
+   *
+   * Note: This method is only suitable for finding a single reordered column.
+   * Consequently, this method is NOT suitable for handling scenarios where multiple column reorders are possible at the
+   * same time, such as ALTER TABLE ... REPLACE COLUMNS commands.
+   *
+   * @param updated The list of the columns after some updates have taken place (if any)
+   * @param old The list of the original columns
+   * @param renameMapping A map of name aliases for the updated columns (e.g. if a column rename occurred)
+   * @return A pair consisting of the reordered column's name, and its preceding column's name (if any).
+   *         Returns a null in case there are no out of order columns.
+   */
+  public static Pair<String, Optional<String>> getReorderedColumn(List<FieldSchema> updated,
+                                                                        List<FieldSchema> old,
+                                                                        Map<String, String> renameMapping) {
+    // first collect the updated index for each column
+    Map<String, Integer> nameToNewIndex = Maps.newHashMap();
+    for (int i = 0; i < updated.size(); ++i) {
+      String updatedCol = renameMapping.getOrDefault(updated.get(i).getName(), updated.get(i).getName());
+      nameToNewIndex.put(updatedCol, i);
+    }
+
+    // find the column which has the highest index difference between its position in the old vs the updated list
+    String reorderedColName = null;
+    int maxIndexDiff = 0;
+    for (int oldIndex = 0; oldIndex < old.size(); ++oldIndex) {
+      String oldName = old.get(oldIndex).getName();
+      Integer newIndex = nameToNewIndex.get(oldName);
+      if (newIndex != null) {
+        int indexDiff = Math.abs(newIndex - oldIndex);
+        if (maxIndexDiff < indexDiff) {
+          maxIndexDiff = indexDiff;
+          reorderedColName = oldName;
+        }
+      }
+    }
+
+    if (maxIndexDiff == 0) {
+      // if there are no changes in index, there were no reorders
+      return null;
+    } else {
+      int newIndex = nameToNewIndex.get(reorderedColName);
+      if (newIndex > 0) {
+        // if the newIndex > 0, that means the column was moved after another column:
+        // ALTER TABLE tbl CHANGE COLUMN reorderedColName reorderedColName type AFTER previousColName;
+        String previousColName = renameMapping.getOrDefault(
+            updated.get(newIndex - 1).getName(), updated.get(newIndex - 1).getName());
+        return Pair.of(reorderedColName, Optional.of(previousColName));
+      } else {
+        // if the newIndex is 0, that means the column was moved to the first position:
+        // ALTER TABLE tbl CHANGE COLUMN reorderedColName reorderedColName type FIRST;
+        return Pair.of(reorderedColName, Optional.empty());
+      }
+    }
+  }
+
+  public static class SchemaDifference {
+    private final List<FieldSchema> missingFromFirst = Lists.newArrayList();
+    private final List<FieldSchema> missingFromSecond = Lists.newArrayList();
+    private final List<FieldSchema> typeChanged = Lists.newArrayList();
+    private final List<FieldSchema> commentChanged = Lists.newArrayList();
+
+    public List<FieldSchema> getMissingFromFirst() {
+      return missingFromFirst;
+    }
+
+    public List<FieldSchema> getMissingFromSecond() {
+      return missingFromSecond;
+    }
+
+    public List<FieldSchema> getTypeChanged() {
+      return typeChanged;
+    }
+
+    public List<FieldSchema> getCommentChanged() {
+      return commentChanged;
+    }
+
+    public boolean isEmpty() {
+      return missingFromFirst.isEmpty() && missingFromSecond.isEmpty() && typeChanged.isEmpty() &&
+          commentChanged.isEmpty();
+    }
+
+    void addMissingFromFirst(FieldSchema field) {
+      missingFromFirst.add(field);
+    }
+
+    void addMissingFromSecond(FieldSchema field) {
+      missingFromSecond.add(field);
+    }
+
+    void addTypeChanged(FieldSchema field) {
+      typeChanged.add(field);
+    }
+
+    void addCommentChanged(FieldSchema field) {
+      commentChanged.add(field);
+    }
+  }
+
+
   private static String convertToTypeString(Type type) {
     switch (type.typeId()) {
       case BOOLEAN:
@@ -149,6 +296,8 @@ public final class HiveSchemaUtil {
       case DATE:
         return "date";
       case TIME:
+      case STRING:
+      case UUID:
         return "string";
       case TIMESTAMP:
         Types.TimestampType timestampType = (Types.TimestampType) type;
@@ -156,11 +305,7 @@ public final class HiveSchemaUtil {
           return "timestamp with local time zone";
         }
         return "timestamp";
-      case STRING:
-      case UUID:
-        return "string";
       case FIXED:
-        return "binary";
       case BINARY:
         return "binary";
       case DECIMAL:

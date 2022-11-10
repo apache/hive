@@ -69,6 +69,6 @@ public class TestQOutProcessor {
   }
 
   private String processLine(String line) {
-    return qOutProcessor.processLine(line, null).get();
+    return qOutProcessor.processLine(line).get();
   }
 }

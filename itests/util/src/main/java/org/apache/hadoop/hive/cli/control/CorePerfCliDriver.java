@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.cli.control;
 
-import java.io.File;
-
 import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
@@ -46,20 +44,15 @@ public class CorePerfCliDriver extends CliAdapter {
   }
 
   @Override
-  public void beforeClass() {
+  public void beforeClass() throws Exception {
     MiniClusterType miniMR = cliConfig.getClusterType();
     String hiveConfDir = cliConfig.getHiveConfDir();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
 
-    try {
-      qt = new QTestUtil(QTestArguments.QTestArgumentsBuilder.instance()
-          .withOutDir(cliConfig.getResultsDir()).withLogDir(cliConfig.getLogDir())
-          .withClusterType(miniMR).withConfDir(hiveConfDir).withInitScript(initScript)
-          .withCleanupScript(cleanupScript).withLlapIo(false).build());
-    } catch (Exception e) {
-      throw new RuntimeException("QTest initialization failed. See cause for details.", e);
-    }
+    qt = new QTestUtil(QTestArguments.QTestArgumentsBuilder.instance().withOutDir(cliConfig.getResultsDir())
+        .withLogDir(cliConfig.getLogDir()).withClusterType(miniMR).withConfDir(hiveConfDir).withInitScript(initScript)
+        .withCleanupScript(cleanupScript).withLlapIo(false).build());
   }
 
   @Override
@@ -68,21 +61,13 @@ public class CorePerfCliDriver extends CliAdapter {
   }
 
   @Override
-  public void setUp() {
-    try {
-      qt.newSession();
-    } catch (Exception e) {
-      throw new RuntimeException("Create session failed. See cause for details.", e);
-    }
+  public void setUp() throws Exception {
+    qt.newSession();
   }
 
   @Override
-  public void tearDown() {
-    try {
-      qt.clearPostTestEffects();
-    } catch (Exception e) {
-      throw new RuntimeException("Post test clean up failed. See cause for details.", e);
-    }
+  public void tearDown() throws Exception {
+    qt.clearPostTestEffects();
   }
 
   @Override
@@ -96,16 +81,16 @@ public class CorePerfCliDriver extends CliAdapter {
     try {
       LOG.info("Begin query: " + fname);
 
-      qt.addFile(fpath);
-      qt.cliInit(new File(fpath));
+      qt.setInputFile(fpath);
+      qt.cliInit();
 
       try {
-        qt.executeClient(fname);
+        qt.executeClient();
       } catch (CommandProcessorException e) {
         qt.failedQuery(e.getCause(), e.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
       }
 
-      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
+      QTestProcessExecResult result = qt.checkCliDriverResults();
       if (result.getReturnCode() != 0) {
         String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ? QTestUtil.DEBUG_HINT :
             "\r\n" + result.getCapturedOutput();

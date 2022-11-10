@@ -61,13 +61,14 @@ final class MajorQueryCompactor extends QueryCompactor {
     List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName);
     List<String> dropQueries = getDropQueries(tmpTableName);
     runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
-        Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries);
+        Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries,
+            table.getParameters());
   }
 
   @Override
   protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
       ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    Util.cleanupEmptyDir(conf, tmpTableName);
+    // We don't need to delete the empty directory, as empty base is a valid scenario.
   }
 
   /**

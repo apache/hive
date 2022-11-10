@@ -23,23 +23,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
 /**
  * NOTE: before LLAP branch merge, there's no LLAP code here.
  * There used to be a global static map of IOContext-s inside IOContext (Hive style!).
  * Unfortunately, due to variety of factors, this is now a giant fustercluck.
- * 1) Spark doesn't apparently care about multiple inputs, but has multiple threads, so one
- *    threadlocal IOContext was added for it.
- * 2) LLAP has lots of tasks in the same process so globals no longer cut it either.
- * 3) However, Tez runs 2+ threads for one task (e.g. TezTaskEventRouter and TezChild), and these
+ * 1) LLAP has lots of tasks in the same process so globals no longer cut it either.
+ * 2) However, Tez runs 2+ threads for one task (e.g. TezTaskEventRouter and TezChild), and these
  *    surprisingly enough need the same context. Tez, in its infinite wisdom, doesn't allow them
  *    to communicate in any way nor provide any shared context.
  * So we are going to...
  * 1) Keep the good ol' global map for MR and Tez. Hive style!
- * 2) Keep the threadlocal for Spark. Hive style!
- * 3) Create inheritable (TADA!) threadlocal with attemptId, only set in LLAP; that will propagate
+ * 2) Create inheritable (TADA!) threadlocal with attemptId, only set in LLAP; that will propagate
  *    to all the little Tez threads, and we will keep a map per attempt. Hive style squared!
  */
 public class IOContextMap {
@@ -49,12 +45,6 @@ public class IOContextMap {
   /** Used for Tez and MR */
   private static final ConcurrentHashMap<String, IOContext> globalMap =
       new ConcurrentHashMap<String, IOContext>();
-
-  /** Used for Spark */
-  private static final ThreadLocal<IOContext> sparkThreadLocal = new ThreadLocal<IOContext>(){
-    @Override
-    protected IOContext initialValue() { return new IOContext(); }
-  };
 
   /** Used for Tez+LLAP */
   private static final ConcurrentHashMap<String, ConcurrentHashMap<String, IOContext>> attemptMap =
@@ -82,9 +72,6 @@ public class IOContextMap {
   }
 
   public static IOContext get(Configuration conf) {
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-      return sparkThreadLocal.get();
-    }
     String inputName = conf.get(Utilities.INPUT_NAME);
     if (inputName == null) {
       inputName = DEFAULT_CONTEXT;
@@ -112,7 +99,6 @@ public class IOContextMap {
   }
 
   public static void clear() {
-    sparkThreadLocal.remove();
     globalMap.clear();
   }
 }

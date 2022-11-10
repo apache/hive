@@ -439,7 +439,7 @@ public final class ObjectInspectorConverters {
     UnionObjectInspector inputOI;
     SettableUnionObjectInspector outputOI;
 
-    // Object inspectors for the tags for the input and output unionss
+    // Object inspectors for the tags for the input and output unions
     List<? extends ObjectInspector> inputTagsOIs;
     List<? extends ObjectInspector> outputTagsOIs;
 

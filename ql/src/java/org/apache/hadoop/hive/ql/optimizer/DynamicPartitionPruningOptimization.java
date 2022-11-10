@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -41,15 +40,12 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.spark.CombineEquivalentWorkResolver;
-import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils.DynamicListContext;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils.DynamicPartitionPrunerContext;
@@ -61,8 +57,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.parse.SemiJoinHint;
-import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
-import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicValue;
@@ -84,11 +78,14 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+
+import static org.apache.hadoop.hive.ql.exec.FunctionRegistry.BLOOM_FILTER_FUNCTION;
 
 /**
  * This optimization looks for expressions of the kind "x IN (RS[n])". If such
@@ -107,19 +104,16 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     ParseContext parseContext;
     if (procCtx instanceof OptimizeTezProcContext) {
       parseContext = ((OptimizeTezProcContext) procCtx).parseContext;
-    } else if (procCtx instanceof OptimizeSparkProcContext) {
-      parseContext = ((OptimizeSparkProcContext) procCtx).getParseContext();
     } else {
-      throw new IllegalArgumentException("expected parseContext to be either " +
-          "OptimizeTezProcContext or OptimizeSparkProcContext, but found " +
+      throw new IllegalArgumentException("expected parseContext " +
+          "OptimizeTezProcContext, but found " +
           procCtx.getClass().getName());
     }
 
     FilterOperator filter = (FilterOperator) nd;
     FilterDesc desc = filter.getConf();
 
-    if (!parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING) &&
-        !parseContext.getConf().isSparkDPPAny()) {
+    if (!parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING)) {
       // nothing to do when the optimization is off
       return null;
     }
@@ -154,10 +148,6 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     }
 
     boolean semiJoin = parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION);
-    if (HiveConf.getVar(parseContext.getConf(), HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-      //TODO HIVE-16862: Implement a similar feature like "hive.tez.dynamic.semijoin.reduction" in hive on spark
-      semiJoin = false;
-    }
 
     List<ExprNodeDesc> newBetweenNodes = new ArrayList<>();
     List<ExprNodeDesc> newBloomFilterNodes = new ArrayList<>();
@@ -352,7 +342,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     }
     internalColName.append(colExpr.getColumn());
 
-    // fetch table ablias
+    // fetch table alias
     ExprNodeDescUtils.ColumnOrigin columnOrigin =
             ExprNodeDescUtils.findColumnOrigin(exprNodeDesc, ctx.generator);
 
@@ -479,10 +469,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     // we also need the expr for the partitioned table
     ExprNodeDesc partKey = ctx.parent.getChildren().get(0);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("key expr: " + key);
-      LOG.debug("partition key expr: " + partKey);
-    }
+    LOG.debug("key expr: {}; partition key expr: {}", key, partKey);
 
     List<ExprNodeDesc> keyExprs = new ArrayList<ExprNodeDesc>();
     keyExprs.add(key);
@@ -550,29 +537,6 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
         eventDesc.setPredicate(predicate.clone());
       }
       OperatorFactory.getAndMakeChild(eventDesc, groupByOp);
-    } else {
-      // Must be spark branch
-      SparkPartitionPruningSinkDesc desc = new SparkPartitionPruningSinkDesc();
-      desc.setTable(PlanUtils.getReduceValueTableDesc(PlanUtils
-          .getFieldSchemasFromColumnList(keyExprs, "key")));
-      desc.addTarget(column, columnType, partKey, null, ts);
-      SparkPartitionPruningSinkOperator dppSink = (SparkPartitionPruningSinkOperator)
-          OperatorFactory.getAndMakeChild(desc, groupByOp);
-      if (HiveConf.getBoolVar(parseContext.getConf(),
-          ConfVars.HIVE_COMBINE_EQUIVALENT_WORK_OPTIMIZATION)) {
-        mayReuseExistingDPPSink(parentOfRS, Arrays.asList(selectOp, groupByOp, dppSink));
-      }
-    }
-  }
-
-  private void mayReuseExistingDPPSink(Operator<? extends OperatorDesc> branchingOP,
-      List<Operator<? extends OperatorDesc>> newDPPBranch) {
-    SparkPartitionPruningSinkOperator reusableDPP = SparkUtilities.findReusableDPPSink(branchingOP,
-        newDPPBranch);
-    if (reusableDPP != null) {
-      CombineEquivalentWorkResolver.combineEquivalentDPPSinks(reusableDPP,
-          (SparkPartitionPruningSinkOperator) newDPPBranch.get(newDPPBranch.size() - 1));
-      branchingOP.removeChild(newDPPBranch.get(0));
     }
   }
 
@@ -675,8 +639,10 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
       AggregationDesc max = new AggregationDesc("max",
               FunctionRegistry.getGenericUDAFEvaluator("max", aggFnOIs, false, false),
               params, false, Mode.PARTIAL1);
-      AggregationDesc bloomFilter = new AggregationDesc("bloom_filter",
-              FunctionRegistry.getGenericUDAFEvaluator("bloom_filter", aggFnOIs, false, false),
+      // we don't add numThreads here since PARTIAL1 mode is for VectorUDAFBloomFilter which does
+      // not support numThreads parameter
+      AggregationDesc bloomFilter = new AggregationDesc(BLOOM_FILTER_FUNCTION,
+              FunctionRegistry.getGenericUDAFEvaluator(BLOOM_FILTER_FUNCTION, aggFnOIs, false, false),
               params, false, Mode.PARTIAL1);
       GenericUDAFBloomFilterEvaluator bloomFilterEval =
           (GenericUDAFBloomFilterEvaluator) bloomFilter.getGenericUDAFEvaluator();
@@ -776,6 +742,9 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
                       rsValueCols.get(2).getTypeInfo(),
                       Utilities.ReduceField.VALUE + "." +
                               gbOutputNames.get(2), "", false));
+      int numThreads = parseContext.getConf().getIntVar(HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS);
+      TypeInfo intTypeInfo = TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(Integer.TYPE);
+      bloomFilterFinalParams.add(new ExprNodeConstantDesc(intTypeInfo, numThreads));
 
       AggregationDesc min = new AggregationDesc("min",
               FunctionRegistry.getGenericUDAFEvaluator("min", minFinalFnOIs,
@@ -785,8 +754,8 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
               FunctionRegistry.getGenericUDAFEvaluator("max", maxFinalFnOIs,
                       false, false),
               maxFinalParams, false, Mode.FINAL);
-      AggregationDesc bloomFilter = new AggregationDesc("bloom_filter",
-              FunctionRegistry.getGenericUDAFEvaluator("bloom_filter", bloomFilterFinalFnOIs,
+      AggregationDesc bloomFilter = new AggregationDesc(BLOOM_FILTER_FUNCTION,
+              FunctionRegistry.getGenericUDAFEvaluator(BLOOM_FILTER_FUNCTION, bloomFilterFinalFnOIs,
                       false, false),
               bloomFilterFinalParams, false, Mode.FINAL);
       GenericUDAFBloomFilterEvaluator bloomFilterEval = (GenericUDAFBloomFilterEvaluator) bloomFilter.getGenericUDAFEvaluator();
@@ -864,7 +833,7 @@ public class DynamicPartitionPruningOptimization implements SemanticNodeProcesso
     List<String> dynamicValueIDs = new ArrayList<String>();
     dynamicValueIDs.add(keyBaseAlias + "_min");
     dynamicValueIDs.add(keyBaseAlias + "_max");
-    dynamicValueIDs.add(keyBaseAlias + "_bloom_filter");
+    dynamicValueIDs.add(keyBaseAlias + "_" + BLOOM_FILTER_FUNCTION);
 
     runtimeValuesInfo.setTableDesc(rsFinalTableDesc);
     runtimeValuesInfo.setDynamicValueIDs(dynamicValueIDs);

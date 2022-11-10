@@ -107,7 +107,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
     setState(OperationState.RUNNING);
     try {
       String command = getStatement().trim();
-      String[] tokens = statement.split("\\s");
+      String[] tokens = command.split("\\s");
       String commandArgs = command.substring(tokens[0].length()).trim();
 
       CommandProcessorResponse response = commandProcessor.run(commandArgs);

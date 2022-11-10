@@ -131,13 +131,14 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       poolLock.lock();
       try {
         while ((result = pool.poll()) == null) {
-          notEmpty.await(100, TimeUnit.MILLISECONDS);
+          LOG.info("Awaiting Tez session to become available in session pool");
+          notEmpty.await(10, TimeUnit.SECONDS);
         }
       } finally {
         poolLock.unlock();
       }
       if (result.tryUse(false)) return result;
-      LOG.info("Couldn't use a session [" + result + "]; attempting another one");
+      LOG.info("Failed to use a session [" + result + "]; attempting another one");
     }
   }
 
@@ -178,9 +179,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     if (!session.stopUsing()) return true; // The session will be restarted and return to us.
     boolean canPutBack = putSessionBack(session, true);
     if (canPutBack) return true;
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Closing an unneeded returned session " + session);
-    }
+    LOG.debug("Closing an unneeded returned session {}", session);
 
     if (isAsync) return false; // The caller is responsible for destroying the session.
     try {
@@ -265,10 +264,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       }
       newSession.open();
       if (!putSessionBack(newSession, false)) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Closing an unneeded session " + newSession
-              + "; trying to replace " + oldSession);
-        }
+        LOG.debug("Closing an unneeded session {}; trying to replace {}", newSession, oldSession);
         try {
           newSession.close(false);
         } catch (Exception ex) {

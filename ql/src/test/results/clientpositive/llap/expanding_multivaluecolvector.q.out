@@ -47,15 +47,15 @@ STAGE PLANS:
                   Statistics: Num rows: 6088 Data size: 984180 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:str:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:str:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: id (type: int), split(str, '#') (type: array<string>)
                     outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 3]
-                        selectExpressions: VectorUDFAdaptor(split(str, '#')) -> 3:array<string>
+                        projectedOutputColumnNums: [0, 4]
+                        selectExpressions: VectorUDFAdaptor(split(str, '#')) -> 4:array<string>
                     Statistics: Num rows: 6088 Data size: 984180 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -205,15 +205,15 @@ STAGE PLANS:
                   Statistics: Num rows: 4534 Data size: 1526284 Basic stats: PARTIAL Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:str:string, 2:part:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:str:string, 2:part:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: id (type: int), UDFToInteger(split(str, '#')[2]) (type: int), part (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 6, 2]
-                        selectExpressions: CastStringToLong(col 5:string)(children: ListIndexColScalar(col 4:array<string>, col 2:int)(children: VectorUDFAdaptor(split(str, '#')) -> 4:array<string>) -> 5:string) -> 6:int
+                        projectedOutputColumnNums: [0, 7, 2]
+                        selectExpressions: CastStringToLong(col 6:string)(children: ListIndexColScalar(col 5:array<string>, col 2:int)(children: VectorUDFAdaptor(split(str, '#')) -> 5:array<string>) -> 6:string) -> 7:int
                     Statistics: Num rows: 4534 Data size: 1526284 Basic stats: PARTIAL Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
@@ -224,8 +224,8 @@ STAGE PLANS:
                           className: VectorReduceSinkStringOperator
                           keyColumns: 2:string
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumns: 0:int, 6:int
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: 0:int, 7:int
                       Statistics: Num rows: 4534 Data size: 1526284 Basic stats: PARTIAL Column stats: PARTIAL
                       value expressions: _col0 (type: int), _col1 (type: int)
             Execution mode: vectorized, llap
@@ -250,7 +250,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: a
                 reduceColumnSortOrder: +
                 allNative: false

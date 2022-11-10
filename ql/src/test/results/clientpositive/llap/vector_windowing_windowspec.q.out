@@ -78,7 +78,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: i (type: int), s (type: string), b (type: bigint)
                     null sort order: azz
@@ -88,7 +88,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         keyColumns: 2:int, 7:string, 3:bigint
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 2:int
                     Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
@@ -112,7 +112,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: azz
                 reduceColumnSortOrder: +++
                 allNative: false
@@ -152,6 +152,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumLong
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorStreamingLongSum]
                       functionInputExpressions: [col 2:bigint]
@@ -339,7 +340,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: d (type: double), s (type: string), f (type: float)
                     null sort order: azz
@@ -349,7 +350,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         keyColumns: 5:double, 7:string, 4:float
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 5:double
                     Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
@@ -373,7 +374,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: azz
                 reduceColumnSortOrder: +++
                 allNative: false
@@ -413,6 +414,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: true
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorStreamingDoubleSum]
                       functionInputExpressions: [col 2:float]
@@ -600,7 +602,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: ts (type: timestamp), f (type: float)
                     null sort order: az
@@ -610,7 +612,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         keyColumns: 8:timestamp, 4:float
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 8:timestamp
                         valueColumns: 7:string
                     Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
@@ -636,8 +638,8 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                notVectorizedReason: PTF operator: sum only CURRENT ROW end frame is supported for RANGE
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -828,7 +830,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: ts (type: timestamp), s (type: string), f (type: float)
                     null sort order: azz
@@ -838,7 +840,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         keyColumns: 8:timestamp, 7:string, 4:float
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 8:timestamp
                     Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
@@ -862,8 +864,8 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: avg only UNBOUNDED start frame is supported
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                notVectorizedReason: PTF operator: avg UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -1054,7 +1056,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: t (type: tinyint), s (type: string), d (type: double)
                     null sort order: aza
@@ -1064,7 +1066,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         keyColumns: 0:tinyint, 7:string, 5:double
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 0:tinyint
                     Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
@@ -1088,8 +1090,8 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: avg only UNBOUNDED start frame is supported
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                notVectorizedReason: PTF operator: avg UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -1280,7 +1282,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: ts (type: timestamp), s (type: string)
                     null sort order: az
@@ -1290,7 +1292,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         keyColumns: 8:timestamp, 7:string
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 8:timestamp
                         valueColumns: 2:int
                     Statistics: Num rows: 1 Data size: 228 Basic stats: COMPLETE Column stats: NONE
@@ -1316,7 +1318,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
@@ -1356,6 +1358,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumLong
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorLongSum]
                       functionInputExpressions: [col 2:int]
@@ -1543,7 +1546,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: ts (type: timestamp), f (type: float)
                     null sort order: az
@@ -1553,7 +1556,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         keyColumns: 8:timestamp, 4:float
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 8:timestamp
                     Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
@@ -1577,7 +1580,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
@@ -1617,6 +1620,7 @@ STAGE PLANS:
                               window function: GenericUDAFSumDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleSum]
                       functionInputExpressions: [col 1:float]
@@ -1804,7 +1808,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: ts (type: timestamp), f (type: float)
                     null sort order: az
@@ -1814,7 +1818,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         keyColumns: 8:timestamp, 4:float
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 8:timestamp
                     Statistics: Num rows: 1 Data size: 44 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
@@ -1838,8 +1842,8 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: sum only UNBOUNDED start frame is supported
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                notVectorizedReason: PTF operator: sum UNBOUNDED end frame is required for ROWS window type
                 vectorized: false
             Reduce Operator Tree:
               Select Operator
@@ -2030,7 +2034,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: s (type: string), i (type: int)
                     null sort order: az
@@ -2040,7 +2044,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         keyColumns: 7:string, 2:int
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 7:string
                         valueColumns: 5:double
                     Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
@@ -2066,7 +2070,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
@@ -2106,6 +2110,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleAvg]
                       functionInputExpressions: [col 2:double]
@@ -2201,7 +2206,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: s (type: string), i (type: int)
                     null sort order: az
@@ -2211,7 +2216,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         keyColumns: 7:string, 2:int
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 7:string
                         valueColumns: 5:double
                     Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
@@ -2237,7 +2242,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
@@ -2277,6 +2282,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleAvg]
                       functionInputExpressions: [col 2:double]
@@ -2372,7 +2378,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:bo:boolean, 7:s:string, 8:ts:timestamp, 9:dec:decimal(10,0)/DECIMAL_64, 10:bin:binary, 11:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 12:ROW__IS__DELETED:boolean]
                   Reduce Output Operator
                     key expressions: s (type: string), i (type: int)
                     null sort order: az
@@ -2382,7 +2388,7 @@ STAGE PLANS:
                         className: VectorReduceSinkObjectHashOperator
                         keyColumns: 7:string, 2:int
                         native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         partitionColumns: 7:string
                         valueColumns: 5:double
                     Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
@@ -2408,7 +2414,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: az
                 reduceColumnSortOrder: ++
                 allNative: false
@@ -2448,6 +2454,7 @@ STAGE PLANS:
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
                       className: VectorPTFOperator
                       evaluatorClasses: [VectorPTFEvaluatorDoubleAvg]
                       functionInputExpressions: [col 2:double]

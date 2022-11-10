@@ -222,7 +222,7 @@ public class UDFToLong extends UDF {
     if (i == null) {
       return null;
     } else {
-      longWritable.set(i.getSeconds());
+      longWritable.set(UDFUtils.getTimestampTZFromTimestamp(i.getTimestamp()).getEpochSecond());
       return longWritable;
     }
   }

@@ -42,6 +42,7 @@ import org.apache.thrift.transport.TSaslClientTransport;
 import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +80,7 @@ public final class PlainSaslHelper {
   }
 
   public static TTransport getPlainTransport(String username, String password,
-    TTransport underlyingTransport) throws SaslException {
+    TTransport underlyingTransport) throws SaslException, TTransportException {
     return new TSaslClientTransport("PLAIN", null, null, null, new HashMap<String, String>(),
       new PlainCallbackHandler(username, password), underlyingTransport);
   }
@@ -107,7 +108,7 @@ public final class PlainSaslHelper {
     }
 
     @Override
-    public TTransport getTransport(final TTransport trans) {
+    public TTransport getTransport(final TTransport trans) throws TTransportException {
       TSocket tSocket = null;
       // Attempt to avoid authentication if only we can fetch the client IP address and it
       // happens to be from the same domain as the server.

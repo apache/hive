@@ -395,17 +395,13 @@ public class AMReporter extends AbstractService {
 
     @Override
     protected Void callInternal() {
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("Attempting to heartbeat to AM: " + amNodeInfo);
-      }
+      LOG.trace("Attempting to heartbeat to AM: {}", amNodeInfo);
       TaskSnapshot tasks = amNodeInfo.getTasksSnapshot();
       if (tasks.attempts.isEmpty()) {
         return null;
       }
       try {
-        if (LOG.isTraceEnabled()) {
-          LOG.trace("NodeHeartbeat to: " + amNodeInfo);
-        }
+        LOG.trace("NodeHeartbeat to: {}", amNodeInfo);
         // TODO: if there are more fields perhaps there should be an array of class.
         TezAttemptArray aw = new TezAttemptArray();
         aw.set(tasks.attempts.toArray(new TezTaskAttemptID[tasks.attempts.size()]));

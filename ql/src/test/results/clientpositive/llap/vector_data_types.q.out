@@ -276,7 +276,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1050 Data size: 357661 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: boolean), _col7 (type: string), _col8 (type: timestamp), _col9 (type: decimal(4,2)), _col10 (type: binary)
             Execution mode: vectorized, llap
@@ -294,7 +294,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -399,13 +399,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [12]
-                        selectExpressions: VectorUDFAdaptor(hash(t,si,i,b,f,d,bo,s,ts,dec,bin)) -> 12:int
+                        projectedOutputColumnNums: [13]
+                        selectExpressions: VectorUDFAdaptor(hash(t,si,i,b,f,d,bo,s,ts,dec,bin)) -> 13:int
                     Statistics: Num rows: 1050 Data size: 358026 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(_col0)
                       Group By Vectorization:
-                          aggregators: VectorUDAFSumLong(col 12:int) -> bigint
+                          aggregators: VectorUDAFSumLong(col 13:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           native: false
@@ -421,7 +421,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
@@ -439,7 +439,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true

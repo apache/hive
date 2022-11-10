@@ -141,7 +141,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColGreaterLongScalar(col 13:int, val 0)(children: LongColSubtractLongScalarChecked(col 4:int, val 2) -> 13:int)
+                        predicateExpression: FilterLongColGreaterLongScalar(col 14:int, val 0)(children: LongColSubtractLongScalarChecked(col 4:int, val 2) -> 14:int)
                     predicate: ((cint1 - 2) > 0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -150,8 +150,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 14]
-                          selectExpressions: LongColSubtractLongScalarChecked(col 4:int, val 2) -> 14:int
+                          projectedOutputColumnNums: [4, 15]
+                          selectExpressions: LongColSubtractLongScalarChecked(col 4:int, val 2) -> 15:int
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
@@ -160,7 +160,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int)
             Execution mode: vectorized, llap
@@ -178,7 +178,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -268,7 +268,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColLessLongScalar(col 13:int, val 0)(children: LongColAddLongScalarChecked(col 5:int, val 2) -> 13:int)
+                        predicateExpression: FilterLongColLessLongScalar(col 14:int, val 0)(children: LongColAddLongScalarChecked(col 5:int, val 2) -> 14:int)
                     predicate: ((cint2 + 2) < 0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -277,8 +277,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [5, 14]
-                          selectExpressions: LongColAddLongScalarChecked(col 5:int, val 2) -> 14:int
+                          projectedOutputColumnNums: [5, 15]
+                          selectExpressions: LongColAddLongScalarChecked(col 5:int, val 2) -> 15:int
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
@@ -287,7 +287,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int)
             Execution mode: vectorized, llap
@@ -305,7 +305,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -393,7 +393,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColLessLongScalar(col 13:int, val 0)(children: LongColMultiplyLongScalarChecked(col 5:int, val 2) -> 13:int)
+                        predicateExpression: FilterLongColLessLongScalar(col 14:int, val 0)(children: LongColMultiplyLongScalarChecked(col 5:int, val 2) -> 14:int)
                     predicate: ((cint2 * 2) < 0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -402,8 +402,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [5, 14]
-                          selectExpressions: LongColMultiplyLongScalarChecked(col 5:int, val 2) -> 14:int
+                          projectedOutputColumnNums: [5, 15]
+                          selectExpressions: LongColMultiplyLongScalarChecked(col 5:int, val 2) -> 15:int
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
@@ -412,7 +412,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int)
             Execution mode: vectorized, llap
@@ -430,7 +430,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -518,7 +518,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColGreaterLongScalar(col 13:tinyint, val 0)(children: LongColSubtractLongScalarChecked(col 0:tinyint, val 2) -> 13:tinyint)
+                        predicateExpression: FilterLongColGreaterLongScalar(col 14:tinyint, val 0)(children: LongColSubtractLongScalarChecked(col 0:tinyint, val 2) -> 14:tinyint)
                     predicate: ((ctinyint1 - 2Y) > 0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -527,8 +527,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 14]
-                          selectExpressions: LongColSubtractLongScalarChecked(col 0:tinyint, val 2) -> 14:tinyint
+                          projectedOutputColumnNums: [0, 15]
+                          selectExpressions: LongColSubtractLongScalarChecked(col 0:tinyint, val 2) -> 15:tinyint
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint)
@@ -537,7 +537,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: tinyint)
             Execution mode: vectorized, llap
@@ -555,7 +555,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -645,7 +645,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColLessLongScalar(col 13:tinyint, val 0)(children: LongColAddLongScalarChecked(col 1:tinyint, val 2) -> 13:tinyint)
+                        predicateExpression: FilterLongColLessLongScalar(col 14:tinyint, val 0)(children: LongColAddLongScalarChecked(col 1:tinyint, val 2) -> 14:tinyint)
                     predicate: ((ctinyint2 + 2Y) < 0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -654,8 +654,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 14]
-                          selectExpressions: LongColAddLongScalarChecked(col 1:tinyint, val 2) -> 14:int
+                          projectedOutputColumnNums: [1, 15]
+                          selectExpressions: LongColAddLongScalarChecked(col 1:tinyint, val 2) -> 15:int
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: tinyint)
@@ -664,7 +664,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int)
             Execution mode: vectorized, llap
@@ -682,7 +682,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -770,7 +770,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColLessLongScalar(col 13:smallint, val 0)(children: LongColMultiplyLongScalarChecked(col 3:smallint, val 2) -> 13:smallint)
+                        predicateExpression: FilterLongColLessLongScalar(col 14:smallint, val 0)(children: LongColMultiplyLongScalarChecked(col 3:smallint, val 2) -> 14:smallint)
                     predicate: ((csmallint2 * 2S) < 0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -779,8 +779,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [3, 14]
-                          selectExpressions: LongColMultiplyLongScalarChecked(col 3:smallint, val 2) -> 14:int
+                          projectedOutputColumnNums: [3, 15]
+                          selectExpressions: LongColMultiplyLongScalarChecked(col 3:smallint, val 2) -> 15:int
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: smallint)
@@ -789,7 +789,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int)
             Execution mode: vectorized, llap
@@ -807,7 +807,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1063,7 +1063,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColLessLongScalar(col 5:int, val 50)(children: LongColSubtractLongColumnChecked(col 2:int, col 3:int) -> 5:int)
+                        predicateExpression: FilterLongColLessLongScalar(col 6:int, val 50)(children: LongColSubtractLongColumnChecked(col 2:int, col 3:int) -> 6:int)
                     predicate: ((i1 - i2) < 50) (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1072,8 +1072,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2, 3, 6]
-                          selectExpressions: LongColSubtractLongColumnChecked(col 2:int, col 3:int) -> 6:int
+                          projectedOutputColumnNums: [2, 3, 7]
+                          selectExpressions: LongColSubtractLongColumnChecked(col 2:int, col 3:int) -> 7:int
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col2 (type: int)
@@ -1082,7 +1082,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: int)
             Execution mode: vectorized, llap
@@ -1100,7 +1100,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
@@ -1287,7 +1287,7 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColGreaterLongScalar(col 13:smallint, val 0)(children: PosModLongToLong(col 2, divisor 16385) -> 13:smallint)
+                        predicateExpression: FilterLongColGreaterLongScalar(col 14:smallint, val 0)(children: PosModLongToLong(col 2, divisor 16385) -> 14:smallint)
                     predicate: ((csmallint1 pmod 16385S) > 0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -1305,7 +1305,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: tinyint), _col2 (type: smallint), _col3 (type: smallint), _col4 (type: int), _col5 (type: int), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: float), _col9 (type: float), _col10 (type: double), _col11 (type: double)
             Execution mode: vectorized, llap
@@ -1323,7 +1323,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true

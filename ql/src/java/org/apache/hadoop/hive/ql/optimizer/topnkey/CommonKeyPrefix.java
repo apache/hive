@@ -78,10 +78,10 @@ public final class CommonKeyPrefix {
    *
    *      opKeys: Column[_col0], Column[_col1], Column[_col2], Column[_col3]
    *      parentKeys: Column[KEY._col0], Column[KEY._col1], Column[KEY._col4]
-   *      parentColExprMap: {_col0 -> Column[KEY._col0]}, {_col1 -> Column[KEY._col1]}, {_col4 -> Column[KEY._col4]}
+   *      parentColExprMap: {_col0 -&gt; Column[KEY._col0]}, {_col1 -&gt; Column[KEY._col1]}, {_col4 -&gt; Column[KEY._col4]}
    *
    * Column ordering and null ordering is given by a string where each character represents a column order/null order.
-   * Ex.: a ASC NULLS FIRST, b DESC NULLS LAST, c ASC NULLS LAST -> order="+-+", null order="azz"
+   * Ex.: a ASC NULLS FIRST, b DESC NULLS LAST, c ASC NULLS LAST -&gt; order="+-+", null order="azz"
    *
    * When <code>parentColExprMap</code> is null this method falls back to
    * {@link #map(List, String, String, List, String, String)}.
@@ -90,7 +90,7 @@ public final class CommonKeyPrefix {
    * @param opOrder operator's key column ordering in {@link String} format
    * @param opNullOrder operator's key column null ordering in {@link String} format
    * @param parentKeys {@link List} of {@link ExprNodeDesc}. contains the parent operator's key columns
-   * @param parentColExprMap {@link Map} of {@link String} -> {@link ExprNodeDesc}.
+   * @param parentColExprMap {@link Map} of {@link String} -&gt; {@link ExprNodeDesc}.
    *                                    contains parent operator's key column name {@link ExprNodeDesc} mapping
    * @param parentOrder parent operator's key column ordering in {@link String} format
    * @param parentNullOrder parent operator's key column null ordering in {@link String} format

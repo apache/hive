@@ -42,6 +42,8 @@ POSTHOOK: Input: default@mytable
 POSTHOOK: Input: default@myview
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.key SIMPLE [(mytable)mytable.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.value SIMPLE [(mytable)mytable.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: create materialized view mv2 disable rewrite as
 select count(*) from myview
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -56,6 +58,7 @@ POSTHOOK: Input: default@mytable
 POSTHOOK: Input: default@myview
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv2
+POSTHOOK: Lineage: mv2._c0 EXPRESSION [(mytable)mytable.null, ]
 PREHOOK: query: drop view myview
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@myview

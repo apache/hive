@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * TopNKeyProcessor is a processor for TopNKeyOperator.
- * A TopNKeyOperator will be placed before any ReduceSinkOperator which has a topN property >= 0.
+ * A TopNKeyOperator will be placed before any ReduceSinkOperator which has a topN property &gt;= 0.
  */
 public class TopNKeyProcessor implements SemanticNodeProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(TopNKeyProcessor.class);
@@ -72,6 +72,15 @@ public class TopNKeyProcessor implements SemanticNodeProcessor {
     }
 
     if (reduceSinkDesc.getTopN() > maxTopNAllowed) {
+      return null;
+    }
+
+    // HIVE-26671: We do not want to create a TopNKey processor when the reduce sink
+    // operator contains a count distinct. This would result in a topnkey operator
+    // with an extra group in its sort order. The TopNKey Pushdown Processor could then
+    // push down this operator and it would be incorrect since the count distinct adds
+    // a group that is only temporarily used for calculating a value.
+    if (reduceSinkDesc.hasADistinctColumnIndex()) {
       return null;
     }
 

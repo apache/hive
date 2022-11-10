@@ -160,11 +160,7 @@ public class AvroSerdeUtils {
       fs = FileSystem.get(new URI(schemaFSUrl), conf);
     } catch (IOException ioe) {
       //return null only if the file system in schema is not recognized
-      if (LOG.isDebugEnabled()) {
-        String msg = "Failed to open file system for uri " + schemaFSUrl + " assuming it is not a FileSystem url";
-        LOG.debug(msg, ioe);
-      }
-
+      LOG.debug("Failed to open file system for uri {} assuming it is not a FileSystem url", schemaFSUrl, ioe);
       return null;
     }
     try {

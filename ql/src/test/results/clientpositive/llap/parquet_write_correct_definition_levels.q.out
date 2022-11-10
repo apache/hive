@@ -9,13 +9,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@text_tbl
 PREHOOK: query: INSERT OVERWRITE TABLE text_tbl
-SELECT IF(false, named_struct("b", named_struct("c", 1)), NULL)
+SELECT NULLIF(named_struct("b", named_struct("c", 1)),named_struct("b", named_struct("c", 1)))
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@text_tbl
 POSTHOOK: query: INSERT OVERWRITE TABLE text_tbl
-SELECT IF(false, named_struct("b", named_struct("c", 1)), NULL)
+SELECT NULLIF(named_struct("b", named_struct("c", 1)),named_struct("b", named_struct("c", 1)))
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

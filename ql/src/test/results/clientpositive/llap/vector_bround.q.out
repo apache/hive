@@ -74,15 +74,15 @@ STAGE PLANS:
                   Statistics: Num rows: 9 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:v0:double, 1:v1:double, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:v0:double, 1:v1:double, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: bround(v0) (type: double), bround(v1, 1) (type: double)
                     outputColumnNames: _col0, _col1
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [3, 4]
-                        selectExpressions: FuncBRoundDoubleToDouble(col 0:double) -> 3:double, BRoundWithNumDigitsDoubleToDouble(col 1, decimalPlaces 1) -> 4:double
+                        projectedOutputColumnNums: [4, 5]
+                        selectExpressions: FuncBRoundDoubleToDouble(col 0:double) -> 4:double, BRoundWithNumDigitsDoubleToDouble(col 1, decimalPlaces 1) -> 5:double
                     Statistics: Num rows: 9 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false

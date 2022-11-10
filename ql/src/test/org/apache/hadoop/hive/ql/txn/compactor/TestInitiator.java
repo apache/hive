@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockState;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -55,6 +57,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import org.mockito.Mockito;
+
+import static org.mockito.Mockito.times;
 
 /**
  * Tests for the compactor Initiator thread.
@@ -78,8 +82,8 @@ public class TestInitiator extends CompactorTest {
     rqst = new CompactionRequest("default", "rflw2", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    txnHandler.findNextToCompact(ServerUtils.hostname() + "-193892", "4.0.0");
-    txnHandler.findNextToCompact("nosuchhost-193892", "4.0.0");
+    txnHandler.findNextToCompact(aFindNextCompactRequest(ServerUtils.hostname() + "-193892", WORKER_VERSION));
+    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", WORKER_VERSION));
 
     startInitiator();
 
@@ -105,7 +109,7 @@ public class TestInitiator extends CompactorTest {
     CompactionRequest rqst = new CompactionRequest("default", "rfrw1", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    txnHandler.findNextToCompact("nosuchhost-193892", "4.0.0");
+    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", WORKER_VERSION));
 
     conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, 1L, TimeUnit.MILLISECONDS);
 
@@ -898,7 +902,7 @@ public class TestInitiator extends CompactorTest {
   }
 
   /**
-   * Tests org.apache.hadoop.hive.ql.txn.compactor.CompactorThread#findUserToRunAs(java.lang.String, org.apache.hadoop
+   * Tests org.apache.hadoop.hive.metastore.txn.TxnUtils#findUserToRunAs(java.lang.String, org.apache.hadoop
    * .hive.metastore.api.Table).
    * Used by Worker and Initiator.
    * Initiator caches this via Initiator#resolveUserToRunAs.
@@ -916,13 +920,13 @@ public class TestInitiator extends CompactorTest {
     // user set in config
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
     initiator.setConf(conf);
-    Assert.assertEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
+    Assert.assertEquals(userFromConf, TxnUtils.findUserToRunAs(t.getSd().getLocation(), t, conf));
 
     // table dir owner (is probably not "randomUser123")
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
     // simulate restarting Initiator
     initiator.setConf(conf);
-    Assert.assertNotEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
+    Assert.assertNotEquals(userFromConf, TxnUtils.findUserToRunAs(t.getSd().getLocation(), t, conf));
   }
 
   /**
@@ -978,7 +982,6 @@ public class TestInitiator extends CompactorTest {
 
     // run and fail initiator
     Initiator initiator = Mockito.spy(new Initiator());
-    initiator.setThreadId((int) t.getId());
     initiator.setConf(conf);
     initiator.init(new AtomicBoolean(true));
     doThrow(new RuntimeException("This was thrown on purpose by testInitiatorFailure"))
@@ -1047,9 +1050,8 @@ public class TestInitiator extends CompactorTest {
 
     // need to mock the runtime version, because the manifest file won't be there in the mvn test setup
     Initiator initiator = Mockito.spy(new Initiator());
-    initiator.setThreadId((int) t.getId());
     initiator.setConf(conf);
-    String runtimeVersion = "4.0.0-SNAPSHOT";
+    String runtimeVersion = WORKER_VERSION;
     doReturn(runtimeVersion).when(initiator).getRuntimeVersion();
     initiator.init(new AtomicBoolean(true));
     initiator.run();
@@ -1065,6 +1067,56 @@ public class TestInitiator extends CompactorTest {
     String[] parts = compacts.get(0).getInitiatorId().split("-");
     Assert.assertTrue(parts.length > 1);
     Assert.assertEquals(ServerUtils.hostname(), String.join("-", Arrays.copyOfRange(parts, 0, parts.length - 1)));
+  }
+
+  @Test
+  public void testMetaCache() throws Exception {
+    String dbname = "default";
+    String tableName = "tmc";
+    Table t = newTable(dbname, tableName, true);
+    List<LockComponent> components = new ArrayList<>();
+
+    for (int i = 0; i < 2; i++) {
+      Partition p = newPartition(t, "part" + (i + 1));
+      addBaseFile(t, p, 20L, 20);
+      addDeltaFile(t, p, 21L, 22L, 2);
+      addDeltaFile(t, p, 23L, 24L, 2);
+
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, dbname);
+      comp.setTablename(tableName);
+      comp.setPartitionname("ds=part" + (i + 1));
+      comp.setOperationType(DataOperationType.UPDATE);
+      components.add(comp);
+    }
+    burnThroughTransactions(dbname, tableName, 23);
+    long txnid = openTxn();
+
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnid);
+    LockResponse res = txnHandler.lock(req);
+    Assert.assertEquals(LockState.ACQUIRED, res.getState());
+
+    long writeid = allocateWriteId(dbname, tableName, txnid);
+    Assert.assertEquals(24, writeid);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE, 3);
+    Initiator initiator = Mockito.spy(new Initiator());
+    initiator.setConf(conf);
+    initiator.init(new AtomicBoolean(true));
+    initiator.run();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(2, compacts.size());
+    Mockito.verify(initiator, times(1)).resolveTable(Mockito.any());
+  }
+
+  private static FindNextCompactRequest aFindNextCompactRequest(String workerId, String workerVersion) {
+    FindNextCompactRequest request = new FindNextCompactRequest();
+    request.setWorkerId(workerId);
+    request.setWorkerVersion(workerVersion);
+    return request;
   }
 
   @Override

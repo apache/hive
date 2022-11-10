@@ -45,7 +45,10 @@ public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
       Assert.assertNotNull("Unable to connect to the MetaStore server", client);
       return;
     }
+    start();
+  }
 
+  protected void start() throws Exception {
     port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(),
         conf);
     System.out.println("Starting MetaStore Server on port " + port);

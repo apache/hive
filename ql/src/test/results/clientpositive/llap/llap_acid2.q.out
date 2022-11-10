@@ -227,11 +227,29 @@ cdecimal2 = cast("9.987654321" as decimal(38,18))  where cstring1 = 'N016jPED08o
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap2
 PREHOOK: Output: default@orc_llap2
+PREHOOK: Output: default@orc_llap2
 POSTHOOK: query: update orc_llap2 set cstring1 = 'testvalue', cdecimal1 = cast("3.321" as decimal(10,3)),
 cdecimal2 = cast("9.987654321" as decimal(38,18))  where cstring1 = 'N016jPED08o'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap2
 POSTHOOK: Output: default@orc_llap2
+POSTHOOK: Output: default@orc_llap2
+POSTHOOK: Lineage: orc_llap2.cbigint SIMPLE [(orc_llap2)orc_llap2.FieldSchema(name:cbigint, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cbigint0 SIMPLE [(orc_llap2)orc_llap2.FieldSchema(name:cbigint0, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cbigint1 SIMPLE [(orc_llap2)orc_llap2.FieldSchema(name:cbigint1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cdecimal1 SIMPLE []
+POSTHOOK: Lineage: orc_llap2.cdecimal2 EXPRESSION []
+POSTHOOK: Lineage: orc_llap2.cdouble SIMPLE [(orc_llap2)orc_llap2.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cdouble0 SIMPLE [(orc_llap2)orc_llap2.FieldSchema(name:cdouble0, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cdouble1 SIMPLE [(orc_llap2)orc_llap2.FieldSchema(name:cdouble1, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cfloat SIMPLE [(orc_llap2)orc_llap2.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cfloat0 SIMPLE [(orc_llap2)orc_llap2.FieldSchema(name:cfloat0, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cfloat1 SIMPLE [(orc_llap2)orc_llap2.FieldSchema(name:cfloat1, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cfloat2 SIMPLE [(orc_llap2)orc_llap2.FieldSchema(name:cfloat2, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cint SIMPLE [(orc_llap2)orc_llap2.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cint0 SIMPLE [(orc_llap2)orc_llap2.FieldSchema(name:cint0, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cint1 SIMPLE [(orc_llap2)orc_llap2.FieldSchema(name:cint1, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_llap2.cstring1 SIMPLE []
 PREHOOK: query: select cstring1 from orc_llap_n2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap_n2

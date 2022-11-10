@@ -532,6 +532,7 @@ public class ReduceRecordSource implements RecordSource {
     return rowObjectInspector;
   }
 
+  @Override
   public void setFlushLastRecord(boolean flushLastRecord) {
     this.flushLastRecord = flushLastRecord;
   }

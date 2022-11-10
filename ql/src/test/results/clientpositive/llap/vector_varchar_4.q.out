@@ -159,8 +159,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [14, 15, 16, 17, 18, 19, 20]
-                        selectExpressions: CastLongToVarChar(col 0:tinyint, maxLength 10) -> 14:varchar(10), CastLongToVarChar(col 1:smallint, maxLength 10) -> 15:varchar(10), CastLongToVarChar(col 2:int, maxLength 20) -> 16:varchar(20), CastLongToVarChar(col 3:bigint, maxLength 30) -> 17:varchar(30), CastFloatToVarChar(col 4:float, maxLength 20) -> 18:varchar(20), CastDoubleToVarChar(col 5:double, maxLength 20) -> 19:varchar(20), CastStringGroupToVarChar(col 8:string, maxLength 50) -> 20:varchar(50)
+                        projectedOutputColumnNums: [15, 16, 17, 18, 19, 20, 21]
+                        selectExpressions: CastLongToVarChar(col 0:tinyint, maxLength 10) -> 15:varchar(10), CastLongToVarChar(col 1:smallint, maxLength 10) -> 16:varchar(10), CastLongToVarChar(col 2:int, maxLength 20) -> 17:varchar(20), CastLongToVarChar(col 3:bigint, maxLength 30) -> 18:varchar(30), CastFloatToVarChar(col 4:float, maxLength 20) -> 19:varchar(20), CastDoubleToVarChar(col 5:double, maxLength 20) -> 20:varchar(20), CastStringGroupToVarChar(col 8:string, maxLength 50) -> 21:varchar(50)
                     Statistics: Num rows: 2000 Data size: 410616 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false

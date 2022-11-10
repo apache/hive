@@ -1364,8 +1364,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@numericDataType_n1
 PREHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT tinyint_constraint
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@numericdatatype_n1
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT tinyint_constraint
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@numericdatatype_n1
+POSTHOOK: Output: default@numericdatatype_n1
 PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@numericdatatype_n1
@@ -1523,8 +1527,12 @@ POSTHOOK: Input: default@numericdatatype_n1
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
 PREHOOK: query: ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@numericdatatype_n1
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@numericdatatype_n1
+POSTHOOK: Output: default@numericdatatype_n1
 PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@numericdatatype_n1
@@ -2036,8 +2044,12 @@ Column Name:a       	Default Value:127Y
 	 	 
 PREHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT default_constraint
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@numericdatatype_n1
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT default_constraint
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@numericdatatype_n1
+POSTHOOK: Output: default@numericdatatype_n1
 PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@numericdatatype_n1
@@ -2552,8 +2564,12 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@numericDataType_n1
 PREHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT tinyint_constraint
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@numericdatatype_n1
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: ALTER TABLE numericDataType_n1 DROP CONSTRAINT tinyint_constraint
 POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@numericdatatype_n1
+POSTHOOK: Output: default@numericdatatype_n1
 PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@numericdatatype_n1
@@ -2711,8 +2727,12 @@ POSTHOOK: Input: default@numericdatatype_n1
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
 PREHOOK: query: ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@numericdatatype_n1
+PREHOOK: Output: default@numericdatatype_n1
 POSTHOOK: query: ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@numericdatatype_n1
+POSTHOOK: Output: default@numericdatatype_n1
 PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@numericdatatype_n1

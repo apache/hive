@@ -313,7 +313,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=329849)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=329849)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
@@ -376,7 +376,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=39)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=39)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE

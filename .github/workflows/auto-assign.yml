@@ -5,6 +5,7 @@ on:
 jobs:
   assign_reviewer:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'apache'
     steps:
     - uses: shufo/auto-assign-reviewer-by-files@v1.1.1
       with:

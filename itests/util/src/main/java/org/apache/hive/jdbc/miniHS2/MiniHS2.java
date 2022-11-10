@@ -87,6 +87,7 @@ public class MiniHS2 extends AbstractHiveService {
   private boolean usePortsFromConf = false;
   private PamAuthenticator pamAuthenticator;
   private boolean createTransactionalTables;
+  private int hmsPort = 0;
 
   public enum MiniClusterType {
     MR,
@@ -372,7 +373,7 @@ public class MiniHS2 extends AbstractHiveService {
 
   public void start(Map<String, String> confOverlay) throws Exception {
     if (isMetastoreRemote) {
-      MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), getHiveConf(),
+      hmsPort = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), getHiveConf(),
               false, false, false, false, createTransactionalTables);
       setWareHouseDir(MetastoreConf.getVar(getHiveConf(), MetastoreConf.ConfVars.WAREHOUSE));
     }
@@ -436,6 +437,11 @@ public class MiniHS2 extends AbstractHiveService {
   private boolean isSAMLAuth() {
     return "SAML"
         .equals(HiveConf.getVar(getHiveConf(), ConfVars.HIVE_SERVER2_SAML_CALLBACK_URL));
+  }
+
+  public void graceful_stop() {
+    verifyStarted();
+    hiveServer2.graceful_stop();
   }
 
   public void stop() {
@@ -533,7 +539,7 @@ public class MiniHS2 extends AbstractHiveService {
   /**
    * return connection URL for this server instance
    * @param dbName - DB name to be included in the URL
-   * @param sessionConfExt - Addional string to be appended to sessionConf part of url
+   * @param sessionConfExt - Additional string to be appended to sessionConf part of url
    * @return
    * @throws Exception
    */
@@ -544,7 +550,7 @@ public class MiniHS2 extends AbstractHiveService {
   /**
    * return connection URL for this server instance
    * @param dbName - DB name to be included in the URL
-   * @param sessionConfExt - Addional string to be appended to sessionConf part of url
+   * @param sessionConfExt - Additional string to be appended to sessionConf part of url
    * @param hiveConfExt - Additional string to be appended to HiveConf part of url (excluding the ?)
    * @return
    * @throws Exception
@@ -722,5 +728,9 @@ public class MiniHS2 extends AbstractHiveService {
     } catch (FileNotFoundException e) {
       // Ignore. Safe if it does not exist.
     }
+  }
+
+  public int getHmsPort() {
+    return hmsPort;
   }
 }

@@ -73,22 +73,6 @@ public class PerfLogger {
   public static final String TEZ_GET_SESSION = "TezGetSession";
   public static final String SAVE_TO_RESULTS_CACHE = "saveToResultsCache";
 
-  public static final String SPARK_SUBMIT_TO_RUNNING = "SparkSubmitToRunning";
-  public static final String SPARK_BUILD_PLAN = "SparkBuildPlan";
-  public static final String SPARK_BUILD_RDD_GRAPH = "SparkBuildRDDGraph";
-  public static final String SPARK_CREATE_EXPLAIN_PLAN = "SparkCreateExplainPlan.";
-  public static final String SPARK_SUBMIT_JOB = "SparkSubmitJob";
-  public static final String SPARK_RUN_JOB = "SparkRunJob";
-  public static final String SPARK_CREATE_TRAN = "SparkCreateTran.";
-  public static final String SPARK_RUN_STAGE = "SparkRunStage.";
-  public static final String SPARK_INIT_OPERATORS = "SparkInitializeOperators";
-  public static final String SPARK_GENERATE_TASK_TREE = "SparkGenerateTaskTree";
-  public static final String SPARK_OPTIMIZE_OPERATOR_TREE = "SparkOptimizeOperatorTree";
-  public static final String SPARK_OPTIMIZE_TASK_TREE = "SparkOptimizeTaskTree";
-  public static final String SPARK_FLUSH_HASHTABLE = "SparkFlushHashTable.";
-  public static final String SPARK_DYNAMICALLY_PRUNE_PARTITIONS =
-          "SparkDynamicallyPrunePartitions.";
-
   public static final String FILE_MOVES = "FileMoves";
   public static final String LOAD_TABLE = "LoadTable";
   public static final String LOAD_PARTITION = "LoadPartition";
@@ -102,9 +86,6 @@ public class PerfLogger {
   public static final String HIVE_GET_PARTITIONS_BY_EXPR = "getPartitionsByExpr";
   public static final String HIVE_GET_TABLE_COLUMN_STATS = "getTableColumnStatistics";
   public static final String HIVE_GET_AGGR_COL_STATS = "getAggrColStatsFor";
-  public static final String HIVE_GET_PK = "getPrimaryKeys";
-  public static final String HIVE_GET_FK = "getForeignKeys";
-  public static final String HIVE_GET_UNIQ_CONSTRAINT = "getUniqueConstraints";
   public static final String HIVE_GET_NOT_NULL_CONSTRAINT = "getNotNullConstraints";
   public static final String HIVE_GET_TABLE_CONSTRAINTS = "getTableConstraints";
 
@@ -150,9 +131,7 @@ public class PerfLogger {
   public void perfLogBegin(String callerName, String method) {
     long startTime = System.currentTimeMillis();
     startTimes.put(method, Long.valueOf(startTime));
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<PERFLOG method=" + method + " from=" + callerName + ">");
-    }
+    LOG.debug("<PERFLOG method={} from={}>", method, callerName);
     beginMetrics(method);
   }
   /**

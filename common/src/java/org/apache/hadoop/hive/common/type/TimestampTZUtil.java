@@ -31,6 +31,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.format.SignStyle;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
@@ -39,8 +40,16 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hive.common.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.time.temporal.ChronoField.DAY_OF_MONTH;
+import static java.time.temporal.ChronoField.HOUR_OF_DAY;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
+import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
+import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
+import static java.time.temporal.ChronoField.YEAR;
 
 public class TimestampTZUtil {
 
@@ -48,6 +57,16 @@ public class TimestampTZUtil {
 
   private static final LocalTime DEFAULT_LOCAL_TIME = LocalTime.of(0, 0);
   private static final Pattern SINGLE_DIGIT_PATTERN = Pattern.compile("[\\+-]\\d:\\d\\d");
+
+  private static final DateTimeFormatter TIMESTAMP_FORMATTER = new DateTimeFormatterBuilder()
+      // Date and Time Parts
+      .appendValue(YEAR, 4, 10, SignStyle.NORMAL).appendLiteral('-').appendValue(MONTH_OF_YEAR, 2, 2, SignStyle.NORMAL)
+      .appendLiteral('-').appendValue(DAY_OF_MONTH, 2, 2, SignStyle.NORMAL)
+      .appendLiteral(" ").appendValue(HOUR_OF_DAY, 2, 2, SignStyle.NORMAL).appendLiteral(':')
+      .appendValue(MINUTE_OF_HOUR, 2, 2, SignStyle.NORMAL).appendLiteral(':')
+      .appendValue(SECOND_OF_MINUTE, 2, 2, SignStyle.NORMAL)
+      // Fractional Part (Optional)
+      .optionalStart().appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true).optionalEnd().toFormatter();
 
   static final DateTimeFormatter FORMATTER;
   static {
@@ -110,9 +129,7 @@ public class TimestampTZUtil {
     try {
       return parse(s, defaultTimeZone);
     } catch (DateTimeParseException e) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Invalid string " + s + " for TIMESTAMP WITH TIME ZONE", e);
-      }
+      LOG.debug("Invalid string '{}' for TIMESTAMP WITH TIME ZONE", s, e);
       return null;
     }
   }
@@ -169,7 +186,7 @@ public class TimestampTZUtil {
       try {
         DateFormat formatter = getLegacyDateFormatter();
         formatter.setTimeZone(TimeZone.getTimeZone(fromZone));
-        java.util.Date date = formatter.parse(ts.toString());
+        java.util.Date date = formatter.parse(ts.format(TIMESTAMP_FORMATTER));
         // Set the formatter to use a different timezone
         formatter.setTimeZone(TimeZone.getTimeZone(toZone));
         Timestamp result = Timestamp.valueOf(formatter.format(date));
@@ -187,5 +204,9 @@ public class TimestampTZUtil {
     // get nanos between [epoch at toZone] and [local time at toZone]
     return Timestamp.ofEpochSecond(localDateTimeAtToZone.toEpochSecond(ZoneOffset.UTC),
         localDateTimeAtToZone.getNano());
+  }
+
+  public static double convertTimestampTZToDouble(TimestampTZ timestampTZ) {
+    return timestampTZ.getEpochSecond() + timestampTZ.getNanos() / DateUtils.NANOS_PER_SEC;
   }
 }

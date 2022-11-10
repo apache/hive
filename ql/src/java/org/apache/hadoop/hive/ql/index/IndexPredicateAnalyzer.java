@@ -160,7 +160,11 @@ public class IndexPredicateAnalyzer {
           }
         }
 
-        return analyzeExpr((ExprNodeGenericFuncDesc) nd, searchConditions, nodeOutputs);
+        if (nd instanceof ExprNodeGenericFuncDesc) {
+          return analyzeExpr((ExprNodeGenericFuncDesc) nd, searchConditions, nodeOutputs);
+        } else {
+          return nd;
+        }
       }
     };
 

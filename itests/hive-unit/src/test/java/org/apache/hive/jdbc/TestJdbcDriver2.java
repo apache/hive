@@ -79,7 +79,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.junit.rules.TestName;
 
 import static java.sql.ResultSet.CONCUR_READ_ONLY;
@@ -228,6 +227,7 @@ public class TestJdbcDriver2 {
     stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
     stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
         "=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    stmt.execute("drop table if exists transactional_crud");
     stmt.execute("create table transactional_crud (a int, b int) stored as orc " +
         "tblproperties('transactional'='true', 'transactional_properties'='default')");
     int count = stmt.executeUpdate("insert into transactional_crud values(1,2),(3,4),(5,6)");
@@ -250,6 +250,45 @@ public class TestJdbcDriver2 {
     pStmt.setInt(3, 3);
     count = pStmt.executeUpdate();
     assertEquals("1 row PreparedStatement update", 1, count);
+  }
+
+  @Test
+  public void testExceucteMergeCounts() throws Exception {
+    testExceucteMergeCounts(true);
+  }
+
+  @Test
+  public void testExceucteMergeCountsNoSplitUpdate() throws Exception {
+    testExceucteMergeCounts(false);
+  }
+
+  private void testExceucteMergeCounts(boolean splitUpdateEarly) throws Exception {
+
+    Statement stmt =  con.createStatement();
+    stmt.execute("set " + ConfVars.SPLIT_UPDATE.varname + "=" + splitUpdateEarly);
+    stmt.execute("set " + ConfVars.MERGE_SPLIT_UPDATE.varname + "=" + splitUpdateEarly);
+    stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
+    stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
+        "=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+
+    stmt.execute("drop table if exists transactional_crud");
+    stmt.execute("drop table if exists source");
+
+    stmt.execute("create table transactional_crud (a int, b int) stored as orc " +
+        "tblproperties('transactional'='true', 'transactional_properties'='default')");
+    stmt.executeUpdate("insert into transactional_crud values(1,2),(3,4),(5,6),(7,8),(9,10)");
+
+    stmt.execute("create table source (a int, b int) stored as orc " +
+            "tblproperties('transactional'='true', 'transactional_properties'='default')");
+    stmt.executeUpdate("insert into source values(1,12),(3,14),(9,19),(100,100)");
+
+    int count = stmt.executeUpdate("    MERGE INTO transactional_crud as t using source as s ON t.a = s.a\n" +
+            "    WHEN MATCHED AND s.a > 7 THEN DELETE\n" +
+            "    WHEN MATCHED AND s.a <= 8 THEN UPDATE set b = 100\n" +
+            "    WHEN NOT MATCHED THEN INSERT VALUES (s.a, s.b)");
+    stmt.close();
+
+    assertEquals("Statement merge", 4, count);
   }
 
   @AfterClass
@@ -890,15 +929,15 @@ public class TestJdbcDriver2 {
     assertEquals(-1.1d, res.getDouble(3), floatCompareDelta);
     assertEquals("", res.getString(4));
     assertEquals("[]", res.getString(5));
-    assertEquals("{}", res.getString(6));
-    assertEquals("{}", res.getString(7));
+    assertEquals("{1:null}", res.getString(6));
+    assertEquals("{\"a\":\"b\"}", res.getString(7));
     assertEquals("{\"r\":null,\"s\":null,\"t\":null}", res.getString(8));
     assertEquals(-1, res.getByte(9));
     assertEquals(-1, res.getShort(10));
     assertEquals(-1.0f, res.getFloat(11), floatCompareDelta);
     assertEquals(-1, res.getLong(12));
     assertEquals("[]", res.getString(13));
-    assertEquals("{}", res.getString(14));
+    assertEquals("{1:{10:100}}", res.getString(14));
     assertEquals("{\"r\":null,\"s\":null}", res.getString(15));
     assertEquals("[]", res.getString(16));
     assertEquals(null, res.getString(17));
@@ -919,7 +958,7 @@ public class TestJdbcDriver2 {
     assertEquals("1", res.getString(4));
     assertEquals("[1,2]", res.getString(5));
     assertEquals("{1:\"x\",2:\"y\"}", res.getString(6));
-    assertEquals("{\"k\":\"v\"}", res.getString(7));
+    assertEquals("{\"k\":\"v\",\"b\":\"c\"}", res.getString(7));
     assertEquals("{\"r\":\"a\",\"s\":9,\"t\":2.2}", res.getString(8));
     assertEquals(1, res.getByte(9));
     assertEquals(1, res.getShort(10));
@@ -2776,11 +2815,12 @@ public class TestJdbcDriver2 {
     String sql = "select count(*) from " + tableName;
 
     // Verify the fetched log (from the beginning of log file)
-    HiveStatement stmt = (HiveStatement)con.createStatement();
-    assertNotNull("Statement is null", stmt);
-    stmt.executeQuery(sql);
-    List<String> logs = stmt.getQueryLog(false, 10000);
-    stmt.close();
+    List<String> logs;
+    try (HiveStatement stmt = (HiveStatement) con.createStatement()) {
+      assertNotNull("Statement is null", stmt);
+      stmt.executeQuery(sql);
+      logs = stmt.getQueryLog(false, 200000);
+    }
     verifyFetchedLog(logs, expectedLogs);
 
     // Verify the fetched log (incrementally)
@@ -2856,6 +2896,7 @@ public class TestJdbcDriver2 {
       stmt.execute("set hive.metastore.dml.events = true");
       stmt.execute("set hive.repl.cm.enabled = true");
       stmt.execute("set hive.repl.cmrootdir = cmroot");
+      stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname + "=" + ConfVars.HIVE_TXN_MANAGER.defaultStrVal);
       stmt.execute("create database " + primaryDb + " with dbproperties('repl.source.for'='1,2,3')");
       stmt.execute("create table " + primaryTblName + " (id int)");
       stmt.execute("insert into " + primaryTblName + " values (1), (2)");
@@ -2970,8 +3011,7 @@ public class TestJdbcDriver2 {
     }
     String accumulatedLogs = stringBuilder.toString();
     for (String expectedLog : expectedLogs) {
-      LOG.info("Checking match for " + expectedLog);
-      assertTrue(accumulatedLogs.contains(expectedLog));
+      assertTrue("Failed to find match for " + expectedLog, accumulatedLogs.contains(expectedLog));
     }
   }
 
@@ -3177,7 +3217,7 @@ public class TestJdbcDriver2 {
     stmt.execute("SET hive.resultset.use.unique.column.names=true");
     ResultSet rs = stmt.executeQuery("select 1 UNION ALL select 2");
     ResultSetMetaData metaData = rs.getMetaData();
-    assertEquals("_c0", metaData.getColumnLabel(1));
+    assertEquals("col1", metaData.getColumnLabel(1));
     assertTrue("There's no . for the UNION column name", !metaData.getColumnLabel(1).contains("."));
     stmt.close();
   }
@@ -3289,6 +3329,21 @@ public class TestJdbcDriver2 {
     assertFalse(stmt.isClosed());
     res.close();
     assertTrue(stmt.isClosed());
+  }
+
+  @Test
+  public void testResultSetShouldNotCloseStatement() throws SQLException {
+    Statement stmt = con.createStatement();
+    ResultSet res = stmt.executeQuery("select under_col from " + tableName + " limit 1");
+    res.next();
+    assertFalse(stmt.isClosed());
+    assertFalse(((HiveStatement)stmt).isQueryClosed());
+    res.close();
+    assertFalse(stmt.isClosed());
+    assertFalse(((HiveStatement)stmt).isQueryClosed()); // check HIVE-25203
+    stmt.close();
+    assertTrue(stmt.isClosed());
+    assertTrue(((HiveStatement)stmt).isQueryClosed());
   }
 
   @Test

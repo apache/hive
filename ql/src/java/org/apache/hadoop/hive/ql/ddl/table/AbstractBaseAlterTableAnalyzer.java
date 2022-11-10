@@ -132,7 +132,7 @@ public abstract class AbstractBaseAlterTableAnalyzer extends BaseSemanticAnalyze
       // See HIVE-16688 for use cases.
       return WriteType.DDL_EXCLUSIVE;
     }
-    return WriteEntity.determineAlterTableWriteType(op);
+    return WriteEntity.determineAlterTableWriteType(op, table, conf);
   }
 
   protected void validateAlterTableType(Table table, AlterTableType op, boolean expectView)
@@ -159,9 +159,10 @@ public abstract class AbstractBaseAlterTableAnalyzer extends BaseSemanticAnalyze
         throw new SemanticException(ErrorMsg.ALTER_COMMAND_FOR_TABLES.getMsg());
       }
     }
-    if (table.isNonNative() && !AlterTableType.NON_NATIVE_TABLE_ALLOWED.contains(op)) {
-      throw new SemanticException(ErrorMsg.ALTER_TABLE_NON_NATIVE.format(
-          AlterTableType.NON_NATIVE_TABLE_ALLOWED.toString(), table.getTableName()));
+    if (table.isNonNative() && table.getStorageHandler() != null &&
+        !table.getStorageHandler().isAllowedAlterOperation(op)) {
+        throw new SemanticException(ErrorMsg.ALTER_TABLE_NON_NATIVE.format(
+            AlterTableType.NON_NATIVE_TABLE_ALLOWED.toString(), table.getTableName()));
     }
   }
 }

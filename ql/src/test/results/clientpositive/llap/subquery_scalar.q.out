@@ -370,8 +370,6 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain select * from part where p_name = (select p_name from part_null_n0 where p_name is null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -383,133 +381,15 @@ POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 5 (XPROD_EDGE)
-        Reducer 3 <- Map 4 (XPROD_EDGE), Reducer 2 (XPROD_EDGE)
-        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: part
-                  Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
-                  Limit
-                    Number of rows: 0
-                    Statistics: Num rows: 1 Data size: 619 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                      Statistics: Num rows: 1 Data size: 619 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 619 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: part_null_n0
-                  filterExpr: p_name is null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: p_name is null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: p_partkey (type: int)
-                      outputColumnNames: p_partkey
-                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count(p_partkey)
-                        minReductionHashAggr: 0.99
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          null sort order: 
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
-                    Limit
-                      Number of rows: 0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                        Reduce Output Operator
-                          null sort order: 
-                          sort order: 
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 
-                  1 
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                Reduce Output Operator
-                  null sort order: 
-                  sort order: 
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
-        Reducer 3 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 
-                  1 
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
-                Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
-                Limit
-                  Number of rows: 0
-                  Statistics: Num rows: 0 Data size: 0 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: NONE
-
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 0
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from part where p_name = (select p_name from part_null_n0 where p_name is null)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -2353,7 +2233,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
                 Statistics: Num rows: 26 Data size: 16406 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: CASE WHEN (_col10 is null) THEN ((UDFToLong(_col5) <> 0L)) ELSE ((UDFToLong(_col5) <> _col9)) END (type: boolean)
+                  predicate: if(_col10 is null, (UDFToLong(_col5) <> 0L), (UDFToLong(_col5) <> _col9)) (type: boolean)
                   Statistics: Num rows: 13 Data size: 8203 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -4840,7 +4720,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
                 Statistics: Num rows: 8 Data size: 2751 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: CASE WHEN (_col11 is null) THEN ((UDFToLong(_col2) <> 0L)) ELSE ((UDFToLong(_col2) <> _col10)) END (type: boolean)
+                  predicate: if(_col11 is null, (UDFToLong(_col2) <> 0L), (UDFToLong(_col2) <> _col10)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1428 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
@@ -5126,7 +5006,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
                 Statistics: Num rows: 8 Data size: 2751 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: CASE WHEN (_col11 is null) THEN ((UDFToLong(_col2) <> 0L)) ELSE ((UDFToLong(_col2) <> _col10)) END (type: boolean)
+                  predicate: if(_col11 is null, (UDFToLong(_col2) <> 0L), (UDFToLong(_col2) <> _col10)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1428 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date), _col11 (type: boolean)
@@ -5151,7 +5031,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col11, _col13
                 Statistics: Num rows: 4 Data size: 1444 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: CASE WHEN (_col11 is null) THEN ((UDFToLong(_col0) > 0L)) ELSE ((UDFToLong(_col0) > _col13)) END (type: boolean)
+                  predicate: if(_col11 is null, (UDFToLong(_col0) > 0L), (UDFToLong(_col0) > _col13)) (type: boolean)
                   Statistics: Num rows: 2 Data size: 722 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: date)
@@ -6236,7 +6116,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
                 Statistics: Num rows: 26 Data size: 16406 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: CASE WHEN (_col10 is null) THEN ((UDFToLong(_col5) <> 0L)) ELSE ((UDFToLong(_col5) <> _col9)) END (type: boolean)
+                  predicate: if(_col10 is null, (UDFToLong(_col5) <> 0L), (UDFToLong(_col5) <> _col9)) (type: boolean)
                   Statistics: Num rows: 13 Data size: 8203 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: string), _col5 (type: int), _col6 (type: string), _col7 (type: double), _col8 (type: string)
@@ -7378,7 +7258,7 @@ HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
           HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
       HiveProject(avg_window_0=[$0])
         HiveFilter(condition=[IS NOT NULL($0)])
-          HiveProject(avg_window_0=[avg(*(CAST($1):DECIMAL(10, 0), $2)) OVER (PARTITION BY $2 ORDER BY $2 NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
+          HiveProject(avg_window_0=[avg(*(CAST($1):DECIMAL(10, 0), $2)) OVER (PARTITION BY $2 ORDER BY $2 NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
             HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
               HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
                 HiveFilter(condition=[IS NOT NULL($0)])

@@ -566,8 +566,8 @@ FROM `default`.`test1_n12`
 WHERE `ds` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT *
 FROM (SELECT MAX(`ds`) AS `$f0`
-FROM `default`.`test1_n12`) AS `t1`
-WHERE `$f0` IS NOT NULL) AS `t2` ON `t0`.`ds` = `t2`.`$f0`
+FROM `default`.`test1_n12`) AS `t2`
+WHERE `$f0` IS NOT NULL) AS `t4` ON `t0`.`ds` = `t4`.`$f0`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

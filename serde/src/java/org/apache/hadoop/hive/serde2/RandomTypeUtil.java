@@ -131,7 +131,7 @@ public class RandomTypeUtil {
 
   public static final long NANOSECONDS_PER_SECOND = TimeUnit.SECONDS.toNanos(1);
   public static final long MILLISECONDS_PER_SECOND = TimeUnit.SECONDS.toMillis(1);
-  public static final long NANOSECONDS_PER_MILLISSECOND = TimeUnit.MILLISECONDS.toNanos(1);
+  public static final long NANOSECONDS_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1);
 
   private static final ThreadLocal<DateFormat> DATE_FORMAT =
       new ThreadLocal<DateFormat>() {
@@ -172,12 +172,12 @@ public class RandomTypeUtil {
     case 2:
       // Limit to milliseconds only...
       optionalNanos = String.format(".%09d",
-          Integer.valueOf(r.nextInt((int) MILLISECONDS_PER_SECOND)) * NANOSECONDS_PER_MILLISSECOND);
+          Integer.valueOf(r.nextInt((int) MILLISECONDS_PER_SECOND)) * NANOSECONDS_PER_MILLISECOND);
       break;
     case 3:
       // Limit to below milliseconds only...
       optionalNanos = String.format(".%09d",
-          Integer.valueOf(r.nextInt((int) NANOSECONDS_PER_MILLISSECOND)));
+          Integer.valueOf(r.nextInt((int) NANOSECONDS_PER_MILLISECOND)));
       break;
     }
     String timestampStr = String.format("%04d-%02d-%02d %02d:%02d:%02d%s",

@@ -30,9 +30,9 @@ import org.apache.parquet.io.SeekableInputStream;
  * read the footer from cache without being aware of the latter.
  * This implements both InputFile and the InputStream that the reader gets from InputFile.
  */
-final class ParquetFooterInputFromCache
+public final class ParquetFooterInputFromCache
     extends SeekableInputStream implements InputFile {
-  final static int FOOTER_LENGTH_SIZE = 4; // For the file size check.
+  public final static int FOOTER_LENGTH_SIZE = 4; // For the file size check.
   private static final int TAIL_LENGTH = ParquetFileWriter.MAGIC.length + FOOTER_LENGTH_SIZE;
   private static final int FAKE_PREFIX_LENGTH = ParquetFileWriter.MAGIC.length;
   private final int length, footerLength;

@@ -46,12 +46,20 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@scr_txn_2
 PREHOOK: query: alter table scr_txn compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@scr_txn
+PREHOOK: Output: default@scr_txn
 POSTHOOK: query: alter table scr_txn compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@scr_txn
+POSTHOOK: Output: default@scr_txn
 PREHOOK: query: alter table scr_txn_2 compact 'minor'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@scr_txn_2
+PREHOOK: Output: default@scr_txn_2
 POSTHOOK: query: alter table scr_txn_2 compact 'minor'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@scr_txn_2
+POSTHOOK: Output: default@scr_txn_2
 PREHOOK: query: CREATE TEMPORARY TABLE src_tmp (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -200,6 +208,10 @@ sys	locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -208,6 +220,10 @@ sys	mv_tables_used			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -244,6 +260,10 @@ sys	replication_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -457,6 +477,8 @@ columns_v2	column_name
 columns_v2	comment
 columns_v2	integer_idx
 columns_v2	type_name
+compaction_queue	cq_cleaner_start
+compaction_queue	cq_commit_time
 compaction_queue	cq_database
 compaction_queue	cq_enqueue_time
 compaction_queue	cq_error_message
@@ -465,23 +487,32 @@ compaction_queue	cq_highest_write_id
 compaction_queue	cq_id
 compaction_queue	cq_initiator_id
 compaction_queue	cq_initiator_version
+compaction_queue	cq_next_txn_id
 compaction_queue	cq_partition
+compaction_queue	cq_pool_name
 compaction_queue	cq_run_as
 compaction_queue	cq_start
 compaction_queue	cq_state
 compaction_queue	cq_table
 compaction_queue	cq_tblproperties
+compaction_queue	cq_txn_id
 compaction_queue	cq_type
 compaction_queue	cq_worker_id
 compaction_queue	cq_worker_version
 compactions	c_catalog
 compactions	c_catalog
+compactions	c_cleaner_start
+compactions	c_cleaner_start
+compactions	c_commit_time
+compactions	c_commit_time
 compactions	c_database
 compactions	c_database
 compactions	c_duration
 compactions	c_duration
 compactions	c_enqueue_time
 compactions	c_enqueue_time
+compactions	c_error_message
+compactions	c_error_message
 #### A masked pattern was here ####
 compactions	c_highest_write_id
 compactions	c_highest_write_id
@@ -493,8 +524,12 @@ compactions	c_initiator_id
 compactions	c_initiator_id
 compactions	c_initiator_version
 compactions	c_initiator_version
+compactions	c_next_txn_id
+compactions	c_next_txn_id
 compactions	c_partition
 compactions	c_partition
+compactions	c_pool_name
+compactions	c_pool_name
 compactions	c_run_as
 compactions	c_run_as
 compactions	c_start
@@ -503,6 +538,10 @@ compactions	c_state
 compactions	c_state
 compactions	c_table
 compactions	c_table
+compactions	c_tblproperties
+compactions	c_tblproperties
+compactions	c_txn_id
+compactions	c_txn_id
 compactions	c_type
 compactions	c_type
 compactions	c_worker_host
@@ -511,6 +550,7 @@ compactions	c_worker_id
 compactions	c_worker_id
 compactions	c_worker_version
 compactions	c_worker_version
+completed_compactions	cc_commit_time
 completed_compactions	cc_database
 completed_compactions	cc_end
 completed_compactions	cc_enqueue_time
@@ -520,12 +560,15 @@ completed_compactions	cc_highest_write_id
 completed_compactions	cc_id
 completed_compactions	cc_initiator_id
 completed_compactions	cc_initiator_version
+completed_compactions	cc_next_txn_id
 completed_compactions	cc_partition
+completed_compactions	cc_pool_name
 completed_compactions	cc_run_as
 completed_compactions	cc_start
 completed_compactions	cc_state
 completed_compactions	cc_table
 completed_compactions	cc_tblproperties
+completed_compactions	cc_txn_id
 completed_compactions	cc_type
 completed_compactions	cc_worker_id
 completed_compactions	cc_worker_version
@@ -610,6 +653,8 @@ locks	partition
 locks	table
 locks	txnid
 locks	user
+min_history_level	mhl_min_open_txnid
+min_history_level	mhl_txnid
 moretypes	a
 moretypes	b
 moretypes	c
@@ -623,6 +668,15 @@ mv_creation_metadata	tbl_name
 mv_creation_metadata	txn_list
 mv_tables_used	mv_creation_metadata_id
 mv_tables_used	tbl_id
+notification_log	cat_name
+notification_log	db_name
+notification_log	event_id
+notification_log	event_time
+notification_log	event_type
+notification_log	message
+notification_log	message_format
+notification_log	nl_id
+notification_log	tbl_name
 part	p_brand
 part	p_comment
 part	p_container
@@ -703,6 +757,12 @@ replication_metrics	metadata
 replication_metrics	policy_name
 replication_metrics	progress
 replication_metrics	scheduled_execution_id
+replication_metrics_orig	dump_execution_id
+replication_metrics_orig	message_format
+replication_metrics_orig	metadata
+replication_metrics_orig	policy_name
+replication_metrics_orig	progress
+replication_metrics_orig	scheduled_execution_id
 role_map	add_time
 role_map	grant_option
 role_map	grantor
@@ -730,6 +790,7 @@ scheduled_executions	scheduled_execution_id
 scheduled_executions	scheduled_query_id
 scheduled_executions	start_time
 scheduled_executions	start_time
+scheduled_executions	start_time_since_epoch
 scheduled_executions	state
 scheduled_executions	state
 scheduled_queries	active_execution_id
@@ -1128,7 +1189,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 0:bigint
                         Statistics: Num rows: 1 Data size: 8 Basic stats: PARTIAL Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
@@ -1153,7 +1214,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: 
                 reduceColumnSortOrder: 
                 allNative: false
@@ -1202,7 +1263,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-73
+76
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -1529,8 +1590,8 @@ POSTHOOK: Input: sys@compaction_queue
 POSTHOOK: Input: sys@compactions
 POSTHOOK: Input: sys@completed_compactions
 #### A masked pattern was here ####
-1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT
-2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL
 PREHOOK: query: use INFORMATION_SCHEMA
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:information_schema
@@ -1598,8 +1659,10 @@ default	sys	global_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	hive_locks	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	key_constraints	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	locks	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	min_history_level	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	mv_creation_metadata	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	mv_tables_used	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	notification_log	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_col_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_col_stats	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	part_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1608,7 +1671,8 @@ default	sys	partition_keys	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	partitions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	sys	replication_metrics	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	replication_metrics	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
+default	sys	replication_metrics_orig	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	role_map	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	roles	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	scheduled_executions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1732,6 +1796,7 @@ information_schema	views
 sys	compactions
 sys	locks
 sys	partition_stats_view
+sys	replication_metrics
 sys	table_stats_view
 sys	transactions
 sys	version
@@ -1755,5 +1820,5 @@ POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT
-2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	#Masked#	manual	4.0.0-SNAPSHOT	NULL	default	NULL

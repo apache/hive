@@ -26,6 +26,7 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: db1@t1
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@mat1
+POSTHOOK: Lineage: mat1.col0 SIMPLE []
 PREHOOK: query: grant select on table db1.t1 to user user2
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: db1@t1

@@ -46,7 +46,7 @@ public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, T
   }
 
   /**
-   * Initilizes LazyTimestamp object by interpreting the input bytes
+   * Initializes LazyTimestamp object by interpreting the input bytes
    * as a JDBC timestamp string
    *
    * @param bytes
@@ -62,18 +62,12 @@ public class LazyTimestamp extends LazyPrimitive<LazyTimestampObjectInspector, T
     String s =
         new String(bytes.getData(), start, length, StandardCharsets.US_ASCII);
 
-    Timestamp t = null;
-    if ("NULL".equals(s)) {
+    Timestamp t = oi.getTimestampParser().parseTimestamp(s);
+    if (t == null) {
       isNull = true;
       logExceptionMessage(bytes, start, length, "TIMESTAMP");
     } else {
-      try {
-        t = oi.getTimestampParser().parseTimestamp(s);
-        isNull = false;
-      } catch (IllegalArgumentException e) {
-        isNull = true;
-        logExceptionMessage(bytes, start, length, "TIMESTAMP");
-      }
+      isNull = false;
     }
     data.set(t);
   }

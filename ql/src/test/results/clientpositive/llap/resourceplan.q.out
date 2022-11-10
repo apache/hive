@@ -162,6 +162,10 @@ sys	locks			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	locks			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	locks			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	locks			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	min_history_level			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	mv_creation_metadata			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -170,6 +174,10 @@ sys	mv_tables_used			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	mv_tables_used			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	notification_log			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	part_col_privs			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -206,6 +214,10 @@ sys	replication_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	replication_metrics			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	replication_metrics_orig			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	SELECT	true	-1	hive_test_user

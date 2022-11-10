@@ -66,18 +66,14 @@ public abstract class HiveCostModel {
         continue;
       }
       RelOptCost joinCost = possibleAlgorithm.getCost(join);
-      if (LOG.isTraceEnabled()) {
-        LOG.trace(possibleAlgorithm + " cost: " + joinCost);
-      }
+      LOG.trace("{} cost: {}", possibleAlgorithm, joinCost);
       if (minJoinCost == null || joinCost.isLt(minJoinCost) ) {
         joinAlgorithm = possibleAlgorithm;
         minJoinCost = joinCost;
       }
     }
 
-    if (LOG.isTraceEnabled()) {
-      LOG.trace(joinAlgorithm + " selected");
-    }
+    LOG.trace("{} selected", joinAlgorithm);
 
     join.setJoinAlgorithm(joinAlgorithm);
     join.setJoinCost(minJoinCost);

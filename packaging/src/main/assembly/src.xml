@@ -41,7 +41,12 @@
         <exclude>**/.project</exclude>
         <exclude>**/.settings/**</exclude>
         <exclude>**/thirdparty/**</exclude>
-        <exclude>testutils/ptest2/velocity.log*</exclude>
+        <exclude>standalone-metastore/metastore-common/src/gen/version/**</exclude>
+        <exclude>standalone-metastore/metastore-server/src/gen/**</exclude>
+        <exclude>common/src/gen/**</exclude>
+        <exclude>kafka-handler/src/test/gen/**</exclude>
+        <exclude>conf/hive-default.xml.template</exclude>
+        <exclude>**/dependency-reduced-pom.xml</exclude>
       </excludes>
 
       <includes>
@@ -51,7 +56,7 @@
         <include>.gitignore</include>
         <include>.reviewboardrc</include>
         <include>DEVNOTES</include>
-        <include>README.txt</include>
+        <include>README*</include>
         <include>LICENSE</include>
         <include>NOTICE</include>
         <include>CHANGELOG</include>
@@ -97,16 +102,28 @@
         <include>service-rpc/**/*</include>
         <include>service/**/*</include>
         <include>shims/**/*</include>
-        <include>spark-client/**/*</include>
         <include>storage-api/**/*</include>
         <include>standalone-metastore/metastore-common/**/*</include>
         <include>standalone-metastore/metastore-server/**/*</include>
+        <include>standalone-metastore/metastore-tools/**/*</include>
+        <include>standalone-metastore/src/assembly/src.xml</include>
+        <include>standalone-metastore/pom.xml</include>
         <include>streaming/**/*</include>
         <include>testutils/**/*</include>
         <include>upgrade-acid/**/*</include>
         <include>vector-code-gen/**/*</include>
-        <include>kryo-registrator/**/*</include>
         <include>kudu-handler/**/*</include>
+        <include>parser/**/*</include>
+        <include>udf/**/*</include>
+        <include>iceberg/iceberg-catalog/**/*</include>
+        <include>iceberg/iceberg-handler/**/*</include>
+        <include>iceberg/iceberg-shading/**/*</include>
+        <include>iceberg/patched-iceberg-api/**/*</include>
+        <include>iceberg/patched-iceberg-core/**/*</include>
+        <include>iceberg/patched-iceberg-data/**/*</include>
+        <include>iceberg/patched-iceberg-orc/**/*</include>
+        <include>iceberg/checkstyle/**/*</include>
+        <include>iceberg/pom.xml</include>
       </includes>
       <outputDirectory>/</outputDirectory>
     </fileSet>

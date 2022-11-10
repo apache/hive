@@ -143,5 +143,12 @@ public interface MetaStoreFilterHook {
    */
   List<String> filterPartitionNames(String catName, String dbName, String tblName,
       List<String> partitionNames) throws MetaException;
+
+  /**
+   * Filter given list of data connectors
+   * @param dcList
+   * @return List of filtered Dc names
+   */
+  List<String> filterDataConnectors(List<String> dcList) throws MetaException;
 }
 

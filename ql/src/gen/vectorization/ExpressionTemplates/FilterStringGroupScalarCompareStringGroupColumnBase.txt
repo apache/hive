@@ -36,12 +36,10 @@ public abstract class <ClassName> extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   protected final byte[] value;
-  protected final int colNum;
 
   public <ClassName>(byte[] value, int colNum) {
-    super();
+    super(colNum, -1);
     this.value = value;
-    this.colNum = colNum;
   }
 
   public <ClassName>() {
@@ -49,7 +47,6 @@ public abstract class <ClassName> extends VectorExpression {
 
     // Dummy final assignments.
     value = null;
-    colNum = -1;
   }
 
   @Override
@@ -64,7 +61,7 @@ public abstract class <ClassName> extends VectorExpression {
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
-    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
 
@@ -143,7 +140,7 @@ public abstract class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + displayUtf8Bytes(value) + ", " + getColumnParamString(1, colNum);
+    return "val " + displayUtf8Bytes(value) + ", " + getColumnParamString(1, inputColumnNum[0]);
   }
 
 }

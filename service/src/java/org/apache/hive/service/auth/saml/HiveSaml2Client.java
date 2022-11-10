@@ -173,7 +173,7 @@ public class HiveSaml2Client extends SAML2Client {
    * @param request
    * @param response
    * @return the NameId as received in the assertion if the assertion was valid.
-   * @throws HttpSamlAuthenticationException In case the assertition is not present or is
+   * @throws HttpSamlAuthenticationException In case the assertion is not present or is
    *                                         invalid.
    */
   public String validate(HttpServletRequest request, HttpServletResponse response)

@@ -53,16 +53,17 @@ public class CompactorTestUtilities {
    */
   private static int getAcidVersionFromDataFile(Path dataFile, FileSystem fs) throws IOException {
     FileStatus fileStatus = fs.getFileStatus(dataFile);
-    Reader orcReader = OrcFile.createReader(dataFile,
+    try (Reader orcReader = OrcFile.createReader(dataFile,
         OrcFile.readerOptions(fs.getConf())
             .filesystem(fs)
             //make sure to check for side file in case streaming ingest died
-            .maxLength(AcidUtils.getLogicalLength(fs, fileStatus)));
-    if (orcReader.hasMetadataValue(AcidUtils.OrcAcidVersion.ACID_VERSION_KEY)) {
-      char[] versionChar =
-          UTF8.decode(orcReader.getMetadataValue(AcidUtils.OrcAcidVersion.ACID_VERSION_KEY)).array();
-      String version = new String(versionChar);
-      return Integer.valueOf(version);
+            .maxLength(AcidUtils.getLogicalLength(fs, fileStatus)))) {
+      if (orcReader.hasMetadataValue(AcidUtils.OrcAcidVersion.ACID_VERSION_KEY)) {
+        char[] versionChar =
+            UTF8.decode(orcReader.getMetadataValue(AcidUtils.OrcAcidVersion.ACID_VERSION_KEY)).array();
+        String version = new String(versionChar);
+        return Integer.valueOf(version);
+      }
     }
     return ORC_ACID_VERSION_DEFAULT;
   }

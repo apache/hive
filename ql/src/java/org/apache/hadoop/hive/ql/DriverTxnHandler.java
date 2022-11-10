@@ -138,7 +138,7 @@ class DriverTxnHandler {
   void cleanupTxnList() {
     driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
   }
-  
+
   void acquireLocksIfNeeded() throws CommandProcessorException {
     if (requiresLock()) {
       acquireLocks();
@@ -153,6 +153,11 @@ class DriverTxnHandler {
 
     // Lock operations themselves don't require the lock.
     if (isExplicitLockOperation()) {
+      return false;
+    }
+
+    // no execution is going to be attempted, skip acquiring locks
+    if (context.isExplainSkipExecution()) {
       return false;
     }
 
@@ -219,6 +224,8 @@ class DriverTxnHandler {
     }
 
     try {
+      // Ensure we answer any metadata calls with fresh responses
+      driverContext.getQueryState().disableHMSCache();
       setWriteIdForAcidFileSinks();
       allocateWriteIdForAcidAnalyzeTable();
       boolean hasAcidDdl = setWriteIdForAcidDdl();
@@ -240,6 +247,7 @@ class DriverTxnHandler {
       throw DriverUtils.createProcessorException(driverContext, 10, errorMessage, ErrorMsg.findSQLState(e.getMessage()),
           e);
     } finally {
+      driverContext.getQueryState().enableHMSCache();
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
     }
   }
@@ -296,7 +304,8 @@ class DriverTxnHandler {
   private void allocateWriteIdForAcidAnalyzeTable() throws LockException {
     if (driverContext.getPlan().getAcidAnalyzeTable() != null) {
       Table table = driverContext.getPlan().getAcidAnalyzeTable().getTable();
-      driverContext.getTxnManager().getTableWriteId(table.getDbName(), table.getTableName());
+      driverContext.getTxnManager().setTableWriteId(
+          table.getDbName(), table.getTableName(), driverContext.getAnalyzeTableWriteId());
     }
   }
 
@@ -501,7 +510,7 @@ class DriverTxnHandler {
   void handleTransactionAfterExecution() throws CommandProcessorException {
     try {
       //since set autocommit starts an implicit txn, close it
-      if (driverContext.getTxnManager().isImplicitTransactionOpen() ||
+      if (driverContext.getTxnManager().isImplicitTransactionOpen(context) ||
           driverContext.getPlan().getOperation() == HiveOperation.COMMIT) {
         endTransactionAndCleanup(true);
       } else if (driverContext.getPlan().getOperation() == HiveOperation.ROLLBACK) {
@@ -562,10 +571,13 @@ class DriverTxnHandler {
     txnRollbackRunner = null;
   }
 
-  void endTransactionAndCleanup(boolean commit, HiveTxnManager txnManager) throws LockException {
+  // When Hive query is being interrupted via cancel request, both the background pool thread (HiveServer2-Background), 
+  // executing the query, and the HttpHandler thread (HiveServer2-Handler), running the HiveSession.cancelOperation logic, 
+  // might call the below method concurrently. To prevent a race condition, marking it as synchronized.
+  synchronized void endTransactionAndCleanup(boolean commit, HiveTxnManager txnManager) throws LockException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
-    
+
     // If we've opened a transaction we need to commit or rollback rather than explicitly releasing the locks.
     driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
     driverContext.getConf().unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
@@ -603,6 +615,8 @@ class DriverTxnHandler {
     if (context != null && context.getHiveLocks() != null) {
       hiveLocks.addAll(context.getHiveLocks());
     }
-    txnManager.releaseLocks(hiveLocks);
+    if (!hiveLocks.isEmpty()) {
+      txnManager.releaseLocks(hiveLocks);
+    }
   }
 }

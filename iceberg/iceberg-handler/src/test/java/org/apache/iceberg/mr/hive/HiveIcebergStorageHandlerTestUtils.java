@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hive.iceberg.org.apache.orc.OrcConf;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Schema;
@@ -55,6 +56,24 @@ public class HiveIcebergStorageHandlerTestUtils {
           .add(1L, "Bob", "Green")
           .add(2L, "Trudy", "Pink")
           .build();
+
+  static final List<Record> OTHER_CUSTOMER_RECORDS_1 = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
+          .add(3L, "Marci", "Barna")
+          .add(4L, "Laci", "Zold")
+          .add(5L, "Peti", "Rozsaszin")
+          .build();
+
+  static final List<Record> OTHER_CUSTOMER_RECORDS_2 = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
+      .add(1L, "Joanna", "Pierce")
+      .add(1L, "Sharon", "Taylor")
+      .add(2L, "Joanna", "Silver")
+      .add(2L, "Bob", "Silver")
+      .add(2L, "Susan", "Morrison")
+      .add(2L, "Jake", "Donnel")
+      .add(3L, "Blake", "Burr")
+      .add(3L, "Trudy", "Johnson")
+      .add(3L, "Trudy", "Henderson")
+      .build();
 
   private HiveIcebergStorageHandlerTestUtils() {
     // Empty constructor for the utility class
@@ -97,17 +116,18 @@ public class HiveIcebergStorageHandlerTestUtils {
     shell.setHiveSessionValue("hive.jar.directory", temp.getRoot().getAbsolutePath());
     shell.setHiveSessionValue("tez.staging-dir", temp.getRoot().getAbsolutePath());
 
-    // temporarily disabling vectorization in Tez, since it doesn't work with projection pruning (fix: TEZ-4248)
-    // TODO: remove this once TEZ-4248 has been released and the Tez dependencies updated here
-    if (engine.equals("tez")) {
-      shell.setHiveSessionValue("hive.vectorized.execution.enabled", "false");
-    }
-
+    // Until HADOOP-16435 we have to manually remove the RpcMetrics for every run otherwise we might end up with OOM
+    // We have to initialize the metrics as TestMetrics, so shutdown will remove them
+    DefaultMetricsSystem.instance().init("TestMetrics");
   }
 
   static void close(TestHiveShell shell) throws Exception {
     shell.closeSession();
     shell.metastore().reset();
+
+    // Until HADOOP-16435 we have to manually remove the RpcMetrics for every run otherwise we might end up with OOM
+    DefaultMetricsSystem.shutdown();
+
     // HiveServer2 thread pools are using thread local Hive -> HMSClient objects. These are not cleaned up when the
     // HiveServer2 is stopped. Only Finalizer closes the HMS connections.
     System.gc();

@@ -23,9 +23,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatalogToDbName;
 
 
 /**
@@ -99,8 +103,11 @@ public class PartitionIterable implements Iterable<Partition> {
           batch_counter++;
         }
         try {
+          String dbName = prependCatalogToDbName(table.getCatName(), table.getDbName(), null);
+          GetPartitionsByNamesRequest req =
+              convertToGetPartitionsByNamesRequest(dbName, table.getTableName(), nameBatch);
           batchIter =
-            msc.getPartitionsByNames(table.getCatName(), table.getDbName(), table.getTableName(), nameBatch).iterator();
+            msc.getPartitionsByNames(req).getPartitionsIterator();
         } catch (Exception e) {
           throw new RuntimeException(e);
         }

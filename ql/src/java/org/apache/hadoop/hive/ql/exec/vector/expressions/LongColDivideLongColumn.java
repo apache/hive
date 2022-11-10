@@ -32,21 +32,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 public class LongColDivideLongColumn extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
-  private final int colNum1;
-  private final int colNum2;
-
   public LongColDivideLongColumn(int colNum1, int colNum2, int outputColumnNum) {
-    super(outputColumnNum);
-    this.colNum1 = colNum1;
-    this.colNum2 = colNum2;
+    super(colNum1, colNum2, outputColumnNum);
   }
 
   public LongColDivideLongColumn() {
     super();
-
-    // Dummy final assignments.
-    colNum1 = -1;
-    colNum2 = -1;
   }
 
   @Override
@@ -56,8 +47,8 @@ public class LongColDivideLongColumn extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[colNum1];
-    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[colNum2];
+    LongColumnVector inputColVector1 = (LongColumnVector) batch.cols[inputColumnNum[0]];
+    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[inputColumnNum[1]];
     DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
@@ -149,7 +140,7 @@ public class LongColDivideLongColumn extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum1) + ", " + getColumnParamString(1, colNum2);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, inputColumnNum[1]);
   }
 
   @Override

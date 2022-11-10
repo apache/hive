@@ -2,7 +2,6 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 SET hive.blobstore.optimizations.enabled=true;
 SET mapreduce.input.fileinputformat.split.maxsize=10;
 SET hive.merge.mapfiles=true;
-set hive.optimize.sort.dynamic.partition=false;
 
 CREATE TABLE tmp_table_move (id string, name string, dt string, pid int);
 

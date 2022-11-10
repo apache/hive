@@ -20,12 +20,15 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.Strong;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
@@ -36,8 +39,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Planner rule that converts a join plus filter to anti join.
@@ -136,7 +138,8 @@ public class HiveAntiSemiJoinRule extends RelOptRule {
     for (RexNode filterNode : aboveFilters) {
       if (filterNode.getKind() == SqlKind.IS_NULL) {
         // Null filter from right side table can be removed and its a pre-condition for anti join conversion.
-        if (HiveCalciteUtil.hasAnyExpressionFromRightSide(join, Collections.singletonList(filterNode))) {
+        if (HiveCalciteUtil.hasAllExpressionsFromRightSide(join, Collections.singletonList(filterNode))
+            && isStrong(((RexCall) filterNode).getOperands().get(0))) {
           hasNullFilterOnRightSide = true;
         } else {
           filterList.add(filterNode);
@@ -156,5 +159,19 @@ public class HiveAntiSemiJoinRule extends RelOptRule {
       return null;
     }
     return filterList;
+  }
+
+  private boolean isStrong(RexNode rexNode) {
+    AtomicBoolean hasCast = new AtomicBoolean(false);
+    rexNode.accept(new RexVisitorImpl<Void>(true) {
+      @Override
+      public Void visitCall(RexCall call) {
+        if (call.getKind() == SqlKind.CAST) {
+          hasCast.set(true);
+        }
+        return super.visitCall(call);
+      }
+    });
+    return !hasCast.get() && Strong.isStrong(rexNode);
   }
 }

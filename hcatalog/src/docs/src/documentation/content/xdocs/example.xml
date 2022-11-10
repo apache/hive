@@ -57,7 +57,7 @@ insert overwrite table 20100819events
 select advertiser_id, count(clicks)
 from processedevents
 where date = ‘20100819’
-group by adverstiser_id;
+group by advertiser_id;
 </source>
 
 <p><strong>With Templeton</strong> all these steps can be easily performed programatcally

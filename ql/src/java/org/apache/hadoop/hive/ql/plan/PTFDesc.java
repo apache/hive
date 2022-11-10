@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
@@ -153,7 +154,8 @@ public class PTFDesc extends AbstractOperatorDesc {
 
     @Explain(vectorization = Vectorization.EXPRESSION, displayName = "functionInputExpressions", explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public String getFunctionInputExpressions() {
-      return Arrays.toString(vectorPTFInfo.getEvaluatorInputExpressions());
+      return Arrays.asList(vectorPTFInfo.getEvaluatorInputExpressions()).stream().map(i -> i[0])
+          .collect(Collectors.toList()).toString();
     }
 
     @Explain(vectorization = Vectorization.EXPRESSION, displayName = "partitionExpressions", explainLevels = { Level.DEFAULT, Level.EXTENDED })
@@ -216,6 +218,19 @@ public class PTFDesc extends AbstractOperatorDesc {
         }
       }
       return result.toString();
+    }
+
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "allEvaluatorsAreStreaming", explainLevels = {
+        Level.DEFAULT, Level.EXTENDED })
+    public boolean getAllEvaluatorsAreStreaming() {
+      VectorPTFEvaluatorBase[] evaluators =
+          VectorPTFDesc.getEvaluators(vectorPTFDesc, vectorPTFInfo);
+      for (VectorPTFEvaluatorBase evaluator : evaluators) {
+        if (!evaluator.streamsResult()) {
+          return false;
+        }
+      }
+      return true;
     }
   }
 

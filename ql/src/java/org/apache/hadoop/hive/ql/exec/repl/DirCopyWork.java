@@ -97,6 +97,10 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
     return snapshotPrefix;
   }
 
+  public String getTableName() {
+    return tableName;
+  }
+
   @Override
   public String convertToString() {
     StringBuilder objInStr = new StringBuilder();

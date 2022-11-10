@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
@@ -62,6 +63,7 @@ import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEventBatch;
 import org.apache.hadoop.hive.metastore.events.UpdateTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeleteTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
@@ -340,6 +342,17 @@ public abstract class MetaStoreEventListener implements Configurable {
   }
 
   /**
+   * This will be called to perform acid write operation in a batch.
+   * @param batchAcidWriteEvent event to be processed
+   * @param dbConn jdbc connection to remote meta store db.
+   * @param sqlGenerator helper class to generate db specific sql string.
+   * @throws MetaException
+   */
+  public void onBatchAcidWrite(BatchAcidWriteEvent batchAcidWriteEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
+  }
+
+  /**
    * This will be called to update table column stats
    * @param updateTableColumnStatEvent event to be processed
    * @throws MetaException
@@ -363,6 +376,17 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onUpdatePartitionColumnStat(UpdatePartitionColumnStatEvent updatePartColStatEvent)
+          throws MetaException {
+  }
+
+  /**
+   * This will be called to update batch of partition column stats.The backend RDBMS operations are done using
+   * direct sql mode.
+   * @param updatePartColStatEvent event to be processed
+   * @throws MetaException
+   */
+  public void onUpdatePartitionColumnStatInBatch(UpdatePartitionColumnStatEventBatch updatePartColStatEvent,
+                                                 Connection dbConn, SQLGenerator sqlGenerator)
           throws MetaException {
   }
 

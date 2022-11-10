@@ -97,84 +97,6 @@ public class MapJoinTableContainerSerDe {
     }
   }
 
-  /**
-   * Loads the table container from a folder. Only used on Spark path.
-   * @param fs FileSystem of the folder.
-   * @param folder The folder to load table container.
-   * @param hconf The hive configuration
-   * @return Loaded table.
-   */
-  @SuppressWarnings("unchecked")
-  public MapJoinTableContainer load(
-      FileSystem fs, Path folder, Configuration hconf) throws HiveException {
-    try {
-
-      if (!fs.exists(folder)) {
-        return getDefaultEmptyContainer(hconf, keyContext, valueContext);
-      }
-      if (!fs.isDirectory(folder)) {
-        throw new HiveException("Error, not a directory: " + folder);
-      }
-      FileStatus[] fileStatuses = fs.listStatus(folder);
-      if (fileStatuses == null || fileStatuses.length == 0) {
-        return getDefaultEmptyContainer(hconf, keyContext, valueContext);
-      }
-
-      AbstractSerDe keySerDe = keyContext.getSerDe();
-      AbstractSerDe valueSerDe = valueContext.getSerDe();
-      Writable keyContainer = keySerDe.getSerializedClass().newInstance();
-      Writable valueContainer = valueSerDe.getSerializedClass().newInstance();
-
-      MapJoinTableContainer tableContainer = null;
-
-      boolean useOptimizedContainer = HiveConf.getBoolVar(
-          hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
-
-      for (FileStatus fileStatus: fileStatuses) {
-        Path filePath = fileStatus.getPath();
-        if (ShimLoader.getHadoopShims().isDirectory(fileStatus)) {
-          throw new HiveException("Error, not a file: " + filePath);
-        }
-        InputStream is = null;
-        ObjectInputStream in = null;
-        try {
-          is = fs.open(filePath);
-          in = new ObjectInputStream(is);
-          String name = in.readUTF();
-          Map<String, String> metaData = (Map<String, String>) in.readObject();
-          if (tableContainer == null) {
-            tableContainer = useOptimizedContainer ?
-                new MapJoinBytesTableContainer(hconf, valueContext, -1, 0) :
-                create(name, metaData);
-          }
-          tableContainer.setSerde(keyContext, valueContext);
-          if (useOptimizedContainer) {
-            loadOptimized((MapJoinBytesTableContainer) tableContainer,
-                in, keyContainer, valueContainer);
-          } else {
-            loadNormal((MapJoinPersistableTableContainer) tableContainer,
-                in, keyContainer, valueContainer);
-          }
-        } finally {
-          if (in != null) {
-            in.close();
-          } else if (is != null) {
-            is.close();
-          }
-        }
-      }
-      if (tableContainer != null) {
-        tableContainer.setKey(folder.toString());
-        tableContainer.seal();
-      }
-      return tableContainer;
-    } catch (IOException e) {
-      throw new HiveException("IO error while trying to create table container", e);
-    } catch (Exception e) {
-      throw new HiveException("Error while trying to create table container", e);
-    }
-  }
-
   private void loadNormal(MapJoinPersistableTableContainer container,
       ObjectInputStream in, Writable keyContainer, Writable valueContainer) throws Exception {
     int numKeys = in.readInt();
@@ -200,76 +122,6 @@ public class MapJoinTableContainerSerDe {
         value.readFields(in);
         container.putRow(key, value);
       }
-    }
-  }
-
-  /**
-   * Loads the small table into a VectorMapJoinFastTableContainer. Only used on Spark path.
-   * @param mapJoinDesc The descriptor for the map join
-   * @param fs FileSystem of the folder.
-   * @param folder The folder to load table container.
-   * @param hconf The hive configuration
-   * @return Loaded table.
-   */
-  @SuppressWarnings("unchecked")
-  public MapJoinTableContainer loadFastContainer(MapJoinDesc mapJoinDesc,
-      FileSystem fs, Path folder, Configuration hconf) throws HiveException {
-    try {
-      VectorMapJoinFastTableContainer tableContainer =
-          new VectorMapJoinFastTableContainer(mapJoinDesc, hconf, -1);
-      tableContainer.setSerde(keyContext, valueContext);
-
-      if (fs.exists(folder)) {
-        if (!fs.isDirectory(folder)) {
-          throw new HiveException("Error, not a directory: " + folder);
-        }
-
-        FileStatus[] fileStatuses = fs.listStatus(folder);
-        if (fileStatuses != null && fileStatuses.length > 0) {
-          AbstractSerDe keySerDe = keyContext.getSerDe();
-          AbstractSerDe valueSerDe = valueContext.getSerDe();
-          Writable key = keySerDe.getSerializedClass().newInstance();
-          Writable value = valueSerDe.getSerializedClass().newInstance();
-
-          for (FileStatus fileStatus : fileStatuses) {
-            Path filePath = fileStatus.getPath();
-            if (ShimLoader.getHadoopShims().isDirectory(fileStatus)) {
-              throw new HiveException("Error, not a file: " + filePath);
-            }
-            InputStream is = null;
-            ObjectInputStream in = null;
-            try {
-              is = fs.open(filePath);
-              in = new ObjectInputStream(is);
-              // skip the name and metadata
-              in.readUTF();
-              in.readObject();
-              int numKeys = in.readInt();
-              for (int keyIndex = 0; keyIndex < numKeys; keyIndex++) {
-                key.readFields(in);
-                long numRows = in.readLong();
-                for (long rowIndex = 0L; rowIndex < numRows; rowIndex++) {
-                  value.readFields(in);
-                  tableContainer.putRow(key, value);
-                }
-              }
-            } finally {
-              if (in != null) {
-                in.close();
-              } else if (is != null) {
-                is.close();
-              }
-            }
-          }
-        }
-        tableContainer.setKey(folder.toString());
-      }
-      tableContainer.seal();
-      return tableContainer;
-    } catch (IOException e) {
-      throw new HiveException("IO error while trying to create table container", e);
-    } catch (Exception e) {
-      throw new HiveException("Error while trying to create table container", e);
     }
   }
 
@@ -317,19 +169,5 @@ public class MapJoinTableContainerSerDe {
           " of type: " + name + ", with metaData: " + metaData;
       throw new HiveException(msg, e);
     }
-  }
-
-  // Get an empty container when the small table is empty.
-  private static MapJoinTableContainer getDefaultEmptyContainer(Configuration hconf,
-      MapJoinObjectSerDeContext keyCtx, MapJoinObjectSerDeContext valCtx) throws SerDeException {
-    boolean useOptimizedContainer = HiveConf.getBoolVar(
-        hconf, HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
-    if (useOptimizedContainer) {
-      return new MapJoinBytesTableContainer(hconf, valCtx, -1, 0);
-    }
-    MapJoinTableContainer container = new HashMapWrapper();
-    container.setSerde(keyCtx, valCtx);
-    container.seal();
-    return container;
   }
 }

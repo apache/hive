@@ -76,3 +76,8 @@ FROM src tablesample (1 rows);
 SELECT conv(key, 10, 16),
        conv(key, 16, 10)
 FROM src tablesample (3 rows);
+
+create table test (a string);
+insert into test values (""),(10),(NULL);
+select conv(a,16,10) from test;
+drop table test;

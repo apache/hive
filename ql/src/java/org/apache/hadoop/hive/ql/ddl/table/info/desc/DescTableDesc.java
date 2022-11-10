@@ -39,6 +39,7 @@ public class DescTableDesc implements DDLDesc, Serializable {
 
   public static final String SCHEMA = "col_name,data_type,comment#string:string:string";
   public static final String COLUMN_STATISTICS_SCHEMA = "column_property,value#string:string";
+  public static final String PARTITION_TRANSFORM_SPEC_SCHEMA = "col_name,transform_type#string:string";
   public static final List<String> COLUMN_STATISTICS_HEADERS = ImmutableList.of(
       "col_name", "data_type", "min", "max", "num_nulls", "distinct_count", "avg_col_len", "max_col_len", "num_trues",
       "num_falses", "bit_vector", "comment"

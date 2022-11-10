@@ -21,8 +21,9 @@ package org.apache.hadoop.hive.ql.ddl.workloadmanagement.resourceplan.show.forma
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.ObjectMapper;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.Closeable;
 import java.io.DataOutputStream;
@@ -35,7 +36,7 @@ import java.util.List;
 public class JsonShowResourcePlanFormatter extends ShowResourcePlanFormatter {
   @Override
   public void showResourcePlans(DataOutputStream out, List<WMResourcePlan> resourcePlans) throws HiveException {
-    try (JsonGenerator generator = new ObjectMapper().getJsonFactory().createJsonGenerator(out)) {
+    try (JsonGenerator generator = new ObjectMapper().getFactory().createJsonGenerator(out)) {
       generator.writeStartArray();
       for (WMResourcePlan plan : resourcePlans) {
         generator.writeStartObject();

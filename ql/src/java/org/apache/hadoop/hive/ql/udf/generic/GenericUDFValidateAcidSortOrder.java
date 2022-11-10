@@ -77,8 +77,8 @@ public class GenericUDFValidateAcidSortOrder extends GenericUDF {
     if (previousWriteIdRowId != null) {
       // Verify sort order for this new row
       if (current.compareTo(previousWriteIdRowId) <= 0) {
-        throw new HiveException("Wrong sort order of Acid rows detected for the rows: " + previousWriteIdRowId + " and "
-            + current);
+        throw new HiveException("Wrong sort order of Acid rows detected for the rows: "
+            + previousWriteIdRowId.toString() + " and " + current.toString());
       }
     }
     previousWriteIdRowId = current;
@@ -104,16 +104,29 @@ public class GenericUDFValidateAcidSortOrder extends GenericUDF {
 
     @Override
     public int compareTo(WriteIdRowId other) {
-      if (this.bucketProperty != other.bucketProperty) {
-        return this.bucketProperty < other.bucketProperty ? -1 : 1;
-      }
       if (this.writeId != other.writeId) {
         return this.writeId < other.writeId ? -1 : 1;
+      }
+      if (this.bucketProperty != other.bucketProperty) {
+        return this.bucketProperty < other.bucketProperty ? -1 : 1;
       }
       if (this.rowId != other.rowId) {
         return this.rowId < other.rowId ? -1 : 1;
       }
       return 0;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("[writeId=");
+      sb.append(writeId);
+      sb.append(", bucketProperty=");
+      sb.append(bucketProperty);
+      sb.append(", rowId=");
+      sb.append(rowId);
+      sb.append("]");
+      return sb.toString();
     }
   }
 }

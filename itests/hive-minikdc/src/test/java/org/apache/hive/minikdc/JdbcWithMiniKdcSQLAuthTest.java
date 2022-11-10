@@ -59,6 +59,7 @@ public abstract class JdbcWithMiniKdcSQLAuthTest {
     hiveConf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
+    hiveConf.setBoolVar(ConfVars.HIVEFETCHTASKCACHING, false);
 
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);
     miniHS2.start(new HashMap<String, String>());
@@ -90,7 +91,7 @@ public abstract class JdbcWithMiniKdcSQLAuthTest {
 
     String tableName1 = "test_jdbc_sql_auth1";
     String tableName2 = "test_jdbc_sql_auth2";
-    // using different code blocks so that jdbc variables are not accidently re-used
+    // using different code blocks so that jdbc variables are not accidentally re-used
     // between the actions. Different connection/statement object should be used for each action.
     {
       // create tables as user1

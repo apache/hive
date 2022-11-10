@@ -19,19 +19,20 @@
 
 package org.apache.iceberg.hive;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hive.iceberg.com.github.benmanes.caffeine.cache.Cache;
-import org.apache.hive.iceberg.com.github.benmanes.caffeine.cache.Caffeine;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.iceberg.CatalogProperties;
+import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.util.PropertyUtil;
 import org.apache.thrift.TException;
 
-public class CachedClientPool implements ClientPool<HiveMetaStoreClient, TException> {
+public class CachedClientPool implements ClientPool<IMetaStoreClient, TException> {
 
   private static Cache<String, HiveClientPool> clientPoolCache;
 
@@ -40,7 +41,7 @@ public class CachedClientPool implements ClientPool<HiveMetaStoreClient, TExcept
   private final int clientPoolSize;
   private final long evictionInterval;
 
-  CachedClientPool(Configuration conf, Map<String, String> properties) {
+  public CachedClientPool(Configuration conf, Map<String, String> properties) {
     this.conf = conf;
     this.metastoreUri = conf.get(HiveConf.ConfVars.METASTOREURIS.varname, "");
     this.clientPoolSize = PropertyUtil.propertyAsInt(properties,
@@ -57,7 +58,6 @@ public class CachedClientPool implements ClientPool<HiveMetaStoreClient, TExcept
     return clientPoolCache.get(metastoreUri, k -> new HiveClientPool(clientPoolSize, conf));
   }
 
-
   private synchronized void init() {
     if (clientPoolCache == null) {
       clientPoolCache = Caffeine.newBuilder().expireAfterAccess(evictionInterval, TimeUnit.MILLISECONDS)
@@ -72,7 +72,13 @@ public class CachedClientPool implements ClientPool<HiveMetaStoreClient, TExcept
   }
 
   @Override
-  public <R> R run(Action<R, HiveMetaStoreClient, TException> action) throws TException, InterruptedException {
+  public <R> R run(Action<R, IMetaStoreClient, TException> action) throws TException, InterruptedException {
     return clientPool().run(action);
+  }
+
+  @Override
+  public <R> R run(Action<R, IMetaStoreClient, TException> action, boolean retry)
+          throws TException, InterruptedException {
+    return clientPool().run(action, retry);
   }
 }

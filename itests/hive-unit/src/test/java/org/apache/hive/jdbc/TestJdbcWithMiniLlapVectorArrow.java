@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.Row;
 import org.apache.hadoop.io.NullWritable;
@@ -64,8 +65,6 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
     return new LlapArrowRowInputFormat(Long.MAX_VALUE);
   }
 
-  // Currently MAP type is not supported. Add it back when Arrow 1.0 is released.
-  // See: SPARK-21187
   @Override
   public void testDataTypes() throws Exception {
     createDataTypesTable("datatypes");
@@ -124,11 +123,13 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
     List<?> c5Value = (List<?>) rowValues[4];
     assertEquals(0, c5Value.size());
 
-    //Map<?,?> c6Value = (Map<?,?>) rowValues[5];
-    //assertEquals(0, c6Value.size());
+    Map<?,?> c6Value = (Map<?,?>) rowValues[5];
+    assertEquals(1, c6Value.size());
+    assertEquals(null, c6Value.get(1));
 
-    //Map<?,?> c7Value = (Map<?,?>) rowValues[6];
-    //assertEquals(0, c7Value.size());
+    Map<?,?> c7Value = (Map<?,?>) rowValues[6];
+    assertEquals(1, c7Value.size());
+    assertEquals("b", c7Value.get("a"));
 
     List<?> c8Value = (List<?>) rowValues[7];
     assertEquals(null, c8Value.get(0));
@@ -143,15 +144,18 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
     List<?> c13Value = (List<?>) rowValues[12];
     assertEquals(0, c13Value.size());
 
-    //Map<?,?> c14Value = (Map<?,?>) rowValues[13];
-    //assertEquals(0, c14Value.size());
+    Map<?,?> c14Value = (Map<?,?>) rowValues[13];
+    assertEquals(1, c14Value.size());
+    Map<?,?> mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(1));
+    assertEquals(1, mapVal.size());
+    assertEquals(100, mapVal.get(Integer.valueOf(10)));
 
     List<?> c15Value = (List<?>) rowValues[14];
     assertEquals(null, c15Value.get(0));
     assertEquals(null, c15Value.get(1));
 
-    //List<?> c16Value = (List<?>) rowValues[15];
-    //assertEquals(0, c16Value.size());
+    List<?> c16Value = (List<?>) rowValues[15];
+    assertEquals(0, c16Value.size());
 
     assertEquals(null, rowValues[16]);
     assertEquals(null, rowValues[17]);
@@ -173,14 +177,15 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
     assertEquals(Integer.valueOf(1), c5Value.get(0));
     assertEquals(Integer.valueOf(2), c5Value.get(1));
 
-    //c6Value = (Map<?,?>) rowValues[5];
-    //assertEquals(2, c6Value.size());
-    //assertEquals("x", c6Value.get(Integer.valueOf(1)));
-    //assertEquals("y", c6Value.get(Integer.valueOf(2)));
+    c6Value = (Map<?,?>) rowValues[5];
+    assertEquals(2, c6Value.size());
+    assertEquals("x", c6Value.get(Integer.valueOf(1)));
+    assertEquals("y", c6Value.get(Integer.valueOf(2)));
 
-    //c7Value = (Map<?,?>) rowValues[6];
-    //assertEquals(1, c7Value.size());
-    //assertEquals("v", c7Value.get("k"));
+    c7Value = (Map<?,?>) rowValues[6];
+    assertEquals(2, c7Value.size());
+    assertEquals("v", c7Value.get("k"));
+    assertEquals("c", c7Value.get("b"));
 
     c8Value = (List<?>) rowValues[7];
     assertEquals("a", c8Value.get(0));
@@ -201,15 +206,15 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
     assertEquals("c", listVal.get(0));
     assertEquals("d", listVal.get(1));
 
-    //c14Value = (Map<?,?>) rowValues[13];
-    //assertEquals(2, c14Value.size());
-    //Map<?,?> mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(1));
-    //assertEquals(2, mapVal.size());
-    //assertEquals(Integer.valueOf(12), mapVal.get(Integer.valueOf(11)));
-    //assertEquals(Integer.valueOf(14), mapVal.get(Integer.valueOf(13)));
-    //mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(2));
-    //assertEquals(1, mapVal.size());
-    //assertEquals(Integer.valueOf(22), mapVal.get(Integer.valueOf(21)));
+    c14Value = (Map<?,?>) rowValues[13];
+    assertEquals(2, c14Value.size());
+    mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(1));
+    assertEquals(2, mapVal.size());
+    assertEquals(Integer.valueOf(12), mapVal.get(Integer.valueOf(11)));
+    assertEquals(Integer.valueOf(14), mapVal.get(Integer.valueOf(13)));
+    mapVal = (Map<?,?>) c14Value.get(Integer.valueOf(2));
+    assertEquals(1, mapVal.size());
+    assertEquals(Integer.valueOf(22), mapVal.get(Integer.valueOf(21)));
 
     c15Value = (List<?>) rowValues[14];
     assertEquals(Integer.valueOf(1), c15Value.get(0));
@@ -218,19 +223,19 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
     assertEquals(Integer.valueOf(2), listVal.get(0));
     assertEquals("x", listVal.get(1));
 
-    //c16Value = (List<?>) rowValues[15];
-    //assertEquals(2, c16Value.size());
-    //listVal = (List<?>) c16Value.get(0);
-    //assertEquals(2, listVal.size());
-    //mapVal = (Map<?,?>) listVal.get(0);
-    //assertEquals(0, mapVal.size());
-    //assertEquals(Integer.valueOf(1), listVal.get(1));
-    //listVal = (List<?>) c16Value.get(1);
-    //mapVal = (Map<?,?>) listVal.get(0);
-    //assertEquals(2, mapVal.size());
-    //assertEquals("b", mapVal.get("a"));
-    //assertEquals("d", mapVal.get("c"));
-    //assertEquals(Integer.valueOf(2), listVal.get(1));
+    c16Value = (List<?>) rowValues[15];
+    assertEquals(2, c16Value.size());
+    listVal = (List<?>) c16Value.get(0);
+    assertEquals(2, listVal.size());
+    mapVal = (Map<?,?>) listVal.get(0);
+    assertEquals(0, mapVal.size());
+    assertEquals(Integer.valueOf(1), listVal.get(1));
+    listVal = (List<?>) c16Value.get(1);
+    mapVal = (Map<?,?>) listVal.get(0);
+    assertEquals(2, mapVal.size());
+    assertEquals("b", mapVal.get("a"));
+    assertEquals("d", mapVal.get("c"));
+    assertEquals(Integer.valueOf(2), listVal.get(1));
 
     assertEquals(Timestamp.valueOf("2012-04-22 09:00:00.123456"), rowValues[16]);
     assertEquals(new BigDecimal("123456789.123456"), rowValues[17]);
@@ -238,6 +243,7 @@ public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
     assertEquals(Date.valueOf("2013-01-01"), rowValues[19]);
     assertEquals("abc123", rowValues[20]);
     assertEquals("abc123         ", rowValues[21]);
+
     assertArrayEquals("X'01FF'".getBytes("UTF-8"), (byte[]) rowValues[22]);
   }
 

@@ -26,16 +26,13 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public class ScalarNullAndCol extends ColAndCol {
   private static final long serialVersionUID = 1L;
-  protected final int colNum;
 
   public ScalarNullAndCol(ConstantVectorExpression expression, int colNum, int outputColumnNum) {
     super(colNum, -1, outputColumnNum);
-    this.colNum = colNum;
   }
 
   public ScalarNullAndCol() {
     super();
-    colNum = -1;
   }
 
   @Override
@@ -44,7 +41,7 @@ public class ScalarNullAndCol extends ColAndCol {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
+    LongColumnVector inputColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
 
     super.doEvaluate(batch, new LongColumnVector(inputColVector.vector.length).fillWithNulls(),
         inputColVector);
@@ -52,7 +49,7 @@ public class ScalarNullAndCol extends ColAndCol {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum) + ", " + getLongValueParamString(1, 0);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getLongValueParamString(1, 0);
   }
 
   @Override

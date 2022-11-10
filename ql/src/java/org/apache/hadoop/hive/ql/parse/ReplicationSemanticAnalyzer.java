@@ -23,10 +23,11 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -43,19 +44,17 @@ import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 import java.util.List;
 import java.util.Collections;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
-import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPLACE;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_DUMP;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_LOAD;
@@ -94,12 +93,26 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (ast.getToken().getType()) {
       case TOK_REPL_DUMP: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: dump");
-        analyzeReplDump(ast);
+        try {
+          analyzeReplDump(ast);
+        } catch (SemanticException e) {
+          ReplUtils.reportStatusInReplicationMetrics("REPL_DUMP", ReplUtils.isErrorRecoverable(e)
+                  ? Status.FAILED_ADMIN : Status.FAILED, null, conf);
+          throw e;
+        }
         break;
       }
       case TOK_REPL_LOAD: {
         LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: load");
-        analyzeReplLoad(ast);
+        try {
+          analyzeReplLoad(ast);
+        } catch (SemanticException e) {
+          if (!e.getMessage().equals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg())) {
+            ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", ReplUtils.isErrorRecoverable(e)
+                    ? Status.FAILED_ADMIN : Status.FAILED, null, conf);
+          }
+          throw e;
+        }
         break;
       }
       case TOK_REPL_STATUS: {
@@ -144,7 +157,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void initReplDump(ASTNode ast) throws HiveException {
     int numChildren = ast.getChildCount();
-    boolean isMetaDataOnly = false;
 
     String dbNameOrPattern = PlanUtils.stripQuotes(ast.getChild(0).getText());
     LOG.info("Current ReplScope: Set DB Name: {}", dbNameOrPattern);
@@ -161,7 +173,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           for (Map.Entry<String, String> config : replConfigs.entrySet()) {
             conf.set(config.getKey(), config.getValue());
           }
-          isMetaDataOnly = HiveConf.getBoolVar(conf, REPL_DUMP_METADATA_ONLY);
         }
         break;
       case TOK_REPL_TABLES:
@@ -174,12 +185,22 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       childIdx++;
     }
 
-    for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
+    List<String> databases = Utils.matchesDb(db, dbNameOrPattern);
+    if (databases.size() == 0) {
+      throw new SemanticException(ErrorMsg.REPL_SOURCE_DATABASE_NOT_FOUND.format(dbNameOrPattern));
+    }
+    for (String dbName : databases) {
       Database database = db.getDatabase(dbName);
       if (database != null) {
-        if (ReplUtils.isTargetOfReplication(database)) {
-          LOG.error("Cannot dump database " + dbNameOrPattern + " as it is a target of replication (repl.target.for)");
-          throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getMsg());
+        if (MetaStoreUtils.isTargetOfReplication(database)) {
+          if (MetaStoreUtils.isDbBeingFailedOverAtEndpoint(database, MetaStoreUtils.FailoverEndpoint.TARGET)) {
+            LOG.info("Proceeding with dump operation as database: {} is target of replication and" +
+                    "{} is set to TARGET.", dbName, ReplConst.REPL_FAILOVER_ENDPOINT);
+            ReplUtils.unsetDbPropIfSet(database, ReplConst.TARGET_OF_REPLICATION, db);
+          } else {
+            LOG.warn("Database " + dbNameOrPattern + " is marked as target of replication (repl.target.for), Will "
+                + "trigger failover.");
+          }
         }
       } else {
         throw new SemanticException("Cannot dump database " + dbNameOrPattern + " as it does not exist");
@@ -314,8 +335,12 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // tells us what is inside that dumpdir.
 
       //If repl status of target is greater than dumps, don't do anything as the load for the latest dump is done
-      if (ReplUtils.failedWithNonRecoverableError(ReplUtils.getLatestDumpPath(ReplUtils
-        .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf), conf)) {
+      Path latestDumpPath = ReplUtils.getLatestDumpPath(ReplUtils
+              .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf);
+      if (ReplUtils.failedWithNonRecoverableError(latestDumpPath, conf)) {
+        Path nonRecoverableFile = new Path(latestDumpPath, ReplAck.NON_RECOVERABLE_MARKER.toString());
+        ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED,
+                nonRecoverableFile.toString(), conf);
         throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
       }
       if (loadPath != null) {
@@ -337,6 +362,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               dmd.getDumpExecutionId()), dmd.isReplScopeModified());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
       } else {
+        ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED, null, conf);
         LOG.warn("Previous Dump Already Loaded");
       }
     } catch (Exception e) {
@@ -439,8 +465,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (database != null) {
         inputs.add(new ReadEntity(database));
         Map<String, String> params = database.getParameters();
-        if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
-          return params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+        if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString()))) {
+          return params.get(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString());
         }
       }
     } catch (HiveException e) {

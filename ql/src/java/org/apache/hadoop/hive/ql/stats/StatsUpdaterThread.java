@@ -56,8 +56,8 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.StatsUpdateMode;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.DriverUtils;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -125,11 +125,6 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
   }
 
   @Override
-  public void setThreadId(int threadId) {
-    this.threadId = threadId;
-  }
-
-  @Override
   public void init(AtomicBoolean stop) throws MetaException {
     this.stop = stop;
     setPriority(MIN_PRIORITY);
@@ -142,7 +137,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     txnHandler = TxnUtils.getTxnStore(conf);
     rs = RawStoreProxy.getProxy(conf, conf,
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL), threadId);
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL));
     for (int i = 0; i < workers.length; ++i) {
       workers[i] = new Thread(new WorkerRunnable(conf, user));
       workers[i].setDaemon(true);
@@ -187,9 +182,10 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     LOG.debug("Processing {}", fullTableNames);
     boolean hadUpdates = false;
+    Map<String, Boolean> dbsToSkip = new HashMap<>();
     for (TableName fullTableName : fullTableNames) {
       try {
-        List<AnalyzeWork> commands = processOneTable(fullTableName);
+        List<AnalyzeWork> commands = processOneTable(fullTableName, dbsToSkip);
         hadUpdates = hadUpdates || commands != null;
         if (commands != null) {
           for (AnalyzeWork req : commands) {
@@ -210,26 +206,24 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
   }
 
-  private List<AnalyzeWork> processOneTable(TableName fullTableName)
+  private List<AnalyzeWork> processOneTable(TableName fullTableName, Map<String, Boolean> dbsToSkip)
       throws MetaException, NoSuchTxnException, NoSuchObjectException {
     if (isAnalyzeTableInProgress(fullTableName)) return null;
     String cat = fullTableName.getCat(), db = fullTableName.getDb(), tbl = fullTableName.getTable();
+    String dbName = MetaStoreUtils.prependCatalogToDbName(cat,db, conf);
+    if (!dbsToSkip.containsKey(dbName)) {
+      dbsToSkip.put(dbName, MetaStoreUtils.checkIfDbNeedsToBeSkipped(rs.getDatabase(cat, db)));
+    }
+    if (dbsToSkip.get(dbName)) {
+      LOG.debug("Skipping table {}", tbl);
+      return null;
+    }
     Table table = rs.getTable(cat, db, tbl);
     LOG.debug("Processing table {}", table);
 
     // Check if the table should be skipped.
     String skipParam = table.getParameters().get(SKIP_STATS_AUTOUPDATE_PROPERTY);
     if ("true".equalsIgnoreCase(skipParam)) return null;
-
-    // If the table is being replicated into,
-    // 1. the stats are also replicated from the source, so we don't need those to be calculated
-    //    on the target again
-    // 2. updating stats requires a writeId to be created. Hence writeIds on source and target
-    //    can get out of sync when stats are updated. That can cause consistency issues.
-    if (ReplUtils.isTargetOfReplication(rs.getDatabase(cat, db))) {
-      LOG.debug("Skipping table {} since it is being replicated into", table);
-      return null;
-    }
 
     // Note: ideally we should take a lock here to pretend to be a real reader.
     //       For now, this check is going to have race potential; it may run a spurious analyze.
@@ -625,12 +619,17 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
     }
     String cmd = null;
     try {
-      cmd = req.buildCommand();
-      LOG.debug("Running {} based on {}", cmd, req);
       if (doWait) {
         SessionState.start(ss); // This is the first call, open the session
       }
-      DriverUtils.runOnDriver(conf, user, ss, cmd);
+      TableName tb = req.tableName;
+      if (MetaStoreUtils.isDbBeingFailedOver(rs.getDatabase(tb.getCat(), tb.getDb()))) {
+        LOG.info("Skipping table: {} as it belongs to database which is being failed over." + tb.getTable());
+        return true;
+      }
+      cmd = req.buildCommand();
+      LOG.debug("Running {} based on {}", cmd, req);
+      DriverUtils.runOnDriver(conf, ss, cmd);
     } catch (Exception e) {
       LOG.error("Analyze command failed: " + cmd, e);
       try {

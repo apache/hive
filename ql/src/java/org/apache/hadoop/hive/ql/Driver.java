@@ -22,6 +22,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -38,7 +39,6 @@ import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.lock.CompileLock;
 import org.apache.hadoop.hive.ql.lock.CompileLockFactory;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -106,11 +106,15 @@ public class Driver implements IDriver {
     this(queryState, queryInfo, null);
   }
 
-  public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager,
-      ValidWriteIdList compactionWriteIds, long compactorTxnId) {
-    this(queryState, queryInfo, txnManager);
+  public Driver(QueryState queryState, ValidWriteIdList compactionWriteIds, long compactorTxnId) {
+    this(queryState);
     driverContext.setCompactionWriteIds(compactionWriteIds);
     driverContext.setCompactorTxnId(compactorTxnId);
+  }
+
+  public Driver(QueryState queryState, long analyzeTableWriteId) {
+    this(queryState);
+    driverContext.setAnalyzeTableWriteId(analyzeTableWriteId);
   }
 
   public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager) {
@@ -199,6 +203,18 @@ public class Driver implements IDriver {
         perfLogger = SessionState.getPerfLogger(true);
       }
       execute();
+
+      FetchTask fetchTask = driverContext.getPlan().getFetchTask();
+      if (fetchTask != null) {
+        fetchTask.setTaskQueue(null);
+        fetchTask.setQueryPlan(null);
+        try {
+          fetchTask.execute();
+          driverContext.setFetchTask(fetchTask);
+        } catch (Throwable e) {
+          throw new CommandProcessorException(e);
+        }
+      }
       driverTxnHandler.handleTransactionAfterExecution();
 
       driverContext.getQueryDisplay().setPerfLogStarts(QueryDisplay.Phase.EXECUTION, perfLogger.getStartTimes());
@@ -212,7 +228,6 @@ public class Driver implements IDriver {
       } else {
         releaseResources();
       }
-
       driverState.executionFinishedWithLocking(isFinishedWithError);
     }
 
@@ -247,6 +262,21 @@ public class Driver implements IDriver {
             String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
             driverContext.getTxnManager().openTxn(context, userFromUGI, driverContext.getTxnType());
             lockAndRespond();
+          } else {
+            // We need to clear the possibly cached writeIds for the prior transaction, so new writeIds
+            // are allocated since writeIds need to be committed in increasing order. It helps in cases
+            // like:
+            // txnId   writeId
+            // 10      71  <--- commit first
+            // 11      69
+            // 12      70
+            // in which the transaction is not out of date, but the writeId would not be increasing.
+            // This would be a problem in an UPDATE, since it would end up generating delete
+            // deltas for a future writeId - which in turn causes scans to not think they are deleted.
+            // The scan basically does last writer wins for a given row which is determined by
+            // max(committingWriteId) for a given ROW__ID(originalWriteId, bucketId, rowId). So the
+            // data add ends up being > than the data delete.
+            driverContext.getTxnManager().clearCaches();
           }
           driverContext.setRetrial(true);
           driverContext.getBackupContext().addSubContext(context);
@@ -423,7 +453,6 @@ public class Driver implements IDriver {
     if (metrics != null) {
       metrics.incrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
     }
-
     PerfLogger perfLogger = SessionState.getPerfLogger(true);
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.WAIT_COMPILE);
 
@@ -466,6 +495,7 @@ public class Driver implements IDriver {
    * @param resetTaskIds Resets taskID counter if true.
    * @return 0 for ok
    */
+  @VisibleForTesting
   public int compile(String command, boolean resetTaskIds) {
     try {
       compile(command, resetTaskIds, false);
@@ -486,7 +516,7 @@ public class Driver implements IDriver {
    */
   @VisibleForTesting
   public void compile(String command, boolean resetTaskIds, boolean deferClose) throws CommandProcessorException {
-    preparForCompile(resetTaskIds);
+    prepareForCompile(resetTaskIds);
 
     Compiler compiler = new Compiler(context, driverContext, driverState);
     QueryPlan plan = compiler.compile(command, deferClose);
@@ -495,7 +525,7 @@ public class Driver implements IDriver {
     compileFinished(deferClose);
   }
 
-  private void preparForCompile(boolean resetTaskIds) throws CommandProcessorException {
+  private void prepareForCompile(boolean resetTaskIds) throws CommandProcessorException {
     driverTxnHandler.createTxnManager();
     DriverState.setDriverState(driverState);
     prepareContext();
@@ -507,6 +537,7 @@ public class Driver implements IDriver {
   }
 
   private void prepareContext() throws CommandProcessorException {
+    String originalCboInfo = context != null ? context.cboInfo : null;
     if (context != null && context.getExplainAnalyze() != AnalyzeState.RUNNING) {
       // close the existing ctx etc before compiling a new query, but does not destroy driver
       closeInProcess(false);
@@ -514,23 +545,25 @@ public class Driver implements IDriver {
 
     if (context == null) {
       context = new Context(driverContext.getConf());
-      }
+      context.setCboInfo(originalCboInfo);
+    }
 
     context.setHiveTxnManager(driverContext.getTxnManager());
     context.setStatsSource(driverContext.getStatsSource());
     context.setHDFSCleanup(true);
 
     driverTxnHandler.setContext(context);
+
+    if (SessionState.get() != null) {
+      QueryState queryState = getQueryState();
+      SessionState.get().addQueryState(queryState.getQueryId(), queryState);
+    }
   }
 
   private void setQueryId() {
     String queryId = Strings.isNullOrEmpty(driverContext.getQueryState().getQueryId()) ?
         QueryPlan.makeQueryId() : driverContext.getQueryState().getQueryId();
 
-    SparkSession ss = SessionState.get().getSparkSession();
-    if (ss != null) {
-      ss.onQuerySubmission(queryId);
-    }
     driverContext.getQueryDisplay().setQueryId(queryId);
 
     setTriggerContext(queryId);
@@ -629,12 +662,10 @@ public class Driver implements IDriver {
     }
     if (isFetchingTable()) {
       try {
-        driverContext.getFetchTask().clearFetch();
+        driverContext.getFetchTask().resetFetch();
       } catch (Exception e) {
-        throw new IOException("Error closing the current fetch task", e);
+        throw new IOException("Error resetting the current fetch task", e);
       }
-      // FetchTask should not depend on the plan.
-      driverContext.getFetchTask().initialize(driverContext.getQueryState(), null, null, context);
     } else {
       context.resetStream();
       driverContext.setResStream(null);
@@ -776,14 +807,6 @@ public class Driver implements IDriver {
 
   private void releasePlan() {
     try {
-      if (driverContext.getPlan() != null) {
-        FetchTask fetchTask = driverContext.getPlan().getFetchTask();
-        if (fetchTask != null) {
-          fetchTask.setTaskQueue(null);
-          fetchTask.setQueryPlan(null);
-        }
-        driverContext.setFetchTask(fetchTask);
-      }
       driverContext.setPlan(null);
     } catch (Exception e) {
       LOG.debug("Exception while clearing the Fetch task", e);
@@ -806,6 +829,18 @@ public class Driver implements IDriver {
           context.setHiveLocks(null);
         }
         context = null;
+      }
+
+      if (SessionState.get() != null) {
+        QueryState queryState = getQueryState();
+        // If the driver object is reused for several queries, make sure we empty the HMS query cache
+        Map<Object, Object> queryCache = SessionState.get().getQueryCache(queryState.getQueryId());
+        if (queryCache != null) {
+          queryCache.clear();
+        }
+        queryState.disableHMSCache();
+        // Remove any query state reference from the session state
+        SessionState.get().removeQueryState(queryState.getQueryId());
       }
     } catch (Exception e) {
       LOG.debug("Exception while clearing the context ", e);

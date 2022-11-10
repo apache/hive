@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
-import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -60,6 +59,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -298,7 +298,7 @@ public class MapOperator extends AbstractMapOperator {
       for (Path onefile : conf.getPathToAliases().keySet()) {
         PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
         TableDesc tableDesc = pd.getTableDesc();
-        Configuration hconf = tableToConf.get(tableDesc.getTableName());
+        Configuration hconf = tableToConf.get(tableDesc.getFullTableName());
         Deserializer partDeserializer = pd.getDeserializer(hconf);
         StructObjectInspector partRawRowObjectInspector;
         boolean isAcid = AcidUtils.isTablePropertyTransactional(tableDesc.getProperties());
@@ -340,10 +340,10 @@ public class MapOperator extends AbstractMapOperator {
   /**
    * For each source table, combine the nested column pruning information from all its
    * table scan descriptors and set it in a configuration copy. This is necessary since
-   * the configuration property "READ_NESTED_COLUMN_PATH_CONF_STR" is set on a per-table
-   * basis, so we can't just use a single configuration for all the tables.
+   * the configuration properties are set on a per-table basis, so we can't just use a
+   * single configuration for all the tables.
    */
-  private Map<String, Configuration> cloneConfsForNestedColPruning(Configuration hconf) {
+  private Map<String, Configuration> cloneConfsForColPruning(Configuration hconf) {
     Map<String, Configuration> tableNameToConf = new HashMap<>();
 
     for (Map.Entry<Path, List<String>> e : conf.getPathToAliases().entrySet()) {
@@ -369,10 +369,15 @@ public class MapOperator extends AbstractMapOperator {
         if (!tableNameToConf.containsKey(tableName)) {
           Configuration clonedConf = new Configuration(hconf);
           clonedConf.unset(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
+          clonedConf.unset(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+          clonedConf.unset(ColumnProjectionUtils.FETCH_VIRTUAL_COLUMNS_CONF_STR);
+          clonedConf.unset(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR);
           tableNameToConf.put(tableName, clonedConf);
         }
         Configuration newConf = tableNameToConf.get(tableName);
-        ColumnProjectionUtils.appendNestedColumnPaths(newConf, nestedColumnPaths);
+        ColumnProjectionUtils.appendReadColumns(newConf, tableScanDesc.getNeededColumnIDs(),
+            tableScanDesc.getOutputColumnNames(), tableScanDesc.getNeededNestedColumnPaths(),
+            tableScanDesc.hasVirtualCols());
       }
     }
 
@@ -403,7 +408,7 @@ public class MapOperator extends AbstractMapOperator {
     throws SerDeException, Exception {
     setChildOperators(children);
 
-    Map<String, Configuration> tableNameToConf = cloneConfsForNestedColPruning(hconf);
+    Map<String, Configuration> tableNameToConf = cloneConfsForColPruning(hconf);
 
     for (Operator<?> child : children) {
       TableScanOperator tsOp = (TableScanOperator) child;
@@ -426,7 +431,7 @@ public class MapOperator extends AbstractMapOperator {
     List<Operator<? extends OperatorDesc>> children =
         new ArrayList<Operator<? extends OperatorDesc>>();
 
-    Map<String, Configuration> tableNameToConf = cloneConfsForNestedColPruning(hconf);
+    Map<String, Configuration> tableNameToConf = cloneConfsForColPruning(hconf);
     Map<TableDesc, StructObjectInspector> convertedOI = getConvertedOI(tableNameToConf);
 
     for (Map.Entry<Path, List<String>> entry : conf.getPathToAliases().entrySet()) {
@@ -434,14 +439,11 @@ public class MapOperator extends AbstractMapOperator {
       List<String> aliases = entry.getValue();
       PartitionDesc partDesc = conf.getPathToPartitionInfo().get(onefile);
       TableDesc tableDesc = partDesc.getTableDesc();
-      Configuration newConf = tableNameToConf.get(tableDesc.getTableName());
+      Configuration newConf = tableNameToConf.get(tableDesc.getFullTableName());
 
       for (String alias : aliases) {
         Operator<? extends OperatorDesc> op = conf.getAliasToWork().get(alias);
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Adding alias " + alias + " to work list for file "
-              + onefile);
-        }
+        LOG.debug("Adding alias {} to work list for file {}", alias, onefile);
         Map<Operator<?>, MapOpCtx> contexts = opCtxMap.computeIfAbsent(onefile,
                 k -> new LinkedHashMap<>());
         if (contexts.containsKey(op)) {
@@ -525,9 +527,7 @@ public class MapOperator extends AbstractMapOperator {
         }
         builder.append(context.alias);
       }
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Processing alias(es) " + builder.toString() + " for file " + fpath);
-      }
+      LOG.debug("Processing alias(es) {} for file {}", builder, fpath);
     }
     // Add alias, table name, and partitions to hadoop conf so that their
     // children will inherit these
@@ -676,7 +676,31 @@ public class MapOperator extends AbstractMapOperator {
             ctx.getIoCxt().setRecordIdentifier(null);//so we don't accidentally cache the value; shouldn't
             //happen since IO layer either knows how to produce ROW__ID or not - but to be safe
           }
-	  break;
+          break;
+        case PARTITION_SPEC_ID:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
+            vcValues[i] = new IntWritable(ctx.getIoCxt().getPositionDeleteInfo().getSpecId());
+          }
+          break;
+        case PARTITION_HASH:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
+            vcValues[i] = new LongWritable(ctx.getIoCxt().getPositionDeleteInfo().getPartitionHash());
+          }
+          break;
+        case FILE_PATH:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
+            vcValues[i] = new Text(ctx.getIoCxt().getPositionDeleteInfo().getFilePath());
+          }
+          break;
+        case ROW_POSITION:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
+            vcValues[i] = new LongWritable(ctx.getIoCxt().getPositionDeleteInfo().getFilePos());
+          }
+          break;
         case ROWISDELETED:
           vcValues[i] = new BooleanWritable(ctx.getIoCxt().isDeletedRecord());
           break;

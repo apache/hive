@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -134,6 +135,7 @@ public class TestStreamingDynamicPartitioning {
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     dbFolder.create();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE, "raw://" + dbFolder.newFolder("warehouse"));
     loc1 = dbFolder.newFolder(dbName + ".db").toString();
 
     //1) Start from a clean slate (metastore)

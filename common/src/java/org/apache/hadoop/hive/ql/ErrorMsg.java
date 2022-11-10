@@ -146,7 +146,7 @@ public enum ErrorMsg {
   UDTF_NO_GROUP_BY(10077, "GROUP BY is not supported with a UDTF in the SELECT clause"),
   UDTF_NO_SORT_BY(10078, "SORT BY is not supported with a UDTF in the SELECT clause"),
   UDTF_NO_CLUSTER_BY(10079, "CLUSTER BY is not supported with a UDTF in the SELECT clause"),
-  UDTF_NO_DISTRIBUTE_BY(10080, "DISTRUBTE BY is not supported with a UDTF in the SELECT clause"),
+  UDTF_NO_DISTRIBUTE_BY(10080, "DISTRIBUTE BY is not supported with a UDTF in the SELECT clause"),
   UDTF_INVALID_LOCATION(10081, "UDTF's are not supported outside the SELECT clause, nor nested "
       + "in expressions"),
   UDTF_LATERAL_VIEW(10082, "UDTF's cannot be in a select expression when there is a lateral view"),
@@ -218,7 +218,7 @@ public enum ErrorMsg {
   BUCKET_MAPJOIN_NOT_POSSIBLE(10136,
     "Bucketed mapjoin cannot be performed. " +
     "This can be due to multiple reasons: " +
-    " . Join columns dont match bucketed columns. " +
+    " . Join columns don't match bucketed columns. " +
     " . Number of buckets are not a multiple of each other. " +
     "If you really want to perform the operation, either remove the " +
     "mapjoin hint from your query or set hive.enforce.bucketmapjoin to false."),
@@ -384,6 +384,8 @@ public enum ErrorMsg {
   MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES(10288,
       "Querying directly materialized view contents is not supported since we detected {0}.{1} " +
           "used by materialized view has row masking/column filtering enabled", true),
+  MASKING_COMPLEX_TYPE_NOT_SUPPORTED(10289,
+      "Masking complex types is not supported, found a masking expression {0} over column {1}:{2}", true),
 
   UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten merge/update or " +
       "delete query"),
@@ -474,7 +476,15 @@ public enum ErrorMsg {
   NULL_TREATMENT_NOT_SUPPORTED(10426, "Function {0} does not support null treatment.", true),
   DATACONNECTOR_ALREADY_EXISTS(10427, "Dataconnector {0} already exists", true),
   DATACONNECTOR_NOT_EXISTS(10428, "Dataconnector does not exist:"),
-
+  TIME_TRAVEL_NOT_ALLOWED(10429, "Time travel is not allowed for {0}. Please choose a storage format which supports the feature.", true),
+  INVALID_METADATA_TABLE_NAME(10430, "Invalid metadata table name {0}.", true),
+  METADATA_TABLE_NOT_SUPPORTED(10431, "Metadata tables are not supported for table {0}.", true),
+  COMPACTION_REFUSED(10432, "Compaction request for {0}.{1}{2} is refused, details: {3}.", true),
+  CBO_IS_REQUIRED(10433,
+          "The following functionality requires CBO (" + HiveConf.ConfVars.HIVE_CBO_ENABLED.varname + "): {0}", true),
+  CTLF_UNSUPPORTED_FORMAT(10434, "CREATE TABLE LIKE FILE is not supported by the ''{0}'' file format", true),
+  NON_NATIVE_ACID_UPDATE(10435, "Update and Merge into non-native ACID table is only supported when " +
+          HiveConf.ConfVars.SPLIT_UPDATE.varname + " is true."),
 
   //========================== 20000 range starts here ========================//
 
@@ -505,13 +515,16 @@ public enum ErrorMsg {
   FILE_NOT_FOUND(20012, "File not found: {0}", "64000", true),
   WRONG_FILE_FORMAT(20013, "Wrong file format. Please check the file's format.", "64000", true),
 
-  SPARK_CREATE_CLIENT_INVALID_QUEUE(20014, "Spark app for session {0} was submitted to an invalid" +
-          " queue: {1}. Please fix and try again.", true),
-  SPARK_RUNTIME_OOM(20015, "Spark job failed because of out of memory."),
-
   REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH(20016, "File is missing from both source and cm path."),
   REPL_EXTERNAL_SERVICE_CONNECTION_ERROR(20017, "Failed to connect to {0} service. Error code {1}.",true),
   CLIENT_POLLING_OPSTATUS_INTERRUPTED(20018, "Interrupted while polling on the operation status", "70100"),
+
+  CTLF_FAILED_INFERENCE(20019, "Failed to infer schema:"),
+  CTLF_CLASS_NOT_FOUND(20020, "Failed to find SerDe class ({0}) for ''{1}''", true),
+  CTLF_MISSING_STORAGE_FORMAT_DESCRIPTOR(20021, "Failed to find StorageFormatDescriptor for file format ''{0}''", true),
+  PARQUET_FOOTER_ERROR(20022, "Failed to read parquet footer:"),
+  PARQUET_UNHANDLED_TYPE(20023, "Unhandled type {0}", true),
+  ORC_FOOTER_ERROR(20024, "Failed to read orc footer:"),
 
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),
@@ -520,23 +533,23 @@ public enum ErrorMsg {
 
   STATSPUBLISHER_NOT_OBTAINED(30000, "StatsPublisher cannot be obtained. " +
     "There was a error to retrieve the StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
   STATSPUBLISHER_INITIALIZATION_ERROR(30001, "StatsPublisher cannot be initialized. " +
     "There was a error in the initialization of StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
   STATSPUBLISHER_CONNECTION_ERROR(30002, "StatsPublisher cannot be connected to." +
     "There was a error while connecting to the StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
   STATSPUBLISHER_PUBLISHING_ERROR(30003, "Error in publishing stats. There was an " +
     "error in publishing stats via StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
   STATSPUBLISHER_CLOSING_ERROR(30004, "StatsPublisher cannot be closed." +
     "There was a error while closing the StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
 
   COLUMNSTATSCOLLECTOR_INVALID_PART_KEY(30005, "Invalid partitioning key specified in ANALYZE " +
@@ -575,42 +588,13 @@ public enum ErrorMsg {
   CONCATENATE_UNSUPPORTED_TABLE_TRANSACTIONAL(30035,
       "Concatenate/Merge can not be performed on transactional tables"),
 
-  SPARK_GET_JOB_INFO_TIMEOUT(30036,
-      "Spark job timed out after {0} seconds while getting job info", true),
-  SPARK_JOB_MONITOR_TIMEOUT(30037, "Job hasn''t been submitted after {0}s." +
-      " Aborting it.\nPossible reasons include network issues, " +
-      "errors in remote driver or the cluster has no available resources, etc.\n" +
-      "Please check YARN or Spark driver''s logs for further information.\n" +
-      "The timeout is controlled by " + HiveConf.ConfVars.SPARK_JOB_MONITOR_TIMEOUT + ".", true),
-
-  // Various errors when creating Spark client
-  SPARK_CREATE_CLIENT_TIMEOUT(30038,
-      "Timed out while creating Spark client for session {0}.", true),
-  SPARK_CREATE_CLIENT_QUEUE_FULL(30039,
-      "Failed to create Spark client for session {0} because job queue is full: {1}.", true),
-  SPARK_CREATE_CLIENT_INTERRUPTED(30040,
-      "Interrupted while creating Spark client for session {0}", true),
-  SPARK_CREATE_CLIENT_ERROR(30041,
-      "Failed to create Spark client for Spark session {0}: {1}", true),
-  SPARK_CREATE_CLIENT_INVALID_RESOURCE_REQUEST(30042,
-      "Failed to create Spark client for session {0} due to invalid resource request: {1}", true),
-  SPARK_CREATE_CLIENT_CLOSED_SESSION(30043,
-      "Cannot create Spark client on a closed session {0}", true),
-
-  SPARK_JOB_INTERRUPTED(30044, "Spark job was interrupted while executing"),
-  SPARK_GET_JOB_INFO_INTERRUPTED(30045, "Spark job was interrupted while getting job info"),
-  SPARK_GET_JOB_INFO_EXECUTIONERROR(30046, "Spark job failed in execution while getting job info due to exception {0}", true),
-
   REPL_FILE_SYSTEM_OPERATION_RETRY(30047, "Replication file system operation retry expired. Error {0}",
     true),
-  SPARK_GET_STAGES_INFO_TIMEOUT(30048, "Spark job GetSparkStagesInfoJob timed out after {0} seconds.", true),
-  SPARK_GET_STAGES_INFO_INTERRUPTED(30049, "Spark job GetSparkStagesInfoJob was interrupted."),
-  SPARK_GET_STAGES_INFO_EXECUTIONERROR(30050, "Spark job GetSparkStagesInfoJob failed in execution while getting job info due to exception {0}", true),
+  REPL_SOURCE_DATABASE_NOT_FOUND(30048, "Cannot dump database {0} as it does not exist",
+          true),
 
   //========================== 40000 range starts here ========================//
 
-  SPARK_JOB_RUNTIME_ERROR(40001, "Spark job failed due to: {0}", true),
-  SPARK_TASK_RUNTIME_ERROR(40002, "Spark job failed due to task failures: {0}", true),
   REPL_DATABASE_IS_TARGET_OF_REPLICATION(40003, "Cannot dump database as it is a Target of replication."),
   REPL_INVALID_DB_OR_TABLE_PATTERN(40005,
                                      "Invalid pattern for the DB or table name in the replication policy. "
@@ -627,7 +611,11 @@ public enum ErrorMsg {
   REPL_INVALID_ARGUMENTS(40012, "Invalid arguments error : {0}.", true),
   REPL_INVALID_ALTER_TABLE(40013, "{0}Unable to alter table{1}", true),
   REPL_PERMISSION_DENIED(40014, "{0}org.apache.hadoop.security.AccessControlException{1}", true),
-  REPL_DISTCP_SNAPSHOT_EXCEPTION(40015, "SNAPSHOT_ERROR", true)
+  REPL_DISTCP_SNAPSHOT_EXCEPTION(40015, "SNAPSHOT_ERROR", true),
+  RANGER_AUTHORIZATION_FAILED(40016, "Authorization Failure while communicating to Ranger admin", true),
+  RANGER_AUTHENTICATION_FAILED(40017, "Authentication Failure while communicating to Ranger admin", true),
+  REPL_INCOMPATIBLE_EXCEPTION(40018, "Cannot load into database {0} as it is replication incompatible.", true),
+  REPL_FAILOVER_TARGET_MODIFIED(40019,"Database event id changed post table diff generation.")
   ;
 
   private int errorCode;

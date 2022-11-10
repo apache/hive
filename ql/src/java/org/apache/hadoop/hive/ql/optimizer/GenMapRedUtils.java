@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
-import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -111,7 +110,6 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.RCFileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
-import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -678,9 +676,7 @@ public final class GenMapRedUtils {
         if (p == null) {
           continue;
         }
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Adding " + p.toString() + " of table " + alias_id);
-        }
+        LOG.debug("Adding {} of table {}", p, alias_id);
 
         partDir.add(p);
         try {
@@ -874,13 +870,6 @@ public final class GenMapRedUtils {
           ((MapWork)w).deriveExplainAttributes();
         }
       }
-    } else if (task instanceof SparkTask) {
-      SparkWork work = (SparkWork) task.getWork();
-      for (BaseWork w : work.getAllWorkUnsorted()) {
-        if (w instanceof MapWork) {
-          ((MapWork) w).deriveExplainAttributes();
-        }
-      }
     }
 
     if (task.getChildTasks() == null) {
@@ -909,9 +898,9 @@ public final class GenMapRedUtils {
    * This can be done because each refers to information within Map Work and performs a specific
    * action.
    *
-   * The revised implementation generates all the map works from all MapReduce tasks (getMRTasks),
-   * Spark Tasks (getSparkTasks) and Tez tasks (getTezTasks).  Then for each of those map works
-   * invokes the respective call.  getMRTasks, getSparkTasks and getTezTasks iteratively walks
+   * The revised implementation generates all the map works from all MapReduce tasks (getMRTasks)
+   * and Tez tasks (getTezTasks).  Then for each of those map works
+   * invokes the respective call.  getMRTasks and getTezTasks iteratively walks
    * the task graph to find the respective map works.
    *
    * The iterative implementation of these functions was done as part of HIVE-17195.  Before
@@ -939,19 +928,6 @@ public final class GenMapRedUtils {
               ((MapWork)w).internTable(interner);
               ((MapWork)w).deriveLlap(conf, false);
             }
-          }
-        }
-      }
-    }
-
-    List<SparkTask> sparkTasks = Utilities.getSparkTasks(tasks);
-    if (!sparkTasks.isEmpty()) {
-      for (SparkTask sparkTask : sparkTasks) {
-        SparkWork work = sparkTask.getWork();
-        for (BaseWork w : work.getAllWorkUnsorted()) {
-          if (w instanceof MapWork) {
-            ((MapWork) w).internTable(interner);
-            ((MapWork) w).deriveLlap(conf, false);
           }
         }
       }
@@ -1343,10 +1319,6 @@ public final class GenMapRedUtils {
         work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID), conf);
         cplan.setName("File Merge");
         ((TezWork) work).add(cplan);
-      } else if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-        work = new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
-        cplan.setName("Spark Merge File Work");
-        ((SparkWork) work).add(cplan);
       } else {
         work = cplan;
       }
@@ -1356,10 +1328,6 @@ public final class GenMapRedUtils {
         work = new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID), conf);
         cplan.setName("File Merge");
         ((TezWork)work).add(cplan);
-      } else if (conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-        work = new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
-        cplan.setName("Spark Merge File Work");
-        ((SparkWork) work).add(cplan);
       } else {
         work = new MapredWork();
         ((MapredWork)work).setMapWork(cplan);
@@ -1533,11 +1501,6 @@ public final class GenMapRedUtils {
       mrWork.getMapWork().setGatheringStats(true);
       if (mrWork.getReduceWork() != null) {
         mrWork.getReduceWork().setGatheringStats(true);
-      }
-    } else if (currTask.getWork() instanceof SparkWork) {
-      SparkWork work = (SparkWork) currTask.getWork();
-      for (BaseWork w: work.getAllWork()) {
-        w.setGatheringStats(true);
       }
     } else { // must be TezWork
       TezWork work = (TezWork) currTask.getWork();
@@ -1948,9 +1911,6 @@ public final class GenMapRedUtils {
     if (currTask.getWork() instanceof TezWork) {
       // tez blurs the boundary between map and reduce, thus it has it's own config
       return hconf.getBoolVar(ConfVars.HIVEMERGETEZFILES);
-    } else if (currTask.getWork() instanceof SparkWork) {
-      // spark has its own config for merging
-      return hconf.getBoolVar(ConfVars.HIVEMERGESPARKFILES);
     }
     return isMergeRequiredForMr(hconf, fsOp, currTask);
   }
@@ -1961,7 +1921,7 @@ public final class GenMapRedUtils {
       // If the user has HIVEMERGEMAPREDFILES set to false, the idea was the
       // number of reducers are few, so the number of files anyway are small.
       // However, with this optimization, we are increasing the number of files
-      // possibly by a big margin. So, merge aggresively.
+      // possibly by a big margin. So, merge aggressively.
       return (hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) ||
           hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES));
     }

@@ -37,21 +37,16 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 public abstract class FuncDecimalToLong extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
-  private final int inputColumn;
 
   private transient boolean integerPrimitiveCategoryKnown = false;
   protected transient PrimitiveCategory integerPrimitiveCategory;
 
   public FuncDecimalToLong(int inputColumn, int outputColumnNum) {
-    super(outputColumnNum);
-    this.inputColumn = inputColumn;
+    super(inputColumn, outputColumnNum);
   }
 
   public FuncDecimalToLong() {
     super();
-
-    // Dummy final assignments.
-    inputColumn = -1;
   }
 
   abstract protected void func(LongColumnVector outputColVector, DecimalColumnVector inputColVector, int i);
@@ -68,7 +63,7 @@ public abstract class FuncDecimalToLong extends VectorExpression {
       integerPrimitiveCategoryKnown = true;
     }
 
-    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumn];
+    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumnNum[0]];
     int[] sel = batch.selected;
     int n = batch.size;
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
@@ -154,7 +149,7 @@ public abstract class FuncDecimalToLong extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, inputColumn);
+    return getColumnParamString(0, inputColumnNum[0]);
   }
 
   @Override

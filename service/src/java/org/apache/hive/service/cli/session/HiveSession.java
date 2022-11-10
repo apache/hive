@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.session;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -184,6 +185,32 @@ public interface HiveSession extends HiveSessionBase {
 	      String primarySchema, String primaryTable, String foreignCatalog,
 	      String foreignSchema, String foreignTable) 
     throws HiveSQLException;
+
+  /**
+   * uploadData operation handler
+   * @param values
+   * @param tableName
+   * @param path
+   * @return
+   * @throws HiveSQLException
+   */
+  OperationHandle uploadData(
+      ByteBuffer values, String tableName, String path) throws HiveSQLException;
+
+  /**
+   * downloadData operation handler
+   * @param tableName
+   * @param query
+   * @param format
+   * @param options
+   * @return
+   * @throws HiveSQLException
+   */
+  OperationHandle downloadData(
+      String tableName,
+      String query,
+      String format,
+      Map<String, String> options) throws HiveSQLException;
 
   /**
    *

@@ -105,7 +105,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkOperator
                             native: false
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             nativeConditionsNotMet: No DISTINCT columns IS false
                         Statistics: Num rows: 6 Data size: 216 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col5 (type: bigint)
@@ -124,7 +124,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 notVectorizedReason: GROUPBY operator: DISTINCT not supported
                 vectorized: false
             Reduce Operator Tree:
@@ -212,13 +212,13 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: GROUPBY operator: Aggregations with > 1 parameter are not supported count([Column[a], Column[b]])
+                notVectorizedReason: GROUPBY operator: Aggregations with > 1 parameter are not supported unless all the extra parameters are constants count([Column[a], Column[b]])
                 vectorized: false
         Reducer 2 
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 notVectorizedReason: GROUPBY operator: DISTINCT not supported
                 vectorized: false
             Reduce Operator Tree:
@@ -301,7 +301,7 @@ STAGE PLANS:
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkOperator
                           native: false
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           nativeConditionsNotMet: No DISTINCT columns IS false
                       Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: d (type: int)
@@ -320,7 +320,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 notVectorizedReason: GROUPBY operator: DISTINCT not supported
                 vectorized: false
             Reduce Operator Tree:
@@ -402,7 +402,7 @@ STAGE PLANS:
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkOperator
                           native: false
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           nativeConditionsNotMet: No DISTINCT columns IS false
                       Statistics: Num rows: 7 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
@@ -420,7 +420,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 notVectorizedReason: GROUPBY operator: DISTINCT not supported
                 vectorized: false
             Reduce Operator Tree:

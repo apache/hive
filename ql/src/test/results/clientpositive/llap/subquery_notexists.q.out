@@ -1489,7 +1489,7 @@ HiveProject(eid=[_UTF-16LE'empno':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"],
     HiveAntiJoin(condition=[=($0, $2)], joinType=[anti])
       HiveProject(id=[$0])
         HiveTableScan(table=[[default, tschema]], table:alias=[a])
-      HiveProject(literalTrue=[true], id0=[$0])
+      HiveProject(literalTrue=[true], id=[$0])
         HiveFilter(condition=[IS NOT NULL($0)])
           HiveTableScan(table=[[default, tschema]], table:alias=[c])
 

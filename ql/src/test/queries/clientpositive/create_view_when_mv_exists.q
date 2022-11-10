@@ -1,5 +1,7 @@
+-- Calcite based automatic query rewrite should be disabled inside view creation
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.materializedview.rewriting.sql=false;
 
 create table t1(col0 int) STORED AS ORC TBLPROPERTIES ('transactional'='true');
 

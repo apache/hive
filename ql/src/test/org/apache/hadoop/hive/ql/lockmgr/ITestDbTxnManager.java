@@ -18,9 +18,11 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Mariadb;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
@@ -32,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Test class to run DbTxnManager tests against different dbms types.
- * Example: mvn test -Dtest=ITestDbTxnManager -Dtest.metastore.db=postgres -Ditest.jdbc.jars=yourPathtoJdbcDriver
+ * Example: mvn test -Dtest=ITestDbTxnManager -Dtest.metastore.db=postgres
  */
 public class ITestDbTxnManager extends TestDbTxnManager2 {
 
@@ -56,7 +58,7 @@ public class ITestDbTxnManager extends TestDbTxnManager2 {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.PWD, rule.getHivePassword());
     // In this case we disable auto_create which is enabled by default for every test
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.AUTO_CREATE_ALL, false);
-
+    DatabaseProduct.reset();
 
     LOG.info("Set metastore connection to url: {}",
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
@@ -72,16 +74,18 @@ public class ITestDbTxnManager extends TestDbTxnManager2 {
 
   private static DatabaseRule getDatabaseRule(String metastoreType) {
     switch (metastoreType) {
-    case "postgres":
-      return new Postgres();
-    case "oracle":
-      return new Oracle();
-    case "mysql":
-      return new Mysql();
-    case "mssql":
-      return new Mssql();
-    default:
-      return new Derby();
+      case "postgres":
+        return new Postgres();
+      case "oracle":
+        return new Oracle();
+      case "mysql":
+        return new Mysql();
+      case "mariadb":
+        return new Mariadb();
+      case "mssql":
+        return new Mssql();
+      default:
+        return new Derby();
     }
   }
 }

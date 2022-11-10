@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+@org.junit.Ignore("HIVE-25266")
 public class TestWarehouseExternalDir {
   private static final Logger LOG = LoggerFactory.getLogger(TestWarehouseExternalDir.class);
 

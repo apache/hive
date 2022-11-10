@@ -20,7 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -45,9 +44,11 @@ import org.apache.iceberg.MetricsConfig;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.data.TableMigrationUtil;
 import org.apache.iceberg.mapping.NameMapping;
 import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class HiveTableUtil {
@@ -81,7 +82,6 @@ public class HiveTableUtil {
     MetricsConfig metricsConfig = MetricsConfig.fromProperties(icebergTable.properties());
     String nameMappingString = icebergTable.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
     NameMapping nameMapping = nameMappingString != null ? NameMappingParser.fromJson(nameMappingString) : null;
-
     try {
       if (partitionSpecProxy.size() == 0) {
         List<DataFile> dataFiles = getDataFiles(filesIterator, Collections.emptyMap(), format, spec, metricsConfig,
@@ -89,7 +89,7 @@ public class HiveTableUtil {
         dataFiles.forEach(append::appendFile);
       } else {
         PartitionSpecProxy.PartitionIterator partitionIterator = partitionSpecProxy.getPartitionIterator();
-        List<Callable<Void>> tasks = new ArrayList<>();
+        List<Callable<Void>> tasks = Lists.newArrayList();
         while (partitionIterator.hasNext()) {
           Partition partition = partitionIterator.next();
           Callable<Void> task = () -> {
@@ -121,15 +121,15 @@ public class HiveTableUtil {
   private static List<DataFile> getDataFiles(RemoteIterator<LocatedFileStatus> fileStatusIterator,
       Map<String, String> partitionKeys, String format, PartitionSpec spec, MetricsConfig metricsConfig,
       NameMapping nameMapping, Configuration conf) throws IOException {
-    List<DataFile> dataFiles = new ArrayList<>();
+    List<DataFile> dataFiles = Lists.newArrayList();
     while (fileStatusIterator.hasNext()) {
       LocatedFileStatus fileStatus = fileStatusIterator.next();
       String fileName = fileStatus.getPath().getName();
-      if (fileName.startsWith(".") || fileName.startsWith("_")) {
+      if (fileName.startsWith(".") || fileName.startsWith("_") || fileName.endsWith("metadata.json")) {
         continue;
       }
-      dataFiles.addAll(DataUtil.listPartition(partitionKeys, fileStatus.getPath().toString(), format, spec, conf,
-          metricsConfig, nameMapping));
+      dataFiles.addAll(TableMigrationUtil.listPartition(partitionKeys, fileStatus.getPath().toString(), format, spec,
+          conf, metricsConfig, nameMapping));
     }
     return dataFiles;
   }

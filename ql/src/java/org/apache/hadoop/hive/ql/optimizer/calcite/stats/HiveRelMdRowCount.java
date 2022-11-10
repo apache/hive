@@ -170,7 +170,7 @@ public class HiveRelMdRowCount extends RelMdRowCount {
   @Override
   public Double getRowCount(Filter rel, RelMetadataQuery mq) {
     if (rel instanceof StatEnhancedHiveFilter) {
-      return rel.getRows();
+      return (double) ((StatEnhancedHiveFilter) rel).getRowCount();
     } else {
       return super.getRowCount(rel, mq);
     }

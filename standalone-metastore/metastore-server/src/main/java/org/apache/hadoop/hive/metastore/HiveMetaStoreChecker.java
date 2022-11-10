@@ -28,7 +28,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPar
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartCols;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionListByFilterExp;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionName;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionSpec;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionColtoTypeMap;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPath;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isPartitioned;
@@ -57,6 +56,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
@@ -67,12 +67,11 @@ import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.util.functional.RemoteIterators;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -89,7 +88,6 @@ public class HiveMetaStoreChecker {
   private final IMetaStoreClient msc;
   private final Configuration conf;
   private final long partitionExpirySeconds;
-  private final Interner<Path> pathInterner = Interners.newStrongInterner();
   public static final PathFilter HIDDEN_FILES_PATH_FILTER =
       p -> !p.getName().startsWith("_") && !p.getName().startsWith(".");
 
@@ -312,7 +310,33 @@ public class HiveMetaStoreChecker {
       return;
     }
 
-    Set<Path> partPaths = new HashSet<>();
+    // now check the table folder and see if we find anything
+    // that isn't in the metastore
+    Set<Path> allPartDirs = new HashSet<>();
+    List<FieldSchema> partColumns = table.getPartitionKeys();
+    checkPartitionDirs(tablePath, allPartDirs, Collections.unmodifiableList(getPartColNames(table)));
+    String tablePathStr = tablePath.toString();
+    int tablePathLength = tablePathStr.length();
+
+    if (filterExp != null) {
+      PartitionExpressionProxy expressionProxy = createExpressionProxy(conf);
+      List<String> partitions = new ArrayList<>();
+      Set<Path> partDirs = new HashSet<Path>();
+      boolean tablePathStrEndsWith = tablePathStr.endsWith("/");
+      int tablePathStrLen = tablePathStr.endsWith("/") ? tablePathStr.length() : tablePathStr.length() + 1;
+      allPartDirs.stream().forEach(path -> partitions.add(path.toString().substring(tablePathStrLen)));
+
+      // Remove all partition paths which does not matches the filter expression.
+      expressionProxy.filterPartitionsByExpr(partColumns, filterExp,
+              conf.get(MetastoreConf.ConfVars.DEFAULTPARTITIONNAME.getVarname()), partitions);
+
+      // now the partition list will contain all the paths that matches the filter expression.
+      // add them back to partDirs.
+      for (String path : partitions) {
+        partDirs.add(new Path(tablePath, path));
+      }
+      allPartDirs = partDirs;
+    }
 
     // check that the partition folders exist on disk
     for (Partition partition : parts) {
@@ -329,10 +353,24 @@ public class HiveMetaStoreChecker {
       CheckResult.PartitionResult prFromMetastore = new CheckResult.PartitionResult();
       prFromMetastore.setPartitionName(getPartitionName(table, partition));
       prFromMetastore.setTableName(partition.getTableName());
-      if (!fs.exists(partPath)) {
-        result.getPartitionsNotOnFs().add(prFromMetastore);
-      } else {
+      if (allPartDirs.remove(partPath)) {
         result.getCorrectPartitions().add(prFromMetastore);
+      } else {
+        // There can be edge case where user can define partition directory outside of table directory
+        // to avoid eviction of such partitions
+        // we check existence of partition path which are not in table directory
+        if (!partPath.toString().contains(tablePathStr)) {
+          if (!fs.exists(partPath)) {
+            result.getPartitionsNotOnFs().add(prFromMetastore);
+          } else {
+            result.getCorrectPartitions().add(prFromMetastore);
+          }
+        } else {
+          // If Partition Path contains table path, we assume to be non-existent partition since
+          // Partition spec has to be in format FS://<TablePath>/<PartKeyName>=<PartValue>
+          // otherwise partition discovery may fail.
+          result.getPartitionsNotOnFs().add(prFromMetastore);
+        }
       }
 
       if (partitionExpirySeconds > 0) {
@@ -351,16 +389,9 @@ public class HiveMetaStoreChecker {
           }
         }
       }
-
-      for (int i = 0; i < getPartitionSpec(table, partition).size(); i++) {
-        Path qualifiedPath = partPath.makeQualified(fs);
-        pathInterner.intern(qualifiedPath);
-        partPaths.add(qualifiedPath);
-        partPath = partPath.getParent();
-      }
     }
 
-    findUnknownPartitions(table, partPaths, filterExp, result);
+    findUnknownPartitions(table, allPartDirs, result);
 
     if (!isPartitioned(table) && TxnUtils.isTransactionalTable(table)) {
       // Check for writeIds in the table directory
@@ -372,22 +403,19 @@ public class HiveMetaStoreChecker {
   }
 
   /**
-   * Find partitions on the fs that are unknown to the metastore.
+   * Add partitions on the fs that are unknown to the metastore.
    *
    * @param table
    *          Table where the partitions would be located
-   * @param partPaths
-   *          Paths of the partitions the ms knows about
-   * @param filterExp
-   *          Filter expression which is used to prune th partition from the
-   *          metastore and FileSystem.
+   * @param missingPartDirs
+   *          Paths of the partitions that ms does not know about
    * @param result
    *          Result object
    * @throws IOException
    *           Thrown if we fail at fetching listings from the fs.
    * @throws MetastoreException ex
    */
-  void findUnknownPartitions(Table table, Set<Path> partPaths, byte[] filterExp,
+  void findUnknownPartitions(Table table, Set<Path> missingPartDirs,
       CheckResult result) throws IOException, MetastoreException, MetaException {
 
     Path tablePath = getPath(table);
@@ -395,42 +423,6 @@ public class HiveMetaStoreChecker {
       return;
     }
     boolean transactionalTable = TxnUtils.isTransactionalTable(table);
-    // now check the table folder and see if we find anything
-    // that isn't in the metastore
-    Set<Path> allPartDirs = new HashSet<>();
-    List<FieldSchema> partColumns = table.getPartitionKeys();
-    checkPartitionDirs(tablePath, allPartDirs, Collections.unmodifiableList(getPartColNames(table)));
-
-    if (filterExp != null) {
-      PartitionExpressionProxy expressionProxy = createExpressionProxy(conf);
-      List<String> paritions = new ArrayList<>();
-      Set<Path> partDirs = new HashSet<Path>();
-      String tablePathStr = tablePath.toString();
-      for (Path path : allPartDirs) {
-        // remove the table's path from the partition path
-        // eg: <tablePath>/p1=1/p2=2/p3=3 ---> p1=1/p2=2/p3=3
-        if (tablePathStr.endsWith("/")) {
-          paritions.add(path.toString().substring(tablePathStr.length()));
-        } else {
-          paritions.add(path.toString().substring(tablePathStr.length() + 1));
-        }
-      }
-      // Remove all partition paths which does not matches the filter expression.
-      expressionProxy.filterPartitionsByExpr(partColumns, filterExp,
-          conf.get(MetastoreConf.ConfVars.DEFAULTPARTITIONNAME.getVarname()), paritions);
-
-      // now the partition list will contain all the paths that matches the filter expression.
-      // add them back to partDirs.
-      for (String path : paritions) {
-        partDirs.add(new Path(tablePath, path));
-      }
-      allPartDirs = partDirs;
-    }
-    // don't want the table dir
-    allPartDirs.remove(tablePath);
-
-    // remove the partition paths we know about
-    allPartDirs.removeAll(partPaths);
 
     Set<String> partColNames = Sets.newHashSet();
     for(FieldSchema fSchema : getPartCols(table)) {
@@ -439,7 +431,7 @@ public class HiveMetaStoreChecker {
 
     Map<String, String> partitionColToTypeMap = getPartitionColtoTypeMap(table.getPartitionKeys());
     // we should now only have the unexpected folders left
-    for (Path partPath : allPartDirs) {
+    for (Path partPath : missingPartDirs) {
       FileSystem fs = partPath.getFileSystem(conf);
       String partitionName = getPartitionName(fs.makeQualified(tablePath),
           partPath, partColNames, partitionColToTypeMap);
@@ -594,10 +586,16 @@ public class HiveMetaStoreChecker {
       if (currentDepth == partColNames.size()) {
         return currentPath;
       }
-      FileStatus[] fileStatuses = fs.listStatus(currentPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
+      List<FileStatus> fileStatuses = new ArrayList<>();
+      RemoteIterator<FileStatus> fileIterator =
+          RemoteIterators.filteringRemoteIterator(fs.listStatusIterator(currentPath),
+            fileStatus -> HIDDEN_FILES_PATH_FILTER.accept(fileStatus.getPath()));
+      while (fileIterator.hasNext()) {
+        fileStatuses.add(fileIterator.next());
+      }
       // found no files under a sub-directory under table base path; it is possible that the table
       // is empty and hence there are no partition sub-directories created under base path
-      if (fileStatuses.length == 0 && currentDepth > 0) {
+      if (fileStatuses.size() == 0 && currentDepth > 0) {
         // since maxDepth is not yet reached, we are missing partition
         // columns in currentPath
         logOrThrowExceptionWithMsg(

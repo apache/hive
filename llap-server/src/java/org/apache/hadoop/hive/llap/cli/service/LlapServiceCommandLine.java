@@ -107,6 +107,13 @@ class LlapServiceCommandLine {
       .hasArg()
       .create('h');
 
+  private static final Option HBASEJARS = OptionBuilder
+      .withLongOpt("hbasejars")
+      .withDescription("HBase mapredcp jars to package")
+      .withArgName("hbasejars")
+      .hasArg()
+      .create('k');
+
   private static final Option HIVECONF = OptionBuilder
       .withLongOpt("hiveconf")
       .withDescription("Use value for given property. Overridden by explicit parameters")
@@ -194,6 +201,7 @@ class LlapServiceCommandLine {
     OPTIONS.addOption(XMX);
     OPTIONS.addOption(AUXJARS);
     OPTIONS.addOption(AUXHBASE);
+    OPTIONS.addOption(HBASEJARS);
     OPTIONS.addOption(HIVECONF);
     OPTIONS.addOption(JAVAHOME);
     OPTIONS.addOption(QUEUE);
@@ -311,6 +319,7 @@ class LlapServiceCommandLine {
   private long size;
   private long xmx;
   private String jars;
+  private String hbaseJars;
   private boolean isHbase;
   private Properties conf = new Properties();
   private String javaPath = null;
@@ -370,6 +379,7 @@ class LlapServiceCommandLine {
     size = TraditionalBinaryPrefix.string2long(cl.getOptionValue(SIZE.getOpt(), "-1"));
     xmx = TraditionalBinaryPrefix.string2long(cl.getOptionValue(XMX.getOpt(), "-1"));
     jars = cl.getOptionValue(AUXJARS.getOpt());
+    hbaseJars = cl.getOptionValue(HBASEJARS.getOpt());
     isHbase = Boolean.parseBoolean(cl.getOptionValue(AUXHBASE.getOpt(), "true"));
     if (cl.hasOption(HIVECONF.getLongOpt())) {
       conf = cl.getOptionProperties(HIVECONF.getLongOpt());
@@ -434,6 +444,10 @@ class LlapServiceCommandLine {
 
   String getAuxJars() {
     return jars;
+  }
+
+  String getHBaseJars() {
+    return hbaseJars;
   }
 
   boolean getIsHBase() {

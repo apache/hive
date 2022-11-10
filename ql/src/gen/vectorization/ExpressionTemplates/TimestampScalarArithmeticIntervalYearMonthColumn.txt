@@ -48,15 +48,13 @@ public class <ClassName> extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private final Timestamp value;
-  private final int colNum;
 
   private transient final HiveIntervalYearMonth scratchIntervalYearMonth2 = new HiveIntervalYearMonth();
   private transient final DateTimeMath dtm = new DateTimeMath();
 
   public <ClassName>(Timestamp value, int colNum, int outputColumnNum) {
-    super(outputColumnNum);
+    super(colNum, outputColumnNum);
     this.value = value;
-    this.colNum = colNum;
   }
 
   public <ClassName>() {
@@ -64,7 +62,6 @@ public class <ClassName> extends VectorExpression {
 
     // Dummy final assignments.
     value = null;
-    colNum = -1;
   }
 
   @Override
@@ -86,7 +83,7 @@ public class <ClassName> extends VectorExpression {
     }
 
     // Input #2 is type Interval_Year_Month (months).
-    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[colNum];
+    LongColumnVector inputColVector2 = (LongColumnVector) batch.cols[inputColumnNum[0]];
 
         // Output is type Timestamp.
     TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
@@ -195,7 +192,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return "val " + TimestampUtils.timestampScalarTypeToString(value) + ", " + getColumnParamString(1, colNum);
+    return "val " + TimestampUtils.timestampScalarTypeToString(value) + ", " + getColumnParamString(1, inputColumnNum[0]);
   }
 
   @Override

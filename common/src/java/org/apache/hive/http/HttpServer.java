@@ -158,6 +158,7 @@ public class HttpServer {
     private String keyStorePath;
     private String keyStoreType;
     private String keyManagerFactoryAlgorithm;
+    private String excludeCiphersuites;
     private String spnegoPrincipal;
     private String spnegoKeytab;
     private boolean useSPNEGO;
@@ -231,6 +232,11 @@ public class HttpServer {
 
     public Builder setKeyManagerFactoryAlgorithm(String keyManagerFactoryAlgorithm) {
       this.keyManagerFactoryAlgorithm = keyManagerFactoryAlgorithm;
+      return this;
+    }
+
+    public Builder setExcludeCiphersuites(String excludeCiphersuites) {
+      this.excludeCiphersuites = excludeCiphersuites;
       return this;
     }
 
@@ -537,6 +543,14 @@ public class HttpServer {
       sslContextFactory.setKeyManagerFactoryAlgorithm(
           b.keyManagerFactoryAlgorithm == null || b.keyManagerFactoryAlgorithm.isEmpty()?
           KeyManagerFactory.getDefaultAlgorithm() : b.keyManagerFactoryAlgorithm);
+      if (b.excludeCiphersuites != null && !b.excludeCiphersuites.trim().isEmpty()) {
+        Set<String> excludeCS = Sets.newHashSet(
+            Splitter.on(",").trimResults().omitEmptyStrings().split(b.excludeCiphersuites.trim()));
+        int eSize = excludeCS.size();
+        if (eSize > 0) {
+          sslContextFactory.setExcludeCipherSuites(excludeCS.toArray(new String[eSize]));
+        }
+      }
       Set<String> excludedSSLProtocols = Sets.newHashSet(
         Splitter.on(",").trimResults().omitEmptyStrings().split(
           Strings.nullToEmpty(b.conf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST))));

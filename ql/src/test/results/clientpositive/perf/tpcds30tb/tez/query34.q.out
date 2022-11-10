@@ -146,10 +146,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: household_demographics
-                  filterExpr: ((hd_vehicle_count > 0) and (hd_buy_potential) IN ('>10000         ', 'unknown        ') and CASE WHEN ((hd_vehicle_count > 0)) THEN (((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.2D)) ELSE (false) END) (type: boolean)
+                  filterExpr: ((hd_vehicle_count > 0) and (hd_buy_potential) IN ('>10000         ', 'unknown        ') and if((hd_vehicle_count > 0), ((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.2D), false)) (type: boolean)
                   Statistics: Num rows: 7200 Data size: 777600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((hd_vehicle_count > 0) and (hd_buy_potential) IN ('>10000         ', 'unknown        ') and CASE WHEN ((hd_vehicle_count > 0)) THEN (((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.2D)) ELSE (false) END) (type: boolean)
+                    predicate: ((hd_vehicle_count > 0) and (hd_buy_potential) IN ('>10000         ', 'unknown        ') and if((hd_vehicle_count > 0), ((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.2D), false)) (type: boolean)
                     Statistics: Num rows: 960 Data size: 103680 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: hd_demo_sk (type: bigint)

@@ -809,10 +809,18 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
       Object thenVal = constThen.getValue();
       Object elseVal = constElse.getValue();
       if (thenVal instanceof Boolean && elseVal instanceof Boolean) {
-        return true;
+        //only convert to COALESCE when both branches are valid
+        return !thenVal.equals(elseVal);
       }
     }
     return false;
+  }
+
+  @Override
+  protected boolean convertCASEIntoIFFuncCallExpr(FunctionInfo fi, List<ExprNodeDesc> inputs) {
+    GenericUDF genericUDF = fi.getGenericUDF();
+    return genericUDF instanceof GenericUDFWhen && inputs.size() == 3
+        && TypeInfoFactory.booleanTypeInfo.equals(inputs.get(0).getTypeInfo());
   }
 
   /**

@@ -1,7 +1,7 @@
 CBO PLAN:
 HiveProject(gross_margin=[$0], i_category=[$1], i_class=[$2], lochierarchy=[$3], rank_within_parent=[$4])
   HiveSortLimit(sort0=[$3], sort1=[$5], sort2=[$4], dir0=[DESC], dir1=[ASC], dir2=[ASC], fetch=[100])
-    HiveProject(gross_margin=[/($2, $3)], i_category=[$0], i_class=[$1], lochierarchy=[+(grouping($4, 1:BIGINT), grouping($4, 0:BIGINT))], rank_within_parent=[rank() OVER (PARTITION BY +(grouping($4, 1:BIGINT), grouping($4, 0:BIGINT)), CASE(=(grouping($4, 0:BIGINT), CAST(0):BIGINT), $0, null:CHAR(50) CHARACTER SET "UTF-16LE") ORDER BY /($2, $3) NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col i_category))=[CASE(=(+(grouping($4, 1:BIGINT), grouping($4, 0:BIGINT)), 0), $0, null:CHAR(50) CHARACTER SET "UTF-16LE")])
+    HiveProject(gross_margin=[/($2, $3)], i_category=[$0], i_class=[$1], lochierarchy=[+(grouping($4, 1:BIGINT), grouping($4, 0:BIGINT))], rank_within_parent=[rank() OVER (PARTITION BY +(grouping($4, 1:BIGINT), grouping($4, 0:BIGINT)), CASE(=(grouping($4, 0:BIGINT), CAST(0):BIGINT), $0, null:CHAR(50) CHARACTER SET "UTF-16LE") ORDER BY /($2, $3) NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col i_category))=[CASE(=(+(grouping($4, 1:BIGINT), grouping($4, 0:BIGINT)), 0), $0, null:CHAR(50) CHARACTER SET "UTF-16LE")])
       HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], GROUPING__ID=[$4])
         HiveAggregate(group=[{0, 1}], groups=[[{0, 1}, {0}, {}]], agg#0=[sum($2)], agg#1=[sum($3)], GROUPING__ID=[GROUPING__ID()])
           HiveProject($f0=[$9], $f1=[$8], $f2=[$3], $f3=[$2])

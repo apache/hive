@@ -39,7 +39,7 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
 
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -95,7 +95,7 @@ public class TestReplChangeManager {
     String noPermBaseDir = Files.createTempDirectory("noPerm").toFile().getAbsolutePath();
     configuration.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, noPermBaseDir);
     configuration.set("dfs.client.use.datanode.hostname", "true");
-    permDdfs = new MiniDFSCluster.Builder(configuration).numDataNodes(1).format(true).build();
+    permDdfs = new MiniDFSCluster.Builder(configuration).numDataNodes(2).format(true).build();
     permhiveConf = new HiveConf(TestReplChangeManager.class);
     permhiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
       "hdfs://" + permDdfs.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
@@ -107,7 +107,7 @@ public class TestReplChangeManager {
   }
 
   private static void internalSetUp() throws Exception {
-    m_dfs = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(1).format(true).build();
+    m_dfs = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(2).format(true).build();
     hiveConf = new HiveConf(TestReplChangeManager.class);
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
       "hdfs://" + m_dfs.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);

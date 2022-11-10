@@ -29,7 +29,6 @@ public class TruncDecimalNoScale extends TruncDecimal {
 
   public TruncDecimalNoScale() {
     super();
-    colNum = -1;
   }
 
   public TruncDecimalNoScale(int colNum, int outputColumnNum) {

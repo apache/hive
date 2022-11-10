@@ -275,7 +275,7 @@ public final class SqlMathUtil {
       // intrinsics in Java 8)
 
       // an equivalent algorithm exists in
-      // com.google.common.primitives.UnsingedLongs
+      // com.google.common.primitives.UnsignedLongs
       long quotient = ((dividend >>> 1L) / divisor) << 1L;
       long remainder = dividend - quotient * divisor;
       if (compareUnsignedLong(remainder, divisor) >= 0) {

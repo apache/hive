@@ -32,7 +32,17 @@ public interface DataSourceProvider {
    * @param hdpConfig
    * @return the new connection pool
    */
-  DataSource create(Configuration hdpConfig) throws SQLException;
+  default DataSource create(Configuration hdpConfig) throws SQLException {
+    int maxPoolSize = MetastoreConf.getIntVar(hdpConfig, MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
+    return create(hdpConfig, maxPoolSize);
+  }
+
+  /**
+   * @param hdpConfig
+   * @param maxPoolSize the maximum size of the connection pool
+   * @return the new connection pool
+   */
+  DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException;
 
   /**
    * Get the declared pooling type string. This is used to check against the constant in

@@ -156,9 +156,10 @@ public class TestRetryingThriftCLIServiceClient {
       cliServiceClient.openSession("anonymous", "anonymous");
     } catch (HiveSQLException exc) {
       exc.printStackTrace();
-      assertTrue(exc.getCause() instanceof TException);
-      assertEquals(1, RetryingThriftCLIServiceClientTest.handlerInst.callCount);
-      assertEquals(3, RetryingThriftCLIServiceClientTest.handlerInst.connectCount);
+      if(exc.getCause() instanceof TException){
+        assertEquals(1, RetryingThriftCLIServiceClientTest.handlerInst.callCount);
+        assertEquals(3, RetryingThriftCLIServiceClientTest.handlerInst.connectCount);
+      }
     } finally {
       cliServiceClient.closeTransport();
     }

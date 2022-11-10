@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -92,15 +93,15 @@ public class ColStatsProcessor implements IStatsProcessor {
     return persistColumnStats(db, tbl);
   }
 
-  private List<ColumnStatistics> constructColumnStatsFromPackedRows(Table tbl)
+  private boolean constructColumnStatsFromPackedRows(Table tbl, List<ColumnStatistics> stats, long maxNumStats)
       throws HiveException, MetaException, IOException {
     String partName = null;
     List<String> colName = colStatDesc.getColName();
     List<String> colType = colStatDesc.getColType();
     boolean isTblLevel = colStatDesc.isTblLevel();
 
-    List<ColumnStatistics> stats = new ArrayList<ColumnStatistics>();
     InspectableObject packedRow;
+    long numStats = 0;
     while ((packedRow = ftOp.getNextRow()) != null) {
       if (packedRow.oi.getCategory() != ObjectInspector.Category.STRUCT) {
         throw new HiveException("Unexpected object type encountered while unpacking row");
@@ -122,6 +123,7 @@ public class ColStatsProcessor implements IStatsProcessor {
           ColumnStatisticsObj statObj = ColumnStatisticsObjTranslator.readHiveColumnStatistics(
               columnName, columnType, columnStatsFields, pos, fields, values);
           statsObjs.add(statObj);
+          numStats++;
         } catch (Exception e) {
           if (isStatsReliable) {
             throw new HiveException("Statistics collection failed while (hive.stats.reliable)", e);
@@ -152,10 +154,13 @@ public class ColStatsProcessor implements IStatsProcessor {
         colStats.setStatsObj(statsObjs);
         colStats.setEngine(Constants.HIVE_ENGINE);
         stats.add(colStats);
+        if (numStats >= maxNumStats) {
+          return false;
+        }
       }
     }
     ftOp.clearFetchContext();
-    return stats;
+    return true;
   }
 
   private ColumnStatisticsDesc buildColumnStatsDesc(Table table, String partName, boolean isTblLevel) {
@@ -177,25 +182,44 @@ public class ColStatsProcessor implements IStatsProcessor {
   public int persistColumnStats(Hive db, Table tbl) throws HiveException, MetaException, IOException {
     // Construct a column statistics object from the result
 
-    List<ColumnStatistics> colStats = constructColumnStatsFromPackedRows(tbl);
-    // Persist the column statistics object to the metastore
-    // Note, this function is shared for both table and partition column stats.
-    if (colStats.isEmpty()) {
-      return 0;
-    }
-    SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats, Constants.HIVE_ENGINE);
-    request.setNeedMerge(colStatDesc.isNeedMerge());
-    HiveTxnManager txnMgr = AcidUtils.isTransactionalTable(tbl)
-        ? SessionState.get().getTxnMgr() : null;
+    long writeId = -1;
+    ValidWriteIdList validWriteIdList = null;
+    HiveTxnManager txnMgr = AcidUtils.isTransactionalTable(tbl) ? SessionState.get().getTxnMgr() : null;
     if (txnMgr != null) {
-      request.setWriteId(txnMgr.getAllocatedTableWriteId(tbl.getDbName(), tbl.getTableName()));
-      ValidWriteIdList validWriteIdList =
-          AcidUtils.getTableValidWriteIdList(conf, AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName()));
-      if (validWriteIdList != null) {
-        request.setValidWriteIdList(validWriteIdList.toString());
-      }
+      writeId = txnMgr.getAllocatedTableWriteId(tbl.getDbName(), tbl.getTableName());
+      validWriteIdList =
+              AcidUtils.getTableValidWriteIdList(conf, AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName()));
     }
-    db.setPartitionColumnStatistics(request);
+
+    boolean done = false;
+    long maxNumStats = conf.getLongVar(HiveConf.ConfVars.HIVE_STATS_MAX_NUM_STATS);
+    while (!done) {
+      List<ColumnStatistics> colStats = new ArrayList<>();
+
+      long start = System. currentTimeMillis();
+      done = constructColumnStatsFromPackedRows(tbl, colStats, maxNumStats);
+      long end = System.currentTimeMillis();
+      LOG.info("Time taken to build " + colStats.size() + " stats desc : " + ((end - start)/1000F) + " seconds.");
+
+      // Persist the column statistics object to the metastore
+      // Note, this function is shared for both table and partition column stats.
+      if (colStats.isEmpty()) {
+        continue;
+      }
+      SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats, Constants.HIVE_ENGINE);
+      request.setNeedMerge(colStatDesc.isNeedMerge());
+      if (txnMgr != null) {
+        request.setWriteId(writeId);
+        if (validWriteIdList != null) {
+          request.setValidWriteIdList(validWriteIdList.toString());
+        }
+      }
+
+      start = System. currentTimeMillis();
+      db.setPartitionColumnStatistics(request);
+      end = System.currentTimeMillis();
+      LOG.info("Time taken to update " + colStats.size() + " stats : " + ((end - start)/1000F) + " seconds.");
+    }
     return 0;
   }
 

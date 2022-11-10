@@ -25,4 +25,11 @@ import org.apache.hadoop.hive.common.io.FileMetadataCache;
 /** Marker interface for LLAP IO. */
 public interface LlapCacheOnlyInputFormatInterface {
   void injectCaches(FileMetadataCache metadataCache, DataCache dataCache, Configuration cacheConf);
+
+  /**
+   * For inputformats that can only accept LLAP caching with vectorization turned on.
+   */
+  interface VectorizedOnly extends LlapCacheOnlyInputFormatInterface {
+
+  }
 }

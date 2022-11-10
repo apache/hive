@@ -36,6 +36,7 @@ public class TestReplWithJsonMessageFormat extends TestReplicationScenarios {
       new ReplicationV1CompatRule(metaStoreClient, hconf, new ArrayList<String>() {{
           add("testEventFilters");
           add("testReplConfiguredCleanupOfNotificationEvents");
+          add("testCleanerThreadStartupWait");
       }});
 
   @BeforeClass

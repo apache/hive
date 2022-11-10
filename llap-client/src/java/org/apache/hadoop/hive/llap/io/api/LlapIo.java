@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -31,6 +33,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.orc.impl.OrcTail;
 
 import javax.annotation.Nullable;
@@ -55,11 +58,26 @@ public interface LlapIo<T> {
    * @param tag a CacheTag instance must be provided as that's needed for cache insertion
    * @param fileKey fileId of the ORC file (either the Long fileId of HDFS or the SyntheticFileId).
    *                Optional, if it is not provided, it will be generated, see:
-   *                {@link org.apache.hadoop.hive.ql.io.HdfsUtils.getFileId()}
+   *                org.apache.hadoop.hive.ql.io.HdfsUtils#getFileId()
    * @return The tail of the ORC file
    * @throws IOException ex
    */
   OrcTail getOrcTailFromCache(Path path, Configuration conf, CacheTag tag, @Nullable Object fileKey) throws IOException;
+
+
+  /**
+   * Returns the metadata buffers associated with the Parquet file on the given path.
+   * Content is either obtained from cache, or from disk if there is a cache miss.
+   * @param path Parquet file path
+   * @param conf jobConf
+   * @param fileKey fileId of the Parquet file (either the Long fileId of HDFS or the SyntheticFileId).
+   *                Optional, if it is not provided, it will be generated, see:
+   *                org.apache.hadoop.hive.ql.io.HdfsUtils#getFileId()
+   * @return
+   * @throws IOException
+   */
+  MemoryBufferOrBuffers getParquetFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey)
+      throws IOException;
 
   /**
    * Handles request to evict entities specified in the request object.
@@ -86,7 +104,7 @@ public interface LlapIo<T> {
    * @throws IOException
    */
   RecordReader<NullWritable, VectorizedRowBatch> llapVectorizedOrcReaderForPath(Object fileKey, Path path, CacheTag tag,
-      List<Integer> tableIncludedCols, JobConf conf, long offset, long length) throws IOException;
+      List<Integer> tableIncludedCols, JobConf conf, long offset, long length, Reporter reporter) throws IOException;
 
   /**
    * Extract and return the cache content metadata.

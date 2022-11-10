@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
-import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.layered.TFramedTransport;
 import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -219,7 +219,7 @@ public class AuthFactory {
     }
 
     @Override
-    public TTransport getTransport(TTransport trans) {
+    public TTransport getTransport(TTransport trans) throws TTransportException {
       return childTransFactory.getTransport(parentTransFactory.getTransport(trans));
     }
   }

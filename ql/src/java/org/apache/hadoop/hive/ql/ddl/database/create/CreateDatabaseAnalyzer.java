@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.ql.ddl.database.create;
 
 import java.util.Map;
 
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -77,11 +79,11 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
         type = DatabaseType.REMOTE.name();
         ASTNode nextNode = (ASTNode) root.getChild(i);
         connectorName = ((ASTNode)nextNode).getChild(0).getText();
-        outputs.add(toWriteEntity(connectorName));
-        if (managedLocationUri != null) {
-          outputs.remove(toWriteEntity(managedLocationUri));
-          managedLocationUri = null;
+        DataConnector connector = getDataConnector(connectorName, true);
+        if (connector == null) {
+          throw new SemanticException("Cannot retrieve connector with name: " + connectorName);
         }
+        inputs.add(new ReadEntity(connector));
         break;
       default:
         throw new SemanticException("Unrecognized token in CREATE DATABASE statement");

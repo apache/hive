@@ -725,13 +725,12 @@ public class TestListPartitions extends MetaStoreClientTest {
             .newArrayList("0", "1", "2", "3"), (short)-1, "", Lists.newArrayList());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
+  @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void testListPartitionsWithAuthByValuesHighMaxParts() throws Exception {
-    List<List<String>> partValues = createTable4PartColsParts(client).testValues;
-    //This doesn't throw MetaException when setting to high max part count
-    List<Partition> partitions = client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
-            .newArrayList("2017"), (short)101, "", Lists.newArrayList());
-    assertPartitionsHaveCorrectValues(partitions, partValues.subList(2, 4));
+    createTable4PartColsParts(client);
+    client.listPartitionsWithAuthInfo(DB_NAME, TABLE_NAME, Lists
+            .newArrayList("2017"), (short) 101, "", Lists.newArrayList());
   }
 
   @Test(expected = MetaException.class)

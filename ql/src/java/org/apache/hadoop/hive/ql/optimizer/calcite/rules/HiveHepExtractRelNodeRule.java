@@ -29,7 +29,8 @@ import org.apache.calcite.rel.RelNode;
 /**
  * The goal of this rule is to extract the RelNode from the
  * HepRelVertex node so rules do tree traversal can be applied correctly.
- * {@see HiveFieldTrimmerRule, HiveAggregateInsertDeleteIncrementalRewritingRule}
+ * @see HiveFieldTrimmerRule
+ * @see org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAggregateInsertDeleteIncrementalRewritingRule
  */
 public class HiveHepExtractRelNodeRule extends RelOptRule {
 

@@ -31,7 +31,6 @@ import org.apache.calcite.avatica.util.TimeUnit;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -62,7 +61,6 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
@@ -76,8 +74,6 @@ import org.apache.hadoop.hive.ql.parse.QBSubQueryParseInfo;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
-import org.apache.hadoop.hive.ql.udf.SettableUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -133,7 +129,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
       throw new CalciteSemanticException("Unexpected error: Cannot find column");
     }
     return rexBuilder.makeInputRef(
-        TypeConverter.convert(colInfo.getType(), rexBuilder.getTypeFactory()), index + offset);
+        TypeConverter.convert(colInfo.getType(), colInfo.isNullable(), rexBuilder.getTypeFactory()), index + offset);
   }
 
   private static RexNode toPrimitiveConstDesc(
@@ -295,33 +291,34 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     if (!allowNullValueConstantExpr && hd == null) {
       return null;
     }
-    DecimalTypeInfo type = adjustType(hd);
+    BigDecimal bd = hd != null ? hd.bigDecimalValue() : null;
+    DecimalTypeInfo type = adjustType(bd);
     return rexBuilder.makeExactLiteral(
-        hd != null ? hd.bigDecimalValue() : null,
-        TypeConverter.convert(type, rexBuilder.getTypeFactory()));
+        bd, TypeConverter.convert(type, rexBuilder.getTypeFactory()));
   }
 
   @Override
   protected TypeInfo adjustConstantType(PrimitiveTypeInfo targetType, Object constantValue) {
-    if (constantValue instanceof HiveDecimal) {
-      return adjustType((HiveDecimal) constantValue);
+    if (PrimitiveObjectInspectorUtils.decimalTypeEntry.equals(targetType.getPrimitiveTypeEntry())) {
+      return adjustType((BigDecimal) constantValue);
     }
     return targetType;
   }
 
-  private DecimalTypeInfo adjustType(HiveDecimal hd) {
-    // Note: the normalize() call with rounding in HiveDecimal will currently reduce the
-    //       precision and scale of the value by throwing away trailing zeroes. This may or may
-    //       not be desirable for the literals; however, this used to be the default behavior
-    //       for explicit decimal literals (e.g. 1.0BD), so we keep this behavior for now.
+  private DecimalTypeInfo adjustType(BigDecimal bd) {
     int prec = 1;
     int scale = 0;
-    if (hd != null) {
-      prec = hd.precision();
-      scale = hd.scale();
+    if (bd != null) {
+      prec = bd.precision();
+      scale = bd.scale();
+      if (prec < scale) {
+        // This can happen for numbers less than 0.1
+        // For 0.001234: prec=4, scale=6
+        // In this case, we'll set the type to have the same precision as the scale.
+        prec = scale;
+      }
     }
-    DecimalTypeInfo typeInfo = TypeInfoFactory.getDecimalTypeInfo(prec, scale);
-    return typeInfo;
+    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
   }
 
   /**
@@ -344,9 +341,9 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
         } else if (PrimitiveObjectInspectorUtils.longTypeEntry.equals(primitiveTypeEntry)) {
           return toBigDecimal(constantToInterpret.toString()).longValueExact();
         } else if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(primitiveTypeEntry)) {
-          return Double.valueOf(constantToInterpret.toString());
+          return toBigDecimal(constantToInterpret.toString());
         } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(primitiveTypeEntry)) {
-          return Float.valueOf(constantToInterpret.toString());
+          return toBigDecimal(constantToInterpret.toString());
         } else if (PrimitiveObjectInspectorUtils.byteTypeEntry.equals(primitiveTypeEntry)) {
           return toBigDecimal(constantToInterpret.toString()).byteValueExact();
         } else if (PrimitiveObjectInspectorUtils.shortTypeEntry.equals(primitiveTypeEntry)) {
@@ -368,17 +365,8 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
       }
     }
 
-    // Comparision of decimal and float/double happens in float/double.
     if (constantToInterpret instanceof BigDecimal) {
-      BigDecimal bigDecimal = (BigDecimal) constantToInterpret;
-
-      PrimitiveTypeEntry primitiveTypeEntry = targetType.getPrimitiveTypeEntry();
-      if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(primitiveTypeEntry)) {
-        return bigDecimal.doubleValue();
-      } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(primitiveTypeEntry)) {
-        return bigDecimal.floatValue();
-      }
-      return bigDecimal;
+      return constantToInterpret;
     }
 
     String constTypeInfoName = sourceType.getTypeName();

@@ -21,8 +21,11 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Contains information about executor memory, various memory thresholds used for join conversions etc. based on
@@ -31,12 +34,10 @@ import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 
 public class MemoryInfo {
 
-  private Configuration conf;
-  private boolean isTez;
-  private boolean isLlap;
-  private long maxExecutorMemory;
-  private long mapJoinMemoryThreshold;
-  private long dynPartJoinMemoryThreshold;
+  private final boolean isTez;
+  private final boolean isLlap;
+  private final long maxExecutorMemory;
+  private final Logger LOG = LoggerFactory.getLogger(MemoryInfo.class);
 
   public MemoryInfo(Configuration conf) {
     this.isTez = "tez".equalsIgnoreCase(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE));
@@ -46,60 +47,53 @@ public class MemoryInfo {
       llapInfo.initClusterInfo();
       if (llapInfo.hasClusterInfo()) {
         this.maxExecutorMemory = llapInfo.getMemoryPerExecutor();
+        LOG.info("Using LLAP registry executor MB {}", maxExecutorMemory / (1024L * 1024L));
       } else {
-        long memPerInstance =
-            HiveConf.getLongVar(conf, HiveConf.ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB) * 1024L * 1024L;
+        long memPerInstanceMb =
+            HiveConf.getLongVar(conf, HiveConf.ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB);
+        LOG.info("Using LLAP default executor MB {}", memPerInstanceMb);
         long numExecutors = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
-        this.maxExecutorMemory = memPerInstance / numExecutors;
+        this.maxExecutorMemory = (memPerInstanceMb * 1024L * 1024L) / numExecutors;
       }
-    } else {
-      if (isTez) {
+    } else if (isTez) {
+        long containerSizeMb = DagUtils.getContainerResource(conf).getMemorySize();
         float heapFraction = HiveConf.getFloatVar(conf, HiveConf.ConfVars.TEZ_CONTAINER_MAX_JAVA_HEAP_FRACTION);
-        int containerSizeMb = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) > 0 ?
-            HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVETEZCONTAINERSIZE) :
-            conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB);
-        // this can happen when config is explicitly set to "-1", in which case defaultValue also does not work
-        if (containerSizeMb < 0) {
-          containerSizeMb =  MRJobConfig.DEFAULT_MAP_MEMORY_MB;
-        }
         this.maxExecutorMemory = (long) ((containerSizeMb * 1024L * 1024L) * heapFraction);
+    } else {
+      long executorMemoryFromConf =
+          conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB) * 1024L * 1024L;
+      // this can happen when config is explicitly set to "-1", in which case defaultValue also does not work
+      if (executorMemoryFromConf < 0L) {
+        LOG.warn("Falling back to default container MB {}", MRJobConfig.DEFAULT_MAP_MEMORY_MB);
+        this.maxExecutorMemory = MRJobConfig.DEFAULT_MAP_MEMORY_MB * 1024L * 1024L;
       } else {
-        this.maxExecutorMemory =
-            conf.getInt(MRJobConfig.MAP_MEMORY_MB, MRJobConfig.DEFAULT_MAP_MEMORY_MB) * 1024L * 1024L;
-        // this can happen when config is explicitly set to "-1", in which case defaultValue also does not work
-        if (maxExecutorMemory < 0) {
-          maxExecutorMemory =  MRJobConfig.DEFAULT_MAP_MEMORY_MB * 1024L * 1024L;
-        }
+        this.maxExecutorMemory = executorMemoryFromConf;
       }
     }
   }
 
-  public Configuration getConf() {
-    return conf;
-  }
-
-  public void setConf(final Configuration conf) {
-    this.conf = conf;
-  }
-
+  /**
+   * Returns True when in TEZ execution mode.
+   * @return boolean
+   */
   public boolean isTez() {
     return isTez;
   }
 
+  /**
+   * Returns True when in LLAP execution mode.
+   * @return boolean
+   */
   public boolean isLlap() {
     return isLlap;
   }
 
+  /**
+   * Get the Container max Memory value in bytes.
+   * @return bytes value as long
+   */
   public long getMaxExecutorMemory() {
     return maxExecutorMemory;
-  }
-
-  public long getMapJoinMemoryThreshold() {
-    return mapJoinMemoryThreshold;
-  }
-
-  public long getDynPartJoinMemoryThreshold() {
-    return dynPartJoinMemoryThreshold;
   }
 
   @Override
@@ -107,8 +101,6 @@ public class MemoryInfo {
     return "MEMORY INFO - { isTez: " + isTez() +
         ", isLlap: " + isLlap() +
         ", maxExecutorMemory: " + LlapUtil.humanReadableByteCount(getMaxExecutorMemory()) +
-        ", mapJoinMemoryThreshold: "+ LlapUtil.humanReadableByteCount(getMapJoinMemoryThreshold()) +
-        ", dynPartJoinMemoryThreshold: " + LlapUtil.humanReadableByteCount(getDynPartJoinMemoryThreshold()) +
         " }";
   }
 }

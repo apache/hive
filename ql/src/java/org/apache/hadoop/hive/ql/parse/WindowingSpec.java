@@ -117,17 +117,17 @@ public class WindowingSpec {
    * - If there is no Order, then add the Partition expressions as the Order.
    */
   public void validateAndMakeEffective() throws SemanticException {
-    for(WindowExpressionSpec expr : getWindowExpressions()) {
+    for (WindowExpressionSpec expr : getWindowExpressions()) {
       WindowFunctionSpec wFn = (WindowFunctionSpec) expr;
       WindowSpec wdwSpec = wFn.getWindowSpec();
 
       // 1. For Wdw Specs that refer to Window Defns, inherit missing components
-      if ( wdwSpec != null ) {
+      if (wdwSpec != null) {
         ArrayList<String> sources = new ArrayList<String>();
         fillInWindowSpec(wdwSpec.getSourceId(), wdwSpec, sources);
       }
 
-      if ( wdwSpec == null ) {
+      if (wdwSpec == null) {
         wdwSpec = new WindowSpec();
         wFn.setWindowSpec(wdwSpec);
       }
@@ -148,33 +148,26 @@ public class WindowingSpec {
   }
 
   private void fillInWindowSpec(String sourceId, WindowSpec dest, ArrayList<String> visited)
-      throws SemanticException
-  {
-    if (sourceId != null)
-    {
-      if ( visited.contains(sourceId)) {
+      throws SemanticException {
+    if (sourceId != null) {
+      if (visited.contains(sourceId)) {
         visited.add(sourceId);
         throw new SemanticException(String.format("Cycle in Window references %s", visited));
       }
       WindowSpec source = getWindowSpecs().get(sourceId);
-      if (source == null || source.equals(dest))
-      {
-        throw new SemanticException(String.format("%s refers to an unknown source" ,
-            dest));
+      if (source == null || source.equals(dest)) {
+        throw new SemanticException(String.format("%s refers to an unknown source", dest));
       }
 
-      if (dest.getPartition() == null)
-      {
+      if (dest.getPartition() == null) {
         dest.setPartition(source.getPartition());
       }
 
-      if (dest.getOrder() == null)
-      {
+      if (dest.getOrder() == null) {
         dest.setOrder(source.getOrder());
       }
 
-      if (dest.getWindowFrame() == null)
-      {
+      if (dest.getWindowFrame() == null) {
         dest.setWindowFrame(source.getWindowFrame());
       }
 
@@ -186,7 +179,7 @@ public class WindowingSpec {
 
   private void applyConstantPartition(WindowSpec wdwSpec) {
     PartitionSpec partSpec = wdwSpec.getPartition();
-    if ( partSpec == null ) {
+    if (partSpec == null) {
       partSpec = new PartitionSpec();
       PartitionExpression partExpr = new PartitionExpression();
       partExpr.setExpression(new ASTNode(new CommonToken(HiveParser.Number, "0")));
@@ -210,10 +203,10 @@ public class WindowingSpec {
     boolean supportsWindowing = wFnInfo == null ? true : wFnInfo.isSupportsWindow();
     WindowFrameSpec wFrame = wdwSpec.getWindowFrame();
     OrderSpec orderSpec = wdwSpec.getOrder();
-    if ( wFrame == null ) {
-      if (!supportsWindowing ) {
-        if ( wFn.getName().toLowerCase().equals(FunctionRegistry.LAST_VALUE_FUNC_NAME)
-            && orderSpec != null ) {
+    if (wFrame == null) {
+      if (!supportsWindowing) {
+        if (wFn.getName().toLowerCase().equals(FunctionRegistry.LAST_VALUE_FUNC_NAME)
+            && orderSpec != null) {
           /*
            * last_value: when an Sort Key is specified, then last_value should return the
            * last value among rows with the same Sort Key value.
@@ -247,8 +240,7 @@ public class WindowingSpec {
       }
 
       wdwSpec.setWindowFrame(wFrame);
-    }
-    else if ( wFrame.getEnd() == null ) {
+    } else if (wFrame.getEnd() == null) {
       wFrame.setEnd(new BoundarySpec(Direction.CURRENT));
     }
   }
@@ -258,13 +250,11 @@ public class WindowingSpec {
     BoundarySpec start = wFrame.getStart();
     BoundarySpec end = wFrame.getEnd();
 
-    if ( start.getDirection() == Direction.FOLLOWING &&
-        start.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT ) {
+    if (start.getDirection() == Direction.FOLLOWING && !start.isBounded()) {
       throw new SemanticException("Start of a WindowFrame cannot be UNBOUNDED FOLLOWING");
     }
 
-    if ( end.getDirection() == Direction.PRECEDING &&
-        end.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT ) {
+    if (end.getDirection() == Direction.PRECEDING && !end.isBounded()) {
       throw new SemanticException("End of a WindowFrame cannot be UNBOUNDED PRECEDING");
     }
   }
@@ -289,18 +279,14 @@ public class WindowingSpec {
         throw new SemanticException("Range based Window Frame needs to specify ORDER BY clause");
       }
 
-      boolean currentRange = start.getDirection() == Direction.CURRENT &&
-              end.getDirection() == Direction.CURRENT;
-      boolean defaultPreceding = start.getDirection() == Direction.PRECEDING &&
-              start.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT &&
-              end.getDirection() == Direction.CURRENT;
-      boolean defaultFollowing = start.getDirection() == Direction.CURRENT &&
-              end.getDirection() == Direction.FOLLOWING &&
-              end.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT;
-      boolean defaultPrecedingFollowing = start.getDirection() == Direction.PRECEDING &&
-              start.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT &&
-              end.getDirection() == Direction.FOLLOWING &&
-              end.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT;
+      boolean currentRange =
+          start.getDirection() == Direction.CURRENT && end.getDirection() == Direction.CURRENT;
+      boolean defaultPreceding = start.getDirection() == Direction.PRECEDING && !start.isBounded()
+          && end.getDirection() == Direction.CURRENT;
+      boolean defaultFollowing = start.getDirection() == Direction.CURRENT
+          && end.getDirection() == Direction.FOLLOWING && !end.isBounded();
+      boolean defaultPrecedingFollowing = start.getDirection() == Direction.PRECEDING
+          && !start.isBounded() && end.getDirection() == Direction.FOLLOWING && !end.isBounded();
       boolean multiOrderAllowed = currentRange || defaultPreceding || defaultFollowing || defaultPrecedingFollowing;
       if ( order.getExpressions().size() != 1 && !multiOrderAllowed) {
         throw new SemanticException("Range value based Window Frame can have only 1 Sort Key");
@@ -316,15 +302,19 @@ public class WindowingSpec {
   public static class WindowExpressionSpec {
     String alias;
     ASTNode expression;
+
     public String getAlias() {
       return alias;
     }
+
     public void setAlias(String alias) {
       this.alias = alias;
     }
+
     public ASTNode getExpression() {
       return expression;
     }
+
     public void setExpression(ASTNode expression) {
       this.expression = expression;
     }
@@ -341,8 +331,7 @@ public class WindowingSpec {
    * - its alias
    * - and an optional Window specification
    */
-  public static class WindowFunctionSpec extends WindowExpressionSpec
-  {
+  public static class WindowFunctionSpec extends WindowExpressionSpec {
     String name;
     boolean isStar;
     boolean isDistinct;
@@ -353,35 +342,45 @@ public class WindowingSpec {
     public String getName() {
       return name;
     }
+
     public void setName(String name) {
       this.name = name;
     }
+
     public boolean isStar() {
       return isStar;
     }
+
     public void setStar(boolean isStar) {
       this.isStar = isStar;
     }
+
     public boolean isDistinct() {
       return isDistinct;
     }
+
     public void setDistinct(boolean isDistinct) {
       this.isDistinct = isDistinct;
     }
+
     public ArrayList<ASTNode> getArgs() {
       args = args == null ? new ArrayList<ASTNode>() : args;
       return args;
     }
+
     public void setArgs(ArrayList<ASTNode> args) {
       this.args = args;
     }
+
     public void addArg(ASTNode arg) {
       args = args == null ? new ArrayList<ASTNode>() : args;
-      args.add((ASTNode)arg);
+      args.add((ASTNode) arg);
     }
+
     public WindowSpec getWindowSpec() {
       return windowSpec;
     }
+
     public void setWindowSpec(WindowSpec windowSpec) {
       this.windowSpec = windowSpec;
     }
@@ -398,22 +397,16 @@ public class WindowingSpec {
     public String toString() {
       StringBuilder buf = new StringBuilder();
       buf.append(name).append("(");
-      if (isStar )
-      {
+      if (isStar) {
         buf.append("*");
-      }
-      else
-      {
-        if ( isDistinct )
-        {
+      } else {
+        if (isDistinct) {
           buf.append("distinct ");
         }
-        if ( args != null )
-        {
+        if (args != null) {
           boolean first = true;
-          for(ASTNode arg : args)
-          {
-            if ( first) {
+          for (ASTNode arg : args) {
+            if (first) {
               first = false;
             } else {
               buf.append(", ");
@@ -429,19 +422,16 @@ public class WindowingSpec {
         buf.append(" ignore nulls ");
       }
 
-      if ( windowSpec != null )
-      {
+      if ( windowSpec != null ){
         buf.append(" ").append(windowSpec.toString());
       }
 
-      if ( alias != null )
-      {
+      if (alias != null) {
         buf.append(" as ").append(alias);
       }
 
       return buf.toString();
     }
-
   }
 
   /*
@@ -455,8 +445,7 @@ public class WindowingSpec {
    * has no content, but inherits all its attributes from 'w1' during
    * subsequent phases of translation.
    */
-  public static class WindowSpec
-  {
+  public static class WindowSpec {
     private String sourceId;
     private PartitioningSpec partitioning;
     private WindowFrameSpec windowFrame;
@@ -464,31 +453,40 @@ public class WindowingSpec {
     public String getSourceId() {
       return sourceId;
     }
+
     public void setSourceId(String sourceId) {
       this.sourceId = sourceId;
     }
+
     public PartitioningSpec getPartitioning() {
       return partitioning;
     }
+
     public void setPartitioning(PartitioningSpec partitioning) {
       this.partitioning = partitioning;
     }
+
     public WindowFrameSpec getWindowFrame() {
       return windowFrame;
     }
+
     public void setWindowFrame(WindowFrameSpec windowFrame) {
       this.windowFrame = windowFrame;
     }
+
     public PartitionSpec getPartition() {
       return getPartitioning() == null ? null : getPartitioning().getPartSpec();
     }
+
     public void setPartition(PartitionSpec partSpec) {
       partitioning = partitioning == null ? new PartitioningSpec() : partitioning;
       partitioning.setPartSpec(partSpec);
     }
+
     public OrderSpec getOrder() {
       return getPartitioning() == null ? null : getPartitioning().getOrderSpec();
     }
+
     public void setOrder(OrderSpec orderSpec) {
       partitioning = partitioning == null ? new PartitioningSpec() : partitioning;
       partitioning.setOrderSpec(orderSpec);
@@ -503,7 +501,24 @@ public class WindowingSpec {
      * an OrderSpec that copies the Partition expressions.
      */
     protected void ensureOrderSpec(WindowFunctionSpec wFn) throws SemanticException {
-      if ( getOrder() == null ) {
+      if (getOrder() == null) {
+        /*
+         * In case of RANGE windows, an explicit ORDER BY clause is needed, otherwise the query ends
+         * up in undefined behavior, considering the following:
+         *
+         * count(*) over(partition by partitioning_col range between 1 preceding and current row) as cs1
+         *
+         * The query above leads to undefined behavior, because it makes no sense to calculate range on:
+         * 1. undefined column (obviously)
+         * 2. the partitioning column, as the partitioning column means that all the rows
+         *    have the same value within the partition (or NULL)
+         */
+        if (windowFrame.getWindowType() == WindowType.RANGE
+            && (windowFrame.getStart().isBoundedNotCurrent()
+                || windowFrame.getEnd().isBoundedNotCurrent())) {
+          throw new SemanticException(
+              "RANGE with offset PRECEDING/FOLLOWING requires at least one ORDER BY column");
+        }
         OrderSpec order = new OrderSpec();
         order.prefixBy(getPartition());
         setOrder(order);
@@ -524,41 +539,34 @@ public class WindowingSpec {
    * be applied for the 'current' row. Its is specified by a <i>start</i> and
    * <i>end</i> Boundary.
    */
-  public static class WindowFrameSpec
-  {
+  public static class WindowFrameSpec {
     private WindowType windowType;
     private BoundarySpec start;
     private BoundarySpec end;
 
-    public WindowFrameSpec(WindowType windowType, BoundarySpec start, BoundarySpec end)
-    {
+    public WindowFrameSpec(WindowType windowType, BoundarySpec start, BoundarySpec end) {
       this.windowType = windowType;
       this.start = start;
       this.end = end;
     }
 
-    public WindowFrameSpec(WindowType windowType, BoundarySpec start)
-    {
+    public WindowFrameSpec(WindowType windowType, BoundarySpec start) {
       this(windowType, start, null);
     }
 
-    public BoundarySpec getStart()
-    {
+    public BoundarySpec getStart() {
       return start;
     }
 
-    public void setStart(BoundarySpec start)
-    {
+    public void setStart(BoundarySpec start) {
       this.start = start;
     }
 
-    public BoundarySpec getEnd()
-    {
+    public BoundarySpec getEnd() {
       return end;
     }
 
-    public void setEnd(BoundarySpec end)
-    {
+    public void setEnd(BoundarySpec end) {
       this.end = end;
     }
 
@@ -567,26 +575,18 @@ public class WindowingSpec {
     }
 
     @Override
-    public String toString()
-    {
-      return String.format("window(type=%s, start=%s, end=%s)",
-          this.windowType, start, end);
+    public String toString() {
+      return String.format("window(type=%s, start=%s, end=%s)", this.windowType, start, end);
     }
-
   }
 
-  public static enum Direction
-  {
-    PRECEDING,
-    CURRENT,
-    FOLLOWING
+  public static enum Direction {
+    PRECEDING, CURRENT, FOLLOWING
   };
 
   // The types for ROWS BETWEEN or RANGE BETWEEN windowing spec
-  public static enum WindowType
-  {
-    ROWS,
-    RANGE
+  public static enum WindowType {
+    ROWS, RANGE
   };
 
   /*
@@ -598,8 +598,7 @@ public class WindowingSpec {
    * - Value Boundary :: which is specified as the amount the value of an
                     Expression must decrease/increase
    */
-  public static class BoundarySpec implements Comparable<BoundarySpec>
-  {
+  public static class BoundarySpec implements Comparable<BoundarySpec> {
     public static final int UNBOUNDED_AMOUNT = Integer.MAX_VALUE;
 
     Direction direction;
@@ -612,45 +611,49 @@ public class WindowingSpec {
       this(direction, 0);
     }
 
-    public BoundarySpec(Direction direction, int amt)
-    {
+    public BoundarySpec(Direction direction, int amt) {
       this.direction = direction;
       this.amt = amt;
     }
 
-    public Direction getDirection()
-    {
+    public Direction getDirection() {
       return direction;
     }
 
-    public void setDirection(Direction direction)
-    {
+    public void setDirection(Direction direction) {
       this.direction = direction;
     }
 
-    public int getAmt()
-    {
+    public int getAmt() {
       return amt;
     }
 
-    public void setAmt(int amt)
-    {
+    public void setAmt(int amt) {
       this.amt = amt;
     }
 
+    public boolean isBounded() {
+      return this.amt != UNBOUNDED_AMOUNT;
+    }
+
+    /**
+     * Returns true for bounded non-current frames.
+     * @return
+     */
+    public boolean isBoundedNotCurrent() {
+      return isBounded() && direction != Direction.CURRENT;
+    }
+
     @Override
-    public String toString()
-    {
+    public String toString() {
       if (this.direction == Direction.CURRENT) {
         return "currentRow";
       }
 
-      return String.format("%s %s", (amt == UNBOUNDED_AMOUNT ? "Unbounded" : amt),
-          direction);
+      return String.format("%s %s", (amt == UNBOUNDED_AMOUNT ? "Unbounded" : amt), direction);
     }
 
-    public int compareTo(BoundarySpec other)
-    {
+    public int compareTo(BoundarySpec other) {
       int c = direction.compareTo(other.getDirection());
       if (c != 0) {
         return c;

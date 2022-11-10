@@ -1,0 +1,73 @@
+PREHOOK: query: CREATE TABLE tableA (
+  bd_id      bigint,
+  quota_type string
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tableA
+POSTHOOK: query: CREATE TABLE tableA (
+  bd_id      bigint,
+  quota_type string
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tableA
+PREHOOK: query: EXPLAIN CBO
+SELECT a.bd_id
+FROM (
+    SELECT t.bd_id
+    FROM tableA t
+    WHERE (t.bd_id = 8 AND t.quota_type IN ('A','C')) OR (t.bd_id = 9 AND t.quota_type IN ('A','B'))
+ ) a JOIN (
+     SELECT t.bd_id
+     FROM tableA t
+     WHERE t.bd_id = 9 AND t.quota_type IN ('A','B')
+     INTERSECT
+     SELECT t.bd_id
+     FROM tableA t
+     WHERE (t.bd_id = 8 AND t.quota_type IN ('A','C')) OR (t.bd_id = 9 AND t.quota_type IN ('A','B'))
+) b ON a.bd_id = b.bd_id
+WHERE a.bd_id = 8 OR a.bd_id <> 8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tablea
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT a.bd_id
+FROM (
+    SELECT t.bd_id
+    FROM tableA t
+    WHERE (t.bd_id = 8 AND t.quota_type IN ('A','C')) OR (t.bd_id = 9 AND t.quota_type IN ('A','B'))
+ ) a JOIN (
+     SELECT t.bd_id
+     FROM tableA t
+     WHERE t.bd_id = 9 AND t.quota_type IN ('A','B')
+     INTERSECT
+     SELECT t.bd_id
+     FROM tableA t
+     WHERE (t.bd_id = 8 AND t.quota_type IN ('A','C')) OR (t.bd_id = 9 AND t.quota_type IN ('A','B'))
+) b ON a.bd_id = b.bd_id
+WHERE a.bd_id = 8 OR a.bd_id <> 8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tablea
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(bd_id=[$0])
+  HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(bd_id=[$0])
+      HiveFilter(condition=[AND(OR(=($0, 8), <>($0, 8)), OR(AND(=($0, 8), IN($1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'C':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), AND(=($0, 9), IN($1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))), IS NOT NULL($0))])
+        HiveTableScan(table=[[default, tablea]], table:alias=[t])
+    HiveProject($f0=[$0])
+      HiveFilter(condition=[=($1, 2)])
+        HiveAggregate(group=[{0}], agg#0=[count($1)])
+          HiveProject($f0=[$0], $f1=[$1])
+            HiveUnion(all=[true])
+              HiveProject($f0=[$0], $f1=[$1])
+                HiveAggregate(group=[{0}], agg#0=[count()])
+                  HiveProject($f0=[CAST(9:BIGINT):BIGINT])
+                    HiveFilter(condition=[AND(=($0, 9), IN($1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))])
+                      HiveTableScan(table=[[default, tablea]], table:alias=[t])
+              HiveProject(bd_id=[$0], $f1=[$1])
+                HiveAggregate(group=[{0}], agg#0=[count()])
+                  HiveFilter(condition=[AND(OR(AND(=($0, 8), IN($1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'C':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), AND(=($0, 9), IN($1, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))), IS NOT NULL($0))])
+                    HiveTableScan(table=[[default, tablea]], table:alias=[t])
+

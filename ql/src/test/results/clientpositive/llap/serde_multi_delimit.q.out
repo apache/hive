@@ -235,6 +235,47 @@ POSTHOOK: Input: default@t4_multi_delimit
 		
 áűáűáűáű		
 űűű	ááá	óóó
+PREHOOK: query: create table test_multidelim(col string)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+with serdeproperties('field.delim'='!^') STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_multidelim
+POSTHOOK: query: create table test_multidelim(col string)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+with serdeproperties('field.delim'='!^') STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_multidelim
+PREHOOK: query: insert into test_multidelim values('aa'),('bb'),('cc'),('dd')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_multidelim
+POSTHOOK: query: insert into test_multidelim values('aa'),('bb'),('cc'),('dd')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_multidelim
+POSTHOOK: Lineage: test_multidelim.col SCRIPT []
+PREHOOK: query: select * from test_multidelim
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_multidelim
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_multidelim
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_multidelim
+#### A masked pattern was here ####
+aa
+bb
+cc
+dd
+PREHOOK: query: DROP TABLE test_multidelim
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_multidelim
+PREHOOK: Output: default@test_multidelim
+POSTHOOK: query: DROP TABLE test_multidelim
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_multidelim
+POSTHOOK: Output: default@test_multidelim
 PREHOOK: query: DROP TABLE t1_multi_delimit
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_multi_delimit

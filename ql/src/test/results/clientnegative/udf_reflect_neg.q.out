@@ -20,4 +20,4 @@ FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-Failed with exception java.io.IOException:org.apache.hadoop.hive.ql.metadata.HiveException: UDFReflect evaluate error while loading class java.lang.StringClassThatDoesNotExist
+Failed with exception org.apache.hadoop.hive.ql.metadata.HiveException:UDFReflect evaluate error while loading class java.lang.StringClassThatDoesNotExist

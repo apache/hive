@@ -32,25 +32,13 @@ public class IfExprDoubleColumnDoubleColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private final int arg1Column;
-  private final int arg2Column;
-  private final int arg3Column;
-
   public IfExprDoubleColumnDoubleColumn(int arg1Column, int arg2Column, int arg3Column,
       int outputColumnNum) {
-    super(outputColumnNum);
-    this.arg1Column = arg1Column;
-    this.arg2Column = arg2Column;
-    this.arg3Column = arg3Column;
+    super(arg1Column, arg2Column, arg3Column, outputColumnNum);
   }
 
   public IfExprDoubleColumnDoubleColumn() {
     super();
-
-    // Dummy final assignments.
-    arg1Column = -1;
-    arg2Column = -1;
-    arg3Column = -1;
   }
 
   @Override
@@ -60,9 +48,9 @@ public class IfExprDoubleColumnDoubleColumn extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
-    DoubleColumnVector arg2ColVector = (DoubleColumnVector) batch.cols[arg2Column];
-    DoubleColumnVector arg3ColVector = (DoubleColumnVector) batch.cols[arg3Column];
+    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
+    DoubleColumnVector arg2ColVector = (DoubleColumnVector) batch.cols[inputColumnNum[1]];
+    DoubleColumnVector arg3ColVector = (DoubleColumnVector) batch.cols[inputColumnNum[2]];
     DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
@@ -159,8 +147,8 @@ public class IfExprDoubleColumnDoubleColumn extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, arg1Column) + ", " + getColumnParamString(1, arg2Column) +
-        getColumnParamString(2, arg3Column);
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, inputColumnNum[1]) +
+        getColumnParamString(2, inputColumnNum[2]);
   }
 
   @Override

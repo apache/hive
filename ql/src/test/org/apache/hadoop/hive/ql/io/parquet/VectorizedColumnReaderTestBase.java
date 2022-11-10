@@ -65,6 +65,7 @@ import org.apache.parquet.schema.MessageType;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TimeZone;
 
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertFalse;
@@ -211,7 +212,7 @@ public class VectorizedColumnReaderTestBase {
   protected static NanoTime getNanoTime(int index) {
     Timestamp ts = new Timestamp();
     ts.setTimeInMillis(index);
-    return NanoTimeUtils.getNanoTime(ts, false);
+    return NanoTimeUtils.getNanoTime(ts, TimeZone.getDefault().toZoneId(), false);
   }
 
   protected static HiveDecimal getDecimal(
@@ -1062,6 +1063,26 @@ public class VectorizedColumnReaderTestBase {
         }
       }
       assertEquals(nElements, c);
+    } finally {
+      reader.close();
+    }
+  }
+
+  protected void verifyBatchOffsets() throws Exception {
+    Configuration c = new Configuration();
+    c.set(IOConstants.COLUMNS, "int64_field");
+    c.set(IOConstants.COLUMNS_TYPES, "bigint");
+    c.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    c.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    VectorizedParquetRecordReader reader =
+        createTestParquetReader("message test { required int64 int64_field;}", c);
+    VectorizedRowBatch previous = reader.createValue();
+    try {
+      int batchCount = 0;
+      while (reader.next(NullWritable.get(), previous)) {
+        assertEquals(VectorizedRowBatch.DEFAULT_SIZE * batchCount++, reader.getRowNumber());
+      }
+      assertEquals(reader.getRowNumber(), nElements);
     } finally {
       reader.close();
     }

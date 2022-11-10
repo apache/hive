@@ -25,11 +25,12 @@ import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
+import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
-import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -132,8 +133,9 @@ public class HiveProject extends Project implements HiveRelNode {
     return shuttle.visit(this);
   }
 
-  public boolean containsOver() {
-    return RexOver.containsOver(this.getChildExps(), null);
+  @Override
+  public RelWriter explainTerms(RelWriter pw) {
+    return super.explainTerms(pw)
+        .itemIf("synthetic", this.isSysnthetic, pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES);
   }
-
 }

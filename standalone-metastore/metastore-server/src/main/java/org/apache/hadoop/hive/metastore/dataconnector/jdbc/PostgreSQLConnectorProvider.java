@@ -1,32 +1,38 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.metastore.dataconnector.jdbc;
 
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 
 public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
-  private static Logger LOG = LoggerFactory.getLogger(MySQLConnectorProvider.class);
+  private static Logger LOG = LoggerFactory.getLogger(PostgreSQLConnectorProvider.class);
   private static final String DRIVER_CLASS = "org.postgresql.Driver".intern();
 
   public PostgreSQLConnectorProvider(String dbName, DataConnector dataConn) {
     super(dbName, dataConn, DRIVER_CLASS);
-  }
-
-  /**
-   * Returns Hive Table objects from the remote database for tables that match a name pattern.
-   * @return List A collection of objects that match the name pattern, null otherwise.
-   * @throws MetaException To indicate any failures with executing this API
-   * @param regex
-   */
-  @Override public List<Table> getTables(String regex) throws MetaException {
-    return null;
   }
 
   @Override protected ResultSet fetchTableMetadata(String tableName) throws MetaException {
@@ -41,6 +47,14 @@ public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
   }
 
   @Override protected ResultSet fetchTableNames() throws MetaException {
+    return null;
+  }
+
+  @Override protected String getCatalogName() {
+    return scoped_db;
+  }
+
+  @Override protected String getDatabaseName() {
     return null;
   }
 

@@ -93,9 +93,16 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
     }
 
     if (database.isSetManagedLocationUri()) {
-      // TODO should we enforce a location check here?
       database.setManagedLocationUri(Utilities.getQualifiedPath(context.getConf(),
           new Path(database.getManagedLocationUri())));
+    } else {
+      // ManagedLocation is not set we utilize WAREHOUSE together with database name 
+      String rootDir = MetastoreConf.getVar(context.getConf(), MetastoreConf.ConfVars.WAREHOUSE);
+      Path path = new Path(rootDir, database.getName().toLowerCase() + DATABASE_PATH_SUFFIX);
+      String qualifiedPath = Utilities.getQualifiedPath(context.getConf(), path);
+      if (!qualifiedPath.equals(database.getLocationUri())) {
+        database.setManagedLocationUri(qualifiedPath);
+      }
     }
   }
 }

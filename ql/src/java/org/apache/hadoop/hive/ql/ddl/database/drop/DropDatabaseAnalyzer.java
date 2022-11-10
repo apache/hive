@@ -18,8 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.database.drop;
 
-import java.util.List;
-
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -27,6 +26,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -34,6 +34,8 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+
+import java.util.List;
 
 /**
  * Analyzer for database dropping commands.
@@ -49,32 +51,38 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
     String databaseName = unescapeIdentifier(root.getChild(0).getText());
     boolean ifExists = root.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null;
     boolean cascade = root.getFirstChildWithType(HiveParser.TOK_CASCADE) != null;
+    boolean isSoftDelete = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
 
     Database database = getDatabase(databaseName, !ifExists);
     if (database == null) {
       return;
     }
-
     // if cascade=true, then we need to authorize the drop table action as well, and add the tables to the outputs
+    boolean isDbLevelLock = true;
     if (cascade) {
       try {
-        List<String> tableNames = db.getAllTables(databaseName);
-        if (tableNames != null) {
-          for (String tableName : tableNames) {
-            Table table = getTable(databaseName, tableName, true);
-            // We want no lock here, as the database lock will cover the tables,
-            // and putting a lock will actually cause us to deadlock on ourselves.
-            outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK));
+        List<Table> tables = db.getAllTableObjects(databaseName);
+        isDbLevelLock = !isSoftDelete || tables.stream().allMatch(
+          table -> AcidUtils.isTableSoftDeleteEnabled(table, conf));
+        for (Table table : tables) {
+          WriteEntity.WriteType lockType = WriteEntity.WriteType.DDL_NO_LOCK;
+          // Optimization used to limit number of requested locks. Check if table lock is needed or we could get away with single DB level lock,
+          if (!isDbLevelLock) {
+            lockType = AcidUtils.isTableSoftDeleteEnabled(table, conf) ?
+              WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
           }
+          outputs.add(new WriteEntity(table, lockType));
         }
       } catch (HiveException e) {
         throw new SemanticException(e);
       }
     }
-
     inputs.add(new ReadEntity(database));
-    outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_EXCLUSIVE));
-
+    if (isDbLevelLock) {
+      WriteEntity.WriteType lockType = isSoftDelete ?
+        WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
+      outputs.add(new WriteEntity(database, lockType));
+    }
     DropDatabaseDesc desc = new DropDatabaseDesc(databaseName, ifExists, cascade, new ReplicationSpec());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }

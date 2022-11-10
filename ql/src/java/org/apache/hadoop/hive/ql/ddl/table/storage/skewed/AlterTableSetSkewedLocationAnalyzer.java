@@ -99,6 +99,7 @@ public class AlterTableSetSkewedLocationAnalyzer extends AbstractAlterTableAnaly
     }
 
     AbstractAlterTableDesc desc = new AlterTableSetSkewedLocationDesc(tableName, partitionSpec, locations);
+    setAcidDdlDesc(getTable(tableName), desc);
     addInputsOutputsAlterTable(tableName, partitionSpec, desc, AlterTableType.SET_SKEWED_LOCATION, false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }

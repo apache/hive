@@ -1,0 +1,84 @@
+PREHOOK: query: create table t (a smallint, b string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (a smallint, b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t values (1, 'a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (1, 'a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.b SCRIPT []
+PREHOOK: query: insert into t values (2, 'aa')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (2, 'aa')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.b SCRIPT []
+PREHOOK: query: insert into t values (6, 'aaaaaa')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t values (6, 'aaaaaa')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.a SCRIPT []
+POSTHOOK: Lineage: t.b SCRIPT []
+PREHOOK: query: select 1 from t where a in (1,2,3) and case a when 1 then true when 2 then true end
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select 1 from t where a in (1,2,3) and case a when 1 then true when 2 then true end
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1
+1
+PREHOOK: query: explain cbo select 1 from t where a in (1,2,3) and case a when 1 then true when 2 then true end
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select 1 from t where a in (1,2,3) and case a when 1 then true when 2 then true end
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject($f0=[1])
+  HiveFilter(condition=[IN($0, 1:SMALLINT, 2:SMALLINT)])
+    HiveTableScan(table=[[default, t]], table:alias=[t])
+
+PREHOOK: query: select 1 from t where a in (1,2,3) and case when a = 1 then true when a = 2 then true end
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select 1 from t where a in (1,2,3) and case when a = 1 then true when a = 2 then true end
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+1
+1
+PREHOOK: query: explain cbo select 1 from t where a in (1,2,3) and case when a = 1 then true when a = 2 then true end
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select 1 from t where a in (1,2,3) and case when a = 1 then true when a = 2 then true end
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject($f0=[1])
+  HiveFilter(condition=[IN($0, 1:SMALLINT, 2:SMALLINT)])
+    HiveTableScan(table=[[default, t]], table:alias=[t])
+

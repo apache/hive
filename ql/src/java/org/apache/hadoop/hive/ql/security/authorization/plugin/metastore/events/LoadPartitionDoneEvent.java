@@ -56,18 +56,14 @@ public class LoadPartitionDoneEvent extends HiveMetaStoreAuthorizableEvent {
   private List<HivePrivilegeObject> getInputHObjs() { return Collections.emptyList(); }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("==> DropTableEvent.getOutputHObjs()");
-    }
+    LOG.debug("==> DropTableEvent.getOutputHObjs()");
 
     List<HivePrivilegeObject> ret   = new ArrayList<>();
     PreLoadPartitionDoneEvent event = (PreLoadPartitionDoneEvent) preEventContext;
 
     ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, event.getDbName(), event.getTableName()));
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("<== DropTableEvent.getOutputHObjs(): ret=" + ret);
-    }
+    LOG.debug("<== DropTableEvent.getOutputHObjs(): ret={}", ret);
 
     return ret;
   }

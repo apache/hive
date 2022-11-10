@@ -107,8 +107,16 @@ public class HiveIcebergFilterFactory {
         return in(column, leafToLiteralList(leaf));
       case BETWEEN:
         List<Object> icebergLiterals = leafToLiteralList(leaf);
-        return and(greaterThanOrEqual(column, icebergLiterals.get(0)),
-                lessThanOrEqual(column, icebergLiterals.get(1)));
+        if (icebergLiterals.size() == 2) {
+          return and(greaterThanOrEqual(column, icebergLiterals.get(0)),
+              lessThanOrEqual(column, icebergLiterals.get(1)));
+        } else {
+          // In case semijoin reduction optimization was applied, there will be a BETWEEN( DynamicValue, DynamicValue)
+          // clause, where DynamicValue is not evaluable in Tez AM, where Hive filter is translated into Iceberg filter.
+          // Overwriting to constant true as the optimization will be utilized by Hive/Tez and no-op for Iceberg.
+          // (Also: the original filter and Iceberg filter are both part of JobConf on the execution side.)
+          return Expressions.alwaysTrue();
+        }
       case IS_NULL:
         return isNull(column);
       default:

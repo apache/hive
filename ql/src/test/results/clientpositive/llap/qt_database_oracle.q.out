@@ -1,0 +1,45 @@
+PREHOOK: query: CREATE EXTERNAL TABLE country
+(
+    id int,
+    name varchar(20)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "ORACLE", 
+    "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/xe",
+    "hive.sql.dbcp.username" = "SYS as SYSDBA",
+    "hive.sql.dbcp.password" = "oracle",
+    "hive.sql.table" = "COUNTRY"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country
+POSTHOOK: query: CREATE EXTERNAL TABLE country
+(
+    id int,
+    name varchar(20)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "ORACLE", 
+    "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/xe",
+    "hive.sql.dbcp.username" = "SYS as SYSDBA",
+    "hive.sql.dbcp.password" = "oracle",
+    "hive.sql.table" = "COUNTRY"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country
+PREHOOK: query: SELECT * FROM country
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM country
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country
+#### A masked pattern was here ####
+1	India
+2	Russia
+3	USA

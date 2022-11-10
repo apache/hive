@@ -62,6 +62,11 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@source_table_001
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source_table_001_mv
+POSTHOOK: Lineage: source_table_001_mv.down_volume_sum EXPRESSION [(source_table_001)a.FieldSchema(name:down_volume, type:bigint, comment:null), ]
+POSTHOOK: Lineage: source_table_001_mv.environment SIMPLE [(source_table_001)a.FieldSchema(name:environment, type:string, comment:null), ]
+POSTHOOK: Lineage: source_table_001_mv.my_date SIMPLE [(source_table_001)a.FieldSchema(name:my_date, type:date, comment:null), ]
+POSTHOOK: Lineage: source_table_001_mv.my_id2 SIMPLE [(source_table_001)a.FieldSchema(name:my_id2, type:bigint, comment:null), ]
+POSTHOOK: Lineage: source_table_001_mv.up_volume_sum EXPRESSION [(source_table_001)a.FieldSchema(name:up_volume, type:bigint, comment:null), ]
 PREHOOK: query: explain
 select
 SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,

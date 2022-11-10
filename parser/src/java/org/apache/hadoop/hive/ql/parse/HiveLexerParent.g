@@ -29,7 +29,6 @@ KW_OR : 'OR';
 KW_NOT : 'NOT' | '!';
 KW_LIKE : 'LIKE';
 KW_ANY : 'ANY';
-
 KW_IF : 'IF';
 KW_EXISTS : 'EXISTS';
 
@@ -41,6 +40,7 @@ KW_ORDER : 'ORDER';
 KW_GROUP : 'GROUP';
 KW_BY : 'BY';
 KW_HAVING : 'HAVING';
+KW_QUALIFY : 'QUALIFY';
 KW_WHERE : 'WHERE';
 KW_FROM : 'FROM';
 KW_AS : 'AS';
@@ -354,6 +354,7 @@ KW_ACTIVATE: 'ACTIVATE';
 KW_DEFAULT: 'DEFAULT';
 KW_CHECK: 'CHECK';
 KW_POOL: 'POOL';
+KW_ID: 'ID';
 KW_MOVE: 'MOVE';
 KW_DO: 'DO';
 KW_ALLOC_FRACTION: 'ALLOC_FRACTION';
@@ -385,6 +386,11 @@ KW_DATACONNECTORS: 'CONNECTORS';
 KW_TYPE: 'TYPE';
 KW_URL: 'URL';
 KW_REMOTE: 'REMOTE';
+KW_SPEC: 'SPEC';
+KW_SYSTEM_TIME: 'SYSTEM_TIME';
+KW_SYSTEM_VERSION: 'SYSTEM_VERSION';
+KW_EXPIRE_SNAPSHOTS: 'EXPIRE_SNAPSHOTS';
+
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

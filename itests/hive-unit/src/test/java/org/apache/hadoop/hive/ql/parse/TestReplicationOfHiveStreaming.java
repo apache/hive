@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 
 /**
  * TestReplicationOfHiveStreaming - test replication for streaming ingest on ACID tables.
@@ -73,7 +73,7 @@ public class TestReplicationOfHiveStreaming {
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =
-        new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+        new MiniDFSCluster.Builder(conf).numDataNodes(2).format(true).build();
     Map<String, String> acidEnableConf = new HashMap<String, String>() {{
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put("hive.support.concurrency", "true");

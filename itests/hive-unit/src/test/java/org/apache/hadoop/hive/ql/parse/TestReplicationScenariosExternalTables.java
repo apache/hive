@@ -67,7 +67,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,10 +83,11 @@ import javax.annotation.Nullable;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS;
-import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TestReplicationScenariosExternalTables extends BaseReplicationAcrossInstances {
@@ -357,6 +358,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         "/" + testName.getMethodName() + "/" + primaryDbName + "/" + "a/");
     DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
     fs.mkdirs(externalTableLocation, new FsPermission("777"));
+    fs.setOwner(externalTableLocation,"user1","group1");
 
     Path externalFileLoc = new Path(externalTableLocation, "file1.txt");
     try (FSDataOutputStream outputStream = fs.create(externalFileLoc)) {
@@ -382,11 +384,9 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     fs.modifyAclEntries(externalTableLocation, aclEntries);
     fs.modifyAclEntries(externalFileLoc, aclEntries);
 
-    // Run bootstrap with distcp options to preserve ACL.
-    List<String> withClause = Arrays
-        .asList("'distcp.options.update'=''", "'distcp.options.puga'=''",
-            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname
-                + "'='true'");
+    // Run bootstrap without distcp options to preserve options.
+    List<String> withClause = Arrays.asList("'distcp.options.update'=''",
+        "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
 
     primary.run("use " + primaryDbName).run(
         "create external table a (i int, j int) "
@@ -400,12 +400,40 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
         .verifyResults(new String[] {"1", "13"}).run("select j from a")
         .verifyResults(new String[] {"2", "21"});
 
-    // Verify the ACL's of the destination table directory and data file are
-    // same as that of source.
+    // Verify the attributes of the destination table directory and data file are
+    // not same as that of source.
     Hive hiveForReplica = Hive.get(replica.hiveConf);
     org.apache.hadoop.hive.ql.metadata.Table replicaTable =
         hiveForReplica.getTable(replicatedDbName + ".a");
     Path dataLocation = replicaTable.getDataLocation();
+
+    assertNotEquals("ACL entries are same for the data file.",
+        fs.getAclStatus(externalFileLoc).getEntries().size(),
+        fs.getAclStatus(new Path(dataLocation, "file1.txt")).getEntries()
+            .size());
+    assertNotEquals("ACL entries are same for the table directory.",
+        fs.getAclStatus(externalTableLocation).getEntries().size(),
+        fs.getAclStatus(dataLocation).getEntries().size());
+
+    assertNotEquals(fs.getFileStatus(externalTableLocation).getOwner(), fs.getFileStatus(dataLocation).getOwner());
+    assertNotEquals(fs.getFileStatus(externalTableLocation).getGroup(), fs.getFileStatus(dataLocation).getGroup());
+
+    // Dump & load with preserve attributes set.
+    withClause = Arrays
+        .asList("'distcp.options.update'=''", "'distcp.options.pugpa'=''",
+            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname
+                + "'='true'");
+
+    primary.run("use " + primaryDbName).dump(primaryDbName, withClause);
+
+    // Verify load is success and has the appropriate data.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName).run("select i From a")
+        .verifyResults(new String[] {"1", "13"}).run("select j from a")
+        .verifyResults(new String[] {"2", "21"});
+
+    // Verify the ACL's of the destination table directory and data file are
+    // same as that of source.
 
     assertEquals("ACL entries are not same for the data file.",
         fs.getAclStatus(externalFileLoc).getEntries().size(),
@@ -414,6 +442,9 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     assertEquals("ACL entries are not same for the table directory.",
         fs.getAclStatus(externalTableLocation).getEntries().size(),
         fs.getAclStatus(dataLocation).getEntries().size());
+
+    assertEquals(fs.getFileStatus(externalTableLocation).getOwner(), fs.getFileStatus(dataLocation).getOwner());
+    assertEquals(fs.getFileStatus(externalTableLocation).getGroup(), fs.getFileStatus(dataLocation).getGroup());
   }
 
   /**
@@ -697,20 +728,24 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     fs.delete(ackFile, false);
     fs.delete(ackLastEventID, false);
     //delete all the event folders except first event
-    long startEvent = Long.valueOf(tuple.lastReplicationId) + 1;
+    long startEvent = -1;
+    long endEvent = Long.valueOf(incrementalDump1.lastReplicationId);
+    for (long eventDir = Long.valueOf(tuple.lastReplicationId) + 1;  eventDir <= endEvent; eventDir++) {
+      Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventDir));
+      if (fs.exists(eventRoot)) {
+        if (startEvent == -1){
+          startEvent = eventDir;
+        } else {
+          fs.delete(eventRoot, true);
+        }
+      }
+    }
     Path startEventRoot = new Path(hiveDumpDir, String.valueOf(startEvent));
     Map<Path, Long> firstEventModTimeMap = new HashMap<>();
     for (FileStatus fileStatus: fs.listStatus(startEventRoot)) {
       firstEventModTimeMap.put(fileStatus.getPath(), fileStatus.getModificationTime());
     }
-    long endEvent = Long.valueOf(incrementalDump1.lastReplicationId);
     assertTrue(endEvent - startEvent > 1);
-    for (long eventDir = startEvent + 1;  eventDir <= endEvent; eventDir++) {
-      Path eventRoot = new Path(hiveDumpDir, String.valueOf(eventDir));
-      if (fs.exists(eventRoot)) {
-        fs.delete(eventRoot, true);
-      }
-    }
     Utils.writeOutput(String.valueOf(startEvent), ackLastEventID, primary.hiveConf);
     WarehouseInstance.Tuple incrementalDump2 = primary.dump(primaryDbName, withClause);
     assertEquals(incrementalDump1.dumpLocation, incrementalDump2.dumpLocation);
@@ -1468,7 +1503,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     // Check the task copied post bootstrap, It should have the database loc,
     // the table 'a' since that is outside of the default location, and the
     // 'c', since its partition is out of the default location.
-    ReplicationTestUtils.assertExternalFileList(Arrays.asList(new Path(primaryDb.getLocationUri()).getName(), "a", "c"),
+    ReplicationTestUtils
+        .assertExternalFileList(Arrays.asList("dbPath:" + new Path(primaryDb.getLocationUri()).getName(), "a", "c"),
         tuple.dumpLocation, primary);
 
     // Add more data to tables and do a incremental run and create another
@@ -1525,7 +1561,8 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     // outside should be there, apart from the ones in the previous run.
 
     ReplicationTestUtils.assertExternalFileList(
-        Arrays.asList(new Path(primaryDb.getLocationUri()).getName(), "a", "c", "newout"), tuple.dumpLocation, primary);
+        Arrays.asList("dbPath:" + new Path(primaryDb.getLocationUri()).getName(), "a", "c", "newout"),
+        tuple.dumpLocation, primary);
   }
 
   @Test
@@ -1783,5 +1820,121 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     // The same tasks should be created.
     ReplicationTestUtils.assertExternalFileList(
         Arrays.asList(primaryDb.getName(), parentPath1.getName(), parentPath2.getName()), tuple.dumpLocation, primary);
+  }
+
+  @Test
+  public void testSingleCopyTasksConfigurationAtSource() throws Throwable {
+    testSingleCopyTasksConfiguration(false);
+  }
+
+  @Test
+  public void testSingleCopyTasksConfigurationAtTarget() throws Throwable {
+    testSingleCopyTasksConfiguration(true);
+  }
+
+  public void testSingleCopyTasksConfiguration(boolean runCopyTasksOnTarget)
+      throws Throwable {
+    // Create five tables, 1 inside the custom parent path, 1 inside the database location and one separate.
+    Path parentPath1 = new Path("/" + testName.getMethodName() + "/" + "external1");
+    Path parent1Table1 = new Path(parentPath1,"table1");
+
+    Path externalTablePath = new Path("/" + testName.getMethodName() + "/" + "externaltable2");
+
+    DistributedFileSystem fs = primary.miniDFSCluster.getFileSystem();
+    fs.mkdirs(parent1Table1, new FsPermission("777"));
+    fs.mkdirs(externalTablePath, new FsPermission("777"));
+
+
+    try (FSDataOutputStream outputStream =
+        fs.create(new Path(externalTablePath, "file1.txt"))) {
+      outputStream.write("3\n".getBytes());
+      outputStream.write("4\n".getBytes());
+    }
+
+    try (FSDataOutputStream outputStream =
+        fs.create(new Path(parent1Table1, "file1.txt"))) {
+      outputStream.write("3\n".getBytes());
+      outputStream.write("4\n".getBytes());
+    }
+
+    // Create a filter file for DistCp
+    String filterFilePath = "/tmp/filter";
+    FileWriter myWriter = new FileWriter(filterFilePath);
+    myWriter.write(".*file1.txt.*");
+    myWriter.close();
+
+    List<String> withClause = Arrays
+        .asList("'distcp.options.update'=''", "'" + REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK.varname + "'='true'",
+            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='" + runCopyTasksOnTarget + "'",
+            "'" + REPL_EXTERNAL_WAREHOUSE_SINGLE_COPY_TASK_PATHS.varname + "'='" + fs.makeQualified(parentPath1) +
+                "'", "'hive.dbpath.distcp.options.filters'='" + filterFilePath + "'");
+
+    WarehouseInstance.Tuple tuple =
+        primary.run("use " + primaryDbName)
+            .run("create external table table1 (id int) row format delimited fields terminated by ',' location '"
+                + parent1Table1.toUri() + "'")
+            .run("create external table table2 (id int) row format delimited fields terminated by ',' location '"
+                + externalTablePath.toUri() + "'")
+            .run("create external table table3 (id int) row format delimited fields terminated by ','")
+            .run("insert into table1 values (1)")
+            .run("insert into table3 values (3)")
+            .dump(primaryDbName, withClause);
+
+    Path primaryDb = new Path(primary.getDatabase(primaryDbName).getLocationUri());
+
+    // Do a load and verify all the data is there.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("select id from table1 ")
+        .verifyResult("1")
+        .run("select id from table2")
+        .verifyResults(new String[] {"3", "4"})
+        .run("select id from table3")
+        .verifyResult("3");
+
+    // Verify the tasks created for these tables, it should be one for the database, two for the two parent paths
+    // that we configured.
+    ReplicationTestUtils.assertExternalFileList(
+        Arrays.asList("dbPath:" + primaryDb.getName(), "dbPath:" + parentPath1.getName(), "table2"), tuple.dumpLocation,
+        primary);
+
+    // Verify the preserve config only worked for db level path.
+    Path parent1Table1_target = new Path(REPLICA_EXTERNAL_BASE, parent1Table1.toUri().getPath().replaceFirst("/", ""));
+    assertFalse(fs.exists(new Path(parent1Table1_target, "file1.txt")));
+
+    // Verify the filter config gets used for the only db level paths.
+    Path externalTablePath_target =
+        new Path(REPLICA_EXTERNAL_BASE, externalTablePath.toUri().getPath().replaceFirst("/", ""));
+    assertTrue(fs.exists(new Path(externalTablePath_target, "file1.txt")));
+
+    // Add more data to tables and do a incremental run and check if things stays same.
+    tuple =
+        primary.run("use " + primaryDbName)
+            .run("insert into table1 values (4)")
+            .run("insert into table2 values (5)")
+            .run("insert into table3 values (2)")
+            .dump(primaryDbName, withClause);
+
+    // Do an incremental load and check if all the old and new data is there.
+    replica.load(replicatedDbName, primaryDbName, withClause)
+        .run("use " + replicatedDbName)
+        .run("select id from table1 ")
+        .verifyResults(new String[] {"1", "4"})
+        .run("select id from table2 ")
+        .verifyResults(new String[] {"3", "4", "5"})
+        .run("select id from table3 ")
+        .verifyResults(new String[] {"3", "2"});
+
+    // The same tasks should be created.
+    ReplicationTestUtils.assertExternalFileList(
+        Arrays.asList("dbPath:" + primaryDb.getName(), "dbPath:" + parentPath1.getName(), "table2"), tuple.dumpLocation,
+        primary);
+
+    // Verify the filter config gets used for the only db level paths.
+    assertFalse(fs.exists(new Path(parent1Table1_target, "file1.txt")));
+    assertTrue(fs.exists(new Path(externalTablePath_target, "file1.txt")));
+
+    // Clean up the filter file.
+    new File(filterFilePath).delete();
   }
 }

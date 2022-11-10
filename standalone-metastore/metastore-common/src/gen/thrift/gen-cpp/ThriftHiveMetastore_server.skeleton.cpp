@@ -75,6 +75,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_database\n");
   }
 
+  void drop_database_req(const DropDatabaseRequest& req) {
+    // Your implementation goes here
+    printf("drop_database_req\n");
+  }
+
   void get_databases(std::vector<std::string> & _return, const std::string& pattern) {
     // Your implementation goes here
     printf("get_databases\n");
@@ -218,6 +223,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void add_check_constraint(const AddCheckConstraintRequest& req) {
     // Your implementation goes here
     printf("add_check_constraint\n");
+  }
+
+  void translate_table_dryrun(Table& _return, const CreateTableRequest& request) {
+    // Your implementation goes here
+    printf("translate_table_dryrun\n");
   }
 
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
@@ -645,6 +655,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("update_partition_column_statistics_req\n");
   }
 
+  void update_transaction_statistics(const UpdateTransactionalStatsRequest& req) {
+    // Your implementation goes here
+    printf("update_transaction_statistics\n");
+  }
+
   void get_table_column_statistics(ColumnStatistics& _return, const std::string& db_name, const std::string& tbl_name, const std::string& col_name) {
     // Your implementation goes here
     printf("get_table_column_statistics\n");
@@ -960,14 +975,24 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("show_compact\n");
   }
 
+  bool submit_for_cleanup(const CompactionRequest& o1, const int64_t o2, const int64_t o3) {
+    // Your implementation goes here
+    printf("submit_for_cleanup\n");
+  }
+
   void add_dynamic_partitions(const AddDynamicPartitions& rqst) {
     // Your implementation goes here
     printf("add_dynamic_partitions\n");
   }
 
-  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId, const std::string& workerVersion) {
+  void find_next_compact(OptionalCompactionInfoStruct& _return, const std::string& workerId) {
     // Your implementation goes here
     printf("find_next_compact\n");
+  }
+
+  void find_next_compact2(OptionalCompactionInfoStruct& _return, const FindNextCompactRequest& rqst) {
+    // Your implementation goes here
+    printf("find_next_compact2\n");
   }
 
   void update_compactor_state(const CompactionInfoStruct& cr, const int64_t txn_id) {
@@ -993,6 +1018,21 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void mark_failed(const CompactionInfoStruct& cr) {
     // Your implementation goes here
     printf("mark_failed\n");
+  }
+
+  void mark_refused(const CompactionInfoStruct& cr) {
+    // Your implementation goes here
+    printf("mark_refused\n");
+  }
+
+  bool update_compaction_metrics_data(const CompactionMetricsDataStruct& data) {
+    // Your implementation goes here
+    printf("update_compaction_metrics_data\n");
+  }
+
+  void remove_compaction_metrics_data(const CompactionMetricsDataRequest& request) {
+    // Your implementation goes here
+    printf("remove_compaction_metrics_data\n");
   }
 
   void set_hadoop_jobid(const std::string& jobId, const int64_t cq_id) {
@@ -1033,6 +1073,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void add_write_notification_log(WriteNotificationLogResponse& _return, const WriteNotificationLogRequest& rqst) {
     // Your implementation goes here
     printf("add_write_notification_log\n");
+  }
+
+  void add_write_notification_log_in_batch(WriteNotificationLogBatchResponse& _return, const WriteNotificationLogBatchRequest& rqst) {
+    // Your implementation goes here
+    printf("add_write_notification_log_in_batch\n");
   }
 
   void cm_recycle(CmRecycleResponse& _return, const CmRecycleRequest& request) {
@@ -1323,6 +1368,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void drop_package(const DropPackageRequest& request) {
     // Your implementation goes here
     printf("drop_package\n");
+  }
+
+  void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request) {
+    // Your implementation goes here
+    printf("get_all_write_event_info\n");
   }
 
 };

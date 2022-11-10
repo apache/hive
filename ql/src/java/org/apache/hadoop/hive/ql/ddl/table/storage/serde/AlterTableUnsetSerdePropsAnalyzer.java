@@ -47,6 +47,7 @@ public class AlterTableUnsetSerdePropsAnalyzer extends AbstractAlterTableAnalyze
 
     AlterTableUnsetSerdePropsDesc desc = new AlterTableUnsetSerdePropsDesc(tableName, partitionSpec, props);
     addInputsOutputsAlterTable(tableName, partitionSpec, desc, AlterTableType.SET_SERDE_PROPS, false);
+    setAcidDdlDesc(getTable(tableName), desc);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 }

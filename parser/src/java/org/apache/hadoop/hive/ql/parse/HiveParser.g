@@ -86,6 +86,7 @@ TOK_CUBE_GROUPBY;
 TOK_GROUPING_SETS;
 TOK_GROUPING_SETS_EXPRESSION;
 TOK_HAVING;
+TOK_QUALIFY;
 TOK_ORDERBY;
 TOK_NULLS_FIRST;
 TOK_NULLS_LAST;
@@ -160,6 +161,7 @@ TOK_CREATEDATABASE;
 TOK_CREATEDATACONNECTOR;
 TOK_CREATETABLE;
 TOK_TRUNCATETABLE;
+TOK_LIKEFILE;
 TOK_LIKETABLE;
 TOK_DATACONNECTOR;
 TOK_DATACONNECTORCOMMENT;
@@ -209,10 +211,14 @@ TOK_ALTERTABLE_BUCKETS;
 TOK_ALTERPARTITION_BUCKETS;
 TOK_ALTERTABLE_CLUSTER_SORT;
 TOK_ALTERTABLE_COMPACT;
+TOK_COMPACT_POOL;
+TOK_COMPACT_ID;
 TOK_ALTERTABLE_DROPCONSTRAINT;
 TOK_ALTERTABLE_ADDCONSTRAINT;
 TOK_ALTERTABLE_UPDATECOLUMNS;
 TOK_ALTERTABLE_OWNER;
+TOK_ALTERTABLE_SETPARTSPEC;
+TOK_ALTERTABLE_EXECUTE;
 TOK_MSCK;
 TOK_SHOWDATABASES;
 TOK_SHOWDATACONNECTORS;
@@ -238,6 +244,7 @@ TOK_TABCOLLIST;
 TOK_TABCOL;
 TOK_TABLECOMMENT;
 TOK_TABLEPARTCOLS;
+TOK_TABLEPARTCOLSBYSPEC;
 TOK_TABLEPARTCOLNAMES;
 TOK_TABLEROWFORMAT;
 TOK_TABLEROWFORMATFIELD;
@@ -403,6 +410,8 @@ TOK_RESOURCE_URI;
 TOK_RESOURCE_LIST;
 TOK_SHOW_COMPACTIONS;
 TOK_SHOW_TRANSACTIONS;
+TOK_COMPACTION_TYPE;
+TOK_COMPACTION_STATUS;
 TOK_DELETE_FROM;
 TOK_UPDATE_TABLE;
 TOK_SET_COLUMNS_CLAUSE;
@@ -487,6 +496,15 @@ TOK_PARAMETER;
 TOK_PARAMETER_IDX;
 TOK_RESPECT_NULLS;
 TOK_IGNORE_NULLS;
+TOK_IDENTITY;
+TOK_YEAR;
+TOK_MONTH;
+TOK_DAY;
+TOK_HOUR;
+TOK_TRUNCATE;
+TOK_BUCKET;
+TOK_AS_OF_TIME;
+TOK_AS_OF_VERSION;
 }
 
 
@@ -495,8 +513,12 @@ TOK_IGNORE_NULLS;
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 }
@@ -674,6 +696,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_DEFAULT", "DEFAULT");
     xlateMap.put("KW_CHECK", "CHECK");
     xlateMap.put("KW_POOL", "POOL");
+    xlateMap.put("KW_ID", "ID");
     xlateMap.put("KW_MOVE", "MOVE");
     xlateMap.put("KW_DO", "DO");
     xlateMap.put("KW_ALLOC_FRACTION", "ALLOC_FRACTION");
@@ -690,6 +713,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_DATACONNECTOR", "CONNECTOR");
     xlateMap.put("KW_DATACONNECTORS", "CONNECTORS");
     xlateMap.put("KW_REMOTE", "REMOTE");
+    xlateMap.put("KW_SPEC", "SPEC");
+    xlateMap.put("KW_YEAR", "YEAR");
+    xlateMap.put("KW_MONTH", "MONTH");
+    xlateMap.put("KW_DAY", "DAY");
+    xlateMap.put("KW_HOUR", "HOUR");
+    xlateMap.put("KW_BUCKET", "BUCKET");
+    xlateMap.put("KW_TRUNCATE", "TRUNCATE");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -841,7 +871,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
   }
   protected boolean nullsLast() {
     if(hiveConf == null){
-      return false;
+      return HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.defaultBoolVal;
     }
     return HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST);
   }
@@ -1129,16 +1159,22 @@ orReplace
 createDatabaseStatement
 @init { pushMsg("create database statement", state); }
 @after { popMsg(state); }
-    : KW_CREATE (remote=KW_REMOTE)? (KW_DATABASE|KW_SCHEMA)
+    : KW_CREATE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
         name=identifier
         databaseComment?
         dbLocation?
         dbManagedLocation?
-        dbConnectorName?
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
-    -> {$remote != null}? ^(TOK_CREATEDATABASE $name ifNotExists? databaseComment? $dbprops? dbConnectorName?)
-    ->                    ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
+    -> ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
+
+    | KW_CREATE KW_REMOTE (KW_DATABASE|KW_SCHEMA)
+        ifNotExists?
+        name=identifier
+        databaseComment?
+        dbConnectorName
+        (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
+    -> ^(TOK_CREATEDATABASE $name ifNotExists? databaseComment? $dbprops? dbConnectorName)
     ;
 
 dbLocation
@@ -1302,7 +1338,14 @@ showStatement
       |
       (parttype=partTypeExpr)? (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWLOCKS $parttype? $isExtended?)
       )
-    | KW_SHOW KW_COMPACTIONS -> ^(TOK_SHOW_COMPACTIONS)
+    | KW_SHOW KW_COMPACTIONS
+      (
+      (KW_ID) => compactionId -> ^(TOK_SHOW_COMPACTIONS compactionId)
+      |
+      (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) (dbName=identifier) compactionPool? compactionType? compactionStatus? orderByClause? limitClause? -> ^(TOK_SHOW_COMPACTIONS $dbName compactionPool? compactionType? compactionStatus? orderByClause? limitClause?)
+      |
+      (parttype=partTypeExpr)? compactionPool? compactionType? compactionStatus? orderByClause? limitClause? -> ^(TOK_SHOW_COMPACTIONS $parttype? compactionPool? compactionType? compactionStatus? orderByClause? limitClause?)
+      )
     | KW_SHOW KW_TRANSACTIONS -> ^(TOK_SHOW_TRANSACTIONS)
     | KW_SHOW KW_CONF StringLiteral -> ^(TOK_SHOWCONF StringLiteral)
     | KW_SHOW KW_RESOURCE
@@ -1808,6 +1851,8 @@ createTablePartitionSpec
     : KW_PARTITIONED KW_BY LPAREN (opt1 = createTablePartitionColumnTypeSpec | opt2 = createTablePartitionColumnSpec) RPAREN
     -> {$opt1.tree != null}? $opt1
     -> $opt2
+    | KW_PARTITIONED KW_BY KW_SPEC LPAREN (spec = partitionTransformSpec) RPAREN
+    -> ^(TOK_TABLEPARTCOLSBYSPEC $spec)
     ;
 
 createTablePartitionColumnTypeSpec
@@ -1822,6 +1867,46 @@ createTablePartitionColumnSpec
 @after { popMsg(state); }
     : columnName (COMMA columnName)*
     -> ^(TOK_TABLEPARTCOLNAMES columnName+)
+    ;
+
+partitionTransformSpec
+@init { pushMsg("create table partition by specification", state); }
+@after { popMsg(state); }
+    : columnNameTransformConstraint (COMMA columnNameTransformConstraint)*
+    -> columnNameTransformConstraint+
+    ;
+
+columnNameTransformConstraint
+@init { pushMsg("column transform specification", state); }
+@after { popMsg(state); }
+    : partitionTransformType
+    -> ^(TOK_TABCOL partitionTransformType)
+    ;
+
+partitionTransformType
+@init {pushMsg("partitition transform type specification", state); }
+@after { popMsg(state); }
+    : columnName
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_IDENTITY columnName)
+    | KW_YEAR LPAREN columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_YEAR columnName)
+    | KW_MONTH LPAREN columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_MONTH columnName)
+    | KW_DAY LPAREN columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_DAY columnName)
+    | KW_HOUR LPAREN columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_HOUR columnName)
+    | KW_TRUNCATE LPAREN value = Number COMMA columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_TRUNCATE $value columnName)
+    | KW_BUCKET LPAREN value = Number COMMA columnName RPAREN
+    -> {containExcludedCharForCreateTableColumnName($columnName.text)}? {throwColumnNameException()}
+    ->  ^(TOK_BUCKET $value columnName)
     ;
 
 tableBuckets
@@ -1971,7 +2056,12 @@ tableFileFormat
       -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt $inDriver? $outDriver?)
       | KW_STORED KW_BY storageHandler=StringLiteral
          (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
-      -> ^(TOK_STORAGEHANDLER $storageHandler $serdeprops?)
+         (KW_STORED KW_AS fileformat=identifier)?
+      -> ^(TOK_STORAGEHANDLER $storageHandler $serdeprops? ^(TOK_FILEFORMAT_GENERIC $fileformat)?)
+      | KW_STORED KW_BY genericSpec=identifier
+         (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
+         (KW_STORED KW_AS fileformat=identifier)?
+      -> ^(TOK_STORAGEHANDLER $genericSpec $serdeprops? ^(TOK_FILEFORMAT_GENERIC $fileformat)?)
       | KW_STORED KW_AS genericSpec=identifier
       -> ^(TOK_FILEFORMAT_GENERIC $genericSpec)
     ;
@@ -2524,8 +2614,9 @@ atomSelectStatement
    g=groupByClause?
    h=havingClause?
    win=window_clause?
+   q=qualifyClause?
    -> ^(TOK_QUERY $f? ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
-                     $s $w? $g? $h? $win?))
+                     $s $w? $g? $h? $win? $q?))
    |
    LPAREN! selectStatement RPAREN!
    |
@@ -2642,13 +2733,14 @@ body
    groupByClause?
    havingClause?
    window_clause?
+   qualifyClause?
    orderByClause?
    clusterByClause?
    distributeByClause?
    sortByClause?
    limitClause? -> ^(TOK_INSERT insertClause
                      selectClause lateralView? whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? window_clause? limitClause?)
+                     distributeByClause? sortByClause? window_clause? qualifyClause? limitClause?)
    |
    selectClause
    lateralView?
@@ -2656,13 +2748,14 @@ body
    groupByClause?
    havingClause?
    window_clause?
+   qualifyClause?
    orderByClause?
    clusterByClause?
    distributeByClause?
    sortByClause?
    limitClause? -> ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
                      selectClause lateralView? whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
-                     distributeByClause? sortByClause? window_clause? limitClause?)
+                     distributeByClause? sortByClause? window_clause? qualifyClause? limitClause?)
    ;
 
 insertClause
@@ -2702,8 +2795,15 @@ deleteStatement
 /*SET <columName> = (3 + col2)*/
 columnAssignmentClause
    :
-   tableOrColumn EQUAL^ precedencePlusExpression
+   | tableOrColumn EQUAL^ precedencePlusExpressionOrDefault
    ;
+
+precedencePlusExpressionOrDefault
+    :
+    (KW_DEFAULT (~DOT|EOF)) => defaultValue
+    | precedencePlusExpression
+    ;
+
 
 /*SET col1 = 5, col2 = (4 + col4), ...*/
 setColumnsClause
@@ -2846,3 +2946,22 @@ killQueryStatement
   :
   KW_KILL KW_QUERY ( StringLiteral )+ -> ^(TOK_KILL_QUERY ( StringLiteral )+)
   ;
+
+/*
+BEGIN SHOW COMPACTIONS statement
+*/
+compactionId
+  : KW_ID EQUAL compactId=Number -> ^(TOK_COMPACT_ID $compactId)
+  ;
+compactionPool
+  : KW_POOL poolName=StringLiteral -> ^(TOK_COMPACT_POOL $poolName)
+  ;
+compactionType
+  : KW_TYPE compactType=StringLiteral -> ^(TOK_COMPACTION_TYPE $compactType)
+  ;
+compactionStatus
+  : KW_STATUS status=StringLiteral -> ^(TOK_COMPACTION_STATUS $status)
+  ;
+/*
+END SHOW COMPACTIONS statement
+*/

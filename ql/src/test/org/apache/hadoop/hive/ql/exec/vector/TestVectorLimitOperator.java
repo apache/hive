@@ -136,6 +136,8 @@ public class TestVectorLimitOperator {
     VectorLimitDesc vectorDesc = new VectorLimitDesc();
     VectorLimitOperator lo = new VectorLimitOperator(
         new CompilationOpContext(), ld, null, vectorDesc);
+    // make sure an object registry is present for the test
+    ObjectCache.setupObjectRegistry(new ObjectRegistryImpl());
     lo.initialize(new Configuration(), null);
 
     // Process the batch

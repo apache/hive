@@ -489,7 +489,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
     // ideally we would like to do this check based on the number of splits
     // in the absence of an easy way to get the number of splits - do this
-    // based on the total number of files (pessimistically assumming that
+    // based on the total number of files (pessimistically assuming that
     // splits are equal to number of files in worst case)
     if (inputFileCount > maxInputFiles) {
       return "Number of Input Files (= " + inputFileCount +

@@ -12,9 +12,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.hive</groupId>
@@ -22,15 +20,12 @@
     <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-
   <artifactId>hive-llap-tez</artifactId>
   <packaging>jar</packaging>
   <name>Hive Llap Tez</name>
-
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
   </properties>
-
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- intra-project -->
@@ -59,7 +54,7 @@
       <artifactId>curator-framework</artifactId>
     </dependency>
     <dependency>
-    <groupId>org.apache.curator</groupId>
+      <groupId>org.apache.curator</groupId>
       <artifactId>apache-curator</artifactId>
       <version>${curator.version}</version>
       <type>pom</type>
@@ -84,11 +79,19 @@
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
-         <exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils</artifactId>
         </exclusion>
-       <exclusion>
+        <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
@@ -154,7 +157,7 @@
       <artifactId>tez-dag</artifactId>
       <optional>true</optional>
       <exclusions>
-          <exclusion>
+        <exclusion>
           <groupId>org.mortbay.jetty</groupId>
           <artifactId>jetty-util</artifactId>
         </exclusion>
@@ -162,7 +165,7 @@
           <groupId>org.mortbay.jetty</groupId>
           <artifactId>jetty</artifactId>
         </exclusion>
-       <exclusion>
+        <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
@@ -180,7 +183,6 @@
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
-
     <!-- test inter-project -->
     <dependency>
       <groupId>junit</groupId>
@@ -208,18 +210,25 @@
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
         </exclusion>
-         <exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils</artifactId>
         </exclusion>
-       <exclusion>
+        <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
   </dependencies>
-
   <build>
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
@@ -245,5 +254,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>

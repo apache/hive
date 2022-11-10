@@ -1,0 +1,69 @@
+PREHOOK: query: create table t1 (a int, b string, c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (a int, b string, c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1 (a, b, c) values
+    (1, 'A', 1),
+    (1, 'A', 1),
+    (2, 'A', 2),
+    (3, 'B', 1),
+    (4, 'B', 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 (a, b, c) values
+    (1, 'A', 1),
+    (1, 'A', 1),
+    (2, 'A', 2),
+    (3, 'B', 1),
+    (4, 'B', 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.a SCRIPT []
+POSTHOOK: Lineage: t1.b SCRIPT []
+POSTHOOK: Lineage: t1.c SCRIPT []
+PREHOOK: query: explain cbo
+select a, b, c, count(*)
+  from t1
+group by a, b, c
+qualify row_number() over (partition by b order by c) = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select a, b, c, count(*)
+  from t1
+group by a, b, c
+qualify row_number() over (partition by b order by c) = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0], b=[$1], c=[$2], _o__c3=[$3])
+  HiveFilter(condition=[=($4, 1)])
+    HiveProject((tok_table_or_col a)=[$0], (tok_table_or_col b)=[$1], (tok_table_or_col c)=[$2], (tok_functionstar count)=[$3], row_number_window_0=[row_number() OVER (PARTITION BY $1 ORDER BY $2 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
+      HiveProject(a=[$0], b=[$1], c=[$2], $f3=[$3])
+        HiveAggregate(group=[{0, 1, 2}], agg#0=[count()])
+          HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: select a, b, c, count(*)
+  from t1
+group by a, b, c
+qualify row_number() over (partition by b order by c) = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select a, b, c, count(*)
+  from t1
+group by a, b, c
+qualify row_number() over (partition by b order by c) = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+1	A	1	2
+3	B	1	1

@@ -328,7 +328,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: rnum (type: int), c1 (type: int), c2 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -346,7 +346,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 1:int
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:int, 2:int
                       Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col2 (type: int)
@@ -374,7 +374,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: c1 (type: int), c2 (type: char(2))
                     outputColumnNames: _col0, _col1
@@ -392,7 +392,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 1:int
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 2:char(2)
                       Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: char(2))
@@ -494,7 +494,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: rnum (type: int), c1 (type: int), c2 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -512,7 +512,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 1:int
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:int, 2:int
                       Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col2 (type: int)
@@ -540,7 +540,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: c1 (type: int), c2 (type: char(2))
                     outputColumnNames: _col0, _col1
@@ -558,7 +558,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 1:int
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 2:char(2)
                       Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: char(2))
@@ -660,7 +660,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: rnum (type: int), c1 (type: int), c2 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -678,7 +678,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 1:int
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:int, 2:int
                       Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col2 (type: int)
@@ -706,7 +706,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: c1 (type: int), c2 (type: char(2))
                     outputColumnNames: _col0, _col1
@@ -724,7 +724,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 1:int
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 2:char(2)
                       Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: char(2))
@@ -826,7 +826,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: rnum (type: int), c1 (type: int), c2 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -844,7 +844,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 1:int
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:int, 2:int
                       Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col2 (type: int)
@@ -872,7 +872,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: c1 (type: int), c2 (type: char(2))
                     outputColumnNames: _col0, _col1
@@ -890,7 +890,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 1:int
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 2:char(2)
                       Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: char(2))
@@ -992,7 +992,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: rnum (type: int), c1 (type: int), c2 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -1010,7 +1010,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 1:int
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:int, 2:int
                       Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col2 (type: int)
@@ -1038,7 +1038,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: c1 (type: int), c2 (type: char(2))
                     outputColumnNames: _col0, _col1
@@ -1056,7 +1056,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 1:int
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 2:char(2)
                       Statistics: Num rows: 4 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: char(2))
@@ -1162,7 +1162,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: rnum (type: int), c1 (type: int), c2 (type: int)
                     outputColumnNames: _col0, _col1, _col2
@@ -1180,7 +1180,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 1:int
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumns: 0:int, 2:int
                       Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col2 (type: int)
@@ -1208,7 +1208,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:rnum:int, 1:c1:int, 2:c2:char(2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Select Operator
                     expressions: c1 (type: int)
                     outputColumnNames: _col0
@@ -1226,7 +1226,7 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           keyColumns: 1:int
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs

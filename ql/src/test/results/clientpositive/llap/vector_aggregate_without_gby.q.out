@@ -67,7 +67,7 @@ STAGE PLANS:
                   Statistics: Num rows: 7 Data size: 714 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:id:int, 1:dt:int, 2:greg_dt:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:id:int, 1:dt:int, 2:greg_dt:string, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 4:ROW__IS__DELETED:boolean]
                   Filter Operator
                     Filter Vectorization:
                         className: VectorFilterOperator
@@ -102,7 +102,7 @@ STAGE PLANS:
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkEmptyKeyOperator
                               native: true
-                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                               valueColumns: 0:int, 1:string
                           Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: int), _col1 (type: string)
@@ -127,7 +127,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
                 reduceColumnNullOrder: 
                 reduceColumnSortOrder: 
                 allNative: false

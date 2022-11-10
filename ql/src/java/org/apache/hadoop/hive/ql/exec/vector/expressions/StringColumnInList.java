@@ -39,7 +39,6 @@ import java.util.regex.Pattern;
  */
 public class StringColumnInList extends VectorExpression implements IStringInExpr {
   private static final long serialVersionUID = 1L;
-  protected int inputCol;
   private byte[][] inListValues;
 
   // The set object containing the IN list. This is optimized for lookup
@@ -54,8 +53,7 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
    * After construction you must call setInListValues() to add the values to the IN set.
    */
   public StringColumnInList(int colNum, int outputColumnNum) {
-    super(outputColumnNum);
-    this.inputCol = colNum;
+    super(colNum, outputColumnNum);
     inSet = null;
   }
 
@@ -71,7 +69,7 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
       inSet.load(inListValues);
     }
 
-    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputCol];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumnNum[0]];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
@@ -172,7 +170,7 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
   public String vectorExpressionParameters() {
     StringBuilder sb = new StringBuilder();
     sb.append("col ");
-    sb.append(inputCol);
+    sb.append(inputColumnNum[0]);
     sb.append(", values ");
     sb.append(displayArrayOfUtf8ByteArrays(inListValues));
     return sb.toString();

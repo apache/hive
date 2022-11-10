@@ -407,14 +407,14 @@ STAGE PLANS:
                   predicate: _col0 is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: (0.95 * _col0) (type: decimal(31,4))
+                    expressions: (0.95 * _col0) (type: decimal(37,8))
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: decimal(31,4))
+                      value expressions: _col0 (type: decimal(37,8))
         Reducer 12 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

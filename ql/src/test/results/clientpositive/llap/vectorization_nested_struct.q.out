@@ -1,0 +1,81 @@
+PREHOOK: query: create table t as
+select
+named_struct('id',13,'str','string','nest',named_struct('id',12,'str','string','arr',array('value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value')))
+s
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t as
+select
+named_struct('id',13,'str','string','nest',named_struct('id',12,'str','string','arr',array('value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value','value')))
+s
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.s EXPRESSION []
+PREHOOK: query: insert into table t select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into table t select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.s EXPRESSION [(t)t.FieldSchema(name:s, type:struct<id:int,str:string,nest:struct<id:int,str:string,arr:array<string>>>, comment:null), ]
+PREHOOK: query: insert into table t select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into table t select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.s EXPRESSION [(t)t.FieldSchema(name:s, type:struct<id:int,str:string,nest:struct<id:int,str:string,arr:array<string>>>, comment:null), ]
+PREHOOK: query: insert into table t select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into table t select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.s EXPRESSION [(t)t.FieldSchema(name:s, type:struct<id:int,str:string,nest:struct<id:int,str:string,arr:array<string>>>, comment:null), ]
+PREHOOK: query: insert into table t select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into table t select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.s EXPRESSION [(t)t.FieldSchema(name:s, type:struct<id:int,str:string,nest:struct<id:int,str:string,arr:array<string>>>, comment:null), ]
+PREHOOK: query: insert into table t select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into table t select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t union all select * from t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.s EXPRESSION [(t)t.FieldSchema(name:s, type:struct<id:int,str:string,nest:struct<id:int,str:string,arr:array<string>>>, comment:null), ]
+PREHOOK: query: select count(1)
+from t
+where 
+s
+.nest
+.id  > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1)
+from t
+where 
+s
+.nest
+.id  > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+100000

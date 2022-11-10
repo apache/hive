@@ -67,7 +67,7 @@ public class TxnIdUtils {
       }
     } else {
       if (b.getHighWatermark() != a.getInvalidWriteIds()[minLen] -1) {
-        return Long.signum(b.getHighWatermark() - (a.getInvalidWriteIds()[minLen] -1));
+        return Long.signum((a.getInvalidWriteIds()[minLen] - 1) - b.getHighWatermark());
       }
       if (allInvalidFrom(a.getInvalidWriteIds(), minLen, a.getHighWatermark())) {
         return 0;

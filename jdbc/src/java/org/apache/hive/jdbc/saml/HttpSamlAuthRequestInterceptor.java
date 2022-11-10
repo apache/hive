@@ -21,11 +21,14 @@ package org.apache.hive.jdbc.saml;
 import com.google.common.base.Preconditions;
 import java.util.Map;
 import org.apache.hive.jdbc.HttpRequestInterceptorBase;
+import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.saml.HiveSamlUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.CookieStore;
 import org.apache.http.protocol.HttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This implements the logic to intercept the HTTP requests from the Hive Jdbc connection
@@ -35,7 +38,8 @@ import org.apache.http.protocol.HttpContext;
 public class HttpSamlAuthRequestInterceptor extends HttpRequestInterceptorBase {
 
   private final IJdbcBrowserClient browserClient;
-  private static final String BEARER = "Bearer ";
+  private static final Logger LOG = LoggerFactory
+      .getLogger(HttpSamlAuthRequestInterceptor.class);
 
   public HttpSamlAuthRequestInterceptor(IJdbcBrowserClient browserClient, CookieStore cookieStore, String cn,
       boolean isSSL, Map<String, String> additionalHeaders,
@@ -52,10 +56,11 @@ public class HttpSamlAuthRequestInterceptor extends HttpRequestInterceptorBase {
         : browserClient.getServerResponse().getToken();
     String clientIdentifier = browserClient.getClientIdentifier();
     if (token != null && !token.isEmpty()) {
-      httpRequest.addHeader(HttpHeaders.AUTHORIZATION, BEARER + token);
+      httpRequest.addHeader(HttpHeaders.AUTHORIZATION, HttpAuthUtils.BEARER + " " + token);
       httpRequest.addHeader(HiveSamlUtils.SSO_CLIENT_IDENTIFIER, clientIdentifier);
       httpRequest.removeHeaders(HiveSamlUtils.SSO_TOKEN_RESPONSE_PORT);
     } else {
+      LOG.debug("Adding response port {}", port);
       httpRequest.addHeader(HiveSamlUtils.SSO_TOKEN_RESPONSE_PORT, port);
     }
   }

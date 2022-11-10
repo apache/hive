@@ -27,19 +27,24 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.common.type.TimestampUtils;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -54,13 +59,26 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobID;
+import org.apache.iceberg.DeleteFile;
+import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.HistoryEntry;
+import org.apache.iceberg.PartitionKey;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.data.GenericAppenderFactory;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.IcebergGenerics;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.deletes.EqualityDeleteWriter;
+import org.apache.iceberg.deletes.PositionDelete;
+import org.apache.iceberg.deletes.PositionDeleteWriter;
+import org.apache.iceberg.encryption.EncryptedOutputFile;
+import org.apache.iceberg.hadoop.HadoopOutputFile;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.io.FileAppenderFactory;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.ArrayUtil;
 import org.apache.iceberg.util.ByteBuffers;
 import org.junit.Assert;
 
@@ -220,7 +238,7 @@ public class HiveIcebergTestUtils {
   public static void validateData(Table table, List<Record> expected, int sortBy) throws IOException {
     // Refresh the table, so we get the new data as well
     table.refresh();
-    List<Record> records = new ArrayList<>(expected.size());
+    List<Record> records = Lists.newArrayListWithExpectedSize(expected.size());
     try (CloseableIterable<Record> iterable = IcebergGenerics.read(table).build()) {
       iterable.forEach(records::add);
     }
@@ -236,15 +254,24 @@ public class HiveIcebergTestUtils {
    * @param sortBy The column position by which we will sort
    */
   public static void validateData(List<Record> expected, List<Record> actual, int sortBy) {
-    List<Record> sortedExpected = new ArrayList<>(expected);
-    List<Record> sortedActual = new ArrayList<>(actual);
+    List<Record> sortedExpected = Lists.newArrayList(expected);
+    List<Record> sortedActual = Lists.newArrayList(actual);
     // Sort based on the specified column
-    sortedExpected.sort(Comparator.comparingLong(record -> (Long) record.get(sortBy)));
-    sortedActual.sort(Comparator.comparingLong(record -> (Long) record.get(sortBy)));
+    sortedExpected.sort(Comparator.comparingInt(record -> record.get(sortBy).hashCode()));
+    sortedActual.sort(Comparator.comparingInt(record -> record.get(sortBy).hashCode()));
 
     Assert.assertEquals(sortedExpected.size(), sortedActual.size());
-    for (int i = 0; i < sortedExpected.size(); ++i) {
-      assertEquals(sortedExpected.get(i), sortedActual.get(i));
+    validateData(sortedExpected, sortedActual);
+  }
+
+  /**
+   * Validates whether the 2 sets of records are the same.
+   * @param expected The expected list of Records
+   * @param actual The actual list of Records
+   */
+  public static void validateData(List<Record> expected, List<Record> actual) {
+    for (int i = 0; i < expected.size(); ++i) {
+      assertEquals(expected.get(i), actual.get(i));
     }
   }
 
@@ -266,4 +293,121 @@ public class HiveIcebergTestUtils {
     Assert.assertFalse(
         new File(HiveIcebergOutputCommitter.generateJobLocation(table.location(), conf, jobId)).exists());
   }
+
+  /**
+   * Validates whether the table contains the expected records. The records are retrieved by Hive query and compared as
+   * strings. The results should be sorted by a unique key so we do not end up with flaky tests.
+   * @param shell Shell to execute the query
+   * @param tableName The table to query
+   * @param expected The expected list of Records
+   * @param sortBy The column name by which we will sort
+   */
+  public static void validateDataWithSQL(TestHiveShell shell, String tableName, List<Record> expected, String sortBy) {
+    List<Object[]> rows = shell.executeStatement("SELECT * FROM " + tableName + " ORDER BY " + sortBy);
+
+    Assert.assertEquals(expected.size(), rows.size());
+    for (int i = 0; i < expected.size(); ++i) {
+      Object[] row = rows.get(i);
+      Record record = expected.get(i);
+      Assert.assertEquals(record.size(), row.length);
+      for (int j = 0; j < record.size(); ++j) {
+        Object field = record.get(j);
+        if (field == null) {
+          Assert.assertNull(row[j]);
+        } else if (field instanceof LocalDateTime) {
+          Assert.assertEquals(((LocalDateTime) field).toInstant(ZoneOffset.UTC).toEpochMilli(),
+              TimestampUtils.stringToTimestamp((String) row[j]).toEpochMilli());
+        } else if (field instanceof OffsetDateTime) {
+          Assert.assertEquals(((OffsetDateTime) field).toInstant().toEpochMilli(),
+              TimestampTZUtil.parse((String) row[j], ZoneId.systemDefault()).toEpochMilli());
+        } else {
+          Assert.assertEquals(field.toString(), row[j].toString());
+        }
+      }
+    }
+  }
+
+  /**
+   * @param table The table to create the delete file for
+   * @param deleteFilePath The path where the delete file should be created, relative to the table location root
+   * @param equalityFields List of field names that should play a role in the equality check
+   * @param fileFormat The file format that should be used for writing out the delete file
+   * @param rowsToDelete The rows that should be deleted. It's enough to fill out the fields that are relevant for the
+   *                     equality check, as listed in equalityFields, the rest of the fields are ignored
+   * @return The DeleteFile created
+   * @throws IOException If there is an error during DeleteFile write
+   */
+  public static DeleteFile createEqualityDeleteFile(Table table, String deleteFilePath, List<String> equalityFields,
+      FileFormat fileFormat, List<Record> rowsToDelete) throws IOException {
+    List<Integer> equalityFieldIds = equalityFields.stream()
+        .map(id -> table.schema().findField(id).fieldId())
+        .collect(Collectors.toList());
+    Schema eqDeleteRowSchema = table.schema().select(equalityFields.toArray(new String[]{}));
+
+    FileAppenderFactory<Record> appenderFactory = new GenericAppenderFactory(table.schema(), table.spec(),
+        ArrayUtil.toIntArray(equalityFieldIds), eqDeleteRowSchema, null);
+    EncryptedOutputFile outputFile = table.encryption().encrypt(HadoopOutputFile.fromPath(
+        new org.apache.hadoop.fs.Path(table.location(), deleteFilePath), new Configuration()));
+
+    PartitionKey part = new PartitionKey(table.spec(), eqDeleteRowSchema);
+    part.partition(rowsToDelete.get(0));
+    EqualityDeleteWriter<Record> eqWriter = appenderFactory.newEqDeleteWriter(outputFile, fileFormat, part);
+    try (EqualityDeleteWriter<Record> writer = eqWriter) {
+      writer.deleteAll(rowsToDelete);
+    }
+    return eqWriter.toDeleteFile();
+  }
+
+  /**
+   * @param table The table to create the delete file for
+   * @param deleteFilePath The path where the delete file should be created, relative to the table location root
+   * @param fileFormat The file format that should be used for writing out the delete file
+   * @param partitionValues A map of partition values (partitionKey=partitionVal, ...) to be used for the delete file
+   * @param deletes The list of position deletes, each containing the data file path, the position of the row in the
+   *                data file and the row itself that should be deleted
+   * @return The DeleteFile created
+   * @throws IOException If there is an error during DeleteFile write
+   */
+  public static DeleteFile createPositionalDeleteFile(Table table, String deleteFilePath, FileFormat fileFormat,
+      Map<String, Object> partitionValues, List<PositionDelete<Record>> deletes) throws IOException {
+
+    Schema posDeleteRowSchema = deletes.get(0).row() == null ? null : table.schema();
+    FileAppenderFactory<Record> appenderFactory = new GenericAppenderFactory(table.schema(), table.spec(),
+        null, null, posDeleteRowSchema);
+    EncryptedOutputFile outputFile = table.encryption().encrypt(HadoopOutputFile.fromPath(
+        new org.apache.hadoop.fs.Path(table.location(), deleteFilePath), new Configuration()));
+
+    PartitionKey partitionKey = null;
+    if (partitionValues != null) {
+      Record record = GenericRecord.create(table.schema()).copy(partitionValues);
+      partitionKey = new PartitionKey(table.spec(), table.schema());
+      partitionKey.partition(record);
+    }
+
+    PositionDeleteWriter<Record> posWriter = appenderFactory.newPosDeleteWriter(outputFile, fileFormat, partitionKey);
+    try (PositionDeleteWriter<Record> writer = posWriter) {
+      deletes.forEach(del -> writer.delete(del.path(), del.pos(), del.row()));
+    }
+    return posWriter.toDeleteFile();
+  }
+
+  /**
+   * Get the timestamp string which we can use in the queries. The timestamp will be after the given snapshot
+   * and before the next one
+   * @param table The table which we want to query
+   * @param snapshotPosition The position of the last snapshot we want to see in the query results
+   * @return The timestamp which we can use in the queries
+   */
+  public static String timestampAfterSnapshot(Table table, int snapshotPosition) {
+    List<HistoryEntry> history = table.history();
+    long snapshotTime = history.get(snapshotPosition).timestampMillis();
+    long time = snapshotTime + 100;
+    if (history.size() > snapshotPosition + 1) {
+      time = snapshotTime + ((history.get(snapshotPosition + 1).timestampMillis() - snapshotTime) / 2);
+    }
+
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS000000");
+    return simpleDateFormat.format(new Date(time));
+  }
+
 }

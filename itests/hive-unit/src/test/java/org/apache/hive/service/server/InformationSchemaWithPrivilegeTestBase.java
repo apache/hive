@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
 import org.apache.hive.testutils.MiniZooKeeperCluster;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -183,6 +184,7 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
   private static MiniHS2 miniHS2 = null;
   private static MiniZooKeeperCluster zkCluster = null;
   private static Map<String, String> confOverlay;
+  private static String hiveSchemaVer;
 
 
   public static void setupInternal(boolean zookeeperSSLEnabled) throws Exception {
@@ -210,6 +212,7 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
     confOverlay.put(MetastoreConf.ConfVars.AUTO_CREATE_ALL.getVarname(), "true");
     confOverlay.put(ConfVars.HIVE_AUTHENTICATOR_MANAGER.varname, FakeGroupAuthenticator.class.getName());
     confOverlay.put(ConfVars.HIVE_AUTHORIZATION_ENABLED.varname, "true");
+    confOverlay.put(ConfVars.HIVE_PRIVILEGE_SYNCHRONIZER.varname, "true");
     confOverlay.put(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname, ".*");
 
     if(zookeeperSSLEnabled) {
@@ -227,6 +230,8 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
       confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE.varname, "true");
     }
     miniHS2.start(confOverlay);
+
+    hiveSchemaVer = MetaStoreSchemaInfoFactory.get(miniHS2.getServerConf()).getHiveSchemaVersion();
   }
 
   @AfterClass
@@ -286,7 +291,7 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
 
     List<String> args = new ArrayList<String>(baseArgs);
     args.add("-f");
-    args.add("../../metastore/scripts/upgrade/hive/hive-schema-4.0.0.hive.sql");
+    args.add("../../metastore/scripts/upgrade/hive/hive-schema-" + hiveSchemaVer + ".hive.sql");
     BeeLine beeLine = new BeeLine();
     int result = beeLine.begin(args.toArray(new String[] {}), null);
     beeLine.close();

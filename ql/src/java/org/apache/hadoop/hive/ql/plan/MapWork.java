@@ -39,7 +39,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.IConfigureJobConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -312,7 +311,8 @@ public class MapWork extends BaseWork {
           } else {
             hasLlap = true;
           }
-        } else if (isLlapOn && HiveInputFormat.canInjectCaches(inputFormatClass)) {
+        } else if (isLlapOn && HiveInputFormat.canInjectCaches(inputFormatClass,
+            Utilities.getIsVectorized(conf, this))) {
           hasCacheOnly = true;
         } else {
           hasNonLlap = true;

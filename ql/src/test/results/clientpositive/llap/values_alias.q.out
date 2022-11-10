@@ -25,6 +25,18 @@ col1	b	c
 1	2	3
 4	5	6
 11	12	13
+PREHOOK: query: VALUES(1 as a,2 b,3 as c),(4,5,6),(11,12,13)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: VALUES(1 as a,2 b,3 as c),(4,5,6),(11,12,13)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+a	b	c
+1	2	3
+4	5	6
+11	12	13
 PREHOOK: query: VALUES(1 a,2 b,3),(4,5,6),(11,12,13)
 UNION ALL
 VALUES(100 f,200 g,300 h),(400,500,600),(110,120,130)

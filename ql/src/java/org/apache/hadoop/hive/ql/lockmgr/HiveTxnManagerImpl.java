@@ -72,6 +72,11 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   }
 
   @Override
+  public void clearCaches() {
+    // no op - implementations should override as needed
+  }
+
+  @Override
   public void acquireLocks(QueryPlan plan, Context ctx, String username, DriverState driverState) throws LockException {
     acquireLocks(plan, ctx, username);
   }
@@ -210,8 +215,14 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   public boolean recordSnapshot(QueryPlan queryPlan) {
     return false;
   }
+
   @Override
   public boolean isImplicitTransactionOpen() {
+    return true;
+  }
+
+  @Override
+  public boolean isImplicitTransactionOpen(Context ctx) {
     return true;
   }
 

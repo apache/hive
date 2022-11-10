@@ -526,7 +526,7 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1`
-WHERE `key` < 5 AND `value` <> 'val_2' AND `ds` <= '2000-04-09'
+WHERE `key` < 5 AND (`value` <> 'val_2' AND `ds` <= '2000-04-09')
 ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1420,7 +1420,7 @@ POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST(14 AS INTEGER) AS `key`, `value`
+OPTIMIZED SQL: SELECT CAST(14 AS INT) AS `key`, `value`
 FROM (SELECT `value`
 FROM `default`.`pcr_t1`
 WHERE `key` = 14 AND `ds` IN ('2000-04-08', '2000-04-09')
@@ -2105,7 +2105,7 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1`
-WHERE ROW(`key`, `ds`) IN (ROW(1, '2000-04-08'), ROW(2, '2000-04-09'))
+WHERE  (`key`, `ds`) IN ( (1, '2000-04-08'),  (2, '2000-04-09'))
 ORDER BY `key`, `value`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2285,15 +2285,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
-FROM (SELECT *
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key0` AS `key1`, `t4`.`value0` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key0`, `t2`.`value` AS `value0`
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
-ORDER BY `t0`.`key`) AS `t3`
+ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2567,15 +2567,15 @@ POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t3`.`key`, `t3`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t3`.`key0` AS `key1`, `t3`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
-FROM (SELECT *
+OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key0` AS `key1`, `t4`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
+FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key0`, `t2`.`value` AS `value0`
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
-ORDER BY `t0`.`key`) AS `t3`
+ORDER BY `t0`.`key`) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4292,7 +4292,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM (SELECT `key`, `value`, `hr`
 FROM `default`.`srcpart`
-WHERE `key` = 11 AND `ds` = '2008-04-08' AND `hr` IN ('11', '12')
+WHERE `key` = 11 AND (`ds` = '2008-04-08' AND `hr` IN ('11', '12'))
 ORDER BY `key`, `hr`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

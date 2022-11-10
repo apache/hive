@@ -21,9 +21,9 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hadoop.hive.common.type.Timestamp;
+import jodd.time.JulianDate;
 
-import jodd.datetime.JDateTime;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 
 /**
@@ -50,28 +50,11 @@ public class NanoTimeUtils {
     return parquetGMTCalendar.get();
   }
 
-  public static NanoTime getNanoTime(Timestamp ts, boolean skipConversion) {
-    return getNanoTime(ts, skipConversion, null);
-  }
-
   /**
-   * Gets a NanoTime object, which represents timestamps as nanoseconds since epoch, from a
-   * Timestamp object. Parquet will store this NanoTime object as int96.
-   *
-   * If skipConversion flag is on, the timestamp will be converted to NanoTime as-is, i.e.
-   * timeZoneId argument will be ignored.
-   * If skipConversion is off, timestamp can be converted from a given time zone (timeZoneId) to UTC
-   * if timeZoneId is present, and if not present: from system time zone to UTC, before being
-   * converted to NanoTime.
-   * (See TimestampDataWriter#write for current Hive writing procedure.)
+   * Converts a timestamp from the specified timezone to UTC and returns its representation in NanoTime.
    */
-  public static NanoTime getNanoTime(Timestamp ts, boolean skipConversion, ZoneId timeZoneId) {
-    if (skipConversion) {
-      timeZoneId = ZoneOffset.UTC;
-    } else if (timeZoneId == null) {
-      timeZoneId = TimeZone.getDefault().toZoneId();
-    }
-    ts = TimestampTZUtil.convertTimestampToZone(ts, timeZoneId, ZoneOffset.UTC);
+  public static NanoTime getNanoTime(Timestamp ts, ZoneId sourceZone, boolean legacyConversion) {
+    ts = TimestampTZUtil.convertTimestampToZone(ts, sourceZone, ZoneOffset.UTC, legacyConversion);
 
     Calendar calendar = getGMTCalendar();
     calendar.setTimeInMillis(ts.toEpochMilli());
@@ -79,9 +62,10 @@ public class NanoTimeUtils {
     if (calendar.get(Calendar.ERA) == GregorianCalendar.BC) {
       year = 1 - year;
     }
-    JDateTime jDateTime = new JDateTime(year,
+    JulianDate jDateTime;
+    jDateTime = JulianDate.of(year,
         calendar.get(Calendar.MONTH) + 1,  //java calendar index starting at 1.
-        calendar.get(Calendar.DAY_OF_MONTH));
+        calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0, 0);
     int days = jDateTime.getJulianDayNumber();
 
     long hour = calendar.get(Calendar.HOUR_OF_DAY);
@@ -94,32 +78,17 @@ public class NanoTimeUtils {
     return new NanoTime(days, nanosOfDay);
   }
 
-  public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion) {
-    return getTimestamp(nt, skipConversion, null, false);
+  public static Timestamp getTimestamp(NanoTime nt, ZoneId targetZone) {
+    return getTimestamp(nt, targetZone, false);
   }
 
   /**
-   * Gets a Timestamp object from a NanoTime object, which represents timestamps as nanoseconds
-   * since epoch. Parquet stores these as int96.
+   * Converts a nanotime representation in UTC, to a timestamp in the specified timezone.
    *
-   * Before converting to NanoTime, we may convert the timestamp to a desired time zone
-   * (timeZoneId). This will only happen if skipConversion flag is off.
-   * If skipConversion is off and timeZoneId is not found, then convert the timestamp to system
-   * time zone.
-   *
-   * For skipConversion to be true it must be set in conf AND the parquet file must NOT be written
-   * by parquet's java library (parquet-mr). This is enforced in ParquetRecordReaderBase#getSplit.
+   * @param legacyConversion when true the conversion to the target timezone is done with legacy (backwards compatible)
+   * method.
    */
-  public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion, ZoneId timeZoneId,
-      boolean legacyConversionEnabled) {
-    boolean legacyConversion = false;
-    if (skipConversion) {
-      timeZoneId = ZoneOffset.UTC;
-    } else if (timeZoneId == null) {
-      legacyConversion = legacyConversionEnabled;
-      timeZoneId = TimeZone.getDefault().toZoneId();
-    }
-
+  public static Timestamp getTimestamp(NanoTime nt, ZoneId targetZone, boolean legacyConversion) {
     int julianDay = nt.getJulianDay();
     long nanosOfDay = nt.getTimeOfDayNanos();
 
@@ -131,11 +100,12 @@ public class NanoTimeUtils {
       julianDay--;
     }
 
-    JDateTime jDateTime = new JDateTime((double) julianDay);
+    JulianDate jDateTime;
+    jDateTime = JulianDate.of((double) julianDay);
     Calendar calendar = getGMTCalendar();
-    calendar.set(Calendar.YEAR, jDateTime.getYear());
-    calendar.set(Calendar.MONTH, jDateTime.getMonth() - 1); //java calendar index starting at 1.
-    calendar.set(Calendar.DAY_OF_MONTH, jDateTime.getDay());
+    calendar.set(Calendar.YEAR, jDateTime.toLocalDateTime().getYear());
+    calendar.set(Calendar.MONTH, jDateTime.toLocalDateTime().getMonth().getValue() - 1); //java calendar index starting at 1.
+    calendar.set(Calendar.DAY_OF_MONTH, jDateTime.toLocalDateTime().getDayOfMonth());
 
     int hour = (int) (remainder / (NANOS_PER_HOUR));
     remainder = remainder % (NANOS_PER_HOUR);
@@ -149,7 +119,7 @@ public class NanoTimeUtils {
     calendar.set(Calendar.SECOND, seconds);
 
     Timestamp ts = Timestamp.ofEpochMilli(calendar.getTimeInMillis(), (int) nanos);
-    ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, timeZoneId, legacyConversion);
+    ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, targetZone, legacyConversion);
     return ts;
   }
 }

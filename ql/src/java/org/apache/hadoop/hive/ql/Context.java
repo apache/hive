@@ -19,10 +19,10 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.DataInput;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.runtime.TokenRewriteStream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -163,6 +164,7 @@ public class Context {
    * different prefixes to encode the purpose of different Insert branches
    */
   private Map<Integer, DestClausePrefix> insertBranchToNamePrefix = new HashMap<>();
+  private int deleteBranchOfUpdateIdx = -1;
   private Operation operation = Operation.OTHER;
   private WmContext wmContext;
 
@@ -187,6 +189,10 @@ public class Context {
    */
   private boolean scheduledQuery;
 
+  private List<Pair<String, String>> parsedTables = new ArrayList<>();
+
+  private Path location;
+
   public void setOperation(Operation operation) {
     this.operation = operation;
   }
@@ -209,6 +215,14 @@ public class Context {
 
   public String getReplPolicy() {
     return this.replPolicy;
+  }
+
+  public Path getLocation() {
+    return location;
+  }
+
+  public void setLocation(Path location) {
+    this.location = location;
   }
 
   /**
@@ -288,39 +302,47 @@ public class Context {
       case OTHER:
         return DestClausePrefix.INSERT;
       case UPDATE:
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPLIT_UPDATE)) {
+          return getMergeDestClausePrefix(curNode);
+        }
         return DestClausePrefix.UPDATE;
       case DELETE:
         return DestClausePrefix.DELETE;
       case MERGE:
-      /* This is the structure expected here
-        HiveParser.TOK_QUERY;
-          HiveParser.TOK_FROM
-          HiveParser.TOK_INSERT;
-            HiveParser.TOK_INSERT_INTO;
-          HiveParser.TOK_INSERT;
-            HiveParser.TOK_INSERT_INTO;
-          .....*/
-        ASTNode insert = (ASTNode) curNode.getParent();
-        assert insert != null && insert.getType() == HiveParser.TOK_INSERT;
-        ASTNode query = (ASTNode) insert.getParent();
-        assert query != null && query.getType() == HiveParser.TOK_QUERY;
-
-        for(int childIdx = 1; childIdx < query.getChildCount(); childIdx++) {//1st child is TOK_FROM
-          assert query.getChild(childIdx).getType() == HiveParser.TOK_INSERT;
-          if(insert == query.getChild(childIdx)) {
-            DestClausePrefix prefix = insertBranchToNamePrefix.get(childIdx);
-            if(prefix == null) {
-              throw new IllegalStateException("Found a node w/o branch mapping: '" +
-                getMatchedText(insert) + "'");
-            }
-            return prefix;
-          }
-        }
-        throw new IllegalStateException("Could not locate '" + getMatchedText(insert) + "'");
+        return getMergeDestClausePrefix(curNode);
       default:
         throw new IllegalStateException("Unexpected operation: " + operation);
     }
   }
+
+  private DestClausePrefix getMergeDestClausePrefix(ASTNode curNode) {
+    /* This is the structure expected here
+      HiveParser.TOK_QUERY;
+        HiveParser.TOK_FROM
+        HiveParser.TOK_INSERT;
+          HiveParser.TOK_INSERT_INTO;
+        HiveParser.TOK_INSERT;
+          HiveParser.TOK_INSERT_INTO;
+        .....*/
+    ASTNode insert = (ASTNode) curNode.getParent();
+    assert insert != null && insert.getType() == HiveParser.TOK_INSERT;
+    ASTNode query = (ASTNode) insert.getParent();
+    assert query != null && query.getType() == HiveParser.TOK_QUERY;
+
+    for(int childIdx = 1; childIdx < query.getChildCount(); childIdx++) {//1st child is TOK_FROM
+      assert query.getChild(childIdx).getType() == HiveParser.TOK_INSERT;
+      if(insert == query.getChild(childIdx)) {
+        DestClausePrefix prefix = insertBranchToNamePrefix.get(childIdx);
+        if(prefix == null) {
+          throw new IllegalStateException("Found a node w/o branch mapping: '" +
+            getMatchedText(insert) + "'");
+        }
+        return prefix;
+      }
+    }
+    throw new IllegalStateException("Could not locate '" + getMatchedText(insert) + "'");
+  }
+
   /**
    * Will make SemanticAnalyzer.Phase1Ctx#dest in subtree rooted at 'tree' use 'prefix'.  This to
    * handle multi-insert stmt that represents Merge stmt and has insert branches representing
@@ -330,6 +352,12 @@ public class Context {
    */
   public DestClausePrefix addDestNamePrefix(int pos, DestClausePrefix prefix) {
     return insertBranchToNamePrefix.put(pos, prefix);
+  }
+
+  public DestClausePrefix addDeleteOfUpdateDestNamePrefix(int pos, DestClausePrefix prefix) {
+    DestClausePrefix destClausePrefix = addDestNamePrefix(pos, prefix);
+    deleteBranchOfUpdateIdx = pos;
+    return destClausePrefix;
   }
 
   public Context(Configuration conf) {
@@ -358,7 +386,8 @@ public class Context {
     // identifiers) to the stored Materialized view query definitions. We have to enable unparsing for generating
     // the extended query text when auto rewriting is enabled.
     enableUnparse =
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL);
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL) ||
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SUBQUERY_SQL);
     scheduledQuery = false;
   }
 
@@ -430,7 +459,7 @@ public class Context {
 
   /**
    * Find whether we should execute the current query due to explain
-   * @return true if the query needs to be executed, false if not
+   * @return true if the query skips execution, false if does execute
    */
   public boolean isExplainSkipExecution() {
     return (explainConfig != null && explainConfig.getAnalyze() != AnalyzeState.RUNNING);
@@ -1045,13 +1074,6 @@ public class Context {
    * Today this translates into running hadoop jobs locally
    */
   public boolean isLocalOnlyExecutionMode() {
-    // Always allow spark to run in a cluster mode. Without this, depending on
-    // user's local hadoop settings, true may be returned, which causes plan to be
-    // stored in local path.
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
-      return false;
-    }
-
     return ShimLoader.getHadoopShims().isLocalMode(conf);
   }
 
@@ -1307,5 +1329,32 @@ public class Context {
 
   public void setScheduledQuery(boolean scheduledQuery) {
     this.scheduledQuery = scheduledQuery;
+  }
+
+  public void setParsedTables(List<Pair<String, String>> parsedTables) {
+    this.parsedTables = parsedTables;
+  }
+
+  public List<Pair<String, String>> getParsedTables() {
+    return parsedTables;
+  }
+
+  public boolean isDeleteBranchOfUpdate(String dest) {
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPLIT_UPDATE) &&
+            !HiveConf.getBoolVar(conf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE)) {
+      return false;
+    }
+
+    if (deleteBranchOfUpdateIdx > 0) {
+      return dest.endsWith(Integer.toString(deleteBranchOfUpdateIdx - 1));
+    }
+
+    for (Context subContext : subContexts) {
+      if (subContext.isDeleteBranchOfUpdate(dest)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

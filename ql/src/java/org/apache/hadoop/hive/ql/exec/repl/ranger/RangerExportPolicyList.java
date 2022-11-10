@@ -18,22 +18,26 @@
 
 package org.apache.hadoop.hive.ql.exec.repl.ranger;
 
-import org.codehaus.jackson.annotate.JsonAutoDetect;
-import org.codehaus.jackson.annotate.JsonAutoDetect.Visibility;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
+
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.LinkedHashMap;
-import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 /**
  * RangerExportPolicyList class to extends RangerPolicyList class.
  */
 @JsonAutoDetect(getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE,
     fieldVisibility = Visibility.ANY)
-@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+@JsonInclude(Include.NON_NULL)
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class RangerExportPolicyList extends RangerPolicyList implements java.io.Serializable {

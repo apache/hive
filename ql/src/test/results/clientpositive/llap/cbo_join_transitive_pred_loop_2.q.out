@@ -1,0 +1,74 @@
+PREHOOK: query: CREATE EXTERNAL TABLE table2 (
+  tenant_id int
+) PARTITIONED BY (date_key int)
+STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
+POSTHOOK: query: CREATE EXTERNAL TABLE table2 (
+  tenant_id int
+) PARTITIONED BY (date_key int)
+STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2
+PREHOOK: query: CREATE EXTERNAL TABLE tenant_1 (
+  tenant_id int,
+  tenant_key bigint
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tenant_1
+POSTHOOK: query: CREATE EXTERNAL TABLE tenant_1 (
+  tenant_id int,
+  tenant_key bigint
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tenant_1
+PREHOOK: query: EXPLAIN CBO
+SELECT * FROM (
+   SELECT date_key, tenant_id
+   FROM  table2
+   WHERE tenant_id = 0
+   UNION ALL
+   SELECT date_key, tenant_id
+   FROM  table2
+   WHERE tenant_id <> 0
+) a
+JOIN tenant_1 dt
+  ON a.tenant_id = dt.tenant_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+PREHOOK: Input: default@tenant_1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT * FROM (
+   SELECT date_key, tenant_id
+   FROM  table2
+   WHERE tenant_id = 0
+   UNION ALL
+   SELECT date_key, tenant_id
+   FROM  table2
+   WHERE tenant_id <> 0
+) a
+JOIN tenant_1 dt
+  ON a.tenant_id = dt.tenant_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@tenant_1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(date_key=[$0], tenant_id=[$1])
+    HiveUnion(all=[true])
+      HiveProject(date_key=[$1], tenant_id=[CAST(0):INTEGER])
+        HiveFilter(condition=[=($0, 0)])
+          HiveTableScan(table=[[default, table2]], table:alias=[table2])
+      HiveProject(date_key=[$1], tenant_id=[$0])
+        HiveFilter(condition=[<>($0, 0)])
+          HiveTableScan(table=[[default, table2]], table:alias=[table2])
+  HiveProject(tenant_id=[$0], tenant_key=[$1])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, tenant_1]], table:alias=[dt])
+

@@ -25,6 +25,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -56,19 +58,25 @@ public class AlterTableSkewedByAnalyzer extends AbstractAlterTableAnalyzer {
     Table table = getTable(tableName);
     validateAlterTableType(table, AlterTableType.SKEWED_BY, false);
 
+    if (AcidUtils.isLocklessReadsEnabled(table, conf)) {
+      throw new UnsupportedOperationException(command.getText());
+    }
     inputs.add(new ReadEntity(table));
     outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_EXCLUSIVE));
 
-    DDLDesc desc = null;
+    DDLDescWithWriteId desc = null;
     if (command.getChildCount() == 0) {
       desc = new AlterTableNotSkewedDesc(tableName);
+      setAcidDdlDesc(table, desc);
     } else {
       switch (((ASTNode) command.getChild(0)).getToken().getType()) {
       case HiveParser.TOK_TABLESKEWED:
         desc = handleAlterTableSkewedBy(command, tableName, table);
+        setAcidDdlDesc(table, desc);
         break;
       case HiveParser.TOK_STOREDASDIRS:
         desc = handleAlterTableDisableStoredAsDirs(tableName, table);
+        setAcidDdlDesc(table, desc);
         break;
       default:
         assert false;
@@ -78,7 +86,7 @@ public class AlterTableSkewedByAnalyzer extends AbstractAlterTableAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 
-  private DDLDesc handleAlterTableSkewedBy(ASTNode ast, TableName tableName, Table table) throws SemanticException {
+  private DDLDescWithWriteId handleAlterTableSkewedBy(ASTNode ast, TableName tableName, Table table) throws SemanticException {
     ASTNode skewedNode = (ASTNode) ast.getChild(0);
     List<String> skewedColumnNames = SkewedTableUtils.analyzeSkewedTableDDLColNames(skewedNode);
     List<List<String>> skewedColumnValues = SkewedTableUtils.analyzeDDLSkewedValues(skewedNode);
@@ -92,7 +100,7 @@ public class AlterTableSkewedByAnalyzer extends AbstractAlterTableAnalyzer {
     return new AlterTableSkewedByDesc(tableName, skewedColumnNames, skewedColumnValues, storedAsDirs);
   }
 
-  private DDLDesc handleAlterTableDisableStoredAsDirs(TableName tableName, Table table) throws SemanticException {
+  private DDLDescWithWriteId handleAlterTableDisableStoredAsDirs(TableName tableName, Table table) throws SemanticException {
     List<String> skewedColumnNames = table.getSkewedColNames();
     List<List<String>> skewedColumnValues = table.getSkewedColValues();
     if (CollectionUtils.isEmpty(skewedColumnNames) || CollectionUtils.isEmpty(skewedColumnValues)) {

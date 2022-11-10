@@ -20,7 +20,6 @@ set hive.merge.mapredfiles=false;
 set hive.compute.splits.in.am=true;
 set tez.grouping.min-size=1000;
 set tez.grouping.max-size=50000;
-set hive.merge.sparkfiles=false;
 
 -- 3 mappers
 explain insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13;
@@ -39,35 +38,60 @@ set hive.merge.orcfile.stripe.level=true;
 set hive.merge.tezfiles=true;
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
-set hive.merge.sparkfiles=true;
 
 -- 3 mappers
 explain insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13;
 insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13;
 insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13;
 
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) userid;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts;
+
 -- 1 file after merging
 analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan;
 analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan;
+analyze table orc_merge5a_n1 partition(year,hour) compute statistics for columns;
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a_n1/year=2000/hour=24/;
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a_n1/year=2001/hour=24/;
 show partitions orc_merge5a_n1;
 select * from orc_merge5a_n1;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) userid;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts;
 
 set hive.merge.orcfile.stripe.level=false;
 set hive.merge.tezfiles=false;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
-set hive.merge.sparkfiles=false;
 
 insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13;
 insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13;
 analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan;
 analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan;
+analyze table orc_merge5a_n1 partition(year,hour) compute statistics for columns;
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a_n1/year=2000/hour=24/;
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a_n1/year=2001/hour=24/;
 show partitions orc_merge5a_n1;
 select * from orc_merge5a_n1;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) userid;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts;
 
 set hive.merge.orcfile.stripe.level=true;
 explain alter table orc_merge5a_n1 partition(year="2000",hour=24) concatenate;
@@ -77,8 +101,17 @@ alter table orc_merge5a_n1 partition(year="2001",hour=24) concatenate;
 -- 1 file after merging
 analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan;
 analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan;
+analyze table orc_merge5a_n1 partition(year,hour) compute statistics for columns;
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a_n1/year=2000/hour=24/;
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_merge5a_n1/year=2001/hour=24/;
 show partitions orc_merge5a_n1;
 select * from orc_merge5a_n1;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) userid;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1;
+describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1;
+describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts;
 

@@ -3232,3 +3232,95 @@ POSTHOOK: Input: default@orc_test_txn@year=2018
 10	Haley	CSE	2018
 8	Henry	CSE	2016
 9	Harris	CSE	2017
+#### A masked pattern was here ####
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
+PREHOOK: Output: default@orc_test_txn
+#### A masked pattern was here ####
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
+POSTHOOK: Output: default@orc_test_txn
+POSTHOOK: Output: default@orc_test_txn@year=2016
+POSTHOOK: Output: default@orc_test_txn@year=2017
+POSTHOOK: Output: default@orc_test_txn@year=2018
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2016).dept SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:dept, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2016).id SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2016).name SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2017).dept SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:dept, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2017).id SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2017).name SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2018).dept SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:dept, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2018).id SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2018).name SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select count(*) from orc_test_txn
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_test_txn
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orc_test_txn
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_test_txn
+#### A masked pattern was here ####
+3
+PREHOOK: query: select * from orc_test_txn
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_test_txn
+PREHOOK: Input: default@orc_test_txn@year=2016
+PREHOOK: Input: default@orc_test_txn@year=2017
+PREHOOK: Input: default@orc_test_txn@year=2018
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_test_txn
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_test_txn
+POSTHOOK: Input: default@orc_test_txn@year=2016
+POSTHOOK: Input: default@orc_test_txn@year=2017
+POSTHOOK: Input: default@orc_test_txn@year=2018
+#### A masked pattern was here ####
+10	Haley	CSE	2018
+8	Henry	CSE	2016
+9	Harris	CSE	2017
+#### A masked pattern was here ####
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
+PREHOOK: Output: default@orc_test_txn
+#### A masked pattern was here ####
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
+POSTHOOK: Output: default@orc_test_txn
+POSTHOOK: Output: default@orc_test_txn@year=2016
+POSTHOOK: Output: default@orc_test_txn@year=2017
+POSTHOOK: Output: default@orc_test_txn@year=2018
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2016).dept SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:dept, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2016).id SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2016).name SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2017).dept SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:dept, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2017).id SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2017).name SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2018).dept SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:dept, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2018).id SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_test_txn PARTITION(year=2018).name SIMPLE [(orc_test_txn__temp_table_for_load_data__)orc_test_txn__temp_table_for_load_data__.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select count(*) from orc_test_txn
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_test_txn
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orc_test_txn
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_test_txn
+#### A masked pattern was here ####
+3
+PREHOOK: query: select * from orc_test_txn
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_test_txn
+PREHOOK: Input: default@orc_test_txn@year=2016
+PREHOOK: Input: default@orc_test_txn@year=2017
+PREHOOK: Input: default@orc_test_txn@year=2018
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_test_txn
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_test_txn
+POSTHOOK: Input: default@orc_test_txn@year=2016
+POSTHOOK: Input: default@orc_test_txn@year=2017
+POSTHOOK: Input: default@orc_test_txn@year=2018
+#### A masked pattern was here ####
+10	Haley	CSE	2018
+8	Henry	CSE	2016
+9	Harris	CSE	2017

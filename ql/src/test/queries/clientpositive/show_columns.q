@@ -50,3 +50,7 @@ SHOW SORTED COLUMNS in foo_n7 from test_db "col+";
 SHOW SORTED COLUMNS in foo_n7 from test_db "c";
 SHOW SORTED COLUMNS from foo_n7 from test_db "c*";
 SHOW SORTED COLUMNS from foo_n7 from test_db like 'c*';
+
+-- show column for table with chinese comments. 名 UTF code is 0x540D. D means CR ( '\r'). It should not cause issue.
+create table tbl_test (fld string COMMENT '期末日期', fld1 string COMMENT '班次名称', fld2  string COMMENT '排班人数');
+show columns from tbl_test;

@@ -18,10 +18,11 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import org.apache.hadoop.hive.ql.wm.WmContext;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Workload Manager events at query level.

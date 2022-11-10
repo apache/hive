@@ -52,6 +52,9 @@ POSTHOOK: Input: default@blobstore_source
 POSTHOOK: Input: ### test.blobstore.path ###/ctas_blobstore_to_blobstore/blobstore_target
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@blobstore_target
+POSTHOOK: Lineage: blobstore_target.a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: blobstore_target.b SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: blobstore_target.c SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
 PREHOOK: query: DROP DATABASE IF EXISTS target_db
 PREHOOK: type: DROPDATABASE
 POSTHOOK: query: DROP DATABASE IF EXISTS target_db

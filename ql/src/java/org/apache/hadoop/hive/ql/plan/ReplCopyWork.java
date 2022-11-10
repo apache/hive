@@ -19,7 +19,10 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.DeferredWorkContext;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
@@ -137,4 +140,19 @@ public class ReplCopyWork extends CopyWork {
   public boolean isOverWrite() {
     return overWrite;
   }
+
+  public void initializeFromDeferredContext(DeferredWorkContext deferredContext) throws HiveException {
+    if (!deferredContext.isCalculated()) {
+      // Read metadata from metastore and populate the members of the context
+      ImportSemanticAnalyzer.setupDeferredContextFromMetadata(deferredContext);
+    }
+
+    setToPath(new Path[] { deferredContext.destPath });
+    if (deferredContext.replace) {
+      setDeleteDestIfExist(true);
+      setAutoPurge(deferredContext.isSkipTrash);
+      setNeedRecycle(deferredContext.needRecycle);
+    }
+  }
+
 }

@@ -33,6 +33,7 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
@@ -103,7 +104,7 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
     // Find the list of scripts to execute for this upgrade
     int firstScript = hiveSchemaVersions.length;
     for (int i=0; i < hiveSchemaVersions.length; i++) {
-      if (hiveSchemaVersions[i].startsWith(fromVersion)) {
+      if (hiveSchemaVersions[i].startsWith(fromVersion + "-to-")) {
         firstScript = i;
       }
     }
@@ -205,19 +206,30 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
       return false;
     }
 
-    for (int i = 0; i < dbVerParts.length; i++) {
-      int dbVerPart = Integer.parseInt(dbVerParts[i]);
-      int hiveVerPart = Integer.parseInt(hiveVerParts[i]);
-      if (dbVerPart > hiveVerPart) {
-        return true;
-      } else if (dbVerPart < hiveVerPart) {
-        return false;
-      } else {
-        continue; // compare next part
+    hiveVerParts = hiveVersion.split("\\.|-");
+    dbVerParts = dbVersion.split("\\.|-");
+    for (int i = 0; i < Math.min(hiveVerParts.length, dbVerParts.length); i++) {
+      int compare = compareVersion(dbVerParts[i], hiveVerParts[i]);
+      if (compare != 0) {
+        return compare > 0;
       }
     }
+    return hiveVerParts.length > dbVerParts.length;
+  }
 
-    return true;
+  private int compareVersion(String dbVerPart, String hiveVerPart) {
+    if (dbVerPart.equals(hiveVerPart)) {
+      return 0;
+    }
+    boolean isDbVerNum = StringUtils.isNumeric(dbVerPart);
+    boolean isHiveVerNum = StringUtils.isNumeric(hiveVerPart);
+    if (isDbVerNum && isHiveVerNum) {
+      return Integer.parseInt(dbVerPart) - Integer.parseInt(hiveVerPart);
+    } else if (!isDbVerNum && !isHiveVerNum) {
+      return dbVerPart.compareTo(hiveVerPart);
+    }
+    // return -1 for one is a number but the other is a string
+    return -1;
   }
 
   @Override

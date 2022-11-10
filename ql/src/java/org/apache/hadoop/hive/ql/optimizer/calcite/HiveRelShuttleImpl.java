@@ -24,6 +24,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.TableFunctionScan;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.logical.LogicalAggregate;
+import org.apache.calcite.rel.logical.LogicalCalc;
 import org.apache.calcite.rel.logical.LogicalCorrelate;
 import org.apache.calcite.rel.logical.LogicalExchange;
 import org.apache.calcite.rel.logical.LogicalFilter;
@@ -33,6 +34,7 @@ import org.apache.calcite.rel.logical.LogicalMatch;
 import org.apache.calcite.rel.logical.LogicalMinus;
 import org.apache.calcite.rel.logical.LogicalProject;
 import org.apache.calcite.rel.logical.LogicalSort;
+import org.apache.calcite.rel.logical.LogicalTableModify;
 import org.apache.calcite.rel.logical.LogicalUnion;
 import org.apache.calcite.rel.logical.LogicalValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -102,6 +104,11 @@ public class HiveRelShuttleImpl implements HiveRelShuttle {
         return visitChild(filter, 0, filter.getInput());
     }
 
+    @Override
+    public RelNode visit(LogicalCalc calc) {
+        return visitChild(calc, 0, calc.getInput());
+    }
+
     public RelNode visit(HiveProject project) {
         return visitChild(project, 0, project.getInput());
     }
@@ -140,6 +147,11 @@ public class HiveRelShuttleImpl implements HiveRelShuttle {
 
     public RelNode visit(LogicalExchange exchange) {
         return visitChildren(exchange);
+    }
+
+    @Override
+    public RelNode visit(LogicalTableModify modify) {
+        return visitChildren(modify);
     }
 
     public RelNode visit(RelNode other) {

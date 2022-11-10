@@ -42,7 +42,7 @@ public class ReadDatabaseEvent extends HiveMetaStoreAuthorizableEvent {
 
   @Override public HiveMetaStoreAuthzInfo getAuthzContext() {
     HiveMetaStoreAuthzInfo ret =
-        new HiveMetaStoreAuthzInfo(preEventContext, HiveOperationType.QUERY, getInputHObjs(), getOutputHObjs(),
+        new HiveMetaStoreAuthzInfo(preEventContext, HiveOperationType.SHOWDATABASES, getInputHObjs(), getOutputHObjs(),
             COMMAND_STR);
     return ret;
   }

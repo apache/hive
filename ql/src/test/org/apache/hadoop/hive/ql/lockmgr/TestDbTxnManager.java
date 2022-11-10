@@ -516,10 +516,15 @@ public class TestDbTxnManager {
     } catch (LockException e) {
       exception = e;
     }
-    Assert.assertNotNull("Txn should have been aborted", exception);
-    Assert.assertEquals(ErrorMsg.TXN_ABORTED, exception.getCanonicalErrorMsg());
+    Assert.assertNull("This CommitTxnRequest is no op since transaction is already aborted by reaper.", exception);
+    try {
+      txnMgr.replRollbackTxn(replPolicy, 1L);
+    } catch (LockException e) {
+      exception = e;
+    }
+    Assert.assertNull("This AbortTxnRequest is no op since transaction is already aborted by reaper.", exception);
     Assert.assertEquals(1, Metrics.getOrCreateCounter(MetricsConstants.TOTAL_NUM_TIMED_OUT_TXNS).getCount());
-  };
+  }
 
   @Before
   public void setUp() throws Exception {
@@ -531,7 +536,6 @@ public class TestDbTxnManager {
     nextInput = 1;
     readEntities = new HashSet<ReadEntity>();
     writeEntities = new HashSet<WriteEntity>();
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.ACID_HOUSEKEEPER_SERVICE_START, 0, TimeUnit.SECONDS);
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, 10, TimeUnit.SECONDS);
     houseKeeperService = new AcidHouseKeeperService();
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.REPL_TXN_TIMEOUT, 30, TimeUnit.SECONDS);
