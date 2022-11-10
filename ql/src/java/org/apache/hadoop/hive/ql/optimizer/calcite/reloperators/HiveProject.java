@@ -19,13 +19,16 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.RelWriter;
+import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
@@ -37,8 +40,13 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.CorrelationIdSearcher;
+import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.HiveCorrelationInfo;
 
 public class HiveProject extends Project implements HiveRelNode {
+
+  // lazy fetch, only populate if getVariablesSet is called
+  private HiveCorrelationInfo correlationInfo;
 
   private boolean isSysnthetic;
 
@@ -124,6 +132,41 @@ public class HiveProject extends Project implements HiveRelNode {
   public boolean isSynthetic() {
     return isSysnthetic;
   }
+
+  @Override
+  public Set<CorrelationId> getVariablesSet() {
+    if (this.correlationInfo == null) {
+      this.correlationInfo = createCorrelationInfo();
+    }
+    return correlationInfo.correlationIds;
+  }
+
+  public HiveCorrelationInfo getCorrelationInfo() {
+    if (correlationInfo == null) {
+      this.correlationInfo = createCorrelationInfo();
+    }
+    return correlationInfo;
+  }
+
+  public HiveCorrelationInfo createCorrelationInfo() {
+    boolean hasSubQuery;
+    HiveCorrelationInfo returnCorrelationInfo = null;
+    for (RexNode r : getProjects()) {
+      CorrelationIdSearcher searcher = new CorrelationIdSearcher(r); 
+      HiveCorrelationInfo correlationInfo = searcher.getCorrelationInfo();
+      if (correlationInfo.rexSubQuery != null) {
+        if (returnCorrelationInfo != null) {
+          throw new RuntimeException("Two subqueries within a select is not allowed.");
+        }
+        returnCorrelationInfo = correlationInfo;
+      }
+    }
+    if (returnCorrelationInfo == null) {
+      returnCorrelationInfo = new HiveCorrelationInfo();
+    }
+    return returnCorrelationInfo;
+  }
+
 
   //required for HiveRelDecorrelator
   @Override public RelNode accept(RelShuttle shuttle) {
