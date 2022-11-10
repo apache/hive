@@ -843,7 +843,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
         map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
             SerializationUtil.serializeToBase64(null));
-        String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
 
         String location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
         if (StringUtils.isBlank(location)) {

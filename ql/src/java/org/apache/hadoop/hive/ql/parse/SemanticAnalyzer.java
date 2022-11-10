@@ -7760,7 +7760,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               // no metastore.metadata.transformer.class was set
               tblDesc.getTblProps().put(TABLE_IS_CTAS, new Warehouse(conf).getDefaultTablePath(
                       destinationTable.getDbName(),
-                      destinationTable.getDbName(),
+                      destinationTable.getTableName(),
                       Boolean.parseBoolean(destinationTable.getParameters().get("EXTERNAL"))).toString());
             } else {
               tblDesc.getTblProps().put(TABLE_IS_CTAS, destinationTable.getDataLocation().toString());
