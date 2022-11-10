@@ -7758,12 +7758,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (tblDesc.getTblProps().containsKey(TABLE_IS_CTAS)) {
             if (destinationTable.getDataLocation() == null) {
               // no metastore.metadata.transformer.class was set
-              destinationTable.setDataLocation(new Warehouse(conf).getDefaultTablePath(
-                  destinationTable.getDbName(),
-                  destinationTable.getDbName(),
-                  Boolean.parseBoolean(destinationTable.getParameters().get("EXTERNAL"))));
+              tblDesc.getTblProps().put(TABLE_IS_CTAS, new Warehouse(conf).getDefaultTablePath(
+                      destinationTable.getDbName(),
+                      destinationTable.getDbName(),
+                      Boolean.parseBoolean(destinationTable.getParameters().get("EXTERNAL"))).toString());
+            } else {
+              tblDesc.getTblProps().put(TABLE_IS_CTAS, destinationTable.getDataLocation().toString());
             }
-            tblDesc.getTblProps().put(TABLE_IS_CTAS, destinationTable.getDataLocation().toString());
           }
           tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
         }
