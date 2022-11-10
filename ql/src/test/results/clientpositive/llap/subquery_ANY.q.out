@@ -4,7 +4,6 @@ PREHOOK: Output: database:default
 PREHOOK: Output: default@tempty
 POSTHOOK: query: create table tempty(i int, j int)
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tempty
 PREHOOK: query: CREATE TABLE part_null_n0 as select * from part
 PREHOOK: type: CREATETABLE_AS_SELECT
