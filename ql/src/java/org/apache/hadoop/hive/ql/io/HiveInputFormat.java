@@ -919,7 +919,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     Utilities.addTableSchemaToConf(jobConf, tableScan);
-    Utilities.setPartitionColumnsToConf(jobConf, tableScan);
+    Utilities.setPartitionColumnsInConf(jobConf, tableScan);
 
     // construct column name list and types for reference by filter push down
     Utilities.setColumnNameList(jobConf, tableScan);

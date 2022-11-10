@@ -216,7 +216,7 @@ public abstract class ParquetRecordReaderBase {
 
   private MessageType getSchemaWithoutPartitionColumns(JobConf conf, MessageType schema) {
     String partCols = conf.get(IOConstants.PARTITION_COLUMNS);
-    if (partCols != null && partCols.length() > 0) {
+    if (partCols != null && !partCols.isEmpty()) {
       Set<String> partitionColumns = new HashSet<>(Arrays.asList(partCols.split(",")));
       List<Type> newFields = new ArrayList<>();
 

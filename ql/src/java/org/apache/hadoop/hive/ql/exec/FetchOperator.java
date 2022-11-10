@@ -143,7 +143,7 @@ public class FetchOperator implements Serializable {
     if (operator instanceof TableScanOperator) {
       Utilities.addTableSchemaToConf(job,
           (TableScanOperator) operator);
-      Utilities.setPartitionColumnsToConf(job, (TableScanOperator) operator);
+      Utilities.setPartitionColumnsInConf(job, (TableScanOperator) operator);
     }
     this.vcCols = vcCols;
     this.hasVC = vcCols != null && !vcCols.isEmpty();

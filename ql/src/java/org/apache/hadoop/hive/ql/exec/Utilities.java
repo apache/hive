@@ -4273,18 +4273,30 @@ public final class Utilities {
       LOG.info("schema.evolution.columns and schema.evolution.columns.types not available");
     }
   }
-  public static void setPartitionColumnsToConf(Configuration conf, TableScanOperator tableScanOp) {
+
+  /**
+   * Sets partition column names to {@link IOConstants#PARTITION_COLUMNS}, if available.
+   *
+   * @param conf JobConf
+   * @param tableScanOp TableScanOperator object
+   */
+  public static void setPartitionColumnsInConf(Configuration conf, TableScanOperator tableScanOp) {
     TableScanDesc scanDesc = tableScanOp.getConf();
     if (scanDesc != null && scanDesc.getTableMetadata() != null) {
       List<String> partitionColsList = scanDesc.getTableMetadata().getPartColNames();
       if (!partitionColsList.isEmpty()) {
         conf.set(IOConstants.PARTITION_COLUMNS, String.join(",", partitionColsList));
+      } else {
+        LOG.info(IOConstants.PARTITION_COLUMNS + " not available");
       }
-    } else {
-      LOG.info(IOConstants.PARTITION_COLUMNS + " not available");
     }
   }
 
+  /**
+   * Unsets partition column names from {@link IOConstants#PARTITION_COLUMNS}
+   *
+   * @param conf JobConf
+   */
   public static void unsetPartitionColumnsInConf(Configuration conf) {
     conf.unset(IOConstants.PARTITION_COLUMNS);
   }
