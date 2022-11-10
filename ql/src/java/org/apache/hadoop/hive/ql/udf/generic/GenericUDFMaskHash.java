@@ -22,6 +22,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.slf4j.Logger;
@@ -63,13 +64,21 @@ class MaskHashTransformer extends AbstractTransformer {
 
   @Override
   String transform(final String value) {
-    if (isSHA512) {
+    if (getIsSHA512FromSessionConf() || isSHA512) {
       LOG.info("Using SHA512 for masking");
       return DigestUtils.sha512Hex(value);
     } else {
       LOG.info("Using SHA256 for masking");
       return DigestUtils.sha256Hex(value);
     }
+  }
+
+  private boolean getIsSHA512FromSessionConf() {
+    if (SessionState.get() != null) {
+      return "sha512".equalsIgnoreCase(
+          HiveConf.getVar(SessionState.get().getConf(), HiveConf.ConfVars.HIVE_MASKING_ALGO).trim());
+    }
+    return false;
   }
 
   @Override
