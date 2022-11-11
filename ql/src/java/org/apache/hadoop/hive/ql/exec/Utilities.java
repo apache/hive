@@ -4287,7 +4287,9 @@ public final class Utilities {
       if (!partitionColsList.isEmpty()) {
         conf.set(IOConstants.PARTITION_COLUMNS, String.join(",", partitionColsList));
       } else {
-        LOG.info(IOConstants.PARTITION_COLUMNS + " not available");
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(IOConstants.PARTITION_COLUMNS + " not available");
+        }
       }
     }
   }
