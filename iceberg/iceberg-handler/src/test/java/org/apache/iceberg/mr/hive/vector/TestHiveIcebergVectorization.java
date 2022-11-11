@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive.vector;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -42,16 +43,19 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerWithEngineBase;
+import org.apache.iceberg.mr.hive.TestTables;
 import org.apache.iceberg.mr.hive.serde.objectinspector.IcebergObjectInspector;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
@@ -124,6 +128,64 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
 
     // The two iterators both should be at the end by now
     Assert.assertEquals(genericRowIterator.hasNext(), hiveRowIterator.hasNext());
+  }
+
+  /**
+   * Tests HiveDeleteFilter implementation correctly filtering rows from VRBs.
+   */
+  @Test
+  public void testHiveDeleteFilter() {
+    // The Avro "vectorized" case should actually serve as compareTo scenario to non-vectorized reading, because
+    // there's no vectorization for Avro and it falls back to the non-vectorized implementation
+    Assume.assumeTrue(isVectorized && testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
+    // Minimal schema to minimize resource footprint of what's coming next...
+    Schema schema = new Schema(
+        optional(1, "customer_id", Types.LongType.get()),
+        optional(2, "customer_age", Types.IntegerType.get())
+    );
+
+    // Generate 106000 records so that we end up with multiple (104) batches to work with during the read.
+    // Sadly there's no way to control DeleteFilter.DEFAULT_SET_FILTER_THRESHOLD from this test, so we need two
+    // select statements: one where we have less than DEFAULT_SET_FILTER_THRESHOLD deletes, & one where there's more.
+    // This should test both in-memory and streaming delete application implementations of Iceberg.
+    List<Record> records = TestHelper.generateRandomRecords(schema, 106000, 0L);
+
+    // Fill id column with deterministic values
+    for (int i = 0; i < records.size(); ++i) {
+      records.get(i).setField("customer_id", (long) i);
+    }
+    testTables.createTable(shell, "vectordelete", schema,
+        PartitionSpec.unpartitioned(), fileFormat, records, 2);
+
+    // Delete every odd row until 6000
+    shell.executeStatement("DELETE FROM vectordelete WHERE customer_id % 2 = 1 and customer_id < 6000");
+
+    // Delete a whole batch's worth of data overlapping into the previous and next partial batches (batch size is 1024)
+    shell.executeStatement("DELETE FROM vectordelete WHERE 1000 < customer_id and customer_id < 3000");
+
+    Function<Integer, Void> validation = expectedCount -> {
+      List<Object[]> result = shell.executeStatement("select * from vectordelete where customer_id < 6000");
+      Assert.assertEquals(expectedCount.intValue(), result.size());
+
+      for (Object[] row : result) {
+        long id = (long) row[0];
+        Assert.assertTrue("Found row with odd customer_id", id % 2 == 0);
+        Assert.assertTrue("Found a row with customer_id between 1000 and 3000 (both exclusive)",
+            id <= 1000 || 3000 <= id);
+        Assert.assertTrue("Found a row with customer_id >= 6000, i.e. where clause is not in effect.", id < 6000);
+      }
+
+      return null;
+    };
+
+    // Test with all deletes loaded into memory (DeletePositionIndex), as we have only 3999 deletes in 2 delete files
+    validation.apply(2001);
+
+    // Test with streamed reading of deletes and data rows as we have 104499 deletes in 3 delete files with:
+    shell.executeStatement("DELETE FROM vectordelete WHERE customer_id >= 5000");
+    // 500 fewer rows as the above statement removed all even rows between 5000 and 6000 that were there previously
+    validation.apply(1501);
   }
 
   /**

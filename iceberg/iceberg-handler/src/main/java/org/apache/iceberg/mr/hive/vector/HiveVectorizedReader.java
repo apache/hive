@@ -47,11 +47,14 @@ import org.apache.hive.iceberg.org.apache.parquet.format.converter.ParquetMetada
 import org.apache.hive.iceberg.org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.hive.iceberg.org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.hive.iceberg.org.apache.parquet.schema.MessageType;
+import org.apache.iceberg.FileContent;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
+import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
@@ -76,8 +79,22 @@ public class HiveVectorizedReader {
 
   }
 
-  public static CloseableIterable<HiveBatchContext> reader(Path path, FileScanTask task,
-      Map<Integer, ?> idToConstant, TaskAttemptContext context, Expression residual) {
+  public static CloseableIterable<HiveBatchContext> reader(Table table, Path path, FileScanTask task,
+      Map<Integer, ?> idToConstant, TaskAttemptContext context, Expression residual, Schema readSchema) {
+
+    HiveDeleteFilter deleteFilter = null;
+    Schema requiredSchema = readSchema;
+
+    if (!task.deletes().isEmpty()) {
+      deleteFilter = new HiveDeleteFilter(table.io(), task, table.schema(), prepareSchemaForDeleteFilter(readSchema));
+      requiredSchema = deleteFilter.requiredSchema();
+      // TODO: take requiredSchema and adjust readColumnIds below accordingly for equality delete cases
+      // and remove below limitation
+      if (task.deletes().stream().anyMatch(d -> d.content() == FileContent.EQUALITY_DELETES)) {
+        throw new UnsupportedOperationException("Vectorized reading with equality deletes is not supported yet.");
+      }
+    }
+
 
     // Tweaks on jobConf here are relevant for this task only, so we need to copy it first as context's conf is reused..
     JobConf job = new JobConf(context.getConfiguration());
@@ -147,7 +164,10 @@ public class HiveVectorizedReader {
           throw new UnsupportedOperationException("Vectorized Hive reading unimplemented for format: " + format);
       }
 
-      return createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues);
+      CloseableIterable<HiveBatchContext> vrbIterable =
+          createVectorizedRowBatchIterable(recordReader, job, partitionColIndices, partitionValues);
+
+      return deleteFilter != null ? deleteFilter.filterBatch(vrbIterable) : vrbIterable;
 
     } catch (IOException ioe) {
       throw new RuntimeException("Error creating vectorized record reader for " + path, ioe);
@@ -241,6 +261,17 @@ public class HiveVectorizedReader {
         iterator.close();
       }
     };
+  }
+
+  /**
+   * We need to add IS_DELETED metadata field so that DeleteFilter marks deleted rows rather than filering them out.
+   * @param schema original schema
+   * @return adjusted schema
+   */
+  private static Schema prepareSchemaForDeleteFilter(Schema schema) {
+    List<Types.NestedField> columns = Lists.newArrayList(schema.columns());
+    columns.add(MetadataColumns.IS_DELETED);
+    return new Schema(columns);
   }
 
 }
