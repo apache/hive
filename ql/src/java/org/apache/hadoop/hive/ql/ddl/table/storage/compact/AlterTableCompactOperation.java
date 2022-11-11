@@ -32,6 +32,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -126,11 +127,11 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
         context.getConsole().printInfo("Interrupted while waiting for compaction with id=" + resp.getId());
         break;
       }
-      ShowCompactRequest request = new ShowCompactRequest();
-      request.setId(resp.getId());
+      ShowCompactRequest request = new ShowCompactRequest(resp.getId());
       ShowCompactResponse compaction = context.getDb().showCompactions(request);
       if (compaction.getCompactsSize() == 1) {
-        switch (compaction.getCompacts().get(0).getState()) {
+        ShowCompactResponseElement comp = compaction.getCompacts().get(0);
+        switch (comp.getState()) {
           case TxnStore.WORKING_RESPONSE:
           case TxnStore.INITIATED_RESPONSE:
             //still working
@@ -140,7 +141,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
           default:
             //done
             context.getConsole().printInfo("Compaction with id " + resp.getId() + " finished with status: " +
-              compaction.getCompacts().get(0).getState());
+              comp.getState());
             break wait;
         }
       }else {

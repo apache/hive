@@ -137,6 +137,10 @@ package org.apache.hadoop.hive.metastore.api;
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ShowCompactRequest.class, metaDataMap);
   }
 
+  public ShowCompactRequest(long id) {
+    this.id = id;
+  }
+
   public ShowCompactRequest() {
   }
 
