@@ -519,7 +519,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
 
   @Explain(displayName = "table properties")
   public Map<String, String> getTblPropsExplain() { // only for displaying plan
-    return PlanUtils.getPropertiesExplain(tblProps,
+    return PlanUtils.getPropertiesForExplain(tblProps,
             IS_EXPLAIN_PLAN, hive_metastoreConstants.TABLE_IS_CTAS, hive_metastoreConstants.TABLE_BUCKETING_VERSION);
   }
 
