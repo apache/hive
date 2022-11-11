@@ -221,11 +221,13 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       if (MetastoreUtil.hive3PresentOnClasspath()) {
         HIVE_VECTORIZED_READER_BUILDER = DynMethods.builder("reader")
             .impl(HIVE_VECTORIZED_READER_CLASS,
+                Table.class,
                 Path.class,
                 FileScanTask.class,
                 Map.class,
                 TaskAttemptContext.class,
-                Expression.class)
+                Expression.class,
+                Schema.class)
             .buildStatic();
       } else {
         HIVE_VECTORIZED_READER_BUILDER = null;
@@ -326,8 +328,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
       Expression residual = HiveIcebergInputFormat.residualForTask(task, context.getConfiguration());
 
       // TODO: We have to take care of the EncryptionManager when LLAP and vectorization is used
-      CloseableIterable<T> iterator = HIVE_VECTORIZED_READER_BUILDER.invoke(path, task,
-          idToConstant, context, residual);
+      CloseableIterable<T> iterator = HIVE_VECTORIZED_READER_BUILDER.invoke(table, path, task,
+          idToConstant, context, residual, readSchema);
 
       return applyResidualFiltering(iterator, residual, readSchema);
     }

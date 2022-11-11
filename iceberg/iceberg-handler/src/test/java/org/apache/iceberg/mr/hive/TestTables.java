@@ -638,7 +638,7 @@ public abstract class TestTables {
     }
   }
 
-  enum TestTableType {
+  public enum TestTableType {
     HADOOP_TABLE {
       @Override
       public TestTables instance(Configuration conf, TemporaryFolder temporaryFolder, String catalogName) {
