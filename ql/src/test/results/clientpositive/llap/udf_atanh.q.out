@@ -1,0 +1,37 @@
+PREHOOK: query: DESCRIBE FUNCTION atanh
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION atanh
+POSTHOOK: type: DESCFUNCTION
+atanh(x) - returns inverse hyperbolic tangent of x, NULL for NaN
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED atanh
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED atanh
+POSTHOOK: type: DESCFUNCTION
+atanh(x) - returns inverse hyperbolic tangent of x, NULL for NaN
+Example:
+   > SELECT atanh(0.98), atanh(-0.5) FROM src LIMIT 1;
+  2.2975599250672945  -0.5493061443340548
+Function class:org.apache.hadoop.hive.ql.udf.UDFAtanh
+Function type:BUILTIN
+PREHOOK: query: SELECT atanh(null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT atanh(null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT atanh(0.98), atanh(1.57), atanh(-0.5)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT atanh(0.98), atanh(1.57), atanh(-0.5)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+2.2975599250672945	NULL	-0.5493061443340548

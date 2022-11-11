@@ -223,4 +223,16 @@ public class MathExpr {
       }
     }
   }
+
+  public static Double asinh(Double a) {
+    return StrictMath.log(a + Math.sqrt(a * a + 1.0));
+  }
+
+  public static Double acosh(Double a) {
+    return StrictMath.log(a + Math.sqrt(a * a - 1.0));
+  }
+
+  public static Double atanh(Double a) {
+    return 0.5 * (StrictMath.log1p(a) - StrictMath.log1p(-a));
+  }
 }

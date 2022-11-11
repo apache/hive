@@ -201,6 +201,9 @@ import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.UDFSinh;
 import org.apache.hadoop.hive.ql.udf.UDFCosh;
 import org.apache.hadoop.hive.ql.udf.UDFTanh;
+import org.apache.hadoop.hive.ql.udf.UDFAsinh;
+import org.apache.hadoop.hive.ql.udf.UDFAcosh;
+import org.apache.hadoop.hive.ql.udf.UDFAtanh;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.ql.udf.ptf.MatchPath.MatchPathResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.Noop.NoopResolver;
@@ -326,6 +329,11 @@ public final class FunctionRegistry {
     system.registerUDF("e", UDFE.class, false);
     system.registerGenericUDF("factorial", GenericUDFFactorial.class);
     system.registerUDF("crc32", UDFCrc32.class, false);
+
+    // Arc hyperbolic funcs
+    system.registerUDF("asinh", UDFAsinh.class, false);
+    system.registerUDF("acosh", UDFAcosh.class, false);
+    system.registerUDF("atanh", UDFAtanh.class, false);
 
     system.registerUDF("conv", UDFConv.class, false);
     system.registerUDF("bin", UDFBin.class, false);

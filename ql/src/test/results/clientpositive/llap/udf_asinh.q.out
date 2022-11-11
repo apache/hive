@@ -1,0 +1,37 @@
+PREHOOK: query: DESCRIBE FUNCTION asinh
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION asinh
+POSTHOOK: type: DESCFUNCTION
+asinh(x) - returns inverse hyperbolic sine of x
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED asinh
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED asinh
+POSTHOOK: type: DESCFUNCTION
+asinh(x) - returns inverse hyperbolic sine of x
+Example:
+   > SELECT asinh(0.98), asinh(1.57), asinh(-0.5) FROM src LIMIT 1;
+  0.8671605068296652     1.2329753895597169      -0.48121182505960336
+Function class:org.apache.hadoop.hive.ql.udf.UDFAsinh
+Function type:BUILTIN
+PREHOOK: query: SELECT asinh(null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT asinh(null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT asinh(0.98), asinh(1.57), asinh(-0.5)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT asinh(0.98), asinh(1.57), asinh(-0.5)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0.8671605068296652	1.2329753895597169	-0.48121182505960336

@@ -167,6 +167,30 @@ public class TestUDFMath {
     Assert.assertEquals(0.6557942026326724, res.get(), 0.000001);
   }
 
+   @Test
+   public void testAcosh() throws HiveException {
+     UDFAcosh udf = new UDFAcosh();
+     input = createDecimal("1.2");
+     DoubleWritable res = udf.evaluate(input);
+     Assert.assertEquals(0.6223625037147785, res.get(), 0.000001);
+   }
+
+   @Test
+   public void testAsinh() throws HiveException {
+     UDFAsinh udf = new UDFAsinh();
+     input = createDecimal("0.7727408115633954");
+     DoubleWritable res = udf.evaluate(input);
+     Assert.assertEquals(0.7112406280453557, res.get(), 0.000001);
+   }
+
+   @Test
+   public void testAtanh() throws HiveException {
+     UDFAtanh udf = new UDFAtanh();
+     input = createDecimal("0.7853981633974483");
+     DoubleWritable res = udf.evaluate(input);
+     Assert.assertEquals(1.059306170823243, res.get(), 0.000001);
+   }
+
   private HiveDecimalWritable createDecimal(String input) {
     return new HiveDecimalWritable(HiveDecimal.create(input));
   }

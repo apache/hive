@@ -40,6 +40,7 @@ $sum0
 ^
 abs
 acos
+acosh
 add_months
 aes_decrypt
 aes_encrypt
@@ -49,9 +50,11 @@ array
 array_contains
 ascii
 asin
+asinh
 assert_true
 assert_true_oom
 atan
+atanh
 avg
 base64
 between
@@ -655,6 +658,7 @@ $sum0
 ^
 abs
 acos
+acosh
 add_months
 aes_decrypt
 aes_encrypt
@@ -664,9 +668,11 @@ array
 array_contains
 ascii
 asin
+asinh
 assert_true
 assert_true_oom
 atan
+atanh
 avg
 base64
 between

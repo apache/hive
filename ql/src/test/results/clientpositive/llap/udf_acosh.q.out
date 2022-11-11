@@ -1,0 +1,37 @@
+PREHOOK: query: DESCRIBE FUNCTION acosh
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION acosh
+POSTHOOK: type: DESCFUNCTION
+acosh(x) - returns inverse hyperbolic cosine of x, null for NaN
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED acosh
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED acosh
+POSTHOOK: type: DESCFUNCTION
+acosh(x) - returns inverse hyperbolic cosine of x, null for NaN
+Example:
+   > SELECT acosh(0.98), acosh(1.57), acosh(-0.5) FROM src LIMIT 1;
+  NULL    1.0225698175294082      NULL
+Function class:org.apache.hadoop.hive.ql.udf.UDFAcosh
+Function type:BUILTIN
+PREHOOK: query: SELECT acosh(null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT acosh(null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT acosh(0.98), acosh(1.57), acosh(-0.5)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT acosh(0.98), acosh(1.57), acosh(-0.5)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	1.0225698175294082	NULL
