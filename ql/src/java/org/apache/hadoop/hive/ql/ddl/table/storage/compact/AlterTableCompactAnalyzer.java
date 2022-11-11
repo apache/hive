@@ -46,6 +46,7 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
   protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException {
     String type = unescapeSQLString(command.getChild(0).getText()).toLowerCase();
+    int numberOfBuckets = 0;
     try {
       CompactionType.valueOf(type.toUpperCase());
     } catch (IllegalArgumentException e) {
@@ -67,12 +68,20 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
         case HiveParser.TOK_COMPACT_POOL:
           poolName = unescapeSQLString(node.getChild(0).getText());
           break;
+        case HiveParser.TOK_ALTERTABLE_BUCKETS:
+          try {
+            numberOfBuckets = Integer.parseInt(node.getChild(0).getText());
+          } catch (NumberFormatException nfe) {
+            throw new SemanticException("Could not parse bucket number: " + node.getChild(0).getText());
+          }
+          break;
         default:
           break;
       }
     }
 
-    AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, type, isBlocking, poolName, mapProp);
+    AlterTableCompactDesc desc = new AlterTableCompactDesc(tableName, partitionSpec, type, isBlocking, poolName,
+        numberOfBuckets, mapProp);
     addInputsOutputsAlterTable(tableName, partitionSpec, desc, desc.getType(), false);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }

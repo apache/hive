@@ -313,6 +313,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         return false;
       }
 
+      if (!ci.type.equals(CompactionType.REBALANCE) && ci.numberOfBuckets > 0) {
+        LOG.warn("Only the REBALANCE compaction accepts the number of buckets clause (CLUSTERED INTO {N} BUCKETS). " +
+            "Since the compaction request is " + ci.type + ", it will be ignored.");
+      }
+
       checkInterrupt();
 
       String fullTableName = TxnUtils.getFullTableName(table.getDbName(), table.getTableName());

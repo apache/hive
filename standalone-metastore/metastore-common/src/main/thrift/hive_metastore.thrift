@@ -1290,6 +1290,7 @@ struct CompactionRequest {
     7: optional string initiatorId
     8: optional string initiatorVersion
     9: optional string poolName
+    10: optional i32 numberOfBuckets
 }
 
 struct CompactionInfoStruct {
@@ -1310,6 +1311,7 @@ struct CompactionInfoStruct {
     15: optional i64 enqueueTime,
     16: optional i64 retryRetention,
     17: optional string poolname
+    18: optional i32 numberOfBuckets
 }
 
 struct OptionalCompactionInfoStruct {

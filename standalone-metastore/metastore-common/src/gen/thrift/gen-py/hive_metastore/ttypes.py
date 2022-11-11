@@ -15321,11 +15321,12 @@ class CompactionRequest(object):
      - initiatorId
      - initiatorVersion
      - poolName
+     - numberOfBuckets
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, initiatorId=None, initiatorVersion=None, poolName=None,):
+    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, initiatorId=None, initiatorVersion=None, poolName=None, numberOfBuckets=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionname = partitionname
@@ -15335,6 +15336,7 @@ class CompactionRequest(object):
         self.initiatorId = initiatorId
         self.initiatorVersion = initiatorVersion
         self.poolName = poolName
+        self.numberOfBuckets = numberOfBuckets
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15396,6 +15398,11 @@ class CompactionRequest(object):
                     self.poolName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.I32:
+                    self.numberOfBuckets = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15446,6 +15453,10 @@ class CompactionRequest(object):
             oprot.writeFieldBegin('poolName', TType.STRING, 9)
             oprot.writeString(self.poolName.encode('utf-8') if sys.version_info[0] == 2 else self.poolName)
             oprot.writeFieldEnd()
+        if self.numberOfBuckets is not None:
+            oprot.writeFieldBegin('numberOfBuckets', TType.I32, 10)
+            oprot.writeI32(self.numberOfBuckets)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -15490,11 +15501,12 @@ class CompactionInfoStruct(object):
      - enqueueTime
      - retryRetention
      - poolname
+     - numberOfBuckets
 
     """
 
 
-    def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None, retryRetention=None, poolname=None,):
+    def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None, retryRetention=None, poolname=None, numberOfBuckets=None,):
         self.id = id
         self.dbname = dbname
         self.tablename = tablename
@@ -15512,6 +15524,7 @@ class CompactionInfoStruct(object):
         self.enqueueTime = enqueueTime
         self.retryRetention = retryRetention
         self.poolname = poolname
+        self.numberOfBuckets = numberOfBuckets
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15607,6 +15620,11 @@ class CompactionInfoStruct(object):
                     self.poolname = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 18:
+                if ftype == TType.I32:
+                    self.numberOfBuckets = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15684,6 +15702,10 @@ class CompactionInfoStruct(object):
         if self.poolname is not None:
             oprot.writeFieldBegin('poolname', TType.STRING, 17)
             oprot.writeString(self.poolname.encode('utf-8') if sys.version_info[0] == 2 else self.poolname)
+            oprot.writeFieldEnd()
+        if self.numberOfBuckets is not None:
+            oprot.writeFieldBegin('numberOfBuckets', TType.I32, 18)
+            oprot.writeI32(self.numberOfBuckets)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -31200,6 +31222,7 @@ CompactionRequest.thrift_spec = (
     (7, TType.STRING, 'initiatorId', 'UTF8', None, ),  # 7
     (8, TType.STRING, 'initiatorVersion', 'UTF8', None, ),  # 8
     (9, TType.STRING, 'poolName', 'UTF8', None, ),  # 9
+    (10, TType.I32, 'numberOfBuckets', None, None, ),  # 10
 )
 all_structs.append(CompactionInfoStruct)
 CompactionInfoStruct.thrift_spec = (
@@ -31221,6 +31244,7 @@ CompactionInfoStruct.thrift_spec = (
     (15, TType.I64, 'enqueueTime', None, None, ),  # 15
     (16, TType.I64, 'retryRetention', None, None, ),  # 16
     (17, TType.STRING, 'poolname', 'UTF8', None, ),  # 17
+    (18, TType.I32, 'numberOfBuckets', None, None, ),  # 18
 )
 all_structs.append(OptionalCompactionInfoStruct)
 OptionalCompactionInfoStruct.thrift_spec = (
