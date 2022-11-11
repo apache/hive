@@ -47,6 +47,8 @@ public class ReplConst {
 
   /**
    * Database level prop to identify the failover endPoint of the database.
+   * It is set during planned failover and unset or removed after optimised
+   * bootstrap is completed. During unplanned failover this prop is not set
    * */
   public static final String REPL_FAILOVER_ENDPOINT = "repl.failover.endpoint";
 
@@ -82,4 +84,10 @@ public class ReplConst {
   public static final String BOOTSTRAP_DUMP_STATE_KEY_PREFIX = "bootstrap.dump.state.";
 
   public static final String READ_ONLY_HOOK = "org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyDatabaseHook";
+
+  /**
+   * Type of failover
+   */
+  public static final String PLANNED_FAILOVER = "PLANNED";
+  public static final String UNPLANNED_FAILOVER = "UNPLANNED";
 }

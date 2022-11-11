@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl.incremental;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.Context;
@@ -99,8 +100,22 @@ public class IncrementalLoadTasksBuilder {
     metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) iterator.getNumEvents());
     this.shouldFailover = shouldFailover;
     if (shouldFailover) {
+      Database db = null;
+      try {
+        db = Hive.get().getDatabase(dbName);
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
+      String dbFailoverEndPoint = "";
+      if (db != null) {
+        Map<String, String> params = db.getParameters();
+        if (params != null) {
+          dbFailoverEndPoint = params.get(ReplConst.REPL_FAILOVER_ENDPOINT);
+        }
+      }
       this.metricCollector.reportFailoverStart("REPL_LOAD", metricMap,
-              new FailoverMetaData(new Path(dumpDirectory, ReplUtils.REPL_HIVE_BASE_DIR), conf));
+          new FailoverMetaData(new Path(dumpDirectory, ReplUtils.REPL_HIVE_BASE_DIR), conf),
+          dbFailoverEndPoint, ReplConst.PLANNED_FAILOVER);
     } else {
       this.metricCollector.reportStageStart("REPL_LOAD", metricMap);
     }
