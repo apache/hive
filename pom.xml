@@ -184,7 +184,7 @@
     <netty.version>4.1.77.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
     <!-- used by druid storage handler -->
-    <pac4j-saml.version>4.5.5</pac4j-saml.version>
+    <pac4j-saml.version>5.7.0</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
     <parquet.version>1.11.1</parquet.version>
     <pig.version>0.16.0</pig.version>
@@ -792,7 +792,7 @@
       </dependency>
       <dependency>
         <groupId>org.pac4j</groupId>
-        <artifactId>pac4j-saml-opensamlv3</artifactId>
+        <artifactId>pac4j-saml</artifactId>
         <version>${pac4j-saml.version}</version>
         <exclusions>
           <exclusion>

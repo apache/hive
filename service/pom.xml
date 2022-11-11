@@ -189,7 +189,7 @@
     </dependency>
     <dependency>
       <groupId>org.pac4j</groupId>
-      <artifactId>pac4j-saml-opensamlv3</artifactId>
+      <artifactId>pac4j-saml</artifactId>
       <exclusions>
         <exclusion>
           <groupId>org.bouncycastle</groupId>
