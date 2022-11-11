@@ -118,18 +118,28 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       builder.push(filter.getInput());
       final int fieldCount = builder.peek().getRowType().getFieldCount();
 
+      LOG.info("SJC: FILTER GONNA CALL INTO CORRELATION INFO");
       boolean isCorrScalarQuery = correlationInfo.isCorrScalarQuery();
 
-      final RexNode target =
-          apply(call.getMetadataQuery(), correlationInfo.rexSubQuery, filter.getVariablesSet(),
-              logic, builder, 1, fieldCount, isCorrScalarQuery);
-      final RexShuttle shuttle = new ReplaceSubQueryShuttle(correlationInfo.rexSubQuery, target);
-      builder.filter(shuttle.apply(filter.getCondition()));
-      builder.project(fields(builder, filter.getRowType().getFieldCount()));
-      RelNode newRel = builder.build();
-      call.transformTo(newRel);
       LOG.info("SJC: ISCORR FOR FILTER IS " + isCorrScalarQuery );
+      LOG.info("SJC: REXSUBQUERY IS " + correlationInfo.rexSubQuery);
+      //XXX: needs fixing, passing a param in to getVariablesSet2
+      final RexNode target =
+          apply(call.getMetadataQuery(), correlationInfo.rexSubQuery, filter.getVariablesSet2(correlationInfo.rexSubQuery),
+              logic, builder, 1, fieldCount, isCorrScalarQuery);
+      LOG.info("SJC: CP1");
+      final RexShuttle shuttle = new ReplaceSubQueryShuttle(correlationInfo.rexSubQuery, target);
+      LOG.info("SJC: CP2");
+      builder.filter(shuttle.apply(filter.getCondition()));
+      LOG.info("SJC: CP3");
+      builder.project(fields(builder, filter.getRowType().getFieldCount()));
+      LOG.info("SJC: CP4");
+      RelNode newRel = builder.build();
+      LOG.info("SJC: CLOSING OUT");
+      call.transformTo(newRel);
+      LOG.info("SJC: CP5");
     } else if (relNode instanceof HiveProject) {
+      LOG.info("SJC: PROJECT GONNA CALL INTO CORRELATION INFO");
       // if subquery is in PROJECT
       final HiveProject project = call.rel(0);
       final HiveCorrelationInfo correlationInfo = project.getCorrelationInfo();
@@ -141,14 +151,15 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       final int fieldCount = builder.peek().getRowType().getFieldCount();
 
       boolean isCorrScalarQuery = correlationInfo.isCorrScalarQuery();
+      LOG.info("SJC: ISCORR FOR PROJECT IS " + isCorrScalarQuery );
 
       final RexNode target =
-          apply(call.getMetadataQuery(), correlationInfo.rexSubQuery, project.getVariablesSet(),
+          apply(call.getMetadataQuery(), correlationInfo.rexSubQuery, project.getVariablesSet2(correlationInfo.rexSubQuery),
               logic, builder, 1, fieldCount, isCorrScalarQuery);
       final RexShuttle shuttle = new ReplaceSubQueryShuttle(correlationInfo.rexSubQuery, target);
       builder.project(shuttle.apply(project.getProjects()), project.getRowType().getFieldNames());
+      LOG.info("SJC: CLOSING OUT PROJECT");
       call.transformTo(builder.build());
-      LOG.info("SJC: ISCORR FOR PROJECT IS " + isCorrScalarQuery );
     }
   }
 
@@ -568,15 +579,22 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
   protected RexNode apply(RelMetadataQuery mq, RexSubQuery e, Set<CorrelationId> variablesSet,
       RelOptUtil.Logic logic, RelBuilder builder, int inputCount, int offset,
       boolean isCorrScalarAgg) {
+    LOG.info("SJC: IN APPLY");
+    LOG.info("SJC: GETKIND IS " + e.getKind());
+    LOG.info("SJC: DONE GETKIND IS "); 
     switch (e.getKind()) {
     case SCALAR_QUERY:
+      LOG.info("SJC: REWRITE SCALAR");
       return rewriteScalar(mq, e, variablesSet, builder, offset, inputCount, isCorrScalarAgg);
     case SOME:
+      LOG.info("SJC: REWRITE SOME ALL");
       return rewriteSomeAll(e, variablesSet, builder);
     case IN:
     case EXISTS:
+      LOG.info("SJC: REWRITE IN EXISTS");
       return rewriteInExists(e, variablesSet, logic, builder, offset, isCorrScalarAgg);
     default:
+      LOG.info("SJC: THROWING ASSERTION ERROR");
       throw new AssertionError(e.getKind());
     }
   }

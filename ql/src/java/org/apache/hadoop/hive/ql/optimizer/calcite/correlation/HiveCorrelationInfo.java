@@ -22,25 +22,37 @@ import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rex.RexSubQuery;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class HiveCorrelationInfo {
   public final Set<CorrelationId> correlationIds;
-  public final RexSubQuery rexSubQuery;
   public final boolean hasGroupByAgg;
+  public final RexSubQuery rexSubQuery;
+  public final Map<RexSubQuery, HiveCorrelationInfo> correlationInfoMap;
 
   public HiveCorrelationInfo() {
-    correlationIds = ImmutableSet.of();
-    rexSubQuery = null;
+    correlationIds = new HashSet<>();
     hasGroupByAgg = false;
+    rexSubQuery = null;
+    correlationInfoMap = new HashMap<>();
   }
 
   public HiveCorrelationInfo(Set<CorrelationId> correlationIds, RexSubQuery rexSubQuery,
-      boolean hasGroupByAgg) {
+      boolean hasGroupByAgg, Map<RexSubQuery, HiveCorrelationInfo> correlationInfoMap) {
     ImmutableSet.Builder builder = ImmutableSet.builder();
     builder.addAll(correlationIds);
+    for (HiveCorrelationInfo h : correlationInfoMap.values()) {
+      // XXX: should  do recursively
+      builder.addAll(h.correlationIds);
+    }
     this.correlationIds = builder.build();
     this.rexSubQuery = rexSubQuery;
     this.hasGroupByAgg = hasGroupByAgg;
+    //XXX: make this immutable
+    this.correlationInfoMap = correlationInfoMap;
   }
 
   public boolean isCorrScalarQuery() {

@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.calcite.plan.RelOptCluster;
@@ -32,6 +34,7 @@ import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlExplainLevel;
 import org.apache.calcite.sql.validate.SqlValidatorUtil;
@@ -42,11 +45,14 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.CorrelationIdSearcher;
 import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.HiveCorrelationInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HiveProject extends Project implements HiveRelNode {
+  private static final Logger LOG = LoggerFactory.getLogger(HiveProject.class);
 
   // lazy fetch, only populate if getVariablesSet is called
-  private HiveCorrelationInfo correlationInfo;
+  private Map<RexSubQuery, HiveCorrelationInfo> correlationInfoMap;
 
   private boolean isSysnthetic;
 
@@ -133,38 +139,38 @@ public class HiveProject extends Project implements HiveRelNode {
     return isSysnthetic;
   }
 
-  @Override
-  public Set<CorrelationId> getVariablesSet() {
-    if (this.correlationInfo == null) {
-      this.correlationInfo = createCorrelationInfo();
+  public Set<CorrelationId> getVariablesSet2(RexSubQuery subquery) {
+    if (this.correlationInfoMap == null) {
+      this.correlationInfoMap = createCorrelationInfo();
     }
-    return correlationInfo.correlationIds;
+    /*
+    LOG.info("SJC: PROJECT GETTING VARIABLES SET 2");
+    for (CorrelationId c : correlationInfo.correlationIds) {
+      LOG.info("SJC: PROJECT CORRELATION ID IS " + c);
+    }
+    LOG.info("SJC: END PROJECT GETTING VARIABLES SET 2");
+    */
+    return correlationInfoMap.get(subquery).correlationIds;
   }
 
   public HiveCorrelationInfo getCorrelationInfo() {
-    if (correlationInfo == null) {
-      this.correlationInfo = createCorrelationInfo();
+    if (correlationInfoMap == null) {
+      this.correlationInfoMap = createCorrelationInfo();
     }
-    return correlationInfo;
+    //XXX: ugly way to do this
+    for (RexSubQuery rsq : correlationInfoMap.keySet()) {
+      return correlationInfoMap.get(rsq);
+    }
+    return new HiveCorrelationInfo();
   }
 
-  public HiveCorrelationInfo createCorrelationInfo() {
-    boolean hasSubQuery;
-    HiveCorrelationInfo returnCorrelationInfo = null;
+  public Map<RexSubQuery, HiveCorrelationInfo> createCorrelationInfo() {
+    Map<RexSubQuery, HiveCorrelationInfo> correlationInfoMap = new LinkedHashMap<>();
     for (RexNode r : getProjects()) {
       CorrelationIdSearcher searcher = new CorrelationIdSearcher(r); 
-      HiveCorrelationInfo correlationInfo = searcher.getCorrelationInfo();
-      if (correlationInfo.rexSubQuery != null) {
-        if (returnCorrelationInfo != null) {
-          throw new RuntimeException("Two subqueries within a select is not allowed.");
-        }
-        returnCorrelationInfo = correlationInfo;
-      }
+      correlationInfoMap.putAll(searcher.getCorrelationInfoMap());
     }
-    if (returnCorrelationInfo == null) {
-      returnCorrelationInfo = new HiveCorrelationInfo();
-    }
-    return returnCorrelationInfo;
+    return correlationInfoMap;
   }
 
 
