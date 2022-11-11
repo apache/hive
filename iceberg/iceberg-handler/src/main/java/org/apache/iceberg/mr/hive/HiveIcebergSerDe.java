@@ -127,7 +127,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
             throw new SerDeException(CTAS_EXCEPTION_MSG);
           }
 
-          if (!Boolean.parseBoolean(serDeProperties.getProperty("explain"))) {
+          if (!Boolean.parseBoolean(serDeProperties.getProperty(org.apache.hadoop.hive.conf.Constants.IS_EXPLAIN))) {
             createTableForCTAS(configuration, serDeProperties);
           }
         }

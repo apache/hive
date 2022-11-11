@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import static org.apache.hadoop.hive.conf.Constants.IS_EXPLAIN;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
 
@@ -1223,7 +1224,7 @@ public final class PlanUtils {
     return LazySimpleSerDe.class;
   }
 
-  private static final String[] FILTER_OUT_FROM_EXPLAIN = {TABLE_IS_CTAS, "explain"};
+  private static final String[] FILTER_OUT_FROM_EXPLAIN = {TABLE_IS_CTAS, IS_EXPLAIN};
 
   /**
    * Get a Map of table or partition properties to be used in explain extended output.

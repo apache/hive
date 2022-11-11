@@ -41,6 +41,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.apache.hadoop.hive.conf.Constants.IS_EXPLAIN;
+
 /**
  * TableDesc.
  *
@@ -147,7 +149,7 @@ public class TableDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "jobProperties", explainLevels = { Level.EXTENDED })
   public Map<String, String> getJobPropertiesExplain() {
-    return PlanUtils.getPropertiesExplain(jobProperties, "explain");
+    return PlanUtils.getPropertiesExplain(jobProperties, IS_EXPLAIN);
   }
 
   public void setJobSecrets(Map<String, String> jobSecrets) {
