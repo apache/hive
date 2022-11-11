@@ -141,7 +141,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
           default:
             //done
             context.getConsole().printInfo("Compaction with id " + resp.getId() + " finished with status: " +
-              comp.getState());
+                comp.getState());
             break wait;
         }
       }else {
