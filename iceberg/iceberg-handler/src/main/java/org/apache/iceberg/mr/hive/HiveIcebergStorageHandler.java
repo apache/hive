@@ -835,7 +835,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
     } catch (NoSuchTableException ex) {
       if (!(StringUtils.isNotBlank(props.getProperty(hive_metastoreConstants.TABLE_IS_CTAS)) &&
-          Boolean.parseBoolean(props.getProperty(org.apache.hadoop.hive.conf.Constants.IS_EXPLAIN)))) {
+          Boolean.parseBoolean(props.getProperty(org.apache.hadoop.hive.conf.Constants.IS_EXPLAIN_PLAN)))) {
         throw ex;
       }
 

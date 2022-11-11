@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.table.create;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +72,7 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.conf.Constants.IS_EXPLAIN;
+import static org.apache.hadoop.hive.conf.Constants.IS_EXPLAIN_PLAN;
 
 /**
  * DDL task description for CREATE TABLE commands.
@@ -521,7 +520,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   @Explain(displayName = "table properties")
   public Map<String, String> getTblPropsExplain() { // only for displaying plan
     return PlanUtils.getPropertiesExplain(tblProps,
-            IS_EXPLAIN, hive_metastoreConstants.TABLE_IS_CTAS, hive_metastoreConstants.TABLE_BUCKETING_VERSION);
+            IS_EXPLAIN_PLAN, hive_metastoreConstants.TABLE_IS_CTAS, hive_metastoreConstants.TABLE_BUCKETING_VERSION);
   }
 
   /**

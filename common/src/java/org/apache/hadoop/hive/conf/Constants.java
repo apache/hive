@@ -106,5 +106,5 @@ public class Constants {
   public static final String HTTP_HEADER_REQUEST_TRACK = "Request-Track";
   public static final String TIME_POSTFIX_REQUEST_TRACK = "_TIME";
 
-  public static final String IS_EXPLAIN = "explain";
+  public static final String IS_EXPLAIN_PLAN = "isExplainPlan";
 }

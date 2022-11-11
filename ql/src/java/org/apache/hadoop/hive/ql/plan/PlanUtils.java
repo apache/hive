@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import static org.apache.hadoop.hive.conf.Constants.IS_EXPLAIN;
+import static org.apache.hadoop.hive.conf.Constants.IS_EXPLAIN_PLAN;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
 
@@ -27,14 +27,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -1224,7 +1222,7 @@ public final class PlanUtils {
     return LazySimpleSerDe.class;
   }
 
-  private static final String[] FILTER_OUT_FROM_EXPLAIN = {TABLE_IS_CTAS, IS_EXPLAIN};
+  private static final String[] FILTER_OUT_FROM_EXPLAIN = {TABLE_IS_CTAS, IS_EXPLAIN_PLAN};
 
   /**
    * Get a Map of table or partition properties to be used in explain extended output.
