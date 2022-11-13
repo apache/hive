@@ -511,6 +511,4 @@ public class GenericUDFTrunc extends GenericUDF {
         }
     }
 
-
-
 }
