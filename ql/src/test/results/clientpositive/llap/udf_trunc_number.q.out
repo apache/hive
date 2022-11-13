@@ -369,3 +369,624 @@ POSTHOOK: query: DROP TABLE sampletable4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sampletable4
 POSTHOOK: Output: default@sampletable4
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789.12345678
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 7)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789.1234567
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789.123456
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789.12345
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789.1234
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789.123
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789.12
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789.1
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456780
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456700
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456000
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123450000
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123400000
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123000000
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -7)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+120000000
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+100000000
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.2345678912345679E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 7)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.234567891234567E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.23456789123456E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.2345678912345E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.234567891234E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.23456789123E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.2345678912E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.234567891E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.23456789E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.2345678E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.234567E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.23456E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.2345E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.234E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.23E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -7)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.2E8
+PREHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789.123456789' AS DOUBLE), -8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.0E8
+PREHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1234567.1
+PREHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1234567.0
+PREHOOK: query: select trunc(CAST('1234567.1' AS FLOAT))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('1234567.1' AS FLOAT))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1234567.0
+PREHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1234560.0
+PREHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1234500.0
+PREHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1234000.0
+PREHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1230000.0
+PREHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1200000.0
+PREHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1000000.0
+PREHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -7)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0.0
+PREHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('1234567.1' AS FLOAT), -8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0.0
+PREHOOK: query: select trunc(CAST('123456789' AS BIGINT), 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS BIGINT), 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789
+PREHOOK: query: select trunc(CAST('123456789' AS BIGINT), 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS BIGINT), 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789
+PREHOOK: query: select trunc(CAST('123456789' AS BIGINT), 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS BIGINT), 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789
+PREHOOK: query: select trunc(CAST('123456789' AS BIGINT), 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS BIGINT), 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789
+PREHOOK: query: select trunc(CAST('123456789' AS BIGINT), -1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS BIGINT), -1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456780
+PREHOOK: query: select trunc(CAST('123456789' AS BIGINT), -2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS BIGINT), -2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456700
+PREHOOK: query: select trunc(CAST('123456789' AS BIGINT), -3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS BIGINT), -3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456000
+PREHOOK: query: select trunc(CAST('123456789' AS BIGINT), -4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS BIGINT), -4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123450000
+PREHOOK: query: select trunc(CAST('123456789' AS BIGINT), -5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS BIGINT), -5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123400000
+PREHOOK: query: select trunc(CAST('123456789' AS BIGINT), -6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS BIGINT), -6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123000000
+PREHOOK: query: select trunc(CAST('123456789' AS BIGINT), -7)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS BIGINT), -7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+120000000
+PREHOOK: query: select trunc(CAST('123456789' AS BIGINT), -8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS BIGINT), -8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+100000000
+PREHOOK: query: select trunc(CAST('123456789' AS INT), 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS INT), 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789
+PREHOOK: query: select trunc(CAST('123456789' AS INT), 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS INT), 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789
+PREHOOK: query: select trunc(CAST('123456789' AS INT), 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS INT), 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789
+PREHOOK: query: select trunc(CAST('123456789' AS INT), 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS INT), 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456789
+PREHOOK: query: select trunc(CAST('123456789' AS INT), -1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS INT), -1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456780
+PREHOOK: query: select trunc(CAST('123456789' AS INT), -2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS INT), -2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456700
+PREHOOK: query: select trunc(CAST('123456789' AS INT), -3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS INT), -3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123456000
+PREHOOK: query: select trunc(CAST('123456789' AS INT), -4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS INT), -4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123450000
+PREHOOK: query: select trunc(CAST('123456789' AS INT), -5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS INT), -5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123400000
+PREHOOK: query: select trunc(CAST('123456789' AS INT), -6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS INT), -6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123000000
+PREHOOK: query: select trunc(CAST('123456789' AS INT), -7)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS INT), -7)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+120000000
+PREHOOK: query: select trunc(CAST('123456789' AS INT), -8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc(CAST('123456789' AS INT), -8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+100000000

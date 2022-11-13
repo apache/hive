@@ -72,3 +72,83 @@ DROP TABLE sampletable2;
 DROP TABLE sampletable3;
 
 DROP TABLE sampletable4;
+
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 8);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 7);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 6);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 5);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 4);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 3);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 2);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 1);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), 0);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -1);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -2);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -3);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -4);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -5);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -6);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -7);
+select trunc(CAST('123456789.123456789' AS DECIMAL(18,9)), -8);
+
+
+-- trunc double
+select trunc(CAST('123456789.123456789' AS DOUBLE), 8);
+select trunc(CAST('123456789.123456789' AS DOUBLE), 7);
+select trunc(CAST('123456789.123456789' AS DOUBLE), 6);
+select trunc(CAST('123456789.123456789' AS DOUBLE), 5);
+select trunc(CAST('123456789.123456789' AS DOUBLE), 4);
+select trunc(CAST('123456789.123456789' AS DOUBLE), 3);
+select trunc(CAST('123456789.123456789' AS DOUBLE), 2);
+select trunc(CAST('123456789.123456789' AS DOUBLE), 1);
+select trunc(CAST('123456789.123456789' AS DOUBLE), 0);
+select trunc(CAST('123456789.123456789' AS DOUBLE), -1);
+select trunc(CAST('123456789.123456789' AS DOUBLE), -2);
+select trunc(CAST('123456789.123456789' AS DOUBLE), -3);
+select trunc(CAST('123456789.123456789' AS DOUBLE), -4);
+select trunc(CAST('123456789.123456789' AS DOUBLE), -5);
+select trunc(CAST('123456789.123456789' AS DOUBLE), -6);
+select trunc(CAST('123456789.123456789' AS DOUBLE), -7);
+select trunc(CAST('123456789.123456789' AS DOUBLE), -8);
+
+-- trunc float
+select trunc(CAST('1234567.1' AS FLOAT), 1);
+select trunc(CAST('1234567.1' AS FLOAT), 0);
+select trunc(CAST('1234567.1' AS FLOAT));
+select trunc(CAST('1234567.1' AS FLOAT), -1);
+select trunc(CAST('1234567.1' AS FLOAT), -2);
+select trunc(CAST('1234567.1' AS FLOAT), -3);
+select trunc(CAST('1234567.1' AS FLOAT), -4);
+select trunc(CAST('1234567.1' AS FLOAT), -5);
+select trunc(CAST('1234567.1' AS FLOAT), -6);
+select trunc(CAST('1234567.1' AS FLOAT), -7);
+select trunc(CAST('1234567.1' AS FLOAT), -8);
+
+-- trunc longCAST('
+select trunc(CAST('123456789' AS BIGINT), 2);
+select trunc(CAST('123456789' AS BIGINT), 2);
+select trunc(CAST('123456789' AS BIGINT), 1);
+select trunc(CAST('123456789' AS BIGINT), 0);
+select trunc(CAST('123456789' AS BIGINT), -1);
+select trunc(CAST('123456789' AS BIGINT), -2);
+select trunc(CAST('123456789' AS BIGINT), -3);
+select trunc(CAST('123456789' AS BIGINT), -4);
+select trunc(CAST('123456789' AS BIGINT), -5);
+select trunc(CAST('123456789' AS BIGINT), -6);
+select trunc(CAST('123456789' AS BIGINT), -7);
+select trunc(CAST('123456789' AS BIGINT), -8);
+
+
+-- trunc Int
+select trunc(CAST('123456789' AS INT), 3);
+select trunc(CAST('123456789' AS INT), 2);
+select trunc(CAST('123456789' AS INT), 1);
+select trunc(CAST('123456789' AS INT), 0);
+select trunc(CAST('123456789' AS INT), -1);
+select trunc(CAST('123456789' AS INT), -2);
+select trunc(CAST('123456789' AS INT), -3);
+select trunc(CAST('123456789' AS INT), -4);
+select trunc(CAST('123456789' AS INT), -5);
+select trunc(CAST('123456789' AS INT), -6);
+select trunc(CAST('123456789' AS INT), -7);
+select trunc(CAST('123456789' AS INT), -8);
