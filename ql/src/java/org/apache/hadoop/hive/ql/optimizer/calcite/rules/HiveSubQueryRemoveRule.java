@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import com.google.common.base.Preconditions;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
@@ -123,6 +124,25 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
 
       LOG.info("SJC: ISCORR FOR FILTER IS " + isCorrScalarQuery );
       LOG.info("SJC: REXSUBQUERY IS " + correlationInfo.rexSubQuery);
+
+      final RexSubQuery e = RexUtil.SubQueryFinder.find(filter.getCondition());
+      SubqueryConf subqueryConfig = filter.getCluster().getPlanner().getContext().unwrap(SubqueryConf.class);
+      boolean oldIsCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
+      LOG.info("SJC: OLD ISCORR FOR FILTER IS " + oldIsCorrScalarQuery );
+      LOG.info("SJC: OLD SUBQUERY IS " + e);
+      LOG.info("SJC: NEW SUBQUERY IS " + correlationInfo.rexSubQuery);
+//      Preconditions.checkState(oldIsCorrScalarQuery == isCorrScalarQuery);
+      Set<CorrelationId> oldSet = HiveFilter.getVariablesSet(e);
+      Set<CorrelationId> newSet = filter.getVariablesSet2(correlationInfo.rexSubQuery);
+      for (CorrelationId c : newSet) {
+        LOG.info("SJC: NEW CORRELATION ID FOR FILTER IS " + c);
+      }
+      for (CorrelationId c : oldSet) {
+        LOG.info("SJC: OLD CORRELATION ID FOR FILTER IS " + c);
+      }
+//      Preconditions.checkState(oldSet.equals(newSet));
+
+      
       //XXX: needs fixing, passing a param in to getVariablesSet2
       final RexNode target =
           apply(call.getMetadataQuery(), correlationInfo.rexSubQuery, filter.getVariablesSet2(correlationInfo.rexSubQuery),
@@ -153,6 +173,20 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       boolean isCorrScalarQuery = correlationInfo.isCorrScalarQuery();
       LOG.info("SJC: ISCORR FOR PROJECT IS " + isCorrScalarQuery );
 
+      final RexSubQuery e = RexUtil.SubQueryFinder.find(project.getProjects());
+      SubqueryConf subqueryConfig = project.getCluster().getPlanner().getContext().unwrap(SubqueryConf.class);
+      boolean oldIsCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
+      LOG.info("SJC: OLD ISCORR FOR FILTER IS " + oldIsCorrScalarQuery );
+      Preconditions.checkState(oldIsCorrScalarQuery == isCorrScalarQuery);
+      Set<CorrelationId> oldSet = HiveFilter.getVariablesSet(e);
+      Set<CorrelationId> newSet = project.getVariablesSet2(correlationInfo.rexSubQuery);
+      for (CorrelationId c : newSet) {
+        LOG.info("SJC: NEW CORRELATION ID FOR FILTER IS " + c);
+      }
+      for (CorrelationId c : oldSet) {
+        LOG.info("SJC: OLD CORRELATION ID FOR FILTER IS " + c);
+      }
+      Preconditions.checkState(oldSet.equals(newSet));
       final RexNode target =
           apply(call.getMetadataQuery(), correlationInfo.rexSubQuery, project.getVariablesSet2(correlationInfo.rexSubQuery),
               logic, builder, 1, fieldCount, isCorrScalarQuery);

@@ -39,7 +39,10 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 public class QBSubQuery implements ISubQueryJoinInfo {
+  private static final Logger LOG = LoggerFactory.getLogger(QBSubQuery.class);
 
   public static enum SubQueryType {
     EXISTS,
@@ -531,6 +534,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
                                  boolean forHavingClause,
                                  String outerQueryAlias, boolean [] subqueryConfig)
           throws SemanticException {
+    LOG.info("SJC: IN RESTRICTONS CHECK");
     ASTNode insertClause = getChildFromSubqueryAST("Insert", HiveParser.TOK_INSERT);
 
     ASTNode selectClause = (ASTNode) insertClause.getChild(1);
@@ -569,6 +573,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       hasAggregateExprs = hasAggregateExprs | ( r == 1 | r== 2 );
       hasCount = hasCount | ( r == 2 );
     }
+    LOG.info("SJC: HASCOUNT = " + hasCount);
 
     // figure out correlation and presence of non-equi join predicate
     boolean hasCorrelation = false;
@@ -593,6 +598,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
         }
       }
     }
+    LOG.info("SJC: HASCORRELATION = " + hasCorrelation);
 
     // figure out if there is group by
     boolean hasExplicitGby = false;
@@ -602,6 +608,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
         break;
       }
     }
+    LOG.info("SJC: HASEXPLICITYGBY = " + hasExplicitGby);
 
     /*
      * Restriction.14.h :: Only Correlated Exists/Not exists Sub Queries can contain Windowing clauses.
@@ -613,6 +620,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
           subQueryAST, "Only Correlated Exists/Not exists Sub Queries can contain Windowing clauses."));
     }
 
+    LOG.info("SJC: IN SUBQUERY, TYPE IS " + operator.getType());
     /*
      * Restriction.13.m :: In the case of an implied Group By on a
      * correlated SubQuery, the SubQuery always returns 1 row.
@@ -627,21 +635,28 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       if (hasAggregateExprs &&
               !hasExplicitGby) {
 
+        LOG.info("SJC: CP1");
         if(operator.getType() == SubQueryType.SCALAR) {
             if(!hasWindowing) {
+              LOG.info("SJC: CP2");
               subqueryConfig[1] = true;
             }
             if(hasCorrelation) {
+              LOG.info("SJC: CP3");
               subqueryConfig[0] = true;
             }
         }
         else if(operator.getType() == SubQueryType.IN) {
+          LOG.info("SJC: CP4");
           if(hasCount && hasCorrelation) {
+            LOG.info("SJC: CP5");
             subqueryConfig[0] = true;
           }
         }
         else if (operator.getType() == SubQueryType.NOT_IN) {
+            LOG.info("SJC: CP6");
             if(hasCorrelation) {
+              LOG.info("SJC: CP7");
               subqueryConfig[0] = true;
             }
         }

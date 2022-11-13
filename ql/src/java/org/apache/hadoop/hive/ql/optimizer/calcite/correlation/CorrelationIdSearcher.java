@@ -31,13 +31,16 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.calcite.rel.core.CorrelationId;
 import java.util.Set;
@@ -48,17 +51,32 @@ import java.util.LinkedHashMap;
 public class CorrelationIdSearcher {
   private Map<RexSubQuery, HiveCorrelationInfo> correlationInfoMap = new LinkedHashMap<>();
   private Set<CorrelationId> correlationIds = new LinkedHashSet<>();
-  private boolean hasGroupByAgg;
+  private boolean hasWindowingFn;
+  private HiveAggregate aggregateRel;
 
   private static class CorrelationIdVisitor extends RexShuttle {
     public Map<RexSubQuery, HiveCorrelationInfo> correlationInfoMap = new LinkedHashMap<>();
     public Set<CorrelationId> correlationIds = new LinkedHashSet<>();
-    public boolean hasGroupByAgg;
+    public HiveAggregate aggregateRel;
+    public boolean hasWindowingFn;
+    public boolean notFlag;
 
-    private CorrelationIdVisitor getOuter() {
-      return this;
+    @Override
+    public RexNode visitCall(RexCall call) {
+      if (call.getOperator().getKind() == SqlKind.NOT) {
+        notFlag = true;
+      }
+      RexNode returnNode = super.visitCall(call);
+      notFlag = false;
+      return returnNode;
     }
-  
+
+    @Override
+    public RexNode visitOver(RexOver over) {
+      hasWindowingFn = true;
+      return super.visitOver(over);
+    }
+
     @Override
     public RexNode visitCorrelVariable(RexCorrelVariable variable) {
       correlationIds.add(variable.id);
@@ -67,7 +85,7 @@ public class CorrelationIdSearcher {
 
     @Override
     public RexNode visitSubQuery(RexSubQuery subQuery) {
-      SubQueryRelNodeShuttle relShuttle = new SubQueryRelNodeShuttle(subQuery);
+      SubQueryRelNodeShuttle relShuttle = new SubQueryRelNodeShuttle(subQuery, notFlag);
       subQuery.rel.accept(relShuttle);
       correlationInfoMap.put(subQuery, relShuttle.getHiveCorrelationInfo());
 
@@ -77,12 +95,15 @@ public class CorrelationIdSearcher {
 
   private static class SubQueryRelNodeShuttle extends HiveRelShuttleImpl {
     public final RexSubQuery rexSubQuery;
-    public boolean hasGroupByAgg;
+    public HiveAggregate aggregateRel;
     public Map<RexSubQuery, HiveCorrelationInfo> correlationInfoMap = new LinkedHashMap<>();
     public Set<CorrelationId> correlationIds = new LinkedHashSet<>();
+    public boolean hasWindowingFn;
+    public boolean notFlag;
 
-    public SubQueryRelNodeShuttle(RexSubQuery rexSubQuery) {
+    public SubQueryRelNodeShuttle(RexSubQuery rexSubQuery, boolean notFlag) {
       this.rexSubQuery = rexSubQuery;
+      this.notFlag = notFlag;
     }
 
     @Override
@@ -90,7 +111,7 @@ public class CorrelationIdSearcher {
       CorrelationIdSearcher searcher = new CorrelationIdSearcher(filter.getCondition());
       this.correlationInfoMap.putAll(searcher.correlationInfoMap);
       this.correlationIds.addAll(searcher.correlationIds);
-      this.hasGroupByAgg = searcher.hasGroupByAgg || this.hasGroupByAgg;
+      this.hasWindowingFn |= searcher.hasWindowingFn;
       return super.visit(filter);
     }
 
@@ -100,19 +121,29 @@ public class CorrelationIdSearcher {
         CorrelationIdSearcher searcher = new CorrelationIdSearcher(r);
         this.correlationInfoMap.putAll(searcher.correlationInfoMap);
         this.correlationIds.addAll(searcher.correlationIds);
-        this.hasGroupByAgg = searcher.hasGroupByAgg || this.hasGroupByAgg;
+        this.hasWindowingFn |= searcher.hasWindowingFn;
       }
       return super.visit(project);
     }
 
     @Override
+    public RelNode visit(HiveJoin join) {
+      CorrelationIdSearcher searcher = new CorrelationIdSearcher(join.getCondition());
+      this.correlationInfoMap.putAll(searcher.correlationInfoMap);
+      this.correlationIds.addAll(searcher.correlationIds);
+      this.hasWindowingFn |= searcher.hasWindowingFn;
+      return super.visit(join);
+    }
+
+    @Override
     public RelNode visit(HiveAggregate aggregate) {
-      hasGroupByAgg = true;
+      this.aggregateRel = aggregate;
       return super.visit(aggregate);
     }
 
     public HiveCorrelationInfo getHiveCorrelationInfo() {
-      return new HiveCorrelationInfo(correlationIds, rexSubQuery, hasGroupByAgg, correlationInfoMap);
+      return new HiveCorrelationInfo(correlationIds, rexSubQuery, aggregateRel,
+          correlationInfoMap, notFlag, hasWindowingFn);
     }
   }
 
@@ -122,7 +153,8 @@ public class CorrelationIdSearcher {
     //XXX: make this immutable
     correlationInfoMap = visitor.correlationInfoMap;
     correlationIds = visitor.correlationIds;
-    hasGroupByAgg = visitor.hasGroupByAgg;
+    hasWindowingFn = visitor.hasWindowingFn;
+    aggregateRel = visitor.aggregateRel;
   }
 
   public Map<RexSubQuery, HiveCorrelationInfo> getCorrelationInfoMap() {

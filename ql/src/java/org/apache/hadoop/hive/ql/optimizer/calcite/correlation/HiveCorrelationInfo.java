@@ -18,30 +18,42 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.correlation;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rex.RexSubQuery;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HiveCorrelationInfo {
+  private static final Logger LOG = LoggerFactory.getLogger(HiveCorrelationInfo.class);
   public final Set<CorrelationId> correlationIds;
-  public final boolean hasGroupByAgg;
+  public final HiveAggregate aggregateRel;
   public final RexSubQuery rexSubQuery;
   public final Map<RexSubQuery, HiveCorrelationInfo> correlationInfoMap;
+  public final boolean notFlag;
+  public final boolean hasWindowingFn;
 
   public HiveCorrelationInfo() {
     correlationIds = new HashSet<>();
-    hasGroupByAgg = false;
+    aggregateRel = null;
     rexSubQuery = null;
     correlationInfoMap = new HashMap<>();
+    notFlag = false;
+    hasWindowingFn = false;
   }
 
   public HiveCorrelationInfo(Set<CorrelationId> correlationIds, RexSubQuery rexSubQuery,
-      boolean hasGroupByAgg, Map<RexSubQuery, HiveCorrelationInfo> correlationInfoMap) {
+      HiveAggregate aggregateRel,
+      Map<RexSubQuery, HiveCorrelationInfo> correlationInfoMap,
+      boolean notFlag, boolean hasWindowingFn) {
     ImmutableSet.Builder builder = ImmutableSet.builder();
     builder.addAll(correlationIds);
     for (HiveCorrelationInfo h : correlationInfoMap.values()) {
@@ -50,12 +62,53 @@ public class HiveCorrelationInfo {
     }
     this.correlationIds = builder.build();
     this.rexSubQuery = rexSubQuery;
-    this.hasGroupByAgg = hasGroupByAgg;
+    this.aggregateRel = aggregateRel;
     //XXX: make this immutable
     this.correlationInfoMap = correlationInfoMap;
+    this.notFlag = notFlag;
+    this.hasWindowingFn = hasWindowingFn;
   }
 
   public boolean isCorrScalarQuery() {
-    return correlationIds.size() > 0 && hasGroupByAgg;
+    if (aggregateRel == null) {
+      LOG.info("SJC: AGGREGATE IS NULL");
+      return false;
+    }
+    LOG.info("SJC: HAS EXPLICIT GROUPS IS " + hasExplicitGroupBy());
+    if (hasExplicitGroupBy()) {
+      return false;
+    }
+
+    LOG.info("SJC: HAS CORRELATION IS " + hasCorrelation());
+    LOG.info("SJC: HAS COUNT IS " + hasCount());
+    LOG.info("SJC: NOT FLAG IS " + notFlag);
+    
+    LOG.info("SJC: REXSUBQUERY IS " + rexSubQuery);
+    LOG.info("SJC: REXSUBQUERY KIND IS " + rexSubQuery.getKind());
+    switch (rexSubQuery.getKind()) {
+      case SCALAR_QUERY:
+        return hasCorrelation() || hasWindowingFn;
+      case IN:
+        return notFlag ? hasCorrelation() : hasCorrelation() && hasCount();
+      default:
+        return false;
+    }
+  }
+
+  private boolean hasExplicitGroupBy() {
+    return aggregateRel.getGroupCount() > 0;
+  }
+
+  private boolean hasCorrelation() {
+    return correlationIds.size() > 0;
+  }
+
+  private boolean hasCount() {
+    for (AggregateCall aggCall : aggregateRel.getAggCallList()) {
+      if (aggCall.getAggregation().getKind() == SqlKind.COUNT) {
+        return true;
+      }
+    }
+    return false;
   }
 }
