@@ -69,3 +69,4 @@ POSTHOOK: Input: default@t_test1
 POSTHOOK: Input: default@t_test2
 #### A masked pattern was here ####
 1	1	2009	1
+10	0	2009	1

@@ -111,7 +111,7 @@ public class CorrelationIdSearcher {
       CorrelationIdSearcher searcher = new CorrelationIdSearcher(filter.getCondition());
       this.correlationInfoMap.putAll(searcher.correlationInfoMap);
       this.correlationIds.addAll(searcher.correlationIds);
-      this.hasWindowingFn |= searcher.hasWindowingFn;
+      this.hasWindowingFn = searcher.hasWindowingFn;
       return super.visit(filter);
     }
 
@@ -121,7 +121,7 @@ public class CorrelationIdSearcher {
         CorrelationIdSearcher searcher = new CorrelationIdSearcher(r);
         this.correlationInfoMap.putAll(searcher.correlationInfoMap);
         this.correlationIds.addAll(searcher.correlationIds);
-        this.hasWindowingFn |= searcher.hasWindowingFn;
+        this.hasWindowingFn = searcher.hasWindowingFn;
       }
       return super.visit(project);
     }
@@ -131,7 +131,7 @@ public class CorrelationIdSearcher {
       CorrelationIdSearcher searcher = new CorrelationIdSearcher(join.getCondition());
       this.correlationInfoMap.putAll(searcher.correlationInfoMap);
       this.correlationIds.addAll(searcher.correlationIds);
-      this.hasWindowingFn |= searcher.hasWindowingFn;
+      this.hasWindowingFn = searcher.hasWindowingFn;
       return super.visit(join);
     }
 

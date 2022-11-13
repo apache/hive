@@ -42,7 +42,7 @@ public class HiveCorrelationInfo {
   public final boolean hasWindowingFn;
 
   public HiveCorrelationInfo() {
-    correlationIds = new HashSet<>();
+    correlationIds = new LinkedHashSet<>();
     aggregateRel = null;
     rexSubQuery = null;
     correlationInfoMap = new HashMap<>();
@@ -56,10 +56,10 @@ public class HiveCorrelationInfo {
       boolean notFlag, boolean hasWindowingFn) {
     ImmutableSet.Builder builder = ImmutableSet.builder();
     builder.addAll(correlationIds);
-    for (HiveCorrelationInfo h : correlationInfoMap.values()) {
+//    for (HiveCorrelationInfo h : correlationInfoMap.values()) {
       // XXX: should  do recursively
-      builder.addAll(h.correlationIds);
-    }
+//      builder.addAll(h.correlationIds);
+//    }
     this.correlationIds = builder.build();
     this.rexSubQuery = rexSubQuery;
     this.aggregateRel = aggregateRel;
