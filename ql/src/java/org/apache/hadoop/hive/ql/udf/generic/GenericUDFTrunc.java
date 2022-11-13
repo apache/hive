@@ -63,9 +63,10 @@ import org.apache.hive.common.util.DateParser;
 
 /**
  * GenericUDFTrunc.
- * <p>
+ *
  * Returns the first day of the month which the date belongs to. The time part of the date will be
  * ignored.
+ *
  */
 @Description(name = "trunc", value = "_FUNC_(date, fmt) / _FUNC_(N,D) - Returns If input is date returns date with the time portion of the day truncated "
         + "to the unit specified by the format model fmt. If you omit fmt, then date is truncated to "
@@ -80,7 +81,7 @@ import org.apache.hive.common.util.DateParser;
         + " > SELECT _FUNC_(1234567891.1234567891,-4);\n" + "OK\n" + " 1234560000"
         + " > SELECT _FUNC_(1234567891.1234567891,0);\n" + "OK\n" + " 1234567891" + "\n"
         + " > SELECT _FUNC_(1234567891.1234567891);\n" + "OK\n" + " 1234567891")
-@VectorizedExpressions({TruncDateFromTimestamp.class, TruncDateFromString.class,
+@VectorizedExpressions({ TruncDateFromTimestamp.class, TruncDateFromString.class,
         TruncDateFromDate.class, TruncFloat.class, TruncFloatNoScale.class, TruncDecimal.class, TruncDecimalNoScale.class})
 public class GenericUDFTrunc extends GenericUDF {
 
@@ -509,5 +510,7 @@ public class GenericUDFTrunc extends GenericUDF {
             }
         }
     }
+
+
 
 }
