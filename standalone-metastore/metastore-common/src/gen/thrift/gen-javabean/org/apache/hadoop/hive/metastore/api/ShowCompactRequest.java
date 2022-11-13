@@ -139,6 +139,7 @@ package org.apache.hadoop.hive.metastore.api;
 
   public ShowCompactRequest(long id) {
     this.id = id;
+    setIdIsSet(true);
   }
 
   public ShowCompactRequest() {
