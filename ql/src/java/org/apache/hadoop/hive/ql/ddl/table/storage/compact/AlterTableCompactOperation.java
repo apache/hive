@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -126,16 +127,11 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
         context.getConsole().printInfo("Interrupted while waiting for compaction with id=" + resp.getId());
         break;
       }
-
-      //this could be expensive when there are a lot of compactions....
-      //todo: update to search by ID once HIVE-13353 is done
-      ShowCompactResponse allCompactions = context.getDb().showCompactions();
-      for (ShowCompactResponseElement compaction : allCompactions.getCompacts()) {
-        if (resp.getId() != compaction.getId()) {
-          continue;
-        }
-
-        switch (compaction.getState()) {
+      ShowCompactRequest request = new ShowCompactRequest(resp.getId());
+      ShowCompactResponse compaction = context.getDb().showCompactions(request);
+      if (compaction.getCompactsSize() == 1) {
+        ShowCompactResponseElement comp = compaction.getCompacts().get(0);
+        switch (comp.getState()) {
           case TxnStore.WORKING_RESPONSE:
           case TxnStore.INITIATED_RESPONSE:
             //still working
@@ -145,9 +141,11 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
           default:
             //done
             context.getConsole().printInfo("Compaction with id " + resp.getId() + " finished with status: " +
-                compaction.getState());
+                comp.getState());
             break wait;
         }
+      }else {
+        throw new HiveException("No suitable compaction found");
       }
     }
   }
