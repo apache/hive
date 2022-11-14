@@ -1,10 +1,10 @@
 PREHOOK: query: create table ice01 (id int) Stored by Iceberg stored as ORC
- TBLPROPERTIES('format-version'='2', 'iceberg.write.deleterow'='true')
+ TBLPROPERTIES('format-version'='2', 'iceberg.delete.skiprowdata'='false')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ice01
 POSTHOOK: query: create table ice01 (id int) Stored by Iceberg stored as ORC
- TBLPROPERTIES('format-version'='2', 'iceberg.write.deleterow'='true')
+ TBLPROPERTIES('format-version'='2', 'iceberg.delete.skiprowdata'='false')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice01
@@ -27,8 +27,8 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'engine.hive.enabled'='true', 
   'format-version'='2', 
+  'iceberg.delete.skiprowdata'='false', 
   'iceberg.orc.files.only'='true', 
-  'iceberg.write.deleterow'='true', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
   'serialization.format'='1', 
   'table_type'='ICEBERG', 
@@ -106,11 +106,11 @@ POSTHOOK: query: delete from ice01 where id=7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
-PREHOOK: query: Alter table ice01 set TBLPROPERTIES('iceberg.write.deleterow'='false')
+PREHOOK: query: Alter table ice01 set TBLPROPERTIES('iceberg.delete.skiprowdata'='true')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@ice01
 PREHOOK: Output: default@ice01
-POSTHOOK: query: Alter table ice01 set TBLPROPERTIES('iceberg.write.deleterow'='false')
+POSTHOOK: query: Alter table ice01 set TBLPROPERTIES('iceberg.delete.skiprowdata'='true')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
@@ -133,8 +133,8 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'engine.hive.enabled'='true', 
   'format-version'='2', 
+  'iceberg.delete.skiprowdata'='true', 
   'iceberg.orc.files.only'='true', 
-  'iceberg.write.deleterow'='false', 
 #### A masked pattern was here ####
   'metadata_location'='hdfs://### HDFS PATH ###', 
   'previous_metadata_location'='hdfs://### HDFS PATH ###', 
@@ -167,12 +167,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 6
 8
 PREHOOK: query: create table icepart01 (id int) partitioned by (part int) Stored by Iceberg stored as ORC
- TBLPROPERTIES('format-version'='2', 'iceberg.write.deleterow'='true')
+ TBLPROPERTIES('format-version'='2', 'iceberg.delete.skiprowdata'='false')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@icepart01
 POSTHOOK: query: create table icepart01 (id int) partitioned by (part int) Stored by Iceberg stored as ORC
- TBLPROPERTIES('format-version'='2', 'iceberg.write.deleterow'='true')
+ TBLPROPERTIES('format-version'='2', 'iceberg.delete.skiprowdata'='false')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@icepart01
@@ -244,11 +244,11 @@ POSTHOOK: query: delete from icepart01 where id=7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@icepart01
 POSTHOOK: Output: default@icepart01
-PREHOOK: query: Alter table icepart01 set TBLPROPERTIES('iceberg.write.deleterow'='false')
+PREHOOK: query: Alter table icepart01 set TBLPROPERTIES('iceberg.delete.skiprowdata'='true')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@icepart01
 PREHOOK: Output: default@icepart01
-POSTHOOK: query: Alter table icepart01 set TBLPROPERTIES('iceberg.write.deleterow'='false')
+POSTHOOK: query: Alter table icepart01 set TBLPROPERTIES('iceberg.delete.skiprowdata'='true')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@icepart01
 POSTHOOK: Output: default@icepart01
@@ -274,8 +274,8 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'engine.hive.enabled'='true', 
   'format-version'='2', 
+  'iceberg.delete.skiprowdata'='true', 
   'iceberg.orc.files.only'='true', 
-  'iceberg.write.deleterow'='false', 
 #### A masked pattern was here ####
   'metadata_location'='hdfs://### HDFS PATH ###', 
   'previous_metadata_location'='hdfs://### HDFS PATH ###', 

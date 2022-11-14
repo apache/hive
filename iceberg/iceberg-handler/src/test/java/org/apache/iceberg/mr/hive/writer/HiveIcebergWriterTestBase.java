@@ -85,9 +85,9 @@ public class HiveIcebergWriterTestBase {
   public boolean partitioned;
 
   @Parameterized.Parameter(2)
-  public boolean isWriteDeleteRowData;
+  public boolean skipRowData;
 
-  @Parameterized.Parameters(name = "fileFormat={0}, partitioned={1}, isWriteDeleteRowData={2}")
+  @Parameterized.Parameters(name = "fileFormat={0}, partitioned={1}, skipRowData={2}")
   public static Collection<Object[]> parameters() {
     return Lists.newArrayList(new Object[][] {
         { FileFormat.PARQUET, true, true },
@@ -115,7 +115,7 @@ public class HiveIcebergWriterTestBase {
             .bucket("data", 3)
             .build();
     this.helper = new TestHelper(new HiveConf(), tables, location.toString(), SCHEMA, spec, fileFormat,
-        Collections.singletonMap("iceberg.write.deleterow", String.valueOf(isWriteDeleteRowData)), temp);
+        Collections.singletonMap(WriterBuilder.ICEBERG_DELETE_SKIPROWDATA, String.valueOf(skipRowData)), temp);
     this.table = helper.createTable();
     helper.appendToTable(RECORDS);
 

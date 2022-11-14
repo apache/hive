@@ -41,15 +41,15 @@ import org.apache.iceberg.mr.mapred.Container;
 class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
 
   private final GenericRecord rowDataTemplate;
-  private final boolean isWriteDeleteRow;
+  private final boolean skipOriginalRow;
 
   HiveIcebergDeleteWriter(Schema schema, Map<Integer, PartitionSpec> specs,
       FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io,
-      long targetFileSize, boolean isWriteDeleteRow) {
+      long targetFileSize, boolean skipOriginalRow) {
     super(schema, specs, io,
         new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, targetFileSize));
     rowDataTemplate = GenericRecord.create(schema);
-    this.isWriteDeleteRow = isWriteDeleteRow;
+    this.skipOriginalRow = skipOriginalRow;
   }
 
   @Override
@@ -57,15 +57,12 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
     Record rec = ((Container<Record>) row).get();
     PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(rec, rowDataTemplate);
     int specId = IcebergAcidUtil.parseSpecId(rec);
-    if (isWriteDeleteRow) {
-      writer.write(positionDelete, specs.get(specId), partition(positionDelete.row(), specId));
-    } else {
-      // Extract the row data to get the partition detail, and remove it from the positional delete to avoid writing
-      // the row data in the delete file
-      Record rowData =  positionDelete.row();
+    Record rowData = positionDelete.row();
+    if (skipOriginalRow) {
+      // Set null as the row data as we intend to avoid writing the actual row data in the delete file.
       positionDelete.set(positionDelete.path(), positionDelete.pos(), null);
-      writer.write(positionDelete, specs.get(specId), partition(rowData, specId));
     }
+    writer.write(positionDelete, specs.get(specId), partition(rowData, specId));
   }
 
   @Override

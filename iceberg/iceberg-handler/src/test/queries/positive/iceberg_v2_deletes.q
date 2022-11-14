@@ -1,9 +1,9 @@
 -- Mask random uuid
 --! qt:replace:/(\s+'uuid'=')\S+('\s*)/$1#Masked#$2/
 
--- create an unpartitioned table with delete data set to true
+-- create an unpartitioned table with skip delete data set to false
  create table ice01 (id int) Stored by Iceberg stored as ORC
- TBLPROPERTIES('format-version'='2', 'iceberg.write.deleterow'='true');
+ TBLPROPERTIES('format-version'='2', 'iceberg.delete.skiprowdata'='false');
 
 -- check the property value
 show create table ice01;
@@ -29,8 +29,8 @@ select * from ice01 order by id;
 -- delete one value
 delete from ice01 where id=7;
 
--- change the delete row type
-Alter table ice01 set TBLPROPERTIES('iceberg.write.deleterow'='false');
+-- change to skip the row data now
+Alter table ice01 set TBLPROPERTIES('iceberg.delete.skiprowdata'='true');
 
 -- check the property value
 show create table ice01;
@@ -41,9 +41,9 @@ delete from ice01 where id=5;
 -- check the entries, the deleted entries shouldn't be there.
 select * from ice01 order by id;
 
--- create a partitioned table with delete data set to true
+-- create a partitioned table with skip row data set to false
  create table icepart01 (id int) partitioned by (part int) Stored by Iceberg stored as ORC
- TBLPROPERTIES('format-version'='2', 'iceberg.write.deleterow'='true');
+ TBLPROPERTIES('format-version'='2', 'iceberg.delete.skiprowdata'='false');
 
 -- insert some values
 insert into icepart01 values (1,1),(2,1),(3,2),(4,2);
@@ -66,8 +66,8 @@ select * from icepart01 order by id;
 -- delete one value
 delete from icepart01 where id=7;
 
--- change the delete row type
-Alter table icepart01 set TBLPROPERTIES('iceberg.write.deleterow'='false');
+-- change to skip the row data now
+Alter table icepart01 set TBLPROPERTIES('iceberg.delete.skiprowdata'='true');
 
 -- check the property value
 show create table icepart01;

@@ -47,6 +47,9 @@ public class WriterBuilder {
   // A task may write multiple output files using multiple writers. Each of them must have a unique operationId.
   private static AtomicInteger operationNum = new AtomicInteger(0);
 
+  // To specify whether to write the actual row data while writing the delete files.
+  public static final String ICEBERG_DELETE_SKIPROWDATA = "iceberg.delete.skiprowdata";
+
   private WriterBuilder(Table table) {
     this.table = table;
   }
@@ -92,10 +95,9 @@ public class WriterBuilder {
     long targetFileSize = PropertyUtil.propertyAsLong(table.properties(), TableProperties.WRITE_TARGET_FILE_SIZE_BYTES,
         TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT);
 
-    boolean isWriteDeleteRow = Boolean.parseBoolean(properties.getOrDefault("iceberg.write.deleterow", "false"));
+    boolean skipOriginalRow = Boolean.parseBoolean(properties.getOrDefault(ICEBERG_DELETE_SKIPROWDATA, "true"));
 
     Schema dataSchema = table.schema();
-    Schema positionalDeleteSchema = isWriteDeleteRow ? dataSchema : null;
     FileIO io = table.io();
     Map<Integer, PartitionSpec> specs = table.specs();
     int currentSpecId = table.spec().specId();
@@ -112,14 +114,15 @@ public class WriterBuilder {
         .operationId("delete-" + operationId)
         .build();
 
-    HiveFileWriterFactory writerFactory = new HiveFileWriterFactory(table, dataFileFormat, dataSchema, null,
-        deleteFileFormat, null, null, null, positionalDeleteSchema);
+    HiveFileWriterFactory writerFactory =
+        new HiveFileWriterFactory(table, dataFileFormat, dataSchema, null, deleteFileFormat, null, null, null,
+            skipOriginalRow ? null : dataSchema);
 
     HiveIcebergWriter writer;
     switch (operation) {
       case DELETE:
         writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
-            io, targetFileSize, isWriteDeleteRow);
+            io, targetFileSize, skipOriginalRow);
         break;
       case OTHER:
         writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
