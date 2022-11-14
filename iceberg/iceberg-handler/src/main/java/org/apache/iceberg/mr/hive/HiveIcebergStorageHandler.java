@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -835,7 +836,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
     } catch (NoSuchTableException ex) {
       if (!(StringUtils.isNotBlank(props.getProperty(hive_metastoreConstants.TABLE_IS_CTAS)) &&
-          Boolean.parseBoolean(props.getProperty(org.apache.hadoop.hive.conf.Constants.IS_EXPLAIN_PLAN)))) {
+              StringUtils.isNotBlank(props.getProperty(Constants.EXPLAIN_CTAS_LOCATION)))) {
         throw ex;
       }
 

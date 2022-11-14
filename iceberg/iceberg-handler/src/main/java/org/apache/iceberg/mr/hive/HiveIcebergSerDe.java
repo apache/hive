@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -126,8 +127,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
             throw new SerDeException(CTAS_EXCEPTION_MSG);
           }
 
-          if (!Boolean.parseBoolean(serDeProperties.getProperty(
-                  org.apache.hadoop.hive.conf.Constants.IS_EXPLAIN_PLAN))) {
+          if (!serDeProperties.containsKey(Constants.EXPLAIN_CTAS_LOCATION)) {
             createTableForCTAS(configuration, serDeProperties);
           }
         }

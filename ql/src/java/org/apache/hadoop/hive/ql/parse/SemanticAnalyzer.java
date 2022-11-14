@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
-import static org.apache.hadoop.hive.conf.Constants.IS_EXPLAIN_PLAN;
+import static org.apache.hadoop.hive.conf.Constants.EXPLAIN_CTAS_LOCATION;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEARCHIVEENABLED;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
@@ -7762,12 +7762,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                   !tblDesc.getTblProps().containsKey(META_TABLE_LOCATION)) {
             if (destinationTable.getDataLocation() == null) {
               // no metastore.metadata.transformer.class was set
-              tblDesc.getTblProps().put(META_TABLE_LOCATION, new Warehouse(conf).getDefaultTablePath(
+              tblDesc.getTblProps().put(EXPLAIN_CTAS_LOCATION, new Warehouse(conf).getDefaultTablePath(
                       destinationTable.getDbName(),
                       destinationTable.getTableName(),
                       Boolean.parseBoolean(destinationTable.getParameters().get("EXTERNAL"))).toString());
             } else {
-              tblDesc.getTblProps().put(META_TABLE_LOCATION, destinationTable.getDataLocation().toString());
+              tblDesc.getTblProps().put(EXPLAIN_CTAS_LOCATION, destinationTable.getDataLocation().toString());
             }
           }
           tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
@@ -14023,7 +14023,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       isExt = isExternalTableChanged(tblProps, isTransactional, isExt, isDefaultTableTypeChanged);
       tblProps.put(TABLE_IS_CTAS, "true");
       if (ctx.isExplainPlan()) {
-        tblProps.put(IS_EXPLAIN_PLAN, "true");
+        tblProps.put(EXPLAIN_CTAS_LOCATION, "");
       }
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
