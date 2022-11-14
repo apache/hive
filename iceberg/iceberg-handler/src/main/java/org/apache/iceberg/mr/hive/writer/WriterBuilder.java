@@ -92,7 +92,10 @@ public class WriterBuilder {
     long targetFileSize = PropertyUtil.propertyAsLong(table.properties(), TableProperties.WRITE_TARGET_FILE_SIZE_BYTES,
         TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT);
 
+    boolean isWriteDeleteRow = Boolean.parseBoolean(properties.getOrDefault("iceberg.write.deleterow", "false"));
+
     Schema dataSchema = table.schema();
+    Schema positionalDeleteSchema = isWriteDeleteRow ? dataSchema : null;
     FileIO io = table.io();
     Map<Integer, PartitionSpec> specs = table.specs();
     int currentSpecId = table.spec().specId();
@@ -110,13 +113,13 @@ public class WriterBuilder {
         .build();
 
     HiveFileWriterFactory writerFactory = new HiveFileWriterFactory(table, dataFileFormat, dataSchema, null,
-        deleteFileFormat, null, null, null, dataSchema);
+        deleteFileFormat, null, null, null, positionalDeleteSchema);
 
     HiveIcebergWriter writer;
     switch (operation) {
       case DELETE:
         writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
-            io, targetFileSize);
+            io, targetFileSize, isWriteDeleteRow);
         break;
       case OTHER:
         writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
