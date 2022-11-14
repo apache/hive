@@ -2342,6 +2342,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ctesExpanded.add(sqAliasToCTEName.get(alias));
       }
       QBExpr qbexpr = qb.getSubqForAlias(alias);
+      if (qbexpr.getQB() != null && (wasView || qb.isInsideView())) {
+        qbexpr.getQB().setInsideView(true);
+      }
       getMetaData(qbexpr, newParentInput);
       if (wasView) {
         viewsExpanded.remove(viewsExpanded.size() - 1);
