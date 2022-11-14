@@ -92,6 +92,7 @@ import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.NullOrder;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
@@ -812,28 +813,20 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         .filter(entry -> !map.containsKey(entry.getKey())) // map overrides tableDesc properties
         .forEach(entry -> map.put(entry.getKey(), entry.getValue()));
 
+    String location;
+    Schema schema;
+    PartitionSpec spec;
     try {
       Table table = IcebergTableUtil.getTable(configuration, props);
-      String schemaJson = SchemaParser.toJson(table.schema());
-
-      map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
-      map.put(InputFormatConfig.TABLE_LOCATION, table.location());
-      map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
-      props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(table.spec()));
+      location = table.location();
+      schema = table.schema();
+      spec = table.spec();
 
       // serialize table object into config
       Table serializableTable = SerializableTable.copyOf(table);
       checkAndSkipIoConfigSerialization(configuration, serializableTable);
       map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
           SerializationUtil.serializeToBase64(serializableTable));
-
-      // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
-      // the serialization utils fail to serialize this character
-      map.remove("columns.comments");
-
-      // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
-      // this is an exception to the interface documentation, but it's a safe operation to add this property
-      props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
     } catch (NoSuchTableException ex) {
       if (!(StringUtils.isNotBlank(props.getProperty(hive_metastoreConstants.TABLE_IS_CTAS)) &&
               StringUtils.isNotBlank(props.getProperty(Constants.EXPLAIN_CTAS_LOCATION)))) {
@@ -841,24 +834,34 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       }
 
       try {
-        map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
-        map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
-            SerializationUtil.serializeToBase64(null));
-
-        String location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
-        if (StringUtils.isNotBlank(location)) {
-          map.put(InputFormatConfig.TABLE_LOCATION, location);
+        location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
+        if (StringUtils.isBlank(location)) {
+          location = props.getProperty(Constants.EXPLAIN_CTAS_LOCATION);
         }
 
         AbstractSerDe serDe = tableDesc.getDeserializer(configuration);
         HiveIcebergSerDe icebergSerDe = (HiveIcebergSerDe) serDe;
-        String schemaJson = SchemaParser.toJson(icebergSerDe.getTableSchema());
-        map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
-        props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+        schema = icebergSerDe.getTableSchema();
+        spec = IcebergTableUtil.spec(configuration, icebergSerDe.getTableSchema());
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
     }
+
+    map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
+    if (StringUtils.isNotBlank(location)) {
+      map.put(InputFormatConfig.TABLE_LOCATION, location);
+    }
+    String schemaJson = SchemaParser.toJson(schema);
+    map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+    // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
+    // this is an exception to the interface documentation, but it's a safe operation to add this property
+    props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+    props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
+
+    // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
+    // the serialization utils fail to serialize this character
+    map.remove("columns.comments");
   }
 
   /**
