@@ -99,6 +99,7 @@ public class Utils {
     public static final String AUTH_PASSWD = "password";
     public static final String AUTH_KERBEROS_AUTH_TYPE = "kerberosAuthType";
     public static final String AUTH_KERBEROS_AUTH_TYPE_FROM_SUBJECT = "fromSubject";
+    public static final String AUTH_KERBEROS_ENABLE_CANONICAL_HOSTNAME_CHECK = "kerberosEnableCanonicalHostnameCheck";
     public static final String AUTH_TYPE_JWT = "jwt";
     public static final String AUTH_TYPE_JWT_KEY = "jwt";
     public static final String AUTH_JWT_ENV = "JWT";
