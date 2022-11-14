@@ -18,10 +18,11 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
-import java.util.LinkedHashMap;
+import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.calcite.plan.RelOptCluster;
@@ -51,8 +52,7 @@ import org.slf4j.LoggerFactory;
 public class HiveProject extends Project implements HiveRelNode {
   private static final Logger LOG = LoggerFactory.getLogger(HiveProject.class);
 
-  // lazy fetch, only populate if getVariablesSet is called
-  private Map<RexSubQuery, HiveCorrelationInfo> correlationInfoMap;
+  private final ProjectCorrelationInfo projectCorrelationInfo;
 
   private boolean isSysnthetic;
 
@@ -70,6 +70,7 @@ public class HiveProject extends Project implements HiveRelNode {
   public HiveProject(RelOptCluster cluster, RelTraitSet traitSet, RelNode child, List<? extends RexNode> exps,
       RelDataType rowType) {
     super(cluster, traitSet, child, exps, rowType);
+    this.projectCorrelationInfo = new ProjectCorrelationInfo(getProjects());
     assert traitSet.containsIfApplicable(HiveRelNode.CONVENTION);
   }
 
@@ -139,41 +140,6 @@ public class HiveProject extends Project implements HiveRelNode {
     return isSysnthetic;
   }
 
-  public Set<CorrelationId> getVariablesSet2(RexSubQuery subquery) {
-    if (this.correlationInfoMap == null) {
-      this.correlationInfoMap = createCorrelationInfo();
-    }
-    /*
-    LOG.info("SJC: PROJECT GETTING VARIABLES SET 2");
-    for (CorrelationId c : correlationInfo.correlationIds) {
-      LOG.info("SJC: PROJECT CORRELATION ID IS " + c);
-    }
-    LOG.info("SJC: END PROJECT GETTING VARIABLES SET 2");
-    */
-    return correlationInfoMap.get(subquery).correlationIds;
-  }
-
-  public HiveCorrelationInfo getCorrelationInfo() {
-    if (correlationInfoMap == null) {
-      this.correlationInfoMap = createCorrelationInfo();
-    }
-    //XXX: ugly way to do this
-    for (RexSubQuery rsq : correlationInfoMap.keySet()) {
-      return correlationInfoMap.get(rsq);
-    }
-    return new HiveCorrelationInfo();
-  }
-
-  public Map<RexSubQuery, HiveCorrelationInfo> createCorrelationInfo() {
-    Map<RexSubQuery, HiveCorrelationInfo> correlationInfoMap = new LinkedHashMap<>();
-    for (RexNode r : getProjects()) {
-      CorrelationIdSearcher searcher = new CorrelationIdSearcher(r); 
-      correlationInfoMap.putAll(searcher.getCorrelationInfoMap());
-    }
-    return correlationInfoMap;
-  }
-
-
   //required for HiveRelDecorrelator
   @Override public RelNode accept(RelShuttle shuttle) {
     if(shuttle instanceof HiveRelShuttle) {
@@ -186,5 +152,29 @@ public class HiveProject extends Project implements HiveRelNode {
   public RelWriter explainTerms(RelWriter pw) {
     return super.explainTerms(pw)
         .itemIf("synthetic", this.isSysnthetic, pw.getDetailLevel() == SqlExplainLevel.DIGEST_ATTRIBUTES);
+  }
+
+  public Set<HiveCorrelationInfo> getCorrelationInfos() {
+    return ImmutableSet.copyOf(projectCorrelationInfo.get().values());
+  }
+
+  private static class ProjectCorrelationInfo {
+    public final List<RexNode> projects;
+    public Map<RexSubQuery, HiveCorrelationInfo> correlationInfoMap;
+
+    public ProjectCorrelationInfo(List<RexNode> projects) {
+      this.projects = projects;
+    }
+
+    public Map<RexSubQuery, HiveCorrelationInfo> get() {
+      if (correlationInfoMap == null) {
+        correlationInfoMap = new LinkedHashMap<>();
+        for (RexNode r : projects) {
+          CorrelationIdSearcher searcher = new CorrelationIdSearcher(r); 
+          correlationInfoMap.putAll(searcher.getCorrelationInfoMap());
+        }
+      }
+      return correlationInfoMap;
+    }
   }
 }

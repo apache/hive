@@ -109,91 +109,43 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     // if subquery is in FILTER
     if (relNode instanceof HiveFilter) {
       final HiveFilter filter = call.rel(0);
-      final HiveCorrelationInfo correlationInfo = filter.getCorrelationInfo();
-      assert correlationInfo.rexSubQuery != null;
-//      final RexSubQuery e = RexUtil.SubQueryFinder.find(filter.getCondition());
-//      assert e != null;
-
-      final RelOptUtil.Logic logic = LogicVisitor.find(RelOptUtil.Logic.TRUE,
-          ImmutableList.of(filter.getCondition()), correlationInfo.rexSubQuery);
-      builder.push(filter.getInput());
-      final int fieldCount = builder.peek().getRowType().getFieldCount();
-
-      LOG.info("SJC: FILTER GONNA CALL INTO CORRELATION INFO");
-      boolean isCorrScalarQuery = correlationInfo.isCorrScalarQuery();
-
-      LOG.info("SJC: ISCORR FOR FILTER IS " + isCorrScalarQuery );
-      LOG.info("SJC: REXSUBQUERY IS " + correlationInfo.rexSubQuery);
-
-      final RexSubQuery e = RexUtil.SubQueryFinder.find(filter.getCondition());
-      SubqueryConf subqueryConfig = filter.getCluster().getPlanner().getContext().unwrap(SubqueryConf.class);
-      boolean oldIsCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
-      LOG.info("SJC: OLD ISCORR FOR FILTER IS " + oldIsCorrScalarQuery );
-      LOG.info("SJC: OLD SUBQUERY IS " + e);
-      LOG.info("SJC: NEW SUBQUERY IS " + correlationInfo.rexSubQuery);
-//      Preconditions.checkState(oldIsCorrScalarQuery == isCorrScalarQuery);
-      Set<CorrelationId> oldSet = HiveFilter.getVariablesSet(e);
-      Set<CorrelationId> newSet = filter.getVariablesSet2(correlationInfo.rexSubQuery);
-      for (CorrelationId c : newSet) {
-        LOG.info("SJC: NEW CORRELATION ID FOR FILTER IS " + c);
+      for (HiveCorrelationInfo correlationInfo : filter.getCorrelationInfos()) {
+        assert correlationInfo.rexSubQuery != null;
+        final RelOptUtil.Logic logic = LogicVisitor.find(RelOptUtil.Logic.TRUE,
+            ImmutableList.of(filter.getCondition()), correlationInfo.rexSubQuery);
+        builder.push(filter.getInput());
+        final int fieldCount = builder.peek().getRowType().getFieldCount();
+ 
+        boolean isCorrScalarQuery = correlationInfo.isCorrScalarQuery();
+        
+        final RexNode target =
+            apply(call.getMetadataQuery(), correlationInfo.rexSubQuery,
+                correlationInfo.correlationIds, logic, builder, 1, fieldCount, isCorrScalarQuery);
+        final RexShuttle shuttle = new ReplaceSubQueryShuttle(correlationInfo.rexSubQuery, target);
+        builder.filter(shuttle.apply(filter.getCondition()));
+        builder.project(fields(builder, filter.getRowType().getFieldCount()));
+        RelNode newRel = builder.build();
+        call.transformTo(newRel);
       }
-      for (CorrelationId c : oldSet) {
-        LOG.info("SJC: OLD CORRELATION ID FOR FILTER IS " + c);
-      }
-//      Preconditions.checkState(oldSet.equals(newSet));
-
-      
-      //XXX: needs fixing, passing a param in to getVariablesSet2
-      final RexNode target =
-          apply(call.getMetadataQuery(), correlationInfo.rexSubQuery, filter.getVariablesSet2(correlationInfo.rexSubQuery),
-              logic, builder, 1, fieldCount, isCorrScalarQuery);
-      LOG.info("SJC: CP1");
-      final RexShuttle shuttle = new ReplaceSubQueryShuttle(correlationInfo.rexSubQuery, target);
-      LOG.info("SJC: CP2");
-      builder.filter(shuttle.apply(filter.getCondition()));
-      LOG.info("SJC: CP3");
-      builder.project(fields(builder, filter.getRowType().getFieldCount()));
-      LOG.info("SJC: CP4");
-      RelNode newRel = builder.build();
-      LOG.info("SJC: CLOSING OUT");
-      call.transformTo(newRel);
-      LOG.info("SJC: CP5");
     } else if (relNode instanceof HiveProject) {
-      LOG.info("SJC: PROJECT GONNA CALL INTO CORRELATION INFO");
-      // if subquery is in PROJECT
       final HiveProject project = call.rel(0);
-      final HiveCorrelationInfo correlationInfo = project.getCorrelationInfo();
-      assert correlationInfo.rexSubQuery != null;
-
-      final RelOptUtil.Logic logic = LogicVisitor.find(RelOptUtil.Logic.TRUE_FALSE_UNKNOWN,
-          project.getProjects(), correlationInfo.rexSubQuery);
-      builder.push(project.getInput());
-      final int fieldCount = builder.peek().getRowType().getFieldCount();
-
-      boolean isCorrScalarQuery = correlationInfo.isCorrScalarQuery();
-      LOG.info("SJC: ISCORR FOR PROJECT IS " + isCorrScalarQuery );
-
-      final RexSubQuery e = RexUtil.SubQueryFinder.find(project.getProjects());
-      SubqueryConf subqueryConfig = project.getCluster().getPlanner().getContext().unwrap(SubqueryConf.class);
-      boolean oldIsCorrScalarQuery = subqueryConfig.getCorrScalarRexSQWithAgg().contains(e.rel);
-      LOG.info("SJC: OLD ISCORR FOR FILTER IS " + oldIsCorrScalarQuery );
-      Preconditions.checkState(oldIsCorrScalarQuery == isCorrScalarQuery);
-      Set<CorrelationId> oldSet = HiveFilter.getVariablesSet(e);
-      Set<CorrelationId> newSet = project.getVariablesSet2(correlationInfo.rexSubQuery);
-      for (CorrelationId c : newSet) {
-        LOG.info("SJC: NEW CORRELATION ID FOR FILTER IS " + c);
+      for (HiveCorrelationInfo correlationInfo : project.getCorrelationInfos()) {
+        assert correlationInfo.rexSubQuery != null;
+       
+        final RelOptUtil.Logic logic = LogicVisitor.find(RelOptUtil.Logic.TRUE_FALSE_UNKNOWN,
+            project.getProjects(), correlationInfo.rexSubQuery);
+        builder.push(project.getInput());
+        final int fieldCount = builder.peek().getRowType().getFieldCount();
+       
+        boolean isCorrScalarQuery = correlationInfo.isCorrScalarQuery();
+       
+        final RexNode target =
+            apply(call.getMetadataQuery(), correlationInfo.rexSubQuery,
+                correlationInfo.correlationIds, logic, builder, 1, fieldCount, isCorrScalarQuery);
+        final RexShuttle shuttle = new ReplaceSubQueryShuttle(correlationInfo.rexSubQuery, target);
+        builder.project(shuttle.apply(project.getProjects()), project.getRowType().getFieldNames());
+        call.transformTo(builder.build());
       }
-      for (CorrelationId c : oldSet) {
-        LOG.info("SJC: OLD CORRELATION ID FOR FILTER IS " + c);
-      }
-      Preconditions.checkState(oldSet.equals(newSet));
-      final RexNode target =
-          apply(call.getMetadataQuery(), correlationInfo.rexSubQuery, project.getVariablesSet2(correlationInfo.rexSubQuery),
-              logic, builder, 1, fieldCount, isCorrScalarQuery);
-      final RexShuttle shuttle = new ReplaceSubQueryShuttle(correlationInfo.rexSubQuery, target);
-      builder.project(shuttle.apply(project.getProjects()), project.getRowType().getFieldNames());
-      LOG.info("SJC: CLOSING OUT PROJECT");
-      call.transformTo(builder.build());
     }
   }
 
