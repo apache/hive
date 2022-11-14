@@ -845,10 +845,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             SerializationUtil.serializeToBase64(null));
 
         String location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
-        if (StringUtils.isBlank(location)) {
-          location = props.getProperty(hive_metastoreConstants.TABLE_IS_CTAS);
+        if (StringUtils.isNotBlank(location)) {
+          map.put(InputFormatConfig.TABLE_LOCATION, location);
         }
-        map.put(InputFormatConfig.TABLE_LOCATION, location);
 
         AbstractSerDe serDe = tableDesc.getDeserializer(configuration);
         HiveIcebergSerDe icebergSerDe = (HiveIcebergSerDe) serDe;

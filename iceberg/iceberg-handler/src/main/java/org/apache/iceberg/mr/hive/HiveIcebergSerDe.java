@@ -27,7 +27,6 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -122,7 +121,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         this.partitionColumns = ImmutableList.of();
         // create table for CTAS
         if (e instanceof NoSuchTableException &&
-            StringUtils.isNotBlank(serDeProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS))) {
+                Boolean.parseBoolean(serDeProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS))) {
           if (!Catalogs.hiveCatalog(configuration, serDeProperties)) {
             throw new SerDeException(CTAS_EXCEPTION_MSG);
           }

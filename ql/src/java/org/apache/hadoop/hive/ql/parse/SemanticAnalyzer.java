@@ -26,6 +26,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONV
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEARCHIVEENABLED;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.DEFAULT_TABLE_TYPE;
@@ -7756,15 +7757,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         } else {
           destinationTable = db.getTranslateTableDryrun(tblDesc.toTable(conf).getTTable());
-          if (tblDesc.getTblProps().containsKey(TABLE_IS_CTAS)) {
+          if (ctx.isExplainPlan() &&
+                  tblDesc.getTblProps().containsKey(TABLE_IS_CTAS) &&
+                  !tblDesc.getTblProps().containsKey(META_TABLE_LOCATION)) {
             if (destinationTable.getDataLocation() == null) {
               // no metastore.metadata.transformer.class was set
-              tblDesc.getTblProps().put(TABLE_IS_CTAS, new Warehouse(conf).getDefaultTablePath(
+              tblDesc.getTblProps().put(META_TABLE_LOCATION, new Warehouse(conf).getDefaultTablePath(
                       destinationTable.getDbName(),
                       destinationTable.getTableName(),
                       Boolean.parseBoolean(destinationTable.getParameters().get("EXTERNAL"))).toString());
             } else {
-              tblDesc.getTblProps().put(TABLE_IS_CTAS, destinationTable.getDataLocation().toString());
+              tblDesc.getTblProps().put(META_TABLE_LOCATION, destinationTable.getDataLocation().toString());
             }
           }
           tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
@@ -7776,8 +7779,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // if available, set location in table desc properties
       if (tblDesc != null && tblDesc.getLocation() != null && tableDescriptor != null &&
-          !tableDescriptor.getProperties().containsKey(hive_metastoreConstants.META_TABLE_LOCATION)) {
-        tableDescriptor.getProperties().setProperty(hive_metastoreConstants.META_TABLE_LOCATION, tblDesc.getLocation());
+          !tableDescriptor.getProperties().containsKey(META_TABLE_LOCATION)) {
+        tableDescriptor.getProperties().setProperty(META_TABLE_LOCATION, tblDesc.getLocation());
       }
 
       // We need a specific rowObjectInspector in this case
@@ -13894,7 +13897,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(e);
         }
       }
-      if (!SessionStateUtil.addResource(conf, hive_metastoreConstants.META_TABLE_LOCATION, tblLocation)) {
+      if (!SessionStateUtil.addResource(conf, META_TABLE_LOCATION, tblLocation)) {
         throw new SemanticException(
             "Query state attached to Session state must be not null. Table location cannot be saved.");
       }
