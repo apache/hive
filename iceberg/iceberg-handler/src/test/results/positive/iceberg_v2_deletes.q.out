@@ -35,7 +35,9 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
-  'write.format.default'='orc')
+  'write.format.default'='orc', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
 PREHOOK: query: insert into ice01 values (1),(2),(3),(4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -141,7 +143,9 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
-  'write.format.default'='orc')
+  'write.format.default'='orc', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
 PREHOOK: query: delete from ice01 where id=5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice01
@@ -280,7 +284,9 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
-  'write.format.default'='orc')
+  'write.format.default'='orc', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
 PREHOOK: query: delete from icepart01 where id=5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@icepart01
