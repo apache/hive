@@ -1228,7 +1228,7 @@ public final class PlanUtils {
    * Get a Map of table or partition properties to be used in explain extended output.
    * Do some filtering to make output readable and/or concise.
    */
-  static Map getPropertiesForExplain(Properties properties) {
+  static Map<Object, Object> getPropertiesForExplain(Properties properties) {
     if (properties != null) {
       Map<Object, Object> clone = null;
       String value = properties.getProperty("columns.comments");
@@ -1262,7 +1262,7 @@ public final class PlanUtils {
 
   public static Map<String, String> getPropertiesForExplain(Map<String, String> properties, String... propertiesToRemove) {
     if (properties == null) {
-      return null;
+      return Collections.emptyMap();
     }
 
     Map<String, String> clone = new HashMap<>(properties);
