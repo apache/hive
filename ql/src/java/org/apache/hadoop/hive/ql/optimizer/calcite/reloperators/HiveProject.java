@@ -111,10 +111,6 @@ public class HiveProject extends Project implements HiveRelNode {
     return hp;
   }
 
-  @Override
-  public void implement(Implementor implementor) {
-  }
-
   // TODO: this should come through RelBuilder to the constructor as opposed to
   // set method. This requires calcite change
   public void setSynthetic() {
