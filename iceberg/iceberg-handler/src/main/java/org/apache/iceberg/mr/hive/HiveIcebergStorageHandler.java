@@ -833,12 +833,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         throw ex;
       }
 
-      try {
-        location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
-        if (StringUtils.isBlank(location)) {
-          location = props.getProperty(Constants.EXPLAIN_CTAS_LOCATION);
-        }
+      location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
+      if (StringUtils.isBlank(location)) {
+        location = props.getProperty(Constants.EXPLAIN_CTAS_LOCATION);
+      }
 
+      try {
         AbstractSerDe serDe = tableDesc.getDeserializer(configuration);
         HiveIcebergSerDe icebergSerDe = (HiveIcebergSerDe) serDe;
         schema = icebergSerDe.getTableSchema();
