@@ -7929,7 +7929,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         destinationPath, currentTableId, destTableIsFullAcid, destTableIsTemporary,//this was 1/4 acid
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
         canBeMerged, destinationTable, writeId, isMmCreate, destType, qb, isDirectInsert, acidOperation, moveTaskId);
-    if (isMmCreate || ((qb.isCTAS() || qb.isMaterializedView()) && isDirectInsert)) {
+    if (isMmCreate || (qb.isCTAS() || qb.isMaterializedView()) && isDirectInsert) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
       if (tableDesc != null) {
         tableDesc.setWriter(fileSinkDesc);
@@ -8001,13 +8001,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Path getCtasOrCMVLocation(CreateTableDesc tblDesc, CreateMaterializedViewDesc viewDesc,
                                boolean createTableWithSuffix) throws SemanticException {
     Path location;
-    String protoName;
     String[] names;
     Table tbl;
     try {
       if (tblDesc != null) {
-        protoName = tblDesc.getDbTableName();
-        names = Utilities.getDbTableName(protoName);
+        names = Utilities.getDbTableName(tblDesc.getDbTableName());
 
         // Handle table translation initially and if not present
         // use default table path.
@@ -8017,8 +8015,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tbl = tblDesc.toTable(conf);
         tbl = db.getTranslateTableDryrun(tbl.getTTable());
       } else {
-        protoName = viewDesc.getViewName();
-        names = Utilities.getDbTableName(protoName);
+        names = Utilities.getDbTableName(viewDesc.getViewName());
         tbl = viewDesc.toTable(conf);
       }
 
@@ -8031,9 +8028,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (createTableWithSuffix) {
-        long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
-        String suffix = AcidUtils.getPathSuffix(txnId);
-        location = new Path(location.toString() + suffix);
+        location = new Path(location.toString() +
+                Utilities.getTableOrMVSuffix(ctx, createTableWithSuffix));
       }
 
       return location;
@@ -8335,11 +8331,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Path tlocation = null;
       String tName = Utilities.getDbTableName(tableDesc.getDbTableName())[1];
       try {
-        String suffix = "";
-        if (AcidUtils.isTableSoftDeleteEnabled(destinationTable, conf)) {
-          long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
-          suffix = AcidUtils.getPathSuffix(txnId);
-        }
+        String suffix = Utilities.getTableOrMVSuffix(ctx,
+                AcidUtils.isTableSoftDeleteEnabled(destinationTable, conf));
         Warehouse wh = new Warehouse(conf);
         tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()),
             tName + suffix, tableDesc.isExternal());

@@ -522,11 +522,11 @@ public abstract class TaskCompiler {
         protoName = pCtx.getCreateTable().getDbTableName();
         isExternal = pCtx.getCreateTable().isExternal();
         createTableOrMVUseSuffix &= AcidUtils.isTransactionalTable(pCtx.getCreateTable());
-        suffix = getTableOrMVSuffix(pCtx, createTableOrMVUseSuffix);
+        suffix = Utilities.getTableOrMVSuffix(pCtx.getContext(), createTableOrMVUseSuffix);
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
         protoName = pCtx.getCreateViewDesc().getViewName();
         createTableOrMVUseSuffix &= AcidUtils.isTransactionalView(pCtx.getCreateViewDesc());
-        suffix = getTableOrMVSuffix(pCtx, createTableOrMVUseSuffix);
+        suffix = Utilities.getTableOrMVSuffix(pCtx.getContext(), createTableOrMVUseSuffix);
       }
       String[] names = Utilities.getDbTableName(protoName);
       if (!db.databaseExists(names[0])) {
@@ -537,18 +537,6 @@ public abstract class TaskCompiler {
     } catch (HiveException | MetaException e) {
       throw new SemanticException(e);
     }
-  }
-
-  public String getTableOrMVSuffix(ParseContext pCtx, boolean createTableOrMVUseSuffix) {
-    String suffix = "";
-    if (createTableOrMVUseSuffix) {
-      long txnId = Optional.ofNullable(pCtx.getContext())
-              .map(ctx -> ctx.getHiveTxnManager().getCurrentTxnId()).orElse(0L);
-      if (txnId != 0) {
-        suffix = AcidUtils.getPathSuffix(txnId);
-      }
-    }
-    return suffix;
   }
 
   private void patchUpAfterCTASorMaterializedView(List<Task<?>> rootTasks,
