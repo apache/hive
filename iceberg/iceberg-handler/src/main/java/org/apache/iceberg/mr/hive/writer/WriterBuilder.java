@@ -49,6 +49,7 @@ public class WriterBuilder {
 
   // To specify whether to write the actual row data while writing the delete files.
   public static final String ICEBERG_DELETE_SKIPROWDATA = "iceberg.delete.skiprowdata";
+  public static final String ICEBERG_DELETE_SKIPROWDATA_DEFAULT = "true";
 
   private WriterBuilder(Table table) {
     this.table = table;
@@ -95,7 +96,8 @@ public class WriterBuilder {
     long targetFileSize = PropertyUtil.propertyAsLong(table.properties(), TableProperties.WRITE_TARGET_FILE_SIZE_BYTES,
         TableProperties.WRITE_TARGET_FILE_SIZE_BYTES_DEFAULT);
 
-    boolean skipOriginalRow = Boolean.parseBoolean(properties.getOrDefault(ICEBERG_DELETE_SKIPROWDATA, "true"));
+    boolean skipRowData =
+        Boolean.parseBoolean(properties.getOrDefault(ICEBERG_DELETE_SKIPROWDATA, ICEBERG_DELETE_SKIPROWDATA_DEFAULT));
 
     Schema dataSchema = table.schema();
     FileIO io = table.io();
@@ -116,13 +118,13 @@ public class WriterBuilder {
 
     HiveFileWriterFactory writerFactory =
         new HiveFileWriterFactory(table, dataFileFormat, dataSchema, null, deleteFileFormat, null, null, null,
-            skipOriginalRow ? null : dataSchema);
+            skipRowData ? null : dataSchema);
 
     HiveIcebergWriter writer;
     switch (operation) {
       case DELETE:
         writer = new HiveIcebergDeleteWriter(dataSchema, specs, writerFactory, deleteOutputFileFactory,
-            io, targetFileSize, skipOriginalRow);
+            io, targetFileSize, skipRowData);
         break;
       case OTHER:
         writer = new HiveIcebergRecordWriter(dataSchema, specs, currentSpecId, writerFactory, outputFileFactory,
