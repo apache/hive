@@ -64,7 +64,7 @@ public class DatabaseProduct implements Configurable {
   private static final ReentrantLock derbyLock = new ReentrantLock(true);
 
   public enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CUSTOM, UNDEFINED};
-  public DbType dbType;
+  static public DbType dbType;
 
   // Singleton instance
   private static DatabaseProduct theDatabaseProduct;
