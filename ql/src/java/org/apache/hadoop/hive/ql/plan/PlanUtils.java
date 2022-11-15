@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import static org.apache.hadoop.hive.conf.Constants.EXPLAIN_CTAS_LOCATION;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
 
@@ -26,14 +27,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
@@ -1223,11 +1222,13 @@ public final class PlanUtils {
     return LazySimpleSerDe.class;
   }
 
+  private static final String[] FILTER_OUT_FROM_EXPLAIN = {TABLE_IS_CTAS, EXPLAIN_CTAS_LOCATION};
+
   /**
    * Get a Map of table or partition properties to be used in explain extended output.
    * Do some filtering to make output readable and/or concise.
    */
-  static Map getPropertiesExplain(Properties properties) {
+  static Map<Object, Object> getPropertiesForExplain(Properties properties) {
     if (properties != null) {
       Map<Object, Object> clone = null;
       String value = properties.getProperty("columns.comments");
@@ -1244,16 +1245,31 @@ public final class PlanUtils {
         }
         clone.remove(StatsSetupConst.NUM_ERASURE_CODED_FILES);
       }
-      if (properties.containsKey(TABLE_IS_CTAS)) {
-        if (clone == null) {
-          clone = new HashMap<>(properties);
+      for (String key : FILTER_OUT_FROM_EXPLAIN) {
+        if (properties.containsKey(key)) {
+          if (clone == null) {
+            clone = new HashMap<>(properties);
+          }
+          clone.remove(key);
         }
-        clone.remove(TABLE_IS_CTAS);
       }
       if (clone != null) {
         return clone;
       }
     }
     return properties;
+  }
+
+  public static Map<String, String> getPropertiesForExplain(Map<String, String> properties, String... propertiesToRemove) {
+    if (properties == null) {
+      return Collections.emptyMap();
+    }
+
+    Map<String, String> clone = new HashMap<>(properties);
+    for (String key : propertiesToRemove) {
+      clone.remove(key);
+    }
+
+    return clone;
   }
 }
