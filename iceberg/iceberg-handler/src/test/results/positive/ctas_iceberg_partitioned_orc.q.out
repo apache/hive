@@ -103,6 +103,7 @@ STAGE PLANS:
                             columns.types int:string:int
                             format-version 2
                             iceberg.mr.operation.type.default.tbl_ice OTHER
+                            iceberg.mr.table.partition.spec {"spec-id":0,"fields":[{"name":"a_bucket","transform":"bucket[16]","source-id":1,"field-id":1000},{"name":"b_trunc","transform":"truncate[3]","source-id":2,"field-id":1001}]}
                             iceberg.mr.table.schema {"type":"struct","schema-id":0,"fields":[{"id":1,"name":"a","required":false,"type":"int"},{"id":2,"name":"b","required":false,"type":"string"},{"id":3,"name":"c","required":false,"type":"int"}]}
                             name default.tbl_ice
                             serialization.format 1
