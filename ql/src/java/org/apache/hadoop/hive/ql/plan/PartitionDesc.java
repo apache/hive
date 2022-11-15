@@ -213,7 +213,7 @@ public class PartitionDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "properties", explainLevels = { Level.EXTENDED })
   public Map getPropertiesExplain() {
-    return PlanUtils.getPropertiesExplain(getProperties());
+    return PlanUtils.getPropertiesForExplain(getProperties());
   }
 
   public void setProperties(final Properties properties) {
