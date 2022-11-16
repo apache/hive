@@ -725,8 +725,6 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
       throws HiveException {
     switch (primitiveCategory) {
     case BYTE:
-    case INT:
-    case LONG:
     case SHORT:
       return new LongValueBoundaryScanner(start, end, exprDef, nullsLast);
     case TIMESTAMP:
