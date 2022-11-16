@@ -70,7 +70,9 @@ public class CorrelationInfoVisitor extends RexShuttle {
     }
     RexNode returnNode = super.visitCall(call);
     // reset flag after visit.
-    notFlag = !notFlag;
+    if (call.getOperator().getKind() == SqlKind.NOT) {
+      notFlag = !notFlag;
+    }
     return returnNode;
   }
 
