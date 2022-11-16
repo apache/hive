@@ -138,7 +138,8 @@ public class HplSqlQueryExecutor implements QueryExecutor {
           if (type == Byte.class)
               return type.cast(((Number) current[columnIndex]).byteValue());
         }
-        // RowSet can never return BigDecimal or HiveDecimal instances, they'd get converted to String
+        // RowSet can never return the HiveDecimal instances created on Hive side, nor its BigDecimal representation.
+        // Instead, it gets converted into String object in ColumnBasedSet.addRow()...
         if (type == BigDecimal.class &&
             serdeConstants.DECIMAL_TYPE_NAME.equalsIgnoreCase(metadata(handle).columnTypeName(columnIndex))) {
           return (T) new BigDecimal((String) current[columnIndex]);
