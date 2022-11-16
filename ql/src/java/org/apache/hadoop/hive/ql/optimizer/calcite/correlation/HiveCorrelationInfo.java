@@ -52,25 +52,37 @@ public class HiveCorrelationInfo {
 
   
   /**
-   * isCorrScalarQuery returns true when we think the subquery will return 1 row.
+   * isCorrScalarQuery returns true for special cases as specified in the
+   * HiveSubQueryRemoveRule rewrite methods for steps that need to be taken
+   * before writing the join operator. It will add an sq_count_check to ensure
+   * that there is a row.
+   *
+   * This logic was copied from QBSubQuery.java for HIVE-26736. The following
+   * comment was copied from there:
+   *
+   * Restriction.13.m :: In the case of an implied Group By on a
+   * correlated SubQuery, the SubQuery always returns 1 row.
+   *   Following is special cases for different type of subqueries which have aggregate and implicit group by
+   *   and are correlatd
+   *     * SCALAR - This should return true since later in subquery remove
+   *                rule we need to know about this case.
+   *     * IN - always allowed, BUT returns true for cases with aggregate other than COUNT since later in subquery remove
+   *            rule we need to know about this case.
+   *     * NOT IN - always allow, but always return true because later subq remove rule will generate diff plan for this case
    */
   public boolean isCorrScalarQuery() {
-    // Not aggregating. Can't determine number of rows
     if (aggregateRel == null) {
       return false;
     }
 
-    // Has a gruop by.  Can't determine number of rows
     if (hasExplicitGroupBy()) {
       return false;
     }
 
     switch (rexSubQuery.getKind()) {
       case SCALAR_QUERY:
-        // is a correlated scalar query, return true.
         return hasCorrelation();
       case IN:
-        // XXX: need to understand this better from code in parse/QBSubQuery.java
         return notFlag ? hasCorrelation() : hasCorrelation() && hasCount();
       default:
         return false;
