@@ -26,20 +26,18 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
-import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hive.common.util.ReflectionUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import static org.apache.hadoop.hive.conf.Constants.EXPLAIN_CTAS_LOCATION;
 
 /**
  * TableDesc.
@@ -129,7 +127,7 @@ public class TableDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "properties", explainLevels = { Level.EXTENDED })
   public Map getPropertiesExplain() {
-    return PlanUtils.getPropertiesExplain(getProperties());
+    return PlanUtils.getPropertiesForExplain(getProperties());
   }
 
   public void setProperties(final Properties properties) {
@@ -141,9 +139,13 @@ public class TableDesc implements Serializable, Cloneable {
     this.jobProperties = jobProperties;
   }
 
-  @Explain(displayName = "jobProperties", explainLevels = { Level.EXTENDED })
   public Map<String, String> getJobProperties() {
     return jobProperties;
+  }
+
+  @Explain(displayName = "jobProperties", explainLevels = { Level.EXTENDED })
+  public Map<String, String> getJobPropertiesExplain() {
+    return PlanUtils.getPropertiesForExplain(jobProperties, EXPLAIN_CTAS_LOCATION);
   }
 
   public void setJobSecrets(Map<String, String> jobSecrets) {
