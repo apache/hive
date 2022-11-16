@@ -203,7 +203,9 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
   }
 
   public static String getVectorizationConfName(String tableName) {
-    return ICEBERG_DISABLE_VECTORIZATION_PREFIX + tableName;
+    String[] components = tableName.split("\\.");
+    String dbAndTableName = components.length == 3 ? components[1] + "." +  components[2] : tableName;
+    return ICEBERG_DISABLE_VECTORIZATION_PREFIX + dbAndTableName;
   }
 
 }
