@@ -103,7 +103,7 @@ public class Constants {
   public static final Pattern COMPACTION_POOLS_PATTERN = Pattern.compile("hive\\.compactor\\.worker\\.(.*)\\.threads");
   public static final String HIVE_COMPACTOR_WORKER_POOL = "hive.compactor.worker.pool";
 
-  public static final String HTTP_HEADER_REQUEST_TRACK = "Request-Track";
+  public static final String HTTP_HEADER_REQUEST_TRACK = "X-Request-ID";
   public static final String TIME_POSTFIX_REQUEST_TRACK = "_TIME";
 
   public static final String EXPLAIN_CTAS_LOCATION = "explainCtasLocation";
