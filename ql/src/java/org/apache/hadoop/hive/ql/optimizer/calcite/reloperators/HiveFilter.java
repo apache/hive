@@ -76,10 +76,6 @@ public class HiveFilter extends Filter implements HiveRelNode {
     return new HiveFilter(getCluster(), traitSet, input, condition);
   }
 
-  @Override
-  public void implement(Implementor implementor) {
-  }
-
   private static void findCorrelatedVar(RexNode node, Set<CorrelationId> allVars) {
     if(node instanceof RexCall) {
       RexCall nd = (RexCall)node;

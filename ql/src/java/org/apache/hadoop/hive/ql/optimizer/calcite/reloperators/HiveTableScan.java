@@ -216,11 +216,6 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   }
 
   @Override
-  public void implement(Implementor implementor) {
-
-  }
-
-  @Override
   public double estimateRowCount(RelMetadataQuery mq) {
     return ((RelOptHiveTable) table).getRowCount();
   }

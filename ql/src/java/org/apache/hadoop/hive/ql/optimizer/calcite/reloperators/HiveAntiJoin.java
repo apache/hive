@@ -89,9 +89,4 @@ public class HiveAntiJoin extends Join implements HiveRelNode {
       throw new AssertionError(e);
     }
   }
-
-  @Override
-  public void implement(Implementor implementor) {
-  }
-
 }

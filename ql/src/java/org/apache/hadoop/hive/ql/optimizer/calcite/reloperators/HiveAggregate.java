@@ -58,10 +58,6 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
     return new HiveAggregate(getCluster(), traitSet, input, groupSet, groupSets, aggCalls);
   }
 
-  @Override
-  public void implement(Implementor implementor) {
-  }
-
   // getRows will call estimateRowCount
   @Override
   public double estimateRowCount(RelMetadataQuery mq) {

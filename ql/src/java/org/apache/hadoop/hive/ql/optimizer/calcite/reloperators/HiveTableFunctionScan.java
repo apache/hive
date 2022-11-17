@@ -67,9 +67,4 @@ public class HiveTableFunctionScan extends TableFunctionScan implements HiveRelN
         elementType, rowType, columnMappings);
   }
 
-  @Override
-  public void implement(Implementor implementor) {
-
-  }
-
 }
