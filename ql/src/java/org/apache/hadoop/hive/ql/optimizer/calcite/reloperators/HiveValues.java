@@ -43,8 +43,4 @@ public class HiveValues extends Values implements HiveRelNode {
   public RelNode copy(RelTraitSet traitSet, List<RelNode> inputs) {
     return new HiveValues(getCluster(), getRowType(), tuples, getTraitSet());
   }
-
-  @Override
-  public void implement(Implementor implementor) {
-  }
 }
