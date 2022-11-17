@@ -28,21 +28,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.TimeUnit;
 
 
 /**
  * Unit test class for testing Ranger Dump.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({UserGroupInformation.class})
+@RunWith(MockitoJUnitRunner.class)
 public class TestRangerRestClient {
 
   @Mock
@@ -56,41 +53,35 @@ public class TestRangerRestClient {
 
   @Before
   public void setup() throws Exception {
-    PowerMockito.mockStatic(UserGroupInformation.class);
-    Mockito.when(UserGroupInformation.getLoginUser()).thenReturn(userGroupInformation);
-    Mockito.when(userGroupInformation.doAs((PrivilegedAction<Object>) Mockito.any())).thenCallRealMethod();
-    Mockito.when(userGroupInformation.doAs((PrivilegedExceptionAction<Object>) Mockito.any())).thenCallRealMethod();
     Mockito.when(mockClient.getRangerExportUrl(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
-      .thenCallRealMethod();
-    Mockito.when(mockClient.getRangerImportUrl(Mockito.anyString(), Mockito.anyString()))
       .thenCallRealMethod();
     Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY, TimeUnit.SECONDS)).thenReturn(1L);
     Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION, TimeUnit.SECONDS)).thenReturn(20L);
     Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_JITTER, TimeUnit.SECONDS)).thenReturn(1L);
     Mockito.when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_MAX_DELAY_BETWEEN_RETRIES, TimeUnit.SECONDS))
       .thenReturn(10L);
-    Mockito.when(conf.getFloat(HiveConf.ConfVars.REPL_RETRY_BACKOFF_COEFFICIENT.varname, 1.0f))
-      .thenReturn(1.0f);
   }
 
   @Test
   public void testSuccessSimpleAuthCheckConnection() throws Exception {
-    Mockito.when(UserGroupInformation.isSecurityEnabled()).thenReturn(false);
-    Mockito.when(mockClient.checkConnectionPlain(Mockito.anyString(), Mockito.any(HiveConf.class))).thenReturn(true);
+    Mockito.when(mockClient.checkConnectionPlain(Mockito.eq("http://localhost:6080/ranger"), Mockito.any(HiveConf.class))).thenReturn(true);
     Mockito.when(mockClient.checkConnection(Mockito.anyString(), Mockito.any())).thenCallRealMethod();
-    mockClient.checkConnection("http://localhost:6080/ranger", conf);
-    ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);
-    Mockito.verify(mockClient,
-      Mockito.times(1)).checkConnectionPlain(urlCaptor.capture(), Mockito.any(HiveConf.class));
-    Assert.assertEquals("http://localhost:6080/ranger", urlCaptor.getValue());
-    ArgumentCaptor<PrivilegedAction> privilegedActionArgumentCaptor = ArgumentCaptor.forClass(PrivilegedAction.class);
+
+    try(MockedStatic<UserGroupInformation> ignored = Mockito.mockStatic(UserGroupInformation.class)) {
+      ignored.when(UserGroupInformation::isSecurityEnabled).thenReturn(false);
+      mockClient.checkConnection("http://localhost:6080/ranger", conf);
+    }
+
+    Mockito.verify(mockClient, Mockito.times(1)).checkConnectionPlain(Mockito.eq("http://localhost:6080/ranger"), Mockito.any(HiveConf.class));
     Mockito.verify(userGroupInformation,
-      Mockito.times(0)).doAs(privilegedActionArgumentCaptor.capture());
+      Mockito.never()).doAs(Mockito.any(PrivilegedAction.class));
   }
 
   @Test
   public void testSuccessSimpleAuthRangerExport() throws Exception {
-    Mockito.when(UserGroupInformation.isSecurityEnabled()).thenReturn(false);
+    try(MockedStatic<UserGroupInformation> ignored = Mockito.mockStatic(UserGroupInformation.class)) {
+      ignored.when(UserGroupInformation::isSecurityEnabled).thenReturn(false);
+    }
     Mockito.when(mockClient.exportRangerPoliciesPlain(Mockito.anyString(),
             Mockito.any(HiveConf.class))).thenReturn(new RangerExportPolicyList());
     Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),

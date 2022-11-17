@@ -101,7 +101,8 @@ import org.junit.rules.ExpectedException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
+
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
@@ -1452,8 +1453,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     runStatementOnDriver("INSERT INTO " + tblName +
       (isPartioned ? " PARTITION (p='" + partName + "')" : "") +
       " VALUES (1, 'foo'),(2, 'bar'),(3, 'baz')");
-    runStatementOnDriver("UPDATE " + tblName + " SET b = 'blah' WHERE a = 3");
 
+    runStatementOnDriver("UPDATE " + tblName + " SET b = 'blah' WHERE a = 3");
     //run Worker to execute compaction
     CompactionRequest req = new CompactionRequest("default", tblName, CompactionType.MAJOR);
     if (isPartioned) {

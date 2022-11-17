@@ -74,7 +74,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for the worker thread and its MR jobs.
@@ -1019,7 +1019,7 @@ public class TestWorker extends CompactorTest {
   public void testFindNextCompactThrowsTException() throws Exception {
     Worker worker = Mockito.spy(new Worker());
     IMetaStoreClient msc = Mockito.mock(IMetaStoreClient.class);
-    Mockito.when(msc.findNextCompact(Mockito.any(FindNextCompactRequest.class))).thenThrow(MetaException.class);
+    when(msc.findNextCompact(Mockito.any(FindNextCompactRequest.class))).thenThrow(MetaException.class);
     worker.msc = msc;
 
     worker.findNextCompactionAndExecute(true, true);

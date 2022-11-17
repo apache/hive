@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -40,6 +39,7 @@ import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
+import org.apache.hadoop.hive.ql.util.TimeUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -154,12 +154,20 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
     private final String functionsRootDir;
     private String destinationDbName;
 
+    private TimeUtil timeUtil;
+
     PrimaryToReplicaResourceFunction(Context context, MetaData metadata,
-        String destinationDbName) {
+        String destinationDbName, TimeUtil timeUtil) {
       this.context = context;
       this.metadata = metadata;
       this.destinationDbName = destinationDbName;
       this.functionsRootDir = context.hiveConf.getVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR);
+      this.timeUtil = timeUtil;
+    }
+
+    PrimaryToReplicaResourceFunction(Context context, MetaData metadata,
+                                     String destinationDbName) {
+      this(context, metadata, destinationDbName, new TimeUtil());
     }
 
     @Override
@@ -187,7 +195,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
           pathBuilder
               .addDescendant(destinationDbName.toLowerCase())
               .addDescendant(metadata.function.getFunctionName().toLowerCase())
-              .addDescendant(String.valueOf(System.nanoTime()))
+              .addDescendant(String.valueOf(timeUtil.getNanoSeconds()))
               .addDescendant(split[split.length - 1])
               .build(),
           new Path(functionsRootDir).getFileSystem(context.hiveConf)

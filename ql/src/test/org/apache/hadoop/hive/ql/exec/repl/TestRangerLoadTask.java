@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
-import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.apache.hadoop.hive.ql.parse.repl.dump.log.RangerDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,7 +34,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +43,8 @@ import java.util.List;
 
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SERVICE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_REST_URL;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 
 /**
  * Unit test class for testing Ranger Load.
@@ -76,7 +77,7 @@ public class TestRangerLoadTask {
       .thenCallRealMethod();
     Mockito.when(mockClient.getDenyPolicyForReplicatedDb(Mockito.anyString(), Mockito.anyString(),
       Mockito.anyString())).thenCallRealMethod();
-    Mockito.when(mockClient.checkConnection(Mockito.anyString(), Mockito.any())).thenReturn(true);
+    Mockito.when(mockClient.checkConnection(Mockito.anyString(), any())).thenReturn(true);
     Mockito.when(work.getMetricCollector()).thenReturn(metricCollector);
   }
 
@@ -116,7 +117,7 @@ public class TestRangerLoadTask {
     Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
     Path rangerDumpPath = new Path("/tmp");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
-    Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    Mockito.when(mockClient.readRangerPoliciesFromJsonFile(any(), any())).thenReturn(rangerPolicyList);
     Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
@@ -124,8 +125,9 @@ public class TestRangerLoadTask {
 
   @Test
   public void testSuccessRangerDumpMetrics() throws Exception {
-    Logger logger = Mockito.mock(Logger.class);
-    Whitebox.setInternalState(ReplState.class, logger);
+    RangerDumpLogger logger = Mockito.mock(RangerDumpLogger.class);
+    task = new RangerLoadTask(mockClient, conf, work, logger);
+
     String rangerResponse = "{\"metaDataInfo\":{\"Host name\":\"ranger.apache.org\","
         + "\"Exported by\":\"hive\",\"Export time\":\"May 5, 2020, 8:55:03 AM\",\"Ranger apache version\""
         + ":\"2.0.0.7.2.0.0-61\"},\"policies\":[{\"service\":\"cm_hive\",\"name\":\"db-level\",\"policyType\":0,"
@@ -143,25 +145,12 @@ public class TestRangerLoadTask {
     Mockito.when(work.getTargetDbName()).thenReturn("tgtdb");
     Path rangerDumpPath = new Path("/tmp");
     Mockito.when(work.getCurrentDumpPath()).thenReturn(rangerDumpPath);
-    Mockito.when(mockClient.readRangerPoliciesFromJsonFile(Mockito.any(), Mockito.any())).thenReturn(rangerPolicyList);
+    Mockito.when(mockClient.readRangerPoliciesFromJsonFile(any(), any())).thenReturn(rangerPolicyList);
     Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
     Assert.assertEquals(0, status);
-    ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);
-    ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-    ArgumentCaptor<Object> eventDetailsCaptor = ArgumentCaptor.forClass(Object.class);
-    Mockito.verify(logger,
-        Mockito.times(2)).info(replStateCaptor.capture(),
-        eventCaptor.capture(), eventDetailsCaptor.capture());
-    Assert.assertEquals("REPL::{}: {}", replStateCaptor.getAllValues().get(0));
-    Assert.assertEquals("RANGER_LOAD_START", eventCaptor.getAllValues().get(0));
-    Assert.assertEquals("RANGER_LOAD_END", eventCaptor.getAllValues().get(1));
-    Assert.assertTrue(eventDetailsCaptor.getAllValues().get(0)
-        .toString().contains("{\"sourceDbName\":\"srcdb\",\"targetDbName\":\"tgtdb\""
-        + ",\"estimatedNumPolicies\":1,\"loadStartTime\":"));
-    Assert.assertTrue(eventDetailsCaptor
-        .getAllValues().get(1).toString().contains("{\"sourceDbName\":\"srcdb\",\"targetDbName\""
-        + ":\"tgtdb\",\"actualNumPolicies\":1,\"loadEndTime\""));
+    Mockito.verify(logger, times(1)).startLog();
+    Mockito.verify(logger, times(1)).endLog(any());
   }
 
   @Test
@@ -186,7 +175,7 @@ public class TestRangerLoadTask {
             Mockito.never()).deleteRangerPolicy(policyName.capture(), rangerEndpoint.capture(), serviceName.capture(),
             confCaptor.capture());
     Mockito.verify(mockClient,
-            Mockito.times(1)).importRangerPolicies(rangerPolicyCapture.capture(),
+            times(1)).importRangerPolicies(rangerPolicyCapture.capture(),
             targetDb.capture(), rangerEndpoint.capture(), serviceName.capture(), confCaptor.capture());
     Assert.assertEquals("tgtdb", targetDb.getAllValues().get(0));
     Assert.assertEquals("rangerEndpoint", rangerEndpoint.getAllValues().get(0));
@@ -221,7 +210,7 @@ public class TestRangerLoadTask {
     status = rangerDenyTask.execute();
     Assert.assertEquals(0, status);
     Mockito.verify(mockClient,
-            Mockito.times(1)).deleteRangerPolicy(policyName.capture(), rangerEndpoint.capture(), serviceName.capture(),
+            times(1)).deleteRangerPolicy(policyName.capture(), rangerEndpoint.capture(), serviceName.capture(),
             confCaptor.capture());
     Assert.assertEquals("srcdb_replication deny policy for tgtdb", policyName.getAllValues().get(0));
     Assert.assertEquals("rangerEndpoint", rangerEndpoint.getAllValues().get(0));

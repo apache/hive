@@ -26,32 +26,28 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.apache.hadoop.hive.ql.parse.repl.dump.log.RangerDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.net.URL;
 import java.util.ArrayList;
 
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_REST_URL;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SERVICE_NAME;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 
 /**
  * Unit test class for testing Ranger Dump.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({LoggerFactory.class})
+@RunWith(MockitoJUnitRunner.class)
 public class TestRangerDumpTask {
 
   private RangerDumpTask task;
@@ -142,8 +138,8 @@ public class TestRangerDumpTask {
 
   @Test
   public void testSuccessRangerDumpMetrics() throws Exception {
-    Logger logger = Mockito.mock(Logger.class);
-    Whitebox.setInternalState(ReplState.class, logger);
+    RangerDumpLogger logger = Mockito.mock(RangerDumpLogger.class);
+    task = new RangerDumpTask(mockClient, conf, work, logger);
     RangerExportPolicyList rangerPolicyList = new RangerExportPolicyList();
     rangerPolicyList.setPolicies(new ArrayList<RangerPolicy>());
     Mockito.when(mockClient.exportRangerPolicies(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
@@ -152,22 +148,12 @@ public class TestRangerDumpTask {
     Mockito.when(conf.get(RANGER_REST_URL)).thenReturn("rangerEndpoint");
     Mockito.when(conf.get(RANGER_HIVE_SERVICE_NAME)).thenReturn("hive");
     Mockito.when(work.getDbName()).thenReturn("testdb");
-    Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("/tmp"));
     Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
+
     int status = task.execute();
+
     Assert.assertEquals(0, status);
-    ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);
-    ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-    ArgumentCaptor<Object> eventDetailsCaptor = ArgumentCaptor.forClass(Object.class);
-    Mockito.verify(logger,
-        Mockito.times(2)).info(replStateCaptor.capture(),
-        eventCaptor.capture(), eventDetailsCaptor.capture());
-    Assert.assertEquals("REPL::{}: {}", replStateCaptor.getAllValues().get(0));
-    Assert.assertEquals("RANGER_DUMP_START", eventCaptor.getAllValues().get(0));
-    Assert.assertEquals("RANGER_DUMP_END", eventCaptor.getAllValues().get(1));
-    Assert.assertTrue(eventDetailsCaptor.getAllValues().get(0)
-        .toString().contains("{\"dbName\":\"testdb\",\"dumpStartTime"));
-    Assert.assertTrue(eventDetailsCaptor
-        .getAllValues().get(1).toString().contains("{\"dbName\":\"testdb\",\"actualNumPolicies\":0,\"dumpEndTime\""));
+    Mockito.verify(logger, times(1)).startLog();
+    Mockito.verify(logger, times(1)).endLog(any());
   }
 }

@@ -22,38 +22,44 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 
+import static org.mockito.Mockito.mockStatic;
+
 /**
  * Tests for retriable interface.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({UserGroupInformation.class})
+@RunWith(MockitoJUnitRunner.class)
 public class TestRetryable {
 
   @Mock
   UserGroupInformation userGroupInformation;
 
+  private static MockedStatic<UserGroupInformation> userGroupInformationMockedStatic;
+
+  @BeforeClass
+  public static void setupClass() {
+      userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class);
+  }
+
   @Before
-  public void setup() throws IOException {
-    PowerMockito.mockStatic(UserGroupInformation.class);
-    Mockito.when(UserGroupInformation.isSecurityEnabled()).thenReturn(false);
-    Mockito.when(UserGroupInformation.getLoginUser()).thenReturn(userGroupInformation);
-    Mockito.when(UserGroupInformation.getCurrentUser()).thenReturn(userGroupInformation);
+  public void setup(){
+    userGroupInformationMockedStatic.when(UserGroupInformation::isSecurityEnabled).thenReturn(false);
+    userGroupInformationMockedStatic.when(UserGroupInformation::getLoginUser).thenReturn(userGroupInformation);
+    userGroupInformationMockedStatic.when(UserGroupInformation::getCurrentUser).thenReturn(userGroupInformation);
   }
 
   @Test
@@ -324,7 +330,6 @@ public class TestRetryable {
 
   @Test
   public void testRetrySuccessSecureCallable() throws Throwable {
-    Mockito.when(userGroupInformation.doAs((PrivilegedAction<Boolean>) Mockito.any())).thenCallRealMethod();
     Mockito.when(userGroupInformation.doAs((PrivilegedExceptionAction<Boolean>) Mockito.any())).thenCallRealMethod();
     Mockito.when(UserGroupInformation.isSecurityEnabled()).thenReturn(true);
     Retryable retryable = Retryable.builder()
@@ -340,7 +345,7 @@ public class TestRetryable {
     ArgumentCaptor<PrivilegedExceptionAction> privilegedActionArgumentCaptor
       = ArgumentCaptor.forClass(PrivilegedExceptionAction.class);
     Mockito.verify(userGroupInformation,
-      Mockito.times(3)).doAs(privilegedActionArgumentCaptor.capture());
+      Mockito.times(1)).doAs(privilegedActionArgumentCaptor.capture());
   }
 
   private void executeWithDelay(long startTime, long totalTime) {

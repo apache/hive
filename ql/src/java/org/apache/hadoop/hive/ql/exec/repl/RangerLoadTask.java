@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.RangerLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,9 +68,15 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
 
   @VisibleForTesting
   RangerLoadTask(final RangerRestClient rangerRestClient, final HiveConf conf, final RangerLoadWork work) {
+    this(rangerRestClient, conf, work, null);
+  }
+
+  @VisibleForTesting
+  RangerLoadTask(final RangerRestClient rangerRestClient, final HiveConf conf, final RangerLoadWork work, ReplLogger replLogger) {
     this.conf = conf;
     this.work = work;
     this.rangerRestClient = rangerRestClient;
+    this.replLogger = replLogger;
   }
 
   @Override
@@ -111,8 +118,7 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
         rangerExportPolicyList = rangerRestClient.readRangerPoliciesFromJsonFile(new Path(work.getCurrentDumpPath(),
                 ReplUtils.HIVE_RANGER_POLICIES_FILE_NAME), conf);
         int expectedPolicyCount = rangerExportPolicyList == null ? 0 : rangerExportPolicyList.getListSize();
-        replLogger = new RangerLoadLogger(work.getSourceDbName(), work.getTargetDbName(),
-          work.getCurrentDumpPath().toString(), expectedPolicyCount);
+        initializeReplLogger(expectedPolicyCount);
         replLogger.startLog();
         Map<String, Long> metricMap = new HashMap<>();
         metricMap.put(ReplUtils.MetricName.POLICIES.name(), (long) expectedPolicyCount);
@@ -167,6 +173,13 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
         LOG.error("Failed to collect replication metrics: ", ex);
         return errorCode;
       }
+    }
+  }
+
+  private void initializeReplLogger(int expectedPolicyCount) {
+    if (this.replLogger == null){
+      this.replLogger = new RangerLoadLogger(work.getSourceDbName(), work.getTargetDbName(),
+              work.getCurrentDumpPath().toString(), expectedPolicyCount);
     }
   }
 

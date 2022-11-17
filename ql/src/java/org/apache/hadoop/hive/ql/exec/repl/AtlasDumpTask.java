@@ -36,11 +36,13 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.AtlasDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.yarn.webapp.hamlet2.Hamlet;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,16 +70,18 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
   private static final transient Logger LOG = LoggerFactory.getLogger(AtlasDumpTask.class);
   private static final long serialVersionUID = 1L;
   private transient AtlasRestClient atlasRestClient;
+  private AtlasDumpLogger replLogger;
 
   public AtlasDumpTask() {
     super();
   }
 
   @VisibleForTesting
-  AtlasDumpTask(final AtlasRestClient atlasRestClient, final HiveConf conf, final AtlasDumpWork work) {
+  AtlasDumpTask(final AtlasRestClient atlasRestClient, final HiveConf conf, final AtlasDumpWork work, AtlasDumpLogger replLogger) {
     this.conf = conf;
     this.work = work;
     this.atlasRestClient = atlasRestClient;
+    this.replLogger = replLogger;
   }
 
   @Override
@@ -87,8 +91,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       AtlasReplInfo atlasReplInfo = createAtlasReplInfo();
       LOG.info("Dumping Atlas metadata of srcDb: {}, for TgtDb: {} to staging location:",
               atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(), atlasReplInfo.getStagingDir());
-      AtlasDumpLogger replLogger = new AtlasDumpLogger(atlasReplInfo.getSrcDB(),
-              atlasReplInfo.getStagingDir().toString());
+      initializeReplLogger(atlasReplInfo);
       replLogger.startLog();
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.ENTITIES.name(), 0L);
@@ -126,6 +129,14 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
         LOG.error("Failed to collect replication metrics: ", ex);
         return errorCode;
       }
+    }
+  }
+
+  @NotNull
+  private void initializeReplLogger(AtlasReplInfo atlasReplInfo) {
+    if (this.replLogger == null){
+      this.replLogger = new AtlasDumpLogger(atlasReplInfo.getSrcDB(),
+              atlasReplInfo.getStagingDir().toString());
     }
   }
 

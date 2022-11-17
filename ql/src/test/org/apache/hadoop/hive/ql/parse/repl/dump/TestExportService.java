@@ -24,8 +24,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.junit.Test;
@@ -35,9 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.when;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({LoggerFactory.class, ExportService.class})
-
+@RunWith(MockitoJUnitRunner.class)
 public class TestExportService {
   protected static final Logger LOG = LoggerFactory.getLogger(TestExportService.class);
   @Mock

@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
+import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.load.log.AtlasLoadLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -50,7 +50,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 /**
  * Atlas Metadata Replication Load Task.
@@ -59,14 +58,17 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final transient Logger LOG = LoggerFactory.getLogger(AtlasLoadTask.class);
 
+  private ReplLogger replLogger = null;
+
   public AtlasLoadTask() {
     super();
   }
 
   @VisibleForTesting
-  AtlasLoadTask(final HiveConf conf, final AtlasLoadWork work) {
+  AtlasLoadTask(final HiveConf conf, final AtlasLoadWork work, ReplLogger replLogger) {
     this.conf = conf;
     this.work = work;
+    this.replLogger = replLogger;
   }
 
   @Override
@@ -79,8 +81,7 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
       work.getMetricCollector().reportStageStart(getName(), metricMap);
       LOG.info("Loading atlas metadata from srcDb: {} to tgtDb: {} from staging: {}",
               atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(), atlasReplInfo.getStagingDir());
-      AtlasLoadLogger replLogger = new AtlasLoadLogger(atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(),
-              atlasReplInfo.getStagingDir().toString());
+      initializeReplLogger(atlasReplInfo);
       replLogger.startLog();
       int importCount = importAtlasMetadata(atlasReplInfo);
       replLogger.endLog(importCount);
@@ -110,6 +111,13 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
         LOG.error("Failed to collect replication metrics: ", ex);
         return errorCode;
       }
+    }
+  }
+
+  private void initializeReplLogger(AtlasReplInfo atlasReplInfo) {
+    if (this.replLogger == null){
+      this.replLogger = new AtlasLoadLogger(atlasReplInfo.getSrcDB(), atlasReplInfo.getTgtDB(),
+              atlasReplInfo.getStagingDir().toString());
     }
   }
 

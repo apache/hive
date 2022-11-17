@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
-import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.RangerDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -65,10 +64,16 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
   }
 
   @VisibleForTesting
-  RangerDumpTask(final RangerRestClient rangerRestClient, final HiveConf conf, final RangerDumpWork work) {
+  RangerDumpTask(final RangerRestClient rangerRestClient, final HiveConf conf, final RangerDumpWork work, ReplLogger replLogger) {
     this.conf = conf;
     this.work = work;
     this.rangerRestClient = rangerRestClient;
+    this.replLogger = replLogger;
+  }
+
+  @VisibleForTesting
+  RangerDumpTask(final RangerRestClient rangerRestClient, final HiveConf conf, final RangerDumpWork work) {
+    this(rangerRestClient, conf, work, null);
   }
 
   @Override
@@ -86,7 +91,7 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.POLICIES.name(), 0L);
       work.getMetricCollector().reportStageStart(getName(), metricMap);
-      replLogger = new RangerDumpLogger(work.getDbName(), work.getCurrentDumpPath().toString());
+      initializeReplLogger(work);
       replLogger.startLog();
       if (rangerRestClient == null) {
         rangerRestClient = getRangerRestClient();
@@ -155,6 +160,12 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
         LOG.error("Failed to collect replication metrics: ", ex);
         return errorCode;        
       }
+    }
+  }
+
+  private void initializeReplLogger(RangerDumpWork work) {
+    if (this.replLogger == null){
+      this.replLogger = new RangerDumpLogger(work.getDbName(), work.getCurrentDumpPath().toString());
     }
   }
 
