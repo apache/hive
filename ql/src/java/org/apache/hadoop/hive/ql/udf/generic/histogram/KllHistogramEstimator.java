@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.common.histogram;
+package org.apache.hadoop.hive.ql.udf.generic.histogram;
 
 import org.apache.datasketches.kll.KllFloatsSketch;
-import org.apache.hadoop.hive.common.histogram.kll.KllUtils;
+import org.apache.hadoop.hive.ql.udf.generic.histogram.kll.KllUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 

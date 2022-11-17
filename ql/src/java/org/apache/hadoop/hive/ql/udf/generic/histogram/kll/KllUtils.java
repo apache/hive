@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common.histogram.kll;
+package org.apache.hadoop.hive.ql.udf.generic.histogram.kll;
 
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;

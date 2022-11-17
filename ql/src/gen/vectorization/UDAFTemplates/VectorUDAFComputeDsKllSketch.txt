@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates;
 
-import org.apache.hadoop.hive.common.histogram.KllHistogramEstimator;
-import org.apache.hadoop.hive.common.histogram.KllHistogramEstimatorFactory;
+import org.apache.hadoop.hive.ql.udf.generic.histogram.KllHistogramEstimator;
+import org.apache.hadoop.hive.ql.udf.generic.histogram.KllHistogramEstimatorFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
