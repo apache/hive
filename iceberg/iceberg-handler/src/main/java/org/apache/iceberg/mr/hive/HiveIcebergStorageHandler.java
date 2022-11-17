@@ -111,8 +111,8 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
+import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.hadoop.Util;
-import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -747,17 +747,17 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   public static Table table(Configuration config, String name) {
     Table table = SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + name));
-    if (table == null && StringUtils.isNotBlank(config.get(InputFormatConfig.TABLE_LOCATION)) &&
-            StringUtils.isNotBlank(config.get(InputFormatConfig.FILE_IO))) {
+    if (table == null && StringUtils.isNotBlank(config.get(InputFormatConfig.TABLE_LOCATION))) {
       String location = config.get(InputFormatConfig.TABLE_LOCATION);
       String filePath = HiveIcebergOutputCommitter.generateTableObjectLocation(location, config);
 
-      FileIO io = SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.FILE_IO));
-      try (ObjectInputStream ois = new ObjectInputStream(io.newInputFile(filePath).newStream())) {
-        table = SerializationUtil.deserializeFromBase64((String) ois.readObject());
-      } catch (ClassNotFoundException | IOException e) {
-        LOG.debug("Can not read or parse committed file: {}", filePath);
-        return null;
+      try (FileIO io = new HadoopFileIO(config)) {
+        try (ObjectInputStream ois = new ObjectInputStream(io.newInputFile(filePath).newStream())) {
+          table = SerializationUtil.deserializeFromBase64((String) ois.readObject());
+        } catch (ClassNotFoundException | IOException e) {
+          LOG.debug("Can not read or parse committed file: {}", filePath);
+          return null;
+        }
       }
     }
     checkAndSetIoConfig(config, table);
@@ -789,9 +789,15 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    * @param table The Iceberg table object
    */
   public static void checkAndSkipIoConfigSerialization(Configuration config, Table table) {
-    if (table != null && config.getBoolean(InputFormatConfig.CONFIG_SERIALIZATION_DISABLED,
-        InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) && table.io() instanceof HadoopConfigurable) {
-      ((HadoopConfigurable) table.io()).serializeConfWith(conf -> new NonSerializingConfig(config)::get);
+    if (table != null) {
+      checkAndSkipIoConfigSerialization(config, table.io());
+    }
+  }
+
+  public static void checkAndSkipIoConfigSerialization(Configuration config, FileIO io) {
+    if (config.getBoolean(InputFormatConfig.CONFIG_SERIALIZATION_DISABLED,
+        InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) && io instanceof HadoopConfigurable) {
+      ((HadoopConfigurable) io).serializeConfWith(conf -> new NonSerializingConfig(config)::get);
     }
   }
 
@@ -875,15 +881,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
         location = props.getProperty(Constants.CTAS_LOCATION);
       }
 
-      String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-      HiveCatalog hiveCatalog = (HiveCatalog) Catalogs.loadCatalog(configuration, catalogName).get();
-      String ioStr = SerializationUtil.serializeToBase64(hiveCatalog.getFileIO());
-      map.put(InputFormatConfig.FILE_IO, ioStr);
       map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
               SerializationUtil.serializeToBase64(null));
 
       try {
-
         AbstractSerDe serDe = tableDesc.getDeserializer(configuration);
         HiveIcebergSerDe icebergSerDe = (HiveIcebergSerDe) serDe;
         schema = icebergSerDe.getTableSchema();
