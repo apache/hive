@@ -463,8 +463,8 @@ public class Initiator extends MetaStoreCompactorThread {
     return AcidUtils.getAcidState(fs, location, conf, writeIds, Ref.from(false), false);
   }
 
-  private CompactionType determineCompactionType(CompactionInfo ci, AcidDirectory dir, Map<String,
-      String> tblproperties, long baseSize, long deltaSize) {
+  private CompactionType determineCompactionType(CompactionInfo ci, AcidDirectory dir,
+                                                 Map<String, String> tblproperties, long baseSize, long deltaSize) {
     boolean noBase = false;
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories();
     if (baseSize == 0 && deltaSize > 0) {
@@ -502,6 +502,47 @@ public class Initiator extends MetaStoreCompactorThread {
         LOG.debug(msg.toString());
       }
       if (initiateMajor) return CompactionType.MAJOR;
+    }
+
+    // bucket size calculation can be resource intensive if there are numerous deltas, so we check for rebalance
+    // compaction only if the table is in an acceptable shape: no major compaction required. This means the number of
+    // files shouldn't be too high
+    if ("tez".equalsIgnoreCase(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)) &&
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED) &&
+        AcidUtils.isFullAcidTable(tblproperties)) {
+      long totalSize = baseSize + deltaSize;
+      long minimumSize = MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_REBALANCE_MINIMUM_SIZE);
+      if (totalSize > minimumSize) {
+        try {
+          Map<Integer, Long> bucketSizes = new HashMap<>();
+          //compute the size of each bucket
+          dir.getFiles().stream()
+              .filter(f -> AcidUtils.bucketFileFilter.accept(f.getHdfsFileStatusWithId().getFileStatus().getPath()))
+              .forEach(
+                  f -> bucketSizes.merge(
+                      AcidUtils.parseBucketId(f.getHdfsFileStatusWithId().getFileStatus().getPath()),
+                      f.getHdfsFileStatusWithId().getFileStatus().getLen(),
+                      Long::sum));
+          final double mean = (double) totalSize / bucketSizes.size();
+
+          // calculate the standard deviation
+          double standardDeviation = Math.sqrt(
+              bucketSizes.values().stream().mapToDouble(Long::doubleValue)
+                  .reduce(0.0, (sum, num) -> Double.sum(sum, Math.pow(num - mean, 2)) / bucketSizes.size()));
+
+          double rsdThreshold = MetastoreConf.getDoubleVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_REBALANCE_THRESHOLD);
+          //Relative standard deviation: If the standard deviation is larger than rsdThreshold * average_bucket_size,
+          // a rebalancing compaction is initiated.
+          if (standardDeviation > mean * rsdThreshold) {
+            LOG.debug("");
+            return CompactionType.REBALANCE;
+          }
+        } catch (IOException e) {
+          LOG.error("Error occured during checking bucket file sizes, rebalance threshold calculation is skipped.", e);
+        }
+      } else {
+        LOG.debug("Table is smaller than the minimum required size for REBALANCE compaction.");
+      }
     }
 
     String deltaNumProp = tblproperties.get(COMPACTORTHRESHOLD_PREFIX +
