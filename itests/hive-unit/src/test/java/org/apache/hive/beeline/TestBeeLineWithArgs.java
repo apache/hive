@@ -63,7 +63,7 @@ import org.junit.Test;
  *
  */
   public class TestBeeLineWithArgs {
-  private enum OutStream {
+  enum OutStream {
     ERR, OUT
   }
 
@@ -158,7 +158,7 @@ import org.junit.Test;
    * @return The stderr and stdout from running the script
    * @throws Throwable
    */
-  private static String testCommandLineScript(List<String> argList, InputStream inputStream,
+  static String testCommandLineScript(List<String> argList, InputStream inputStream,
       OutStream streamType)
       throws Throwable {
     BeeLine beeLine = new BeeLine();

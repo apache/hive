@@ -20,12 +20,12 @@
 
 package org.apache.hive.beeline;
 
+import static org.apache.hive.beeline.TestBeeLineWithArgs.OutStream;
+import static org.apache.hive.beeline.TestBeeLineWithArgs.testCommandLineScript;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -368,27 +368,47 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "e1=1 e2=2 e3=3 e4=4 e5=5 e6=6");
   }
 
+  @Test
+  public void testDecimalCast() throws Throwable {
+    String SCRIPT_TEXT =
+        "DECLARE\n" +
+        "a DECIMAL(10,2);\n" +
+        "BEGIN\n" +
+        "SELECT CAST('10.5' AS DECIMAL(10,2)) as t INTO a;\n" +
+        "print (a);\n" +
+        "END;\n" +
+        "/";
+    testScriptFile(SCRIPT_TEXT, args(), "10.50", OutStream.ERR);
+  }
+
+  @Test
+  public void testNullCast() throws Throwable {
+    String SCRIPT_TEXT =
+        "BEGIN\n" +
+        "DECLARE a BIGINT;\n" +
+        "print('started');\n" +
+        "SELECT cast (null as BIGINT) as t INTO a\n" +
+        "print (a);\n" +
+        "print ('here');\n" +
+        "end;\n" +
+        "/";
+    // Inverted match, output should not have NPE
+    testScriptFile(SCRIPT_TEXT, args(), "^(.(?!(NullPointerException)))*$", OutStream.ERR);
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);
   }
 
-  private static String testCommandLineScript(List<String> argList, InputStream inputStream)
-          throws Throwable {
-    BeeLine beeLine = new BeeLine();
-    ByteArrayOutputStream os = new ByteArrayOutputStream();
-    PrintStream beelineOutputStream = new PrintStream(os);
-    beeLine.setOutputStream(beelineOutputStream);
-    String[] args = argList.toArray(new String[argList.size()]);
-    beeLine.begin(args, inputStream);
-    beeLine.close();
-    beelineOutputStream.close();
-    String output = os.toString("UTF8");
-    return output;
-  }
 
   private void testScriptFile(String scriptText, List<String> argList, String expectedPattern)
           throws Throwable {
+    testScriptFile(scriptText, argList, expectedPattern, OutStream.OUT);
+  }
+
+  private void testScriptFile(String scriptText, List<String> argList, String expectedPattern,
+          TestBeeLineWithArgs.OutStream outStream) throws Throwable {
     File scriptFile = File.createTempFile(this.getClass().getSimpleName(), "temp");
     scriptFile.deleteOnExit();
     try (PrintStream os = new PrintStream(new FileOutputStream(scriptFile))) {
@@ -397,7 +417,7 @@ public class TestHplSqlViaBeeLine {
     List<String> copy = new ArrayList<>(argList);
     copy.add("-f");
     copy.add(scriptFile.getAbsolutePath());
-    String output = testCommandLineScript(copy, null);
+    String output = testCommandLineScript(copy, null, outStream);
     if (!Pattern.compile(".*" + expectedPattern + ".*", Pattern.DOTALL).matcher(output).matches()) {
       fail("Output: '" + output + "' should match " + expectedPattern);
     }
