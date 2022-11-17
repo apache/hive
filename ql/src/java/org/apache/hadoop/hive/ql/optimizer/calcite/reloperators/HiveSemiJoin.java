@@ -93,9 +93,4 @@ public class HiveSemiJoin extends Join implements HiveRelNode {
       throw new AssertionError(e);
     }
   }
-
-  @Override
-  public void implement(Implementor implementor) {
-  }
-
 }

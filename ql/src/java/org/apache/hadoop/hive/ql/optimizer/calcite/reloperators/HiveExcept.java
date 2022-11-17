@@ -24,7 +24,6 @@ import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Minus;
 import org.apache.calcite.rel.core.SetOp;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode.Implementor;
 
 public class HiveExcept extends Minus {
 
@@ -36,8 +35,4 @@ public class HiveExcept extends Minus {
   public SetOp copy(RelTraitSet traitSet, List<RelNode> inputs, boolean all) {
     return new HiveExcept(this.getCluster(), traitSet, inputs, all);
   }
-
-  public void implement(Implementor implementor) {
-  }
-
 }

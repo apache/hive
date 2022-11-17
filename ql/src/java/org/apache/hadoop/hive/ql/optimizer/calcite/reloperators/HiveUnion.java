@@ -38,9 +38,6 @@ public class HiveUnion extends Union implements HiveRelNode {
     return new HiveUnion(this.getCluster(), traitSet, inputs);
   }
 
-  @Override
-  public void implement(Implementor implementor) {
-  }
   //required for HiveRelDecorrelator
   public RelNode accept(RelShuttle shuttle) {
     if (shuttle instanceof HiveRelShuttle) {
