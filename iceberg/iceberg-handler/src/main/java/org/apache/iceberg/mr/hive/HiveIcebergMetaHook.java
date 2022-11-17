@@ -911,6 +911,14 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
+  public void setTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (hmsTable != null) {
+      Table tbl = Catalogs.loadTable(conf, getCatalogProperties(hmsTable));
+      String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
+      hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
+    }
+  }
+
   private class PreAlterTableProperties {
     private String tableLocation;
     private String format;
