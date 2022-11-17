@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
-import static org.apache.hadoop.hive.conf.Constants.EXPLAIN_CTAS_LOCATION;
+import static org.apache.hadoop.hive.conf.Constants.CTAS_LOCATION;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEARCHIVEENABLED;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
@@ -7774,17 +7774,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         } else {
           destinationTable = db.getTranslateTableDryrun(tblDesc.toTable(conf).getTTable());
-          if (ctx.isExplainPlan() &&
-                  tblDesc.getTblProps().containsKey(TABLE_IS_CTAS) &&
+          if (tblDesc.getTblProps().containsKey(TABLE_IS_CTAS) &&
                   !tblDesc.getTblProps().containsKey(META_TABLE_LOCATION)) {
             if (destinationTable.getDataLocation() == null) {
               // no metastore.metadata.transformer.class was set
-              tblDesc.getTblProps().put(EXPLAIN_CTAS_LOCATION, new Warehouse(conf).getDefaultTablePath(
+              tblDesc.getTblProps().put(CTAS_LOCATION, new Warehouse(conf).getDefaultTablePath(
                       destinationTable.getDbName(),
                       destinationTable.getTableName(),
                       Boolean.parseBoolean(destinationTable.getParameters().get("EXTERNAL"))).toString());
             } else {
-              tblDesc.getTblProps().put(EXPLAIN_CTAS_LOCATION, destinationTable.getDataLocation().toString());
+              tblDesc.getTblProps().put(CTAS_LOCATION, destinationTable.getDataLocation().toString());
             }
           }
           tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
@@ -14041,9 +14040,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           isTransactional, isManaged, new String[]{qualifiedTabName.getDb(), qualifiedTabName.getTable()}, isDefaultTableTypeChanged);
       isExt = isExternalTableChanged(tblProps, isTransactional, isExt, isDefaultTableTypeChanged);
       tblProps.put(TABLE_IS_CTAS, "true");
-      if (ctx.isExplainPlan()) {
-        tblProps.put(EXPLAIN_CTAS_LOCATION, "");
-      }
       addDbAndTabToOutputs(new String[] {qualifiedTabName.getDb(), qualifiedTabName.getTable()},
           TableType.MANAGED_TABLE, isTemporary, tblProps, storageFormat);
       tableDesc = new CreateTableDesc(qualifiedTabName, isExt, isTemporary, cols,

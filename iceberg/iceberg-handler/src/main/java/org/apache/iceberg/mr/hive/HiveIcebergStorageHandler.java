@@ -851,8 +851,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
           SerializationUtil.serializeToBase64(serializableTable));
     } catch (NoSuchTableException ex) {
-      if (!(StringUtils.isNotBlank(props.getProperty(hive_metastoreConstants.TABLE_IS_CTAS)) &&
-              StringUtils.isNotBlank(props.getProperty(Constants.EXPLAIN_CTAS_LOCATION)))) {
+      if (!StringUtils.isNotBlank(props.getProperty(hive_metastoreConstants.TABLE_IS_CTAS))) {
         throw ex;
       }
 
@@ -862,7 +861,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
 
       location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
       if (StringUtils.isBlank(location)) {
-        location = props.getProperty(Constants.EXPLAIN_CTAS_LOCATION);
+        location = props.getProperty(Constants.CTAS_LOCATION);
       }
 
       String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
