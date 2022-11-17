@@ -74,7 +74,6 @@ public final class StatsUpdater {
             }
             sb.append(" compute statistics");
             LOG.info(ci + ": running '" + sb + "'");
-            statusUpdaterConf.setVar(HiveConf.ConfVars.METASTOREURIS, "");
             if (compactionQueueName != null && compactionQueueName.length() > 0) {
                 statusUpdaterConf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);
             }
