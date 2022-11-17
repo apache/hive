@@ -42,8 +42,6 @@ import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 
-import com.google.common.collect.ImmutableList;
-
 public class HiveFilterSetOpTransposeRule extends FilterSetOpTransposeRule {
 
   public static final HiveFilterSetOpTransposeRule INSTANCE =
@@ -66,8 +64,8 @@ public class HiveFilterSetOpTransposeRule extends FilterSetOpTransposeRule {
    *       Op1 Op2
    *
    *
-   * It additionally can remove branch(es) of filter if its able to determine
-   * that they are going to generate empty result set.
+   * It additionally can remove branch(es) of filter if it's able to determine
+   * that they are going to generate an empty result set.
    */
   private HiveFilterSetOpTransposeRule(RelBuilderFactory relBuilderFactory) {
     super(relBuilderFactory);
@@ -111,18 +109,14 @@ public class HiveFilterSetOpTransposeRule extends FilterSetOpTransposeRule {
         final RelMetadataQuery mq = call.getMetadataQuery();
         final RelOptPredicateList predicates = mq.getPulledUpPredicates(input);
         if (predicates != null) {
-          ImmutableList.Builder<RexNode> listBuilder = ImmutableList.builder();
-          listBuilder.addAll(predicates.pulledUpPredicates);
-          listBuilder.add(newCondition);
-          RexExecutor executor =
+          final RexExecutor executor =
               Util.first(filterRel.getCluster().getPlanner().getExecutor(), RexUtil.EXECUTOR);
-          final RexSimplify simplify = new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY, executor);
-          final RexNode cond = RexUtil.composeConjunction(rexBuilder, listBuilder.build());
-          final RexNode x = simplify.simplifyUnknownAs(cond, RexUnknownAs.FALSE);
+          final RexSimplify simplify = new RexSimplify(rexBuilder, predicates, executor);
+          final RexNode x = simplify.simplifyUnknownAs(newCondition, RexUnknownAs.FALSE);
           if (x.isAlwaysFalse()) {
             // this is the last branch, and it is always false
             // We assume alwaysFalse filter will get pushed down to TS so this
-            // branch so it won't read any data.
+            // branch won't read any data.
             if (index == setOp.getInputs().size() - 1) {
               lastInput = relBuilder.push(input).filter(newCondition).build();
             }
