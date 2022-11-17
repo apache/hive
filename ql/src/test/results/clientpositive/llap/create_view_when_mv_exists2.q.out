@@ -46,11 +46,10 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
 CBO PLAN:
-HiveProject(col0=[CAST(10):INTEGER])
-  HiveAggregate(group=[{0}])
-    HiveProject($f0=[true])
-      HiveFilter(condition=[=($0, 10)])
-        HiveTableScan(table=[[default, t1]], table:alias=[t1])
+HiveAggregate(group=[{0}])
+  HiveProject($f0=[CAST(10):INTEGER])
+    HiveFilter(condition=[=($0, 10)])
+      HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: create view v1 as
 select sub.* from (select * from t1 where col0 > 2 union select * from t1 where col0 = 0) sub
@@ -80,11 +79,10 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@v1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(col0=[CAST(10):INTEGER])
-  HiveAggregate(group=[{0}])
-    HiveProject($f0=[true])
-      HiveFilter(condition=[=($0, 10)])
-        HiveTableScan(table=[[default, t1]], table:alias=[t1])
+HiveAggregate(group=[{0}])
+  HiveProject($f0=[CAST(10):INTEGER])
+    HiveFilter(condition=[=($0, 10)])
+      HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: select * from v1
 PREHOOK: type: QUERY
