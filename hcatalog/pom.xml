@@ -91,6 +91,10 @@
           <artifactId>groovy-all</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>org.apache.ivy</groupId>
+          <artifactId>ivy</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>tomcat</groupId>
           <artifactId>jasper-compiler</artifactId>
         </exclusion>
