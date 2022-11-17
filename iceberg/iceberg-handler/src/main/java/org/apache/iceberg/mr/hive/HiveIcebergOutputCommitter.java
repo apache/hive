@@ -83,6 +83,7 @@ import org.slf4j.LoggerFactory;
  */
 public class HiveIcebergOutputCommitter extends OutputCommitter {
   static final String FOR_COMMIT_EXTENSION = ".forCommit";
+  static final String TABLE_EXTENSION = ".table";
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergOutputCommitter.class);
 
@@ -607,6 +608,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   static String generateJobLocation(String location, Configuration conf, JobID jobId) {
     String queryId = conf.get(HiveConf.ConfVars.HIVEQUERYID.varname);
     return location + "/temp/" + queryId + "-" + jobId;
+  }
+
+  static String generateTableObjectLocation(String tableLocation, Configuration conf) {
+    return tableLocation + "/temp/" + conf.get(HiveConf.ConfVars.HIVEQUERYID.varname) + TABLE_EXTENSION;
   }
 
   /**

@@ -37,7 +37,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -262,11 +261,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
       String tableIdentifier = catalogProperties.getProperty(Catalogs.NAME);
       SessionStateUtil.addResource(conf, tableIdentifier, table);
-      String filePath = table.location() +
-              "/temp/" +
-              conf.get(HiveConf.ConfVars.HIVEQUERYID.varname) +
-              HiveIcebergOutputCommitter.FOR_COMMIT_EXTENSION +
-              "Table";
+      String filePath = HiveIcebergOutputCommitter.generateTableObjectLocation(table.location(), conf);
 
       Table serializableTable = SerializableTable.copyOf(table);
       HiveIcebergStorageHandler.checkAndSkipIoConfigSerialization(conf, serializableTable);

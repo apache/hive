@@ -22,6 +22,7 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -38,6 +39,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
@@ -108,6 +111,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
+import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.Catalogs;
@@ -465,7 +469,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
+    String ctasLocation = commitProperties.getProperty(Constants.CTAS_LOCATION);
     Configuration configuration = SessionState.getSessionConf();
+    if (ctasLocation != null) {
+      String tableObjectLocation = HiveIcebergOutputCommitter.generateTableObjectLocation(ctasLocation, configuration);
+      try {
+        Path toDelete = new Path(tableObjectLocation);
+        FileSystem fs = Util.getFs(toDelete, configuration);
+        fs.delete(toDelete, true);
+      } catch (IOException ex) {
+        throw new UncheckedIOException(ex);
+      }
+    }
     List<JobContext> jobContextList = generateJobContext(configuration, tableName, overwrite);
     if (jobContextList.isEmpty()) {
       return;
@@ -735,11 +750,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (table == null && StringUtils.isNotBlank(config.get(InputFormatConfig.TABLE_LOCATION)) &&
             StringUtils.isNotBlank(config.get(InputFormatConfig.FILE_IO))) {
       String location = config.get(InputFormatConfig.TABLE_LOCATION);
-      String filePath = location +
-              "/temp/" +
-              config.get(HiveConf.ConfVars.HIVEQUERYID.varname) +
-              HiveIcebergOutputCommitter.FOR_COMMIT_EXTENSION +
-              "Table";
+      String filePath = HiveIcebergOutputCommitter.generateTableObjectLocation(location, config);
 
       FileIO io = SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.FILE_IO));
       try (ObjectInputStream ois = new ObjectInputStream(io.newInputFile(filePath).newStream())) {
