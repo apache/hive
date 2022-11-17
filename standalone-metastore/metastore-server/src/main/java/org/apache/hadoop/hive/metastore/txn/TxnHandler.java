@@ -369,11 +369,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS);
     synchronized (TxnHandler.class) {
-      if (connPool == null) {
-        connPool = setupJdbcConnectionPool(conf, maxPoolSize);
-      }
-      if (connPoolMutex == null) {
-        connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize);
+      try (DataSourceProvider.DataSourceNameConfigurator configurator =
+               new DataSourceProvider.DataSourceNameConfigurator(conf, "txn")) {
+        if (connPool == null) {
+          connPool = setupJdbcConnectionPool(conf, maxPoolSize);
+        }
+        if (connPoolMutex == null) {
+          configurator.resetName("mutex");
+          connPoolMutex = setupJdbcConnectionPool(conf, maxPoolSize);
+        }
       }
 
       if (dbProduct == null) {
