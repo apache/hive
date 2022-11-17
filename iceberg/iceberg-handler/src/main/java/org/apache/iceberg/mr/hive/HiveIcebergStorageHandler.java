@@ -106,10 +106,6 @@ import org.apache.iceberg.SortField;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
-<<<<<<< HEAD
-=======
-import org.apache.iceberg.catalog.TableIdentifier;
->>>>>>> 7efc876427 (HIVE-26628: Iceberg table is created when running explain ctas command)
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hive.HiveCatalog;
