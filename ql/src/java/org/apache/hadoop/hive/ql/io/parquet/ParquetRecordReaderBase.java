@@ -134,9 +134,9 @@ public abstract class ParquetRecordReaderBase {
       return null;
     }
 
-    FilterCompat.Filter filter = setFilter(jobConf, readContext.getRequestedSchema());
+    FilterCompat.Filter filter = setFilter(jobConf, fileMetaData.getSchema());
     if (filter != null) {
-      filteredBlocks = RowGroupFilter.filterRowGroups(filter, splitGroup, readContext.getRequestedSchema());
+      filteredBlocks = RowGroupFilter.filterRowGroups(filter, splitGroup, fileMetaData.getSchema());
       if (filteredBlocks.isEmpty()) {
         LOG.debug("All row groups are dropped due to filter predicates");
         return null;
