@@ -1,4 +1,3 @@
---! qt:dataset:src
 CREATE TABLE t_test(
   int_col int,
   tinyint_col tinyint
