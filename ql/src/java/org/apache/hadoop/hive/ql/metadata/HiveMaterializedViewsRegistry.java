@@ -120,13 +120,16 @@ public final class HiveMaterializedViewsRegistry {
    */
   public void init(final Hive db) {
     try {
-      List<Table> tables = new ArrayList<Table>();
-      for (String dbName : db.getAllDatabases()) {
-        // TODO: We should enhance metastore API such that it returns only
-        // materialized views instead of all tables
-        tables.addAll(db.getAllTableObjects(dbName));
+      if(db.getConf().getBoolVar(
+                            HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_CACHE_AT_STARTUP)) {
+        List<Table> tables = new ArrayList<Table>();
+        for (String dbName : db.getAllDatabases()) {
+          tables.addAll(db.getAllTableObjects(dbName));
+        }
+        pool.submit(new Loader(tables));
+      } else {
+        LOG.info("Materialized views cache has been disabled...");
       }
-      pool.submit(new Loader(tables));
     } catch (HiveException e) {
       LOG.error("Problem connecting to the metastore when initializing the view registry");
     }
