@@ -55,6 +55,7 @@ import java.util.Map;
 
 import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_DONT_SET;
 import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_RESET;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_ENABLE_BACKGROUND_THREAD;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DB_PROPERTY;
 import static org.apache.hadoop.hive.common.repl.ReplConst.TARGET_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
@@ -1034,5 +1035,61 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
       }
     }
     return txnHandler.getOpenTxns(txnListExcludingReplCreated).getOpen_txns();
+  }
+
+  @Test
+  public void testDbParametersAfterOptimizedBootstrap() throws Throwable {
+    List<String> withClause = Arrays.asList(
+            String.format("'%s'='%s'", HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false"),
+            String.format("'%s'='%s'", HiveConf.ConfVars.HIVE_REPL_FAILOVER_START.varname, "true")
+    );
+
+    // bootstrap
+    primary.run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into table t1 values (1),(2)")
+            .dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    // incremental
+    primary.run("use " + primaryDbName)
+            .run("insert into table t1 values (3)")
+            .dump(primaryDbName, withClause);
+    replica.load(replicatedDbName, primaryDbName, withClause);
+
+    // make some changes on primary
+    primary.run("use " + primaryDbName)
+            .run("insert into table t1 values (4)");
+
+    withClause = Arrays.asList(
+            String.format("'%s'='%s'", HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false")
+    );
+    // 1st cycle of optimized bootstrap
+    replica.dump(replicatedDbName, withClause);
+    primary.load(primaryDbName, replicatedDbName, withClause);
+
+    String[] dbParams = new String[]{
+            TARGET_OF_REPLICATION,
+            CURR_STATE_ID_SOURCE.toString(),
+            CURR_STATE_ID_TARGET.toString(),
+            REPL_TARGET_DB_PROPERTY,
+            REPL_ENABLE_BACKGROUND_THREAD
+    };
+    //verify if all db parameters are set
+    for (String paramKey : dbParams) {
+      assertTrue(replica.getDatabase(replicatedDbName).getParameters().containsKey(paramKey));
+    }
+
+    // 2nd cycle of optimized bootstrap
+    replica.dump(replicatedDbName, withClause);
+    primary.load(primaryDbName, replicatedDbName, withClause);
+
+    for (String paramKey : dbParams) {
+      assertFalse(replica.getDatabase(replicatedDbName).getParameters().containsKey(paramKey));
+    }
+    // ensure optimized bootstrap was successful.
+    primary.run(String.format("select * from %s.t1", primaryDbName))
+            .verifyResults(new String[]{"1", "2", "3"});
   }
 }
