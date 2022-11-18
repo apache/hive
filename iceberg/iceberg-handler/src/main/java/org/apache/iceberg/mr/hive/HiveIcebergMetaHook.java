@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -79,6 +80,7 @@ import org.apache.iceberg.UpdateProperties;
 import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveCommitLock;
@@ -913,9 +915,16 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
   public void setTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     if (hmsTable != null) {
-      Table tbl = Catalogs.loadTable(conf, getCatalogProperties(hmsTable));
-      String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
-      hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
+      try {
+        Table tbl = Catalogs.loadTable(conf, getCatalogProperties(hmsTable));
+        String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
+        // If it is not the default format version, then set it in the table properties.
+        if (!"1".equals(formatVersion)) {
+          hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
+        }
+      } catch (NoSuchTableException | NotFoundException ex) {
+        // If the table doesn't exist, ignore throwing exception from here
+      }
     }
   }
 
