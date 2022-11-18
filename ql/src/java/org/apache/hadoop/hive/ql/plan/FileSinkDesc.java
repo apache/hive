@@ -394,17 +394,6 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
         : AcidUtils.isCompactionTable(getTableInfo().getProperties());
   }
 
-  /**
-   * @return true if the compaction type is 'REBALANCE', false otherwise.
-   */
-  public boolean isRebalanceCompactionTable() {
-    String compactionType = getTable() != null
-        ? table.getParameters().get(COMPACTOR_TABLE_PROPERTY)
-        : getTableInfo().getProperties().getProperty(COMPACTOR_TABLE_PROPERTY);
-    return StringUtils.isNotBlank(compactionType) &&
-        CompactionType.valueOf(compactionType).equals(CompactionType.REBALANCE);
-  }
-
   public boolean isMaterialization() {
     return materialization;
   }

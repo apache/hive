@@ -45,7 +45,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1044,10 +1043,9 @@ public class TestWorker extends CompactorTest {
     CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
     when(mockedFactory.getQueryCompactor(any(), any(), any(), any())).thenThrow(new RuntimeException());
 
-    Worker worker = Mockito.spy(new Worker());
+    Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(conf);
     worker.init(new AtomicBoolean(true));
-    Whitebox.setInternalState(worker, "compactorFactory", mockedFactory);
     Worker.statsUpdater = statsUpdater;
 
     worker.findNextCompactionAndExecute(true, true);

@@ -42,7 +42,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
-import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2.swapTxnManager;
 import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
 
 public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   static final private Logger LOG = LoggerFactory.getLogger(TestTxnCommands3.class);
@@ -497,10 +496,9 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
     when(mockedFactory.getQueryCompactor(any(), any(), any(), any())).thenReturn(mrCompactor);
 
-    Worker worker = Mockito.spy(new Worker());
+    Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
-    Whitebox.setInternalState(worker, "compactorFactory", mockedFactory);
     worker.run();
 
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
@@ -555,10 +553,9 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
     when(mockedFactory.getQueryCompactor(any(), any(), any(), any())).thenReturn(mrCompactor);
 
-    Worker worker = Mockito.spy(new Worker());
+    Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
-    Whitebox.setInternalState(worker, "compactorFactory", mockedFactory);
     worker.run();
 
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);

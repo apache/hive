@@ -1056,8 +1056,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           createNewPaths(null, lbDirName);
         }
       } else if (conf.isCompactionTable()) {
-        if (conf.isRebalanceCompactionTable()) {
-          //For rebalacning compaction, the unencoded bucket id comes in the bucketproperty. It must be encoded before
+        if (AcidUtils.isRebalanceCompactionTable(conf.getTable().getParameters())) {
+          //For rebalancing compaction, the unencoded bucket id comes in the bucketproperty. It must be encoded before
           //writing the data out
           bucketId = getBucketProperty(row);
           setBucketProperty(hconf, row, bucketId);
@@ -1835,7 +1835,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   /**
-   * Reuired for rebalancing compaction. Encodes the raw bucket property set by the compactor
+   * Required for rebalancing compaction. Encodes the raw bucket property set by the compactor
    * @param row The acid row in which the bucket needs to be updated.
    */
   private void setBucketProperty(Configuration hiveConf, Object row, int bucketId) {

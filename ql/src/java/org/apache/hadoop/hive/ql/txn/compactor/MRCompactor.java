@@ -285,7 +285,7 @@ public class MRCompactor extends Compactor {
 
     StringableList dirsToSearch = new StringableList();
     Path baseDir = null;
-    if (ci.type.equals(CompactionType.MAJOR)) {
+    if (CompactionType.MAJOR.equals(ci.type)) {
       // There may not be a base dir if the partition was empty before inserts or if this
       // partition is just now being converted to ACID.
       baseDir = dir.getBaseDirectory();

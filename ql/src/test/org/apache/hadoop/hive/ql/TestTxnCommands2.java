@@ -100,7 +100,6 @@ import static org.powermock.api.mockito.PowerMockito.when;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
-import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1459,10 +1458,9 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
     when(mockedFactory.getQueryCompactor(any(), any(), any(), any())).thenReturn(mrCompactor);
 
-    Worker worker = Mockito.spy(new Worker());
+    Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(hiveConf);
     worker.init(new AtomicBoolean(true));
-    Whitebox.setInternalState(worker, "compactorFactory", mockedFactory);
 
     CompletableFuture<Void> compactionJob = CompletableFuture.runAsync(worker);
     Thread.sleep(1000);

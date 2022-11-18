@@ -189,7 +189,7 @@ class CompactionQueryBuilder {
    */
   CompactionQueryBuilder setBucketed(boolean bucketed) {
     if(rebalance && bucketed) {
-      throw new IllegalArgumentException("Rebalance compaction is supported only on non-bucketed tables!");
+      throw new IllegalArgumentException("Rebalance compaction is supported only on implicitly-bucketed tables!");
     }
     isBucketed = bucketed;
     return this;
@@ -224,9 +224,9 @@ class CompactionQueryBuilder {
     this.resultTableName = resultTableName;
     this.crud = crud;
     insertOnly = !crud;
-    major = compactionType.equals(CompactionType.MAJOR);
-    minor = compactionType.equals(CompactionType.MINOR);
-    rebalance = compactionType.equals(CompactionType.REBALANCE);
+    major = CompactionType.MAJOR.equals(compactionType);
+    minor = CompactionType.MINOR.equals(compactionType);
+    rebalance = CompactionType.REBALANCE.equals(compactionType);
 
     if(rebalance && !crud) {
       throw new IllegalArgumentException("Rebalance compaction is supported only on ACID tables!");

@@ -72,7 +72,7 @@ public final class CompactorFactory {
     if (AcidUtils.isFullAcidTable(table.getParameters())) {
       if (!"tez".equalsIgnoreCase(HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)) ||
           !HiveConf.getBoolVar(configuration, HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)) {
-        if (compactionInfo.type.equals(CompactionType.REBALANCE)) {
+        if (CompactionType.REBALANCE.equals(compactionInfo.type)) {
           throw new HiveException("Rebalancing compaction is only supported in Tez, and via Query based compaction. " +
               "Set hive.execution.engine=tez and hive.compactor.crud.query.based=true to enable it.");
         }
@@ -102,7 +102,8 @@ public final class CompactorFactory {
               "Rebalancing compaction is not supported on insert only tables.");
       }
     }
-    return null;
+    throw new HiveException("Only transactional tables can be compacted, " + table.getTableName() + "is not suitable " +
+        "for compaction!");
   }
 
 }

@@ -83,8 +83,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   private final CompactorFactory compactorFactory;
 
   public Worker() {
-    //This is for better testability (no static mocking required)
     compactorFactory = CompactorFactory.getInstance();
+  }
+
+  public Worker(CompactorFactory compactorFactory) {
+    this.compactorFactory = compactorFactory;
   }
 
   static StatsUpdater statsUpdater = new StatsUpdater();
@@ -418,7 +421,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         task (currently we're using Tez split grouping).
         */
         Compactor compactor = compactorFactory.getQueryCompactor(msc, t, conf, ci);
-        computeStats = (compactor == null && collectMrStats) || collectGenericStats;
+        computeStats = (compactor instanceof MRCompactor && collectMrStats) || collectGenericStats;
 
         LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + ", id:" +
                 ci.id + " in " + compactionTxn + " with compute stats set to " + computeStats);

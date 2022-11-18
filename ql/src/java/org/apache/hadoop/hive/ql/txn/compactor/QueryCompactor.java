@@ -112,7 +112,7 @@ abstract class QueryCompactor extends Compactor {
       }
       for (String query : compactionQueries) {
         LOG.info("Running {} compaction via query: {}", compactionInfo.type, query);
-        if (compactionInfo.type.equals(CompactionType.MINOR)) {
+        if (CompactionType.MINOR.equals(compactionInfo.type)) {
           // There was an issue with the query-based MINOR compaction (HIVE-23763), that the row distribution between the FileSinkOperators
           // was not correlated correctly with the bucket numbers. So we could end up with files containing rows from
           // multiple buckets or rows from the same bucket could end up in different FileSinkOperator. This behaviour resulted

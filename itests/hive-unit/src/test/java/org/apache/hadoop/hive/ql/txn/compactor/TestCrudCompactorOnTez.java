@@ -90,7 +90,7 @@ import static org.mockito.Mockito.*;
 public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
-  public void testRebalanceCompactionNotPartitionedWithoutBuckets() throws Exception {
+  public void testRebalanceCompactionOfNotPartitionedImplicitlyBucketedTable() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
@@ -154,7 +154,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         },
     };
     for(int i = 0; i < 3; i++) {
-      Assert.assertEquals("rebalanced bucket " + i, Arrays.asList(expectedBuckets[i]),
+      Assert.assertEquals("unbalanced bucket " + i, Arrays.asList(expectedBuckets[i]),
           testDataProvider.getBucketData(tableName, BucketCodec.V1.encode(options.bucket(i)) + ""));
     }
 
@@ -163,12 +163,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     runWorker(conf);
 
     //Check if the compaction succeed
-    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
-    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    Assert.assertEquals("Expecting 1 rows and found " + compacts.size(), 1, compacts.size());
-    Assert.assertEquals("Expecting compaction state 'ready for cleaning' and found:" + compacts.get(0).getState(),
-        "ready for cleaning", compacts.get(0).getState());
+    verifyCompaction(1, TxnStore.CLEANING_RESPONSE);
 
     // Verify buckets and their content after rebalance
     Assert.assertEquals("Buckets does not match after compaction",
@@ -207,7 +202,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test
-  public void testRebalanceCompactionPartitionedWithoutBuckets() throws Exception {
+  public void testRebalanceCompactionOfPartitionedImplicitlyBucketedTable() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
@@ -283,12 +278,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     runWorker(conf);
 
     //Check if the compaction succeed
-    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
-    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    Assert.assertEquals("Expecting 1 rows and found " + compacts.size(), 1, compacts.size());
-    Assert.assertEquals("Expecting compaction state 'ready for cleaning' and found:" + compacts.get(0).getState(),
-        "ready for cleaning", compacts.get(0).getState());
+    verifyCompaction(1, TxnStore.CLEANING_RESPONSE);
 
     // Verify buckets and their content after rebalance in partition ds=tomorrow
     Assert.assertEquals("Buckets does not match after compaction",
@@ -327,7 +317,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test
-  public void testRebalanceCompactionNotPartitionedWithBuckets() throws Exception {
+  public void testRebalanceCompactionOfNotPartitionedExplicitlyBucketedTable() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
@@ -342,13 +332,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     executeStatementOnDriver("ALTER TABLE " + tableName + " COMPACT 'rebalance'", driver);
     runWorker(conf);
 
-    //Check if the compaction succeed
-    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
-    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    Assert.assertEquals("Expecting 1 rows and found " + compacts.size(), 1, compacts.size());
-    Assert.assertEquals("Expecting compaction state 'refused' and found:" + compacts.get(0).getState(),
-        "refused", compacts.get(0).getState());
+    //Check if the compaction is refused
+    List<ShowCompactResponseElement> compacts = verifyCompaction(1, TxnStore.REFUSED_RESPONSE);
     Assert.assertEquals("Expecting error message 'Cannot execute rebalancing compaction on bucketed tables.' and found:" + compacts.get(0).getState(),
         "Cannot execute rebalancing compaction on bucketed tables.", compacts.get(0).getErrorMessage());
   }
@@ -382,11 +367,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     runWorker(conf);
 
     //Check if the compaction succeed
-    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    Assert.assertEquals("Expecting 1 rows and found " + compacts.size(), 1, compacts.size());
-    Assert.assertEquals("Expecting compaction state 'ready for cleaning' and found:" + compacts.get(0).getState(),
-            "ready for cleaning", compacts.get(0).getState());
+    verifyCompaction(1, TxnStore.CLEANING_RESPONSE);
   }
 
   @Test
