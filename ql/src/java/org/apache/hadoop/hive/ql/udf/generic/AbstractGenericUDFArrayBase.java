@@ -44,56 +44,53 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
     static final int SEPARATOR_IDX = 1;
     static final int REPLACE_NULL_IDX = 2;
 
-    int MIN_ARG_COUNT;
-    int MAX_ARG_COUNT;
+    private final int minArgCount;
+    private final int maxArgCount;
+    private final ObjectInspector.Category outputCategory;
+
+    private final FUNC_NAMES funcName;
 
     transient ListObjectInspector arrayOI;
     transient ObjectInspector[] argumentOIs;
 
     transient Converter converter;
 
+    public AbstractGenericUDFArrayBase(FUNC_NAMES funcName, int minArgCount, int maxArgCount, ObjectInspector.Category outputCategory) {
+        this.funcName = funcName;
+        this.minArgCount = minArgCount;
+        this.maxArgCount = maxArgCount;
+        this.outputCategory = outputCategory;
+    }
+
     enum FUNC_NAMES {
         ARRAY_MAX, ARRAY_MIN, ARRAY_DISTINCT, ARRAY_SLICE, ARRAY_JOIN, ARRAY_EXCEPT, ARRAY_INTERSECT
     }
-
-    FUNC_NAMES FUNC_NAME;
 
     @Override
     public ObjectInspector initialize(ObjectInspector[] arguments)
             throws UDFArgumentException {
 
         // Check if wrong number of arguments were passed
-        checkArgsSize(arguments, MIN_ARG_COUNT, MAX_ARG_COUNT);
+        checkArgsSize(arguments, minArgCount, maxArgCount);
 
         // Check if the argument is of category LIST or not
-        checkArgCategory(arguments, ARRAY_IDX, ObjectInspector.Category.LIST, FUNC_NAME,
+        checkArgCategory(arguments, ARRAY_IDX, ObjectInspector.Category.LIST, funcName,
                 org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME);
 
-        if (FUNC_NAME == FUNC_NAMES.ARRAY_EXCEPT
-                || FUNC_NAME == FUNC_NAMES.ARRAY_INTERSECT
-                || FUNC_NAME == FUNC_NAMES.ARRAY_JOIN) {
-            checkArgCategory(arguments, ARRAY2_IDX, ObjectInspector.Category.LIST, FUNC_NAME,
-                    org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME);
-        }
-
-        if (FUNC_NAME == FUNC_NAMES.ARRAY_SLICE) {
-            PrimitiveObjectInspector startIndexObjectInspector = (PrimitiveObjectInspector) arguments[START_IDX];
-            PrimitiveObjectInspector lengthObjectInspector = (PrimitiveObjectInspector) arguments[LENGTH_IDX];
-            checkArgIntPrimitiveCategory(startIndexObjectInspector, FUNC_NAME, 2);
-            checkArgIntPrimitiveCategory(lengthObjectInspector, FUNC_NAME, 3);
-        }
-
+        //return ObjectInspectors based on expected output type
         arrayOI = (ListObjectInspector) arguments[ARRAY_IDX];
         argumentOIs = arguments;
-
-        //return initialize(arguments);
-        return initListOI(arguments);
+        if (outputCategory == ObjectInspector.Category.LIST) {
+            return initListOI(arguments);
+        } else {
+            return initOI(arguments);
+        }
     }
 
     @Override
     public String getDisplayString(String[] children) {
-        assert (children.length == MIN_ARG_COUNT);
-        return FUNC_NAME.toString().toLowerCase() + "(" + children[ARRAY_IDX] + ")";
+        assert (children.length == minArgCount);
+        return funcName.toString().toLowerCase() + "(" + children[ARRAY_IDX] + ")";
     }
 
     List<Object> convertArray(List objects) {
@@ -105,19 +102,19 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
     }
 
     void checkArgCategory(ObjectInspector[] arguments, int idx, Enum category,
-                          FUNC_NAMES function_name, String typeName) throws UDFArgumentTypeException {
+                          FUNC_NAMES functionName, String typeName) throws UDFArgumentTypeException {
 
         if (!arguments[idx].getCategory().equals(category)) {
             throw new UDFArgumentTypeException(idx,
                     "\"" + typeName + "\" "
-                            + "expected at function " + function_name + ", but "
+                            + "expected at function " + functionName + ", but "
                             + "\"" + arguments[idx].getTypeName() + "\" "
                             + "is found");
         }
     }
 
     void checkArgIntPrimitiveCategory(PrimitiveObjectInspector objectInspector,
-                                      FUNC_NAMES function_name, int idx) throws UDFArgumentTypeException {
+                                      FUNC_NAMES functionName, int idx) throws UDFArgumentTypeException {
 
         switch (objectInspector.getPrimitiveCategory()) {
             case SHORT:
@@ -126,7 +123,7 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
                 break;
             default:
                 throw new UDFArgumentTypeException(0, "Argument " + idx
-                        + " of function " + function_name + " must be \""
+                        + " of function " + functionName + " must be \""
                         + serdeConstants.SMALLINT_TYPE_NAME + "\""
                         + " or \"" + serdeConstants.INT_TYPE_NAME + "\""
                         + " or \"" + serdeConstants.BIGINT_TYPE_NAME + "\", but \""
@@ -134,15 +131,7 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
         }
     }
 
-    boolean isListEmpty(Object array, ListObjectInspector listObjectInspector) {
-
-        int arrayLength = listObjectInspector.getListLength(array);
-
-        // Check if array is null or empty or value is null
-        return array == null || arrayLength <= 0;
-    }
-
-    ObjectInspector initListOI(ObjectInspector[] arguments) {
+    ObjectInspector initOI(ObjectInspector[] arguments) {
 
         GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver =
                 new GenericUDFUtils.ReturnObjectInspectorResolver(true);
@@ -152,9 +141,11 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
 
         ObjectInspector returnOI = returnOIResolver.get(elementObjectInspector);
         converter = ObjectInspectorConverters.getConverter(elementObjectInspector, returnOI);
-        if(FUNC_NAME == FUNC_NAMES.ARRAY_MAX || FUNC_NAME == FUNC_NAMES.ARRAY_MIN){
             return returnOI;
-        }
-        return ObjectInspectorFactory.getStandardListObjectInspector(returnOI);
     }
+
+    ObjectInspector initListOI(ObjectInspector[] arguments) {
+        return ObjectInspectorFactory.getStandardListObjectInspector(initOI(arguments));
+    }
+
 }

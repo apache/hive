@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 import java.util.Comparator;
 import java.util.List;
@@ -41,16 +42,14 @@ public class GenericUDFArrayMin extends AbstractGenericUDFArrayBase {
 
     //Initialise parent member variables
     public GenericUDFArrayMin() {
-        FUNC_NAME = FUNC_NAMES.ARRAY_MIN;
-        MIN_ARG_COUNT = 1;
-        MAX_ARG_COUNT = 1;
+        super(FUNC_NAMES.ARRAY_MIN,1,1, ObjectInspector.Category.PRIMITIVE);
     }
 
     @Override
     public Object evaluate(DeferredObject[] arguments) throws HiveException {
         Object array = arguments[ARRAY_IDX].get();
 
-        if (isListEmpty(array, arrayOI)) {
+        if (array == null || arrayOI.getListLength(array) <= 0) {
             return null;
         }
         List retArray = ((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array);
