@@ -17,9 +17,7 @@
  * under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf.generic.histogram;
-
-import org.apache.hadoop.hive.ql.udf.generic.histogram.kll.KllUtils;
+package org.apache.hadoop.hive.ql.udf.datasketch.kll;
 
 public class KllHistogramEstimatorFactory {
 

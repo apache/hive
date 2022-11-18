@@ -15,10 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.udf.generic.histogram;
+package org.apache.hadoop.hive.ql.udf.datasketch.kll;
 
 import org.apache.datasketches.kll.KllFloatsSketch;
-import org.apache.hadoop.hive.ql.udf.generic.histogram.kll.KllUtils;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 
@@ -28,10 +27,6 @@ import java.io.IOException;
 public class KllHistogramEstimator {
 
   private final KllFloatsSketch kll;
-
-  KllHistogramEstimator() {
-    this.kll = new KllFloatsSketch();
-  }
 
   KllHistogramEstimator(int k) {
     this.kll = new KllFloatsSketch(k);
@@ -71,10 +66,6 @@ public class KllHistogramEstimator {
 
   public int lengthFor(JavaDataModel model) {
     return KllUtils.lengthFor(model, kll);
-  }
-
-  public boolean canMerge(KllHistogramEstimator o) {
-    return o != null && this.kll.getK() == o.kll.getK();
   }
 
   public KllFloatsSketch getSketch() {
