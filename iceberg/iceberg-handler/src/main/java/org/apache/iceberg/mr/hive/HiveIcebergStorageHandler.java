@@ -110,6 +110,7 @@ import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.hadoop.Util;
@@ -754,10 +755,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       try (FileIO io = new HadoopFileIO(config)) {
         try (ObjectInputStream ois = new ObjectInputStream(io.newInputFile(filePath).newStream())) {
           table = SerializationUtil.deserializeFromBase64((String) ois.readObject());
-        } catch (ClassNotFoundException | IOException e) {
-          LOG.debug("Can not read or parse committed file: {}", filePath);
-          return null;
         }
+      } catch (NotFoundException e) {
+        LOG.debug("Table object file {} not found.", filePath);
+        return null;
+      } catch (Exception e) {
+        LOG.warn("Unable to read table object file: " + filePath, e);
+        return null;
       }
     }
     checkAndSetIoConfig(config, table);
