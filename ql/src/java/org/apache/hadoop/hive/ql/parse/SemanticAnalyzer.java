@@ -8002,10 +8002,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                boolean createTableWithSuffix) throws SemanticException {
     Path location;
     String[] names;
+    String protoName = null;
     Table tbl;
     try {
       if (tblDesc != null) {
-        names = Utilities.getDbTableName(tblDesc.getDbTableName());
+        protoName = tblDesc.getDbTableName();
 
         // Handle table translation initially and if not present
         // use default table path.
@@ -8015,9 +8016,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tbl = tblDesc.toTable(conf);
         tbl = db.getTranslateTableDryrun(tbl.getTTable());
       } else {
-        names = Utilities.getDbTableName(viewDesc.getViewName());
+        protoName = viewDesc.getViewName();
         tbl = viewDesc.toTable(conf);
       }
+      names = Utilities.getDbTableName(protoName);
 
       Warehouse wh = new Warehouse(conf);
       if (tbl.getSd() == null
