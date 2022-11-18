@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.udf.datasketch.kll;
+package org.apache.hadoop.hive.ql.udf.datasketches.kll;
 
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.hadoop.hive.common.type.HiveDecimal;

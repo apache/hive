@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf.datasketch.kll;
+package org.apache.hadoop.hive.ql.udf.datasketches.kll;
 
 public class KllHistogramEstimatorFactory {
 
