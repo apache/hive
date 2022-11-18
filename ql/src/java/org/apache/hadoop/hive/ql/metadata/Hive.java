@@ -2608,7 +2608,6 @@ public class Hive {
            * See: HIVE-1707 and HIVE-2117 for background
            */
           FileSystem oldPartPathFS = oldPartPath.getFileSystem(getConf());
-          //FileSystem loadPathFS = loadPath.getFileSystem(getConf());
           FileSystem tblPathFS = tblDataLocationPath.getFileSystem(getConf());
           if (FileUtils.equalsFileSystem(oldPartPathFS,tblPathFS)) {
             newPartPath = oldPartPath;
