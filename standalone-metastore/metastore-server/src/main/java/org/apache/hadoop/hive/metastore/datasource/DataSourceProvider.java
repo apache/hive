@@ -87,20 +87,16 @@ public interface DataSourceProvider {
   class DataSourceNameConfigurator implements Closeable {
     static final String DATA_SOURCE_NAME = "metastore.DataSourceProvider.pool.name";
     private final Configuration configuration;
-
     public DataSourceNameConfigurator(Configuration conf, String name) {
       this.configuration = conf;
       configuration.set(DATA_SOURCE_NAME, name);
     }
-
     public void resetName(String name) {
       configuration.set(DATA_SOURCE_NAME, name);
     }
-
     @Override
     public void close() {
       configuration.unset(DATA_SOURCE_NAME);
     }
   }
-
 }
