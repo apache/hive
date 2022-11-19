@@ -2319,6 +2319,8 @@ public class HiveConf extends Configuration {
         "Setting it to 0s disables the timeout."),
     HIVE_SERVER2_PARALLEL_OPS_IN_SESSION("hive.server2.parallel.ops.in.session", true,
         "Whether to allow several parallel operations (such as SQL statements) in one session."),
+    HIVE_SERVER2_MATERIALIZED_VIEWS_CACHE_AT_STARTUP("hive.server2.materializedviews.cache.at.startup", false,
+            "Whether to cache the materialized views in the registry at startup."),
 
     // HiveServer2 WebUI
     HIVE_SERVER2_WEBUI_BIND_HOST("hive.server2.webui.host", "0.0.0.0", "The host address the HiveServer2 WebUI will listen on"),
