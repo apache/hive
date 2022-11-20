@@ -51,7 +51,10 @@ public class TestServiceDiscovery {
 
   @BeforeClass
   public static void setup() throws Exception {
-    server = new TestingServer();
+    synchronized (TestServiceDiscovery.class)
+    {
+      server = new TestingServer();
+    }
     CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder();
     client = builder.connectString(server.getConnectString()).retryPolicy(new RetryOneTime(1)).build();
     client.start();

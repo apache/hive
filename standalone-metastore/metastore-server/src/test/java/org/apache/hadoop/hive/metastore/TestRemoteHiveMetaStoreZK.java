@@ -30,13 +30,10 @@ public class TestRemoteHiveMetaStoreZK extends TestRemoteHiveMetaStore {
   private static TestingServer zkServer = null;
 
     @Before
-    public void setUp() throws Exception {
+    public synchronized void setUp() throws Exception {
         // Start ZooKeeper server if not done already.
         if (zkServer == null) {
-            synchronized (zkServer)
-            {
-                zkServer = new TestingServer();
-            }
+            zkServer = new TestingServer();
             // Add ZK specific configurations, so that the metastore can register itself to ZK when
             // started.
             initConf();
