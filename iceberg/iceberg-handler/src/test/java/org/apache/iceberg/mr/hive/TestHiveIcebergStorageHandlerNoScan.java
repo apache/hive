@@ -709,7 +709,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         testTables.locationForCreateTableSQL(TableIdentifier.of("default", "customers")) +
         testTables.propertiesForCreateTableSQL(ImmutableMap.of()));
 
-    String fmt = shell.executeAndStringify("show create table " + TableIdentifier.of("default", "customers"));
+    String fmt = shell.executeAndStringify("show create table " + tbl);
 
     Assert.assertTrue(fmt, fmt.contains("'format-version'='2'"));
   }

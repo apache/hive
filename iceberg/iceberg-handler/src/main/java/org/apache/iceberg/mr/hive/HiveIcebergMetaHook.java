@@ -912,6 +912,7 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
+  @Override
   public void setTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     if (hmsTable != null) {
       try {
