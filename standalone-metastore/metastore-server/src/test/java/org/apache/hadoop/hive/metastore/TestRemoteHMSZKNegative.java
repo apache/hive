@@ -44,7 +44,7 @@ public class TestRemoteHMSZKNegative {
   private String rootNamespace = this.getClass().getSimpleName();
 
   @Before
-  public synchronized void setUp() throws Exception {
+  public void setUp() throws Exception {
     zkServer = new TestingServer();
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, zkServer.getConnectString());

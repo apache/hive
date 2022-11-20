@@ -30,7 +30,7 @@ public class TestRemoteHiveMetaStoreZK extends TestRemoteHiveMetaStore {
   private static TestingServer zkServer = null;
 
     @Before
-    public synchronized void setUp() throws Exception {
+    public void setUp() throws Exception {
         // Start ZooKeeper server if not done already.
         if (zkServer == null) {
             zkServer = new TestingServer();
