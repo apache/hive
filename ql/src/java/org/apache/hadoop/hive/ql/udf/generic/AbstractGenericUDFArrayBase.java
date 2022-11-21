@@ -28,9 +28,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Abstract GenericUDF for array functions
  */
@@ -38,32 +35,23 @@ import java.util.List;
 public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
 
     static final int ARRAY_IDX = 0;
-    static final int ARRAY2_IDX = 1;
-    static final int START_IDX = 1;
-    static final int LENGTH_IDX = 2;
-    static final int SEPARATOR_IDX = 1;
-    static final int REPLACE_NULL_IDX = 2;
 
     private final int minArgCount;
     private final int maxArgCount;
     private final ObjectInspector.Category outputCategory;
 
-    private final FUNC_NAMES funcName;
+    private final String functionName;
 
     transient ListObjectInspector arrayOI;
     transient ObjectInspector[] argumentOIs;
 
     transient Converter converter;
 
-    public AbstractGenericUDFArrayBase(FUNC_NAMES funcName, int minArgCount, int maxArgCount, ObjectInspector.Category outputCategory) {
-        this.funcName = funcName;
+    public AbstractGenericUDFArrayBase(String functionName, int minArgCount, int maxArgCount, ObjectInspector.Category outputCategory) {
+        this.functionName = functionName;
         this.minArgCount = minArgCount;
         this.maxArgCount = maxArgCount;
         this.outputCategory = outputCategory;
-    }
-
-    enum FUNC_NAMES {
-        ARRAY_MAX, ARRAY_MIN, ARRAY_DISTINCT, ARRAY_SLICE, ARRAY_JOIN, ARRAY_EXCEPT, ARRAY_INTERSECT
     }
 
     @Override
@@ -74,7 +62,7 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
         checkArgsSize(arguments, minArgCount, maxArgCount);
 
         // Check if the argument is of category LIST or not
-        checkArgCategory(arguments, ARRAY_IDX, ObjectInspector.Category.LIST, funcName,
+        checkArgCategory(arguments, ARRAY_IDX, ObjectInspector.Category.LIST, functionName,
                 org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME);
 
         //return ObjectInspectors based on expected output type
@@ -90,19 +78,11 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
     @Override
     public String getDisplayString(String[] children) {
         assert (children.length == minArgCount);
-        return funcName.toString().toLowerCase() + "(" + children[ARRAY_IDX] + ")";
-    }
-
-    List<Object> convertArray(List objects) {
-        List<Object> ret = new ArrayList<>();
-        for (Object o : objects) {
-            ret.add(converter.convert(o));
-        }
-        return ret;
+        return functionName.toString().toLowerCase() + "(" + children[ARRAY_IDX] + ")";
     }
 
     void checkArgCategory(ObjectInspector[] arguments, int idx, Enum category,
-                          FUNC_NAMES functionName, String typeName) throws UDFArgumentTypeException {
+                          String functionName, String typeName) throws UDFArgumentTypeException {
 
         if (!arguments[idx].getCategory().equals(category)) {
             throw new UDFArgumentTypeException(idx,
@@ -110,24 +90,6 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
                             + "expected at function " + functionName + ", but "
                             + "\"" + arguments[idx].getTypeName() + "\" "
                             + "is found");
-        }
-    }
-
-    void checkArgIntPrimitiveCategory(PrimitiveObjectInspector objectInspector,
-                                      FUNC_NAMES functionName, int idx) throws UDFArgumentTypeException {
-
-        switch (objectInspector.getPrimitiveCategory()) {
-            case SHORT:
-            case INT:
-            case LONG:
-                break;
-            default:
-                throw new UDFArgumentTypeException(0, "Argument " + idx
-                        + " of function " + functionName + " must be \""
-                        + serdeConstants.SMALLINT_TYPE_NAME + "\""
-                        + " or \"" + serdeConstants.INT_TYPE_NAME + "\""
-                        + " or \"" + serdeConstants.BIGINT_TYPE_NAME + "\", but \""
-                        + objectInspector.getTypeName() + "\" was found.");
         }
     }
 

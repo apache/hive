@@ -42,14 +42,14 @@ public class GenericUDFArrayMin extends AbstractGenericUDFArrayBase {
 
     //Initialise parent member variables
     public GenericUDFArrayMin() {
-        super(FUNC_NAMES.ARRAY_MIN,1,1, ObjectInspector.Category.PRIMITIVE);
+        super("ARRAY_MIN",1,1, ObjectInspector.Category.PRIMITIVE);
     }
 
     @Override
     public Object evaluate(DeferredObject[] arguments) throws HiveException {
         Object array = arguments[ARRAY_IDX].get();
 
-        if (array == null || arrayOI.getListLength(array) <= 0) {
+        if (arrayOI.getListLength(array) <= 0) {
             return null;
         }
         List retArray = ((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array);

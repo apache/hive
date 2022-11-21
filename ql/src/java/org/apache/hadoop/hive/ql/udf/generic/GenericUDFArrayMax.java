@@ -42,7 +42,7 @@ public class GenericUDFArrayMax extends AbstractGenericUDFArrayBase {
 
     //Initialise parent member variables
     public GenericUDFArrayMax() {
-        super(FUNC_NAMES.ARRAY_MAX,1,1, ObjectInspector.Category.PRIMITIVE);
+        super("ARRAY_MAX",1,1, ObjectInspector.Category.PRIMITIVE);
     }
 
     @Override
