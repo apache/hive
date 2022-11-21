@@ -187,7 +187,8 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
   public VectorizedSupport.Support[] getSupportedFeatures(HiveConf hiveConf, TableDesc tableDesc) {
     // disabling VectorizedSupport.Support.DECIMAL_64 for Parquet as it doesn't support it
     boolean isORCOnly =
-        Boolean.parseBoolean(tableDesc.getProperties().getProperty(HiveIcebergMetaHook.ORC_FILES_ONLY)) &&
+        Boolean.parseBoolean(tableDesc.getProperties().getProperty(HiveIcebergMetaHook.DECIMAL64_VECTORIZATION)) &&
+            Boolean.parseBoolean(tableDesc.getProperties().getProperty(HiveIcebergMetaHook.ORC_FILES_ONLY)) &&
             org.apache.iceberg.FileFormat.ORC.name()
                 .equalsIgnoreCase(tableDesc.getProperties().getProperty(TableProperties.DEFAULT_FILE_FORMAT));
     if (!isORCOnly) {
