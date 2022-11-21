@@ -4277,7 +4277,7 @@ public final class Utilities {
   /**
    * Sets partition column names to the configuration, if there is available info in the operator.
    */
-  public static void setPartitionColumnsInConf(Configuration conf, TableScanOperator tableScanOp) {
+  public static void setPartitionColumnNames(Configuration conf, TableScanOperator tableScanOp) {
     TableScanDesc scanDesc = tableScanOp.getConf();
     Table metadata = scanDesc.getTableMetadata();
     if (metadata == null) {
