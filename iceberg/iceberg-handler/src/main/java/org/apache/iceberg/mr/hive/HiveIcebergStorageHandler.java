@@ -907,6 +907,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
     // this is an exception to the interface documentation, but it's a safe operation to add this property
     props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+    if (spec == null) {
+      spec = PartitionSpec.unpartitioned();
+    }
     props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
 
     // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
