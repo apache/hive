@@ -30,12 +30,24 @@ public class JavaTimestampObjectInspector
   }
 
   public TimestampWritableV2 getPrimitiveWritableObject(Object o) {
-    return o == null ? null : new TimestampWritableV2((Timestamp) o);
+    if (o == null) {
+      return null;
+    }
+    if (o instanceof java.sql.Timestamp) {
+      return new TimestampWritableV2(Timestamp.valueOf(o.toString()));
+    }
+    return new TimestampWritableV2((Timestamp) o);
   }
 
   @Override
   public Timestamp getPrimitiveJavaObject(Object o) {
-    return o == null ? null : (Timestamp) o;
+    if (o == null) {
+      return null;
+    }
+    if (o instanceof java.sql.Timestamp) {
+      return Timestamp.valueOf(o.toString());
+    }
+    return (Timestamp) o;
   }
 
   @Override
@@ -43,11 +55,18 @@ public class JavaTimestampObjectInspector
     if (o == null) {
       return null;
     }
+    if (o instanceof java.sql.Timestamp) {
+      Timestamp source = Timestamp.valueOf(o.toString());
+      return new Timestamp(source);
+    }
     Timestamp source = (Timestamp) o;
     return new Timestamp(source);
   }
 
   public Timestamp get(Object o) {
+    if (o instanceof java.sql.Timestamp) {
+      return Timestamp.valueOf(o.toString());
+    }
     return (Timestamp) o;
   }
 

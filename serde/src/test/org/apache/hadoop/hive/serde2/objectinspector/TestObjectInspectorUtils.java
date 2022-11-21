@@ -25,7 +25,11 @@ import java.util.List;
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaDateObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaTimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
 import org.apache.hadoop.hive.serde2.thrift.test.IntString;
@@ -192,5 +196,34 @@ public class TestObjectInspectorUtils {
     assertEquals("", 0, fieldHash);
     fieldHash = ObjectInspectorUtils.hashCode(bucketFields[2], bucketFieldInspectors[2]);
     assertEquals("", 7200, fieldHash);
+  }
+
+  @Test
+  public void testDateCastingOperation() {
+    java.sql.Date javaDate = java.sql.Date.valueOf("1970-01-02");
+    JavaDateObjectInspector javaDateObjectInspector = PrimitiveObjectInspectorFactory.javaDateObjectInspector;
+    Date hiveDate1 = javaDateObjectInspector.get(javaDate);
+    Date hiveDate2 = javaDateObjectInspector.getPrimitiveJavaObject(javaDate);
+    DateWritableV2 dateWritableV2 = javaDateObjectInspector.getPrimitiveWritableObject(javaDate);
+    assertEquals(hiveDate1.toString(), javaDate.toString());
+    assertEquals(hiveDate2.toString(), javaDate.toString());
+    assertEquals(dateWritableV2.toString(), javaDate.toString());
+  }
+
+  @Test
+  public void testTimestampCastingOperation() {
+    long dateOffset = java.sql.Timestamp.valueOf("1900-01-01 00:00:00").getTime();
+    long dateEnd = java.sql.Timestamp.valueOf("2300-01-01 00:00:00").getTime();
+    java.sql.Timestamp javaTimestamp = new java.sql.Timestamp(dateOffset + (long)(Math.random() * (dateEnd
+            - dateOffset + 1)));
+    JavaTimestampObjectInspector javaTimestampObjectInspector = PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
+    Timestamp hiveTimestamp1 = javaTimestampObjectInspector.get(javaTimestamp);
+    Timestamp hiveTimestamp2 = javaTimestampObjectInspector.getPrimitiveJavaObject(javaTimestamp);
+    Timestamp hiveTimestamp3 = (Timestamp) javaTimestampObjectInspector.copyObject(javaTimestamp);
+    TimestampWritableV2 timestampWritableV2 = javaTimestampObjectInspector.getPrimitiveWritableObject(javaTimestamp);
+    assertEquals(hiveTimestamp1.toString(), javaTimestamp.toString());
+    assertEquals(hiveTimestamp2.toString(), javaTimestamp.toString());
+    assertEquals(hiveTimestamp3.toString(), javaTimestamp.toString());
+    assertEquals(timestampWritableV2.toString(), javaTimestamp.toString());
   }
 }
