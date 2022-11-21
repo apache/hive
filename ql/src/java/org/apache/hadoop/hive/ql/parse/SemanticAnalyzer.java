@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.parse;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
-import static org.apache.hadoop.hive.conf.Constants.CTAS_LOCATION;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEARCHIVEENABLED;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
@@ -7774,11 +7773,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         } else {
           destinationTable = db.getTranslateTableDryrun(tblDesc.toTable(conf).getTTable());
-          if (tblDesc.getTblProps().containsKey(TABLE_IS_CTAS) &&
-                  !tblDesc.getTblProps().containsKey(META_TABLE_LOCATION)) {
+          if (tblDesc.isCTAS() && tblDesc.getStorageHandler() != null) {
+            String location;
             if (destinationTable.getDataLocation() == null) {
               // no metastore.metadata.transformer.class was set
-              String location = getDatabase(destinationTable.getDbName()).getLocationUri();
+              location = getDatabase(destinationTable.getDbName()).getLocationUri();
               if (location != null) {
                 location = String.format("%s/%s", location, destinationTable.getTableName());
               } else {
@@ -7787,10 +7786,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                         destinationTable.getTableName(),
                         Boolean.parseBoolean(destinationTable.getParameters().get("EXTERNAL"))).toString();
               }
-              tblDesc.getTblProps().put(CTAS_LOCATION, location);
             } else {
-              tblDesc.getTblProps().put(CTAS_LOCATION, destinationTable.getDataLocation().toString());
+              location =destinationTable.getDataLocation().toString();
             }
+            tblDesc.setLocation(location);
           }
           tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
         }

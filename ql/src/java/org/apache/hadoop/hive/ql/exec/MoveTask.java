@@ -90,7 +90,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import static org.apache.hadoop.hive.conf.Constants.CTAS_LOCATION;
 import static org.apache.hadoop.hive.ql.exec.Utilities.BLOB_MANIFEST_FILE;
 
 /**
@@ -1074,7 +1073,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         storageHandlerClass = createTableDesc.getStorageHandler();
         commitProperties = new Properties();
         commitProperties.put(hive_metastoreConstants.META_TABLE_NAME, createTableDesc.getDbTableName());
-        commitProperties.put(CTAS_LOCATION, createTableDesc.getTblProps().get(CTAS_LOCATION));
       } else if (moveWork.getLoadFileWork().getCreateViewDesc() != null) {
         storageHandlerClass = moveWork.getLoadFileWork().getCreateViewDesc().getStorageHandler();
         commitProperties = new Properties();

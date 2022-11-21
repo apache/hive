@@ -72,8 +72,6 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.conf.Constants.CTAS_LOCATION;
-
 /**
  * DDL task description for CREATE TABLE commands.
  */
@@ -520,7 +518,6 @@ public class CreateTableDesc implements DDLDesc, Serializable {
   @Explain(displayName = "table properties")
   public Map<String, String> getTblPropsExplain() { // only for displaying plan
     return PlanUtils.getPropertiesForExplain(tblProps,
-            CTAS_LOCATION,
             hive_metastoreConstants.TABLE_IS_CTAS,
             hive_metastoreConstants.TABLE_BUCKETING_VERSION);
   }
