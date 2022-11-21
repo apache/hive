@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -470,10 +469,10 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
-    String ctasLocation = commitProperties.getProperty(Constants.CTAS_LOCATION);
+    String location = commitProperties.getProperty(Catalogs.LOCATION);
     Configuration configuration = SessionState.getSessionConf();
-    if (ctasLocation != null) {
-      String tableObjectLocation = HiveIcebergOutputCommitter.generateTableObjectLocation(ctasLocation, configuration);
+    if (location != null) {
+      String tableObjectLocation = HiveIcebergOutputCommitter.generateTableObjectLocation(location, configuration);
       try {
         Path toDelete = new Path(tableObjectLocation);
         FileSystem fs = Util.getFs(toDelete, configuration);
