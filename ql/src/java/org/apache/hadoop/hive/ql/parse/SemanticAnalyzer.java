@@ -7881,7 +7881,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         loadFileDesc.setMoveTaskId(moveTaskId);
         loadFileWork.add(loadFileDesc);
         try {
-          Path qualifiedPath = destinationPath.getFileSystem(conf).makeQualified(destinationPath);
+          Path qualifiedPath = conf.getBoolVar(ConfVars.HIVE_RANGER_USE_FULLY_QUALIFIED_URL) ?
+                  destinationPath.getFileSystem(conf).makeQualified(destinationPath) : destinationPath;
           if (!outputs.add(new WriteEntity(qualifiedPath, !isDfsDir, isDestTempFile))) {
             throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
                     .getMsg(destinationPath.toUri().toString()));
