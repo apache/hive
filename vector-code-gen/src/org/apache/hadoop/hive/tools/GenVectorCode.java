@@ -1214,9 +1214,14 @@ public class GenVectorCode extends Task {
       {"VectorUDAFSum", "VectorUDAFSumLong", "long"},
       {"VectorUDAFSum", "VectorUDAFSumDouble", "double"},
 
+      // "long" as <ValueType> for "MERGING" is ignored
       {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorFinal", "long", "MERGING"},
       {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorLong", "long", "COMPLETE"},
       {"VectorUDAFComputeBitVector", "VectorUDAFComputeBitVectorDouble", "double", "COMPLETE"},
+
+      // "double" as <ValueType> for "MERGING" is ignored
+      {"VectorUDAFComputeDsKllSketch", "VectorUDAFComputeDsKllSketchFinal", "double", "MERGING"},
+      {"VectorUDAFComputeDsKllSketch", "VectorUDAFComputeDsKllSketchDouble", "double", "COMPLETE"},
 
 
       // Template, <ClassName>, <ValueType>, <IfDefined>
@@ -1471,7 +1476,9 @@ public class GenVectorCode extends Task {
       } else if (tdesc[0].equals("VectorUDAFAvgDecimalMerge")) {
         generateVectorUDAFAvgMerge(tdesc);
       } else if (tdesc[0].equals("VectorUDAFComputeBitVector")) {
-        generateVectorUDAFComputeBitVector(tdesc);
+        generateVectorUDAFDataSummary(tdesc);
+      } else if (tdesc[0].equals("VectorUDAFComputeDsKllSketch")) {
+        generateVectorUDAFDataSummary(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVar")) {
         generateVectorUDAFVar(tdesc);
       } else if (tdesc[0].equals("VectorUDAFVarDecimal")) {
@@ -1940,7 +1947,7 @@ public class GenVectorCode extends Task {
         className, templateString);
   }
 
-  private void generateVectorUDAFComputeBitVector(String[] tdesc) throws Exception {
+  private void generateVectorUDAFDataSummary(String[] tdesc) throws Exception {
     String className = tdesc[1];
     String valueType = tdesc[2];
     String columnType = getColumnVectorType(valueType);
