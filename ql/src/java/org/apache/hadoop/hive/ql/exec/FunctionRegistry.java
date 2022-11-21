@@ -127,6 +127,7 @@ import org.apache.hadoop.hive.ql.udf.UDFAcos;
 import org.apache.hadoop.hive.ql.udf.UDFAscii;
 import org.apache.hadoop.hive.ql.udf.UDFAsin;
 import org.apache.hadoop.hive.ql.udf.UDFAtan;
+import org.apache.hadoop.hive.ql.udf.UDFAtan2;
 import org.apache.hadoop.hive.ql.udf.UDFBase64;
 import org.apache.hadoop.hive.ql.udf.UDFBin;
 import org.apache.hadoop.hive.ql.udf.UDFBuildVersion;
@@ -321,6 +322,7 @@ public final class FunctionRegistry {
     system.registerUDF("degrees", UDFDegrees.class, false);
     system.registerUDF("radians", UDFRadians.class, false);
     system.registerUDF("atan", UDFAtan.class, false);
+    system.registerUDF("atan2", UDFAtan2.class, false);
     system.registerUDF("tan", UDFTan.class, false);
     system.registerUDF("tanh", UDFTanh.class, false);
     system.registerUDF("e", UDFE.class, false);

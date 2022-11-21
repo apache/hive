@@ -52,6 +52,7 @@ asin
 assert_true
 assert_true_oom
 atan
+atan2
 avg
 base64
 between
@@ -667,6 +668,7 @@ asin
 assert_true
 assert_true_oom
 atan
+atan2
 avg
 base64
 between

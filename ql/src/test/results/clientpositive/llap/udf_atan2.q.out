@@ -1,0 +1,61 @@
+PREHOOK: query: DESCRIBE FUNCTION atan2
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION atan2
+POSTHOOK: type: DESCFUNCTION
+atan2(x, y) -  Returns the angle in radians between the x-axis of a plane 
+and the point given by the coordinates (x, y), as if computed by java.lang.Math.atan2
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED atan2
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED atan2
+POSTHOOK: type: DESCFUNCTION
+atan2(x, y) -  Returns the angle in radians between the x-axis of a plane 
+and the point given by the coordinates (x, y), as if computed by java.lang.Math.atan2
+Example:
+  > SELECT atan2(13, 13) FROM src LIMIT 1;
+  0.7853981633974483
+Function class:org.apache.hadoop.hive.ql.udf.UDFAtan2
+Function type:BUILTIN
+PREHOOK: query: SELECT atan2(null,null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT atan2(null,null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT atan2(1,null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT atan2(1,null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT atan2(null,1)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT atan2(null,1)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT atan2(1.57,2), atan2(-0.5,-3), atan2(-0.5,3), atan2(0.5,-3)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT atan2(1.57,2), atan2(-0.5,-3), atan2(-0.5,3), atan2(0.5,-3)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0.6655274437255029	-2.976443976175166	-0.16514867741462683	2.976443976175166
