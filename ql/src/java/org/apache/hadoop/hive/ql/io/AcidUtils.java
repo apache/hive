@@ -498,17 +498,6 @@ public class AcidUtils {
   }
 
   /**
-   * @return true if the compaction type is 'REBALANCE', false otherwise.
-   * @param parameters Table properties or parameters
-   */
-  public static boolean isRebalanceCompactionTable(Map<String, String> parameters) {
-    String compactionType = parameters.get(COMPACTOR_TABLE_PROPERTY);
-    return StringUtils.isNotBlank(compactionType) &&
-        CompactionType.valueOf(compactionType).equals(CompactionType.REBALANCE);
-  }
-
-
-  /**
    * Get the bucket id from the file path
    * @param bucketFile - bucket file path
    * @return - bucket id

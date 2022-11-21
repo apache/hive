@@ -1056,7 +1056,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           createNewPaths(null, lbDirName);
         }
       } else if (conf.isCompactionTable()) {
-        if (AcidUtils.isRebalanceCompactionTable(conf.getTable().getParameters())) {
+        if (conf.isRebalanceCompactionTable()) {
           //For rebalancing compaction, the unencoded bucket id comes in the bucketproperty. It must be encoded before
           //writing the data out
           bucketId = getBucketProperty(row);
