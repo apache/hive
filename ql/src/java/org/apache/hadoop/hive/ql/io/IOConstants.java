@@ -47,6 +47,7 @@ public final class IOConstants {
    */
   public static final String SCHEMA_EVOLUTION_COLUMNS = "schema.evolution.columns";
   public static final String SCHEMA_EVOLUTION_COLUMNS_TYPES = "schema.evolution.columns.types";
+  public static final String PARTITION_COLUMNS = "partition.columns";
 
   @VisibleForTesting
   public static final String CUSTOM_TEXT_SERDE = "CustomTextSerde";
