@@ -5010,4 +5010,16 @@ public final class Utilities {
     return ((p1.toString().toLowerCase().indexOf(p2.toString().toLowerCase()) > -1) ||
         (p2.toString().toLowerCase().indexOf(p1.toString().toLowerCase()) > -1)) ? true : false;
   }
+
+  public static String getTableOrMVSuffix(Context context, boolean createTableOrMVUseSuffix) {
+    String suffix = "";
+    if (createTableOrMVUseSuffix) {
+      long txnId = Optional.ofNullable(context)
+              .map(ctx -> ctx.getHiveTxnManager().getCurrentTxnId()).orElse(0L);
+      if (txnId != 0) {
+        suffix = AcidUtils.getPathSuffix(txnId);
+      }
+    }
+    return suffix;
+  }
 }

@@ -7615,30 +7615,44 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         destTableIsMaterialization = false;
         tableName = HiveTableName.ofNullableWithNoDefault(viewDesc.getViewName());
         tblProps = viewDesc.getTblProps();
+        // Add suffix only when required confs are present
+        // and user has not specified a location to the table.
+        createTableUseSuffix = (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
+                || HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED))
+                && viewDesc.getLocation() == null;
       }
 
       destTableIsTransactional = tblProps != null && AcidUtils.isTablePropertyTransactional(tblProps);
       if (destTableIsTransactional) {
         isNonNativeTable = MetaStoreUtils.isNonNativeTable(tblProps);
         boolean isCtas = tblDesc != null && tblDesc.isCTAS();
+        boolean isCMV = viewDesc != null && qb.isMaterializedView();
         isMmTable = isMmCreate = AcidUtils.isInsertOnlyTable(tblProps);
-        if (!isNonNativeTable && !destTableIsTemporary && isCtas) {
+        if (!isNonNativeTable && !destTableIsTemporary && (isCtas || isCMV)) {
           destTableIsFullAcid = AcidUtils.isFullAcidTable(tblProps);
           acidOperation = getAcidType(dest);
           isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOperation);
           if (isDirectInsert || isMmTable) {
-            destinationPath = getCtasLocation(tblDesc, createTableUseSuffix);
+            destinationPath = getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix);
             if (createTableUseSuffix) {
-              tblDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
+              if (tblDesc != null) {
+                tblDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
+              } else {
+                viewDesc.getTblProps().put(SOFT_DELETE_TABLE, Boolean.TRUE.toString());
+              }
             }
             // Set the location in context for possible rollback.
             ctx.setLocation(destinationPath);
             // Setting the location so that metadata transformers
             // does not change the location later while creating the table.
-            tblDesc.setLocation(destinationPath.toString());
+            if (tblDesc != null) {
+              tblDesc.setLocation(destinationPath.toString());
+            } else {
+              viewDesc.setLocation(destinationPath.toString());
+            }
           } else {
             // Set the location in context for possible rollback.
-            ctx.setLocation(getCtasLocation(tblDesc, createTableUseSuffix));
+            ctx.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix));
           }
         }
         try {
@@ -7650,14 +7664,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } catch (LockException ex) {
           throw new SemanticException("Failed to allocate write Id", ex);
         }
-        if (isMmTable) {
+        if (isMmTable || isDirectInsert) {
           if (tblDesc != null) {
             tblDesc.setInitialWriteId(writeId);
           } else {
-            viewDesc.setInitialMmWriteId(writeId);
+            viewDesc.setInitialWriteId(writeId);
           }
-        } else if (isDirectInsert) {
-          tblDesc.setInitialWriteId(writeId);
         }
       }
 
@@ -7936,16 +7948,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         destinationPath, currentTableId, destTableIsFullAcid, destTableIsTemporary,//this was 1/4 acid
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
         canBeMerged, destinationTable, writeId, isMmCreate, destType, qb, isDirectInsert, acidOperation, moveTaskId);
-    if (isMmCreate) {
+    if (isMmCreate || (qb.isCTAS() || qb.isMaterializedView()) && isDirectInsert) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
       if (tableDesc != null) {
         tableDesc.setWriter(fileSinkDesc);
       } else {
         createVwDesc.setWriter(fileSinkDesc);
-      }
-    } else if (qb.isCTAS() && isDirectInsert) {
-      if (tableDesc != null) {
-        tableDesc.setWriter(fileSinkDesc);
       }
     }
 
@@ -8009,19 +8017,28 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return true;
   }
 
-  private Path getCtasLocation(CreateTableDesc tblDesc, boolean createTableWithSuffix) throws SemanticException {
+  private Path getCtasOrCMVLocation(CreateTableDesc tblDesc, CreateMaterializedViewDesc viewDesc,
+                               boolean createTableWithSuffix) throws SemanticException {
     Path location;
+    String[] names;
+    String protoName = null;
+    Table tbl;
     try {
-      String protoName = tblDesc.getDbTableName();
-      String[] names = Utilities.getDbTableName(protoName);
+      if (tblDesc != null) {
+        protoName = tblDesc.getDbTableName();
 
-      // Handle table translation initially and if not present
-      // use default table path.
-      // Property modifications of the table is handled later.
-      // We are interested in the location if it has changed
-      // due to table translation.
-      Table tbl = tblDesc.toTable(conf);
-      tbl = db.getTranslateTableDryrun(tbl.getTTable());
+        // Handle table translation initially and if not present
+        // use default table path.
+        // Property modifications of the table is handled later.
+        // We are interested in the location if it has changed
+        // due to table translation.
+        tbl = tblDesc.toTable(conf);
+        tbl = db.getTranslateTableDryrun(tbl.getTTable());
+      } else {
+        protoName = viewDesc.getViewName();
+        tbl = viewDesc.toTable(conf);
+      }
+      names = Utilities.getDbTableName(protoName);
 
       Warehouse wh = new Warehouse(conf);
       if (tbl.getSd() == null
@@ -8032,9 +8049,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (createTableWithSuffix) {
-        long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
-        String suffix = AcidUtils.getPathSuffix(txnId);
-        location = new Path(location.toString() + suffix);
+        location = new Path(location.toString() +
+                Utilities.getTableOrMVSuffix(ctx, createTableWithSuffix));
       }
 
       return location;
@@ -8336,11 +8352,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Path tlocation = null;
       String tName = Utilities.getDbTableName(tableDesc.getDbTableName())[1];
       try {
-        String suffix = "";
-        if (AcidUtils.isTableSoftDeleteEnabled(destinationTable, conf)) {
-          long txnId = ctx.getHiveTxnManager().getCurrentTxnId();
-          suffix = AcidUtils.getPathSuffix(txnId);
-        }
+        String suffix = Utilities.getTableOrMVSuffix(ctx,
+                AcidUtils.isTableSoftDeleteEnabled(destinationTable, conf));
         Warehouse wh = new Warehouse(conf);
         tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()),
             tName + suffix, tableDesc.isExternal());
