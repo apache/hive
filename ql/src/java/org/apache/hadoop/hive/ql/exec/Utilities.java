@@ -4275,32 +4275,31 @@ public final class Utilities {
   }
 
   /**
-   * Sets partition column names to {@link IOConstants#PARTITION_COLUMNS}, if available.
-   *
-   * @param conf JobConf
-   * @param tableScanOp TableScanOperator object
+   * Sets partition column names to the configuration, if there is available info in the operator.
    */
   public static void setPartitionColumnsInConf(Configuration conf, TableScanOperator tableScanOp) {
     TableScanDesc scanDesc = tableScanOp.getConf();
-    if (scanDesc != null && scanDesc.getTableMetadata() != null) {
-      List<String> partitionColsList = scanDesc.getTableMetadata().getPartColNames();
-      if (!partitionColsList.isEmpty()) {
-        conf.set(IOConstants.PARTITION_COLUMNS, String.join(",", partitionColsList));
-      } else {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug(IOConstants.PARTITION_COLUMNS + " not available");
-        }
-      }
+    Table metadata = scanDesc.getTableMetadata();
+    if (metadata == null) {
+      return;
+    }
+    List<FieldSchema> partCols = metadata.getPartCols();
+    if (partCols != null && !partCols.isEmpty()) {
+      conf.set(serdeConstants.LIST_PARTITION_COLUMNS, MetaStoreUtils.getColumnNamesFromFieldSchema(partCols));
     }
   }
 
   /**
-   * Unsets partition column names from {@link IOConstants#PARTITION_COLUMNS}
-   *
-   * @param conf JobConf
+   * Returns a list with partition column names present in the configuration,
+   * or empty if there is no such information available.
    */
-  public static void unsetPartitionColumnsInConf(Configuration conf) {
-    conf.unset(IOConstants.PARTITION_COLUMNS);
+  public static List<String> getPartitionColumnNames(Configuration conf) {
+    String colNames = conf.get(serdeConstants.LIST_PARTITION_COLUMNS);
+    if (colNames != null) {
+      return splitColNames(new ArrayList<>(), colNames);
+    } else {
+      return Collections.emptyList();
+    }
   }
 
   /**

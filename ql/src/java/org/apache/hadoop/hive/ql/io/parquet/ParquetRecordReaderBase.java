@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.ql.io.parquet;
 import com.google.common.base.Strings;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetFilterPredicateConverter;
@@ -215,19 +216,17 @@ public abstract class ParquetRecordReaderBase {
   }
 
   private MessageType getSchemaWithoutPartitionColumns(JobConf conf, MessageType schema) {
-    String partCols = conf.get(IOConstants.PARTITION_COLUMNS);
-    if (partCols != null && !partCols.isEmpty()) {
-      Set<String> partitionColumns = new HashSet<>(Arrays.asList(partCols.split(",")));
-      List<Type> newFields = new ArrayList<>();
-
-      for (Type field: schema.getFields()) {
-        if(!partitionColumns.contains(field.getName())) {
-          newFields.add(field);
-        }
-      }
-      return new MessageType(schema.getName(), newFields);
+    List<String> partCols = Utilities.getPartitionColumnNames(conf);
+    if (partCols.isEmpty()) {
+      return schema;
     }
-    return schema;
+    List<Type> newFields = new ArrayList<>();
+    for (Type field : schema.getFields()) {
+      if (!partCols.contains(field.getName())) {
+        newFields.add(field);
+      }
+    }
+    return new MessageType(schema.getName(), newFields);
   }
 
   public List<BlockMetaData> getFilteredBlocks() {
