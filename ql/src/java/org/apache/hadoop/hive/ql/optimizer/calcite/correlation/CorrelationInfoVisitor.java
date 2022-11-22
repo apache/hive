@@ -144,7 +144,9 @@ public class CorrelationInfoVisitor extends RexShuttle {
     @Override
     public RelNode visit(HiveAggregate aggregate) {
       // capture the aggregate RelNode to grab information off of it.
-      this.aggregateRel = aggregate;
+      if (this.aggregateRel == null) {
+        this.aggregateRel = aggregate;
+      }
       return super.visit(aggregate);
     }
 
