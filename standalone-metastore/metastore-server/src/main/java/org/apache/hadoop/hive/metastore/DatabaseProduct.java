@@ -77,6 +77,7 @@ public class DatabaseProduct implements Configurable {
       Configuration conf) {
     DbType dbt;
 
+    Preconditions.checkNotNull(conf, "Configuration is null");
     // Check if we are using an external database product
     boolean isExternal = MetastoreConf.getBoolVar(conf, ConfVars.USE_CUSTOM_RDBMS);
 
