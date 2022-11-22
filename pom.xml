@@ -62,6 +62,8 @@
     <module>kafka-handler</module>
   </modules>
   <properties>
+      <sonar.organization>tarak271</sonar.organization>
+  <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <standalone-metastore.version>4.0.0-SNAPSHOT</standalone-metastore.version>
     <hive.version.shortname>4.0.0</hive.version.shortname>
     <!-- Build Properties -->
