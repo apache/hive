@@ -365,6 +365,10 @@
         <name>hive.stats.fetch.bitvector</name>
         <value>true</value>
     </property>
+    <property>
+        <name>hive.stats.fetch.kll</name>
+        <value>true</value>
+    </property>
 
     <property>
         <name>hive.tez.cartesian-product.enabled</name>

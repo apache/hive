@@ -17,7 +17,6 @@
 package org.apache.hadoop.hive.metastore.columnstats;
 
 import org.apache.datasketches.kll.KllFloatsSketch;
-import org.apache.hadoop.hive.common.histogram.kll.KllUtils;
 import org.apache.hadoop.hive.common.ndv.fm.FMSketch;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.metastore.StatisticsTestUtils;

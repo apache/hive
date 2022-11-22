@@ -1,5 +1,6 @@
 set hive.stats.kll.enable=true;
 set metastore.stats.fetch.bitvector=true;
+set metastore.stats.fetch.kll=true;
 set hive.stats.autogather=true;
 set hive.stats.column.autogather=true;
 
