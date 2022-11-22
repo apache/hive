@@ -14229,10 +14229,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       tblProps = convertToAcidByDefault(storageFormat, dbDotTable, null, tblProps);
     }
-    if (tblProps == null) {
-      tblProps = new HashMap<>();
-    }
-    tblProps.put(hive_metastoreConstants.TABLE_IS_CTAS, "true");
 
     createVwDesc = new CreateMaterializedViewDesc(
         dbDotTable, cols, comment, tblProps, partColNames, sortColNames, distributeColNames,
