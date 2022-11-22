@@ -2702,7 +2702,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private void extractTablePropertiesFromHook(Table t) throws MetaException {
     HiveMetaHook hook = getHook(t);
     if (hook != null) {
-      hook.setTableProperties(t);
+      hook.postGetTable(t);
     }
   }
 

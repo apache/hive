@@ -182,7 +182,7 @@ public interface HiveMetaHook {
    *  Set storage handler specific table properties
    * @param table
    */
-  default void setTableProperties(Table table) {
+  default void postGetTable(Table table) {
     // Do nothing
   }
 }

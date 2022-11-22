@@ -913,10 +913,10 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
   }
 
   @Override
-  public void setTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+  public void postGetTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     if (hmsTable != null) {
       try {
-        Table tbl = Catalogs.loadTable(conf, getCatalogProperties(hmsTable));
+        Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
         String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
         // If it is not the default format version, then set it in the table properties.
         if (!"1".equals(formatVersion)) {
