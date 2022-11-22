@@ -136,19 +136,19 @@ public abstract class TaskCompiler {
     boolean isCStats = pCtx.getQueryProperties().isAnalyzeRewrite();
     int outerQueryLimit = pCtx.getQueryProperties().getOuterQueryLimit();
 
-    boolean directInsertCtas = false;
+    boolean directInsert = false;
     if (pCtx.getCreateTable() != null && pCtx.getCreateTable().getStorageHandler() != null) {
       try {
-        directInsertCtas =
-            HiveUtils.getStorageHandler(conf, pCtx.getCreateTable().getStorageHandler()).directInsertCTAS();
+        directInsert =
+            HiveUtils.getStorageHandler(conf, pCtx.getCreateTable().getStorageHandler()).directInsert();
       } catch (HiveException e) {
         throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
       }
     }
     if (pCtx.getCreateViewDesc() != null && pCtx.getCreateViewDesc().getStorageHandler() != null) {
       try {
-        directInsertCtas =
-            HiveUtils.getStorageHandler(conf, pCtx.getCreateViewDesc().getStorageHandler()).directInsertCTAS();
+        directInsert =
+            HiveUtils.getStorageHandler(conf, pCtx.getCreateViewDesc().getStorageHandler()).directInsert();
       } catch (HiveException e) {
         throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
       }
@@ -311,7 +311,7 @@ public abstract class TaskCompiler {
       setInputFormat(rootTask);
     }
 
-    if (directInsertCtas) {
+    if (directInsert) {
       Task<?> crtTask = null;
       if (pCtx.getCreateTable() != null) {
         CreateTableDesc crtTblDesc = pCtx.getCreateTable();
@@ -400,14 +400,14 @@ public abstract class TaskCompiler {
 
     // for direct insert CTAS, we don't need this table creation DDL task, since the table will be created
     // ahead of time by the non-native table
-    if (pCtx.getQueryProperties().isCTAS() && !pCtx.getCreateTable().isMaterialization() && !directInsertCtas) {
+    if (pCtx.getQueryProperties().isCTAS() && !pCtx.getCreateTable().isMaterialization() && !directInsert) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateTableDesc crtTblDesc = pCtx.getCreateTable();
       crtTblDesc.validate(conf);
       Task<?> crtTblTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
       patchUpAfterCTASorMaterializedView(rootTasks, inputs, outputs, crtTblTask,
           CollectionUtils.isEmpty(crtTblDesc.getPartColNames()));
-    } else if (pCtx.getQueryProperties().isMaterializedView() && !directInsertCtas) {
+    } else if (pCtx.getQueryProperties().isMaterializedView() && !directInsert) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateMaterializedViewDesc viewDesc = pCtx.getCreateViewDesc();
       Task<?> crtViewTask = TaskFactory.get(new DDLWork(

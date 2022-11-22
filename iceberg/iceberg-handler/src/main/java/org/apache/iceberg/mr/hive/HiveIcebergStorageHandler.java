@@ -270,7 +270,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean directInsertCTAS() {
+  public boolean directInsert() {
     return true;
   }
 
