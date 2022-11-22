@@ -52,6 +52,14 @@ final class MmMinorQueryCompactor extends QueryCompactor {
 
     HiveConf driverConf = setUpDriverSession(hiveConf);
 
+    if (storageDescriptor.getOutputFormat().equalsIgnoreCase("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat")
+            && Util.isMergeCompaction(hiveConf, dir, writeIds)) {
+      // Only inserts happened, it is much more performant to merge the files than running a query
+      Path outputDirPath = Util.getCompactionOutputDirPath(hiveConf, writeIds, true, storageDescriptor);
+      Util.mergeOrcFiles(hiveConf, true, dir, outputDirPath, true);
+      return;
+    }
+
     String tmpTableName = getTempTableName(table);
     String resultTmpTableName = tmpTableName + "_result";
     Path resultDeltaDir = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds, driverConf,

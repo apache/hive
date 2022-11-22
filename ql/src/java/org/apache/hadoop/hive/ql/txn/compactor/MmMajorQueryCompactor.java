@@ -51,6 +51,14 @@ final class MmMajorQueryCompactor extends QueryCompactor {
     // Set up the session for driver.
     HiveConf driverConf = new HiveConf(hiveConf);
 
+    if (storageDescriptor.getOutputFormat().equalsIgnoreCase("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat")
+            && Util.isMergeCompaction(hiveConf, dir, writeIds)) {
+      // Only inserts happened, it is much more performant to merge the files than running a query
+      Path outputDirPath = Util.getCompactionOutputDirPath(hiveConf, writeIds, true, storageDescriptor);
+      Util.mergeOrcFiles(hiveConf, true, dir, outputDirPath, true);
+      return;
+    }
+
     // Note: we could skip creating the table and just add table type stuff directly to the
     //       "insert overwrite directory" command if there were no bucketing or list bucketing.
     String tmpTableName = getTempTableName(table);

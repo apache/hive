@@ -45,9 +45,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.stream.Stream;
 
 /**
@@ -294,6 +297,130 @@ abstract class QueryCompactor implements Compactor {
                 String property = entry.getKey().substring(COMPACTOR_PREFIX.length());
                 conf.set(property, entry.getValue());
               });
+    }
+
+    /**
+     * Returns whether merge compaction must be enabled or not.
+     * @param conf Hive configuration
+     * @param directory the directory to be scanned
+     * @param validWriteIdList list of valid write IDs
+     * @return true, if merge compaction must be enabled
+     */
+    static boolean isMergeCompaction(HiveConf conf, AcidDirectory directory, ValidWriteIdList validWriteIdList) {
+      return conf.getBoolVar(HiveConf.ConfVars.HIVE_MERGE_COMPACTION_ENABLED)
+              && !hasDeleteOrAbortedDirectories(directory, validWriteIdList);
+    }
+
+    /**
+     * Scan a directory for delete deltas or aborted directories.
+     * @param directory the directory to be scanned
+     * @param validWriteIdList list of valid write IDs
+     * @return true, if delete or aborted directory found
+     */
+    static boolean hasDeleteOrAbortedDirectories(AcidDirectory directory, ValidWriteIdList validWriteIdList) {
+      if (!directory.getCurrentDirectories().isEmpty()) {
+        final long minWriteId = validWriteIdList.getMinOpenWriteId() == null ? 1 : validWriteIdList.getMinOpenWriteId();
+        final long maxWriteId = validWriteIdList.getHighWatermark();
+        return directory.getCurrentDirectories().stream()
+                .filter(AcidUtils.ParsedDeltaLight::isDeleteDelta)
+                .filter(delta -> delta.getMinWriteId() >= minWriteId)
+                .anyMatch(delta -> delta.getMaxWriteId() <= maxWriteId) || !directory.getAbortedDirectories().isEmpty();
+      }
+      return true;
+    }
+
+    /**
+     * Collect the list of all bucket file paths, which belong to the same bucket Id. This method scans all the base
+     * and delta dirs.
+     * @param conf hive configuration, must be not null
+     * @param dir the root directory of delta dirs
+     * @param includeBaseDir true, if the base directory should be scanned
+     * @param isMm
+     * @return map of bucket ID -> bucket files
+     * @throws IOException an error happened during the reading of the directory/bucket file
+     */
+    private static Map<Integer, List<Path>> matchBucketIdToBucketFiles(HiveConf conf, AcidDirectory dir,
+                                                                       boolean includeBaseDir, boolean isMm) throws IOException {
+      Map<Integer, List<Path>> result = new HashMap<>();
+      if (includeBaseDir && dir.getBaseDirectory() != null) {
+        getBucketFiles(conf, dir.getBaseDirectory(), isMm, result);
+      }
+      for (AcidUtils.ParsedDelta deltaDir : dir.getCurrentDirectories()) {
+        Path deltaDirPath = deltaDir.getPath();
+        getBucketFiles(conf, deltaDirPath, isMm, result);
+      }
+      return result;
+    }
+
+    /**
+     * Collect the list of all bucket file paths, which belong to the same bucket Id. This method checks only one
+     * directory.
+     * @param conf hive configuration, must be not null
+     * @param dirPath the directory to be scanned.
+     * @param isMm collect bucket files fron insert only directories
+     * @param bucketIdToBucketFilePath the result of the scan
+     * @throws IOException an error happened during the reading of the directory/bucket file
+     */
+    private static void getBucketFiles(HiveConf conf, Path dirPath, boolean isMm, Map<Integer, List<Path>> bucketIdToBucketFilePath) throws IOException {
+      FileSystem fs = dirPath.getFileSystem(conf);
+      FileStatus[] fileStatuses =
+              fs.listStatus(dirPath, isMm ? AcidUtils.originalBucketFilter : AcidUtils.bucketFileFilter);
+      for (FileStatus f : fileStatuses) {
+        final Path fPath = f.getPath();
+        Matcher matcher = isMm ? AcidUtils.LEGACY_BUCKET_DIGIT_PATTERN
+                .matcher(fPath.getName()) : AcidUtils.BUCKET_PATTERN.matcher(fPath.getName());
+        if (!matcher.find()) {
+          String errorMessage = String
+                  .format("Found a bucket file matching the bucket pattern! %s Matcher=%s", fPath.toString(),
+                          matcher.toString());
+          LOG.error(errorMessage);
+          throw new IllegalArgumentException(errorMessage);
+        }
+        int bucketNum = matcher.groupCount() > 0 ? Integer.parseInt(matcher.group(1)) : Integer.parseInt(matcher.group());
+        bucketIdToBucketFilePath.computeIfAbsent(bucketNum, ArrayList::new);
+        bucketIdToBucketFilePath.computeIfPresent(bucketNum, (k, v) -> v).add(fPath);
+      }
+    }
+
+    /**
+     * Generate output path for compaction. This can be used to generate delta or base directories.
+     * @param conf hive configuration, must be non-null
+     * @param writeIds list of valid write IDs
+     * @param isBaseDir if base directory path should be generated
+     * @param sd the resolved storadge descriptor
+     * @return output path, always non-null
+     */
+    static Path getCompactionOutputDirPath(HiveConf conf, ValidWriteIdList writeIds, boolean isBaseDir,
+                                           StorageDescriptor sd) {
+      long minOpenWriteId = writeIds.getMinOpenWriteId() == null ? 1 : writeIds.getMinOpenWriteId();
+      long highWatermark = writeIds.getHighWatermark();
+      long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
+      AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).writingBase(isBaseDir)
+              .writingDeleteDelta(false).isCompressed(false).minimumWriteId(minOpenWriteId)
+              .maximumWriteId(highWatermark).statementId(-1).visibilityTxnId(compactorTxnId);
+      return AcidUtils.baseOrDeltaSubdirPath(new Path(sd.getLocation()), options);
+    }
+
+    /**
+     * Merge ORC files from base/delta directories. If the directories contains multiple buckets, the result will also
+     * contain the same amount.
+     * @param conf hive configuration
+     * @param includeBaseDir if base directory should be scanned for orc files
+     * @param dir the root directory of the table/partition
+     * @param outputDirPath the result directory path
+     * @param isMm merge orc files from insert only tables
+     * @throws IOException error occurred during file operation
+     */
+    static void mergeOrcFiles(HiveConf conf, boolean includeBaseDir, AcidDirectory dir,
+                              Path outputDirPath, boolean isMm) throws IOException {
+      Map<Integer, List<Path>> bucketIdToBucketFiles = matchBucketIdToBucketFiles(conf, dir, includeBaseDir, isMm);
+      OrcFileMerger fileMerger = new OrcFileMerger(conf);
+      for (Map.Entry<Integer, List<Path>> e : bucketIdToBucketFiles.entrySet()) {
+        Path path = isMm ? new Path(outputDirPath, String.format(AcidUtils.LEGACY_FILE_BUCKET_DIGITS,
+                e.getKey()) + "_0") : new Path(outputDirPath, AcidUtils.BUCKET_PREFIX + String.format(AcidUtils.BUCKET_DIGITS,
+                e.getKey()));
+        fileMerger.mergeFiles(e.getValue(), path);
+      }
     }
   }
 }

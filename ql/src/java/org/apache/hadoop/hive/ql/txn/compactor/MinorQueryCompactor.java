@@ -54,6 +54,14 @@ final class MinorQueryCompactor extends QueryCompactor {
     conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
+
+    if (Util.isMergeCompaction(conf, dir, writeIds)) {
+      // Only inserts happened, it is much more performant to merge the files than running a query
+      Path outputDirPath = Util.getCompactionOutputDirPath(conf, writeIds, false, storageDescriptor);
+      Util.mergeOrcFiles(conf, false, dir, outputDirPath, false);
+      return;
+    }
+
     String tmpTableName =
         table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_" + System.currentTimeMillis();
 

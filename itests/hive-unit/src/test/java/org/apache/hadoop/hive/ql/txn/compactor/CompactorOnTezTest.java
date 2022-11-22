@@ -308,6 +308,23 @@ public abstract class CompactorOnTezTest {
           + "('5',4, 'today'),('6',2, 'today'),('6',3, 'today'),('6',4, 'today')", driver);
     }
 
+    protected void insertTestData(String tblName, boolean isPartitioned) throws Exception {
+      if (isPartitioned) {
+        insertTestDataPartitioned(tblName);
+      } else {
+        insertTestData(tblName);
+      }
+    }
+
+
+    protected void insertMmTestData(String tblName, boolean isPartitioned) throws Exception {
+      if (isPartitioned) {
+        insertMmTestDataPartitioned(tblName);
+      } else {
+        insertMmTestData(tblName);
+      }
+    }
+
     /**
      * 5 txns.
      */

@@ -3161,4 +3161,170 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
     executeStatementOnDriver("drop table if exists " + tblName, driver);
   }
+
+  @Test
+  public void testMajorCompactionWithMergeNotPartitionedWithoutBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MAJOR, false, false, null, Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("base_0000003_v0000007"), true, true);
+  }
+
+  @Test
+  public void testMajorCompactionWithMergePartitionedWithoutBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MAJOR, true, false, "ds=today", Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("base_0000003_v0000007"), true, true);
+  }
+
+  @Test
+  public void testMajorCompactionWithMergeNotPartitionedWithBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MAJOR, false, true, null, Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("base_0000003_v0000007"), true, true);
+  }
+
+  @Test
+  public void testMajorCompactionWithMergerPartitionedWithBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MAJOR, true, true, "ds=today", Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("base_0000003_v0000007"), true, true);
+  }
+
+  @Test
+  public void testMinorCompactionWithMergeNotPartitionedWithoutBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MINOR, false, false, null,
+            Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true);
+  }
+
+  @Test
+  public void testMinorCompactionWithMergePartitionedWithoutBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MINOR, true, false, "ds=today",
+            Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true);
+  }
+
+  @Test
+  public void testMinorCompactionWithMergeNotPartitionedWithBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MINOR, false, true, null,
+            Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true);
+  }
+
+  @Test
+  public void testMinorCompactionWithMergePartitionedWithBuckets() throws Exception {
+    testCompactionWithMerge(CompactionType.MINOR, true, true, "ds=today",
+            Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, true);
+  }
+
+  @Test
+  public void testMajorCompactionAfterMinorWithMerge() throws Exception {
+    testCompactionWithMerge(CompactionType.MINOR, true, true, "ds=today",
+            Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("delta_0000001_0000003_v0000007"),true, false);
+    testCompactionWithMerge(CompactionType.MAJOR, true, true, "ds=today",
+            Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000003_v0000007", "delta_0000004_0000004_0000", "delta_0000005_0000005_0000",
+                    "delta_0000006_0000006_0000"), Collections.singletonList("base_0000006_v0000013"), false, true);
+  }
+
+  @Test
+  public void testMinorCompactionAfterMajorWithMerge() throws Exception {
+    testCompactionWithMerge(CompactionType.MAJOR, false, false, null,
+            Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("base_0000003_v0000007"), true, false);
+    testCompactionWithMerge(CompactionType.MINOR, false, false, null,
+            Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000004_0000004_0000", "delta_0000005_0000005_0000", "delta_0000006_0000006_0000"),
+            Collections.singletonList("delta_0000001_0000006_v0000013"), false, true);
+  }
+
+  @Test
+  public void testMultipleMajorCompactionWithMerge() throws Exception {
+    testCompactionWithMerge(CompactionType.MAJOR, true, true, "ds=today",
+            Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("base_0000003_v0000007"), true, false);
+    testCompactionWithMerge(CompactionType.MAJOR, true, true, "ds=today",
+            Arrays.asList("bucket_00000", "bucket_00001"),
+            Arrays.asList("delta_0000004_0000004_0000", "delta_0000005_0000005_0000", "delta_0000006_0000006_0000"),
+            Collections.singletonList("base_0000006_v0000013"), false, true);
+  }
+
+  @Test
+  public void testMultipleMinorCompactionWithMerge() throws Exception {
+    testCompactionWithMerge(CompactionType.MINOR, false, false, null,
+            Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000", "delta_0000003_0000003_0000"),
+            Collections.singletonList("delta_0000001_0000003_v0000007"), true, false);
+    testCompactionWithMerge(CompactionType.MINOR, false, false, null,
+            Collections.singletonList("bucket_00000"),
+            Arrays.asList("delta_0000001_0000003_v0000007", "delta_0000004_0000004_0000", "delta_0000005_0000005_0000",
+                    "delta_0000006_0000006_0000"),
+            Collections.singletonList("delta_0000001_0000006_v0000013"), false, true);
+  }
+
+  private void testCompactionWithMerge(CompactionType compactionType, boolean isPartitioned, boolean isBucketed,
+                                       String partitionName, List<String> bucketName, List<String> deltaDirNames, List<String> compactDirNames,
+                                       boolean createTable, boolean dropTable) throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_MERGE_COMPACTION_ENABLED, true);
+    String dbName = "default";
+    String tableName = "testCompaction";
+    // Create test table
+    TestDataProvider dataProvider = new TestDataProvider();
+    if (createTable) {
+      dataProvider.createFullAcidTable(tableName, isPartitioned, isBucketed);
+    }
+    // Find the location of the table
+    IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
+    Table table = metaStoreClient.getTable(dbName, tableName);
+    FileSystem fs = FileSystem.get(conf);
+    // Insert test data into test table
+    dataProvider.insertMmTestData(tableName, isPartitioned);
+    // Get all data before compaction is run
+    List<String> expectedData = dataProvider.getAllData(tableName);
+    // Verify deltas
+    Assert.assertEquals("Delta directories does not match",
+            deltaDirNames, CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, partitionName));
+    // Verify delete delta
+    Assert.assertTrue(CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table,
+            partitionName).isEmpty());
+    // Run a compaction
+    if (partitionName == null) {
+      CompactorTestUtil.runCompaction(conf, dbName, tableName, compactionType, true);
+    } else {
+      CompactorTestUtil.runCompaction(conf, dbName, tableName, compactionType, true, partitionName);
+    }
+    // Clean up resources
+    CompactorTestUtil.runCleaner(conf);
+    // Only 1 compaction should be in the response queue with succeeded state
+    List<ShowCompactResponseElement> compacts =
+            TxnUtils.getTxnStore(conf).showCompact(new ShowCompactRequest()).getCompacts();
+    compacts.forEach(c -> Assert.assertEquals("succeeded", c.getState()));
+    // Verify directories after compaction
+    List<String> actualDirAfterComp =
+            CompactorTestUtil.getBaseOrDeltaNames(fs, compactionType == CompactionType.MAJOR ? AcidUtils.baseFileFilter :
+                    AcidUtils.deltaFileFilter, table, partitionName);
+    Assert.assertEquals("Base directory does not match after compaction", compactDirNames, actualDirAfterComp);
+    Assert.assertTrue(CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table,
+            partitionName).isEmpty());
+    // Verify bucket files in delta dirs
+    Assert.assertEquals("Bucket names are not matching after compaction", bucketName,
+            CompactorTestUtil.getBucketFileNames(fs, table, partitionName, actualDirAfterComp.get(0)));
+    // Verify all contents
+    List<String> actualData = dataProvider.getAllData(tableName);
+    Assert.assertEquals(expectedData, actualData);
+    // Clean up
+    if (dropTable) {
+      dataProvider.dropTable(tableName);
+    }
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_MERGE_COMPACTION_ENABLED, false);
+  }
 }

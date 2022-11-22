@@ -50,6 +50,13 @@ final class MajorQueryCompactor extends QueryCompactor {
      */
     conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
 
+    if (Util.isMergeCompaction(conf, dir, writeIds)) {
+      // Only inserts happened, it is much more performant to merge the files than running a query
+      Path outputDirPath = Util.getCompactionOutputDirPath(conf, writeIds, true, storageDescriptor);
+      Util.mergeOrcFiles(conf, true, dir, outputDirPath, false);
+      return;
+    }
+
     String tmpTableName = getTempTableName(table);
     Path tmpTablePath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
         conf, true, false, false, null);
