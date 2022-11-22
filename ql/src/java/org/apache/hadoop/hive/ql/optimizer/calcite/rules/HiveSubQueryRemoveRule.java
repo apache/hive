@@ -108,7 +108,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       final HiveFilter filter = call.rel(0);
       // Since there is a RexSubQuery, there should be a HiveCorrelationInfo
       // in the RelNode
-      Preconditions.checkState(filter.getCorrelationInfos().size() > 0);
+      Preconditions.checkState(!filter.getCorrelationInfos().isEmpty());
       HiveCorrelationInfo correlationInfo = filter.getCorrelationInfos().get(0);
       final RelOptUtil.Logic logic = LogicVisitor.find(RelOptUtil.Logic.TRUE,
           ImmutableList.of(filter.getCondition()), correlationInfo.rexSubQuery);
