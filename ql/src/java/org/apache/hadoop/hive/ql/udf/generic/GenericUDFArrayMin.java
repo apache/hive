@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Generic UDF to find out min from array elements
@@ -42,7 +43,7 @@ public class GenericUDFArrayMin extends AbstractGenericUDFArrayBase {
 
     //Initialise parent member variables
     public GenericUDFArrayMin() {
-        super("ARRAY_MIN",1,1, ObjectInspector.Category.PRIMITIVE);
+        super("ARRAY_MIN", 1, 1, ObjectInspector.Category.PRIMITIVE);
     }
 
     @Override
@@ -52,7 +53,9 @@ public class GenericUDFArrayMin extends AbstractGenericUDFArrayBase {
         if (arrayOI.getListLength(array) <= 0) {
             return null;
         }
+
         List retArray = ((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array);
-        return retArray.stream().filter(Objects::nonNull).min(Comparator.naturalOrder()).get();
+        Optional value = retArray.stream().filter(Objects::nonNull).min(Comparator.naturalOrder());
+        return value.isPresent() ? value.get() : null;
     }
 }

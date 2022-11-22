@@ -7,7 +7,9 @@ DESCRIBE FUNCTION EXTENDED array_min;
 -- evalutes function for array of primitives
 SELECT array_min(array(1, 2, 3, null)) FROM src tablesample (1 rows);
 
-SELECT array_max(array()) FROM src tablesample (1 rows);
+SELECT array_min(array()) FROM src tablesample (1 rows);
+
+SELECT array_min(array(null)) FROM src tablesample (1 rows);
 
 SELECT array_min(array(1.12, 2.23, 3.34, null)) FROM src tablesample (1 rows);
 

@@ -19,14 +19,11 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.serde.serdeConstants;
-
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 
 /**
  * Abstract GenericUDF for array functions
@@ -47,7 +44,7 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
 
     transient Converter converter;
 
-    public AbstractGenericUDFArrayBase(String functionName, int minArgCount, int maxArgCount, ObjectInspector.Category outputCategory) {
+    protected AbstractGenericUDFArrayBase(String functionName, int minArgCount, int maxArgCount, ObjectInspector.Category outputCategory) {
         this.functionName = functionName;
         this.minArgCount = minArgCount;
         this.maxArgCount = maxArgCount;
@@ -77,11 +74,10 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
 
     @Override
     public String getDisplayString(String[] children) {
-        assert (children.length == minArgCount);
-        return functionName.toString().toLowerCase() + "(" + children[ARRAY_IDX] + ")";
+        return getStandardDisplayString(functionName.toLowerCase(), children);
     }
 
-    void checkArgCategory(ObjectInspector[] arguments, int idx, Enum category,
+    void checkArgCategory(ObjectInspector[] arguments, int idx, ObjectInspector.Category category,
                           String functionName, String typeName) throws UDFArgumentTypeException {
 
         if (!arguments[idx].getCategory().equals(category)) {
@@ -103,7 +99,7 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
 
         ObjectInspector returnOI = returnOIResolver.get(elementObjectInspector);
         converter = ObjectInspectorConverters.getConverter(elementObjectInspector, returnOI);
-            return returnOI;
+        return returnOI;
     }
 
     ObjectInspector initListOI(ObjectInspector[] arguments) {

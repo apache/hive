@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Generic UDF to find out max from array elements
@@ -42,18 +43,19 @@ public class GenericUDFArrayMax extends AbstractGenericUDFArrayBase {
 
     //Initialise parent member variables
     public GenericUDFArrayMax() {
-        super("ARRAY_MAX",1,1, ObjectInspector.Category.PRIMITIVE);
+        super("ARRAY_MAX", 1, 1, ObjectInspector.Category.PRIMITIVE);
     }
 
     @Override
     public Object evaluate(DeferredObject[] arguments) throws HiveException {
         Object array = arguments[ARRAY_IDX].get();
 
-        if (array == null || arrayOI.getListLength(array) <= 0) {
+        if (arrayOI.getListLength(array) <= 0) {
             return null;
         }
 
         List retArray = ((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array);
-        return retArray.stream().filter(Objects::nonNull).max(Comparator.naturalOrder()).get();
+        Optional value = retArray.stream().filter(Objects::nonNull).max(Comparator.naturalOrder());
+        return value.isPresent() ? value.get() : null;
     }
 }
