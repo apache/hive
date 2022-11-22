@@ -145,14 +145,6 @@ public abstract class TaskCompiler {
         throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
       }
     }
-    if (pCtx.getCreateViewDesc() != null && pCtx.getCreateViewDesc().getStorageHandler() != null) {
-      try {
-        directInsert =
-            HiveUtils.getStorageHandler(conf, pCtx.getCreateViewDesc().getStorageHandler()).directInsert();
-      } catch (HiveException e) {
-        throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
-      }
-    }
 
     if (pCtx.getFetchTask() != null) {
       if (pCtx.getFetchTask().getTblDesc() == null) {
@@ -317,9 +309,6 @@ public abstract class TaskCompiler {
         CreateTableDesc crtTblDesc = pCtx.getCreateTable();
         crtTblDesc.validate(conf);
          crtTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
-      } else if (pCtx.getCreateViewDesc() != null) {
-        CreateMaterializedViewDesc createMaterializedViewDesc = pCtx.getCreateViewDesc();
-        crtTask = TaskFactory.get(new DDLWork(inputs, outputs, createMaterializedViewDesc));
       }
       if (crtTask != null) {
         for (Task<?> rootTask : rootTasks) {
