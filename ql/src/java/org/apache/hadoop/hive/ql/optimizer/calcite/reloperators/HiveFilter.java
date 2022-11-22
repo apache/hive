@@ -25,10 +25,6 @@ import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexCorrelVariable;
-import org.apache.calcite.rex.RexFieldAccess;
-import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.CorrelationInfoVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.HiveCorrelationInfo;
@@ -37,7 +33,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.calcite.rel.core.CorrelationId;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 public class HiveFilter extends Filter implements HiveRelNode {
@@ -86,7 +81,7 @@ public class HiveFilter extends Filter implements HiveRelNode {
 
   @Override
   public Set<CorrelationId> getVariablesSet() {
-    Set<CorrelationId> correlationIds = new LinkedHashSet<CorrelationId>();
+    Set<CorrelationId> correlationIds = new LinkedHashSet<>();
     for (HiveCorrelationInfo h : correlationInfos.get()) {
       correlationIds.addAll(h.correlationIds);
     }

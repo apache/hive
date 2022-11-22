@@ -57,7 +57,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubqueryRuntimeException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
-import org.apache.hadoop.hive.ql.optimizer.calcite.SubqueryConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.HiveCorrelationInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -129,7 +128,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       final HiveProject project = call.rel(0);
       // Since there is a RexSubQuery, there should be a HiveCorrelationInfo
       // in the RelNode
-      Preconditions.checkState(project.getCorrelationInfos().size() > 0);
+      Preconditions.checkState(!project.getCorrelationInfos().isEmpty());
       HiveCorrelationInfo correlationInfo = project.getCorrelationInfos().get(0);
 
       final RelOptUtil.Logic logic = LogicVisitor.find(RelOptUtil.Logic.TRUE_FALSE_UNKNOWN,

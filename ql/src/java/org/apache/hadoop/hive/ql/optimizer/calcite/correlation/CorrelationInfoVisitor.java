@@ -24,7 +24,6 @@ import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexCorrelVariable;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.sql.SqlKind;
@@ -92,12 +91,16 @@ public class CorrelationInfoVisitor extends RexShuttle {
    * for the subquery within their RexNodes.
    */
   private static class InsideRexSubQueryVisitor extends RexShuttle {
-    public Set<CorrelationId> correlationIds = new LinkedHashSet<>();
+    private Set<CorrelationId> correlationIds = new LinkedHashSet<>();
 
     @Override
     public RexNode visitCorrelVariable(RexCorrelVariable variable) {
       correlationIds.add(variable.id);
       return super.visitCorrelVariable(variable);
+    }
+
+    public Set<CorrelationId> getCorrelationIds() {
+      return correlationIds;
     }
   }
 
@@ -151,7 +154,8 @@ public class CorrelationInfoVisitor extends RexShuttle {
     }
 
     public HiveCorrelationInfo getCorrelationInfo() {
-      return new HiveCorrelationInfo(visitor.correlationIds, rexSubQuery, aggregateRel, notFlag);
+      return new HiveCorrelationInfo(visitor.getCorrelationIds(), rexSubQuery,
+          aggregateRel, notFlag);
     }
   }
 

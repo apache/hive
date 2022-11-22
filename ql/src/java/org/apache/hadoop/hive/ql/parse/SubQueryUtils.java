@@ -26,7 +26,6 @@ import java.util.Deque;
 import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.CommonTreeAdaptor;
@@ -157,7 +156,6 @@ public class SubQueryUtils {
 
     String havingInputAlias = null;
 
-    boolean [] subqueryConfig = {false, false};
     subQuery.subqueryRestrictionsCheck(inputRR, forHavingClause,
         havingInputAlias);
   }

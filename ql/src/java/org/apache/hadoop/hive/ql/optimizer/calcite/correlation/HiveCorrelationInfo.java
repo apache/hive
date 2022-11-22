@@ -94,7 +94,7 @@ public class HiveCorrelationInfo {
   }
 
   private boolean hasCorrelation() {
-    return correlationIds.size() > 0;
+    return !correlationIds.isEmpty();
   }
 
   private boolean hasCount() {

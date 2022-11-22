@@ -152,7 +152,7 @@ public class HiveProject extends Project implements HiveRelNode {
    */
   private static class CorrelationInfoSupplier {
     public final List<RexNode> projects;
-    public List<HiveCorrelationInfo> correlationInfos;
+    private List<HiveCorrelationInfo> correlationInfos;
 
     public CorrelationInfoSupplier(List<RexNode> projects) {
       this.projects = projects;

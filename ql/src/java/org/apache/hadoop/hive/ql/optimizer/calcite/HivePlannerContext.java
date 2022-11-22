@@ -19,13 +19,9 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.plan.Context;
-import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
-
-import java.util.Set;
-
 
 public class HivePlannerContext implements Context {
   private HiveAlgorithmsConf algoConfig;
