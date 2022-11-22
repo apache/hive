@@ -20,9 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -39,8 +37,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
@@ -109,10 +105,7 @@ import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.exceptions.NoSuchTableException;
-import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
-import org.apache.iceberg.hadoop.HadoopFileIO;
-import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -472,14 +465,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     String location = commitProperties.getProperty(Catalogs.LOCATION);
     Configuration configuration = SessionState.getSessionConf();
     if (location != null) {
-      String tableObjectLocation = HiveIcebergOutputCommitter.generateTableObjectLocation(location, configuration);
-      try {
-        Path toDelete = new Path(tableObjectLocation);
-        FileSystem fs = Util.getFs(toDelete, configuration);
-        fs.delete(toDelete, true);
-      } catch (IOException ex) {
-        throw new UncheckedIOException(ex);
-      }
+      HiveTableUtil.cleanupTableObjectFile(location, configuration);
     }
     List<JobContext> jobContextList = generateJobContext(configuration, tableName, overwrite);
     if (jobContextList.isEmpty()) {
@@ -748,20 +734,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public static Table table(Configuration config, String name) {
     Table table = SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + name));
     if (table == null && StringUtils.isNotBlank(config.get(InputFormatConfig.TABLE_LOCATION))) {
-      String location = config.get(InputFormatConfig.TABLE_LOCATION);
-      String filePath = HiveIcebergOutputCommitter.generateTableObjectLocation(location, config);
-
-      try (FileIO io = new HadoopFileIO(config)) {
-        try (ObjectInputStream ois = new ObjectInputStream(io.newInputFile(filePath).newStream())) {
-          table = SerializationUtil.deserializeFromBase64((String) ois.readObject());
-        }
-      } catch (NotFoundException e) {
-        LOG.debug("Table object file {} not found.", filePath);
-        return null;
-      } catch (Exception e) {
-        LOG.warn("Unable to read table object file: " + filePath, e);
-        return null;
-      }
+      table = HiveTableUtil.readTableObjectFromFile(config);
     }
     checkAndSetIoConfig(config, table);
     return table;

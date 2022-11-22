@@ -20,8 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,7 +69,6 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
-import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
@@ -89,7 +86,6 @@ import org.apache.iceberg.hive.HiveCommitLock;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mapping.MappingUtil;
 import org.apache.iceberg.mapping.NameMapping;
 import org.apache.iceberg.mapping.NameMappingParser;
@@ -104,7 +100,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.util.Pair;
-import org.apache.iceberg.util.SerializationUtil;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -261,19 +256,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
 
       String tableIdentifier = catalogProperties.getProperty(Catalogs.NAME);
       SessionStateUtil.addResource(conf, tableIdentifier, table);
-      String filePath = HiveIcebergOutputCommitter.generateTableObjectLocation(table.location(), conf);
 
-      Table serializableTable = SerializableTable.copyOf(table);
-      HiveIcebergStorageHandler.checkAndSkipIoConfigSerialization(conf, serializableTable);
-      String serialized = SerializationUtil.serializeToBase64(serializableTable);
-
-      OutputFile serializedTableFile = table.io().newOutputFile(filePath);
-      try (ObjectOutputStream oos = new ObjectOutputStream(serializedTableFile.createOrOverwrite())) {
-        oos.writeObject(serialized);
-      } catch (IOException ex) {
-        throw new UncheckedIOException(ex);
-      }
-      LOG.debug("Iceberg table metadata file is created {}", serializedTableFile);
+      HiveTableUtil.createFileForTableObject(table, conf);
     }
   }
 
