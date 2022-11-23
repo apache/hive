@@ -61,6 +61,9 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected String hostName;
   protected String runtimeVersion;
 
+  //Time threshold for compactor thread log
+  //In milli sec
+  protected Integer MAX_WARN_LOG_TIME = 1200000;
   @Override
   public void setConf(Configuration configuration) {
     // TODO MS-SPLIT for now, keep a copy of HiveConf around as we need to call other methods with

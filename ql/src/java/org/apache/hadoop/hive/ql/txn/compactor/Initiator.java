@@ -100,7 +100,6 @@ public class Initiator extends MetaStoreCompactorThread {
 
   static final private String COMPACTORTHRESHOLD_PREFIX = "compactorthreshold.";
 
-  private long checkInterval;
   private ExecutorService compactionExecutor;
   private Optional<Cache<String, TBase>> metaCache = Optional.empty();
   private boolean metricsEnabled;
@@ -228,11 +227,16 @@ public class Initiator extends MetaStoreCompactorThread {
         }
 
         long elapsedTime = System.currentTimeMillis() - startedAt;
-        if (elapsedTime < checkInterval && !stop.get()) {
-          Thread.sleep(checkInterval - elapsedTime);
+        long threadSleepTime = getThreadSleepTime(elapsedTime, stop, CompactorUtil.CompactorThreadType.INITIATOR);
+
+        if(threadSleepTime != -1 )  Thread.sleep(threadSleepTime);
+
+        if(elapsedTime < MAX_WARN_LOG_TIME){
+          LOG.debug("Initiator loop took " + elapsedTime + " milli sec to finish.");
+        } else {
+          LOG.warn("Possible Initiator slowdown, loop took "+ elapsedTime + "milli sec to finish.");
         }
 
-        LOG.info("Initiator thread finished one loop.");
       } while (!stop.get());
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor initiator, exiting.", t);
@@ -326,7 +330,6 @@ public class Initiator extends MetaStoreCompactorThread {
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
-    checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
     compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
             COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);

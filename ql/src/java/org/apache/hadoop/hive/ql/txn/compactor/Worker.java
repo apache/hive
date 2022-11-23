@@ -59,6 +59,8 @@ import org.apache.hadoop.security.UserGroupInformation;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -95,6 +97,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     ExecutorService executor = getTimeoutHandlingExecutor();
     try {
       do {
+        Instant loopStartTime = Instant.now();
         Future<Boolean> singleRun = executor.submit(() -> findNextCompactionAndExecute(genericStats, mrStats));
         try {
           launchedJob = singleRun.get(timeout, TimeUnit.MILLISECONDS);
@@ -123,7 +126,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           } catch (InterruptedException e) {
           }
         }
-        LOG.info("Worker thread finished one loop.");
+        Instant loopEndTime = Instant.now();
+        Duration timeElapsed = Duration.between(loopStartTime, loopEndTime);
+
+        if(timeElapsed.toMillis() < MAX_WARN_LOG_TIME){
+          LOG.debug("Worker loop took " + timeElapsed + " milli sec to finish.");
+        } else {
+          LOG.warn("Possible Worker slowdown, loop took "+ timeElapsed + "milli sec to finish.");
+        }
       } while (!stop.get());
     } finally {
       if (executor != null) {
