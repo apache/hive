@@ -31,7 +31,6 @@ import org.apache.commons.pool2.impl.BaseObjectPoolConfig;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +57,8 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
   public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
-    LOG.debug("Creating dbcp connection pool for the MetaStore");
+    String poolName = DataSourceProvider.getDataSourceName(hdpConfig);
+    LOG.info("Creating dbcp connection pool for the MetaStore, maxPoolSize: {}, name: {}", maxPoolSize, poolName);
 
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);

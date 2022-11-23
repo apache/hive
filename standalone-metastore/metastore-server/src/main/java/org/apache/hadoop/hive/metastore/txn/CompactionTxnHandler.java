@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.slf4j.Logger;
@@ -94,7 +95,10 @@ class CompactionTxnHandler extends TxnHandler {
     synchronized (CompactionTxnHandler.class) {
       if (connPoolCompaction == null) {
         int maxPoolSize = MetastoreConf.getIntVar(conf, ConfVars.HIVE_COMPACTOR_CONNECTION_POOLING_MAX_CONNECTIONS);
-        connPoolCompaction = setupJdbcConnectionPool(conf, maxPoolSize);
+        try (DataSourceProvider.DataSourceNameConfigurator configurator =
+                 new DataSourceProvider.DataSourceNameConfigurator(conf, "compactor")) {
+          connPoolCompaction = setupJdbcConnectionPool(conf, maxPoolSize);
+        }
       }
     }
   }

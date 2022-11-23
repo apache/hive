@@ -152,10 +152,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private IMetaStoreMetadataTransformer transformer;
   private static DataConnectorProviderFactory dataconnectorFactory = null;
 
-  // Variables for metrics
-  // Package visible so that HMSMetricsListener can see them.
-  static AtomicInteger databaseCount, tableCount, partCount;
-
   public static final String PARTITION_NUMBER_EXCEED_LIMIT_MSG =
       "Number of partitions scanned (=%d) on table '%s' exceeds limit (=%d). This is controlled on the metastore server by %s.";
 
@@ -341,6 +337,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @Override
   public void init() throws MetaException {
+    Metrics.initialize(conf);
     initListeners = MetaStoreServerUtils.getMetaStoreListeners(
         MetaStoreInitListener.class, conf, MetastoreConf.getVar(conf, ConfVars.INIT_HOOKS));
     for (MetaStoreInitListener singleInitListener: initListeners) {
@@ -359,18 +356,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         createDefaultRoles();
         addAdminUsers();
         currentUrl = MetaStoreInit.getConnectionURL(conf);
+        updateMetrics();
       }
-    }
-
-    //Start Metrics
-    if (MetastoreConf.getBoolVar(conf, ConfVars.METRICS_ENABLED)) {
-      LOG.info("Begin calculating metadata count metrics.");
-      Metrics.initialize(conf);
-      databaseCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES);
-      tableCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES);
-      partCount = Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS);
-      updateMetrics();
-
     }
 
     preListeners = MetaStoreServerUtils.getMetaStoreListeners(MetaStorePreEventListener.class,
@@ -9658,10 +9645,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   @VisibleForTesting
   void updateMetrics() throws MetaException {
-    if (databaseCount != null) {
-      tableCount.set(getMS().getTableCount());
-      partCount.set(getMS().getPartitionCount());
-      databaseCount.set(getMS().getDatabaseCount());
+    if (Metrics.getRegistry() != null) {
+      LOG.info("Begin calculating metadata count metrics.");
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_DATABASES).set(getMS().getTableCount());
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_TABLES).set(getMS().getPartitionCount());
+      Metrics.getOrCreateGauge(MetricsConstants.TOTAL_PARTITIONS).set(getMS().getDatabaseCount());
     }
   }
 
