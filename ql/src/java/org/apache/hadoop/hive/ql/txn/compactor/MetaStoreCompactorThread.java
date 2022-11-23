@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -132,5 +133,29 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
       return elapsed;
     }
     return 0;
+  }
+
+  // This method was created to reduce duplication between
+  // Compactor classes Cleaner and Initiator
+  protected long getThreadSleepTime(long elapsedTime, AtomicBoolean stop, CompactorUtil.CompactorThreadType type) {
+    long checkInterval;
+    switch (type) {
+      case INITIATOR:
+        checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
+        break;
+      case CLEANER:
+        checkInterval = conf.getTimeVar(
+                HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown type: " + type);
+    }
+
+    if (elapsedTime < checkInterval && !stop.get()) {
+      return checkInterval - elapsedTime;
+    } else {
+      //In case where Thread.sleep is not required
+      return -1;
+    }
   }
 }
