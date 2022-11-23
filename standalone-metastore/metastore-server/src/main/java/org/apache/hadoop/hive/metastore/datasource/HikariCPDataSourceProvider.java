@@ -22,8 +22,8 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
 
   @Override
   public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
-    LOG.debug("Creating Hikari connection pool for the MetaStore");
+    String poolName = DataSourceProvider.getDataSourceName(hdpConfig);
+    LOG.info("Creating Hikari connection pool for the MetaStore, maxPoolSize: {}, name: {}", maxPoolSize, poolName);
 
     String driverUrl = DataSourceProvider.getMetastoreJdbcDriverUrl(hdpConfig);
     String user = DataSourceProvider.getMetastoreJdbcUser(hdpConfig);
@@ -67,6 +68,9 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setUsername(user);
     config.setPassword(passwd);
     config.setLeakDetectionThreshold(leakDetectionThreshold);
+    if (!StringUtils.isEmpty(poolName)) {
+      config.setPoolName(poolName);
+    }
 
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);
