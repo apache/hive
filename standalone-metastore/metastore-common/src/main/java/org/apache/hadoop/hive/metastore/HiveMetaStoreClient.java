@@ -2688,7 +2688,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         getTableRequest.setProcessorIdentifier(processorIdentifier);
 
       Table t = getTableInternal(getTableRequest).getTable();
-      extractTablePropertiesFromHook(t);
+      executePostGetTableHook(t);
       return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
     } finally {
       long diff = System.currentTimeMillis() - t1;
@@ -2699,7 +2699,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
   }
 
-  private void extractTablePropertiesFromHook(Table t) throws MetaException {
+  private void executePostGetTableHook(Table t) throws MetaException {
     HiveMetaHook hook = getHook(t);
     if (hook != null) {
       hook.postGetTable(t);
@@ -2730,7 +2730,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     req.setProjectionSpec(projectionsSpec);
     List<Table> tabs = client.get_table_objects_by_name_req(req).getTables();
     for (Table tbl : tabs) {
-      extractTablePropertiesFromHook(tbl);
+      executePostGetTableHook(tbl);
     }
     return deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
   }
