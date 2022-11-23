@@ -733,7 +733,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   public static Table table(Configuration config, String name) {
     Table table = SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + name));
-    if (table == null && StringUtils.isNotBlank(config.get(InputFormatConfig.TABLE_LOCATION))) {
+    if (table == null &&
+            config.getBoolean(hive_metastoreConstants.TABLE_IS_CTAS, false) &&
+            StringUtils.isNotBlank(config.get(InputFormatConfig.TABLE_LOCATION))) {
       table = HiveTableUtil.readTableObjectFromFile(config);
     }
     checkAndSetIoConfig(config, table);

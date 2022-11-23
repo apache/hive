@@ -199,12 +199,8 @@ public class HiveTableUtil {
       try (ObjectInputStream ois = new ObjectInputStream(io.newInputFile(filePath).newStream())) {
         return SerializationUtil.deserializeFromBase64((String) ois.readObject());
       }
-    } catch (NotFoundException e) {
-      LOG.debug("Table object file {} not found.", filePath);
-      return null;
-    } catch (Exception e) {
-      LOG.warn("Unable to read table object file: " + filePath, e);
-      return null;
+    } catch (ClassNotFoundException | IOException e) {
+      throw new NotFoundException("Can not read or parse table object file: %s", filePath);
     }
   }
 }
