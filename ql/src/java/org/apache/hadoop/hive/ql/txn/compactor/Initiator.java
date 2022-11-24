@@ -227,15 +227,7 @@ public class Initiator extends MetaStoreCompactorThread {
         }
 
         long elapsedTime = System.currentTimeMillis() - startedAt;
-        long threadSleepTime = getThreadSleepTime(elapsedTime, stop, CompactorUtil.CompactorThreadType.INITIATOR);
-
-        if(threadSleepTime != -1 )  Thread.sleep(threadSleepTime);
-
-        if(elapsedTime < MAX_WARN_LOG_TIME){
-          LOG.debug("Initiator loop took " + elapsedTime + " milli sec to finish.");
-        } else {
-          LOG.warn("Possible Initiator slowdown, loop took "+ elapsedTime + "milli sec to finish.");
-        }
+        doPostLoopActions(elapsedTime, CompactorThreadType.INITIATOR);
 
       } while (!stop.get());
     } catch (Throwable t) {
@@ -330,6 +322,7 @@ public class Initiator extends MetaStoreCompactorThread {
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
+    checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
     compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
             COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
