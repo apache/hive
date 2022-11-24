@@ -25,6 +25,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Abstract GenericUDF for array functions
  */
@@ -106,4 +109,11 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
         return ObjectInspectorFactory.getStandardListObjectInspector(initOI(arguments));
     }
 
+    List<?> convertArray(List<?> objects) {
+        List<Object> ret = new ArrayList<>();
+        for (Object o : objects) {
+            ret.add(converter.convert(o));
+        }
+        return ret;
+    }
 }
