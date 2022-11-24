@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.optimizer.stats.annotation;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.hadoop.hive.common.ndv.fm.FMSketch;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.metastore.StatisticsTestUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -28,16 +30,20 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+
+import static org.apache.hadoop.hive.ql.optimizer.stats.annotation.StatsRulesProcFactory.FilterStatsRule.extractFloatFromLiteralValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 public class TestStatsRulesProcFactory {
 
@@ -60,7 +66,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(0, numRows);
+    assertEquals(0, numRows);
   }
 
   @Test
@@ -75,7 +81,7 @@ public class TestStatsRulesProcFactory {
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
     // when no KLL it defaults to 1/3 of the number of rows
-    Assert.assertEquals((VALUES.length + numNulls) / 3, numRows);
+    assertEquals((VALUES.length + numNulls) / 3, numRows);
 
     // empty KLL array is not valid either
     stats.getColumnStats().get(0).setHistogram(new byte[0]);
@@ -83,7 +89,7 @@ public class TestStatsRulesProcFactory {
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
     // when no KLL it defaults to 1/3 of the number of rows
-    Assert.assertEquals((VALUES.length + numNulls) / 3, numRows);
+    assertEquals((VALUES.length + numNulls) / 3, numRows);
   }
 
   @Test
@@ -96,7 +102,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(8, numRows);
+    assertEquals(8, numRows);
   }
 
   @Test
@@ -109,7 +115,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(0, numRows);
+    assertEquals(0, numRows);
   }
 
   @Test
@@ -122,7 +128,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(0, numRows);
+    assertEquals(0, numRows);
   }
 
   @Test
@@ -135,7 +141,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(12, numRows);
+    assertEquals(12, numRows);
   }
 
   @Test
@@ -148,7 +154,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(13, numRows);
+    assertEquals(13, numRows);
   }
 
   @Test
@@ -160,7 +166,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(9, numRows);
+    assertEquals(9, numRows);
   }
 
   @Test
@@ -172,7 +178,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(1, numRows);
+    assertEquals(1, numRows);
   }
 
   @Test
@@ -184,7 +190,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(0, numRows);
+    assertEquals(0, numRows);
   }
 
   @Test
@@ -196,7 +202,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(13, numRows);
+    assertEquals(13, numRows);
   }
 
   @Test
@@ -208,7 +214,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(13, numRows);
+    assertEquals(13, numRows);
   }
 
   @Test
@@ -220,7 +226,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(2, numRows);
+    assertEquals(2, numRows);
   }
 
   @Test
@@ -232,7 +238,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(12, numRows);
+    assertEquals(12, numRows);
   }
 
   @Test
@@ -244,7 +250,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(13, numRows);
+    assertEquals(13, numRows);
   }
 
   @Test
@@ -256,7 +262,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(0, numRows);
+    assertEquals(0, numRows);
   }
 
   @Test
@@ -268,7 +274,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(0, numRows);
+    assertEquals(0, numRows);
   }
 
   @Test
@@ -280,7 +286,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(3, numRows);
+    assertEquals(3, numRows);
   }
 
   @Test
@@ -292,7 +298,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(13, numRows);
+    assertEquals(13, numRows);
   }
 
   @Test
@@ -304,7 +310,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(13, numRows);
+    assertEquals(13, numRows);
   }
 
   @Test
@@ -316,7 +322,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(1, numRows);
+    assertEquals(1, numRows);
   }
 
   @Test
@@ -328,7 +334,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
 
-    Assert.assertEquals(0, numRows);
+    assertEquals(0, numRows);
   }
 
   @Test
@@ -342,7 +348,7 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, values.length + numNulls);
 
-    Assert.assertEquals(2, numRows);
+    assertEquals(2, numRows);
   }
 
   @Test
@@ -356,7 +362,228 @@ public class TestStatsRulesProcFactory {
     long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
         stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, values.length + numNulls);
 
-    Assert.assertEquals(2, numRows);
+    assertEquals(2, numRows);
+  }
+
+  @Test
+  public void testBetween() throws SemanticException {
+    long numNulls = 2;
+    Statistics stats = createStatistics(VALUES, numNulls);
+
+    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFBetween(), Arrays.asList(new ExprNodeConstantDesc(Boolean.FALSE),
+            COL_EXPR, createExprNodeConstantDesc(3), createExprNodeConstantDesc(4)));
+    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    assertEquals(2, numRows);
+  }
+
+  @Test
+  public void testLiteralExtraction() {
+    final double DELTA = 1e-5;
+
+    assertEquals((float) 100,
+        extractFloatFromLiteralValue("int", "100"), DELTA);
+    assertEquals((float) 1,
+        extractFloatFromLiteralValue("smallint", "1"), DELTA);
+    assertEquals((float) 1,
+        extractFloatFromLiteralValue("tinyint", "1"), DELTA);
+    assertEquals((float) 10000000000000L,
+        extractFloatFromLiteralValue("bigint", "10000000000000"), DELTA);
+    assertEquals((float) 15.2,
+        extractFloatFromLiteralValue("decimal(5, 2)", "15.2"), DELTA);
+    assertEquals(15.0002f,
+        extractFloatFromLiteralValue("float", "15.0002"), DELTA);
+    assertEquals((float) 1512.2222222d,
+        extractFloatFromLiteralValue("double", "1512.2222222d"), DELTA);
+    assertEquals((float) Date.valueOf("2022-01-05").toEpochSecond(),
+        extractFloatFromLiteralValue("date", "2022-01-05"), DELTA);
+    assertEquals((float) Date.valueOf("2022-1-5").toEpochSecond(),
+        extractFloatFromLiteralValue("date", "2022-1-5"), DELTA);
+    assertEquals((float) Timestamp.valueOf("2022-01-05 00:00:00").toEpochSecond(),
+        extractFloatFromLiteralValue("timestamp", "2022-01-05 00:00:00"), DELTA);
+    assertEquals((float) Timestamp.valueOf("2022-01-05 01:20:02").toEpochSecond(),
+        extractFloatFromLiteralValue("timestamp", "2022-01-05 01:20:02"), DELTA);
+    assertEquals((float) Timestamp.valueOf("2022-01-05 01:20:02").toEpochSecond(),
+        extractFloatFromLiteralValue("timestamp", "2022-1-5 01:20:02"), DELTA);
+  }
+
+  @Test
+  public void testLiteralExtractionFailures() {
+    // if we fail at parsing the boundary value, make sure the correct exception is raised so that we can
+    // default to standard computation
+    String[] types = {"int", "tinyint", "smallint", "bigint", "date", "timestamp", "float", "double"};
+    for (String type : types) {
+      assertThrows(IllegalArgumentException.class, () -> extractFloatFromLiteralValue(type, "abc"));
+    }
+
+    // check we throw the correct exception when an unsupported type is provided
+    assertThrows(IllegalStateException.class,
+        () -> extractFloatFromLiteralValue("typex", "abc"));
+  }
+
+  @Test
+  public void testBetweenLeftLowerThanMin() throws SemanticException {
+    long numNulls = 2;
+    Statistics stats = createStatistics(VALUES, numNulls);
+
+    ExprNodeDesc exprNodeDescLeq = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFOPEqualOrLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(4)));
+    long numRowsLeq = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDescLeq, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    ExprNodeDesc exprNodeDescBetween = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFBetween(), Arrays.asList(new ExprNodeConstantDesc(Boolean.FALSE),
+        COL_EXPR, createExprNodeConstantDesc(0), createExprNodeConstantDesc(4)));
+    long numRowsBetween = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDescBetween, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    assertEquals(numRowsLeq, numRowsBetween);
+    assertEquals(10, numRowsBetween);
+  }
+
+  @Test
+  public void testBetweenLeftLowerThanMinRightHigherThanMax() throws SemanticException {
+    long numNulls = 2;
+    Statistics stats = createStatistics(VALUES, numNulls);
+
+    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFBetween(), Arrays.asList(new ExprNodeConstantDesc(Boolean.FALSE),
+        COL_EXPR, createExprNodeConstantDesc(0), createExprNodeConstantDesc(10)));
+    long numRowsBetween = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    assertEquals(VALUES.length, numRowsBetween);
+  }
+
+  @Test
+  public void testBetweenRightHigherThanMax() throws SemanticException {
+    long numNulls = 2;
+    Statistics stats = createStatistics(VALUES, numNulls);
+
+    ExprNodeDesc exprNodeDescGeq = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFOPEqualOrGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(2)));
+    long numRowsGeq = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDescGeq, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    ExprNodeDesc exprNodeDescBetween = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFBetween(), Arrays.asList(new ExprNodeConstantDesc(Boolean.FALSE),
+        COL_EXPR, createExprNodeConstantDesc(2), createExprNodeConstantDesc(10)));
+    long numRowsBetween = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDescBetween, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    assertEquals(numRowsGeq, numRowsBetween);
+    assertEquals(12, numRowsBetween);
+  }
+
+  @Test
+  public void testBetweenRightLowerThanMin() throws SemanticException {
+    long numNulls = 2;
+    Statistics stats = createStatistics(VALUES, numNulls);
+
+    ExprNodeDesc exprNodeDescBetween = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFBetween(), Arrays.asList(new ExprNodeConstantDesc(Boolean.FALSE),
+        COL_EXPR, createExprNodeConstantDesc(-1), createExprNodeConstantDesc(0)));
+    long numRowsBetween = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDescBetween, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    assertEquals(0, numRowsBetween);
+  }
+
+  @Test
+  public void testBetweenLeftHigherThanMax() throws SemanticException {
+    long numNulls = 2;
+    Statistics stats = createStatistics(VALUES, numNulls);
+
+    ExprNodeDesc exprNodeDescBetween = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFBetween(), Arrays.asList(new ExprNodeConstantDesc(Boolean.FALSE),
+        COL_EXPR, createExprNodeConstantDesc(10), createExprNodeConstantDesc(12)));
+    long numRowsBetween = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDescBetween, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    assertEquals(0, numRowsBetween);
+  }
+
+  @Test
+  public void testBetweenLeftEqualMax() throws SemanticException {
+    long numNulls = 2;
+    Statistics stats = createStatistics(VALUES, numNulls);
+
+    ExprNodeDesc exprNodeDescBetween = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFBetween(), Arrays.asList(new ExprNodeConstantDesc(Boolean.FALSE),
+        COL_EXPR, createExprNodeConstantDesc(3), createExprNodeConstantDesc(3)));
+    long numRowsBetween = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDescBetween, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    assertEquals(7, numRowsBetween);
+  }
+
+  @Test
+  public void testNotBetween() throws SemanticException {
+    long numNulls = 2;
+    Statistics stats = createStatistics(VALUES, numNulls);
+
+    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFBetween(), Arrays.asList(new ExprNodeConstantDesc(Boolean.TRUE),
+        COL_EXPR, createExprNodeConstantDesc(3), createExprNodeConstantDesc(4)));
+    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    ExprNodeDesc exprNodeDescLth = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFOPLessThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(3)));
+    long numRowsLth = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDescLth, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    ExprNodeDesc exprNodeDescGth = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFOPGreaterThan(), Arrays.asList(COL_EXPR, createExprNodeConstantDesc(4)));
+    long numRowsGth = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDescGth, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    assertEquals(11, numRows);
+    assertEquals(numRows, numRowsLth + numRowsGth);
+  }
+
+  @Test
+  public void testNotBetweenLowerThanMinHigherThanMax() throws SemanticException {
+    long numNulls = 2;
+    Statistics stats = createStatistics(VALUES, numNulls);
+
+    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFBetween(), Arrays.asList(new ExprNodeConstantDesc(Boolean.TRUE),
+        COL_EXPR, createExprNodeConstantDesc(0), createExprNodeConstantDesc(10)));
+    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    assertEquals(0, numRows);
+  }
+
+  @Test
+  public void testNotBetweenLeftEqualsRight() throws SemanticException {
+    long numNulls = 2;
+    Statistics stats = createStatistics(VALUES, numNulls);
+
+    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFBetween(), Arrays.asList(new ExprNodeConstantDesc(Boolean.TRUE),
+        COL_EXPR, createExprNodeConstantDesc(3), createExprNodeConstantDesc(3)));
+    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    assertEquals(VALUES.length - 1, numRows);
+  }
+
+  @Test
+  public void testNotBetweenRightLowerThanLeft() throws SemanticException {
+    long numNulls = 2;
+    Statistics stats = createStatistics(VALUES, numNulls);
+
+    ExprNodeDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+        new GenericUDFBetween(), Arrays.asList(new ExprNodeConstantDesc(Boolean.TRUE),
+        COL_EXPR, createExprNodeConstantDesc(4), createExprNodeConstantDesc(3)));
+    long numRows = new StatsRulesProcFactory.FilterStatsRule().evaluateExpression(
+        stats, exprNodeDesc, STATS_PROC_CTX, Collections.emptyList(), null, VALUES.length + numNulls);
+
+    assertEquals(VALUES.length, numRows);
   }
 
   private ExprNodeDesc createExprNodeConstantDesc(int value) {
