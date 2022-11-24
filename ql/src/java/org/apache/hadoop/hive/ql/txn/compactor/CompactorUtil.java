@@ -34,7 +34,6 @@ import static java.lang.String.format;
 
 public class CompactorUtil {
   public static final String COMPACTOR = "compactor";
-
   /**
    * List of accepted properties for defining the compactor's job queue.
    *

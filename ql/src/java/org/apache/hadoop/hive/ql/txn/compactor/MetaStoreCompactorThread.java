@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
