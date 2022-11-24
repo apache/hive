@@ -35,8 +35,8 @@ public class BinaryColumnStatsAggregator extends ColumnStatsAggregator {
     checkStatisticsList(colStatsWithSourceInfo);
 
     ColumnStatisticsObj statsObj = null;
-    String colType = null;
-    String colName = null;
+    String colType;
+    String colName;
     BinaryColumnStatsData aggregateData = null;
     for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
       ColumnStatisticsObj cso = csp.getColStatsObj();
@@ -59,5 +59,9 @@ public class BinaryColumnStatsAggregator extends ColumnStatsAggregator {
     columnStatisticsData.setBinaryStats(aggregateData);
     statsObj.setStatsData(columnStatisticsData);
     return statsObj;
+  }
+
+  @Override protected ColumnStatisticsData initColumnStatisticsData() {
+    throw new UnsupportedOperationException("initColumnStatisticsData not supported for binary statistics");
   }
 }

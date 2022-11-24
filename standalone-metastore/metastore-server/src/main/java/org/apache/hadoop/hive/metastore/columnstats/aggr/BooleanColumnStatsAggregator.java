@@ -35,8 +35,8 @@ public class BooleanColumnStatsAggregator extends ColumnStatsAggregator {
     checkStatisticsList(colStatsWithSourceInfo);
 
     ColumnStatisticsObj statsObj = null;
-    String colType = null;
-    String colName = null;
+    String colType;
+    String colName;
     BooleanColumnStatsData aggregateData = null;
     for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
       ColumnStatisticsObj cso = csp.getColStatsObj();
@@ -61,4 +61,7 @@ public class BooleanColumnStatsAggregator extends ColumnStatsAggregator {
     return statsObj;
   }
 
+  @Override protected ColumnStatisticsData initColumnStatisticsData() {
+    throw new UnsupportedOperationException("initColumnStatisticsData not supported for boolean statistics");
+  }
 }
