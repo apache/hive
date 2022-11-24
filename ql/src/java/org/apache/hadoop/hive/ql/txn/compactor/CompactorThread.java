@@ -62,8 +62,8 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected String runtimeVersion;
 
   //Time threshold for compactor thread log
-  //In millisecond:
-  protected Integer MAX_WARN_LOG_TIME = 1200000; //20 mins
+  //In milliseconds:
+  protected Integer MAX_WARN_LOG_TIME = 1200000; //20 min
 
   protected long checkInterval;
 
@@ -235,7 +235,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
     if(elapsedTime < MAX_WARN_LOG_TIME){
       LOG.debug(type.name() + " loop took " + elapsedTime/1000 + " seconds to finish.");
     } else {
-      LOG.warn("Possible "+ type.name() +" slowdown, loop took "+ elapsedTime/1000 + " seconds to finish.");
+      LOG.warn("Possible " + type.name() + " slowdown, loop took "+ elapsedTime/1000 + " seconds to finish.");
     }
 
   }
