@@ -1,3 +1,4 @@
+--! qt:disabled:disabled the ctas doesn't set table as v2 in HMS & sets copy-on-write which is unsupported at Hive
 set hive.query.lifetime.hooks=org.apache.iceberg.mr.hive.HiveIcebergQueryLifeTimeHook;
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
 set hive.explain.user=false;

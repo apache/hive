@@ -79,6 +79,7 @@ import org.apache.iceberg.UpdateProperties;
 import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveCommitLock;
@@ -908,6 +909,22 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       newProps.put(TableProperties.DELETE_MODE, "merge-on-read");
       newProps.put(TableProperties.UPDATE_MODE, "merge-on-read");
       newProps.put(TableProperties.MERGE_MODE, "merge-on-read");
+    }
+  }
+
+  @Override
+  public void postGetTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (hmsTable != null) {
+      try {
+        Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
+        String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
+        // If it is not the default format version, then set it in the table properties.
+        if (!"1".equals(formatVersion)) {
+          hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
+        }
+      } catch (NoSuchTableException | NotFoundException ex) {
+        // If the table doesn't exist, ignore throwing exception from here
+      }
     }
   }
 
