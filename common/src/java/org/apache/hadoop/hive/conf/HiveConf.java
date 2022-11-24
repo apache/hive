@@ -99,6 +99,7 @@ public class HiveConf extends Configuration {
   private static final Map<String, ConfVars> metaConfs = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
   private final Set<String> hiddenSet = new HashSet<String>();
+  private final Set<String> ignoreSet = new HashSet<String>();
   private final List<String> rscList = new ArrayList<>();
 
   private Pattern modWhiteListPattern = null;
@@ -5499,6 +5500,10 @@ public class HiveConf extends Configuration {
     HIVE_CONF_INTERNAL_VARIABLE_LIST("hive.conf.internal.variable.list",
         "hive.added.files.path,hive.added.jars.path,hive.added.archives.path",
         "Comma separated list of variables which are used internally and should not be configurable."),
+    HIVE_CONF_IGNORE_LIST("hive.conf.ignored.variable.list",
+            "",
+            "Comma separated list of variables which cannot be changed with set commands, setting of those"
+            + " are just silently ignored."),
     HIVE_QUERY_MAX_LENGTH("hive.query.max.length", "10Mb", new SizeValidator(), "The maximum" +
             " size of a query string. Enforced after variable substitutions."),
     HIVE_QUERY_TIMEOUT_SECONDS("hive.query.timeout.seconds", "0s",
@@ -5922,6 +5927,10 @@ public class HiveConf extends Configuration {
     return Iterables.any(hiddenSet, hiddenVar -> name.startsWith(hiddenVar));
   }
 
+  public boolean isIgnoredConfig(String name) {
+    return Iterables.any(ignoreSet, ignoredVar -> name.equals(ignoredVar));
+  }
+
   public static boolean isEncodedPar(String name) {
     for (ConfVars confVar : HiveConf.ENCODED_CONF) {
       ConfVars confVar1 = confVar;
@@ -6321,6 +6330,7 @@ public class HiveConf extends Configuration {
     origProp = (Properties)other.origProp.clone();
     restrictList.addAll(other.restrictList);
     hiddenSet.addAll(other.hiddenSet);
+    ignoreSet.addAll(other.ignoreSet);
     modWhiteListPattern = other.modWhiteListPattern;
   }
 
@@ -6454,6 +6464,8 @@ public class HiveConf extends Configuration {
     setupRestrictList();
     hiddenSet.clear();
     hiddenSet.addAll(HiveConfUtil.getHiddenSet(this));
+    ignoreSet.clear();
+    ignoreSet.addAll(HiveConfUtil.getIgnoreSet(this));
   }
 
   /**
@@ -6962,6 +6974,10 @@ public class HiveConf extends Configuration {
     String validNonMrEngines = String.join(", ", engines);
     LOG.debug("Valid non-MapReduce execution engines: {}", validNonMrEngines);
     return validNonMrEngines;
+  }
+
+  public static String generateIgnoredConfigWarning(String key) {
+    return String.format("Configuration {} is ignored and may not be set during runtime.", key);
   }
 
   public static String generateMrDeprecationWarning() {

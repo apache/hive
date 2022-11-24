@@ -81,19 +81,38 @@ public class HiveConfUtil {
   }
 
   /**
+   * Getting a set of strings from a configuration
+   * @param configuration The original configuration
+   * @param configName configuration name which may have multiple comma separated values
+   * @return The set of strings with the configuration values
+   */
+  public static Set<String> getConfigAsSet(Configuration configuration, String configName) {
+    Set<String> configSet = new HashSet<String>();
+    String configListStr = HiveConf.getVar(configuration, HiveConf.getConfVars(configName));
+    if (configListStr != null) {
+      for (String entry : configListStr.split(",")) {
+        configSet.add(entry.trim());
+      }
+    }
+    return configSet;
+  }
+
+  /**
+   * Getting the set of the ignored configurations
+   * @param configuration The original configuration
+   * @return The list of the configuration values to hide
+   */
+  public static Set<String> getIgnoreSet(Configuration configuration) {
+    return getConfigAsSet(configuration, ConfVars.HIVE_CONF_IGNORE_LIST.varname);
+  }
+
+  /**
    * Getting the set of the hidden configurations
    * @param configuration The original configuration
    * @return The list of the configuration values to hide
    */
   public static Set<String> getHiddenSet(Configuration configuration) {
-    Set<String> hiddenSet = new HashSet<String>();
-    String hiddenListStr = HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST);
-    if (hiddenListStr != null) {
-      for (String entry : hiddenListStr.split(",")) {
-        hiddenSet.add(entry.trim());
-      }
-    }
-    return hiddenSet;
+    return getConfigAsSet(configuration, HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
   }
 
   /**

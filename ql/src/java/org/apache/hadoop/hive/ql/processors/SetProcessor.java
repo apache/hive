@@ -254,6 +254,12 @@ public class SetProcessor implements CommandProcessor {
         throw new IllegalArgumentException("hive configuration " + key + " does not exists.");
       }
     }
+    if (conf.isIgnoredConfig(key)) {
+      result = HiveConf.generateIgnoredConfigWarning(key);
+      ss.out.println(result);
+      LOG.warn(result);
+      return result;
+    }
     conf.verifyAndSet(key, value);
     if (HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname.equals(key)) {
       if ("mr".equals(value)) {
