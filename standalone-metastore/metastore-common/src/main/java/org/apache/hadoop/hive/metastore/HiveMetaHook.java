@@ -177,4 +177,12 @@ public interface HiveMetaHook {
   default boolean createHMSTableInHook() {
     return false;
   }
+
+  /**
+   *  Set storage handler specific table properties
+   * @param table
+   */
+  default void postGetTable(Table table) {
+    // Do nothing
+  }
 }
