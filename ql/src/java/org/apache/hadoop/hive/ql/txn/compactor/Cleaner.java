@@ -103,6 +103,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
+    checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, TimeUnit.MILLISECONDS);
     replChangeManager = ReplChangeManager.getInstance(conf);
     cleanerExecutor = CompactorUtil.createExecutorWithThreadFactory(
             conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_THREADS_NUM),
@@ -178,16 +179,7 @@ public class Cleaner extends MetaStoreCompactorThread {
         }
         // Now, go back to bed until it's time to do this again
         long elapsedTime = System.currentTimeMillis() - startedAt;
-        long threadSleepTime = getThreadSleepTime(elapsedTime, stop, CompactorUtil.CompactorThreadType.CLEANER);
-
-        if(threadSleepTime != -1 )  Thread.sleep(threadSleepTime);
-
-
-        if(elapsedTime < MAX_WARN_LOG_TIME){
-          LOG.debug("Cleaner loop took " + elapsedTime + " milli sec to finish.");
-        } else {
-          LOG.warn("Possible Cleaner slowdown, loop took "+ elapsedTime + " milli sec to finish.");
-        }
+        doPostLoopActions(elapsedTime, CompactorThreadType.CLEANER);
       } while (!stop.get());
     } catch (InterruptedException ie) {
       LOG.error("Compactor cleaner thread interrupted, exiting " +

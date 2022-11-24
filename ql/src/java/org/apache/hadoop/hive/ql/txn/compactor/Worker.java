@@ -128,13 +128,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         }
         Instant loopEndTime = Instant.now();
         Duration timeElapsed = Duration.between(loopStartTime, loopEndTime);
-
-        if(timeElapsed.toMillis() < MAX_WARN_LOG_TIME){
-          LOG.debug("Worker loop took " + timeElapsed + " milli sec to finish.");
-        } else {
-          LOG.warn("Possible Worker slowdown, loop took "+ timeElapsed + "milli sec to finish.");
-        }
+        doPostLoopActions(timeElapsed.toMillis(), CompactorThreadType.WORKER);
       } while (!stop.get());
+    } catch (Throwable t) {
+      LOG.error("Caught an exception in the main loop of compactor worker, exiting.", t);
     } finally {
       if (executor != null) {
         executor.shutdownNow();
@@ -148,6 +145,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
+    checkInterval = 0;
     this.workerName = getWorkerId();
     setName(workerName);
   }

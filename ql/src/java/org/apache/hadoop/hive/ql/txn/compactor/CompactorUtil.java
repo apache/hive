@@ -35,7 +35,6 @@ import static java.lang.String.format;
 public class CompactorUtil {
   public static final String COMPACTOR = "compactor";
 
-  public enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
   /**
    * List of accepted properties for defining the compactor's job queue.
    *
