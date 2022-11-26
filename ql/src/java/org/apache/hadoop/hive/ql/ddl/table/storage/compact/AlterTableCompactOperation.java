@@ -127,7 +127,9 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
         context.getConsole().printInfo("Interrupted while waiting for compaction with id=" + resp.getId());
         break;
       }
-      ShowCompactRequest request = new ShowCompactRequest(resp.getId());
+      ShowCompactRequest request = new ShowCompactRequest();
+      request.setId(resp.getId());
+      
       ShowCompactResponse compaction = context.getDb().showCompactions(request);
       if (compaction.getCompactsSize() == 1) {
         ShowCompactResponseElement comp = compaction.getCompacts().get(0);

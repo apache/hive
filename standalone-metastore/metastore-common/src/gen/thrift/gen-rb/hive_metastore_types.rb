@@ -4670,20 +4670,16 @@ class ShowCompactRequest
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
     POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true},
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname', :optional => true},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename', :optional => true},
     PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
-    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::CompactionType},
-    STATE => {:type => ::Thrift::Types::STRING, :name => 'state'}
+    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :optional => true, :enum_class => ::CompactionType},
+    STATE => {:type => ::Thrift::Types::STRING, :name => 'state', :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbname is unset!') unless @dbname
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablename is unset!') unless @tablename
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field type is unset!') unless @type
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field state is unset!') unless @state
     unless @type.nil? || ::CompactionType::VALID_VALUES.include?(@type)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
     end
