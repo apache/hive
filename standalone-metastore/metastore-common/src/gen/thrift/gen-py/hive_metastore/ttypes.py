@@ -16205,14 +16205,6 @@ class ShowCompactRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
-        if self.dbname is None:
-            raise TProtocolException(message='Required field dbname is unset!')
-        if self.tablename is None:
-            raise TProtocolException(message='Required field tablename is unset!')
-        if self.type is None:
-            raise TProtocolException(message='Required field type is unset!')
-        if self.state is None:
-            raise TProtocolException(message='Required field state is unset!')
         return
 
     def __repr__(self):

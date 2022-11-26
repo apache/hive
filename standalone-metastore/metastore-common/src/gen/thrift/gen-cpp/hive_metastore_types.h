@@ -11155,10 +11155,14 @@ void swap(CompactionResponse &a, CompactionResponse &b);
 std::ostream& operator<<(std::ostream& out, const CompactionResponse& obj);
 
 typedef struct _ShowCompactRequest__isset {
-  _ShowCompactRequest__isset() : id(false), poolName(false), partitionname(false) {}
+  _ShowCompactRequest__isset() : id(false), poolName(false), dbname(false), tablename(false), partitionname(false), type(false), state(false) {}
   bool id :1;
   bool poolName :1;
+  bool dbname :1;
+  bool tablename :1;
   bool partitionname :1;
+  bool type :1;
+  bool state :1;
 } _ShowCompactRequest__isset;
 
 class ShowCompactRequest : public virtual ::apache::thrift::TBase {
@@ -11215,17 +11219,25 @@ class ShowCompactRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.poolName && !(poolName == rhs.poolName))
       return false;
-    if (!(dbname == rhs.dbname))
+    if (__isset.dbname != rhs.__isset.dbname)
       return false;
-    if (!(tablename == rhs.tablename))
+    else if (__isset.dbname && !(dbname == rhs.dbname))
+      return false;
+    if (__isset.tablename != rhs.__isset.tablename)
+      return false;
+    else if (__isset.tablename && !(tablename == rhs.tablename))
       return false;
     if (__isset.partitionname != rhs.__isset.partitionname)
       return false;
     else if (__isset.partitionname && !(partitionname == rhs.partitionname))
       return false;
-    if (!(type == rhs.type))
+    if (__isset.type != rhs.__isset.type)
       return false;
-    if (!(state == rhs.state))
+    else if (__isset.type && !(type == rhs.type))
+      return false;
+    if (__isset.state != rhs.__isset.state)
+      return false;
+    else if (__isset.state && !(state == rhs.state))
       return false;
     return true;
   }

@@ -28131,10 +28131,12 @@ __isset.poolName = true;
 
 void ShowCompactRequest::__set_dbname(const std::string& val) {
   this->dbname = val;
+__isset.dbname = true;
 }
 
 void ShowCompactRequest::__set_tablename(const std::string& val) {
   this->tablename = val;
+__isset.tablename = true;
 }
 
 void ShowCompactRequest::__set_partitionname(const std::string& val) {
@@ -28144,10 +28146,12 @@ __isset.partitionname = true;
 
 void ShowCompactRequest::__set_type(const CompactionType::type val) {
   this->type = val;
+__isset.type = true;
 }
 
 void ShowCompactRequest::__set_state(const std::string& val) {
   this->state = val;
+__isset.state = true;
 }
 std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj)
 {
@@ -28168,10 +28172,6 @@ uint32_t ShowCompactRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
 
   using ::apache::thrift::protocol::TProtocolException;
 
-  bool isset_dbname = false;
-  bool isset_tablename = false;
-  bool isset_type = false;
-  bool isset_state = false;
 
   while (true)
   {
@@ -28200,7 +28200,7 @@ uint32_t ShowCompactRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
       case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->dbname);
-          isset_dbname = true;
+          this->__isset.dbname = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -28208,7 +28208,7 @@ uint32_t ShowCompactRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
       case 4:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->tablename);
-          isset_tablename = true;
+          this->__isset.tablename = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -28226,7 +28226,7 @@ uint32_t ShowCompactRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
           int32_t ecast995;
           xfer += iprot->readI32(ecast995);
           this->type = static_cast<CompactionType::type>(ecast995);
-          isset_type = true;
+          this->__isset.type = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -28234,7 +28234,7 @@ uint32_t ShowCompactRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
       case 7:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->state);
-          isset_state = true;
+          this->__isset.state = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -28248,14 +28248,6 @@ uint32_t ShowCompactRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
 
   xfer += iprot->readStructEnd();
 
-  if (!isset_dbname)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_tablename)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_type)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
-  if (!isset_state)
-    throw TProtocolException(TProtocolException::INVALID_DATA);
   return xfer;
 }
 
@@ -28274,27 +28266,31 @@ uint32_t ShowCompactRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeString(this->poolName);
     xfer += oprot->writeFieldEnd();
   }
-  xfer += oprot->writeFieldBegin("dbname", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString(this->dbname);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("tablename", ::apache::thrift::protocol::T_STRING, 4);
-  xfer += oprot->writeString(this->tablename);
-  xfer += oprot->writeFieldEnd();
-
+  if (this->__isset.dbname) {
+    xfer += oprot->writeFieldBegin("dbname", ::apache::thrift::protocol::T_STRING, 3);
+    xfer += oprot->writeString(this->dbname);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.tablename) {
+    xfer += oprot->writeFieldBegin("tablename", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->tablename);
+    xfer += oprot->writeFieldEnd();
+  }
   if (this->__isset.partitionname) {
     xfer += oprot->writeFieldBegin("partitionname", ::apache::thrift::protocol::T_STRING, 5);
     xfer += oprot->writeString(this->partitionname);
     xfer += oprot->writeFieldEnd();
   }
-  xfer += oprot->writeFieldBegin("type", ::apache::thrift::protocol::T_I32, 6);
-  xfer += oprot->writeI32(static_cast<int32_t>(this->type));
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("state", ::apache::thrift::protocol::T_STRING, 7);
-  xfer += oprot->writeString(this->state);
-  xfer += oprot->writeFieldEnd();
-
+  if (this->__isset.type) {
+    xfer += oprot->writeFieldBegin("type", ::apache::thrift::protocol::T_I32, 6);
+    xfer += oprot->writeI32(static_cast<int32_t>(this->type));
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.state) {
+    xfer += oprot->writeFieldBegin("state", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeString(this->state);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -28338,11 +28334,11 @@ void ShowCompactRequest::printTo(std::ostream& out) const {
   out << "ShowCompactRequest(";
   out << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ", " << "poolName="; (__isset.poolName ? (out << to_string(poolName)) : (out << "<null>"));
-  out << ", " << "dbname=" << to_string(dbname);
-  out << ", " << "tablename=" << to_string(tablename);
+  out << ", " << "dbname="; (__isset.dbname ? (out << to_string(dbname)) : (out << "<null>"));
+  out << ", " << "tablename="; (__isset.tablename ? (out << to_string(tablename)) : (out << "<null>"));
   out << ", " << "partitionname="; (__isset.partitionname ? (out << to_string(partitionname)) : (out << "<null>"));
-  out << ", " << "type=" << to_string(type);
-  out << ", " << "state=" << to_string(state);
+  out << ", " << "type="; (__isset.type ? (out << to_string(type)) : (out << "<null>"));
+  out << ", " << "state="; (__isset.state ? (out << to_string(state)) : (out << "<null>"));
   out << ")";
 }
 

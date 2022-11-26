@@ -33,12 +33,12 @@ class ShowCompactRequest
         ),
         3 => array(
             'var' => 'dbname',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
         4 => array(
             'var' => 'tablename',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
         5 => array(
@@ -48,13 +48,13 @@ class ShowCompactRequest
         ),
         6 => array(
             'var' => 'type',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::I32,
             'class' => '\metastore\CompactionType',
         ),
         7 => array(
             'var' => 'state',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
     );

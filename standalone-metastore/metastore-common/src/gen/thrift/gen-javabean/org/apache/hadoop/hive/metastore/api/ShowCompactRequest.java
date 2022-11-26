@@ -24,11 +24,11 @@ package org.apache.hadoop.hive.metastore.api;
 
   private long id; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String poolName; // optional
-  private @org.apache.thrift.annotation.Nullable java.lang.String dbname; // required
-  private @org.apache.thrift.annotation.Nullable java.lang.String tablename; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String dbname; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String tablename; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String partitionname; // optional
-  private @org.apache.thrift.annotation.Nullable CompactionType type; // required
-  private @org.apache.thrift.annotation.Nullable java.lang.String state; // required
+  private @org.apache.thrift.annotation.Nullable CompactionType type; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String state; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -115,7 +115,7 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __ID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.ID,_Fields.POOL_NAME,_Fields.PARTITIONNAME};
+  private static final _Fields optionals[] = {_Fields.ID,_Fields.POOL_NAME,_Fields.DBNAME,_Fields.TABLENAME,_Fields.PARTITIONNAME,_Fields.TYPE,_Fields.STATE};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -123,39 +123,21 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.POOL_NAME, new org.apache.thrift.meta_data.FieldMetaData("poolName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TABLENAME, new org.apache.thrift.meta_data.FieldMetaData("tablename", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.TABLENAME, new org.apache.thrift.meta_data.FieldMetaData("tablename", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PARTITIONNAME, new org.apache.thrift.meta_data.FieldMetaData("partitionname", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, CompactionType.class)));
-    tmpMap.put(_Fields.STATE, new org.apache.thrift.meta_data.FieldMetaData("state", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.STATE, new org.apache.thrift.meta_data.FieldMetaData("state", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ShowCompactRequest.class, metaDataMap);
   }
 
-  public ShowCompactRequest(long id) {
-    this.id = id;
-    setIdIsSet(true);
-  }
-
   public ShowCompactRequest() {
-  }
-
-  public ShowCompactRequest(
-    java.lang.String dbname,
-    java.lang.String tablename,
-    CompactionType type,
-    java.lang.String state)
-  {
-    this();
-    this.dbname = dbname;
-    this.tablename = tablename;
-    this.type = type;
-    this.state = state;
   }
 
   /**
@@ -716,22 +698,26 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
-    if (!first) sb.append(", ");
-    sb.append("dbname:");
-    if (this.dbname == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.dbname);
+    if (isSetDbname()) {
+      if (!first) sb.append(", ");
+      sb.append("dbname:");
+      if (this.dbname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dbname);
+      }
+      first = false;
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("tablename:");
-    if (this.tablename == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.tablename);
+    if (isSetTablename()) {
+      if (!first) sb.append(", ");
+      sb.append("tablename:");
+      if (this.tablename == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tablename);
+      }
+      first = false;
     }
-    first = false;
     if (isSetPartitionname()) {
       if (!first) sb.append(", ");
       sb.append("partitionname:");
@@ -742,44 +728,32 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
-    if (!first) sb.append(", ");
-    sb.append("type:");
-    if (this.type == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.type);
+    if (isSetType()) {
+      if (!first) sb.append(", ");
+      sb.append("type:");
+      if (this.type == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.type);
+      }
+      first = false;
     }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("state:");
-    if (this.state == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.state);
+    if (isSetState()) {
+      if (!first) sb.append(", ");
+      sb.append("state:");
+      if (this.state == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.state);
+      }
+      first = false;
     }
-    first = false;
     sb.append(")");
     return sb.toString();
   }
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetDbname()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'dbname' is unset! Struct:" + toString());
-    }
-
-    if (!isSetTablename()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'tablename' is unset! Struct:" + toString());
-    }
-
-    if (!isSetType()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'type' is unset! Struct:" + toString());
-    }
-
-    if (!isSetState()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'state' is unset! Struct:" + toString());
-    }
-
     // check for sub-struct validity
   }
 
@@ -901,14 +875,18 @@ package org.apache.hadoop.hive.metastore.api;
         }
       }
       if (struct.dbname != null) {
-        oprot.writeFieldBegin(DBNAME_FIELD_DESC);
-        oprot.writeString(struct.dbname);
-        oprot.writeFieldEnd();
+        if (struct.isSetDbname()) {
+          oprot.writeFieldBegin(DBNAME_FIELD_DESC);
+          oprot.writeString(struct.dbname);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.tablename != null) {
-        oprot.writeFieldBegin(TABLENAME_FIELD_DESC);
-        oprot.writeString(struct.tablename);
-        oprot.writeFieldEnd();
+        if (struct.isSetTablename()) {
+          oprot.writeFieldBegin(TABLENAME_FIELD_DESC);
+          oprot.writeString(struct.tablename);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.partitionname != null) {
         if (struct.isSetPartitionname()) {
@@ -918,14 +896,18 @@ package org.apache.hadoop.hive.metastore.api;
         }
       }
       if (struct.type != null) {
-        oprot.writeFieldBegin(TYPE_FIELD_DESC);
-        oprot.writeI32(struct.type.getValue());
-        oprot.writeFieldEnd();
+        if (struct.isSetType()) {
+          oprot.writeFieldBegin(TYPE_FIELD_DESC);
+          oprot.writeI32(struct.type.getValue());
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.state != null) {
-        oprot.writeFieldBegin(STATE_FIELD_DESC);
-        oprot.writeString(struct.state);
-        oprot.writeFieldEnd();
+        if (struct.isSetState()) {
+          oprot.writeFieldBegin(STATE_FIELD_DESC);
+          oprot.writeString(struct.state);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -944,10 +926,6 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, ShowCompactRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      oprot.writeString(struct.dbname);
-      oprot.writeString(struct.tablename);
-      oprot.writeI32(struct.type.getValue());
-      oprot.writeString(struct.state);
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetId()) {
         optionals.set(0);
@@ -955,33 +933,49 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetPoolName()) {
         optionals.set(1);
       }
-      if (struct.isSetPartitionname()) {
+      if (struct.isSetDbname()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetTablename()) {
+        optionals.set(3);
+      }
+      if (struct.isSetPartitionname()) {
+        optionals.set(4);
+      }
+      if (struct.isSetType()) {
+        optionals.set(5);
+      }
+      if (struct.isSetState()) {
+        optionals.set(6);
+      }
+      oprot.writeBitSet(optionals, 7);
       if (struct.isSetId()) {
         oprot.writeI64(struct.id);
       }
       if (struct.isSetPoolName()) {
         oprot.writeString(struct.poolName);
       }
+      if (struct.isSetDbname()) {
+        oprot.writeString(struct.dbname);
+      }
+      if (struct.isSetTablename()) {
+        oprot.writeString(struct.tablename);
+      }
       if (struct.isSetPartitionname()) {
         oprot.writeString(struct.partitionname);
+      }
+      if (struct.isSetType()) {
+        oprot.writeI32(struct.type.getValue());
+      }
+      if (struct.isSetState()) {
+        oprot.writeString(struct.state);
       }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ShowCompactRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      struct.dbname = iprot.readString();
-      struct.setDbnameIsSet(true);
-      struct.tablename = iprot.readString();
-      struct.setTablenameIsSet(true);
-      struct.type = org.apache.hadoop.hive.metastore.api.CompactionType.findByValue(iprot.readI32());
-      struct.setTypeIsSet(true);
-      struct.state = iprot.readString();
-      struct.setStateIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      java.util.BitSet incoming = iprot.readBitSet(7);
       if (incoming.get(0)) {
         struct.id = iprot.readI64();
         struct.setIdIsSet(true);
@@ -991,8 +985,24 @@ package org.apache.hadoop.hive.metastore.api;
         struct.setPoolNameIsSet(true);
       }
       if (incoming.get(2)) {
+        struct.dbname = iprot.readString();
+        struct.setDbnameIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.tablename = iprot.readString();
+        struct.setTablenameIsSet(true);
+      }
+      if (incoming.get(4)) {
         struct.partitionname = iprot.readString();
         struct.setPartitionnameIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.type = org.apache.hadoop.hive.metastore.api.CompactionType.findByValue(iprot.readI32());
+        struct.setTypeIsSet(true);
+      }
+      if (incoming.get(6)) {
+        struct.state = iprot.readString();
+        struct.setStateIsSet(true);
       }
     }
   }
