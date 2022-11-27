@@ -128,8 +128,7 @@ public class Udf extends GenericUDF {
     for (int i = 1; i < arguments.length; i++) {
       String name = ":" + i;
       Object inputObject = arguments[i].get();
-      switch (argumentsOI[i].getCategory()) {
-      case PRIMITIVE:
+      if (argumentsOI[i].getCategory() == ObjectInspector.Category.PRIMITIVE) {
         PrimitiveObjectInspector poi = (PrimitiveObjectInspector) argumentsOI[i];
         switch (poi.getPrimitiveCategory()) {
         case BOOLEAN:
@@ -138,49 +137,49 @@ public class Udf extends GenericUDF {
           if (booleanValue != null) {
             exec.setVariable(name, new Var(booleanValue));
           }
-          return;
+          break;
         case SHORT:
           Short shortValue = (Short) ((ShortObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
           if (shortValue != null) {
-            exec.setVariable(name, new Var(new Long(shortValue)));
+            exec.setVariable(name, new Var(shortValue.longValue()));
           }
-          return;
+          break;
         case INT:
           Integer intValue = (Integer) ((IntObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
           if (intValue != null) {
-            exec.setVariable(name, new Var(new Long(intValue)));
+            exec.setVariable(name, new Var(intValue.longValue()));
           }
-          return;
+          break;
         case LONG:
           Long longValue = (Long) ((LongObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
           if (longValue != null) {
             exec.setVariable(name, new Var(longValue));
           }
-          return;
+          break;
         case FLOAT:
           Float floatValue = (Float) ((FloatObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
           if (floatValue != null) {
-            exec.setVariable(name, new Var(new Double(floatValue.doubleValue())));
+            exec.setVariable(name, new Var(floatValue.doubleValue()));
           }
-          return;
+          break;
         case DOUBLE:
           Double doubleValue = (Double) ((DoubleObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
           if (doubleValue != null) {
             exec.setVariable(name, new Var(doubleValue));
           }
-          return;
+          break;
         case STRING:
           String strValue = ((StringObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
           if (strValue != null) {
             exec.setVariable(name, strValue);
           }
-          return;
+          break;
         case DATE:
           Date dateValue = ((DateObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
           if (dateValue != null) {
             exec.setVariable(name, new Var(java.sql.Date.valueOf(dateValue.toString())));
           }
-          return;
+          break;
         case TIMESTAMP:
           Timestamp timestampValue = ((TimestampObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
           if (timestampValue != null) {
@@ -188,29 +187,29 @@ public class Udf extends GenericUDF {
             timestamp.setNanos(timestampValue.getNanos());
             exec.setVariable(name, new Var(timestamp, 0));
           }
-          return;
+          break;
         case DECIMAL:
           HiveDecimal decimalValue = ((HiveDecimalObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
           if (decimalValue != null) {
             exec.setVariable(name, new Var(decimalValue.bigDecimalValue()));
           }
-          return;
+          break;
         case VARCHAR:
           HiveVarchar varcharValue = ((HiveVarcharObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
           if (varcharValue != null) {
             exec.setVariable(name, varcharValue.getValue());
           }
-          return;
+          break;
         case CHAR:
           HiveChar charValue = ((HiveCharObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
           if (charValue != null) {
             exec.setVariable(name, charValue.getStrippedValue());
           }
-          return;
+          break;
         default:
           exec.setVariableToNull(name);
         }
-      default:
+      } else {
         exec.setVariableToNull(name);
       }
     }
