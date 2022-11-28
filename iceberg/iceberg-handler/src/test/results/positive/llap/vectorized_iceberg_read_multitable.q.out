@@ -17,10 +17,12 @@ POSTHOOK: Output: default@lineitem
 POSTHOOK: Lineage: lineitem.l_discount SCRIPT []
 POSTHOOK: Lineage: lineitem.l_orderkey SCRIPT []
 PREHOOK: query: create external table customer_ice(c_custkey int) STORED BY ICEBERG stored as orc
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@customer_ice
 POSTHOOK: query: create external table customer_ice(c_custkey int) STORED BY ICEBERG stored as orc
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@customer_ice
@@ -76,10 +78,12 @@ POSTHOOK: Input: default@orders
 #### A masked pattern was here ####
 -99.20
 PREHOOK: query: create external table lineitem_ice(l_discount decimal(15,2), l_orderkey int) STORED BY ICEBERG stored as orc
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@lineitem_ice
 POSTHOOK: query: create external table lineitem_ice(l_discount decimal(15,2), l_orderkey int) STORED BY ICEBERG stored as orc
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@lineitem_ice
