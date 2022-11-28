@@ -128,90 +128,95 @@ public class Udf extends GenericUDF {
     for (int i = 1; i < arguments.length; i++) {
       String name = ":" + i;
       Object inputObject = arguments[i].get();
-      if (argumentsOI[i].getCategory() == ObjectInspector.Category.PRIMITIVE) {
-        PrimitiveObjectInspector poi = (PrimitiveObjectInspector) argumentsOI[i];
-        switch (poi.getPrimitiveCategory()) {
-        case BOOLEAN:
-          Boolean booleanValue =
-              (Boolean) ((BooleanObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
-          if (booleanValue != null) {
-            exec.setVariable(name, new Var(booleanValue));
-          }
-          break;
-        case SHORT:
-          Short shortValue = (Short) ((ShortObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
-          if (shortValue != null) {
-            exec.setVariable(name, new Var(shortValue.longValue()));
-          }
-          break;
-        case INT:
-          Integer intValue = (Integer) ((IntObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
-          if (intValue != null) {
-            exec.setVariable(name, new Var(intValue.longValue()));
-          }
-          break;
-        case LONG:
-          Long longValue = (Long) ((LongObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
-          if (longValue != null) {
-            exec.setVariable(name, new Var(longValue));
-          }
-          break;
-        case FLOAT:
-          Float floatValue = (Float) ((FloatObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
-          if (floatValue != null) {
-            exec.setVariable(name, new Var(floatValue.doubleValue()));
-          }
-          break;
-        case DOUBLE:
-          Double doubleValue = (Double) ((DoubleObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
-          if (doubleValue != null) {
-            exec.setVariable(name, new Var(doubleValue));
-          }
-          break;
-        case STRING:
-          String strValue = ((StringObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
-          if (strValue != null) {
-            exec.setVariable(name, strValue);
-          }
-          break;
-        case DATE:
-          Date dateValue = ((DateObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
-          if (dateValue != null) {
-            exec.setVariable(name, new Var(java.sql.Date.valueOf(dateValue.toString())));
-          }
-          break;
-        case TIMESTAMP:
-          Timestamp timestampValue = ((TimestampObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
-          if (timestampValue != null) {
-            java.sql.Timestamp timestamp = java.sql.Timestamp.valueOf(timestampValue.toString());
-            timestamp.setNanos(timestampValue.getNanos());
-            exec.setVariable(name, new Var(timestamp, 0));
-          }
-          break;
-        case DECIMAL:
-          HiveDecimal decimalValue = ((HiveDecimalObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
-          if (decimalValue != null) {
-            exec.setVariable(name, new Var(decimalValue.bigDecimalValue()));
-          }
-          break;
-        case VARCHAR:
-          HiveVarchar varcharValue = ((HiveVarcharObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
-          if (varcharValue != null) {
-            exec.setVariable(name, varcharValue.getValue());
-          }
-          break;
-        case CHAR:
-          HiveChar charValue = ((HiveCharObjectInspector) argumentsOI[i]).getPrimitiveJavaObject(inputObject);
-          if (charValue != null) {
-            exec.setVariable(name, charValue.getStrippedValue());
-          }
-          break;
-        default:
-          exec.setVariableToNull(name);
-        }
+      ObjectInspector objectInspector = argumentsOI[i];
+      if (objectInspector.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+        setParameterForPrimitiveTypeArgument(name, inputObject, objectInspector);
       } else {
         exec.setVariableToNull(name);
       }
+    }
+  }
+
+  private void setParameterForPrimitiveTypeArgument(String name, Object inputObject, ObjectInspector objectInspector) {
+    PrimitiveObjectInspector.PrimitiveCategory primitiveCategory =
+        ((PrimitiveObjectInspector) objectInspector).getPrimitiveCategory();
+    switch (primitiveCategory) {
+    case BOOLEAN:
+      Boolean booleanValue = (Boolean) ((BooleanObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (booleanValue != null) {
+        exec.setVariable(name, new Var(booleanValue));
+      }
+      break;
+    case SHORT:
+      Short shortValue = (Short) ((ShortObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (shortValue != null) {
+        exec.setVariable(name, new Var(shortValue.longValue()));
+      }
+      break;
+    case INT:
+      Integer intValue = (Integer) ((IntObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (intValue != null) {
+        exec.setVariable(name, new Var(intValue.longValue()));
+      }
+      break;
+    case LONG:
+      Long longValue = (Long) ((LongObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (longValue != null) {
+        exec.setVariable(name, new Var(longValue));
+      }
+      break;
+    case FLOAT:
+      Float floatValue = (Float) ((FloatObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (floatValue != null) {
+        exec.setVariable(name, new Var(floatValue.doubleValue()));
+      }
+      break;
+    case DOUBLE:
+      Double doubleValue = (Double) ((DoubleObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (doubleValue != null) {
+        exec.setVariable(name, new Var(doubleValue));
+      }
+      break;
+    case STRING:
+      String strValue = ((StringObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (strValue != null) {
+        exec.setVariable(name, strValue);
+      }
+      break;
+    case DATE:
+      Date dateValue = ((DateObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (dateValue != null) {
+        exec.setVariable(name, new Var(java.sql.Date.valueOf(dateValue.toString())));
+      }
+      break;
+    case TIMESTAMP:
+      Timestamp timestampValue = ((TimestampObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (timestampValue != null) {
+        java.sql.Timestamp timestamp = java.sql.Timestamp.valueOf(timestampValue.toString());
+        timestamp.setNanos(timestampValue.getNanos());
+        exec.setVariable(name, new Var(timestamp, 0));
+      }
+      break;
+    case DECIMAL:
+      HiveDecimal decimalValue = ((HiveDecimalObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (decimalValue != null) {
+        exec.setVariable(name, new Var(decimalValue.bigDecimalValue()));
+      }
+      break;
+    case VARCHAR:
+      HiveVarchar varcharValue = ((HiveVarcharObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (varcharValue != null) {
+        exec.setVariable(name, varcharValue.getValue());
+      }
+      break;
+    case CHAR:
+      HiveChar charValue = ((HiveCharObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (charValue != null) {
+        exec.setVariable(name, charValue.getStrippedValue());
+      }
+      break;
+    default:
+      exec.setVariableToNull(name);
     }
   }
 
