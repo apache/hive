@@ -2473,13 +2473,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // Setup
     QueryCompactor qc = new QueryCompactor() {
       @Override
-      void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-                         ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
-      }
-
-      @Override
-      protected void commitCompaction(String dest, String tmpTableName, HiveConf conf, ValidWriteIdList actualWriteIds,
-                                      long compactorTxnId) throws IOException, HiveException {
+      public void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
+               ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
       }
     };
     StorageDescriptor sdMock = mock(StorageDescriptor.class);

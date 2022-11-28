@@ -38,8 +38,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
-import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -83,7 +81,6 @@ import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.apache.hadoop.mapreduce.security.TokenCache;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.Ref;
-import org.apache.parquet.Strings;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,15 +91,13 @@ import org.slf4j.LoggerFactory;
  * and output formats, which are in ql.  ql depends on metastore and we can't have a circular
  * dependency.
  */
-public class MRCompactor extends Compactor {
+public class MRCompactor implements Compactor {
 
   static final private String CLASS_NAME = MRCompactor.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-
   static final private String INPUT_FORMAT_CLASS_NAME = "hive.compactor.input.format.class.name";
   static final private String OUTPUT_FORMAT_CLASS_NAME = "hive.compactor.output.format.class.name";
   static final private String TMP_LOCATION = "hive.compactor.input.tmp.dir";
-  static final private String FINAL_LOCATION = "hive.compactor.input.dir";
   static final private String MIN_TXN = "hive.compactor.txn.min";
   static final private String MAX_TXN = "hive.compactor.txn.max";
   static final private String IS_MAJOR = "hive.compactor.is.major";
@@ -123,15 +118,15 @@ public class MRCompactor extends Compactor {
   }
 
    @Override
-  void runCompaction(HiveConf conf, Table table, Partition partition, StorageDescriptor sd,
-                     ValidWriteIdList writeIds, CompactionInfo ci, AcidDirectory dir)
+  public void run(HiveConf conf, Table table, Partition partition, StorageDescriptor sd,
+                  ValidWriteIdList writeIds, CompactionInfo ci, AcidDirectory dir)
        throws IOException, HiveException, InterruptedException {
     if (ci.runAs.equals(System.getProperty("user.name"))) {
-      run(conf, table, sd, writeIds, ci, msc, dir);
+      run(conf, table, sd, writeIds, ci, dir);
     } else {
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs, UserGroupInformation.getLoginUser());
       ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
-        run(conf, table, sd, writeIds, ci, msc, dir);
+        run(conf, table, sd, writeIds, ci, dir);
         return null;
       });
       try {
@@ -238,7 +233,7 @@ public class MRCompactor extends Compactor {
    * @throws java.io.IOException if the job fails
    */
   public void run(HiveConf conf, Table t, StorageDescriptor sd, ValidWriteIdList writeIds,
-           CompactionInfo ci, IMetaStoreClient msc, AcidDirectory dir) throws IOException {
+           CompactionInfo ci, AcidDirectory dir) throws IOException {
 
     String jobName = ci.workerId + "-compactor-" + ci.getFullPartitionName();
     JobConf job = createBaseJobConf(conf, jobName, t, sd, writeIds, ci);
@@ -859,17 +854,7 @@ public class MRCompactor extends Compactor {
         deleteEventWriter.close(false);
       }
     }
-    static long getCompactorTxnId(Configuration jobConf) {
-      String snapshot = jobConf.get(ValidTxnList.VALID_TXNS_KEY);
-      if(Strings.isNullOrEmpty(snapshot)) {
-        throw new IllegalStateException(ValidTxnList.VALID_TXNS_KEY + " not found for writing to "
-            + jobConf.get(FINAL_LOCATION));
-      }
-      ValidTxnList validTxnList = new ValidReadTxnList();
-      validTxnList.readFromString(snapshot);
-      //this is id of the current (compactor) txn
-      return validTxnList.getHighWatermark();
-    }
+
     private RecordWriter getWriter(Reporter reporter, ObjectInspector inspector,
                            int bucket) throws IOException {
       if (writer == null) {
@@ -883,7 +868,7 @@ public class MRCompactor extends Compactor {
             .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE))
             .bucket(bucket)
             .statementId(-1)//setting statementId == -1 makes compacted delta files use
-            .visibilityTxnId(getCompactorTxnId(jobConf));
+            .visibilityTxnId(QueryCompactor.Util.getCompactorTxnId(jobConf));
       //delta_xxxx_yyyy format
 
         // Instantiate the underlying output format
@@ -922,7 +907,7 @@ public class MRCompactor extends Compactor {
                 .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE)).bucket(bucket)
                 .statementId(-1)//setting statementId == -1 makes compacted delta files use
                 // delta_xxxx_yyyy format
-                .visibilityTxnId(getCompactorTxnId(jobConf));
+                .visibilityTxnId(QueryCompactor.Util.getCompactorTxnId(jobConf));
 
         // Instantiate the underlying output format
         @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
@@ -1041,7 +1026,7 @@ public class MRCompactor extends Compactor {
             .maximumWriteId(conf.getLong(MAX_TXN, Long.MIN_VALUE))
             .bucket(0)
             .statementId(-1)
-            .visibilityTxnId(CompactorMap.getCompactorTxnId(conf));
+            .visibilityTxnId(QueryCompactor.Util.getCompactorTxnId(conf));
         Path newDeltaDir = AcidUtils.createFilename(finalLocation, options).getParent();
         LOG.info(context.getJobID() + ": " + tmpLocation +
             " not found.  Assuming 0 splits.  Creating " + newDeltaDir);

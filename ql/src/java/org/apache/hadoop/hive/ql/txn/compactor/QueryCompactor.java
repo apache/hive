@@ -18,13 +18,17 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.DriverUtils;
@@ -34,6 +38,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.parquet.Strings;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +52,7 @@ import java.util.stream.Stream;
 /**
  * Common interface for query based compactions.
  */
-abstract class QueryCompactor extends Compactor {
+abstract class QueryCompactor implements Compactor {
 
   private static final Logger LOG = LoggerFactory.getLogger(QueryCompactor.class.getName());
   private static final String COMPACTOR_PREFIX = "compactor.";
@@ -63,8 +68,8 @@ abstract class QueryCompactor extends Compactor {
    * @throws IOException failed to execute file system operation.
    * @throws HiveException failed to execute file operation within hive.
    */
-  protected abstract void commitCompaction(String dest, String tmpTableName, HiveConf conf,
-      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException;
+  protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
+      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {}
 
   /**
    * Run all the queries which performs the compaction.
@@ -89,12 +94,13 @@ abstract class QueryCompactor extends Compactor {
       conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
     }
     Util.disableLlapCaching(conf);
+    conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON, false);
     Util.overrideConfProps(conf, compactionInfo, tblProperties);
     String user = compactionInfo.runAs;
     SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
-    long compactorTxnId = MRCompactor.CompactorMap.getCompactorTxnId(conf);
+    long compactorTxnId = Util.getCompactorTxnId(conf);
     try {
       for (String query : createQueries) {
         try {
@@ -145,6 +151,10 @@ abstract class QueryCompactor extends Compactor {
     }
   }
 
+  protected String getTempTableName(Table table) {
+    return table.getDbName() + ".tmp_compactor_" + table.getTableName() + "_" + System.currentTimeMillis();
+  }
+
   /**
    * Call in case compaction failed. Removes the new empty compacted delta/base.
    * Cleaner would handle this later but clean up now just in case.
@@ -164,6 +174,18 @@ abstract class QueryCompactor extends Compactor {
    */
   static class Util {
 
+    static long getCompactorTxnId(Configuration jobConf) {
+      String snapshot = jobConf.get(ValidTxnList.VALID_TXNS_KEY);
+      if(Strings.isNullOrEmpty(snapshot)) {
+        throw new IllegalStateException(ValidTxnList.VALID_TXNS_KEY + " not found for writing to "
+            + jobConf.get(FINAL_LOCATION));
+      }
+      ValidTxnList validTxnList = new ValidReadTxnList();
+      validTxnList.readFromString(snapshot);
+      //this is id of the current (compactor) txn
+      return validTxnList.getHighWatermark();
+    }
+
     /**
      * Get the path of the base, delta, or delete delta directory that will be the final
      * destination of the files during compaction.
@@ -182,7 +204,7 @@ abstract class QueryCompactor extends Compactor {
         boolean writingBase, boolean createDeleteDelta, boolean bucket0, AcidDirectory directory) {
       long minWriteID = writingBase ? 1 : getMinWriteID(directory);
       long highWatermark = writeIds.getHighWatermark();
-      long compactorTxnId = MRCompactor.CompactorMap.getCompactorTxnId(conf);
+      long compactorTxnId = getCompactorTxnId(conf);
       AcidOutputFormat.Options options =
           new AcidOutputFormat.Options(conf).isCompressed(false).minimumWriteId(minWriteID)
               .maximumWriteId(highWatermark).statementId(-1).visibilityTxnId(compactorTxnId)

@@ -28,7 +28,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 import java.io.IOException;
 
-public abstract class Compactor {
+public interface Compactor {
+
+  String FINAL_LOCATION = "hive.compactor.input.dir";
 
   /**
    * Start a compaction.
@@ -41,8 +43,8 @@ public abstract class Compactor {
    * @param dir provides ACID directory layout information
    * @throws IOException compaction cannot be finished.
    */
-  abstract void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-                              ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir)
+  void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
+           ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir)
       throws IOException, HiveException, InterruptedException;
 
 }

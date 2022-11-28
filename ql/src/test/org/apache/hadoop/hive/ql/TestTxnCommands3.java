@@ -494,7 +494,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     }).when(mrCompactor).run(any(), any(), any(), any(), any(), any(), any());
 
     CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
-    when(mockedFactory.getQueryCompactor(any(), any(), any(), any())).thenReturn(mrCompactor);
+    when(mockedFactory.getCompactor(any(), any(), any(), any())).thenReturn(mrCompactor);
 
     Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(hiveConf);
@@ -551,7 +551,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     }).when(mrCompactor).run(any(), any(), any(), any(), any(), any(), any());
 
     CompactorFactory mockedFactory = Mockito.mock(CompactorFactory.class);
-    when(mockedFactory.getQueryCompactor(any(), any(), any(), any())).thenReturn(mrCompactor);
+    when(mockedFactory.getCompactor(any(), any(), any(), any())).thenReturn(mrCompactor);
 
     Worker worker = Mockito.spy(new Worker(mockedFactory));
     worker.setConf(hiveConf);

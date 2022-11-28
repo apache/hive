@@ -80,10 +80,6 @@ class CompactionQueryBuilder {
   private boolean isDeleteDelta; // for Alter in CRUD minor
 
   // internal use only, for legibility
-  private final boolean major;
-  private final boolean minor;
-  private final boolean rebalance;
-  private final boolean crud;
   private final boolean insertOnly;
   private final CompactionType compactionType;
 
@@ -188,7 +184,7 @@ class CompactionQueryBuilder {
    * If true, Create operations for CRUD minor compaction will result in a bucketed table.
    */
   CompactionQueryBuilder setBucketed(boolean bucketed) {
-    if(rebalance && bucketed) {
+    if(CompactionType.REBALANCE.equals(compactionType) && bucketed) {
       throw new IllegalArgumentException("Rebalance compaction is supported only on implicitly-bucketed tables!");
     }
     isBucketed = bucketed;
@@ -211,10 +207,10 @@ class CompactionQueryBuilder {
    * @param compactionType major or minor; crud or insert-only, e.g. CompactionType.MAJOR_CRUD.
    *                       Cannot be null.
    * @param operation query's Operation e.g. Operation.CREATE.
-   * @param resultTableName the name of the table we are running the operation on
+   * @param insertOnly Inidicated if the table is not full ACID but Insert-only (Micromanaged)
    * @throws IllegalArgumentException if compactionType is null
    */
-  CompactionQueryBuilder(CompactionType compactionType, Operation operation, boolean crud,
+  CompactionQueryBuilder(CompactionType compactionType, Operation operation, boolean insertOnly,
       String resultTableName) {
     if (compactionType == null) {
       throw new IllegalArgumentException("CompactionQueryBuilder.CompactionType cannot be null");
@@ -222,14 +218,10 @@ class CompactionQueryBuilder {
     this.compactionType = compactionType;
     this.operation = operation;
     this.resultTableName = resultTableName;
-    this.crud = crud;
-    insertOnly = !crud;
-    major = CompactionType.MAJOR.equals(compactionType);
-    minor = CompactionType.MINOR.equals(compactionType);
-    rebalance = CompactionType.REBALANCE.equals(compactionType);
+    this.insertOnly = insertOnly;
 
-    if(rebalance && !crud) {
-      throw new IllegalArgumentException("Rebalance compaction is supported only on ACID tables!");
+    if(CompactionType.REBALANCE.equals(compactionType) && insertOnly) {
+      throw new IllegalArgumentException("Rebalance compaction is supported only on full ACID tables!");
     }
   }
 
@@ -302,7 +294,9 @@ class CompactionQueryBuilder {
   private void buildSelectClauseForInsert(StringBuilder query) {
     // Need list of columns for major crud, mmmajor partitioned, mmminor
     List<FieldSchema> cols;
-    if (rebalance || major && crud || major && insertOnly && sourcePartition != null || minor && insertOnly) {
+    if (CompactionType.REBALANCE.equals(compactionType) ||
+        (CompactionType.MAJOR.equals(compactionType) && (!insertOnly || (insertOnly && sourcePartition != null))) ||
+        (CompactionType.MINOR.equals(compactionType) && insertOnly)) {
       if (sourceTab == null) {
         return; // avoid NPEs, don't throw an exception but skip this part of the query
       }
@@ -310,46 +304,53 @@ class CompactionQueryBuilder {
     } else {
       cols = null;
     }
-    if (rebalance) {
-      query.append("0, t2.writeId, t2.rowId / CEIL(numRows / ");
-      query.append(numberOfBuckets);
-      query.append("), t2.rowId, t2.writeId, t2.data from (select ");
-      query.append("count(ROW__ID.writeId) over() as numRows, ROW__ID.writeId as writeId, " +
-          "(row_number() OVER (order by ROW__ID.writeId ASC, ROW__ID.bucketId ASC, ROW__ID.rowId ASC)) -1 AS rowId, " +
-          "NAMED_STRUCT(");
-      for (int i = 0; i < cols.size(); ++i) {
-        query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', ")
-            .append(cols.get(i).getName());
-      }
-      query.append(") as data");
-    } else if (crud) {
-      if (major) {
-        query.append(
-            "validate_acid_sort_order(ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId), "
-                + "ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId, ROW__ID.writeId, "
-                + "NAMED_STRUCT(");
+    switch (compactionType) {
+      case REBALANCE: {
+        query.append("0, t2.writeId, t2.rowId / CEIL(numRows / ");
+        query.append(numberOfBuckets);
+        query.append("), t2.rowId, t2.writeId, t2.data from (select ");
+        query.append("count(ROW__ID.writeId) over() as numRows, ROW__ID.writeId as writeId, " +
+            "(row_number() OVER (order by ROW__ID.writeId ASC, ROW__ID.bucketId ASC, ROW__ID.rowId ASC)) -1 AS rowId, " +
+            "NAMED_STRUCT(");
         for (int i = 0; i < cols.size(); ++i) {
           query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', `")
               .append(cols.get(i).getName()).append("`");
         }
-        query.append(") ");
-      } else { //minor
-        query.append(
-            "`operation`, `originalTransaction`, `bucket`, `rowId`, `currentTransaction`, `row`");
+        query.append(") as data");
+        break;
       }
-    } else { // mm
-      if (major) {
-        if (sourcePartition != null) { //mmmajor and partitioned
+      case MAJOR: {
+        if (insertOnly) {
+          if (sourcePartition != null) { //mmmajor and partitioned
+            for (int i = 0; i < cols.size(); ++i) {
+              query.append(i == 0 ? "`" : ", `").append(cols.get(i).getName()).append("`");
+            }
+          } else { // mmmajor and unpartitioned
+            query.append("*");
+          }
+        } else {
+          query.append(
+              "validate_acid_sort_order(ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId), "
+                  + "ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId, ROW__ID.writeId, "
+                  + "NAMED_STRUCT(");
+          for (int i = 0; i < cols.size(); ++i) {
+            query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', ")
+                .append(cols.get(i).getName());
+          }
+          query.append(") ");
+        }
+        break;
+      }
+      case MINOR: {
+        if (insertOnly) {
           for (int i = 0; i < cols.size(); ++i) {
             query.append(i == 0 ? "`" : ", `").append(cols.get(i).getName()).append("`");
           }
-        } else { // mmmajor and unpartitioned
-          query.append("*");
+        } else {
+          query.append(
+              "`operation`, `originalTransaction`, `bucket`, `rowId`, `currentTransaction`, `row`");
         }
-      } else { // mmminor
-        for (int i = 0; i < cols.size(); ++i) {
-          query.append(i == 0 ? "`" : ", `").append(cols.get(i).getName()).append("`");
-        }
+        break;
       }
     }
   }
@@ -360,13 +361,13 @@ class CompactionQueryBuilder {
     } else {
       query.append(sourceTab.getDbName()).append(".").append(sourceTab.getTableName());
     }
-    if (rebalance) {
+    if (CompactionType.REBALANCE.equals(compactionType)) {
       query.append(" order by ROW__ID.writeId ASC, ROW__ID.bucketId ASC, ROW__ID.rowId ASC) t2");
     }
   }
 
   private void buildWhereClauseForInsert(StringBuilder query) {
-    if (major && sourcePartition != null && sourceTab != null) {
+    if (CompactionType.MAJOR.equals(compactionType) && sourcePartition != null && sourceTab != null) {
       List<String> vals = sourcePartition.getValues();
       List<FieldSchema> keys = sourceTab.getPartitionKeys();
       if (keys.size() != vals.size()) {
@@ -387,7 +388,7 @@ class CompactionQueryBuilder {
       }
     }
 
-    if (minor && crud && validWriteIdList != null) {
+    if (CompactionType.MINOR.equals(compactionType) && !insertOnly && validWriteIdList != null) {
       long[] invalidWriteIds = validWriteIdList.getInvalidWriteIds();
       if (invalidWriteIds.length > 0) {
         query.append(" where `originalTransaction` not in (").append(
@@ -407,7 +408,7 @@ class CompactionQueryBuilder {
 
     // CLUSTERED BY. (bucketing)
     int bucketingVersion = 0;
-    if (crud && minor) {
+    if (!insertOnly && CompactionType.MINOR.equals(compactionType)) {
       bucketingVersion = getMinorCrudBucketing(query, bucketingVersion);
     } else if (insertOnly) {
       getMmBucketing(query);
@@ -419,7 +420,7 @@ class CompactionQueryBuilder {
     }
 
     // STORED AS / ROW FORMAT SERDE + INPUTFORMAT + OUTPUTFORMAT
-    if (crud) {
+    if (!insertOnly) {
       query.append(" stored as orc");
     } else {
       copySerdeFromSourceTable(query);
@@ -442,7 +443,7 @@ class CompactionQueryBuilder {
       return; // avoid NPEs, don't throw an exception but skip this part of the query
     }
     query.append("(");
-    if (crud) {
+    if (!insertOnly) {
       query.append(
           "`operation` int, `originalTransaction` bigint, `bucket` int, `rowId` bigint, "
               + "`currentTransaction` bigint, `row` struct<");
@@ -451,11 +452,11 @@ class CompactionQueryBuilder {
     List<String> columnDescs = new ArrayList<>();
     for (FieldSchema col : cols) {
       String columnType = DDLPlanUtils.formatType(TypeInfoUtils.getTypeInfoFromTypeString(col.getType()));
-      String columnDesc = "`" + col.getName() + "` " + (crud ? ":" : "") + columnType;
+      String columnDesc = "`" + col.getName() + "` " + (!insertOnly ? ":" : "") + columnType;
       columnDescs.add(columnDesc);
     }
     query.append(StringUtils.join(',',columnDescs));
-    query.append(crud ? ">" : "");
+    query.append(!insertOnly ? ">" : "");
     query.append(") ");
   }
 
@@ -571,11 +572,11 @@ class CompactionQueryBuilder {
   private void addTblProperties(StringBuilder query, int bucketingVersion) {
     Map<String, String> tblProperties = new HashMap<>();
     tblProperties.put("transactional", "false");
-    if (crud) {
+    if (!insertOnly) {
       tblProperties.put(AcidUtils.COMPACTOR_TABLE_PROPERTY, compactionType.name());
-    }
-    if (crud && minor && isBucketed) {
-      tblProperties.put("bucketing_version", String.valueOf(bucketingVersion));
+      if (CompactionType.MINOR.equals(compactionType) && isBucketed) {
+        tblProperties.put("bucketing_version", String.valueOf(bucketingVersion));
+      }
     }
     if (sourceTab != null) { // to avoid NPEs, skip this part if sourceTab is null
       if (insertOnly) {

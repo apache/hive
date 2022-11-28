@@ -41,20 +41,19 @@ final class MmMajorQueryCompactor extends QueryCompactor {
 
   private static final Logger LOG = LoggerFactory.getLogger(MmMajorQueryCompactor.class.getName());
 
-  @Override void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
+  @Override
+  public void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
+                     ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
     LOG.debug("Going to delete directories for aborted transactions for MM table " + table.getDbName() + "." + table
         .getTableName());
     QueryCompactor.Util.removeFilesForMmTable(hiveConf, dir);
 
     // Set up the session for driver.
     HiveConf driverConf = new HiveConf(hiveConf);
-    driverConf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
 
     // Note: we could skip creating the table and just add table type stuff directly to the
     //       "insert overwrite directory" command if there were no bucketing or list bucketing.
-    String tmpPrefix = table.getDbName() + ".tmp_compactor_" + table.getTableName() + "_";
-    String tmpTableName = tmpPrefix + System.currentTimeMillis();
+    String tmpTableName = getTempTableName(table);
     Path resultBaseDir = QueryCompactor.Util.getCompactionResultDir(
         storageDescriptor, writeIds, driverConf, true, true, false, null);
 
@@ -84,7 +83,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
         new CompactionQueryBuilder(
             CompactionType.MAJOR,
             CompactionQueryBuilder.Operation.CREATE,
-            false,
+            true,
             tmpTableName)
             .setSourceTab(table)
             .setStorageDescriptor(storageDescriptor)
@@ -98,7 +97,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
         new CompactionQueryBuilder(
             CompactionType.MAJOR,
             CompactionQueryBuilder.Operation.INSERT,
-            false,
+            true,
             tmpName)
             .setSourceTab(t)
             .setSourcePartition(p)
@@ -111,7 +110,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
         new CompactionQueryBuilder(
             CompactionType.MAJOR,
             CompactionQueryBuilder.Operation.DROP,
-            false,
+            true,
             tmpTableName).build());
   }
 }

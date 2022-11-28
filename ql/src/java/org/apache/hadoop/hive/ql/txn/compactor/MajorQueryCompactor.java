@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,22 +38,19 @@ import java.util.List;
 final class MajorQueryCompactor extends QueryCompactor {
 
   @Override
-  void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
+  public void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
+                  ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
     AcidUtils
         .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
 
     HiveConf conf = new HiveConf(hiveConf);
-    // Set up the session for driver.
-    conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
     /*
      * For now, we will group splits on tez so that we end up with all bucket files,
      * with same bucket number in one map task.
      */
     conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
 
-    String tmpPrefix = table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_";
-    String tmpTableName = tmpPrefix + System.currentTimeMillis();
+    String tmpTableName = getTempTableName(table);
     Path tmpTablePath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
         conf, true, false, false, null);
 
@@ -64,12 +60,6 @@ final class MajorQueryCompactor extends QueryCompactor {
     runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
         Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries,
             table.getParameters());
-  }
-
-  @Override
-  protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
-      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    // We don't need to delete the empty directory, as empty base is a valid scenario.
   }
 
   /**
@@ -83,7 +73,7 @@ final class MajorQueryCompactor extends QueryCompactor {
     return Lists.newArrayList(new CompactionQueryBuilder(
         CompactionType.MAJOR,
         CompactionQueryBuilder.Operation.CREATE,
-        true,
+        false,
         fullName)
         .setSourceTab(t)
         .setLocation(tmpTableLocation)
@@ -95,7 +85,7 @@ final class MajorQueryCompactor extends QueryCompactor {
         new CompactionQueryBuilder(
             CompactionType.MAJOR,
             CompactionQueryBuilder.Operation.INSERT,
-            true,
+            false,
             tmpName)
             .setSourceTab(t)
             .setSourcePartition(p)
@@ -107,7 +97,7 @@ final class MajorQueryCompactor extends QueryCompactor {
         new CompactionQueryBuilder(
             CompactionType.MAJOR,
             CompactionQueryBuilder.Operation.DROP,
-            true,
+            false,
             tmpTableName).build());
   }
 }

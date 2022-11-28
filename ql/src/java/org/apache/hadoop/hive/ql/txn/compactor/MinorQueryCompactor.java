@@ -44,19 +44,17 @@ final class MinorQueryCompactor extends QueryCompactor {
   private static final Logger LOG = LoggerFactory.getLogger(MinorQueryCompactor.class.getName());
 
   @Override
-  void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
+  public void run(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
+           ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
     LOG.info("Running query based minor compaction");
     AcidUtils
         .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
     // Set up the session for driver.
     HiveConf conf = new HiveConf(hiveConf);
-    conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
     conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
-    String tmpTableName =
-        table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_" + System.currentTimeMillis();
+    String tmpTableName = getTempTableName(table);
 
     Path resultDeltaDir = QueryCompactor.Util.getCompactionResultDir(storageDescriptor,
         writeIds, conf, false, false, false, dir);
@@ -150,7 +148,7 @@ final class MinorQueryCompactor extends QueryCompactor {
     return new CompactionQueryBuilder(
         CompactionType.MINOR,
         CompactionQueryBuilder.Operation.CREATE,
-        true,
+        false,
         newTableName)
         .setSourceTab(table)
         .setBucketed(isBucketed)
@@ -173,7 +171,7 @@ final class MinorQueryCompactor extends QueryCompactor {
     return new CompactionQueryBuilder(
         CompactionType.MINOR,
         CompactionQueryBuilder.Operation.ALTER,
-        true,
+        false,
         tableName)
         .setDir(dir)
         .setValidWriteIdList(validWriteIdList)
@@ -214,7 +212,7 @@ final class MinorQueryCompactor extends QueryCompactor {
     return new CompactionQueryBuilder(
         CompactionType.MINOR,
         CompactionQueryBuilder.Operation.INSERT,
-        true,
+        false,
         resultTableName)
         .setSourceTabForInsert(sourceTableName)
         .setSourceTab(table)
@@ -239,7 +237,7 @@ final class MinorQueryCompactor extends QueryCompactor {
     return new CompactionQueryBuilder(
         CompactionType.MINOR,
         CompactionQueryBuilder.Operation.DROP,
-        true,
+        false,
         tableToDrop).build();
   }
 }

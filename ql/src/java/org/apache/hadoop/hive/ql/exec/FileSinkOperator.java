@@ -1839,9 +1839,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    * @param row The acid row in which the bucket needs to be updated.
    */
   private void setBucketProperty(Configuration hiveConf, Object row, int bucketId) {
-    //TODO: statementId?
-    BucketCodec codec = conf.getBucketingVersion() == 2 ? BucketCodec.V1 : BucketCodec.V0;
-    int encodedBucketValue = codec.encode(new AcidOutputFormat.Options(hiveConf).bucket(bucketId));
+    int encodedBucketValue = BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(bucketId));
     Object bucketProperty = ((Object[]) row)[2];
     if (bucketProperty instanceof Writable) {
       ((IntWritable) bucketProperty).set(encodedBucketValue);

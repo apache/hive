@@ -34,10 +34,15 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import java.util.StringTokenizer;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -1377,6 +1382,37 @@ public final class FileUtils {
         throws IOException {
     return RemoteIterators.filteringRemoteIterator(fs.listFiles(path, recursive),
         status -> filter.accept(status.getPath()));
+  }
+
+  public static <T> Stream<T> asStream(RemoteIterator<T> iterator) {
+    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new RemoteIteratorWrapper<T>(iterator), Spliterator.ORDERED), false);
+  }
+
+  static class RemoteIteratorWrapper<T> implements Iterator {
+
+    private final RemoteIterator<T> iterator;
+
+    @Override
+    public boolean hasNext() {
+      try {
+        return iterator.hasNext();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public Object next() {
+      try {
+        return iterator.next();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    public RemoteIteratorWrapper(RemoteIterator<T> iterator) {
+      this.iterator = iterator;
+    }
   }
 
   /**

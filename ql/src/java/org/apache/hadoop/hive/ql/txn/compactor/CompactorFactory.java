@@ -67,7 +67,7 @@ public final class CompactorFactory {
    * @param compactionInfo provides insight about the type of compaction, must be not null.
    * @return {@link QueryCompactor} or null.
    */
-  public Compactor getQueryCompactor(IMetaStoreClient msc, Table table, HiveConf configuration, CompactionInfo compactionInfo)
+  public Compactor getCompactor(Table table, HiveConf configuration, CompactionInfo compactionInfo,IMetaStoreClient msc)
       throws HiveException {
     if (AcidUtils.isFullAcidTable(table.getParameters())) {
       if (!"tez".equalsIgnoreCase(HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)) ||
@@ -76,7 +76,10 @@ public final class CompactorFactory {
           throw new HiveException("Rebalancing compaction is only supported in Tez, and via Query based compaction. " +
               "Set hive.execution.engine=tez and hive.compactor.crud.query.based=true to enable it.");
         }
-        LOG.info("Query-based compaction is only supported on tez. Falling back to MR compaction.");
+        if (!"tez".equalsIgnoreCase(HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE)) &&
+            HiveConf.getBoolVar(configuration, HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)) {
+          LOG.warn("Query-based compaction is enabled, but it is only supported on tez. Falling back to MR compaction.");
+        }
         return new MRCompactor(msc);
       }
       switch (compactionInfo.type) {
@@ -97,9 +100,9 @@ public final class CompactorFactory {
           return new MmMinorQueryCompactor();
         case MAJOR:
           return new MmMajorQueryCompactor();
-        case REBALANCE:
+        default:
           throw new HiveException(
-              "Rebalancing compaction is not supported on insert only tables.");
+              compactionInfo.type.name() + " compaction is not supported on insert only tables.");
       }
     }
     throw new HiveException("Only transactional tables can be compacted, " + table.getTableName() + "is not suitable " +

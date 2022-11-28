@@ -170,7 +170,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     boolean isEnoughToCompact;
 
     if (ci.type.equals(CompactionType.REBALANCE)) {
-      //For now, we are allowing rebalance compaction regardless of the table state. Thresholds will be added later.
+      //TODO: For now, we are allowing rebalance compaction regardless of the table state. Thresholds will be added later.
       return true;
     } else if (ci.type.equals(CompactionType.MAJOR)) {
       isEnoughToCompact =
@@ -246,7 +246,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
     CompactionInfo ci = null;
     boolean computeStats = false;
-    Table t1 = null;
+    Table table = null;
 
     // If an exception is thrown in the try-with-resources block below, msc is closed and nulled, so a new instance
     // is need to be obtained here.
@@ -292,8 +292,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
       // Find the table we will be working with.
       try {
-        t1 = resolveTable(ci);
-        if (t1 == null) {
+        table = resolveTable(ci);
+        if (table == null) {
           ci.errorMessage = "Unable to find table " + ci.getFullTableName() + ", assuming it was dropped and moving on.";
           LOG.warn(ci.errorMessage + " Compaction info: {}", ci);
           msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
@@ -306,7 +306,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         return false;
       }
 
-      if (ci.type.equals(CompactionType.REBALANCE) && t1.getSd().isSetNumBuckets() && t1.getSd().getNumBuckets() > 0) {
+      if (ci.type.equals(CompactionType.REBALANCE) && table.getSd().getNumBuckets() > 0) {
         LOG.error("Cannot execute rebalancing compaction on bucketed tables.");
         ci.errorMessage = "Cannot execute rebalancing compaction on bucketed tables.";
         msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
@@ -315,10 +315,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
       checkInterrupt();
 
-      // This chicanery is to get around the fact that the table needs to be final in order to
-      // go into the doAs below.
-      final Table t = t1;
-      String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
+      String fullTableName = TxnUtils.getFullTableName(table.getDbName(), table.getTableName());
+
 
       // Find the partition we will be working with, if there is one.
       Partition p;
@@ -340,7 +338,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       checkInterrupt();
 
       // Find the appropriate storage descriptor
-      final StorageDescriptor sd =  resolveStorageDescriptor(t, p);
+      final StorageDescriptor sd =  resolveStorageDescriptor(table, p);
 
       // Check that the table or partition isn't sorted, as we don't yet support that.
       if (sd.getSortCols() != null && !sd.getSortCols().isEmpty()) {
@@ -351,7 +349,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
 
       if (ci.runAs == null) {
-        ci.runAs = TxnUtils.findUserToRunAs(sd.getLocation(), t, conf);
+        ci.runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
       }
 
       checkInterrupt();
@@ -380,7 +378,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       checkInterrupt();
 
       // Don't start compaction or cleaning if not necessary
-      if (isDynPartAbort(t, ci)) {
+      if (isDynPartAbort(table, ci)) {
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
         compactionTxn.wasSuccessful();
         return false;
@@ -398,7 +396,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         compactionTxn.wasSuccessful();
         return false;
       }
-      if (ci.type.equals(CompactionType.MINOR) && !isMinorCompactionSupported(t.getParameters(), dir)) {
+      if (ci.type.equals(CompactionType.MINOR) && !isMinorCompactionSupported(table.getParameters(), dir)) {
         ci.errorMessage = "Query based Minor compaction is not possible for full acid tables having raw format " +
             "(non-acid) data in them.";
         LOG.error(ci.errorMessage + " Compaction info: {}", ci);
@@ -420,14 +418,14 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         todo Find a more generic approach to collecting files in the same logical bucket to compact within the same
         task (currently we're using Tez split grouping).
         */
-        Compactor compactor = compactorFactory.getQueryCompactor(msc, t, conf, ci);
+        Compactor compactor = compactorFactory.getCompactor(table, conf, ci, msc);
         computeStats = (compactor instanceof MRCompactor && collectMrStats) || collectGenericStats;
 
         LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + ", id:" +
                 ci.id + " in " + compactionTxn + " with compute stats set to " + computeStats);
-        LOG.info("Will compact id: " + ci.id + " with compactor class: " + compactor.getClass().getName());
+        LOG.debug("Will compact id: " + ci.id + " with compactor class: " + compactor.getClass().getName());
 
-        compactor.runCompaction(conf, t, p, sd, tblValidWriteIds, ci, dir);
+        compactor.run(conf, table, p, sd, tblValidWriteIds, ci, dir);
 
         LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in "
             + compactionTxn + ", marking as compacted.");
@@ -480,8 +478,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
 
     if (computeStats) {
-      statsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : t1.getOwner(),
-              CompactorUtil.getCompactorJobQueueName(conf, ci, t1), msc);
+       statsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : table.getOwner(),
+              CompactorUtil.getCompactorJobQueueName(conf, ci, table), msc);
     }
     return true;
   }
