@@ -39,7 +39,7 @@ import java.util.List;
 public class OrcFileMerger {
 
   private final Configuration conf;
-  private final static Logger LOG = LoggerFactory.getLogger(OrcFileMerger.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OrcFileMerger.class);
 
   public OrcFileMerger(Configuration conf) {
     this.conf = conf;
@@ -66,7 +66,7 @@ public class OrcFileMerger {
       for (int i = 0; i < readers.size(); i++) {
         Reader reader = readers.get(i);
         Path path = files.get(i);
-        LOG.info("ORC merge file input path: {}", path.toString());
+        LOG.info("ORC merge file input path: {}", path);
         if (writer == null) {
           writer = setupWriter(reader, outPath);
         }
@@ -101,7 +101,7 @@ public class OrcFileMerger {
       options.bufferSize(reader.getCompressionSize()).enforceBufferSize();
     }
     Writer writer = OrcFile.createWriter(outPath, options);
-    LOG.info("ORC merge file output path: " + outPath);
+    LOG.info("ORC merge file output path: {}", outPath);
     return writer;
   }
 

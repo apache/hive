@@ -18,11 +18,9 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
-import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -38,7 +36,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.parquet.Strings;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -394,7 +391,7 @@ abstract class QueryCompactor implements Compactor {
                                            StorageDescriptor sd) {
       long minOpenWriteId = writeIds.getMinOpenWriteId() == null ? 1 : writeIds.getMinOpenWriteId();
       long highWatermark = writeIds.getHighWatermark();
-      long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
+      long compactorTxnId = Compactor.getCompactorTxnId(conf);
       AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).writingBase(isBaseDir)
               .writingDeleteDelta(false).isCompressed(false).minimumWriteId(minOpenWriteId)
               .maximumWriteId(highWatermark).statementId(-1).visibilityTxnId(compactorTxnId);
