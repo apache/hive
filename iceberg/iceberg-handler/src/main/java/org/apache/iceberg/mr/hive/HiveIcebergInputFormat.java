@@ -195,7 +195,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     if (!isORCOnly) {
       final String vectorizationConfName = getVectorizationConfName(tableDesc.getTableName());
       LOG.debug("Setting {} for table: {} to true", vectorizationConfName, tableDesc.getTableName());
-      hiveConf.set(vectorizationConfName , "true");
+      hiveConf.set(vectorizationConfName, "true");
       return new VectorizedSupport.Support[] {};
     }
     return new VectorizedSupport.Support[] { VectorizedSupport.Support.DECIMAL_64 };
