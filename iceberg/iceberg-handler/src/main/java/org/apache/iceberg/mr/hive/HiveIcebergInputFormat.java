@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -192,7 +193,9 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
             org.apache.iceberg.FileFormat.ORC.name()
                 .equalsIgnoreCase(tableDesc.getProperties().getProperty(TableProperties.DEFAULT_FILE_FORMAT));
     if (!isORCOnly) {
-      hiveConf.set(getVectorizationConfName(tableDesc.getTableName()), "true");
+      final String vectorizationConfName = getVectorizationConfName(tableDesc.getTableName());
+      LOG.debug("Setting {} for table: {} to true", vectorizationConfName, tableDesc.getTableName());
+      hiveConf.set(vectorizationConfName , "true");
       return new VectorizedSupport.Support[] {};
     }
     return new VectorizedSupport.Support[] { VectorizedSupport.Support.DECIMAL_64 };
@@ -204,9 +207,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
   }
 
   public static String getVectorizationConfName(String tableName) {
-    String[] components = tableName.split("\\.");
-    String dbAndTableName = components.length == 3 ? components[1] + "." +  components[2] : tableName;
+    String dbAndTableName = TableName.fromString(tableName, null, null).getNotEmptyDbTable();
     return ICEBERG_DISABLE_VECTORIZATION_PREFIX + dbAndTableName;
   }
-
 }
