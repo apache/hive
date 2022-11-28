@@ -298,7 +298,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
 
     Table newTable = new Table(tableName,
         database,
-        metadata.property(TableProperties.HMS_TABLE_OWNER, System.getProperty("user.name")),
+        metadata.property(HiveCatalog.HMS_TABLE_OWNER, System.getProperty("user.name")),
         (int) currentTimeMillis / 1000,
         (int) currentTimeMillis / 1000,
         Integer.MAX_VALUE,
@@ -321,7 +321,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations {
 
     // push all Iceberg table properties into HMS
     metadata.properties().entrySet().stream()
-            .filter(entry -> !entry.getKey().equalsIgnoreCase(TableProperties.HMS_TABLE_OWNER))
+            .filter(entry -> !entry.getKey().equalsIgnoreCase(HiveCatalog.HMS_TABLE_OWNER))
             .forEach(
               entry -> {
                 String key = entry.getKey();
