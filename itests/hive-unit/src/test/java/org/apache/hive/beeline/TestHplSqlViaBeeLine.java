@@ -365,6 +365,22 @@ public class TestHplSqlViaBeeLine {
   }
 
   @Test
+  public void testUdfWhenUdfParamerAndActualParamDifferent() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+            "CREATE TABLE result (col_d decimal(10,2));\n" +
+            "INSERT INTO result VALUES(12345.67);\n" +
+            "INSERT INTO result VALUES(98765.43);\n" +
+            "CREATE FUNCTION hello(s String)\n" +
+            "   RETURNS String\n" +
+            "BEGIN\n" +
+            "   RETURN 'Hello ' || s || '!';\n" +
+            "END;\n" +
+            "SELECT hello(col_d) FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "Hello 12345.67!.*Hello 98765.43!");
+  }
+
+  @Test
     public void testDbChange() throws Throwable {
     String SCRIPT_TEXT =
         "DROP TABLE IF EXISTS result;\n" +

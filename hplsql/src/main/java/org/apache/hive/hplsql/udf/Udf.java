@@ -180,7 +180,7 @@ public class Udf extends GenericUDF {
     case STRING:
       String strValue = ((StringObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
       if (strValue != null) {
-        exec.setVariable(name, strValue);
+        exec.setVariable(name, new Var(strValue));
       }
       break;
     case DATE:
@@ -206,13 +206,13 @@ public class Udf extends GenericUDF {
     case VARCHAR:
       HiveVarchar varcharValue = ((HiveVarcharObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
       if (varcharValue != null) {
-        exec.setVariable(name, varcharValue.getValue());
+        exec.setVariable(name, new Var(varcharValue.getValue()));
       }
       break;
     case CHAR:
       HiveChar charValue = ((HiveCharObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
       if (charValue != null) {
-        exec.setVariable(name, charValue.getStrippedValue());
+        exec.setVariable(name, new Var(charValue.getStrippedValue()));
       }
       break;
     default:
