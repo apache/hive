@@ -3243,7 +3243,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     testCompactionWithMerge(CompactionType.MINOR, false, false, null,
             Collections.singletonList("bucket_00000"),
             Arrays.asList("delta_0000004_0000004_0000", "delta_0000005_0000005_0000", "delta_0000006_0000006_0000"),
-            Collections.singletonList("delta_0000001_0000006_v0000013"), false, true);
+            Collections.singletonList("delta_0000001_0000006_v0000014"), false, true);
   }
 
   @Test
@@ -3255,7 +3255,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     testCompactionWithMerge(CompactionType.MAJOR, true, true, "ds=today",
             Arrays.asList("bucket_00000", "bucket_00001"),
             Arrays.asList("delta_0000004_0000004_0000", "delta_0000005_0000005_0000", "delta_0000006_0000006_0000"),
-            Collections.singletonList("base_0000006_v0000013"), false, true);
+            Collections.singletonList("base_0000006_v0000014"), false, true);
   }
 
   @Test
