@@ -54,7 +54,8 @@ final class MinorQueryCompactor extends QueryCompactor {
     conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_ESTIMATE_STATS, false);
-    String tmpTableName = getTempTableName(table);
+    String tmpTableName =
+        table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_" + System.currentTimeMillis();
 
     Path resultDeltaDir = QueryCompactor.Util.getCompactionResultDir(storageDescriptor,
         writeIds, conf, false, false, false, dir);

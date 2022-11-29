@@ -322,7 +322,7 @@ class CompactionQueryBuilder {
       case MAJOR: {
         if (insertOnly) {
           if (sourcePartition != null) { //mmmajor and partitioned
-            appendColumns(query, cols);
+            appendColumns(query, cols, false);
           } else { // mmmajor and unpartitioned
             query.append("*");
           }
@@ -331,14 +331,14 @@ class CompactionQueryBuilder {
               "validate_acid_sort_order(ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId), "
                   + "ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId, ROW__ID.writeId, "
                   + "NAMED_STRUCT(");
-          appendColumns(query, cols);
+          appendColumns(query, cols, true);
           query.append(") ");
         }
         break;
       }
       case MINOR: {
         if (insertOnly) {
-          appendColumns(query, cols);
+          appendColumns(query, cols, false);
         } else {
           query.append(
               "`operation`, `originalTransaction`, `bucket`, `rowId`, `currentTransaction`, `row`");
@@ -348,13 +348,17 @@ class CompactionQueryBuilder {
     }
   }
 
-  private void appendColumns(StringBuilder query, List<FieldSchema> cols) {
+  private void appendColumns(StringBuilder query, List<FieldSchema> cols, boolean alias) {
     if (cols == null) {
       throw new IllegalStateException("Query could not be created: Source columns are unknown");
     }
     for (int i = 0; i < cols.size(); ++i) {
-      query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', ")
-          .append(cols.get(i).getName());
+      if (alias) {
+        query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', ")
+            .append(cols.get(i).getName());
+      } else {
+        query.append(i == 0 ? "`" : ", `").append(cols.get(i).getName()).append("`");
+      }
     }
   }
 
