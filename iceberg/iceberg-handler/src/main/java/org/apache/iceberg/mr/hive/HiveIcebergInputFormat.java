@@ -21,9 +21,9 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.mapred.InputSplit;
@@ -43,6 +44,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.iceberg.FileScanTask;
+import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.common.DynConstructors;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.expressions.Expression;
@@ -69,6 +71,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
   private static final String HIVE_VECTORIZED_RECORDREADER_CLASS =
       "org.apache.iceberg.mr.hive.vector.HiveIcebergVectorizedRecordReader";
   private static final DynConstructors.Ctor<AbstractMapredIcebergRecordReader> HIVE_VECTORIZED_RECORDREADER_CTOR;
+  public static final String ICEBERG_DISABLE_VECTORIZATION_PREFIX = "iceberg.disable.vectorization.";
 
   static {
     if (MetastoreUtil.hive3PresentOnClasspath()) {
@@ -182,12 +185,17 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
   }
 
   @Override
-  public VectorizedSupport.Support[] getSupportedFeatures(HiveConf hiveConf, Properties properties) {
+  public VectorizedSupport.Support[] getSupportedFeatures(HiveConf hiveConf, TableDesc tableDesc) {
     // disabling VectorizedSupport.Support.DECIMAL_64 for Parquet as it doesn't support it
-    boolean isORCOnly = Boolean.parseBoolean(properties.getProperty(HiveIcebergMetaHook.ORC_FILES_ONLY)) &&
-        org.apache.iceberg.FileFormat.ORC.name().equalsIgnoreCase(properties.getProperty("write.format.default"));
+    boolean isORCOnly =
+        Boolean.parseBoolean(tableDesc.getProperties().getProperty(HiveIcebergMetaHook.DECIMAL64_VECTORIZATION)) &&
+            Boolean.parseBoolean(tableDesc.getProperties().getProperty(HiveIcebergMetaHook.ORC_FILES_ONLY)) &&
+            org.apache.iceberg.FileFormat.ORC.name()
+                .equalsIgnoreCase(tableDesc.getProperties().getProperty(TableProperties.DEFAULT_FILE_FORMAT));
     if (!isORCOnly) {
-      HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED, "");
+      final String vectorizationConfName = getVectorizationConfName(tableDesc.getTableName());
+      LOG.debug("Setting {} for table: {} to true", vectorizationConfName, tableDesc.getTableName());
+      hiveConf.set(vectorizationConfName, "true");
       return new VectorizedSupport.Support[] {};
     }
     return new VectorizedSupport.Support[] { VectorizedSupport.Support.DECIMAL_64 };
@@ -198,4 +206,8 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     // no-op for Iceberg
   }
 
+  public static String getVectorizationConfName(String tableName) {
+    String dbAndTableName = TableName.fromString(tableName, null, null).getNotEmptyDbTable();
+    return ICEBERG_DISABLE_VECTORIZATION_PREFIX + dbAndTableName;
+  }
 }
