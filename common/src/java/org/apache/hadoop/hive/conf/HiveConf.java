@@ -4377,7 +4377,8 @@ public class HiveConf extends Configuration {
             "bonecp.,"+
             "hive.druid.broker.address.default,"+
             "hive.druid.coordinator.address.default,"+
-            "hikari.,"+
+            "hikaricp.," +
+            "dbcp.," +
             "hadoop.bin.path,"+
             "yarn.bin.path,"+
             "spark.home",

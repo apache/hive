@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.datasource;
 
 import com.jolbox.bonecp.BoneCPDataSource;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -41,17 +42,15 @@ public class TestDataSourceProviderFactory {
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_USER_NAME, "dummyUser");
     MetastoreConf.setVar(conf, ConfVars.PWD, "dummyPass");
+    conf.unset(ConfVars.CONNECTION_POOLING_TYPE.getVarname());
   }
 
   @Test
   public void testNoDataSourceCreatedWithoutProps() throws SQLException {
 
-    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
-    Assert.assertNull(dsp);
-
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, "dummy");
 
-    dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNull(dsp);
   }
 
@@ -59,8 +58,6 @@ public class TestDataSourceProviderFactory {
   public void testCreateBoneCpDataSource() throws SQLException {
 
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, BoneCPDataSourceProvider.BONECP);
-    conf.set(BoneCPDataSourceProvider.BONECP + ".firstProp", "value");
-    conf.set(BoneCPDataSourceProvider.BONECP + ".secondProp", "value");
 
     DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNotNull(dsp);
@@ -170,4 +167,15 @@ public class TestDataSourceProviderFactory {
     Assert.assertEquals(false, ((HikariDataSource)ds).isAllowPoolSuspension());
   }
 
+  @Test
+  public void testCreateDbCpDataSource() throws SQLException {
+
+    MetastoreConf.setVar(conf, ConfVars.CONNECTION_POOLING_TYPE, DbCPDataSourceProvider.DBCP);
+
+    DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
+    Assert.assertNotNull(dsp);
+
+    DataSource ds = dsp.create(conf);
+    Assert.assertTrue(ds instanceof PoolingDataSource);
+  }
 }
