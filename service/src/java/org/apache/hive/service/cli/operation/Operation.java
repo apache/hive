@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.ipc.CallerContext;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
@@ -237,7 +238,9 @@ public abstract class Operation {
    * Set up some preconditions, or configurations.
    */
   protected void beforeRun() {
-    ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
+    CallerContext.setCurrent(new CallerContext.Builder("Check").build());
+    ShimLoader.getHadoopShims()
+        .setHadoopQueryContext(queryState.getQueryId() + " User: " + parentSession.getUserName());
     if (!embedded) {
       createOperationLog();
       LogUtils.registerLoggingContext(queryState.getConf());
