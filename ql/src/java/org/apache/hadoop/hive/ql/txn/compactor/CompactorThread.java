@@ -203,7 +203,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected String getRuntimeVersion() {
     return this.getClass().getPackage().getImplementationVersion();
   }
-  
+
   protected LockRequest createLockRequest(CompactionInfo ci, long txnId, LockType lockType, DataOperationType opType) {
     String agentInfo = Thread.currentThread().getName();
     LockRequestBuilder requestBuilder = new LockRequestBuilder(agentInfo);
@@ -232,7 +232,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
       Thread.sleep(checkInterval - elapsedTime);
     }
 
-    if(elapsedTime < MAX_WARN_LOG_TIME){
+    if (elapsedTime < MAX_WARN_LOG_TIME) {
       LOG.debug(type.name() + " loop took " + elapsedTime/1000 + " seconds to finish.");
     } else {
       LOG.warn("Possible " + type.name() + " slowdown, loop took "+ elapsedTime/1000 + " seconds to finish.");
