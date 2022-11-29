@@ -137,6 +137,10 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     return CompactionType.MAJOR == type;
   }
 
+  public boolean isMinorCompaction() {
+    return CompactionType.MINOR == type;
+  }
+
   @Override
   public int compareTo(CompactionInfo o) {
     return getFullPartitionName().compareTo(o.getFullPartitionName());

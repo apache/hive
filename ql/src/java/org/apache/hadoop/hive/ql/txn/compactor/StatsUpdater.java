@@ -52,10 +52,6 @@ public final class StatsUpdater {
      */
     public void gatherStats(CompactionInfo ci, HiveConf conf, String userName, String compactionQueueName) {
         try {
-            if (!ci.isMajorCompaction()) {
-                return;
-            }
-
             HiveConf statusUpdaterConf = new HiveConf(conf);
             statusUpdaterConf.unset(ValidTxnList.VALID_TXNS_KEY);
 
@@ -73,6 +69,9 @@ public final class StatsUpdater {
                 sb.append(")");
             }
             sb.append(" compute statistics");
+            if (ci.isMinorCompaction()) {
+                sb.append(" noscan");
+            }
             LOG.info(ci + ": running '" + sb + "'");
             if (compactionQueueName != null && compactionQueueName.length() > 0) {
                 statusUpdaterConf.set(TezConfiguration.TEZ_QUEUE_NAME, compactionQueueName);

@@ -2609,4 +2609,80 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> actualData = testDP.getAllData(tblName);
     Assert.assertEquals(expectedData, actualData);
   }
+
+  @Test
+  public void testStatsAfterMinorCompactionPartTblForMRCompaction() throws Exception {
+    testStatsAfterMinorCompactionPartTbl(false);
+  }
+
+  @Test
+  public void testStatsAfterMinorCompactionPartTblForQueryBasedCompaction() throws Exception {
+    testStatsAfterMinorCompactionPartTbl(true);
+  }
+
+  public void testStatsAfterMinorCompactionPartTbl(boolean isQueryBased) throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, isQueryBased);
+    String dbName = "default";
+    String tblName = "minor_compaction_test";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+            " PARTITIONED BY(bkt INT)" +
+            " STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
+            " values(57, 'Budapest')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
+            " values(58, 'Milano')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
+            " values(59, 'Bangalore')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
+            " values(60, 'New York')", driver);
+    executeStatementOnDriver("DELETE FROM " + tblName + " WHERE a = 57", driver);
+    executeStatementOnDriver("DELETE FROM " + tblName + " WHERE a = 58", driver);
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    Table table = msClient.getTable(dbName, tblName);
+
+    //compute stats before compaction
+    CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=1", CompactionType.MINOR);
+    new StatsUpdater().gatherStats(ci, conf,
+            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
+
+    //Check basic stats are collected
+    org.apache.hadoop.hive.ql.metadata.Table hiveTable = Hive.get().getTable(tblName);
+    List<org.apache.hadoop.hive.ql.metadata.Partition> partitions = Hive.get().getPartitions(hiveTable);
+    Map<String, String> parameters = partitions
+            .stream()
+            .filter(p -> p.getName().equals("bkt=1"))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Could not get Partition"))
+            .getParameters();
+    Assert.assertEquals("The number of files is differing from the expected", "6", parameters.get("numFiles"));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+
+    //Do a minor compaction
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    rqst.setPartitionname("bkt=1");
+    txnHandler.compact(rqst);
+    runWorker(conf);
+    CompactorTestUtil.runCleaner(conf);
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    if (1 != compacts.size()) {
+      Assert.fail("Expecting 1 compaction and found " + compacts.size() + " compactions " + compacts);
+    }
+    Assert.assertEquals("succeeded", compacts.get(0).getState());
+
+    partitions = Hive.get().getPartitions(hiveTable);
+    parameters = partitions
+            .stream()
+            .filter(p -> p.getName().equals("bkt=1"))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Could not get Partition"))
+            .getParameters();
+    Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+  }
 }
