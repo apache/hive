@@ -256,7 +256,7 @@ public class CliDriver {
           response = qp.run(cmd);
         } catch (CommandProcessorException e) {
           qp.close();
-          ShimLoader.getHadoopShims().setHadoopSessionContext(ss.getSessionId());
+          ShimLoader.getHadoopShims().setHadoopSessionContext(ss.getSessionId() + "_User:" + ss.getUserName());
           throw e;
         }
 
@@ -293,7 +293,7 @@ public class CliDriver {
           throw new CommandProcessorException(1);
         } finally {
           qp.close();
-          ShimLoader.getHadoopShims().setHadoopSessionContext(ss.getSessionId());
+          ShimLoader.getHadoopShims().setHadoopSessionContext(ss.getSessionId() + "_User:" + ss.getUserName());
 
           if (out instanceof FetchConverter) {
             ((FetchConverter) out).fetchFinished();

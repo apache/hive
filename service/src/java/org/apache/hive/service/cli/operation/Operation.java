@@ -264,7 +264,8 @@ public abstract class Operation {
       LogUtils.unregisterLoggingContext();
     }
     // Reset back to session context after the query is done
-    ShimLoader.getHadoopShims().setHadoopSessionContext(parentSession.getSessionState().getSessionId());
+    ShimLoader.getHadoopShims().setHadoopSessionContext(
+        parentSession.getSessionState().getSessionId() + "_User:" + parentSession.getUserName());
   }
 
   /**

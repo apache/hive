@@ -470,7 +470,7 @@ public class SessionState implements ISessionAuthState{
     killQuery = new NullKillQuery();
     this.cleanupService = cleanupService;
 
-    ShimLoader.getHadoopShims().setHadoopSessionContext(getSessionId());
+    ShimLoader.getHadoopShims().setHadoopSessionContext(getSessionId() + "_User:" + userName);
   }
 
   public Map<String, String> getHiveVariables() {
