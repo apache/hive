@@ -19,8 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-
-import java.util.Properties;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 /**
  * Marker interface to indicate a given input format supports
@@ -30,7 +29,7 @@ public interface VectorizedInputFormatInterface {
 
   VectorizedSupport.Support[] getSupportedFeatures();
 
-  default VectorizedSupport.Support[] getSupportedFeatures(HiveConf hiveConf, Properties properties) {
+  default VectorizedSupport.Support[] getSupportedFeatures(HiveConf hiveConf, TableDesc tableDesc) {
     return getSupportedFeatures();
   }
 }
