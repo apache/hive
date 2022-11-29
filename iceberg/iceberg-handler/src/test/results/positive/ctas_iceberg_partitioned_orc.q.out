@@ -273,6 +273,7 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	bucketing_version   	-1                  
 	engine.hive.enabled 	true                
+	format-version      	2                   
 	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	2                   

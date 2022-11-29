@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import java.util.stream.Collectors;
-
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -64,7 +62,7 @@ public class UpdateDeleteSemanticAnalyzer extends RewriteSemanticAnalyzer {
       reparseAndSuperAnalyze(tree, table, tabNameNode);
       break;
     case HiveParser.TOK_UPDATE_TABLE:
-      boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(table);
+      boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(table, true);
       if (nonNativeAcid) {
         throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
       }

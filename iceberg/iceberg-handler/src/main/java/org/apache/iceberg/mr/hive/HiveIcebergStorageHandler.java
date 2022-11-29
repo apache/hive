@@ -595,9 +595,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public AcidSupportType supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table table) {
+  public AcidSupportType supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table table,
+      boolean isWriteOperation) {
     if (table.getParameters() != null && "2".equals(table.getParameters().get(TableProperties.FORMAT_VERSION))) {
-      checkDMLOperationMode(table);
+      if (isWriteOperation) {
+        checkDMLOperationMode(table);
+      }
       return AcidSupportType.WITHOUT_TRANSACTIONS;
     }
 
