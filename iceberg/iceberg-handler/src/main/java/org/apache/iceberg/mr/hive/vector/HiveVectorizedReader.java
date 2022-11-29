@@ -58,6 +58,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
+import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.orc.VectorizedReadUtils;
 import org.apache.iceberg.parquet.ParquetFooterInputFromCache;
@@ -154,7 +155,7 @@ public class HiveVectorizedReader {
       switch (format) {
         case ORC:
           recordReader = orcRecordReader(job, reporter, task, path, start, length, readColumnIds,
-              fileId, residual);
+              fileId, residual, table.name());
           break;
 
         case PARQUET:
@@ -176,7 +177,7 @@ public class HiveVectorizedReader {
 
   private static RecordReader<NullWritable, VectorizedRowBatch> orcRecordReader(JobConf job, Reporter reporter,
       FileScanTask task, Path path, long start, long length, List<Integer> readColumnIds,
-      SyntheticFileId fileId, Expression residual) throws IOException {
+      SyntheticFileId fileId, Expression residual, String tableName) throws IOException {
     RecordReader<NullWritable, VectorizedRowBatch> recordReader = null;
 
     // Need to turn positional schema evolution off since we use column name based schema evolution for projection
@@ -195,6 +196,12 @@ public class HiveVectorizedReader {
     // TODO: add support for reading files with positional deletes with LLAP (LLAP would need to provide file row num)
     if (HiveConf.getBoolVar(job, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon()) &&
         LlapProxy.getIo() != null && task.deletes().isEmpty()) {
+      boolean isDisableVectorization =
+          job.getBoolean(HiveIcebergInputFormat.getVectorizationConfName(tableName), false);
+      if (isDisableVectorization) {
+        // Required to prevent LLAP from dealing with decimal64, HiveIcebergInputFormat.getSupportedFeatures()
+        HiveConf.setVar(job, HiveConf.ConfVars.HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED, "");
+      }
       recordReader = LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, path, null, readColumnIds,
           job, start, length, reporter);
     }
