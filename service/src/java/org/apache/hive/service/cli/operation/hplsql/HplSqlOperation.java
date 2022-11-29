@@ -199,7 +199,8 @@ public class HplSqlOperation extends ExecuteStatementOperation implements Result
         SessionState.setCurrentSessionState(parentSessionState);
         PerfLogger.setPerfLogger(SessionState.getPerfLogger());
         LogUtils.registerLoggingContext(queryState.getConf());
-        ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
+        ShimLoader.getHadoopShims()
+            .setHadoopQueryContext(queryState.getQueryId() + "_User:" + parentSessionState.getUserName());
         try {
           interpret();
         } catch (HiveSQLException e) {
