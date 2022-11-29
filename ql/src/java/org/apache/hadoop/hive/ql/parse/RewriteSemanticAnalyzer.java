@@ -609,7 +609,7 @@ public abstract class RewriteSemanticAnalyzer extends CalcitePlanner {
   public static final String SUB_QUERY_ALIAS = "s";
 
   protected ColumnAppender getColumnAppender(String subQueryAlias) {
-    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable);
+    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable, true);
     return nonNativeAcid ? new NonNativeAcidColumnAppender(targetTable, conf, subQueryAlias) :
             new NativeAcidColumnAppender(targetTable, conf, subQueryAlias);
   }
