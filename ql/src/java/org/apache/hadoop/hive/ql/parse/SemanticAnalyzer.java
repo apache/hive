@@ -7692,6 +7692,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         dpCtx.setRootPath(queryTmpdir);
         isPartitioned = true;
       } else {
+        queryTmpdir = getTmpDir(false, isMmTable, isDirectInsert, qPath, dpCtx);
         ColsAndTypes ct = deriveFileSinkColTypes(
             inputRR, sortColumnNames, distributeColumnNames, fieldSchemas, sortColumns, distributeColumns,
             sortColInfos, distributeColInfos);
