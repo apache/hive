@@ -3366,9 +3366,9 @@ public class AcidUtils {
     }
   }
 
-  public static boolean isNonNativeAcidTable(Table table) {
+  public static boolean isNonNativeAcidTable(Table table, boolean isWriteOperation) {
     return table != null && table.getStorageHandler() != null &&
-        table.getStorageHandler().supportsAcidOperations(table) != HiveStorageHandler.AcidSupportType.NONE;
+        table.getStorageHandler().supportsAcidOperations(table, isWriteOperation) != HiveStorageHandler.AcidSupportType.NONE;
   }
 
   /**
@@ -3381,7 +3381,7 @@ public class AcidUtils {
     if (isTransactionalTable(table)) {
       return Lists.newArrayList(VirtualColumn.ROWID);
     } else {
-      if (isNonNativeAcidTable(table)) {
+      if (isNonNativeAcidTable(table, false)) {
         return table.getStorageHandler().acidVirtualColumns();
       }
     }
@@ -3390,7 +3390,8 @@ public class AcidUtils {
 
   public static boolean acidTableWithoutTransactions(Table table) {
     return table != null && table.getStorageHandler() != null &&
-        table.getStorageHandler().supportsAcidOperations(table) == HiveStorageHandler.AcidSupportType.WITHOUT_TRANSACTIONS;
+        table.getStorageHandler().supportsAcidOperations(table, true) ==
+            HiveStorageHandler.AcidSupportType.WITHOUT_TRANSACTIONS;
   }
 
   static class DirInfoValue {

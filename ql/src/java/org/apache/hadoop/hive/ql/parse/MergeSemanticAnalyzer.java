@@ -62,7 +62,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
 
   @Override
   public void analyze(ASTNode tree, Table targetTable, ASTNode tableNameNode) throws SemanticException {
-    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable);
+    boolean nonNativeAcid = AcidUtils.isNonNativeAcidTable(targetTable, true);
     if (nonNativeAcid) {
       throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
     }

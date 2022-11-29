@@ -634,6 +634,10 @@ public class TestHiveIcebergV2 extends HiveIcebergStorageHandlerWithEngineBase {
       Assert.assertTrue(e.getMessage().contains("Hive doesn't support copy-on-write mode"));
     }
 
+    // Try read queries, they shouldn't fail
+    shell.executeStatement("select * from customers where first_name='Joanna'");
+    shell.executeStatement("select * from customers limit 1");
+    shell.executeStatement("select count(*) from customers");
   }
 
   private static <T> PositionDelete<T> positionDelete(CharSequence path, long pos, T row) {
