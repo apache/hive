@@ -397,7 +397,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   /**
    * @return true if the compaction type is 'REBALANCE', false otherwise.
    */
-  public boolean isRebalanceCompactionTable() {
+  public boolean isRebalanceRequested() {
     String compactionType = getTable() != null
         ? table.getParameters().get(COMPACTOR_TABLE_PROPERTY)
         : getTableInfo().getProperties().getProperty(COMPACTOR_TABLE_PROPERTY);

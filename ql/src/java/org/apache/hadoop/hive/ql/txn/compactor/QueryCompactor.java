@@ -100,7 +100,7 @@ abstract class QueryCompactor implements Compactor {
     Util.overrideConfProps(conf, compactionInfo, tblProperties);
     String user = compactionInfo.runAs;
     SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
-    long compactorTxnId = Util.getCompactorTxnId(conf);
+    long compactorTxnId = Compactor.getCompactorTxnId(conf);
     try {
       for (String query : createQueries) {
         try {
@@ -174,18 +174,6 @@ abstract class QueryCompactor implements Compactor {
    */
   static class Util {
 
-    static long getCompactorTxnId(Configuration jobConf) {
-      String snapshot = jobConf.get(ValidTxnList.VALID_TXNS_KEY);
-      if(Strings.isNullOrEmpty(snapshot)) {
-        throw new IllegalStateException(ValidTxnList.VALID_TXNS_KEY + " not found for writing to "
-            + jobConf.get(FINAL_LOCATION));
-      }
-      ValidTxnList validTxnList = new ValidReadTxnList();
-      validTxnList.readFromString(snapshot);
-      //this is id of the current (compactor) txn
-      return validTxnList.getHighWatermark();
-    }
-
     /**
      * Get the path of the base, delta, or delete delta directory that will be the final
      * destination of the files during compaction.
@@ -204,7 +192,7 @@ abstract class QueryCompactor implements Compactor {
         boolean writingBase, boolean createDeleteDelta, boolean bucket0, AcidDirectory directory) {
       long minWriteID = writingBase ? 1 : getMinWriteID(directory);
       long highWatermark = writeIds.getHighWatermark();
-      long compactorTxnId = getCompactorTxnId(conf);
+      long compactorTxnId = Compactor.getCompactorTxnId(conf);
       AcidOutputFormat.Options options =
           new AcidOutputFormat.Options(conf).isCompressed(false).minimumWriteId(minWriteID)
               .maximumWriteId(highWatermark).statementId(-1).visibilityTxnId(compactorTxnId)

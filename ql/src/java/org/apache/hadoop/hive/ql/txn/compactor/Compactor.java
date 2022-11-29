@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -25,12 +28,25 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.parquet.Strings;
 
 import java.io.IOException;
 
 public interface Compactor {
 
   String FINAL_LOCATION = "hive.compactor.input.dir";
+
+  static long getCompactorTxnId(Configuration jobConf) {
+    String snapshot = jobConf.get(ValidTxnList.VALID_TXNS_KEY);
+    if(Strings.isNullOrEmpty(snapshot)) {
+      throw new IllegalStateException(ValidTxnList.VALID_TXNS_KEY + " not found for writing to "
+          + jobConf.get(FINAL_LOCATION));
+    }
+    ValidTxnList validTxnList = new ValidReadTxnList();
+    validTxnList.readFromString(snapshot);
+    //this is id of the current (compactor) txn
+    return validTxnList.getHighWatermark();
+  }
 
   /**
    * Start a compaction.

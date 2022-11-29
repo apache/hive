@@ -93,23 +93,23 @@ import org.slf4j.LoggerFactory;
  */
 public class MRCompactor implements Compactor {
 
-  static final private String CLASS_NAME = MRCompactor.class.getName();
-  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-  static final private String INPUT_FORMAT_CLASS_NAME = "hive.compactor.input.format.class.name";
-  static final private String OUTPUT_FORMAT_CLASS_NAME = "hive.compactor.output.format.class.name";
-  static final private String TMP_LOCATION = "hive.compactor.input.tmp.dir";
-  static final private String MIN_TXN = "hive.compactor.txn.min";
-  static final private String MAX_TXN = "hive.compactor.txn.max";
-  static final private String IS_MAJOR = "hive.compactor.is.major";
-  static final private String IS_COMPRESSED = "hive.compactor.is.compressed";
-  static final private String TABLE_PROPS = "hive.compactor.table.props";
-  static final private String NUM_BUCKETS = hive_metastoreConstants.BUCKET_COUNT;
-  static final private String BASE_DIR = "hive.compactor.base.dir";
-  static final private String DELTA_DIRS = "hive.compactor.delta.dirs";
-  static final private String DIRS_TO_SEARCH = "hive.compactor.dirs.to.search";
-  static final private String TMPDIR = "_tmp";
-  static final private String TBLPROPS_PREFIX = "tblprops.";
-  static final private String COMPACTOR_PREFIX = "compactor.";
+  private static final String CLASS_NAME = MRCompactor.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+  private static final String INPUT_FORMAT_CLASS_NAME = "hive.compactor.input.format.class.name";
+  private static final String OUTPUT_FORMAT_CLASS_NAME = "hive.compactor.output.format.class.name";
+  private static final String TMP_LOCATION = "hive.compactor.input.tmp.dir";
+  private static final String MIN_TXN = "hive.compactor.txn.min";
+  private static final String MAX_TXN = "hive.compactor.txn.max";
+  private static final String IS_MAJOR = "hive.compactor.is.major";
+  private static final String IS_COMPRESSED = "hive.compactor.is.compressed";
+  private static final String TABLE_PROPS = "hive.compactor.table.props";
+  private static final String NUM_BUCKETS = hive_metastoreConstants.BUCKET_COUNT;
+  private static final String BASE_DIR = "hive.compactor.base.dir";
+  private static final String DELTA_DIRS = "hive.compactor.delta.dirs";
+  private static final String DIRS_TO_SEARCH = "hive.compactor.dirs.to.search";
+  private static final String TMPDIR = "_tmp";
+  private static final String TBLPROPS_PREFIX = "tblprops.";
+  private static final String COMPACTOR_PREFIX = "compactor.";
 
   private JobConf mrJob;  // the MR job for compaction
   private IMetaStoreClient msc;
@@ -521,7 +521,7 @@ public class MRCompactor implements Compactor {
       int len;
       byte[] buf;
 
-      locations = new ArrayList<String>();
+      locations = new ArrayList<>();
       length = dataInput.readLong();
       LOG.debug("Read length of " + length);
       int numElements = dataInput.readInt();
@@ -568,11 +568,11 @@ public class MRCompactor implements Compactor {
         }
         deltasToAttemptId.put(deltas[i].getName(), attemptId);
         if (baseAttemptId != null) {
-          deltasToAttemptId.put(base.getName(), Integer.valueOf(baseAttemptId));
+          deltasToAttemptId.put(base.getName(), baseAttemptId);
         }
       }
       if (baseAttemptId != null) {
-        deltasToAttemptId.put(base.toString(), Integer.valueOf(baseAttemptId));
+        deltasToAttemptId.put(base.toString(), baseAttemptId);
       }
     }
 
@@ -868,7 +868,7 @@ public class MRCompactor implements Compactor {
             .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE))
             .bucket(bucket)
             .statementId(-1)//setting statementId == -1 makes compacted delta files use
-            .visibilityTxnId(QueryCompactor.Util.getCompactorTxnId(jobConf));
+            .visibilityTxnId(Compactor.getCompactorTxnId(jobConf));
       //delta_xxxx_yyyy format
 
         // Instantiate the underlying output format
@@ -907,7 +907,7 @@ public class MRCompactor implements Compactor {
                 .maximumWriteId(jobConf.getLong(MAX_TXN, Long.MIN_VALUE)).bucket(bucket)
                 .statementId(-1)//setting statementId == -1 makes compacted delta files use
                 // delta_xxxx_yyyy format
-                .visibilityTxnId(QueryCompactor.Util.getCompactorTxnId(jobConf));
+                .visibilityTxnId(Compactor.getCompactorTxnId(jobConf));
 
         // Instantiate the underlying output format
         @SuppressWarnings("unchecked")//since there is no way to parametrize instance of Class
@@ -1026,7 +1026,7 @@ public class MRCompactor implements Compactor {
             .maximumWriteId(conf.getLong(MAX_TXN, Long.MIN_VALUE))
             .bucket(0)
             .statementId(-1)
-            .visibilityTxnId(QueryCompactor.Util.getCompactorTxnId(conf));
+            .visibilityTxnId(Compactor.getCompactorTxnId(conf));
         Path newDeltaDir = AcidUtils.createFilename(finalLocation, options).getParent();
         LOG.info(context.getJobID() + ": " + tmpLocation +
             " not found.  Assuming 0 splits.  Creating " + newDeltaDir);

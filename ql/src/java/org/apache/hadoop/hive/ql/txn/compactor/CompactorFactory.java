@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * Simple factory class, which returns an instance of {@link QueryCompactor}.
  */
 public final class CompactorFactory {
-  static final private Logger LOG = LoggerFactory.getLogger(CompactorFactory.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(CompactorFactory.class.getName());
 
   private static final CompactorFactory INSTANCE = new CompactorFactory();
 

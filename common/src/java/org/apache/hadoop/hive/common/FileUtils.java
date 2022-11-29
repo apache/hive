@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -36,6 +37,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.Map;
@@ -46,6 +48,7 @@ import java.util.stream.StreamSupport;
 import java.util.StringTokenizer;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Streams;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.ContentSummary;
@@ -1384,11 +1387,7 @@ public final class FileUtils {
         status -> filter.accept(status.getPath()));
   }
 
-  public static <T> Stream<T> asStream(RemoteIterator<T> iterator) {
-    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new RemoteIteratorWrapper<T>(iterator), Spliterator.ORDERED), false);
-  }
-
-  static class RemoteIteratorWrapper<T> implements Iterator {
+  public static class AdaptingIterator<T> implements Iterator<T> {
 
     private final RemoteIterator<T> iterator;
 
@@ -1397,20 +1396,24 @@ public final class FileUtils {
       try {
         return iterator.hasNext();
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     }
 
     @Override
-    public Object next() {
+    public T next() {
       try {
-        return iterator.next();
+        if (iterator.hasNext()) {
+          return iterator.next();
+        } else {
+          throw new NoSuchElementException();
+        }
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new UncheckedIOException(e);
       }
     }
 
-    public RemoteIteratorWrapper(RemoteIterator<T> iterator) {
+    public AdaptingIterator(RemoteIterator<T> iterator) {
       this.iterator = iterator;
     }
   }

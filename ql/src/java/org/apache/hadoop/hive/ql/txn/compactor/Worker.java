@@ -169,10 +169,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     StringBuilder deltaInfo = new StringBuilder().append(deltaCount);
     boolean isEnoughToCompact;
 
-    if (ci.type.equals(CompactionType.REBALANCE)) {
+    if (ci.isRebalanceCompaction()) {
       //TODO: For now, we are allowing rebalance compaction regardless of the table state. Thresholds will be added later.
       return true;
-    } else if (ci.type.equals(CompactionType.MAJOR)) {
+    } else if (ci.isMajorCompaction()) {
       isEnoughToCompact =
           (origCount > 0 || deltaCount + (dir.getBaseDirectory() == null ? 0 : 1) > 1);
 
@@ -306,7 +306,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         return false;
       }
 
-      if (ci.type.equals(CompactionType.REBALANCE) && table.getSd().getNumBuckets() > 0) {
+      if (ci.isRebalanceCompaction() && table.getSd().getNumBuckets() > 0) {
         LOG.error("Cannot execute rebalancing compaction on bucketed tables.");
         ci.errorMessage = "Cannot execute rebalancing compaction on bucketed tables.";
         msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
@@ -396,7 +396,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         compactionTxn.wasSuccessful();
         return false;
       }
-      if (ci.type.equals(CompactionType.MINOR) && !isMinorCompactionSupported(table.getParameters(), dir)) {
+      if (!ci.isMajorCompaction() && !isMinorCompactionSupported(table.getParameters(), dir)) {
         ci.errorMessage = "Query based Minor compaction is not possible for full acid tables having raw format " +
             "(non-acid) data in them.";
         LOG.error(ci.errorMessage + " Compaction info: {}", ci);

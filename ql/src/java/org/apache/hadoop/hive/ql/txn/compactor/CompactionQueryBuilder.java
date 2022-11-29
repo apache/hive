@@ -220,7 +220,7 @@ class CompactionQueryBuilder {
     this.resultTableName = resultTableName;
     this.insertOnly = insertOnly;
 
-    if(CompactionType.REBALANCE.equals(compactionType) && insertOnly) {
+    if (CompactionType.REBALANCE.equals(compactionType) && insertOnly) {
       throw new IllegalArgumentException("Rebalance compaction is supported only on full ACID tables!");
     }
   }
@@ -295,8 +295,8 @@ class CompactionQueryBuilder {
     // Need list of columns for major crud, mmmajor partitioned, mmminor
     List<FieldSchema> cols;
     if (CompactionType.REBALANCE.equals(compactionType) ||
-        (CompactionType.MAJOR.equals(compactionType) && (!insertOnly || (insertOnly && sourcePartition != null))) ||
-        (CompactionType.MINOR.equals(compactionType) && insertOnly)) {
+        CompactionType.MAJOR.equals(compactionType) && (!insertOnly || sourcePartition != null) ||
+        CompactionType.MINOR.equals(compactionType) && insertOnly) {
       if (sourceTab == null) {
         return; // avoid NPEs, don't throw an exception but skip this part of the query
       }
@@ -322,9 +322,7 @@ class CompactionQueryBuilder {
       case MAJOR: {
         if (insertOnly) {
           if (sourcePartition != null) { //mmmajor and partitioned
-            for (int i = 0; i < cols.size(); ++i) {
-              query.append(i == 0 ? "`" : ", `").append(cols.get(i).getName()).append("`");
-            }
+            appendColumns(query, cols);
           } else { // mmmajor and unpartitioned
             query.append("*");
           }
@@ -333,25 +331,30 @@ class CompactionQueryBuilder {
               "validate_acid_sort_order(ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId), "
                   + "ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId, ROW__ID.writeId, "
                   + "NAMED_STRUCT(");
-          for (int i = 0; i < cols.size(); ++i) {
-            query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', ")
-                .append(cols.get(i).getName());
-          }
+          appendColumns(query, cols);
           query.append(") ");
         }
         break;
       }
       case MINOR: {
         if (insertOnly) {
-          for (int i = 0; i < cols.size(); ++i) {
-            query.append(i == 0 ? "`" : ", `").append(cols.get(i).getName()).append("`");
-          }
+          appendColumns(query, cols);
         } else {
           query.append(
               "`operation`, `originalTransaction`, `bucket`, `rowId`, `currentTransaction`, `row`");
         }
         break;
       }
+    }
+  }
+
+  private void appendColumns(StringBuilder query, List<FieldSchema> cols) {
+    if (cols == null) {
+      throw new IllegalStateException("Query could not be created: Source columns are unknown");
+    }
+    for (int i = 0; i < cols.size(); ++i) {
+      query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', ")
+          .append(cols.get(i).getName());
     }
   }
 

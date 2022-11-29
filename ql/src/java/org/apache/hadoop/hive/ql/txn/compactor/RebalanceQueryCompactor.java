@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
@@ -51,7 +52,7 @@ final class RebalanceQueryCompactor extends QueryCompactor {
         conf, true, false, false, null);
 
     //TODO: This is quite expensive, a better way should be found to get the number of buckets for an implicitly bucketed table
-    int numBuckets = FileUtils.asStream(FileUtils.listFiles(dir.getFs(), dir.getPath(), true, AcidUtils.bucketFileFilter))
+    int numBuckets = Streams.stream(new FileUtils.AdaptingIterator<>(FileUtils.listFiles(dir.getFs(), dir.getPath(), true, AcidUtils.bucketFileFilter)))
         .map(f -> AcidUtils.parseBucketId(f.getPath()))
         .collect(Collectors.toSet()).size();
 
