@@ -329,7 +329,7 @@ public class SQLOperation extends ExecuteStatementOperation {
             LogUtils.registerLoggingContext(queryState.getConf());
           }
           ShimLoader.getHadoopShims()
-              .setHadoopQueryContext(queryState.getQueryId() + " User:" + parentSessionState.getUserName());
+              .setHadoopQueryContext(queryState.getQueryId() + "_User:" + parentSessionState.getUserName());
 
           try {
             if (asyncPrepare) {

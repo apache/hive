@@ -251,7 +251,7 @@ public class CliDriver {
 
         // Set HDFS CallerContext to queryId and reset back to sessionId after the query is done
         ShimLoader.getHadoopShims()
-            .setHadoopQueryContext(qp.getQueryState().getQueryId() + " User: " + ss.getUserName());
+            .setHadoopQueryContext(qp.getQueryState().getQueryId() + "_User:" + ss.getUserName());
         try {
           response = qp.run(cmd);
         } catch (CommandProcessorException e) {

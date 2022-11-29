@@ -198,7 +198,7 @@ public class TezTask extends Task<TezWork> {
       // TODO: we could perhaps reuse the same directory for HiveResources?
       Path scratchDir = utils.createTezDir(ctx.getMRScratchDir(), conf);
       CallerContext callerContext =
-          CallerContext.create("HIVE", queryPlan.getQueryId() + " User: " + userName, "HIVE_QUERY_ID",
+          CallerContext.create("HIVE", queryPlan.getQueryId() + "_User:" + userName, "HIVE_QUERY_ID",
               queryPlan.getQueryStr());
 
       perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
