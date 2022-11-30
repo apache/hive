@@ -94,8 +94,8 @@
     <storage-api.version>4.0.0-SNAPSHOT</storage-api.version>
     <beanutils.version>1.9.4</beanutils.version>
     <hamcrest.version>1.3</hamcrest.version>
-    <curator.version>5.2.0</curator.version>
-    <zookeeper.version>3.6.3</zookeeper.version>
+    <curator.version>4.2.0</curator.version>
+    <zookeeper.version>3.5.5</zookeeper.version>
     <cron-utils.version>9.1.6</cron-utils.version>
     <spotbugs.version>4.0.3</spotbugs.version>
     <caffeine.version>2.8.4</caffeine.version>
