@@ -1786,6 +1786,35 @@
       <build>
         <plugins>
           <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.2.1</version>
+            <executions>
+              <execution>
+                <id>check-thrift-version</id>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>sh</executable>
+                  <workingDirectory>${basedir}</workingDirectory>
+                  <arguments>
+                    <argument>-c</argument>
+                    <argument>${thrift.home}/bin/thrift -version | fgrep 'Thrift version ${libthrift.version}' &amp;&amp; exit 0;
+                      echo "=================================================================================";
+                      echo "========== [FATAL] Build is configured to require Thrift version ${libthrift.version} =========";
+                      echo "========== Currently installed: ";
+                      ${thrift.home}/bin/thrift -version;
+                      echo "=================================================================================";
+                      exit 1
+                    </argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
