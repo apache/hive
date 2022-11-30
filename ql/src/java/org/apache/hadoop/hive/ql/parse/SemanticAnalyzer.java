@@ -7654,23 +7654,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      Path qPath = null;
-      if (isLocal) {
-        assert !isMmTable;
-        // for local directory - we always write to map-red intermediate
-        // store and then copy to local fs
-        queryTmpdir = ctx.getMRTmpPath();
-      } else {
-        // otherwise write to the file system implied by the directory
-        // no copy is required. we may want to revisit this policy in future
-        try {
-          qPath = FileUtils.makeQualified(destinationPath, conf);
-        } catch (Exception e) {
-          throw new SemanticException("Error creating "
-              + destinationPath, e);
-        }
-      }
-
       // Check for dynamic partitions.
       final String cols, colTypes;
       final boolean isPartitioned;
@@ -7687,18 +7670,35 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
             conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
         qbm.setDPCtx(dest, dpCtx);
-        // set the root of the temporary path where dynamic partition columns will populate
-        queryTmpdir = getTmpDir(false, isMmTable, isDirectInsert, qPath, dpCtx);
-        dpCtx.setRootPath(queryTmpdir);
         isPartitioned = true;
       } else {
-        queryTmpdir = getTmpDir(false, isMmTable, isDirectInsert, qPath, dpCtx);
         ColsAndTypes ct = deriveFileSinkColTypes(
             inputRR, sortColumnNames, distributeColumnNames, fieldSchemas, sortColumns, distributeColumns,
             sortColInfos, distributeColInfos);
         cols = ct.cols;
         colTypes = ct.colTypes;
         isPartitioned = false;
+      }
+
+      if (isLocal) {
+        assert !isMmTable;
+        // for local directory - we always write to map-red intermediate
+        // store and then copy to local fs
+        queryTmpdir = ctx.getMRTmpPath();
+      } else {
+        // otherwise write to the file system implied by the directory
+        // no copy is required. we may want to revisit this policy in future
+        try {
+          Path qPath = FileUtils.makeQualified(destinationPath, conf);
+          queryTmpdir = getTmpDir(false, isMmTable, isDirectInsert, qPath, dpCtx);
+        } catch (Exception e) {
+          throw new SemanticException("Error creating "
+              + destinationPath, e);
+        }
+      }
+      // set the root of the temporary path where dynamic partition columns will populate
+      if (dpCtx != null) {
+        dpCtx.setRootPath(queryTmpdir);
       }
 
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
