@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.common.type.Timestamp;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -263,7 +262,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean directInsertCTAS() {
+  public boolean directInsert() {
     return true;
   }
 
@@ -462,7 +461,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
+    String location = commitProperties.getProperty(Catalogs.LOCATION);
     Configuration configuration = SessionState.getSessionConf();
+    if (location != null) {
+      HiveTableUtil.cleanupTableObjectFile(location, configuration);
+    }
     List<JobContext> jobContextList = generateJobContext(configuration, tableName, overwrite);
     if (jobContextList.isEmpty()) {
       return;
@@ -729,6 +732,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   public static Table table(Configuration config, String name) {
     Table table = SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + name));
+    if (table == null &&
+            config.getBoolean(hive_metastoreConstants.TABLE_IS_CTAS, false) &&
+            StringUtils.isNotBlank(config.get(InputFormatConfig.TABLE_LOCATION))) {
+      table = HiveTableUtil.readTableObjectFromFile(config);
+    }
     checkAndSetIoConfig(config, table);
     return table;
   }
@@ -759,7 +767,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   public static void checkAndSkipIoConfigSerialization(Configuration config, Table table) {
     if (table != null && config.getBoolean(InputFormatConfig.CONFIG_SERIALIZATION_DISABLED,
-        InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) && table.io() instanceof HadoopConfigurable) {
+            InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) && table.io() instanceof HadoopConfigurable) {
       ((HadoopConfigurable) table.io()).serializeConfWith(conf -> new NonSerializingConfig(config)::get);
     }
   }
@@ -831,15 +839,18 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
           SerializationUtil.serializeToBase64(serializableTable));
     } catch (NoSuchTableException ex) {
-      if (!(StringUtils.isNotBlank(props.getProperty(hive_metastoreConstants.TABLE_IS_CTAS)) &&
-              StringUtils.isNotBlank(props.getProperty(Constants.EXPLAIN_CTAS_LOCATION)))) {
+      if (!HiveTableUtil.isCtas(props)) {
         throw ex;
       }
 
-      location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
-      if (StringUtils.isBlank(location)) {
-        location = props.getProperty(Constants.EXPLAIN_CTAS_LOCATION);
+      if (!Catalogs.hiveCatalog(configuration, props)) {
+        throw new UnsupportedOperationException(HiveIcebergSerDe.CTAS_EXCEPTION_MSG);
       }
+
+      location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
+
+      map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
+              SerializationUtil.serializeToBase64(null));
 
       try {
         AbstractSerDe serDe = tableDesc.getDeserializer(configuration);
@@ -860,6 +871,9 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
     // this is an exception to the interface documentation, but it's a safe operation to add this property
     props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+    if (spec == null) {
+      spec = PartitionSpec.unpartitioned();
+    }
     props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
 
     // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
