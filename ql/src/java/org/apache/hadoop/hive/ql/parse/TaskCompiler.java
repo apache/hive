@@ -308,7 +308,7 @@ public abstract class TaskCompiler {
       if (pCtx.getCreateTable() != null) {
         CreateTableDesc crtTblDesc = pCtx.getCreateTable();
         crtTblDesc.validate(conf);
-         crtTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
+        crtTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
       }
       if (crtTask != null) {
         for (Task<?> rootTask : rootTasks) {
