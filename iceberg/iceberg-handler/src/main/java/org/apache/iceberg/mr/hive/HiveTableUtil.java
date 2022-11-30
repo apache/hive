@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
@@ -203,4 +204,9 @@ public class HiveTableUtil {
       throw new NotFoundException("Can not read or parse table object file: %s", filePath);
     }
   }
+
+  public static boolean isCtas(Properties properties) {
+    return Boolean.parseBoolean(properties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS));
+  }
+
 }

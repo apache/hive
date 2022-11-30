@@ -121,10 +121,9 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         this.partitionColumns = ImmutableList.of();
         // create table for CTAS
         if (e instanceof NoSuchTableException &&
-                Boolean.parseBoolean(serDeProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS))) {
-          if (!Catalogs.hiveCatalog(configuration, serDeProperties)) {
-            throw new SerDeException(CTAS_EXCEPTION_MSG);
-          }
+            HiveTableUtil.isCtas(serDeProperties) &&
+            !Catalogs.hiveCatalog(configuration, serDeProperties)) {
+          throw new SerDeException(CTAS_EXCEPTION_MSG);
         }
       }
     }
