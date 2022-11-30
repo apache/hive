@@ -7685,6 +7685,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // for local directory - we always write to map-red intermediate
         // store and then copy to local fs
         queryTmpdir = ctx.getMRTmpPath();
+        if (dpCtx != null && dpCtx.getSPPath() != null) {
+          queryTmpdir = new Path(queryTmpdir, dpCtx.getSPPath());
+        }
       } else {
         // otherwise write to the file system implied by the directory
         // no copy is required. we may want to revisit this policy in future
@@ -8062,19 +8065,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      * 2. Micro-managed (insert only table)
      * 3. Full ACID table and operation type is INSERT
      */
+    Path destPath = null;
     if (isNonNativeTable || isMmTable || isDirectInsert) {
-      return (dpCtx != null && dpCtx.getSPPath() != null)? new Path(destinationPath, dpCtx.getSPPath()): destinationPath;
-    }
-    // If not direct insert, we see where to stage the query results
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_USE_SCRATCHDIR_FOR_STAGING)) {
-      Path queryTmpdir =  ctx.getTempDirForInterimJobPath(destinationPath);
-      if (dpCtx != null && dpCtx.getSPPath() != null) {
-        queryTmpdir = new Path(queryTmpdir, dpCtx.getSPPath());
-      }
-      return queryTmpdir;
+      destPath = destinationPath;
+    } else if (HiveConf.getBoolVar(conf, ConfVars.HIVE_USE_SCRATCHDIR_FOR_STAGING)) {
+      destPath = ctx.getTempDirForInterimJobPath(destinationPath);
     } else {
-      return ctx.getTempDirForFinalJobPath(destinationPath);
+      destPath = ctx.getTempDirForFinalJobPath(destinationPath);
     }
+    if (dpCtx != null && dpCtx.getSPPath() != null) {
+      return new Path(destPath, dpCtx.getSPPath());
+    }
+    return destPath;
   }
 
   private String getMoveTaskId() {
