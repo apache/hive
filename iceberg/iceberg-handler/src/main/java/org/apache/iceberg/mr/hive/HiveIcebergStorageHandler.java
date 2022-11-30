@@ -839,7 +839,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
       map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
           SerializationUtil.serializeToBase64(serializableTable));
     } catch (NoSuchTableException ex) {
-      if (!StringUtils.isNotBlank(props.getProperty(hive_metastoreConstants.TABLE_IS_CTAS))) {
+      if (!HiveTableUtil.isCtas(props)) {
         throw ex;
       }
 

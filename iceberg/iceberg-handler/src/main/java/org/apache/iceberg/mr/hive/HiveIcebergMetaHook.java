@@ -246,15 +246,13 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
         table = Catalogs.createTable(conf, catalogProperties);
       }
 
-      if (!Boolean.parseBoolean(catalogProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS))) {
+      if (!HiveTableUtil.isCtas(catalogProperties)) {
         return;
       }
 
       // set this in the query state so that we can rollback the table in the lifecycle hook in case of failures
-      SessionStateUtil.addResource(conf, InputFormatConfig.CTAS_TABLE_NAME,
-              catalogProperties.getProperty(Catalogs.NAME));
-
       String tableIdentifier = catalogProperties.getProperty(Catalogs.NAME);
+      SessionStateUtil.addResource(conf, InputFormatConfig.CTAS_TABLE_NAME, tableIdentifier);
       SessionStateUtil.addResource(conf, tableIdentifier, table);
 
       HiveTableUtil.createFileForTableObject(table, conf);
