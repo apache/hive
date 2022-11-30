@@ -424,7 +424,7 @@ KW_NOT : 'NOT';
 KW_AND : 'AND';
 KW_OR : 'OR';
 KW_LIKE : 'LIKE';
-KW_DATE : 'date';
+KW_DATE : ('DATE'|'date');
 KW_CONST : 'CONST';
 KW_STRUCT : 'STRUCT';
 
@@ -463,7 +463,8 @@ to support single quotes [( '\'' DateString '\'' ) |]. For now, what we do inste
 to parse the string in metastore code from StringLiteral. */
 DateLiteral
     :
-    KW_DATE? DateString { ExtractDate(getText()) != null }?
+    KW_DATE '\'' DateString '\'' { ExtractDate(getText()) != null }?
+    | DateString { ExtractDate(getText()) != null }?
     ;
 
 StringLiteral
