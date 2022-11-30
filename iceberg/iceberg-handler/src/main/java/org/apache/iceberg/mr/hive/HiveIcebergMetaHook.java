@@ -239,11 +239,23 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       setFileFormat(catalogProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
 
       String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+      Table table;
       if (metadataLocation != null) {
-        Catalogs.registerTable(conf, catalogProperties, metadataLocation);
+        table = Catalogs.registerTable(conf, catalogProperties, metadataLocation);
       } else {
-        Catalogs.createTable(conf, catalogProperties);
+        table = Catalogs.createTable(conf, catalogProperties);
       }
+
+      if (!HiveTableUtil.isCtas(catalogProperties)) {
+        return;
+      }
+
+      // set this in the query state so that we can rollback the table in the lifecycle hook in case of failures
+      String tableIdentifier = catalogProperties.getProperty(Catalogs.NAME);
+      SessionStateUtil.addResource(conf, InputFormatConfig.CTAS_TABLE_NAME, tableIdentifier);
+      SessionStateUtil.addResource(conf, tableIdentifier, table);
+
+      HiveTableUtil.createFileForTableObject(table, conf);
     }
   }
 

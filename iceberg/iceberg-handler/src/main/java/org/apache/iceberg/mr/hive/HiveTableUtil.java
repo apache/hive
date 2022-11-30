@@ -20,6 +20,9 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -37,21 +40,36 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.MetricsConfig;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.data.TableMigrationUtil;
+import org.apache.iceberg.exceptions.NotFoundException;
+import org.apache.iceberg.hadoop.HadoopFileIO;
+import org.apache.iceberg.hadoop.Util;
+import org.apache.iceberg.io.FileIO;
+import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mapping.NameMapping;
 import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.iceberg.util.SerializationUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HiveTableUtil {
+
+  private static final Logger LOG = LoggerFactory.getLogger(HiveTableUtil.class);
+
+  static final String TABLE_EXTENSION = ".table";
 
   private HiveTableUtil() {
   }
@@ -142,4 +160,53 @@ public class HiveTableUtil {
       throw new MetaException("Exception happened during the collection of file statuses.\n" + e.getMessage());
     }
   }
+
+  static String generateTableObjectLocation(String tableLocation, Configuration conf) {
+    return tableLocation + "/temp/" + conf.get(HiveConf.ConfVars.HIVEQUERYID.varname) + TABLE_EXTENSION;
+  }
+
+  static void createFileForTableObject(Table table, Configuration conf) {
+    String filePath = generateTableObjectLocation(table.location(), conf);
+
+    Table serializableTable = SerializableTable.copyOf(table);
+    HiveIcebergStorageHandler.checkAndSkipIoConfigSerialization(conf, serializableTable);
+    String serialized = SerializationUtil.serializeToBase64(serializableTable);
+
+    OutputFile serializedTableFile = table.io().newOutputFile(filePath);
+    try (ObjectOutputStream oos = new ObjectOutputStream(serializedTableFile.createOrOverwrite())) {
+      oos.writeObject(serialized);
+    } catch (IOException ex) {
+      throw new UncheckedIOException(ex);
+    }
+    LOG.debug("Iceberg table metadata file is created {}", serializedTableFile);
+  }
+
+  static void cleanupTableObjectFile(String location, Configuration configuration) {
+    String tableObjectLocation = HiveTableUtil.generateTableObjectLocation(location, configuration);
+    try {
+      Path toDelete = new Path(tableObjectLocation);
+      FileSystem fs = Util.getFs(toDelete, configuration);
+      fs.delete(toDelete, true);
+    } catch (IOException ex) {
+      throw new UncheckedIOException(ex);
+    }
+  }
+
+  static Table readTableObjectFromFile(Configuration config) {
+    String location = config.get(InputFormatConfig.TABLE_LOCATION);
+    String filePath = HiveTableUtil.generateTableObjectLocation(location, config);
+
+    try (FileIO io = new HadoopFileIO(config)) {
+      try (ObjectInputStream ois = new ObjectInputStream(io.newInputFile(filePath).newStream())) {
+        return SerializationUtil.deserializeFromBase64((String) ois.readObject());
+      }
+    } catch (ClassNotFoundException | IOException e) {
+      throw new NotFoundException("Can not read or parse table object file: %s", filePath);
+    }
+  }
+
+  public static boolean isCtas(Properties properties) {
+    return Boolean.parseBoolean(properties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS));
+  }
+
 }
