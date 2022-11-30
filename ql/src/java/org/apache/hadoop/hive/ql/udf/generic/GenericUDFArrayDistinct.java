@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,8 +34,7 @@ import java.util.stream.Collectors;
  */
 @Description(name = "array_distinct",
         value = "_FUNC_(array(obj1, obj2,...)) - "
-                + "The function returns an array of the same type as the input argument where all duplicate"
-                + " values have been removed.",
+                + "The function returns an array of the same type as the input array with distinct values.",
         extended = "Example:\n"
                 + "  > SELECT _FUNC_(array('b', 'd', 'd', 'a')) FROM src LIMIT 1;\n"
                 + "  ['b', 'd', 'a']")
@@ -50,10 +50,10 @@ public class GenericUDFArrayDistinct extends AbstractGenericUDFArrayBase {
         Object array = arguments[ARRAY_IDX].get();
 
         if (arrayOI.getListLength(array) <= 0) {
-            return null;
+            return new ArrayList<Object>();
         }
 
         List<?> retArray = ((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array);
-        return convertArray(retArray.stream().distinct().collect(Collectors.toList()));
+        return retArray.stream().distinct().map(o->converter.convert(o)).collect(Collectors.toList());
     }
 }

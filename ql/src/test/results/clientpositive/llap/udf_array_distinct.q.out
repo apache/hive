@@ -2,12 +2,12 @@ PREHOOK: query: DESCRIBE FUNCTION array_distinct
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION array_distinct
 POSTHOOK: type: DESCFUNCTION
-array_distinct(array(obj1, obj2,...)) - The function returns an array of the same type as the input argument where all duplicate values have been removed.
+array_distinct(array(obj1, obj2,...)) - The function returns an array of the same type as the input array with distinct values.
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED array_distinct
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED array_distinct
 POSTHOOK: type: DESCFUNCTION
-array_distinct(array(obj1, obj2,...)) - The function returns an array of the same type as the input argument where all duplicate values have been removed.
+array_distinct(array(obj1, obj2,...)) - The function returns an array of the same type as the input array with distinct values.
 Example:
   > SELECT array_distinct(array('b', 'd', 'd', 'a')) FROM src LIMIT 1;
   ['b', 'd', 'a']
@@ -30,7 +30,7 @@ POSTHOOK: query: SELECT array_distinct(array()) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-NULL
+[]
 PREHOOK: query: SELECT array_distinct(array(null)) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -76,3 +76,37 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 [["a","b","c","d"],["a","b","c","d","e"],null,["e","a","b","c","d"]]
+PREHOOK: query: create external table test_null_array (id int, value Array<String>) ROW FORMAT DELIMITED
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_null_array
+POSTHOOK: query: create external table test_null_array (id int, value Array<String>) ROW FORMAT DELIMITED
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_null_array
+PREHOOK: query: select value from test_null_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+POSTHOOK: query: select value from test_null_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+[]
+["NULL"]
+["null","null"]
+PREHOOK: query: select array_distinct(value) from test_null_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+POSTHOOK: query: select array_distinct(value) from test_null_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+[]
+["NULL"]
+["null"]

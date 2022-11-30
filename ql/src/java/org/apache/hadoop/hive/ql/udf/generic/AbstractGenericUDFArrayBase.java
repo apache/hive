@@ -108,12 +108,4 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
     ObjectInspector initListOI(ObjectInspector[] arguments) {
         return ObjectInspectorFactory.getStandardListObjectInspector(initOI(arguments));
     }
-
-    List<?> convertArray(List<?> objects) {
-        List<Object> ret = new ArrayList<>();
-        for (Object o : objects) {
-            ret.add(converter.convert(o));
-        }
-        return ret;
-    }
 }

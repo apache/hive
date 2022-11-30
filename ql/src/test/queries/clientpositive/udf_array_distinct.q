@@ -18,3 +18,16 @@ SELECT array_distinct(array(1.1234567890, 2.234567890, 3.34567890, null, 3.34567
 SELECT array_distinct(array(11234567890, 2234567890, 334567890, null, 11234567890, 2234567890, 334567890, null)) FROM src tablesample (1 rows);
 
 SELECT array_distinct(array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null,array("e","a","b","c","d"))) FROM src tablesample (1 rows);
+
+# handle null array cases
+
+dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/test_null_array;
+
+dfs -copyFromLocal ../../data/files/test_null_array.csv ${system:test.tmp.dir}/test_null_array/;
+
+create external table test_null_array (id int, value Array<String>) ROW FORMAT DELIMITED
+ FIELDS TERMINATED BY ':' collection items terminated by ',' location '${system:test.tmp.dir}/test_null_array';
+
+select value from test_null_array;
+
+select array_distinct(value) from test_null_array;
