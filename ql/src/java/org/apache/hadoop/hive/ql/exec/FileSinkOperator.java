@@ -1005,10 +1005,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       FileSystem dpFs = dpFinalPath.getFileSystem(hconf);
       if (!dpFs.exists(dpFinalPath)) {
         fs.mkdirs(dpStagingPath);
-      }
-      // move task will create dp final path
-      if (reporter != null) {
-        reporter.incrCounter(counterGroup, Operator.HIVE_COUNTER_CREATED_DYNAMIC_PARTITIONS, 1);
+        // move task will create dp final path
+        if (reporter != null) {
+          reporter.incrCounter(counterGroup, Operator.HIVE_COUNTER_CREATED_DYNAMIC_PARTITIONS, 1);
+        }
       }
     }
   }
