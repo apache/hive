@@ -7735,11 +7735,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         if (tblDesc == null) {
           if (viewDesc != null) {
-            tableDescriptor = PlanUtils.getTableDesc(viewDesc, cols, colTypes);
             if (viewDesc.getStorageHandler() != null) {
               viewDesc.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix).toString());
-              tableDescriptor.getProperties().setProperty(META_TABLE_LOCATION, viewDesc.getLocation());
             }
+            tableDescriptor = PlanUtils.getTableDesc(viewDesc, cols, colTypes);
           } else if (qb.getIsQuery()) {
             Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
             String fileFormat = conf.getResultFileFormat().toString();
@@ -7764,7 +7763,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             tblDesc.setLocation(getCtasOrCMVLocation(tblDesc, viewDesc, createTableUseSuffix).toString());
           }
           tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
-          tableDescriptor.getProperties().setProperty(META_TABLE_LOCATION, tblDesc.getLocation());
         }
       } catch (HiveException e) {
         throw new SemanticException(e);
