@@ -4917,13 +4917,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
             }
             return true;
           } else {
-            // Create destf parent if it is on scratchdir and not exist
-            if (!destFs.exists(destf.getParent())) {
-              Path scratchDir = new Path(HiveConf.getVar(conf, ConfVars.SCRATCHDIR));
-              if (isSubDir(destf, scratchDir, destFs, destFs, false)) {
-                destFs.mkdirs(destf.getParent());
-              }
-            }
             if (destFs.rename(srcf, destf)) {
               return true;
             }
