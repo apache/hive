@@ -106,7 +106,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  Partition append_partition_req(AppendPartitionsRequest appendPartitionsReq)')
     print('  Partition append_partition_by_name(string db_name, string tbl_name, string part_name)')
     print('  Partition append_partition_by_name_with_environment_context(string db_name, string tbl_name, string part_name, EnvironmentContext environment_context)')
-    print('  Partition append_partition_by_name_req(AppendPartitionRequest appendPartitionRequest)')
+    print('  Partition append_partition_by_name_req(AppendPartitionsRequest appendPartitionRequest)')
     print('  bool drop_partition(string db_name, string tbl_name,  part_vals, bool deleteData)')
     print('  bool drop_partition_with_environment_context(string db_name, string tbl_name,  part_vals, bool deleteData, EnvironmentContext environment_context)')
     print('  bool drop_partition_req(DropPartitionRequest dropPartitionReq)')

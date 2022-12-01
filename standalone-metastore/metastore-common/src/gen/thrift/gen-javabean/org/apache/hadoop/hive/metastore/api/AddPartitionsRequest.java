@@ -25,9 +25,9 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new AddPartitionsRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new AddPartitionsRequestTupleSchemeFactory();
 
-  private @org.apache.thrift.annotation.Nullable java.lang.String dbName; // optional
-  private @org.apache.thrift.annotation.Nullable java.lang.String tblName; // optional
-  private @org.apache.thrift.annotation.Nullable java.util.List<Partition> parts; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String dbName; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String tblName; // required
+  private @org.apache.thrift.annotation.Nullable java.util.List<Partition> parts; // required
   private boolean ifNotExists; // required
   private boolean needResult; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
@@ -128,15 +128,15 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __NEEDRESULT_ISSET_ID = 1;
   private static final int __SKIPCOLUMNSCHEMAFORPARTITION_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.DB_NAME,_Fields.TBL_NAME,_Fields.PARTS,_Fields.NEED_RESULT,_Fields.CAT_NAME,_Fields.VALID_WRITE_ID_LIST,_Fields.SKIP_COLUMN_SCHEMA_FOR_PARTITION,_Fields.PARTITION_COL_SCHEMA,_Fields.ENVIRONMENT_CONTEXT};
+  private static final _Fields optionals[] = {_Fields.NEED_RESULT,_Fields.CAT_NAME,_Fields.VALID_WRITE_ID_LIST,_Fields.SKIP_COLUMN_SCHEMA_FOR_PARTITION,_Fields.PARTITION_COL_SCHEMA,_Fields.ENVIRONMENT_CONTEXT};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tblName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tblName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PARTS, new org.apache.thrift.meta_data.FieldMetaData("parts", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.PARTS, new org.apache.thrift.meta_data.FieldMetaData("parts", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class))));
     tmpMap.put(_Fields.IF_NOT_EXISTS, new org.apache.thrift.meta_data.FieldMetaData("ifNotExists", org.apache.thrift.TFieldRequirementType.REQUIRED, 
@@ -164,9 +164,15 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public AddPartitionsRequest(
+    java.lang.String dbName,
+    java.lang.String tblName,
+    java.util.List<Partition> parts,
     boolean ifNotExists)
   {
     this();
+    this.dbName = dbName;
+    this.tblName = tblName;
+    this.parts = parts;
     this.ifNotExists = ifNotExists;
     setIfNotExistsIsSet(true);
   }
@@ -930,35 +936,29 @@ package org.apache.hadoop.hive.metastore.api;
     java.lang.StringBuilder sb = new java.lang.StringBuilder("AddPartitionsRequest(");
     boolean first = true;
 
-    if (isSetDbName()) {
-      sb.append("dbName:");
-      if (this.dbName == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.dbName);
-      }
-      first = false;
+    sb.append("dbName:");
+    if (this.dbName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.dbName);
     }
-    if (isSetTblName()) {
-      if (!first) sb.append(", ");
-      sb.append("tblName:");
-      if (this.tblName == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.tblName);
-      }
-      first = false;
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("tblName:");
+    if (this.tblName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.tblName);
     }
-    if (isSetParts()) {
-      if (!first) sb.append(", ");
-      sb.append("parts:");
-      if (this.parts == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.parts);
-      }
-      first = false;
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("parts:");
+    if (this.parts == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.parts);
     }
+    first = false;
     if (!first) sb.append(", ");
     sb.append("ifNotExists:");
     sb.append(this.ifNotExists);
@@ -1021,6 +1021,18 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
+    if (!isSetDbName()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'dbName' is unset! Struct:" + toString());
+    }
+
+    if (!isSetTblName()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'tblName' is unset! Struct:" + toString());
+    }
+
+    if (!isSetParts()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'parts' is unset! Struct:" + toString());
+    }
+
     if (!isSetIfNotExists()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'ifNotExists' is unset! Struct:" + toString());
     }
@@ -1184,32 +1196,26 @@ package org.apache.hadoop.hive.metastore.api;
 
       oprot.writeStructBegin(STRUCT_DESC);
       if (struct.dbName != null) {
-        if (struct.isSetDbName()) {
-          oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
-          oprot.writeString(struct.dbName);
-          oprot.writeFieldEnd();
-        }
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(struct.dbName);
+        oprot.writeFieldEnd();
       }
       if (struct.tblName != null) {
-        if (struct.isSetTblName()) {
-          oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
-          oprot.writeString(struct.tblName);
-          oprot.writeFieldEnd();
-        }
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(struct.tblName);
+        oprot.writeFieldEnd();
       }
       if (struct.parts != null) {
-        if (struct.isSetParts()) {
-          oprot.writeFieldBegin(PARTS_FIELD_DESC);
+        oprot.writeFieldBegin(PARTS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.parts.size()));
+          for (Partition _iter656 : struct.parts)
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.parts.size()));
-            for (Partition _iter656 : struct.parts)
-            {
-              _iter656.write(oprot);
-            }
-            oprot.writeListEnd();
+            _iter656.write(oprot);
           }
-          oprot.writeFieldEnd();
+          oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldBegin(IF_NOT_EXISTS_FIELD_DESC);
       oprot.writeBool(struct.ifNotExists);
@@ -1276,51 +1282,36 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, AddPartitionsRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      oprot.writeBool(struct.ifNotExists);
-      java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetDbName()) {
-        optionals.set(0);
-      }
-      if (struct.isSetTblName()) {
-        optionals.set(1);
-      }
-      if (struct.isSetParts()) {
-        optionals.set(2);
-      }
-      if (struct.isSetNeedResult()) {
-        optionals.set(3);
-      }
-      if (struct.isSetCatName()) {
-        optionals.set(4);
-      }
-      if (struct.isSetValidWriteIdList()) {
-        optionals.set(5);
-      }
-      if (struct.isSetSkipColumnSchemaForPartition()) {
-        optionals.set(6);
-      }
-      if (struct.isSetPartitionColSchema()) {
-        optionals.set(7);
-      }
-      if (struct.isSetEnvironmentContext()) {
-        optionals.set(8);
-      }
-      oprot.writeBitSet(optionals, 9);
-      if (struct.isSetDbName()) {
-        oprot.writeString(struct.dbName);
-      }
-      if (struct.isSetTblName()) {
-        oprot.writeString(struct.tblName);
-      }
-      if (struct.isSetParts()) {
+      oprot.writeString(struct.dbName);
+      oprot.writeString(struct.tblName);
+      {
+        oprot.writeI32(struct.parts.size());
+        for (Partition _iter658 : struct.parts)
         {
-          oprot.writeI32(struct.parts.size());
-          for (Partition _iter658 : struct.parts)
-          {
-            _iter658.write(oprot);
-          }
+          _iter658.write(oprot);
         }
       }
+      oprot.writeBool(struct.ifNotExists);
+      java.util.BitSet optionals = new java.util.BitSet();
+      if (struct.isSetNeedResult()) {
+        optionals.set(0);
+      }
+      if (struct.isSetCatName()) {
+        optionals.set(1);
+      }
+      if (struct.isSetValidWriteIdList()) {
+        optionals.set(2);
+      }
+      if (struct.isSetSkipColumnSchemaForPartition()) {
+        optionals.set(3);
+      }
+      if (struct.isSetPartitionColSchema()) {
+        optionals.set(4);
+      }
+      if (struct.isSetEnvironmentContext()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetNeedResult()) {
         oprot.writeBool(struct.needResult);
       }
@@ -1350,48 +1341,42 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, AddPartitionsRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
+      struct.dbName = iprot.readString();
+      struct.setDbNameIsSet(true);
+      struct.tblName = iprot.readString();
+      struct.setTblNameIsSet(true);
+      {
+        org.apache.thrift.protocol.TList _list660 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.parts = new java.util.ArrayList<Partition>(_list660.size);
+        @org.apache.thrift.annotation.Nullable Partition _elem661;
+        for (int _i662 = 0; _i662 < _list660.size; ++_i662)
+        {
+          _elem661 = new Partition();
+          _elem661.read(iprot);
+          struct.parts.add(_elem661);
+        }
+      }
+      struct.setPartsIsSet(true);
       struct.ifNotExists = iprot.readBool();
       struct.setIfNotExistsIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(9);
+      java.util.BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
-        struct.dbName = iprot.readString();
-        struct.setDbNameIsSet(true);
-      }
-      if (incoming.get(1)) {
-        struct.tblName = iprot.readString();
-        struct.setTblNameIsSet(true);
-      }
-      if (incoming.get(2)) {
-        {
-          org.apache.thrift.protocol.TList _list660 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.parts = new java.util.ArrayList<Partition>(_list660.size);
-          @org.apache.thrift.annotation.Nullable Partition _elem661;
-          for (int _i662 = 0; _i662 < _list660.size; ++_i662)
-          {
-            _elem661 = new Partition();
-            _elem661.read(iprot);
-            struct.parts.add(_elem661);
-          }
-        }
-        struct.setPartsIsSet(true);
-      }
-      if (incoming.get(3)) {
         struct.needResult = iprot.readBool();
         struct.setNeedResultIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(1)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
       }
-      if (incoming.get(5)) {
+      if (incoming.get(2)) {
         struct.validWriteIdList = iprot.readString();
         struct.setValidWriteIdListIsSet(true);
       }
-      if (incoming.get(6)) {
+      if (incoming.get(3)) {
         struct.skipColumnSchemaForPartition = iprot.readBool();
         struct.setSkipColumnSchemaForPartitionIsSet(true);
       }
-      if (incoming.get(7)) {
+      if (incoming.get(4)) {
         {
           org.apache.thrift.protocol.TList _list663 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
           struct.partitionColSchema = new java.util.ArrayList<FieldSchema>(_list663.size);
@@ -1405,7 +1390,7 @@ package org.apache.hadoop.hive.metastore.api;
         }
         struct.setPartitionColSchemaIsSet(true);
       }
-      if (incoming.get(8)) {
+      if (incoming.get(5)) {
         struct.environmentContext = new EnvironmentContext();
         struct.environmentContext.read(iprot);
         struct.setEnvironmentContextIsSet(true);

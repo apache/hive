@@ -5373,13 +5373,13 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("append_partition_by_name_with_environment_context failed: unknown result");
     }
 
-    public function append_partition_by_name_req(\metastore\AppendPartitionRequest $appendPartitionRequest)
+    public function append_partition_by_name_req(\metastore\AppendPartitionsRequest $appendPartitionRequest)
     {
         $this->send_append_partition_by_name_req($appendPartitionRequest);
         return $this->recv_append_partition_by_name_req();
     }
 
-    public function send_append_partition_by_name_req(\metastore\AppendPartitionRequest $appendPartitionRequest)
+    public function send_append_partition_by_name_req(\metastore\AppendPartitionsRequest $appendPartitionRequest)
     {
         $args = new \metastore\ThriftHiveMetastore_append_partition_by_name_req_args();
         $args->appendPartitionRequest = $appendPartitionRequest;

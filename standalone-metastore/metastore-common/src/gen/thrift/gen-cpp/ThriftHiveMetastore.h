@@ -108,7 +108,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void append_partition_req(Partition& _return, const AppendPartitionsRequest& appendPartitionsReq) = 0;
   virtual void append_partition_by_name(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name) = 0;
   virtual void append_partition_by_name_with_environment_context(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const EnvironmentContext& environment_context) = 0;
-  virtual void append_partition_by_name_req(Partition& _return, const AppendPartitionRequest& appendPartitionRequest) = 0;
+  virtual void append_partition_by_name_req(Partition& _return, const AppendPartitionsRequest& appendPartitionRequest) = 0;
   virtual bool drop_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData) = 0;
   virtual bool drop_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData, const EnvironmentContext& environment_context) = 0;
   virtual bool drop_partition_req(const DropPartitionRequest& dropPartitionReq) = 0;
@@ -593,7 +593,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void append_partition_by_name_with_environment_context(Partition& /* _return */, const std::string& /* db_name */, const std::string& /* tbl_name */, const std::string& /* part_name */, const EnvironmentContext& /* environment_context */) override {
     return;
   }
-  void append_partition_by_name_req(Partition& /* _return */, const AppendPartitionRequest& /* appendPartitionRequest */) override {
+  void append_partition_by_name_req(Partition& /* _return */, const AppendPartitionsRequest& /* appendPartitionRequest */) override {
     return;
   }
   bool drop_partition(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::vector<std::string> & /* part_vals */, const bool /* deleteData */) override {
@@ -11439,11 +11439,11 @@ class ThriftHiveMetastore_append_partition_by_name_req_args {
   }
 
   virtual ~ThriftHiveMetastore_append_partition_by_name_req_args() noexcept;
-  AppendPartitionRequest appendPartitionRequest;
+  AppendPartitionsRequest appendPartitionRequest;
 
   _ThriftHiveMetastore_append_partition_by_name_req_args__isset __isset;
 
-  void __set_appendPartitionRequest(const AppendPartitionRequest& val);
+  void __set_appendPartitionRequest(const AppendPartitionsRequest& val);
 
   bool operator == (const ThriftHiveMetastore_append_partition_by_name_req_args & rhs) const
   {
@@ -11468,7 +11468,7 @@ class ThriftHiveMetastore_append_partition_by_name_req_pargs {
 
 
   virtual ~ThriftHiveMetastore_append_partition_by_name_req_pargs() noexcept;
-  const AppendPartitionRequest* appendPartitionRequest;
+  const AppendPartitionsRequest* appendPartitionRequest;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -36458,8 +36458,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void append_partition_by_name_with_environment_context(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const EnvironmentContext& environment_context) override;
   void send_append_partition_by_name_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const EnvironmentContext& environment_context);
   void recv_append_partition_by_name_with_environment_context(Partition& _return);
-  void append_partition_by_name_req(Partition& _return, const AppendPartitionRequest& appendPartitionRequest) override;
-  void send_append_partition_by_name_req(const AppendPartitionRequest& appendPartitionRequest);
+  void append_partition_by_name_req(Partition& _return, const AppendPartitionsRequest& appendPartitionRequest) override;
+  void send_append_partition_by_name_req(const AppendPartitionsRequest& appendPartitionRequest);
   void recv_append_partition_by_name_req(Partition& _return);
   bool drop_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData) override;
   void send_drop_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData);
@@ -38480,7 +38480,7 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
-  void append_partition_by_name_req(Partition& _return, const AppendPartitionRequest& appendPartitionRequest) override {
+  void append_partition_by_name_req(Partition& _return, const AppendPartitionsRequest& appendPartitionRequest) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -40725,8 +40725,8 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void append_partition_by_name_with_environment_context(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const EnvironmentContext& environment_context) override;
   int32_t send_append_partition_by_name_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const EnvironmentContext& environment_context);
   void recv_append_partition_by_name_with_environment_context(Partition& _return, const int32_t seqid);
-  void append_partition_by_name_req(Partition& _return, const AppendPartitionRequest& appendPartitionRequest) override;
-  int32_t send_append_partition_by_name_req(const AppendPartitionRequest& appendPartitionRequest);
+  void append_partition_by_name_req(Partition& _return, const AppendPartitionsRequest& appendPartitionRequest) override;
+  int32_t send_append_partition_by_name_req(const AppendPartitionsRequest& appendPartitionRequest);
   void recv_append_partition_by_name_req(Partition& _return, const int32_t seqid);
   bool drop_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData) override;
   int32_t send_drop_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData);

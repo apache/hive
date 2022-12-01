@@ -639,13 +639,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function append_partition_by_name_with_environment_context($db_name, $tbl_name, $part_name, \metastore\EnvironmentContext $environment_context);
     /**
-     * @param \metastore\AppendPartitionRequest $appendPartitionRequest
+     * @param \metastore\AppendPartitionsRequest $appendPartitionRequest
      * @return \metastore\Partition
      * @throws \metastore\InvalidObjectException
      * @throws \metastore\AlreadyExistsException
      * @throws \metastore\MetaException
      */
-    public function append_partition_by_name_req(\metastore\AppendPartitionRequest $appendPartitionRequest);
+    public function append_partition_by_name_req(\metastore\AppendPartitionsRequest $appendPartitionRequest);
     /**
      * @param string $db_name
      * @param string $tbl_name
