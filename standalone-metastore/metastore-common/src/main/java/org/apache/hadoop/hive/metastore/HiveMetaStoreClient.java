@@ -1107,11 +1107,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (!new_part.isSetCatName()) {
       new_part.setCatName(getDefaultCatalog(conf));
     }
-    AddPartitionsRequest addPartitionsReq = new AddPartitionsRequest();
-    addPartitionsReq.setDbName(new_part.getDbName());
-    addPartitionsReq.setTblName(new_part.getTableName());
-    addPartitionsReq.setParts(new ArrayList<>(Arrays.asList(new_part)));
-    addPartitionsReq.setIfNotExists(false);
+    AddPartitionsRequest addPartitionsReq = new AddPartitionsRequest(new_part.getDbName(), new_part.getTableName(),
+            new ArrayList<>(Arrays.asList(new_part)), false);
+    addPartitionsReq.setCatName(new_part.getCatName());
     addPartitionsReq.setEnvironmentContext(envContext);
     Partition p = client.add_partition_req(addPartitionsReq);
     return deepCopy(p);
@@ -1137,11 +1135,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       final String defaultCat = getDefaultCatalog(conf);
       new_parts.forEach(p -> p.setCatName(defaultCat));
     }
-    AddPartitionsRequest addPartitionsReq = new AddPartitionsRequest();
-    addPartitionsReq.setDbName(new_parts.get(0).getDbName());
-    addPartitionsReq.setTblName(new_parts.get(0).getTableName());
-    addPartitionsReq.setParts(new_parts);
-    addPartitionsReq.setIfNotExists(false);
+    AddPartitionsRequest addPartitionsReq = new AddPartitionsRequest(new_parts.get(0).getDbName(),
+            new_parts.get(0).getTableName(), new_parts, false);
     addPartitionsReq.setCatName(new_parts.get(0).getCatName());
     return client.add_partitions_req(addPartitionsReq).getPartitions().size();
   }
@@ -1225,10 +1220,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public Partition appendPartition(String catName, String dbName, String tableName,
                                    String name) throws TException {
-    AppendPartitionRequest appendPartitionRequest = new AppendPartitionRequest();
+    AppendPartitionsRequest appendPartitionRequest = new AppendPartitionsRequest();
     appendPartitionRequest.setDbName(dbName);
     appendPartitionRequest.setTableName(tableName);
-    appendPartitionRequest.setPartName(name);
+    appendPartitionRequest.setPartVals(new ArrayList<>(Arrays.asList(name)));
     appendPartitionRequest.setCatalogName(catName);
     Partition p = client.append_partition_by_name_req(appendPartitionRequest);
     return deepCopy(p);
@@ -3729,10 +3724,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   public Partition appendPartitionByName(String dbName, String tableName, String partName,
       EnvironmentContext envContext) throws TException {
-    AppendPartitionRequest appendPartitionRequest = new AppendPartitionRequest();
+    AppendPartitionsRequest appendPartitionRequest = new AppendPartitionsRequest();
     appendPartitionRequest.setDbName(dbName);
     appendPartitionRequest.setTableName(tableName);
-    appendPartitionRequest.setPartName(partName);
+    appendPartitionRequest.setPartVals(new ArrayList<>(Arrays.asList(partName)));
     appendPartitionRequest.setCatalogName(getDefaultCatalog(conf));
     appendPartitionRequest.setEnvironmentContext(envContext);
     Partition p = client.append_partition_by_name_req(appendPartitionRequest);

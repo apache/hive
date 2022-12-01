@@ -924,9 +924,9 @@ struct AddPartitionsResult {
 
 // Request type for add_partitions_req
 struct AddPartitionsRequest {
-  1: optional string dbName,
-  2: optional string tblName,
-  3: optional list<Partition> parts,
+  1: required string dbName,
+  2: required string tblName,
+  3: required list<Partition> parts,
   4: required bool ifNotExists,
   5: optional bool needResult=true,
   6: optional string catName,
@@ -2242,14 +2242,6 @@ struct AlterPartitionsRequest {
   9: optional list<FieldSchema> partitionColSchema
 }
 
-struct AppendPartitionRequest {
-  1: optional string catalogName,
-  2: optional string dbName,
-  3: optional string tableName,
-  4: optional string partName,
-  5: optional EnvironmentContext environmentContext
-}
-
 struct AppendPartitionsRequest {
   1: optional string catalogName,
   2: optional string dbName,
@@ -2783,7 +2775,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Partition append_partition_by_name_with_environment_context(1:string db_name, 2:string tbl_name,
       3:string part_name, 4:EnvironmentContext environment_context)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
-  Partition append_partition_by_name_req(1:AppendPartitionRequest appendPartitionRequest)
+  Partition append_partition_by_name_req(1:AppendPartitionsRequest appendPartitionRequest)
         throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   bool drop_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:bool deleteData)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)

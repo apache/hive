@@ -34341,7 +34341,7 @@ class append_partition_by_name_req_args(object):
                 break
             if fid == 1:
                 if ftype == TType.STRUCT:
-                    self.appendPartitionRequest = AppendPartitionRequest()
+                    self.appendPartitionRequest = AppendPartitionsRequest()
                     self.appendPartitionRequest.read(iprot)
                 else:
                     iprot.skip(ftype)
@@ -34378,7 +34378,7 @@ class append_partition_by_name_req_args(object):
 all_structs.append(append_partition_by_name_req_args)
 append_partition_by_name_req_args.thrift_spec = (
     None,  # 0
-    (1, TType.STRUCT, 'appendPartitionRequest', [AppendPartitionRequest, None], None, ),  # 1
+    (1, TType.STRUCT, 'appendPartitionRequest', [AppendPartitionsRequest, None], None, ),  # 1
 )
 
 

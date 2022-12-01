@@ -25,12 +25,12 @@ class ThriftHiveMetastore_append_partition_by_name_req_args
             'var' => 'appendPartitionRequest',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\AppendPartitionRequest',
+            'class' => '\metastore\AppendPartitionsRequest',
         ),
     );
 
     /**
-     * @var \metastore\AppendPartitionRequest
+     * @var \metastore\AppendPartitionsRequest
      */
     public $appendPartitionRequest = null;
 
@@ -64,7 +64,7 @@ class ThriftHiveMetastore_append_partition_by_name_req_args
             switch ($fid) {
                 case 1:
                     if ($ftype == TType::STRUCT) {
-                        $this->appendPartitionRequest = new \metastore\AppendPartitionRequest();
+                        $this->appendPartitionRequest = new \metastore\AppendPartitionsRequest();
                         $xfer += $this->appendPartitionRequest->read($input);
                     } else {
                         $xfer += $input->skip($ftype);

@@ -681,11 +681,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
       return needResults ? new ArrayList<>() : null;
     }
     Partition part = parts.get(0);
-    AddPartitionsRequest req = new AddPartitionsRequest();
-    req.setDbName(part.getDbName());
-    req.setTblName(part.getTableName());
-    req.setParts(parts);
-    req.setIfNotExists(ifNotExists);
+    AddPartitionsRequest req = new AddPartitionsRequest(part.getDbName(), part.getTableName(), parts, ifNotExists);
     req.setNeedResult(needResults);
     AddPartitionsResult result = client.add_partitions_req(req);
     return needResults ? filterHook.filterPartitions(result.getPartitions()) : null;

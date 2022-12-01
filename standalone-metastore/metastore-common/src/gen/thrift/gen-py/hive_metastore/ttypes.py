@@ -10992,6 +10992,12 @@ class AddPartitionsRequest(object):
         oprot.writeStructEnd()
 
     def validate(self):
+        if self.dbName is None:
+            raise TProtocolException(message='Required field dbName is unset!')
+        if self.tblName is None:
+            raise TProtocolException(message='Required field tblName is unset!')
+        if self.parts is None:
+            raise TProtocolException(message='Required field parts is unset!')
         if self.ifNotExists is None:
             raise TProtocolException(message='Required field ifNotExists is unset!')
         return
@@ -27188,108 +27194,6 @@ class AlterPartitionsRequest(object):
         return not (self == other)
 
 
-class AppendPartitionRequest(object):
-    """
-    Attributes:
-     - catalogName
-     - dbName
-     - tableName
-     - partName
-     - environmentContext
-
-    """
-
-
-    def __init__(self, catalogName=None, dbName=None, tableName=None, partName=None, environmentContext=None,):
-        self.catalogName = catalogName
-        self.dbName = dbName
-        self.tableName = tableName
-        self.partName = partName
-        self.environmentContext = environmentContext
-
-    def read(self, iprot):
-        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
-            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
-            return
-        iprot.readStructBegin()
-        while True:
-            (fname, ftype, fid) = iprot.readFieldBegin()
-            if ftype == TType.STOP:
-                break
-            if fid == 1:
-                if ftype == TType.STRING:
-                    self.catalogName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRING:
-                    self.dbName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 3:
-                if ftype == TType.STRING:
-                    self.tableName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 4:
-                if ftype == TType.STRING:
-                    self.partName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 5:
-                if ftype == TType.STRUCT:
-                    self.environmentContext = EnvironmentContext()
-                    self.environmentContext.read(iprot)
-                else:
-                    iprot.skip(ftype)
-            else:
-                iprot.skip(ftype)
-            iprot.readFieldEnd()
-        iprot.readStructEnd()
-
-    def write(self, oprot):
-        if oprot._fast_encode is not None and self.thrift_spec is not None:
-            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
-            return
-        oprot.writeStructBegin('AppendPartitionRequest')
-        if self.catalogName is not None:
-            oprot.writeFieldBegin('catalogName', TType.STRING, 1)
-            oprot.writeString(self.catalogName.encode('utf-8') if sys.version_info[0] == 2 else self.catalogName)
-            oprot.writeFieldEnd()
-        if self.dbName is not None:
-            oprot.writeFieldBegin('dbName', TType.STRING, 2)
-            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
-            oprot.writeFieldEnd()
-        if self.tableName is not None:
-            oprot.writeFieldBegin('tableName', TType.STRING, 3)
-            oprot.writeString(self.tableName.encode('utf-8') if sys.version_info[0] == 2 else self.tableName)
-            oprot.writeFieldEnd()
-        if self.partName is not None:
-            oprot.writeFieldBegin('partName', TType.STRING, 4)
-            oprot.writeString(self.partName.encode('utf-8') if sys.version_info[0] == 2 else self.partName)
-            oprot.writeFieldEnd()
-        if self.environmentContext is not None:
-            oprot.writeFieldBegin('environmentContext', TType.STRUCT, 5)
-            self.environmentContext.write(oprot)
-            oprot.writeFieldEnd()
-        oprot.writeFieldStop()
-        oprot.writeStructEnd()
-
-    def validate(self):
-        return
-
-    def __repr__(self):
-        L = ['%s=%r' % (key, value)
-             for key, value in self.__dict__.items()]
-        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not (self == other)
-
-
 class AppendPartitionsRequest(object):
     """
     Attributes:
@@ -34100,15 +34004,6 @@ AlterPartitionsRequest.thrift_spec = (
     (7, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 7
     (8, TType.BOOL, 'skipColumnSchemaForPartition', None, None, ),  # 8
     (9, TType.LIST, 'partitionColSchema', (TType.STRUCT, [FieldSchema, None], False), None, ),  # 9
-)
-all_structs.append(AppendPartitionRequest)
-AppendPartitionRequest.thrift_spec = (
-    None,  # 0
-    (1, TType.STRING, 'catalogName', 'UTF8', None, ),  # 1
-    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
-    (3, TType.STRING, 'tableName', 'UTF8', None, ),  # 3
-    (4, TType.STRING, 'partName', 'UTF8', None, ),  # 4
-    (5, TType.STRUCT, 'environmentContext', [EnvironmentContext, None], None, ),  # 5
 )
 all_structs.append(AppendPartitionsRequest)
 AppendPartitionsRequest.thrift_spec = (

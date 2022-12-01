@@ -23,17 +23,17 @@ class AddPartitionsRequest
     static public $_TSPEC = array(
         1 => array(
             'var' => 'dbName',
-            'isRequired' => false,
+            'isRequired' => true,
             'type' => TType::STRING,
         ),
         2 => array(
             'var' => 'tblName',
-            'isRequired' => false,
+            'isRequired' => true,
             'type' => TType::STRING,
         ),
         3 => array(
             'var' => 'parts',
-            'isRequired' => false,
+            'isRequired' => true,
             'type' => TType::LST,
             'etype' => TType::STRUCT,
             'elem' => array(

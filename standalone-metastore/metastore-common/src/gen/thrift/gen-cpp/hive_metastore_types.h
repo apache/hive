@@ -989,8 +989,6 @@ class ScheduledQueryProgressInfo;
 
 class AlterPartitionsRequest;
 
-class AppendPartitionRequest;
-
 class AppendPartitionsRequest;
 
 class AlterPartitionsResponse;
@@ -7721,10 +7719,7 @@ void swap(AddPartitionsResult &a, AddPartitionsResult &b);
 std::ostream& operator<<(std::ostream& out, const AddPartitionsResult& obj);
 
 typedef struct _AddPartitionsRequest__isset {
-  _AddPartitionsRequest__isset() : dbName(false), tblName(false), parts(false), needResult(true), catName(false), validWriteIdList(false), skipColumnSchemaForPartition(false), partitionColSchema(false), environmentContext(false) {}
-  bool dbName :1;
-  bool tblName :1;
-  bool parts :1;
+  _AddPartitionsRequest__isset() : needResult(true), catName(false), validWriteIdList(false), skipColumnSchemaForPartition(false), partitionColSchema(false), environmentContext(false) {}
   bool needResult :1;
   bool catName :1;
   bool validWriteIdList :1;
@@ -7784,17 +7779,11 @@ class AddPartitionsRequest : public virtual ::apache::thrift::TBase {
 
   bool operator == (const AddPartitionsRequest & rhs) const
   {
-    if (__isset.dbName != rhs.__isset.dbName)
+    if (!(dbName == rhs.dbName))
       return false;
-    else if (__isset.dbName && !(dbName == rhs.dbName))
+    if (!(tblName == rhs.tblName))
       return false;
-    if (__isset.tblName != rhs.__isset.tblName)
-      return false;
-    else if (__isset.tblName && !(tblName == rhs.tblName))
-      return false;
-    if (__isset.parts != rhs.__isset.parts)
-      return false;
-    else if (__isset.parts && !(parts == rhs.parts))
+    if (!(parts == rhs.parts))
       return false;
     if (!(ifNotExists == rhs.ifNotExists))
       return false;
@@ -18832,86 +18821,6 @@ class AlterPartitionsRequest : public virtual ::apache::thrift::TBase {
 void swap(AlterPartitionsRequest &a, AlterPartitionsRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const AlterPartitionsRequest& obj);
-
-typedef struct _AppendPartitionRequest__isset {
-  _AppendPartitionRequest__isset() : catalogName(false), dbName(false), tableName(false), partName(false), environmentContext(false) {}
-  bool catalogName :1;
-  bool dbName :1;
-  bool tableName :1;
-  bool partName :1;
-  bool environmentContext :1;
-} _AppendPartitionRequest__isset;
-
-class AppendPartitionRequest : public virtual ::apache::thrift::TBase {
- public:
-
-  AppendPartitionRequest(const AppendPartitionRequest&);
-  AppendPartitionRequest& operator=(const AppendPartitionRequest&);
-  AppendPartitionRequest() noexcept
-                         : catalogName(),
-                           dbName(),
-                           tableName(),
-                           partName() {
-  }
-
-  virtual ~AppendPartitionRequest() noexcept;
-  std::string catalogName;
-  std::string dbName;
-  std::string tableName;
-  std::string partName;
-  EnvironmentContext environmentContext;
-
-  _AppendPartitionRequest__isset __isset;
-
-  void __set_catalogName(const std::string& val);
-
-  void __set_dbName(const std::string& val);
-
-  void __set_tableName(const std::string& val);
-
-  void __set_partName(const std::string& val);
-
-  void __set_environmentContext(const EnvironmentContext& val);
-
-  bool operator == (const AppendPartitionRequest & rhs) const
-  {
-    if (__isset.catalogName != rhs.__isset.catalogName)
-      return false;
-    else if (__isset.catalogName && !(catalogName == rhs.catalogName))
-      return false;
-    if (__isset.dbName != rhs.__isset.dbName)
-      return false;
-    else if (__isset.dbName && !(dbName == rhs.dbName))
-      return false;
-    if (__isset.tableName != rhs.__isset.tableName)
-      return false;
-    else if (__isset.tableName && !(tableName == rhs.tableName))
-      return false;
-    if (__isset.partName != rhs.__isset.partName)
-      return false;
-    else if (__isset.partName && !(partName == rhs.partName))
-      return false;
-    if (__isset.environmentContext != rhs.__isset.environmentContext)
-      return false;
-    else if (__isset.environmentContext && !(environmentContext == rhs.environmentContext))
-      return false;
-    return true;
-  }
-  bool operator != (const AppendPartitionRequest &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const AppendPartitionRequest & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(AppendPartitionRequest &a, AppendPartitionRequest &b);
-
-std::ostream& operator<<(std::ostream& out, const AppendPartitionRequest& obj);
 
 typedef struct _AppendPartitionsRequest__isset {
   _AppendPartitionsRequest__isset() : catalogName(false), dbName(false), tableName(false), partVals(false), environmentContext(false) {}

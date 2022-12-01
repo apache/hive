@@ -430,7 +430,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("append_partition_by_name_with_environment_context\n");
   }
 
-  void append_partition_by_name_req(Partition& _return, const AppendPartitionRequest& appendPartitionRequest) {
+  void append_partition_by_name_req(Partition& _return, const AppendPartitionsRequest& appendPartitionRequest) {
     // Your implementation goes here
     printf("append_partition_by_name_req\n");
   }

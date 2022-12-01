@@ -1344,42 +1344,19 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws AlreadyExistsException, InvalidObjectException, MetaException {
     CreateDatabaseRequest req = new CreateDatabaseRequest();
     req.setDatabaseName(db.getName());
-    if (db.isSetDescription()) {
-      req.setDescription(db.getDescription());
-    }
-    if (db.isSetLocationUri()) {
-      req.setLocationUri(db.getLocationUri());
-    }
-    if (db.isSetParameters()) {
-      req.setParameters(db.getParameters());
-    }
-    if (db.isSetPrivileges()) {
-      req.setPrivileges(db.getPrivileges());
-    }
-    if (db.isSetOwnerName()) {
-      req.setOwnerName(db.getOwnerName());
-    }
-    if (db.isSetOwnerType()) {
-      req.setOwnerType(db.getOwnerType());
-    }
-    if (db.isSetCatalogName()) {
-      req.setCatalogName(db.getCatalogName());
-    }
-    if (db.isSetCreateTime()) {
-      req.setCreateTime(db.getCreateTime());
-    }
-    if (db.isSetManagedLocationUri()) {
-      req.setManagedLocationUri(db.getManagedLocationUri());
-    }
-    if (db.isSetType()) {
-      req.setType(db.getType());
-    }
-    if (db.isSetConnector_name()) {
-      req.setDataConnectorName(db.getConnector_name());
-    }
-    if (db.isSetRemote_dbname()) {
-      req.setRemote_dbname(db.getRemote_dbname());
-    }
+    req.setDescription(db.getDescription());
+    req.setLocationUri(db.getLocationUri());
+    req.setParameters(db.getParameters());
+    req.setPrivileges(db.getPrivileges());
+    req.setOwnerName(db.getOwnerName());
+    req.setOwnerType(db.getOwnerType());
+    req.setCatalogName(db.getCatalogName());
+    req.setCreateTime(db.getCreateTime());
+    req.setManagedLocationUri(db.getManagedLocationUri());
+    req.setType(db.getType());
+    req.setDataConnectorName(db.getConnector_name());
+    req.setRemote_dbname(db.getRemote_dbname());
+
     create_database_req(req);
     //location and manged location might be set/changed.
     db.setLocationUri(req.getLocationUri());
@@ -4937,11 +4914,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (part == null) {
       throw new MetaException("Partition cannot be null.");
     }
-    AddPartitionsRequest addPartitionsReq = new AddPartitionsRequest();
-    addPartitionsReq.setDbName(part.getDbName());
-    addPartitionsReq.setTblName(part.getTableName());
-    addPartitionsReq.setParts(new ArrayList<>(Arrays.asList(part)));
-    addPartitionsReq.setIfNotExists(false);
+    AddPartitionsRequest addPartitionsReq = new AddPartitionsRequest(part.getDbName(), part.getTableName(),
+            new ArrayList<>(Arrays.asList(part)), false);
     addPartitionsReq.setEnvironmentContext(envContext);
     return add_partition_req(addPartitionsReq);
   }
@@ -6881,10 +6855,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Partition ret = null;
     Exception ex = null;
     try {
-      AppendPartitionRequest appendPartitionRequest = new AppendPartitionRequest();
+      AppendPartitionsRequest appendPartitionRequest = new AppendPartitionsRequest();
       appendPartitionRequest.setDbName(parsedDbName[DB_NAME]);
       appendPartitionRequest.setTableName(tbl_name);
-      appendPartitionRequest.setPartName(part_name);
+      appendPartitionRequest.setPartVals(new ArrayList<>(Arrays.asList(part_name)));
       appendPartitionRequest.setCatalogName(parsedDbName[CAT_NAME]);
       appendPartitionRequest.setEnvironmentContext(env_context);
       ret = append_partition_by_name_req(appendPartitionRequest);
@@ -6900,17 +6874,18 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public Partition append_partition_by_name_req(final AppendPartitionRequest appendPartitionRequest) throws TException {
+  public Partition append_partition_by_name_req(final AppendPartitionsRequest appendPartitionRequest) throws TException {
     String catName = appendPartitionRequest.getCatalogName();
     String dbName = appendPartitionRequest.getDbName();
     String tbl_name = appendPartitionRequest.getTableName();
+    String part_name = appendPartitionRequest.getPartVals().get(0);
     startFunction("append_partition_by_name_req", ": tbl="
-            + TableName.getQualified(catName, dbName,tbl_name) + " part=" + appendPartitionRequest.getPartName());
+            + TableName.getQualified(catName, dbName,tbl_name) + " part=" + part_name);
     Partition ret = null;
     Exception ex = null;
     try {
       RawStore ms = getMS();
-      List<String> partVals = getPartValsFromName(ms, catName, dbName, tbl_name, appendPartitionRequest.getPartName());
+      List<String> partVals = getPartValsFromName(ms, catName, dbName, tbl_name, part_name);
       ret = append_partition_common(ms, catName, dbName, tbl_name, partVals, appendPartitionRequest.getEnvironmentContext());
     } catch (Exception e) {
       ex = e;

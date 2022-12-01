@@ -11422,7 +11422,7 @@ module ThriftHiveMetastore
     APPENDPARTITIONREQUEST = 1
 
     FIELDS = {
-      APPENDPARTITIONREQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'appendPartitionRequest', :class => ::AppendPartitionRequest}
+      APPENDPARTITIONREQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'appendPartitionRequest', :class => ::AppendPartitionsRequest}
     }
 
     def struct_fields; FIELDS; end
