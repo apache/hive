@@ -610,6 +610,18 @@
         <version>${calcite.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.curator</groupId>
+        <artifactId>curator-test</artifactId>
+        <version>${curator.version}</version>
+        <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
         <groupId>org.apache.datasketches</groupId>
         <artifactId>datasketches-hive</artifactId>
         <version>${datasketches.version}</version>
