@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDirectory;
@@ -87,8 +88,6 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_INTIATOR_THREAD_NAME_FORMAT;
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isNoAutoCompactSet;
 
 /**
  * A class to initiate compactions.  This will run in a separate thread.
@@ -290,7 +289,7 @@ public class Initiator extends MetaStoreCompactorThread {
 
   private Database resolveDatabase(CompactionInfo ci) throws MetaException, NoSuchObjectException {
     try {
-      return getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
+      return getMSForConf(conf).getDatabase(MetaStoreUtils.getDefaultCatalog(conf), ci.dbname);
     } catch (NoSuchObjectException e) {
       LOG.error("Unable to find database " + ci.dbname + ", " + e.getMessage());
       throw e;
@@ -613,13 +612,22 @@ public class Initiator extends MetaStoreCompactorThread {
         return false;
       }
 
-      if (isNoAutoCompactSet(t.getParameters())) {
-        LOG.info("Table " + tableName(t) + " marked " + hive_metastoreConstants.TABLE_NO_AUTO_COMPACT +
-            "=true so we will not compact it.");
+      Map<String, String> dbParams = computeIfAbsent(ci.dbname, () -> resolveDatabase(ci)).getParameters();
+      if (MetaStoreUtils.isNoAutoCompactSet(dbParams, t.getParameters())) {
+        if (Boolean.parseBoolean(MetaStoreUtils.getNoAutoCompact(dbParams))) {
+          skipDBs.add(ci.dbname);
+          LOG.info("DB " + ci.dbname + " marked " + hive_metastoreConstants.NO_AUTO_COMPACT +
+              "=true so we will not compact it.");
+        } else {
+          skipTables.add(ci.getFullTableName());
+          LOG.info("Table " + tableName(t) + " marked " + hive_metastoreConstants.NO_AUTO_COMPACT +
+              "=true so we will not compact it.");
+        }
         return false;
       }
       if (AcidUtils.isInsertOnlyTable(t.getParameters()) && !HiveConf
           .getBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM)) {
+        skipTables.add(ci.getFullTableName());
         LOG.info("Table " + tableName(t) + " is insert only and " + HiveConf.ConfVars.HIVE_COMPACTOR_COMPACT_MM.varname
             + "=false so we will not compact it.");
         return false;

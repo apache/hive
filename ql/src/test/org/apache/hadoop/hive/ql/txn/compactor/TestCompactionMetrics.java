@@ -835,7 +835,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     String dbName = "default";
 
     Map<String, String> params = new HashMap<>();
-    params.put(hive_metastoreConstants.TABLE_NO_AUTO_COMPACT, "true");
+    params.put(hive_metastoreConstants.NO_AUTO_COMPACT, "true");
     Table disabledTbl = newTable(dbName, "comp_disabled", false, params);
     burnThroughTransactions(disabledTbl.getDbName(), disabledTbl.getTableName(), 1, null, null);
     burnThroughTransactions(disabledTbl.getDbName(), disabledTbl.getTableName(), 1, null, new HashSet<>(
