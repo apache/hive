@@ -3599,6 +3599,9 @@ public class HiveConf extends Configuration {
     HIVE_AUTHORIZATION_TABLES_ON_STORAGEHANDLERS("hive.security.authorization.tables.on.storagehandlers", true,
         "Enables authorization on tables with custom storage handlers as implemented by HIVE-24705. " +
         "Default setting is true. Useful for turning the feature off if the corresponding ranger patch is missing."),
+    HIVE_AUTHORIZATION_FUNCTIONS_IN_VIEW("hive.security.authorization.functions.in.view", true, "" +
+            "Enable authorization on functions/udfs used within a TABLE/VIEW during a select query. Default setting is true" +
+            "When set to false, the udf used in the table/view will not be autiozed during the select query"),
 
     // if this is not set default value is set during config initialization
     // Default value can't be set in this constructor as it would refer names in other ConfVars

@@ -72,8 +72,8 @@ final class CommandAuthorizerV2 {
     List<WriteEntity> outputList = new ArrayList<WriteEntity>(outputs);
     addPermanentFunctionEntities(ss, inputList);
 
-    List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputList, selectTab2Cols, hiveOpType);
-    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputList, updateTab2Cols, hiveOpType);
+    List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputList, selectTab2Cols, hiveOpType, sem);
+    List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputList, updateTab2Cols, hiveOpType, sem);
 
     HiveAuthzContext.Builder authzContextBuilder = new HiveAuthzContext.Builder();
     authzContextBuilder.setUserIpAddress(ss.getUserIpAddress());
@@ -98,7 +98,7 @@ final class CommandAuthorizerV2 {
   }
 
   private static List<HivePrivilegeObject> getHivePrivObjects(List<? extends Entity> privObjects,
-      Map<String, List<String>> tableName2Cols, HiveOperationType hiveOpType) throws HiveException {
+      Map<String, List<String>> tableName2Cols, HiveOperationType hiveOpType, BaseSemanticAnalyzer sem) throws HiveException {
     List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
     if (privObjects == null){
       return hivePrivobjs;
@@ -137,6 +137,13 @@ final class CommandAuthorizerV2 {
       if (privObject.getTyp() == Type.TABLE && (privObject.getT() == null || privObject.getT().isTemporary())) {
         // skip temporary tables from authorization
         continue;
+      }
+
+      if (privObject.getTyp() == Type.FUNCTION && !HiveConf.getBoolVar(SessionState.get().getConf(),
+              HiveConf.ConfVars.HIVE_AUTHORIZATION_FUNCTIONS_IN_VIEW) && hiveOpType == HiveOperationType.QUERY) {
+        if (!sem.getUserSuppliedFunctions().contains(privObject.getFunctionName())) {
+          continue;
+        }
       }
 
       addHivePrivObject(privObject, tableName2Cols, hivePrivobjs, hiveOpType);
