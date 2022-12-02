@@ -1971,8 +1971,6 @@ public final class GenMapRedUtils {
        * 2. INSERT operation on full ACID table
        */
       if (!isMmTable && !isDirectInsert) {
-        // generate the temporary file
-        // it must be on the same file system as the current destination
         Context baseCtx = parseCtx.getContext();
 
         // Choose location of required temporary file
