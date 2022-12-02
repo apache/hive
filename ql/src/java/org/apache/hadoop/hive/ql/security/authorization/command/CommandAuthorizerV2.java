@@ -100,11 +100,11 @@ final class CommandAuthorizerV2 {
   private static List<HivePrivilegeObject> getHivePrivObjects(List<? extends Entity> privObjects,
       Map<String, List<String>> tableName2Cols, HiveOperationType hiveOpType, BaseSemanticAnalyzer sem) throws HiveException {
     List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
-    if (privObjects == null){
+    if (privObjects == null) {
       return hivePrivobjs;
     }
 
-    for (Entity privObject : privObjects){
+    for (Entity privObject : privObjects) {
       if (privObject.isDummy()) {
         //do not authorize dummy readEntity or writeEntity
         continue;
@@ -114,19 +114,19 @@ final class CommandAuthorizerV2 {
         // it's not inside a deferred authorized view.
         ReadEntity reTable = (ReadEntity)privObject;
         Boolean isDeferred = false;
-        if( reTable.getParents() != null && reTable.getParents().size() > 0){
-          for( ReadEntity re: reTable.getParents()){
+        if ( reTable.getParents() != null && reTable.getParents().size() > 0) {
+          for ( ReadEntity re: reTable.getParents()){
             if (re.getTyp() == Type.TABLE && re.getTable() != null ) {
               Table t = re.getTable();
-              if(!isDeferredAuthView(t)){
+              if (!isDeferredAuthView(t)) {
                 continue;
-              }else{
+              } else {
                 isDeferred = true;
               }
             }
           }
         }
-        if(!isDeferred){
+        if (!isDeferred) {
           continue;
         }
       }
@@ -140,10 +140,9 @@ final class CommandAuthorizerV2 {
       }
 
       if (privObject.getTyp() == Type.FUNCTION && !HiveConf.getBoolVar(SessionState.get().getConf(),
-              HiveConf.ConfVars.HIVE_AUTHORIZATION_FUNCTIONS_IN_VIEW) && hiveOpType == HiveOperationType.QUERY) {
-        if (!sem.getUserSuppliedFunctions().contains(privObject.getFunctionName())) {
-          continue;
-        }
+              HiveConf.ConfVars.HIVE_AUTHORIZATION_FUNCTIONS_IN_VIEW) && hiveOpType == HiveOperationType.QUERY &&
+              !sem.getUserSuppliedFunctions().contains(privObject.getFunctionName())) {
+        continue;
       }
 
       addHivePrivObject(privObject, tableName2Cols, hivePrivobjs, hiveOpType);

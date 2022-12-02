@@ -12549,7 +12549,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             tokenType == HiveParser.TOK_FUNCTIONDI ||
             tokenType == HiveParser.TOK_FUNCTIONSTAR) {
       if (ast.getChild(0).getType() == HiveParser.Identifier) {
-        // maybe user supplied
         this.userSuppliedFunctions.add(ast.getChild(0).getText());
       }
     }

@@ -1447,6 +1447,12 @@ public abstract class BaseSemanticAnalyzer {
     this.updateColumnAccessInfo = updateColumnAccessInfo;
   }
 
+  /**
+   * Gets the user supplied functions.
+   * Note 1: This list only accumulates UDFs explicitly mentioned in the query
+   * Note 2: This list will not include UDFs defined with views/tables
+   * @return List of String with names of UDFs.
+   */
   public Set<String> getUserSuppliedFunctions() {
     return userSuppliedFunctions;
   }
