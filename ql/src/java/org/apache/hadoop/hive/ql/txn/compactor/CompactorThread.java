@@ -228,14 +228,15 @@ public abstract class CompactorThread extends Thread implements Configurable {
   }
 
   protected void doPostLoopActions(long elapsedTime, CompactorThreadType type) throws InterruptedException {
+    String threadTypeName = type.name();
     if (elapsedTime < checkInterval && !stop.get()) {
       Thread.sleep(checkInterval - elapsedTime);
     }
 
     if (elapsedTime < MAX_WARN_LOG_TIME) {
-      LOG.debug(type.name() + " loop took " + elapsedTime/1000 + " seconds to finish.");
+      LOG.debug("{} loop took {} seconds to finish.", threadTypeName, elapsedTime/1000);
     } else {
-      LOG.warn("Possible " + type.name() + " slowdown, loop took "+ elapsedTime/1000 + " seconds to finish.");
+      LOG.warn("Possible {} slowdown, loop took {} seconds to finish.", threadTypeName, elapsedTime/1000);
     }
 
   }
