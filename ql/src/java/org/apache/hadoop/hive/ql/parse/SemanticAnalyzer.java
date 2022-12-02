@@ -32,6 +32,7 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.DEFAU
 import static org.apache.hadoop.hive.ql.ddl.view.create.AbstractCreateViewAnalyzer.validateTablesUsed;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.AccessControlException;
@@ -195,6 +196,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverterPostProc;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.optimizer.lineage.Generator;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec.SpecType;
@@ -12914,6 +12916,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // 7. Perform Logical optimization
       if (LOG.isDebugEnabled()) {
         LOG.debug("Before logical optimization\n" + Operator.toString(pCtx.getTopOps().values()));
+      }
+      try {
+        OperatorGraph g = new OperatorGraph(pCtx);
+        g.toDot(new File("target"+File.separator+"BeforeLogicalOptimization-" + System.currentTimeMillis() + ".dot"));
+      } catch (Exception e) {
+        e.printStackTrace();
       }
       Optimizer optm = new Optimizer();
       optm.setPctx(pCtx);

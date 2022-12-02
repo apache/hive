@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ppd;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -29,6 +30,7 @@ import java.util.Stack;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.slf4j.Logger;
@@ -71,7 +73,12 @@ public class SyntheticJoinPredicate extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-
+    try {
+      OperatorGraph g = new OperatorGraph(pctx);
+      g.toDot(new File("target"+File.separator+"SyntheticJoinPredicate-" + System.currentTimeMillis() + ".dot"));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
     boolean enabled = false;
     String queryEngine = pctx.getConf().getVar(ConfVars.HIVE_EXECUTION_ENGINE);
 
@@ -85,6 +92,7 @@ public class SyntheticJoinPredicate extends Transform {
     }
 
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
+    String exp = "TS%.*RS%JOIN%";
     opRules.put(new RuleRegExp("R1", "(" +
         TableScanOperator.getOperatorName() + "%" + ".*" +
         ReduceSinkOperator.getOperatorName() + "%" +
@@ -94,13 +102,13 @@ public class SyntheticJoinPredicate extends Transform {
     // rule and passes the context along
     SyntheticContext context = new SyntheticContext(pctx);
     SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, context);
-    SemanticGraphWalker ogw = new PreOrderOnceWalker(disp);
-
+    PreOrderOnceWalker ogw = new PreOrderOnceWalker(disp);
+    
     // Create a list of top op nodes
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getTopOps().values());
     ogw.startWalking(topNodes, null);
-
+    ogw.debug();
     return pctx;
   }
 

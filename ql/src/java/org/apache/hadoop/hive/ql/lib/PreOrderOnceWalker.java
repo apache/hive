@@ -19,6 +19,10 @@ package org.apache.hadoop.hive.ql.lib;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Graph walker this class takes list of starting nodes and walks them in pre-order.
  * If a rule fires up against a given node, we do not try to apply the rule
@@ -29,7 +33,7 @@ public class PreOrderOnceWalker extends PreOrderWalker {
   public PreOrderOnceWalker(SemanticDispatcher disp) {
     super(disp);
   }
-
+  private final Map<String, Integer> nodeOcc = new HashMap<>();
   /**
    * Walk the current operator and its descendants.
    * 
@@ -39,6 +43,7 @@ public class PreOrderOnceWalker extends PreOrderWalker {
    */
   @Override
   public void walk(Node nd) throws SemanticException {
+    nodeOcc.compute(nd.toString(), (n, cnt) -> cnt == null ? 1 : ++cnt);
     opStack.push(nd);
     dispatch(nd, opStack);
 
@@ -58,4 +63,9 @@ public class PreOrderOnceWalker extends PreOrderWalker {
     opStack.pop();
   }
 
+  public void debug() {
+    System.out.println("PreOrderOnceWalkerVisitStatistics");
+    System.out.println("============================");
+    nodeOcc.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).forEach(System.out::println);
+  }
 }
