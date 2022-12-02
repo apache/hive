@@ -28,17 +28,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
 
-public class TestGenericUDFArrayDistinct {
-    private final GenericUDFArrayDistinct udf = new GenericUDFArrayDistinct();
+public class TestGenericUDFArrayDistinct extends TestGenericUDFArray {
+
+    public TestGenericUDFArrayDistinct(){
+        super.udf = new GenericUDFArrayDistinct();
+    }
 
     @Test
     public void testPrimitive() throws HiveException {
@@ -153,10 +154,4 @@ public class TestGenericUDFArrayDistinct {
         runAndVerify(asList(m1, m3,m2, m3,m1), asList(m1, m3, m2));
     }
 
-    private void runAndVerify(List<Object> actual, List<Object> expected)
-            throws HiveException {
-        GenericUDF.DeferredJavaObject[] args = { new GenericUDF.DeferredJavaObject(actual) };
-        List<?> result = (List<?>) udf.evaluate(args);
-        Assert.assertArrayEquals("Check content", expected.toArray(), result.toArray());
-    }
 }

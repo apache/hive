@@ -1,4 +1,7 @@
 --! qt:dataset:src
+
+-- SORT_QUERY_RESULTS
+
 set hive.fetch.task.conversion=more;
 
 DESCRIBE FUNCTION array_distinct;
@@ -31,3 +34,5 @@ create external table test_null_array (id int, value Array<String>) ROW FORMAT D
 select value from test_null_array;
 
 select array_distinct(value) from test_null_array;
+
+dfs -rm -r ${system:test.tmp.dir}/test_null_array;

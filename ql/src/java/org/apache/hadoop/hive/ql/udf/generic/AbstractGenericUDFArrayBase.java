@@ -106,4 +106,4 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
         return ObjectInspectorFactory.getStandardListObjectInspector(initOI(arguments));
     }
 
-}
+} 

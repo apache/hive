@@ -96,9 +96,9 @@ POSTHOOK: query: select value from test_null_array
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_null_array
 #### A masked pattern was here ####
-[]
 ["NULL"]
 ["null","null"]
+[]
 PREHOOK: query: select array_distinct(value) from test_null_array
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_null_array
@@ -107,6 +107,6 @@ POSTHOOK: query: select array_distinct(value) from test_null_array
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_null_array
 #### A masked pattern was here ####
-[]
 ["NULL"]
 ["null"]
+[]

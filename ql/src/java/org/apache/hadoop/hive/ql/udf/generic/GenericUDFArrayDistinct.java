@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,8 +50,12 @@ public class GenericUDFArrayDistinct extends AbstractGenericUDFArrayBase {
 
         Object array = arguments[ARRAY_IDX].get();
 
-        if (arrayOI.getListLength(array) <= 0) {
-            return new ArrayList<Object>();
+
+        // If the array is empty, then there are no duplicates, return back the empty array
+        if (arrayOI.getListLength(array) == 0) {
+            return Collections.emptyList();
+        } else if (arrayOI.getListLength(array) < 0) {
+            return null;
         }
 
         List<?> retArray = ((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array);
