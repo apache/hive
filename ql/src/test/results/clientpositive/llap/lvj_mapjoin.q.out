@@ -121,7 +121,6 @@ STAGE PLANS:
                 TableScan
                   alias: expod1
                   filterExpr: aid is not null (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_39_container, bigKeyColName:aid, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 3 Data size: 5772 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: aid is not null (type: boolean)

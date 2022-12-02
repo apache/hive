@@ -59,11 +59,11 @@ public class TestExplainTask {
 
   @Before
   public void setUp() {
+    HiveConf hiveConf = new HiveConf();
     uut = new ExplainTask();
-    uut.conf = mock(HiveConf.class);
+    uut.conf = hiveConf;
     out = mock(PrintStream.class);
     QueryState qs = mock(QueryState.class);
-    HiveConf hiveConf = new HiveConf();
     when(qs.getConf()).thenReturn(hiveConf);
     uut.queryState = qs;
   }
@@ -165,6 +165,7 @@ public class TestExplainTask {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     work.setConfig(new ExplainConfiguration());
     ExplainTask newExplainTask = new ExplainTask();
+    newExplainTask.conf = uut.conf;
     newExplainTask.queryState = uut.queryState;
     newExplainTask.getJSONLogicalPlan(new PrintStream(baos), work);
     baos.close();
@@ -209,7 +210,7 @@ public class TestExplainTask {
 
   @Test
   public void testGetJSONPlan() throws Exception {
-    when(uut.conf.getVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE)).thenReturn("EXECUTION");
+    uut.conf.setVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE, "EXECUTION");
     Task mockTask = mockTask();
     when(mockTask.getId()).thenReturn("mockTaskId");
     ExplainWork explainWorkMock = mockExplainWork();
