@@ -79,6 +79,7 @@ import org.apache.iceberg.UpdateProperties;
 import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hive.CachedClientPool;
 import org.apache.iceberg.hive.HiveCommitLock;
@@ -128,6 +129,8 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       Lists.newArrayList(org.apache.commons.lang3.tuple.Pair.of(1, new byte[0]));
   static final String MIGRATED_TO_ICEBERG = "MIGRATED_TO_ICEBERG";
   static final String ORC_FILES_ONLY = "iceberg.orc.files.only";
+
+  static final String DECIMAL64_VECTORIZATION = "iceberg.decimal64.vectorization";
   static final String MANUAL_ICEBERG_METADATA_LOCATION_CHANGE = "MANUAL_ICEBERG_METADATA_LOCATION_CHANGE";
 
   private final Configuration conf;
@@ -236,11 +239,23 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       setFileFormat(catalogProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
 
       String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+      Table table;
       if (metadataLocation != null) {
-        Catalogs.registerTable(conf, catalogProperties, metadataLocation);
+        table = Catalogs.registerTable(conf, catalogProperties, metadataLocation);
       } else {
-        Catalogs.createTable(conf, catalogProperties);
+        table = Catalogs.createTable(conf, catalogProperties);
       }
+
+      if (!HiveTableUtil.isCtas(catalogProperties)) {
+        return;
+      }
+
+      // set this in the query state so that we can rollback the table in the lifecycle hook in case of failures
+      String tableIdentifier = catalogProperties.getProperty(Catalogs.NAME);
+      SessionStateUtil.addResource(conf, InputFormatConfig.CTAS_TABLE_NAME, tableIdentifier);
+      SessionStateUtil.addResource(conf, tableIdentifier, table);
+
+      HiveTableUtil.createFileForTableObject(table, conf);
     }
   }
 
@@ -908,6 +923,22 @@ public class HiveIcebergMetaHook implements HiveMetaHook {
       newProps.put(TableProperties.DELETE_MODE, "merge-on-read");
       newProps.put(TableProperties.UPDATE_MODE, "merge-on-read");
       newProps.put(TableProperties.MERGE_MODE, "merge-on-read");
+    }
+  }
+
+  @Override
+  public void postGetTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (hmsTable != null) {
+      try {
+        Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
+        String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
+        // If it is not the default format version, then set it in the table properties.
+        if (!"1".equals(formatVersion)) {
+          hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
+        }
+      } catch (NoSuchTableException | NotFoundException ex) {
+        // If the table doesn't exist, ignore throwing exception from here
+      }
     }
   }
 

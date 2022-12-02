@@ -1069,10 +1069,15 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     } else if (moveWork.getLoadFileWork() != null) {
       // Get the info from the create table data
       CreateTableDesc createTableDesc = moveWork.getLoadFileWork().getCtasCreateTableDesc();
+      String location = null;
       if (createTableDesc != null) {
         storageHandlerClass = createTableDesc.getStorageHandler();
         commitProperties = new Properties();
         commitProperties.put(hive_metastoreConstants.META_TABLE_NAME, createTableDesc.getDbTableName());
+        location = createTableDesc.getLocation();
+      }
+      if (location != null) {
+        commitProperties.put(hive_metastoreConstants.META_TABLE_LOCATION, location);
       }
     }
 

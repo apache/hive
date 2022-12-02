@@ -1,4 +1,5 @@
 --! qt:dataset:src
+-- SORT_QUERY_RESULTS
 set hive.mapred.mode=nonstrict;
 CREATE TABLE agg1 (col0 INT, col1 STRING, col2 DOUBLE);
 

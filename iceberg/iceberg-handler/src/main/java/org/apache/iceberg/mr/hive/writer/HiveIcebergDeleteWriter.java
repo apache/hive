@@ -41,13 +41,15 @@ import org.apache.iceberg.mr.mapred.Container;
 class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
 
   private final GenericRecord rowDataTemplate;
+  private final boolean skipRowData;
 
   HiveIcebergDeleteWriter(Schema schema, Map<Integer, PartitionSpec> specs,
       FileWriterFactory<Record> writerFactory, OutputFileFactory fileFactory, FileIO io,
-      long targetFileSize) {
+      long targetFileSize, boolean skipRowData) {
     super(schema, specs, io,
         new ClusteredPositionDeleteWriter<>(writerFactory, fileFactory, io, targetFileSize));
     rowDataTemplate = GenericRecord.create(schema);
+    this.skipRowData = skipRowData;
   }
 
   @Override
@@ -55,7 +57,12 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
     Record rec = ((Container<Record>) row).get();
     PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(rec, rowDataTemplate);
     int specId = IcebergAcidUtil.parseSpecId(rec);
-    writer.write(positionDelete, specs.get(specId), partition(positionDelete.row(), specId));
+    Record rowData = positionDelete.row();
+    if (skipRowData) {
+      // Set null as the row data as we intend to avoid writing the actual row data in the delete file.
+      positionDelete.set(positionDelete.path(), positionDelete.pos(), null);
+    }
+    writer.write(positionDelete, specs.get(specId), partition(rowData, specId));
   }
 
   @Override

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -79,4 +80,23 @@ public interface DataSourceProvider {
     return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
   }
 
+  static String getDataSourceName(Configuration conf) {
+    return conf.get(DataSourceNameConfigurator.DATA_SOURCE_NAME);
+  }
+
+  class DataSourceNameConfigurator implements Closeable {
+    static final String DATA_SOURCE_NAME = "metastore.DataSourceProvider.pool.name";
+    private final Configuration configuration;
+    public DataSourceNameConfigurator(Configuration conf, String name) {
+      this.configuration = conf;
+      configuration.set(DATA_SOURCE_NAME, name);
+    }
+    public void resetName(String name) {
+      configuration.set(DATA_SOURCE_NAME, name);
+    }
+    @Override
+    public void close() {
+      configuration.unset(DATA_SOURCE_NAME);
+    }
+  }
 }

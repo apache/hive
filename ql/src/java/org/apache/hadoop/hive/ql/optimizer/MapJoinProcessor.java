@@ -464,7 +464,7 @@ public class MapJoinProcessor extends Transform {
         HiveConf.getVar(hiveConf,
             HiveConf.ConfVars.HIVE_TEST_MAPJOINFULLOUTER_OVERRIDE);
     EnabledOverride mapJoinFullOuterOverride =
-        EnabledOverride.nameMap.get(testMapJoinFullOuterOverrideString);
+        EnabledOverride.NAME_MAP.get(testMapJoinFullOuterOverrideString);
 
     final boolean isEnabled =
         HiveConf.getBoolVar(

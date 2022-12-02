@@ -98,7 +98,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -137,11 +136,11 @@ public abstract class TaskCompiler {
     boolean isCStats = pCtx.getQueryProperties().isAnalyzeRewrite();
     int outerQueryLimit = pCtx.getQueryProperties().getOuterQueryLimit();
 
-    boolean directInsertCtas = false;
+    boolean directInsert = false;
     if (pCtx.getCreateTable() != null && pCtx.getCreateTable().getStorageHandler() != null) {
       try {
-        directInsertCtas =
-            HiveUtils.getStorageHandler(conf, pCtx.getCreateTable().getStorageHandler()).directInsertCTAS();
+        directInsert =
+            HiveUtils.getStorageHandler(conf, pCtx.getCreateTable().getStorageHandler()).directInsert();
       } catch (HiveException e) {
         throw new SemanticException("Failed to load storage handler:  " + e.getMessage());
       }
@@ -304,6 +303,22 @@ public abstract class TaskCompiler {
       setInputFormat(rootTask);
     }
 
+    if (directInsert) {
+      Task<?> crtTask = null;
+      if (pCtx.getCreateTable() != null) {
+        CreateTableDesc crtTblDesc = pCtx.getCreateTable();
+        crtTblDesc.validate(conf);
+        crtTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
+      }
+      if (crtTask != null) {
+        for (Task<?> rootTask : rootTasks) {
+          crtTask.addDependentTask(rootTask);
+          rootTasks.clear();
+          rootTasks.add(crtTask);
+        }
+      }
+    }
+
     optimizeTaskPlan(rootTasks, pCtx, ctx);
 
     /*
@@ -374,14 +389,14 @@ public abstract class TaskCompiler {
 
     // for direct insert CTAS, we don't need this table creation DDL task, since the table will be created
     // ahead of time by the non-native table
-    if (pCtx.getQueryProperties().isCTAS() && !pCtx.getCreateTable().isMaterialization() && !directInsertCtas) {
+    if (pCtx.getQueryProperties().isCTAS() && !pCtx.getCreateTable().isMaterialization() && !directInsert) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateTableDesc crtTblDesc = pCtx.getCreateTable();
       crtTblDesc.validate(conf);
       Task<?> crtTblTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
       patchUpAfterCTASorMaterializedView(rootTasks, inputs, outputs, crtTblTask,
           CollectionUtils.isEmpty(crtTblDesc.getPartColNames()));
-    } else if (pCtx.getQueryProperties().isMaterializedView()) {
+    } else if (pCtx.getQueryProperties().isMaterializedView() && !directInsert) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateMaterializedViewDesc viewDesc = pCtx.getCreateViewDesc();
       Task<?> crtViewTask = TaskFactory.get(new DDLWork(
@@ -473,10 +488,10 @@ public abstract class TaskCompiler {
     } else {
       CreateMaterializedViewDesc cmv = pCtx.getCreateViewDesc();
       dataSink = cmv.getAndUnsetWriter();
-      txnId = cmv.getInitialMmWriteId();
+      txnId = cmv.getInitialWriteId();
       loc = cmv.getLocation();
     }
-    Path location = (loc == null) ? getDefaultCtasLocation(pCtx) : new Path(loc);
+    Path location = (loc == null) ? getDefaultCtasOrCMVLocation(pCtx) : new Path(loc);
     if (pCtx.getQueryProperties().isCTAS()) {
       CreateTableDesc ctd = pCtx.getCreateTable();
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL)) {
@@ -511,7 +526,7 @@ public abstract class TaskCompiler {
     lfd.setTargetDir(location);
   }
 
-  private Path getDefaultCtasLocation(final ParseContext pCtx) throws SemanticException {
+  private Path getDefaultCtasOrCMVLocation(final ParseContext pCtx) throws SemanticException {
     try {
       String protoName = null, suffix = "";
       boolean isExternal = false;
@@ -522,11 +537,11 @@ public abstract class TaskCompiler {
         protoName = pCtx.getCreateTable().getDbTableName();
         isExternal = pCtx.getCreateTable().isExternal();
         createTableOrMVUseSuffix &= AcidUtils.isTransactionalTable(pCtx.getCreateTable());
-        suffix = getTableOrMVSuffix(pCtx, createTableOrMVUseSuffix);
+        suffix = Utilities.getTableOrMVSuffix(pCtx.getContext(), createTableOrMVUseSuffix);
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
         protoName = pCtx.getCreateViewDesc().getViewName();
         createTableOrMVUseSuffix &= AcidUtils.isTransactionalView(pCtx.getCreateViewDesc());
-        suffix = getTableOrMVSuffix(pCtx, createTableOrMVUseSuffix);
+        suffix = Utilities.getTableOrMVSuffix(pCtx.getContext(), createTableOrMVUseSuffix);
       }
       String[] names = Utilities.getDbTableName(protoName);
       if (!db.databaseExists(names[0])) {
@@ -537,18 +552,6 @@ public abstract class TaskCompiler {
     } catch (HiveException | MetaException e) {
       throw new SemanticException(e);
     }
-  }
-
-  public String getTableOrMVSuffix(ParseContext pCtx, boolean createTableOrMVUseSuffix) {
-    String suffix = "";
-    if (createTableOrMVUseSuffix) {
-      long txnId = Optional.ofNullable(pCtx.getContext())
-              .map(ctx -> ctx.getHiveTxnManager().getCurrentTxnId()).orElse(0L);
-      if (txnId != 0) {
-        suffix = AcidUtils.getPathSuffix(txnId);
-      }
-    }
-    return suffix;
   }
 
   private void patchUpAfterCTASorMaterializedView(List<Task<?>> rootTasks,

@@ -35,6 +35,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.Date;
@@ -90,6 +91,7 @@ import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.NullOrder;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.RowLevelOperationMode;
 import org.apache.iceberg.Schema;
@@ -102,6 +104,7 @@ import org.apache.iceberg.SortField;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -259,7 +262,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public boolean directInsertCTAS() {
+  public boolean directInsert() {
     return true;
   }
 
@@ -458,7 +461,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @Override
   public void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     String tableName = commitProperties.getProperty(Catalogs.NAME);
+    String location = commitProperties.getProperty(Catalogs.LOCATION);
     Configuration configuration = SessionState.getSessionConf();
+    if (location != null) {
+      HiveTableUtil.cleanupTableObjectFile(location, configuration);
+    }
     List<JobContext> jobContextList = generateJobContext(configuration, tableName, overwrite);
     if (jobContextList.isEmpty()) {
       return;
@@ -541,21 +548,32 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   public URI getURIForAuth(org.apache.hadoop.hive.metastore.api.Table hmsTable) throws URISyntaxException {
     String dbName = hmsTable.getDbName();
     String tableName = hmsTable.getTableName();
-    StringBuilder authURI = new StringBuilder(ICEBERG_URI_PREFIX).append(dbName).append("/").append(tableName)
-        .append("?snapshot=");
+    StringBuilder authURI =
+        new StringBuilder(ICEBERG_URI_PREFIX).append(encodeString(dbName)).append("/").append(encodeString(tableName))
+            .append("?snapshot=");
     Optional<String> locationProperty = SessionStateUtil.getProperty(conf, hive_metastoreConstants.META_TABLE_LOCATION);
     if (locationProperty.isPresent()) {
       Preconditions.checkArgument(locationProperty.get() != null,
           "Table location is not set in SessionState. Authorization URI cannot be supplied.");
       // this property is set during the create operation before the hive table was created
       // we are returning a dummy iceberg metadata file
-      authURI.append(URI.create(locationProperty.get()).getPath()).append("/metadata/dummy.metadata.json");
+      authURI.append(encodeString(URI.create(locationProperty.get()).getPath()))
+          .append(encodeString("/metadata/dummy.metadata.json"));
     } else {
       Table table = IcebergTableUtil.getTable(conf, hmsTable);
-      authURI.append(URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath());
+      authURI.append(
+          encodeString(URI.create(((BaseTable) table).operations().current().metadataFileLocation()).getPath()));
     }
     LOG.debug("Iceberg storage handler authorization URI {}", authURI);
-    return new URI(HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.encode(authURI.toString()));
+    return new URI(authURI.toString());
+  }
+
+  @VisibleForTesting
+  static String encodeString(String rawString) {
+    if (rawString == null) {
+      return null;
+    }
+    return HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.encode(rawString);
   }
 
 
@@ -580,9 +598,12 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   }
 
   @Override
-  public AcidSupportType supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table table) {
+  public AcidSupportType supportsAcidOperations(org.apache.hadoop.hive.ql.metadata.Table table,
+      boolean isWriteOperation) {
     if (table.getParameters() != null && "2".equals(table.getParameters().get(TableProperties.FORMAT_VERSION))) {
-      checkDMLOperationMode(table);
+      if (isWriteOperation) {
+        checkDMLOperationMode(table);
+      }
       return AcidSupportType.WITHOUT_TRANSACTIONS;
     }
 
@@ -711,6 +732,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   public static Table table(Configuration config, String name) {
     Table table = SerializationUtil.deserializeFromBase64(config.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + name));
+    if (table == null &&
+            config.getBoolean(hive_metastoreConstants.TABLE_IS_CTAS, false) &&
+            StringUtils.isNotBlank(config.get(InputFormatConfig.TABLE_LOCATION))) {
+      table = HiveTableUtil.readTableObjectFromFile(config);
+    }
     checkAndSetIoConfig(config, table);
     return table;
   }
@@ -741,7 +767,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   public static void checkAndSkipIoConfigSerialization(Configuration config, Table table) {
     if (table != null && config.getBoolean(InputFormatConfig.CONFIG_SERIALIZATION_DISABLED,
-        InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) && table.io() instanceof HadoopConfigurable) {
+            InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) && table.io() instanceof HadoopConfigurable) {
       ((HadoopConfigurable) table.io()).serializeConfWith(conf -> new NonSerializingConfig(config)::get);
     }
   }
@@ -793,31 +819,66 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   @VisibleForTesting
   static void overlayTableProperties(Configuration configuration, TableDesc tableDesc, Map<String, String> map) {
     Properties props = tableDesc.getProperties();
-    Table table = IcebergTableUtil.getTable(configuration, props);
-    String schemaJson = SchemaParser.toJson(table.schema());
 
     Maps.fromProperties(props).entrySet().stream()
         .filter(entry -> !map.containsKey(entry.getKey())) // map overrides tableDesc properties
         .forEach(entry -> map.put(entry.getKey(), entry.getValue()));
 
-    map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
-    map.put(InputFormatConfig.TABLE_LOCATION, table.location());
-    map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
-    props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(table.spec()));
+    String location;
+    Schema schema;
+    PartitionSpec spec;
+    try {
+      Table table = IcebergTableUtil.getTable(configuration, props);
+      location = table.location();
+      schema = table.schema();
+      spec = table.spec();
 
-    // serialize table object into config
-    Table serializableTable = SerializableTable.copyOf(table);
-    checkAndSkipIoConfigSerialization(configuration, serializableTable);
-    map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
-        SerializationUtil.serializeToBase64(serializableTable));
+      // serialize table object into config
+      Table serializableTable = SerializableTable.copyOf(table);
+      checkAndSkipIoConfigSerialization(configuration, serializableTable);
+      map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
+          SerializationUtil.serializeToBase64(serializableTable));
+    } catch (NoSuchTableException ex) {
+      if (!HiveTableUtil.isCtas(props)) {
+        throw ex;
+      }
+
+      if (!Catalogs.hiveCatalog(configuration, props)) {
+        throw new UnsupportedOperationException(HiveIcebergSerDe.CTAS_EXCEPTION_MSG);
+      }
+
+      location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
+
+      map.put(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tableDesc.getTableName(),
+              SerializationUtil.serializeToBase64(null));
+
+      try {
+        AbstractSerDe serDe = tableDesc.getDeserializer(configuration);
+        HiveIcebergSerDe icebergSerDe = (HiveIcebergSerDe) serDe;
+        schema = icebergSerDe.getTableSchema();
+        spec = IcebergTableUtil.spec(configuration, icebergSerDe.getTableSchema());
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    map.put(InputFormatConfig.TABLE_IDENTIFIER, props.getProperty(Catalogs.NAME));
+    if (StringUtils.isNotBlank(location)) {
+      map.put(InputFormatConfig.TABLE_LOCATION, location);
+    }
+    String schemaJson = SchemaParser.toJson(schema);
+    map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+    // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
+    // this is an exception to the interface documentation, but it's a safe operation to add this property
+    props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
+    if (spec == null) {
+      spec = PartitionSpec.unpartitioned();
+    }
+    props.put(InputFormatConfig.PARTITION_SPEC, PartitionSpecParser.toJson(spec));
 
     // We need to remove this otherwise the job.xml will be invalid as column comments are separated with '\0' and
     // the serialization utils fail to serialize this character
     map.remove("columns.comments");
-
-    // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations
-    // this is an exception to the interface documentation, but it's a safe operation to add this property
-    props.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
   }
 
   /**
@@ -897,7 +958,6 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
   /**
    * If any of the following checks is true we fall back to non vectorized mode:
    * <ul>
-   *   <li>iceberg format-version is "2"</li>
    *   <li>fileformat is set to avro</li>
    *   <li>querying metadata tables</li>
    *   <li>fileformat is set to ORC, and table schema has time type column</li>
@@ -907,8 +967,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
    */
   private void fallbackToNonVectorizedModeBasedOnProperties(Properties tableProps) {
     Schema tableSchema = SchemaParser.fromJson(tableProps.getProperty(InputFormatConfig.TABLE_SCHEMA));
-    if ("2".equals(tableProps.get(TableProperties.FORMAT_VERSION)) ||
-        FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
+    if (FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
         (tableProps.containsKey("metaTable") && isValidMetadataTable(tableProps.getProperty("metaTable"))) ||
         hasOrcTimeInSchema(tableProps, tableSchema) ||
         !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema)) {

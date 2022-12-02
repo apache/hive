@@ -1008,6 +1008,7 @@ public class HiveServer2 extends CompositeService {
       // reinitialized after a HS2 is restarted.
       HiveSaml2Client.shutdown();
     }
+
   }
 
   private void shutdownExecutor(final ExecutorService leaderActionsExecutorService) {

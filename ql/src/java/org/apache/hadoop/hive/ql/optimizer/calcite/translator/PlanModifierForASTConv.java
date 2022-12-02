@@ -196,6 +196,10 @@ public class PlanModifierForASTConv {
         // this should only happen when newParent is constant.
         if (isEmptyGrpAggr(rel)) {
           replaceEmptyGroupAggr(rel, newParent);
+          // Since the aggregate gets replaced, we need to change rel
+          // to be the new aggregate so that when convertOpTree gets
+          // called recursively, it will have the correct parent.
+          rel = newParent.getInputs().get(0);
         }
       }
     }

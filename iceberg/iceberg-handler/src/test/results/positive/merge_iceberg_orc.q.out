@@ -90,6 +90,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 6 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string), _col2 (type: int)
+            Execution mode: vectorized
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -202,6 +203,7 @@ STAGE PLANS:
                           Statistics: Num rows: 4 Data size: 644 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col4 (type: bigint)
         Reducer 3 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: bigint), VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: int)
@@ -216,6 +218,7 @@ STAGE PLANS:
                       serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                       name: default.target_ice
         Reducer 4 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: string), KEY.reducesinkkey3 (type: bigint), VALUE._col0 (type: int), VALUE._col1 (type: string), VALUE._col2 (type: int)
@@ -230,6 +233,7 @@ STAGE PLANS:
                       serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
                       name: default.target_ice
         Reducer 5 
+            Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)

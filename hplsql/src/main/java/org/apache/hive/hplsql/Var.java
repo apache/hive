@@ -255,11 +255,11 @@ public class Var {
       cast(new Var(queryResult.column(idx, String.class)));
     } else if (type == java.sql.Types.INTEGER || type == java.sql.Types.BIGINT ||
             type == java.sql.Types.SMALLINT || type == java.sql.Types.TINYINT) {
-      cast(new Var(Long.valueOf(queryResult.column(idx, Long.class))));
+      cast(new Var(queryResult.column(idx, Long.class)));
     } else if (type == java.sql.Types.DECIMAL || type == java.sql.Types.NUMERIC) {
       cast(new Var(queryResult.column(idx, BigDecimal.class)));
     } else if (type == java.sql.Types.FLOAT || type == java.sql.Types.DOUBLE) {
-      cast(new Var(Double.valueOf(queryResult.column(idx, Double.class))));
+      cast(new Var(queryResult.column(idx, Double.class)));
     }
     return this;
   }

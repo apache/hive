@@ -65,7 +65,7 @@ import org.junit.Assert;
 import org.junit.rules.TemporaryFolder;
 
 // Helper class for setting up and testing various catalog implementations
-abstract class TestTables {
+public abstract class TestTables {
   public static final TestTableType[] ALL_TABLE_TYPES = new TestTableType[] {
       TestTableType.HADOOP_TABLE,
       TestTableType.HADOOP_CATALOG,
@@ -638,7 +638,7 @@ abstract class TestTables {
     }
   }
 
-  enum TestTableType {
+  public enum TestTableType {
     HADOOP_TABLE {
       @Override
       public TestTables instance(Configuration conf, TemporaryFolder temporaryFolder, String catalogName) {

@@ -32,7 +32,7 @@ import java.util.List;
  * Subclass of {@link org.apache.calcite.rel.core.Values}.
  * Specialized to Hive engine.
  */
-public class HiveValues extends Values {
+public class HiveValues extends Values implements HiveRelNode {
 
   public HiveValues(RelOptCluster cluster, RelDataType rowType, ImmutableList<ImmutableList<RexLiteral>> tuples,
                     RelTraitSet traits) {
