@@ -35,10 +35,15 @@ public class HiveFilterAggregateTransposeRule extends FilterAggregateTransposeRu
   @Override
   public boolean matches(RelOptRuleCall call) {
     final Filter filterRel = call.rel(0);
+    final Aggregate aggRel = call.rel(1);
     RexNode condition = filterRel.getCondition();
     if (!HiveCalciteUtil.isDeterministic(condition)) {
       return false;
     }
+    if (aggRel.getGroupCount() == 0) {
+      return false;
+    }
+
 
     return super.matches(call);
   }
