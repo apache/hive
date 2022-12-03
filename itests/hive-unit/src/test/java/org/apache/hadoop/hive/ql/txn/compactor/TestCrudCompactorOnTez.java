@@ -2549,7 +2549,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   public void testCompactionShouldNotFailOnKeywordField() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     String dbName = "default";
-    String tblName = ":q!q";
+    String tblName = "compact_hive_aggregated_data";
 
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     TestDataProvider testDP = new TestDataProvider();
