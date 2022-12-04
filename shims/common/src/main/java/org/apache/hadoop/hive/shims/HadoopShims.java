@@ -72,6 +72,8 @@ import org.apache.hadoop.util.Progressable;
  */
 public interface HadoopShims {
 
+  String USER_ID = "%s_User:%s";
+
   /**
    * Constructs and Returns TaskAttempt Logger Url
    * or null if the TaskLogServlet is not available
