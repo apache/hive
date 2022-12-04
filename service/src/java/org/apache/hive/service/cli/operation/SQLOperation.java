@@ -82,6 +82,8 @@ import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.server.ThreadWithGarbageCleanup;
 
+import static org.apache.hadoop.hive.shims.HadoopShims.USER_ID;
+
 /**
  * SQLOperation.
  */
@@ -328,7 +330,8 @@ public class SQLOperation extends ExecuteStatementOperation {
           if (!embedded) {
             LogUtils.registerLoggingContext(queryState.getConf());
           }
-          ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
+          ShimLoader.getHadoopShims()
+              .setHadoopQueryContext(String.format(USER_ID, queryState.getQueryId(), parentSessionState.getUserName()));
 
           try {
             if (asyncPrepare) {

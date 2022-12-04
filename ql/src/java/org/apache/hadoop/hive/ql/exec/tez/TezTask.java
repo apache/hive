@@ -94,6 +94,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import static org.apache.hadoop.hive.shims.HadoopShims.USER_ID;
+
 /**
  *
  * TezTask handles the execution of TezWork. Currently it executes a graph of map and reduce work
@@ -197,8 +199,9 @@ public class TezTask extends Task<TezWork> {
       // DAG scratch dir. We get a session from the pool so it may be different from Tez one.
       // TODO: we could perhaps reuse the same directory for HiveResources?
       Path scratchDir = utils.createTezDir(ctx.getMRScratchDir(), conf);
-      CallerContext callerContext = CallerContext.create(
-          "HIVE", queryPlan.getQueryId(), "HIVE_QUERY_ID", queryPlan.getQueryStr());
+      CallerContext callerContext =
+          CallerContext.create("HIVE", String.format(USER_ID, queryPlan.getQueryId(), userName), "HIVE_QUERY_ID",
+              queryPlan.getQueryStr());
 
       perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_GET_SESSION);
       session = sessionRef.value = WorkloadManagerFederation.getSession(

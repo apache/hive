@@ -53,6 +53,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
+import static org.apache.hadoop.hive.shims.HadoopShims.USER_ID;
+
 public abstract class Operation {
   protected final HiveSession parentSession;
   protected boolean embedded;
@@ -237,7 +239,8 @@ public abstract class Operation {
    * Set up some preconditions, or configurations.
    */
   protected void beforeRun() {
-    ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
+    ShimLoader.getHadoopShims()
+        .setHadoopQueryContext(String.format(USER_ID, queryState.getQueryId(), parentSession.getUserName()));
     if (!embedded) {
       createOperationLog();
       LogUtils.registerLoggingContext(queryState.getConf());
@@ -263,7 +266,8 @@ public abstract class Operation {
       LogUtils.unregisterLoggingContext();
     }
     // Reset back to session context after the query is done
-    ShimLoader.getHadoopShims().setHadoopSessionContext(parentSession.getSessionState().getSessionId());
+    ShimLoader.getHadoopShims().setHadoopSessionContext(
+        String.format(USER_ID, parentSession.getSessionState().getSessionId(), parentSession.getUserName()));
   }
 
   /**
