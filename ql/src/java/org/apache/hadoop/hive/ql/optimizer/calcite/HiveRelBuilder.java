@@ -115,6 +115,9 @@ public class HiveRelBuilder extends RelBuilder {
       final RelNode filter = HiveRelFactories.HIVE_FILTER_FACTORY.createFilter(input, x);
       return this.push(filter);
     }
+    if (x.isAlwaysFalse()) {
+      return empty();
+    }
     return this;
   }
 
