@@ -268,7 +268,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         if (_isFileCompressed) {
           index.getNext();
         }
-        reader.seek(index, phase);
+        present.seek(index);
       }
 
       if (_isDictionaryEncoding) {
@@ -1554,7 +1554,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         if (_isFileCompressed) {
           index.getNext();
         }
-        reader.seek(index, readPhase);
+        present.seek(index);
       }
 
       if (_isDictionaryEncoding) {
@@ -1761,7 +1761,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         if (_isFileCompressed) {
           index.getNext();
         }
-        reader.seek(index, readPhase);
+        present.seek(index);
       }
 
       if (_isDictionaryEncoding) {
