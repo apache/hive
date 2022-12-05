@@ -234,7 +234,7 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
         "Ndv estimation for {} is {}. # of partitions requested: {}. # of partitions found: {}",
         colName, columnStatisticsData.getDoubleStats().getNumDVs(), partNames.size(),
         colStatsWithSourceInfo.size());
-    
+
     KllHistogramEstimator mergedKllHistogramEstimator = mergeHistograms(colStatsWithSourceInfo);
     if (mergedKllHistogramEstimator != null) {
       columnStatisticsData.getDoubleStats().setHistogram(mergedKllHistogramEstimator.serialize());
