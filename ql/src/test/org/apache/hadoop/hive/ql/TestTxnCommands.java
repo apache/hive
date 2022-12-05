@@ -2373,13 +2373,13 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   }
   @Test
   public void testShowCompactionInputValidation() throws Exception {
-    setUpCompactionRequestsData("mydb2", "tbl2");
-    executeCompactionRequest("mydb2", "tbl2", "MAJOR", "ds='mon'");
+    setUpCompactionRequestsData("mydb2","tbl2");
+    executeCompactionRequest("mydb2","tbl2", "MAJOR", "ds='mon'");
     SessionState.get().setCurrentDatabase("mydb2");
 
     //validation testing of paramters
     expectedException.expect(RuntimeException.class);
-    List<String> r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb POOL 'pool0' TYPE 'MAJOR'");// validates db
+    List<String> r  = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb POOL 'pool0' TYPE 'MAJOR'");// validates db
     r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb2  TYPE 'MAJR'");// validates compaction type
     r = runStatementOnDriver("SHOW COMPACTIONS mydb2.tbl1 PARTITION (ds='mon') TYPE 'MINOR' " +
           "STATUS 'ready for clean'");// validates table

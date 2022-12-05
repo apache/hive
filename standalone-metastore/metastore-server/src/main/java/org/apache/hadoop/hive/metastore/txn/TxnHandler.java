@@ -3889,6 +3889,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         getShowCompactFilterClause(rqst) +
         getShowCompactSortingOrderClause(rqst);
       List<String> params = getShowCompactParamList(rqst);
+
       try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         PreparedStatement stmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params)) {
         if (rqst.isSetId()) {
