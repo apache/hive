@@ -4662,19 +4662,23 @@ class ShowCompactRequest
   ID = 1
   POOLNAME = 2
   DBNAME = 3
-  TABLENAME = 4
-  PARTITIONNAME = 5
+  TBNAME = 4
+  PARTNAME = 5
   TYPE = 6
   STATE = 7
+  LIMIT = 8
+  ORDER = 9
 
   FIELDS = {
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
     POOLNAME => {:type => ::Thrift::Types::STRING, :name => 'poolName', :optional => true},
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname', :optional => true},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename', :optional => true},
-    PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
+    TBNAME => {:type => ::Thrift::Types::STRING, :name => 'tbName', :optional => true},
+    PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partName', :optional => true},
     TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :optional => true, :enum_class => ::CompactionType},
-    STATE => {:type => ::Thrift::Types::STRING, :name => 'state', :optional => true}
+    STATE => {:type => ::Thrift::Types::STRING, :name => 'state', :optional => true},
+    LIMIT => {:type => ::Thrift::Types::I64, :name => 'limit', :optional => true},
+    ORDER => {:type => ::Thrift::Types::STRING, :name => 'order', :optional => true}
   }
 
   def struct_fields; FIELDS; end

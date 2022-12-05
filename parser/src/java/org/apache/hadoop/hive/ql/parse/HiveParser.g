@@ -696,7 +696,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_DEFAULT", "DEFAULT");
     xlateMap.put("KW_CHECK", "CHECK");
     xlateMap.put("KW_POOL", "POOL");
-    xlateMap.put("KW_ID", "ID");
+    xlateMap.put("KW_COMPACT_ID", "COMPACTIONID");
     xlateMap.put("KW_MOVE", "MOVE");
     xlateMap.put("KW_DO", "DO");
     xlateMap.put("KW_ALLOC_FRACTION", "ALLOC_FRACTION");
@@ -1340,7 +1340,7 @@ showStatement
       )
     | KW_SHOW KW_COMPACTIONS
       (
-      (KW_ID) => compactionId -> ^(TOK_SHOW_COMPACTIONS compactionId)
+      (KW_COMPACT_ID) => compactionId -> ^(TOK_SHOW_COMPACTIONS compactionId)
       |
       (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) (dbName=identifier) compactionPool? compactionType? compactionStatus? orderByClause? limitClause? -> ^(TOK_SHOW_COMPACTIONS $dbName compactionPool? compactionType? compactionStatus? orderByClause? limitClause?)
       |
@@ -2951,7 +2951,7 @@ killQueryStatement
 BEGIN SHOW COMPACTIONS statement
 */
 compactionId
-  : KW_ID EQUAL compactId=Number -> ^(TOK_COMPACT_ID $compactId)
+  : KW_COMPACT_ID EQUAL compactId=Number -> ^(TOK_COMPACT_ID $compactId)
   ;
 compactionPool
   : KW_POOL poolName=StringLiteral -> ^(TOK_COMPACT_POOL $poolName)

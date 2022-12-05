@@ -3885,14 +3885,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException {
     try {
       ShowCompactResponse response = new ShowCompactResponse(new ArrayList<>());
-      String query = TxnQueries.SHOW_COMPACTION_QUERY + getShowCompactFilterClause(rqst) + 
-        TxnQueries.SHOW_COMPACTION_ORDERBY_CLAUSE;
+      String query = TxnQueries.SHOW_COMPACTION_QUERY +
+        getShowCompactFilterClause(rqst) +
+        getShowCompactSortingOrderClause(rqst);
       List<String> params = getShowCompactParamList(rqst);
-
       try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         PreparedStatement stmt = sqlGenerator.prepareStmtWithParameters(dbConn, query, params)) {
         if (rqst.isSetId()) {
           stmt.setLong(1, rqst.getId());
+        }
+        int rowLimit = (int) rqst.getLimit();
+        if (rowLimit > 0) {
+          stmt.setMaxRows(rowLimit);
         }
         LOG.debug("Going to execute query <" + query + ">");
         try (ResultSet rs = stmt.executeQuery()) {
@@ -3955,14 +3959,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  private String getShowCompactSortingOrderClause(ShowCompactRequest request) {
+    String sortingOrder = request.getOrder();
+    return isNotBlank(sortingOrder) ? "  ORDER BY  " + sortingOrder : TxnQueries.SHOW_COMPACTION_ORDERBY_CLAUSE;
+  }
+
   private List<String> getShowCompactParamList(ShowCompactRequest request) throws MetaException {
     if (request.getId() > 0) {
       return Collections.emptyList();
     }
     String poolName = request.getPoolName();
-    String dbName = request.getDbname();
-    String tableName = request.getTablename();
-    String partName = request.getPartitionname();
+    String dbName = request.getDbName();
+    String tableName = request.getTbName();
+    String partName = request.getPartName();
     CompactionType type = request.getType();
     String state = request.getState();
   
@@ -3994,13 +4003,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (request.getId() > 0) {
       params.add("\"CC_ID\"=?");
     } else {
-      if (isNotBlank(request.getDbname())) {
+      if (isNotBlank(request.getDbName())) {
         params.add("\"CC_DATABASE\"=?");
       }
-      if (isNotBlank(request.getTablename())) {
+      if (isNotBlank(request.getTbName())) {
         params.add("\"CC_TABLE\"=?");
       }
-      if (isNotBlank(request.getPartitionname())) {
+      if (isNotBlank(request.getPartName())) {
         params.add("\"CC_PARTITION\"=?");
       }
       if (isNotBlank(request.getState())) {
