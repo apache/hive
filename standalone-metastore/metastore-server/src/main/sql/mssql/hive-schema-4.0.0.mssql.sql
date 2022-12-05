@@ -257,14 +257,14 @@ CREATE TABLE TAB_COL_STATS
     MAX_COL_LEN bigint NULL,
     NUM_DISTINCTS bigint NULL,
     BIT_VECTOR varbinary(max) NULL,
-    HISTOGRAM varbinary(max) NULL,
     NUM_FALSES bigint NULL,
     NUM_NULLS bigint NOT NULL,
     NUM_TRUES bigint NULL,
     TBL_ID bigint NULL,
     "TABLE_NAME" nvarchar(256) NOT NULL,
     "CAT_NAME" nvarchar(256) NOT NULL,
-    "ENGINE" nvarchar(128) NOT NULL
+    "ENGINE" nvarchar(128) NOT NULL,
+    HISTOGRAM varbinary(max) NULL
 );
 
 ALTER TABLE TAB_COL_STATS ADD CONSTRAINT TAB_COL_STATS_PK PRIMARY KEY (CS_ID);

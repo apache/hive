@@ -615,13 +615,13 @@ CREATE TABLE "PART_COL_STATS" (
  "NUM_NULLS" bigint NOT NULL,
  "NUM_DISTINCTS" bigint,
  "BIT_VECTOR" bytea,
- "HISTOGRAM" bytea,
  "AVG_COL_LEN" double precision,
  "MAX_COL_LEN" bigint,
  "NUM_TRUES" bigint,
  "NUM_FALSES" bigint,
  "LAST_ANALYZED" bigint NOT NULL,
- "ENGINE" character varying(128) NOT NULL
+ "ENGINE" character varying(128) NOT NULL,
+ "HISTOGRAM" bytea
 );
 
 --
