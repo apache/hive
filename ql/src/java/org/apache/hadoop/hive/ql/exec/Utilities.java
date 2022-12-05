@@ -1411,7 +1411,7 @@ public final class Utilities {
     }
   }
 
-  public static void mvFileToFinalPath(Path specPath, Configuration hconf,
+  public static void mvFileToFinalPath(Path specPath, String unionSuffix, Configuration hconf,
                                        boolean success, Logger log, DynamicPartitionCtx dpCtx, FileSinkDesc conf,
                                        Reporter reporter) throws IOException,
       HiveException {
@@ -1461,8 +1461,10 @@ public final class Utilities {
         Set<FileStatus> filesKept = new HashSet<>();
         perfLogger.perfLogBegin("FileSinkOperator", "RemoveTempOrDuplicateFiles");
         // remove any tmp file or double-committed output files
-        List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
-            fs, statuses, dpCtx, conf, hconf, filesKept, false);
+        int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
+            numBuckets = (conf != null && conf.getTable() != null) ? conf.getTable().getNumBuckets() : 0;
+        List<Path> emptyBuckets = removeTempOrDuplicateFiles(
+            fs, statuses, unionSuffix, dpLevels, numBuckets, hconf, null, 0, false, filesKept, false);
         perfLogger.perfLogEnd("FileSinkOperator", "RemoveTempOrDuplicateFiles");
         // create empty buckets if necessary
         if (!emptyBuckets.isEmpty()) {
