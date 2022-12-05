@@ -15,14 +15,14 @@ SELECT * FROM (
    a,
    b
    FROM t
-   WHERE a = 1001
+   WHERE a = '1001'
     UNION ALL
    SELECT
    a,
    b
    FROM t
-   WHERE a = 1002) AS t2
-WHERE a = 1000;
+   WHERE a = '1002') AS t2
+WHERE a = '1000';
 
 EXPLAIN CBO
 SELECT * FROM (
@@ -35,11 +35,11 @@ SELECT * FROM (
    a,
    b
    FROM t
-   WHERE a = 1001
+   WHERE a = '1001'
     UNION ALL
    SELECT
    a,
    b
    FROM t
-   WHERE a = 1002) AS t2
-WHERE a = 1000;
+   WHERE a = '1002') AS t2
+WHERE a = '1000';

@@ -56,14 +56,14 @@ PREHOOK: query: SELECT * FROM (
    a,
    b
    FROM t
-   WHERE a = 1001
+   WHERE a = '1001'
     UNION ALL
    SELECT
    a,
    b
    FROM t
-   WHERE a = 1002) AS t2
-WHERE a = 1000
+   WHERE a = '1002') AS t2
+WHERE a = '1000'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
@@ -77,14 +77,14 @@ POSTHOOK: query: SELECT * FROM (
    a,
    b
    FROM t
-   WHERE a = 1001
+   WHERE a = '1001'
     UNION ALL
    SELECT
    a,
    b
    FROM t
-   WHERE a = 1002) AS t2
-WHERE a = 1000
+   WHERE a = '1002') AS t2
+WHERE a = '1000'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
@@ -100,14 +100,14 @@ SELECT * FROM (
    a,
    b
    FROM t
-   WHERE a = 1001
+   WHERE a = '1001'
     UNION ALL
    SELECT
    a,
    b
    FROM t
-   WHERE a = 1002) AS t2
-WHERE a = 1000
+   WHERE a = '1002') AS t2
+WHERE a = '1000'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
@@ -122,19 +122,19 @@ SELECT * FROM (
    a,
    b
    FROM t
-   WHERE a = 1001
+   WHERE a = '1001'
     UNION ALL
    SELECT
    a,
    b
    FROM t
-   WHERE a = 1002) AS t2
-WHERE a = 1000
+   WHERE a = '1002') AS t2
+WHERE a = '1000'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(a=[$0], b=[$1])
-  HiveFilter(condition=[=(CAST($0):DOUBLE, 1000)])
+HiveProject(a=[CAST(_UTF-16LE'1000':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], b=[$1])
+  HiveFilter(condition=[=($0, _UTF-16LE'1000')])
     HiveTableScan(table=[[default, t]], table:alias=[t])
 
