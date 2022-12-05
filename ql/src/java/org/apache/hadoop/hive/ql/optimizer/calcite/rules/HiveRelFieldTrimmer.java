@@ -37,6 +37,7 @@ import org.apache.calcite.rel.RelDistribution;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.Aggregate.Group;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Project;
@@ -543,8 +544,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
   private Aggregate rewriteGBConstantKeys(Aggregate aggregate, ImmutableBitSet fieldsUsed,
       ImmutableBitSet aggCallFields) {
     if ((aggregate.getIndicatorCount() > 0)
-        || (aggregate.getGroupSet().isEmpty())
-        || fieldsUsed.contains(aggregate.getGroupSet())) {
+        || (aggregate.getGroupType() != Group.SIMPLE)) {
       return aggregate;
     }
 
