@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.histogram.KllHistogramEstimator;
-import org.apache.hadoop.hive.common.histogram.KllHistogramEstimatorFactory;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -60,9 +59,7 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
     // bitvectors
     boolean doAllPartitionContainStats = partNames.size() == colStatsWithSourceInfo.size();
     NumDistinctValueEstimator ndvEstimator = null;
-    KllHistogramEstimator histogramEstimator = null;
     boolean areAllNDVEstimatorsMergeable = true;
-    boolean areAllHistogramEstimatorsMergeable = true;
     for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
       ColumnStatisticsObj cso = csp.getColStatsObj();
       if (statsObj == null) {
@@ -88,29 +85,11 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
           }
         }
       }
-      // check if we can merge histogram estimators
-      if (columnStatsData.getHistogramEstimator() == null) {
-        areAllHistogramEstimatorsMergeable = false;
-      } else if (areAllHistogramEstimatorsMergeable) {
-        KllHistogramEstimator estimator = columnStatsData.getHistogramEstimator();
-        if (histogramEstimator == null) {
-          histogramEstimator = estimator;
-        } else {
-          // null histogram can happen when there are only null values
-          if (estimator != null && !histogramEstimator.canMerge(estimator)) {
-            areAllHistogramEstimatorsMergeable = false;
-          }
-        }
-      }
     }
     if (areAllNDVEstimatorsMergeable && ndvEstimator != null) {
       ndvEstimator = NumDistinctValueEstimatorFactory.getEmptyNumDistinctValueEstimator(ndvEstimator);
     }
     LOG.debug("all of the bit vectors can merge for {} is {}", colName, areAllNDVEstimatorsMergeable);
-    if (areAllHistogramEstimatorsMergeable && histogramEstimator != null) {
-      histogramEstimator = KllHistogramEstimatorFactory.getEmptyHistogramEstimator(histogramEstimator);
-    }
-    LOG.debug("all histograms can merge for {} is {}", colName, areAllHistogramEstimatorsMergeable);
 
     ColumnStatisticsData columnStatisticsData = initColumnStatisticsData();
     if (doAllPartitionContainStats || colStatsWithSourceInfo.size() < 2) {
@@ -130,10 +109,6 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
         }
         if (areAllNDVEstimatorsMergeable && ndvEstimator != null) {
           ndvEstimator.mergeEstimators(newData.getNdvEstimator());
-        }
-        if (areAllHistogramEstimatorsMergeable
-            && histogramEstimator != null && newData.getHistogramEstimator() != null) {
-          histogramEstimator.mergeEstimators(newData.getHistogramEstimator());
         }
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
@@ -168,16 +143,6 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
           estimation = (long) (lowerBound + (higherBound - lowerBound) * ndvTuner);
         }
         aggregateData.setNumDVs(estimation);
-      }
-
-      if (areAllHistogramEstimatorsMergeable && histogramEstimator != null) {
-        aggregateData.setHistogram(histogramEstimator.serialize());
-      } else {
-        // merge what can be merged and keep the one with the biggest cardinality
-        KllHistogramEstimator mergedKllHistogramEstimator = mergeHistograms(colStatsWithSourceInfo);
-        if (mergedKllHistogramEstimator != null) {
-          columnStatisticsData.getDecimalStats().setHistogram(mergedKllHistogramEstimator.serialize());
-        }
       }
 
       columnStatisticsData.setDecimalStats(aggregateData);
@@ -282,17 +247,17 @@ public class DecimalColumnStatsAggregator extends ColumnStatsAggregator implemen
       }
       extrapolate(columnStatisticsData, partNames.size(), colStatsWithSourceInfo.size(),
           adjustedIndexMap, adjustedStatsMap, densityAvgSum / adjustedStatsMap.size());
-
-      // merge what can be merged and keep the one with the biggest cardinality
-      KllHistogramEstimator mergedKllHistogramEstimator = mergeHistograms(colStatsWithSourceInfo);
-      if (mergedKllHistogramEstimator != null) {
-        columnStatisticsData.getDecimalStats().setHistogram(mergedKllHistogramEstimator.serialize());
-      }
     }
     LOG.debug(
         "Ndv estimation for {} is {}. # of partitions requested: {}. # of partitions found: {}",
         colName, columnStatisticsData.getDecimalStats().getNumDVs(), partNames.size(),
         colStatsWithSourceInfo.size());
+
+    KllHistogramEstimator mergedKllHistogramEstimator = mergeHistograms(colStatsWithSourceInfo);
+    if (mergedKllHistogramEstimator != null) {
+      columnStatisticsData.getDecimalStats().setHistogram(mergedKllHistogramEstimator.serialize());
+    }
+
     statsObj.setStatsData(columnStatisticsData);
     return statsObj;
   }
