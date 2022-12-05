@@ -51,7 +51,6 @@ STAGE PLANS:
     Create Materialized View
       columns: b string, c int
       table properties:
-        created_with_ctas true
         format-version 1
         storage_handler org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
       expanded text: select `tbl_ice`.`b`, `tbl_ice`.`c` from `default`.`tbl_ice` where `tbl_ice`.`c` > 52
