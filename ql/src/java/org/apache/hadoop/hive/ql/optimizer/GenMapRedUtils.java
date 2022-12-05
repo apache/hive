@@ -1971,13 +1971,19 @@ public final class GenMapRedUtils {
        * 2. INSERT operation on full ACID table
        */
       if (!isMmTable && !isDirectInsert) {
-        // generate the temporary file
-        // it must be on the same file system as the current destination
         Context baseCtx = parseCtx.getContext();
 
-        // Create the required temporary file in the HDFS location if the destination
-        // path of the FileSinkOperator table is a blobstore path.
-        Path tmpDir = baseCtx.getTempDirForFinalJobPath(fileSinkDesc.getDestPath());
+        // Choose location of required temporary file
+        Path tmpDir = null;
+        if (hconf.getBoolVar(ConfVars.HIVE_USE_SCRATCHDIR_FOR_STAGING)) {
+          tmpDir = baseCtx.getTempDirForInterimJobPath(fileSinkDesc.getDestPath());
+        } else {
+          tmpDir = baseCtx.getTempDirForFinalJobPath(fileSinkDesc.getDestPath());
+        }
+        DynamicPartitionCtx dpCtx = fileSinkDesc.getDynPartCtx();
+        if (dpCtx != null && dpCtx.getSPPath() != null) {
+            tmpDir = new Path(tmpDir, dpCtx.getSPPath());
+        }
 
         // Change all the linked file sink descriptors
         if (fileSinkDesc.isLinkedFileSink()) {
