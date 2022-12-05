@@ -17,24 +17,34 @@
  */
 package org.apache.hadoop.hive.ql.io.orc.encoded;
 
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
+import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
+import org.apache.hadoop.hive.ql.io.filter.FilterContext;
+
 import org.apache.orc.OrcFile;
+import org.apache.orc.CompressionCodec;
+import org.apache.orc.TypeDescription;
+import org.apache.orc.OrcProto;
+import org.apache.orc.impl.DynamicByteArray;
+import org.apache.orc.impl.InStream;
+import org.apache.orc.impl.IntegerReader;
+import org.apache.orc.impl.PositionProvider;
 import org.apache.orc.impl.RunLengthByteReader;
+import org.apache.orc.impl.StreamName;
+import org.apache.orc.impl.TreeReaderFactory;
+import org.apache.orc.impl.reader.StripePlanner;
+import org.apache.orc.impl.reader.tree.TypeReader;
+
+import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
+import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
-import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
-import org.apache.orc.CompressionCodec;
-import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.InStream;
-import org.apache.orc.impl.PositionProvider;
-import org.apache.orc.impl.TreeReaderFactory;
-import org.apache.orc.OrcProto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,10 +83,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize, 
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       // Note: we assume that batchSize will be consistent with vectors passed in.
@@ -88,7 +98,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase phase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (isFileCompressed) {
@@ -224,7 +234,247 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     index.getNext();
   }
 
-  protected static class StringStreamReader extends StringTreeReader
+  public static class StringDictionaryTreeReaderHive extends TreeReader {
+    private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
+    private DynamicByteArray dictionaryBuffer;
+    private int[] dictionaryOffsets;
+    protected IntegerReader reader;
+
+    private byte[] dictionaryBufferInBytesCache = null;
+    private final LongColumnVector scratchlcv;
+
+    StringDictionaryTreeReaderHive(int columnId, Context context) throws IOException {
+      this(columnId, null, null, null, null, null, context);
+    }
+
+    protected StringDictionaryTreeReaderHive(int columnId, InStream present, InStream data, InStream length, 
+        InStream dictionary, OrcProto.ColumnEncoding encoding, Context context) throws IOException {
+      super(columnId, present, context);
+      scratchlcv = new LongColumnVector();
+      if (data != null && encoding != null) {
+        this.reader = createIntegerReader(encoding.getKind(), data, false, context);
+      }
+
+      if (dictionary != null && encoding != null) {
+        readDictionaryStream(dictionary);
+      }
+
+      if (length != null && encoding != null) {
+        readDictionaryLengthStream(length, encoding);
+      }
+    }
+
+    @Override
+    public void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      if (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DICTIONARY &&
+              encoding.getKind() != OrcProto.ColumnEncoding.Kind.DICTIONARY_V2) {
+        throw new IOException("Unknown encoding " + encoding + " in column " +
+                columnId);
+      }
+    }
+
+    @Override
+    public void startStripe(StripePlanner planner, ReadPhase readPhase) throws IOException {
+      super.startStripe(planner, readPhase);
+
+      // read the dictionary blob
+      StreamName name = new StreamName(columnId,
+              OrcProto.Stream.Kind.DICTIONARY_DATA);
+      InStream in = planner.getStream(name);
+      readDictionaryStream(in);
+
+      // read the lengths
+      name = new StreamName(columnId, OrcProto.Stream.Kind.LENGTH);
+      in = planner.getStream(name);
+      OrcProto.ColumnEncoding encoding = planner.getEncoding(columnId);
+      readDictionaryLengthStream(in, encoding);
+
+      // set up the row reader
+      name = new StreamName(columnId, OrcProto.Stream.Kind.DATA);
+      reader = createIntegerReader(encoding.getKind(),
+              planner.getStream(name), false, context);
+    }
+
+    private void readDictionaryLengthStream(InStream in, OrcProto.ColumnEncoding encoding)
+            throws IOException {
+      int dictionarySize = encoding.getDictionarySize();
+      if (in != null) { // Guard against empty LENGTH stream.
+        IntegerReader lenReader = createIntegerReader(encoding.getKind(), in, false, context);
+        int offset = 0;
+        if (dictionaryOffsets == null ||
+                dictionaryOffsets.length < dictionarySize + 1) {
+          dictionaryOffsets = new int[dictionarySize + 1];
+        }
+        for (int i = 0; i < dictionarySize; ++i) {
+          dictionaryOffsets[i] = offset;
+          offset += (int) lenReader.next();
+        }
+        dictionaryOffsets[dictionarySize] = offset;
+        in.close();
+      }
+
+    }
+
+    private void readDictionaryStream(InStream in) throws IOException {
+      if (in != null) { // Guard against empty dictionary stream.
+        if (in.available() > 0) {
+          dictionaryBuffer = new DynamicByteArray(64, in.available());
+          dictionaryBuffer.readAll(in);
+          // Since its start of strip invalidate the cache.
+          dictionaryBufferInBytesCache = null;
+        }
+        in.close();
+      } else {
+        dictionaryBuffer = null;
+      }
+    }
+
+    @Override
+    public void seek(PositionProvider[] index, ReadPhase readPhase) throws IOException {
+      seek(index[columnId], readPhase);
+    }
+
+    @Override
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
+      super.seek(index, readPhase);
+      reader.seek(index);
+    }
+
+    @Override
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize,
+            FilterContext filterContext, ReadPhase readPhase) throws IOException {
+      final BytesColumnVector result = (BytesColumnVector) previousVector;
+
+      // Read present/isNull stream
+      super.nextVector(result, isNull, batchSize, filterContext, readPhase);
+      readDictionaryByteArray(result, filterContext, batchSize);
+    }
+
+    private void readDictionaryByteArray(BytesColumnVector result, FilterContext filterContext, int batchSize) 
+            throws IOException {
+      int offset;
+      int length;
+
+      if (dictionaryBuffer != null) {
+
+        // Load dictionaryBuffer into cache.
+        if (dictionaryBufferInBytesCache == null) {
+          dictionaryBufferInBytesCache = dictionaryBuffer.get();
+        }
+
+        // Read string offsets
+        scratchlcv.isRepeating = result.isRepeating;
+        scratchlcv.noNulls = result.noNulls;
+        scratchlcv.isNull = result.isNull;
+        scratchlcv.ensureSize(batchSize, false);
+        reader.nextVector(scratchlcv, scratchlcv.vector, batchSize);
+        if (!scratchlcv.isRepeating) {
+          // The vector has non-repeating strings. Iterate thru the batch
+          // and set strings one by one
+          if (filterContext.isSelectedInUse()) {
+            // Set all string values to null - offset and length is zero
+            for (int i = 0; i < batchSize; i++) {
+              result.setRef(i, dictionaryBufferInBytesCache, 0, 0);
+            }
+            // Read selected rows from stream
+            for (int i = 0; i != filterContext.getSelectedSize(); i++) {
+              int idx = filterContext.getSelected()[i];
+              if (!scratchlcv.isNull[idx]) {
+                offset = dictionaryOffsets[(int) scratchlcv.vector[idx]];
+                length = getDictionaryEntryLength((int) scratchlcv.vector[idx], offset);
+                result.setRef(idx, dictionaryBufferInBytesCache, offset, length);
+              }
+            }
+          } else {
+            for (int i = 0; i < batchSize; i++) {
+              if (!scratchlcv.isNull[i]) {
+                offset = dictionaryOffsets[(int) scratchlcv.vector[i]];
+                length = getDictionaryEntryLength((int) scratchlcv.vector[i], offset);
+                result.setRef(i, dictionaryBufferInBytesCache, offset, length);
+              } else {
+                // If the value is null then set offset and length to zero (null string)
+                result.setRef(i, dictionaryBufferInBytesCache, 0, 0);
+              }
+            }
+          }
+        } else {
+          // If the value is repeating then just set the first value in the
+          // vector and set the isRepeating flag to true. No need to iterate thru and
+          // set all the elements to the same value
+          offset = dictionaryOffsets[(int) scratchlcv.vector[0]];
+          length = getDictionaryEntryLength((int) scratchlcv.vector[0], offset);
+          result.setRef(0, dictionaryBufferInBytesCache, offset, length);
+        }
+        result.isRepeating = scratchlcv.isRepeating;
+      } else {
+        if (dictionaryOffsets == null) {
+          // Entire stripe contains null strings.
+          result.isRepeating = true;
+          result.noNulls = false;
+          result.isNull[0] = true;
+          result.setRef(0, EMPTY_BYTE_ARRAY, 0, 0);
+        } else {
+          // stripe contains nulls and empty strings
+          for (int i = 0; i < batchSize; i++) {
+            if (!result.isNull[i]) {
+              result.setRef(i, EMPTY_BYTE_ARRAY, 0, 0);
+            }
+          }
+        }
+      }
+    }
+
+    int getDictionaryEntryLength(int entry, int offset) {
+      final int length;
+      // if it isn't the last entry, subtract the offsets otherwise use
+      // the buffer length.
+      if (entry < dictionaryOffsets.length - 1) {
+        length = dictionaryOffsets[entry + 1] - offset;
+      } else {
+        length = dictionaryBuffer.size() - offset;
+      }
+      return length;
+    }
+
+    @Override
+    public void skipRows(long items, ReadPhase readPhase) throws IOException {
+      reader.skip(countNonNulls(items));
+    }
+
+    public IntegerReader getReader() {
+      return reader;
+    }
+  }
+  public static class StringTreeReaderHive extends StringTreeReader {
+
+    protected StringTreeReaderHive(int columnId, InStream present, InStream data, InStream length,
+            InStream dictionary, OrcProto.ColumnEncoding encoding, Context context) throws IOException {
+      super(columnId, present, data, length, dictionary, encoding, context);
+      if (encoding != null) {
+        switch (encoding.getKind()) {
+          case DICTIONARY_V2:
+          case DICTIONARY:
+            this.reader = new StringDictionaryTreeReaderHive(columnId, present, data, length, dictionary, encoding, context);
+            break;
+        }
+      }
+    }
+
+    @Override
+    public void startStripe(StripePlanner planner, TypeReader.ReadPhase readPhase) throws IOException {
+      switch (planner.getEncoding(this.columnId).getKind()) {
+        case DICTIONARY_V2:
+        case DICTIONARY:
+          this.reader = new StringDictionaryTreeReaderHive(this.columnId, this.context);
+          this.reader.startStripe(planner, readPhase);
+          break;
+        default:
+          super.startStripe(planner, readPhase);
+      }
+    }
+  }
+
+  protected static class StringStreamReader extends StringTreeReaderHive
       implements SettableTreeReader {
     private boolean _isFileCompressed;
     private boolean _isDictionaryEncoding;
@@ -251,19 +501,19 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider[] index) throws IOException {
+    public void seek(PositionProvider[] index, ReadPhase phase) throws IOException {
       // This string reader should simply redirect to its own seek (what other types already do).
-      this.seek(index[columnId]);
+      this.seek(index[columnId], phase);
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase phase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (_isFileCompressed) {
           index.getNext();
         }
-        reader.getPresent().seek(index);
+        ((TreeReader)reader).getPresent().seek(index);
       }
 
       if (_isDictionaryEncoding) {
@@ -273,7 +523,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         // This can happen if all values in stream are nulls or last row group values are all null.
         skipCompressedIndex(_isFileCompressed, index);
         if (_dataStream != null && _dataStream.available() > 0) {
-          ((StringDictionaryTreeReader) reader).getReader().seek(index);
+          ((StringDictionaryTreeReaderHive) reader).getReader().seek(index);
         } // No need to skip seek here, index won't be used anymore.
       } else {
         // DIRECT encoding
@@ -299,10 +549,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize,
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -442,7 +692,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase phase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (isFileCompressed) {
@@ -462,10 +712,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize,
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -571,7 +821,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (_isFileCompressed) {
@@ -591,10 +841,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize,
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -701,7 +951,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (_isFileCompressed) {
@@ -721,10 +971,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize,
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -817,12 +1067,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     private SettableUncompressedStream _presentStream;
     private SettableUncompressedStream _dataStream;
     private List<ColumnVector> vectors;
-      private int vectorIndex = 0;
+    private int vectorIndex = 0;
 
     private FloatStreamReader(int columnId, SettableUncompressedStream present,
         SettableUncompressedStream data, boolean isFileCompressed,
-        List<ColumnVector> vectors) throws IOException {
-      super(columnId, present, data);
+        List<ColumnVector> vectors, TreeReaderFactory.Context context) throws IOException {
+      super(columnId, present, data, context);
       this._isFileCompressed = isFileCompressed;
       this._presentStream = present;
       this._dataStream = data;
@@ -830,7 +1080,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (_isFileCompressed) {
@@ -848,10 +1098,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize, 
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -879,6 +1129,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
       private List<ColumnVector> vectors;
+      private TreeReaderFactory.Context context;
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -910,7 +1161,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
-        return new FloatStreamReader(columnIndex, present, data, isFileCompressed, vectors);
+        return new FloatStreamReader(columnIndex, present, data, isFileCompressed, vectors, context);
+      }
+
+      public StreamReaderBuilder setContext(Context context) {
+        this.context = context;
+        return this;
       }
 
       public StreamReaderBuilder setVectors(List<ColumnVector> vectors) {
@@ -934,8 +1190,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     private DoubleStreamReader(int columnId, SettableUncompressedStream present,
         SettableUncompressedStream data, boolean isFileCompressed,
-        List<ColumnVector> vectors) throws IOException {
-      super(columnId, present, data);
+        List<ColumnVector> vectors, TreeReaderFactory.Context context) throws IOException {
+      super(columnId, present, data, context);
       this._isFileCompressed = isFileCompressed;
       this._presentStream = present;
       this._dataStream = data;
@@ -943,7 +1199,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (_isFileCompressed) {
@@ -961,10 +1217,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize, 
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -1030,7 +1286,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
         boolean isFileCompressed = compressionCodec != null;
         // TODO: why doesn't this use context?
-        return new DoubleStreamReader(columnIndex, present, data, isFileCompressed, vectors);
+        return new DoubleStreamReader(columnIndex, present, data, isFileCompressed, vectors, context);
       }
 
       public StreamReaderBuilder setVectors(List<ColumnVector> vectors) {
@@ -1068,7 +1324,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (_isFileCompressed) {
@@ -1095,10 +1351,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize, 
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -1229,7 +1485,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (_isFileCompressed) {
@@ -1249,10 +1505,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-      ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize,
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -1367,7 +1623,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (isFileCompressed) {
@@ -1387,10 +1643,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize, 
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -1477,7 +1733,56 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
   }
 
-  protected static class CharStreamReader extends CharTreeReader implements SettableTreeReader {
+  public static class CharTreeReaderHive extends StringTreeReaderHive {
+    int maxLength;
+
+    CharTreeReaderHive(int columnId, int maxLength, Context context) throws IOException {
+      this(columnId, maxLength, (InStream)null, (InStream)null, (InStream)null, (InStream)null, (OrcProto.ColumnEncoding)null, context);
+    }
+
+    protected CharTreeReaderHive(int columnId, int maxLength, InStream present, InStream data, InStream length, 
+        InStream dictionary, OrcProto.ColumnEncoding encoding, Context context) throws IOException {
+      super(columnId, present, data, length, dictionary, encoding, context);
+      this.maxLength = maxLength;
+    }
+
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext, 
+        TypeReader.ReadPhase readPhase) throws IOException {
+      super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
+      BytesColumnVector result = (BytesColumnVector)previousVector;
+      int adjustedDownLen;
+      if (result.isRepeating) {
+        if (result.noNulls || !result.isNull[0]) {
+          adjustedDownLen = StringExpr.rightTrimAndTruncate(result.vector[0], result.start[0], result.length[0], this.maxLength);
+          if (adjustedDownLen < result.length[0]) {
+            result.setRef(0, result.vector[0], result.start[0], adjustedDownLen);
+          }
+        }
+      } else {
+        int i;
+        if (result.noNulls) {
+          for(i = 0; i < batchSize; ++i) {
+            adjustedDownLen = StringExpr.rightTrimAndTruncate(result.vector[i], result.start[i], result.length[i], this.maxLength);
+            if (adjustedDownLen < result.length[i]) {
+              result.setRef(i, result.vector[i], result.start[i], adjustedDownLen);
+            }
+          }
+        } else {
+          for(i = 0; i < batchSize; ++i) {
+            if (!result.isNull[i]) {
+              adjustedDownLen = StringExpr.rightTrimAndTruncate(result.vector[i], result.start[i], result.length[i], this.maxLength);
+              if (adjustedDownLen < result.length[i]) {
+                result.setRef(i, result.vector[i], result.start[i], adjustedDownLen);
+              }
+            }
+          }
+        }
+      }
+
+    }
+  }
+
+  protected static class CharStreamReader extends CharTreeReaderHive implements SettableTreeReader {
     private boolean _isFileCompressed;
     private boolean _isDictionaryEncoding;
     private SettableUncompressedStream _presentStream;
@@ -1491,9 +1796,9 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         SettableUncompressedStream present, SettableUncompressedStream data,
         SettableUncompressedStream length, SettableUncompressedStream dictionary,
         boolean isFileCompressed, OrcProto.ColumnEncoding encoding,
-        List<ColumnVector> vectors) throws IOException {
+        List<ColumnVector> vectors, TreeReaderFactory.Context context) throws IOException {
       super(columnId, maxLength, present, data, length,
-          dictionary, encoding);
+          dictionary, encoding, context);
       this._isDictionaryEncoding = dictionary != null;
       this._isFileCompressed = isFileCompressed;
       this._presentStream = present;
@@ -1504,19 +1809,19 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider[] index) throws IOException {
+    public void seek(PositionProvider[] index, ReadPhase readPhase) throws IOException {
       // This string reader should simply redirect to its own seek (what other types already do).
-      this.seek(index[columnId]);
+      this.seek(index[columnId], readPhase);
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (_isFileCompressed) {
           index.getNext();
         }
-        reader.getPresent().seek(index);
+        ((TreeReader)reader).getPresent().seek(index);
       }
 
       if (_isDictionaryEncoding) {
@@ -1526,7 +1831,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         // This can happen if all values in stream are nulls or last row group values are all null.
         skipCompressedIndex(_isFileCompressed, index);
         if (_dataStream.available() > 0) {
-          ((StringDictionaryTreeReader) reader).getReader().seek(index);
+          ((StringDictionaryTreeReaderHive) reader).getReader().seek(index);
         } // No need to skip seek here, index won't be used anymore.
       } else {
         // DIRECT encoding
@@ -1551,10 +1856,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize, 
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -1601,6 +1906,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
       private List<ColumnVector> vectors;
+      private TreeReaderFactory.Context context;
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -1660,7 +1966,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
         boolean isFileCompressed = compressionCodec != null;
         return new CharStreamReader(columnIndex, maxLength, present, data, length,
-            dictionary, isFileCompressed, columnEncoding, vectors);
+            dictionary, isFileCompressed, columnEncoding, vectors, context);
+      }
+
+      public StreamReaderBuilder setContext(TreeReaderFactory.Context context) {
+        this.context =  context;
+        return this;
       }
 
       public StreamReaderBuilder setVectors(List<ColumnVector> vectors) {
@@ -1675,7 +1986,56 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
   }
 
-  protected static class VarcharStreamReader extends VarcharTreeReader implements SettableTreeReader {
+  public static class VarcharTreeReaderHive extends StringTreeReaderHive {
+    int maxLength;
+
+    VarcharTreeReaderHive(int columnId, int maxLength, Context context) throws IOException {
+      this(columnId, maxLength, (InStream)null, (InStream)null, (InStream)null, (InStream)null, (OrcProto.ColumnEncoding)null, context);
+    }
+
+    protected VarcharTreeReaderHive(int columnId, int maxLength, InStream present, InStream data, InStream length, 
+        InStream dictionary, OrcProto.ColumnEncoding encoding, Context context) throws IOException {
+      super(columnId, present, data, length, dictionary, encoding, context);
+      this.maxLength = maxLength;
+    }
+
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, int batchSize, FilterContext filterContext, 
+        TypeReader.ReadPhase readPhase) throws IOException {
+      super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
+      BytesColumnVector result = (BytesColumnVector)previousVector;
+      int adjustedDownLen;
+      if (result.isRepeating) {
+        if (result.noNulls || !result.isNull[0]) {
+          adjustedDownLen = StringExpr.truncate(result.vector[0], result.start[0], result.length[0], this.maxLength);
+          if (adjustedDownLen < result.length[0]) {
+            result.setRef(0, result.vector[0], result.start[0], adjustedDownLen);
+          }
+        }
+      } else {
+        int i;
+        if (result.noNulls) {
+          for(i = 0; i < batchSize; ++i) {
+            adjustedDownLen = StringExpr.truncate(result.vector[i], result.start[i], result.length[i], this.maxLength);
+            if (adjustedDownLen < result.length[i]) {
+              result.setRef(i, result.vector[i], result.start[i], adjustedDownLen);
+            }
+          }
+        } else {
+          for(i = 0; i < batchSize; ++i) {
+            if (!result.isNull[i]) {
+              adjustedDownLen = StringExpr.truncate(result.vector[i], result.start[i], result.length[i], this.maxLength);
+              if (adjustedDownLen < result.length[i]) {
+                result.setRef(i, result.vector[i], result.start[i], adjustedDownLen);
+              }
+            }
+          }
+        }
+      }
+
+    }
+  }
+
+  protected static class VarcharStreamReader extends VarcharTreeReaderHive implements SettableTreeReader {
     private boolean _isFileCompressed;
     private boolean _isDictionaryEncoding;
     private SettableUncompressedStream _presentStream;
@@ -1683,15 +2043,15 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     private SettableUncompressedStream _lengthStream;
     private SettableUncompressedStream _dictionaryStream;
     private List<ColumnVector> vectors;
-      private int vectorIndex = 0;
+    private int vectorIndex = 0;
 
     private VarcharStreamReader(int columnId, int maxLength,
         SettableUncompressedStream present, SettableUncompressedStream data,
         SettableUncompressedStream length, SettableUncompressedStream dictionary,
         boolean isFileCompressed, OrcProto.ColumnEncoding encoding,
-        List<ColumnVector> vectors) throws IOException {
+        List<ColumnVector> vectors, TreeReaderFactory.Context context) throws IOException {
       super(columnId, maxLength, present, data, length,
-          dictionary, encoding);
+          dictionary, encoding, context);
       this._isDictionaryEncoding = dictionary != null;
       this._isFileCompressed = isFileCompressed;
       this._presentStream = present;
@@ -1702,19 +2062,19 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider[] index) throws IOException {
+    public void seek(PositionProvider[] index, ReadPhase readPhase) throws IOException {
       // This string reader should simply redirect to its own seek (what other types already do).
-      this.seek(index[columnId]);
+      this.seek(index[columnId], readPhase);
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (_isFileCompressed) {
           index.getNext();
         }
-        reader.getPresent().seek(index);
+        ((TreeReader)reader).getPresent().seek(index);
       }
 
       if (_isDictionaryEncoding) {
@@ -1724,7 +2084,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         // This can happen if all values in stream are nulls or last row group values are all null.
         skipCompressedIndex(_isFileCompressed, index);
         if (_dataStream.available() > 0) {
-          ((StringDictionaryTreeReader) reader).getReader().seek(index);
+          ((StringDictionaryTreeReaderHive) reader).getReader().seek(index);
         } // No need to skip seek here, index won't be used anymore.
       } else {
         // DIRECT encoding
@@ -1749,10 +2109,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize,
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -1799,6 +2159,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private CompressionCodec compressionCodec;
       private OrcProto.ColumnEncoding columnEncoding;
       private List<ColumnVector> vectors;
+      private TreeReaderFactory.Context context;
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -1858,7 +2219,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
         boolean isFileCompressed = compressionCodec != null;
         return new VarcharStreamReader(columnIndex, maxLength, present, data, length,
-            dictionary, isFileCompressed, columnEncoding, vectors);
+            dictionary, isFileCompressed, columnEncoding, vectors, context);
+      }
+
+      public StreamReaderBuilder setContext(TreeReaderFactory.Context context) {
+        this.context = context;
+        return this;
       }
 
       public StreamReaderBuilder setVectors(List<ColumnVector> vectors) {
@@ -1882,8 +2248,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     private ByteStreamReader(int columnId, SettableUncompressedStream present,
         SettableUncompressedStream data, boolean isFileCompressed,
-        List<ColumnVector> vectors) throws IOException {
-      super(columnId, present, data);
+        List<ColumnVector> vectors, TreeReaderFactory.Context context) throws IOException {
+      super(columnId, present, data, context);
       this._isFileCompressed = isFileCompressed;
       this._presentStream = present;
       this._dataStream = data;
@@ -1891,7 +2257,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (_isFileCompressed) {
@@ -1911,10 +2277,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize,
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -1942,6 +2308,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
       private List<ColumnVector> vectors;
+      private TreeReaderFactory.Context context;
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -1973,7 +2340,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
-        return new ByteStreamReader(columnIndex, present, data, isFileCompressed, vectors);
+        return new ByteStreamReader(columnIndex, present, data, isFileCompressed, vectors, context);
+      }
+
+      public StreamReaderBuilder setContext(TreeReaderFactory.Context context) {
+        this.context = context;
+        return this;
       }
 
       public StreamReaderBuilder setVectors(List<ColumnVector> vectors) {
@@ -2008,10 +2380,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize,
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -2021,7 +2393,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (_isFileCompressed) {
@@ -2143,8 +2515,8 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
 
     private BooleanStreamReader(int columnId, SettableUncompressedStream present,
         SettableUncompressedStream data, boolean isFileCompressed,
-        List<ColumnVector> vectors) throws IOException {
-      super(columnId, present, data);
+        List<ColumnVector> vectors, TreeReaderFactory.Context context) throws IOException {
+      super(columnId, present, data, context);
       this._isFileCompressed = isFileCompressed;
       this._presentStream = present;
       this._dataStream = data;
@@ -2152,7 +2524,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       if (vectors != null) return;
       if (present != null) {
         if (_isFileCompressed) {
@@ -2172,10 +2544,10 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void nextVector(
-        ColumnVector previousVector, boolean[] isNull, int batchSize) throws IOException {
+    public void nextVector(ColumnVector previousVector, boolean[] isNull, final int batchSize,
+        FilterContext filterContext, ReadPhase readPhase) throws IOException {
       if (vectors == null) {
-        super.nextVector(previousVector, isNull, batchSize);
+        super.nextVector(previousVector, isNull, batchSize, filterContext, readPhase);
         return;
       }
       vectors.get(vectorIndex++).shallowCopyTo(previousVector);
@@ -2203,6 +2575,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       private ColumnStreamData dataStream;
       private CompressionCodec compressionCodec;
       private List<ColumnVector> vectors;
+      private TreeReaderFactory.Context context;
 
       public StreamReaderBuilder setColumnIndex(int columnIndex) {
         this.columnIndex = columnIndex;
@@ -2234,7 +2607,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
                 dataStream);
 
         boolean isFileCompressed = compressionCodec != null;
-        return new BooleanStreamReader(columnIndex, present, data, isFileCompressed, vectors);
+        return new BooleanStreamReader(columnIndex, present, data, isFileCompressed, vectors, context);
+      }
+
+      public StreamReaderBuilder setContext(TreeReaderFactory.Context context) {
+        this.context = context;
+        return this;
       }
 
       public StreamReaderBuilder setVectors(List<ColumnVector> vectors) {
@@ -2445,6 +2823,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             .setDataStream(data)
             .setCompressionCodec(codec)
             .setVectors(vectors)
+            .setContext(context)
             .build();
       case BYTE:
         return ByteStreamReader.builder()
@@ -2453,6 +2832,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             .setDataStream(data)
             .setCompressionCodec(codec)
             .setVectors(vectors)
+            .setContext(context)
             .build();
       case SHORT:
         return ShortStreamReader.builder()
@@ -2491,6 +2871,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             .setDataStream(data)
             .setCompressionCodec(codec)
             .setVectors(vectors)
+            .setContext(context)
             .build();
       case DOUBLE:
         return DoubleStreamReader.builder()
@@ -2499,6 +2880,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             .setDataStream(data)
             .setCompressionCodec(codec)
             .setVectors(vectors)
+            .setContext(context)
             .build();
       case CHAR:
         return CharStreamReader.builder()
@@ -2511,6 +2893,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             .setCompressionCodec(codec)
             .setColumnEncoding(columnEncoding)
             .setVectors(vectors)
+            .setContext(context)
             .build();
       case VARCHAR:
         return VarcharStreamReader.builder()
@@ -2523,6 +2906,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             .setCompressionCodec(codec)
             .setColumnEncoding(columnEncoding)
             .setVectors(vectors)
+            .setContext(context)
             .build();
       case STRING:
         return StringStreamReader.builder()
@@ -2534,6 +2918,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             .setCompressionCodec(codec)
             .setColumnEncoding(columnEncoding)
             .setVectors(vectors)
+            .setContext(context)
             .build();
       case DECIMAL:
         // special handling for serde reader (text) in llap IO.
@@ -2622,7 +3007,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider[] index) throws IOException {
+    public void seek(PositionProvider[] index, ReadPhase readPhase) throws IOException {
       PositionProvider ownIndex = index[columnId];
       if (present != null) {
         if (_isFileCompressed) {
@@ -2638,12 +3023,12 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           ownIndex.getNext();
         }
         lengths.seek(ownIndex);
-        elementReader.seek(index);
+        elementReader.seek(index, readPhase);
       }
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       // Only our parent class can call this.
       throw new IOException("Should never be called");
     }
@@ -2747,7 +3132,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider[] index) throws IOException {
+    public void seek(PositionProvider[] index, ReadPhase readPhase) throws IOException {
       // We are not calling super.seek since we handle the present stream differently.
       PositionProvider ownIndex = index[columnId];
       if (present != null) {
@@ -2764,13 +3149,13 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
           ownIndex.getNext();
         }
         lengths.seek(ownIndex);
-        keyReader.seek(index);
-        valueReader.seek(index);
+        keyReader.seek(index, readPhase);
+        valueReader.seek(index, readPhase);
       }
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       // Only our parent class can call this.
       throw new IOException("Should never be called");
     }
@@ -2882,7 +3267,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider[] index) throws IOException {
+    public void seek(PositionProvider[] index, ReadPhase readPhase) throws IOException {
       PositionProvider ownIndex = index[columnId];
       if (present != null) {
         if (_isFileCompressed) {
@@ -2891,16 +3276,16 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         present.seek(ownIndex);
       }
       if (fields != null) {
-        for (TreeReader child : fields) {
+        for (TypeReader child : fields) {
           if (child != null) {
-            child.seek(index);
+            child.seek(index, readPhase);
           }
         }
       }
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       // Only our parent class can call this.
       throw new IOException("Should never be called");
     }
@@ -2915,7 +3300,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.PRESENT_VALUE]));
       }
       if (fields != null) {
-        for (TreeReader child : fields) {
+        for (TypeReader child : fields) {
           if (child != null) {
             ((SettableTreeReader) child).setBuffers(batch, sameStripe);
           }
@@ -2995,7 +3380,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    public void seek(PositionProvider[] index) throws IOException {
+    public void seek(PositionProvider[] index, ReadPhase readPhase) throws IOException {
       PositionProvider ownIndex = index[columnId];
       if (present != null) {
         if (_isFileCompressed) {
@@ -3012,15 +3397,15 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
         }
         tags.seek(ownIndex);
         if (fields != null) {
-          for (TreeReader child : fields) {
-            child.seek(index);
+          for (TypeReader child : fields) {
+            child.seek(index, readPhase);
           }
         }
       }
     }
 
     @Override
-    public void seek(PositionProvider index) throws IOException {
+    public void seek(PositionProvider index, ReadPhase readPhase) throws IOException {
       // Only our parent class can call this.
       throw new IOException("Should never be called");
     }
@@ -3038,7 +3423,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
             StreamUtils.createDiskRangeInfo(streamsData[OrcProto.Stream.Kind.DATA_VALUE]));
       }
       if (fields != null) {
-        for (TreeReader child : fields) {
+        for (TypeReader child : fields) {
           ((SettableTreeReader) child).setBuffers(batch, sameStripe);
         }
       }
