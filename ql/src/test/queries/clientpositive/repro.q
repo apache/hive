@@ -1,12 +1,32 @@
 CREATE TABLE customer(orders array<string>);
 
-
-set hive.optimize.ppd=false;
-set hive.explain.user=false;
-SELECT *
+EXPLAIN SELECT *
 FROM customer
 lateral view explode(orders) v as c1
 lateral view explode(orders) v as c2
-lateral view explode(orders) v as c3
-lateral view explode(orders) v as c4
+;
+
+EXPLAIN FORMATTED SELECT *
+FROM customer
+lateral view explode(orders) v as c1
+lateral view explode(orders) v as c2
+;
+
+EXPLAIN AST SELECT *
+FROM customer
+lateral view explode(orders) v as c1
+lateral view explode(orders) v as c2
+;
+
+set hive.explain.user=true;
+EXPLAIN SELECT *
+FROM customer
+lateral view explode(orders) v as c1
+lateral view explode(orders) v as c2
+;
+
+EXPLAIN FORMATTED SELECT *
+FROM customer
+lateral view explode(orders) v as c1
+lateral view explode(orders) v as c2
 ;
