@@ -55,13 +55,13 @@ public class BooleanColumnStatsAggregator extends ColumnStatsAggregator {
         aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
       }
     }
-    ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
+    ColumnStatisticsData columnStatisticsData = initColumnStatisticsData();
     columnStatisticsData.setBooleanStats(aggregateData);
     statsObj.setStatsData(columnStatisticsData);
     return statsObj;
   }
 
   @Override protected ColumnStatisticsData initColumnStatisticsData() {
-    throw new UnsupportedOperationException("initColumnStatisticsData not supported for boolean statistics");
+    return new ColumnStatisticsData();
   }
 }

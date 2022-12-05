@@ -407,8 +407,16 @@ public class DDLPlanUtils {
   public String checkHistogram(ColumnStatisticsData cd) {
     byte[] buffer = null;
 
-    if (cd.isSetDoubleStats() && cd.getDoubleStats().isSetHistogram()) {
+    if (cd.isSetDateStats() && cd.getDateStats().isSetHistogram()) {
+      buffer = cd.getDateStats().getHistogram();
+    } else if (cd.isSetDoubleStats() && cd.getDoubleStats().isSetHistogram()) {
       buffer = cd.getDoubleStats().getHistogram();
+    } else if (cd.isSetDecimalStats() && cd.getDecimalStats().isSetHistogram()) {
+      buffer = cd.getDecimalStats().getHistogram();
+    } else if (cd.isSetLongStats() && cd.getLongStats().isSetHistogram()) {
+      buffer = cd.getLongStats().getHistogram();
+    } else if (cd.isSetTimestampStats() && cd.getTimestampStats().isSetHistogram()) {
+      buffer = cd.getTimestampStats().getHistogram();
     }
 
     return encodeBytes(buffer);

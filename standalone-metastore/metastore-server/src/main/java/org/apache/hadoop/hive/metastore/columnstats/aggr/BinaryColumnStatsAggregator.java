@@ -55,13 +55,13 @@ public class BinaryColumnStatsAggregator extends ColumnStatsAggregator {
         aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
       }
     }
-    ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
+    ColumnStatisticsData columnStatisticsData = initColumnStatisticsData();
     columnStatisticsData.setBinaryStats(aggregateData);
     statsObj.setStatsData(columnStatisticsData);
     return statsObj;
   }
 
   @Override protected ColumnStatisticsData initColumnStatisticsData() {
-    throw new UnsupportedOperationException("initColumnStatisticsData not supported for binary statistics");
+    return new ColumnStatisticsData();
   }
 }

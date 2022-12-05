@@ -1141,6 +1141,9 @@ public class StatObjectConverter {
       if (newDateStatsData.isSetBitVectors()) {
         oldDateStatsData.setBitVectors(newDateStatsData.getBitVectors());
       }
+      if (newDateStatsData.isSetHistogram()) {
+        oldDateStatsData.setHistogram(newDateStatsData.getHistogram());
+      }
       break;
     }
     case TIMESTAMP_STATS: {
@@ -1160,6 +1163,9 @@ public class StatObjectConverter {
       }
       if (newTimestampStatsData.isSetBitVectors()) {
         oldTimestampStatsData.setBitVectors(newTimestampStatsData.getBitVectors());
+      }
+      if (newTimestampStatsData.isSetHistogram()) {
+        oldTimestampStatsData.setHistogram(newTimestampStatsData.getHistogram());
       }
       break;
     }

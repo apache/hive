@@ -82,7 +82,7 @@ public class HiveStatsUtils {
   }
 
   public static boolean computeHistograms(Configuration conf) {
-    return conf.getBoolean(HiveConf.ConfVars.HIVE_STATS_KLL_ENABLE.varname,
+    return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_KLL_ENABLE,
         HiveConf.ConfVars.HIVE_STATS_KLL_ENABLE.defaultBoolVal);
   }
 
