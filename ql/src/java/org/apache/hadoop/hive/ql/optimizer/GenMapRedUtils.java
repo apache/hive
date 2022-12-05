@@ -1982,7 +1982,7 @@ public final class GenMapRedUtils {
         }
         DynamicPartitionCtx dpCtx = fileSinkDesc.getDynPartCtx();
         if (dpCtx != null && dpCtx.getSPPath() != null) {
-            tmpDir = new Path(tmpDir, dpCtx.getSPPath());
+          tmpDir = new Path(tmpDir, dpCtx.getSPPath());
         }
 
         // Change all the linked file sink descriptors

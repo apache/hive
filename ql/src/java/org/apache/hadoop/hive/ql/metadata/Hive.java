@@ -2609,7 +2609,7 @@ public class Hive {
            */
           FileSystem oldPartPathFS = oldPartPath.getFileSystem(getConf());
           FileSystem tblPathFS = tblDataLocationPath.getFileSystem(getConf());
-          if (FileUtils.equalsFileSystem(oldPartPathFS,tblPathFS)) {
+          if (FileUtils.equalsFileSystem(oldPartPathFS, tblPathFS)) {
             newPartPath = oldPartPath;
           }
         }

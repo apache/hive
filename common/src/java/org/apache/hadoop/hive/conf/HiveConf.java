@@ -5631,7 +5631,7 @@ public class HiveConf extends Configuration {
 
     HIVE_USE_SCRATCHDIR_FOR_STAGING("hive.use.scratchdir.for.staging", false,
         "Use ${hive.exec.scratchdir} for query results instead of ${hive.exec.stagingdir}.\n" +
-            "This stages query results in ${hive.exec.scratchdir} before move to final destination."),
+            "This stages query results in ${hive.exec.scratchdir} before moving to final destination."),
 
     HIVE_ADDITIONAL_CONFIG_FILES("hive.additional.config.files", "",
             "The names of additional config files, such as ldap-site.xml," +
