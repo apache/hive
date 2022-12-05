@@ -55,13 +55,13 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.reader.tree.TypeReader;
 import org.apache.orc.impl.SchemaEvolution;
 import org.apache.orc.impl.TreeReaderFactory;
 import org.apache.orc.impl.TreeReaderFactory.StructTreeReader;
 import org.apache.orc.impl.TreeReaderFactory.TreeReader;
 import org.apache.orc.impl.WriterImpl;
 import org.apache.orc.OrcProto;
-
 
 public class OrcEncodedDataConsumer
   extends EncodedDataConsumer<OrcBatchKey, OrcEncodedColumnBatch> {
@@ -193,7 +193,7 @@ public class OrcEncodedDataConsumer
            */
           TreeReader reader = columnReaders[idx];
           ColumnVector cv = prepareColumnVector(cvb, idx, batchSize);
-          reader.nextVector(cv, null, batchSize);
+          reader.nextVector(cv, null, batchSize, cvb.filterContext, TypeReader.ReadPhase.ALL);
         }
 
         // we are done reading a batch, send it to consumer for processing
@@ -234,7 +234,7 @@ public class OrcEncodedDataConsumer
     this.batchSchemas = includes.getBatchReaderTypes(fileSchema);
     StructTreeReader treeReader = EncodedTreeReaderFactory.createRootTreeReader(
         batchSchemas, stripeMetadata.getEncodings(), batch, codec, context, useDecimal64ColumnVectors);
-    this.columnReaders = treeReader.getChildReaders();
+    this.columnReaders = (TreeReader[]) treeReader.getChildReaders();
 
     if (LlapIoImpl.LOG.isDebugEnabled()) {
       for (int i = 0; i < columnReaders.length; ++i) {
@@ -306,7 +306,7 @@ public class OrcEncodedDataConsumer
     for (int i = 0; i < columnReaders.length; i++) {
       if (columnReaders[i] == null) continue;
       // TODO: we could/should trace seek destinations; pps needs a "peek" method
-      columnReaders[i].seek(pps);
+      columnReaders[i].seek(pps, TypeReader.ReadPhase.ALL);
     }
   }
 
@@ -331,7 +331,7 @@ public class OrcEncodedDataConsumer
         ((EncodedTreeReaderFactory.TimestampStreamReader) reader)
                 .updateTimezone(stripeMetadata.getWriterTimezone());
       }
-      reader.seek(pps);
+      reader.seek(pps, TypeReader.ReadPhase.ALL);
     }
   }
 

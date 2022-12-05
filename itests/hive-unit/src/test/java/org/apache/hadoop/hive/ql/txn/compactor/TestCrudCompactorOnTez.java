@@ -707,7 +707,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Map<String, String> parameters = Hive.get().getTable(tblName).getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "1434", parameters.get("totalSize"));
+    Assert.assertEquals("The total table size is differing from the expected", "1446", parameters.get("totalSize"));
 
     //Do a major compaction
     CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true);
@@ -723,7 +723,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     parameters = Hive.get().getTable(tblName).getParameters();
     Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
-    Assert.assertEquals("The total table size is differing from the expected", "727", parameters.get("totalSize"));
+    Assert.assertEquals("The total table size is differing from the expected", "735", parameters.get("totalSize"));
   }
 
   @Test
