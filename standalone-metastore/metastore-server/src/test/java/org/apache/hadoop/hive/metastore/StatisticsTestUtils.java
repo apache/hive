@@ -202,7 +202,7 @@ public class StatisticsTestUtils {
           + " while computed data is of type " + computed.getSetField());
     }
 
-    Class<?> dataClass = null;
+    Class<?> dataClass;
     switch (expected.getSetField()) {
     case DATE_STATS:
       dataClass = DateColumnStatsData.class;
@@ -247,6 +247,8 @@ public class StatisticsTestUtils {
         clazz.getMethod("setHistogram", byte[].class).invoke(expectedStats, computedHistogram);
         Assert.assertEquals(expected, computed);
         clazz.getMethod("setHistogram", byte[].class).invoke(expectedStats, expectedHistogram);
+      } else {
+        Assert.assertEquals(expected, computed);
       }
     } catch(NoSuchMethodException | IllegalAccessException | InvocationTargetException e){
       throw new RuntimeException("Reflection error", e);
