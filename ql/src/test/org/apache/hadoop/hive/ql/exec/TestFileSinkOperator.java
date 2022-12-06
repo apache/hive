@@ -76,11 +76,15 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Tests for {@link org.apache.hadoop.hive.ql.exec.FileSinkOperator}
@@ -162,6 +166,59 @@ public class TestFileSinkOperator {
     confirmOutput(DataFormat.WITH_PARTITION_VALUE);
   }
 
+  @Test
+  public void testNonAcidRemoveDuplicate() throws Exception {
+    setBasePath("writeDuplicate");
+    setupData(DataFormat.WITH_PARTITION_VALUE);
+
+    FileSinkDesc desc = (FileSinkDesc) getFileSink(AcidUtils.Operation.NOT_ACID, true, 0).getConf().clone();
+    desc.setLinkedFileSink(true);
+    desc.setDirName(new Path(desc.getDirName(), AbstractFileMergeOperator.UNION_SUDBIR_PREFIX + "0"));
+    JobConf jobConf = new JobConf(jc);
+    jobConf.set("hive.execution.engine", "tez");
+    jobConf.set("mapred.task.id", "000000_0");
+    FileSinkOperator op1 = (FileSinkOperator)OperatorFactory.get(new CompilationOpContext(), FileSinkDesc.class);
+    op1.setConf(desc);
+    op1.initialize(jobConf, new ObjectInspector[]{inspector});
+
+    JobConf jobConf2 = new JobConf(jobConf);
+    jobConf2.set("mapred.task.id", "000000_1");
+    FileSinkOperator speculative = (FileSinkOperator)OperatorFactory.get(
+        new CompilationOpContext(), FileSinkDesc.class);
+    speculative.setConf(desc);
+    speculative.initialize(jobConf2, new ObjectInspector[]{inspector});
+
+    for (Object r : rows) {
+      op1.process(r, 0);
+      speculative.process(r, 0);
+    }
+
+    op1.close(false);
+    // speculative task also ends successfully
+    speculative.close(false);
+    Path[] paths = findFilesInBasePath();
+    List<Path> mondays = Arrays.stream(paths)
+        .filter(path -> path.getParent().toString().endsWith("partval=Monday/HIVE_UNION_SUBDIR_0"))
+        .collect(Collectors.toList());
+    Assert.assertTrue(mondays.size() == 2);
+    Set<String> fileNames = new HashSet<>();
+    fileNames.add(mondays.get(0).getName());
+    fileNames.add(mondays.get(1).getName());
+    Assert.assertTrue(fileNames.contains("000000_1") && fileNames.contains("000000_0"));
+
+    op1.jobCloseOp(jobConf, true);
+    List<Path> resultFiles = new ArrayList<Path>();
+    recurseOnPath(basePath, basePath.getFileSystem(jc), resultFiles);
+    mondays = resultFiles.stream()
+        .filter(path -> path.getParent().toString().endsWith("partval=Monday/HIVE_UNION_SUBDIR_0"))
+        .collect(Collectors.toList());
+    Assert.assertTrue(mondays.size() == 1);
+    Assert.assertTrue(mondays.get(0).getName().equals("000000_1"));
+
+    confirmOutput(DataFormat.WITH_PARTITION_VALUE, resultFiles.toArray(new Path[0]));
+    // Clean out directory after testing
+    basePath.getFileSystem(jc).delete(basePath, true);
+  }
 
   @Test
   public void testInsertDynamicPartitioning() throws Exception {
@@ -290,6 +347,7 @@ public class TestFileSinkOperator {
     } else {
       desc = new FileSinkDesc(basePath, tableDesc, false);
     }
+    desc.setStatsAggPrefix(basePath.toString());
     desc.setWriteType(writeType);
     desc.setGatherStats(true);
     if (writeId > 0) {
@@ -313,7 +371,10 @@ public class TestFileSinkOperator {
   }
 
   private void confirmOutput(DataFormat rType) throws IOException, SerDeException, CloneNotSupportedException {
-    Path[] paths = findFilesInBasePath();
+    confirmOutput(rType, findFilesInBasePath());
+  }
+
+  private void confirmOutput(DataFormat rType, Path[] paths) throws IOException, SerDeException, CloneNotSupportedException {
     TFSOInputFormat input = new TFSOInputFormat(rType);
     FileInputFormat.setInputPaths(jc, paths);
 
