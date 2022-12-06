@@ -14632,30 +14632,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return pSpec;
   }
 
-  private OrderSpec processOrderSpec(ASTNode sortNode) {
-    OrderSpec oSpec = new OrderSpec();
-    int exprCnt = sortNode.getChildCount();
-    for(int i=0; i < exprCnt; i++) {
-      OrderExpression exprSpec = new OrderExpression();
-      ASTNode orderSpec = (ASTNode) sortNode.getChild(i);
-      ASTNode nullOrderSpec = (ASTNode) orderSpec.getChild(0);
-      exprSpec.setExpression((ASTNode) nullOrderSpec.getChild(0));
-      if ( orderSpec.getType() == HiveParser.TOK_TABSORTCOLNAMEASC ) {
-        exprSpec.setOrder(org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.ASC);
-      }
-      else {
-        exprSpec.setOrder(org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.DESC);
-      }
-      if ( nullOrderSpec.getType() == HiveParser.TOK_NULLS_FIRST ) {
-        exprSpec.setNullOrder(org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_FIRST);
-      } else {
-        exprSpec.setNullOrder(org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_LAST);
-      }
-      oSpec.addExpression(exprSpec);
-    }
-    return oSpec;
-  }
-
   private PartitioningSpec processPTFPartitionSpec(ASTNode pSpecNode)
   {
     PartitioningSpec partitioning = new PartitioningSpec();

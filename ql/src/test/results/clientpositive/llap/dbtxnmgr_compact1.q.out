@@ -53,7 +53,7 @@ PREHOOK: query: show compactions
 PREHOOK: type: SHOW COMPACTIONS
 POSTHOOK: query: show compactions
 POSTHOOK: type: SHOW COMPACTIONS
-CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteID
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
 1	default	t1_n153	 --- 	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
 2	default	t2_n153	 --- 	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
 PREHOOK: query: drop table T1_n153

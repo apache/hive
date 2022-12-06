@@ -3466,24 +3466,24 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(4, compacts.size());
     ShowCompactRequest scr = new ShowCompactRequest();
-    scr.setDbname("bar");
+    scr.setDbName("bar");
     Assert.assertEquals(1, txnHandler.showCompact(scr).getCompacts().size());
     scr = new ShowCompactRequest();
-    scr.setTablename("bar");
+    scr.setTbName("bar");
     scr.setPoolName("mypool");
     List<ShowCompactResponseElement>  compRsp =txnHandler.showCompact(scr).getCompacts();
     Assert.assertEquals(1, compRsp.size());
     Assert.assertEquals("mypool", compRsp.get(0).getPoolName());
     scr = new ShowCompactRequest();
-    scr.setTablename("bar1");
+    scr.setTbName("bar1");
     Assert.assertEquals(2, txnHandler.showCompact(scr).getCompacts().size());
     scr = new ShowCompactRequest();
-    scr.setDbname("bar22");
-    scr.setTablename("bar1");
+    scr.setDbName("bar22");
+    scr.setTbName("bar1");
     Assert.assertEquals(0, txnHandler.showCompact(scr).getCompacts().size());
     scr = new ShowCompactRequest();
-    scr.setDbname("bar");
-    scr.setTablename("bar1");
+    scr.setDbName("bar");
+    scr.setTbName("bar1");
     Assert.assertEquals(1, txnHandler.showCompact(scr).getCompacts().size());
     scr = new ShowCompactRequest();
     scr.setState("i");
@@ -3499,7 +3499,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(1, txnHandler.showCompact(scr).getCompacts().size());
 
     scr = new ShowCompactRequest();
-    scr.setPartitionname("ds=today");
+    scr.setPartName("ds=today");
     Assert.assertEquals(4, txnHandler.showCompact(scr).getCompacts().size());
 
   }
