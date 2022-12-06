@@ -5629,6 +5629,10 @@ public class HiveConf extends Configuration {
             "This is a performance optimization that forces the final FileSinkOperator to write to the blobstore.\n" +
             "See HIVE-15121 for details."),
 
+    HIVE_USE_SCRATCHDIR_FOR_STAGING("hive.use.scratchdir.for.staging", false,
+        "Use ${hive.exec.scratchdir} for query results instead of ${hive.exec.stagingdir}.\n" +
+            "This stages query results in ${hive.exec.scratchdir} before moving to final destination."),
+
     HIVE_ADDITIONAL_CONFIG_FILES("hive.additional.config.files", "",
             "The names of additional config files, such as ldap-site.xml," +
                     "tez-site.xml, etc in comma separated list.");
