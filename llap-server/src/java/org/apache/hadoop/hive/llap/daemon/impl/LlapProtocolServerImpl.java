@@ -311,7 +311,6 @@ public class LlapProtocolServerImpl extends AbstractService
     }
     ByteString bs = ByteString.copyFrom(out.toByteArray());
     GetTokenResponseProto response = GetTokenResponseProto.newBuilder().setToken(bs).build();
-
     return response;
   }
 

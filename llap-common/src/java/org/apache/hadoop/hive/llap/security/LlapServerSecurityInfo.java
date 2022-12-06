@@ -31,9 +31,6 @@ import org.slf4j.LoggerFactory;
 public class LlapServerSecurityInfo extends SecurityInfo {
   private static final Logger LOG = LoggerFactory.getLogger(LlapServerSecurityInfo.class);
 
-  public LlapServerSecurityInfo() {
-  }
-
   @Override
   public KerberosInfo getKerberosInfo(Class<?> protocol, Configuration conf) {
     LOG.debug("Trying to get KerberosInfo for " + protocol);

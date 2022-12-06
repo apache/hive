@@ -124,8 +124,8 @@ public class LlapTokenClient {
     if (currentToken != null) {
       try {
         return fetchTokenWithCurrentToken(appId);
-      } catch (Exception e) {
-        LOG.error("IOException while getting delgation token, trying with kerberos login", e);
+      } catch (IOException | ServiceException e) {
+        LOG.warn("Exception while getting delegation token, trying with kerberos login", e);
         return fetchTokenWithKerberosLogin(appId);
       }
     } else {
@@ -147,7 +147,7 @@ public class LlapTokenClient {
    * Tries to fetch token by LlapManagementProtocolClientImpl with a kerberos login.
    * 1. Logs in to kerberos
    * 2. Obtains an authenticated ugi
-   * 3. Fetches a delegation token from a deamon.
+   * 3. Fetches a delegation token from a daemon.
    * This is supposed to be used if currentToken is not available or expired.
    * Kerberos login is a valid use-case if there is no other way to authenticate and get a new token. It always
    * means communication with the KDC, but if we use delegation token in at least ~90% of the time,

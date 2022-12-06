@@ -109,13 +109,8 @@ public class DefaultLlapTokenManager implements LlapTokenManager {
       throw new RuntimeException(e);
     }
 
-    long tokenRenewInterval =
-        HiveConf.getTimeVar(conf, ConfVars.LLAP_DELEGATION_TOKEN_RENEW_INTERVAL, TimeUnit.SECONDS);
-    // if the tokenRenewInterval is low (e.g. testing), let's use the half of it as interval instead of the constant
-    long interval = Math.min(tokenRenewInterval / 2, LLAP_TOKEN_CHECK_INTERVAL_IN_DEAMON_SECONDS);
-
     LOG.info("Initializing periodic token refresh in daemon, will run in every {}s",
-        interval);
+        LLAP_TOKEN_CHECK_INTERVAL_IN_DAEMON_SECONDS);
     tokenChecker.scheduleAtFixedRate(() -> {
       LOG.debug("Checking tokens, count: {}", tokens.size());
       ListIterator<TokenWrapper> tokensIt = tokens.listIterator();
@@ -137,7 +132,7 @@ public class DefaultLlapTokenManager implements LlapTokenManager {
           token.renew();
         }
       }
-    }, 0, interval, TimeUnit.SECONDS);
+    }, 0, LLAP_TOKEN_CHECK_INTERVAL_IN_DAEMON_SECONDS, TimeUnit.SECONDS);
   }
 
   private boolean needsRecreate(TokenWrapper token) {

@@ -109,17 +109,12 @@ public class LlapProtocolClientProxy
     if (!UserGroupInformation.isSecurityEnabled()) {
       return;
     }
-    long tokenRenewInterval =
-        HiveConf.getTimeVar(conf, ConfVars.LLAP_DELEGATION_TOKEN_RENEW_INTERVAL, TimeUnit.SECONDS);
-    // if the tokenRenewInterval is low (e.g. testing), let's use the half of it as interval instead of the constant
-    long interval = Math.min(tokenRenewInterval / 2, LLAP_TOKEN_REFRESH_INTERVAL_IN_AM_SECONDS);
-
-    LOG.info("Initializing periodic token refresh in AM, will run in every {}s", interval);
+    LOG.info("Initializing periodic token refresh in AM, will run in every {}s",
+        LLAP_TOKEN_REFRESH_INTERVAL_IN_AM_SECONDS);
     tokenClient = new LlapTokenClient(conf);
 
-    newTokenChecker.scheduleAtFixedRate(() -> {
-      fetchToken();
-    }, 0, interval, TimeUnit.SECONDS);
+    newTokenChecker.scheduleAtFixedRate(this::fetchToken, 0, LLAP_TOKEN_REFRESH_INTERVAL_IN_AM_SECONDS,
+        TimeUnit.SECONDS);
   }
 
   private synchronized void fetchToken() {

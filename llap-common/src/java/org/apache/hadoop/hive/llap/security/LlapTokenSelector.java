@@ -30,9 +30,6 @@ import org.slf4j.LoggerFactory;
 public class LlapTokenSelector implements TokenSelector<LlapTokenIdentifier> {
   private static final Logger LOG = LoggerFactory.getLogger(LlapTokenSelector.class);
 
-  public LlapTokenSelector() {
-  }
-
   @Override
   public Token<LlapTokenIdentifier> selectToken(Text service,
       Collection<Token<? extends TokenIdentifier>> tokens) {

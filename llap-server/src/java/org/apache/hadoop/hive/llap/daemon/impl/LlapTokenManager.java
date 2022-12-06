@@ -24,7 +24,7 @@ import org.apache.hadoop.security.token.Token;
  * See further details in implementations.
  */
 public interface LlapTokenManager {
-  public static final long LLAP_TOKEN_CHECK_INTERVAL_IN_DEAMON_SECONDS = 300;
+  long LLAP_TOKEN_CHECK_INTERVAL_IN_DAEMON_SECONDS = 300;
 
   Token<LlapTokenIdentifier> getToken(GetTokenRequestProto request, boolean isSigningRequired) throws IOException;
 
