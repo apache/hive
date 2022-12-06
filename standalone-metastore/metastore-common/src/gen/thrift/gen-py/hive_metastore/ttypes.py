@@ -16101,23 +16101,27 @@ class ShowCompactRequest(object):
     Attributes:
      - id
      - poolName
-     - dbname
-     - tablename
-     - partitionname
+     - dbName
+     - tbName
+     - partName
      - type
      - state
+     - limit
+     - order
 
     """
 
 
-    def __init__(self, id=None, poolName=None, dbname=None, tablename=None, partitionname=None, type=None, state=None,):
+    def __init__(self, id=None, poolName=None, dbName=None, tbName=None, partName=None, type=None, state=None, limit=None, order=None,):
         self.id = id
         self.poolName = poolName
-        self.dbname = dbname
-        self.tablename = tablename
-        self.partitionname = partitionname
+        self.dbName = dbName
+        self.tbName = tbName
+        self.partName = partName
         self.type = type
         self.state = state
+        self.limit = limit
+        self.order = order
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -16140,17 +16144,17 @@ class ShowCompactRequest(object):
                     iprot.skip(ftype)
             elif fid == 3:
                 if ftype == TType.STRING:
-                    self.dbname = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                    self.dbName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 4:
                 if ftype == TType.STRING:
-                    self.tablename = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                    self.tbName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 5:
                 if ftype == TType.STRING:
-                    self.partitionname = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                    self.partName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 6:
@@ -16161,6 +16165,16 @@ class ShowCompactRequest(object):
             elif fid == 7:
                 if ftype == TType.STRING:
                     self.state = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.I64:
+                    self.limit = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRING:
+                    self.order = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             else:
@@ -16181,17 +16195,17 @@ class ShowCompactRequest(object):
             oprot.writeFieldBegin('poolName', TType.STRING, 2)
             oprot.writeString(self.poolName.encode('utf-8') if sys.version_info[0] == 2 else self.poolName)
             oprot.writeFieldEnd()
-        if self.dbname is not None:
-            oprot.writeFieldBegin('dbname', TType.STRING, 3)
-            oprot.writeString(self.dbname.encode('utf-8') if sys.version_info[0] == 2 else self.dbname)
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 3)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
             oprot.writeFieldEnd()
-        if self.tablename is not None:
-            oprot.writeFieldBegin('tablename', TType.STRING, 4)
-            oprot.writeString(self.tablename.encode('utf-8') if sys.version_info[0] == 2 else self.tablename)
+        if self.tbName is not None:
+            oprot.writeFieldBegin('tbName', TType.STRING, 4)
+            oprot.writeString(self.tbName.encode('utf-8') if sys.version_info[0] == 2 else self.tbName)
             oprot.writeFieldEnd()
-        if self.partitionname is not None:
-            oprot.writeFieldBegin('partitionname', TType.STRING, 5)
-            oprot.writeString(self.partitionname.encode('utf-8') if sys.version_info[0] == 2 else self.partitionname)
+        if self.partName is not None:
+            oprot.writeFieldBegin('partName', TType.STRING, 5)
+            oprot.writeString(self.partName.encode('utf-8') if sys.version_info[0] == 2 else self.partName)
             oprot.writeFieldEnd()
         if self.type is not None:
             oprot.writeFieldBegin('type', TType.I32, 6)
@@ -16200,6 +16214,14 @@ class ShowCompactRequest(object):
         if self.state is not None:
             oprot.writeFieldBegin('state', TType.STRING, 7)
             oprot.writeString(self.state.encode('utf-8') if sys.version_info[0] == 2 else self.state)
+            oprot.writeFieldEnd()
+        if self.limit is not None:
+            oprot.writeFieldBegin('limit', TType.I64, 8)
+            oprot.writeI64(self.limit)
+            oprot.writeFieldEnd()
+        if self.order is not None:
+            oprot.writeFieldBegin('order', TType.STRING, 9)
+            oprot.writeString(self.order.encode('utf-8') if sys.version_info[0] == 2 else self.order)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -31179,11 +31201,13 @@ ShowCompactRequest.thrift_spec = (
     None,  # 0
     (1, TType.I64, 'id', None, None, ),  # 1
     (2, TType.STRING, 'poolName', 'UTF8', None, ),  # 2
-    (3, TType.STRING, 'dbname', 'UTF8', None, ),  # 3
-    (4, TType.STRING, 'tablename', 'UTF8', None, ),  # 4
-    (5, TType.STRING, 'partitionname', 'UTF8', None, ),  # 5
+    (3, TType.STRING, 'dbName', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'tbName', 'UTF8', None, ),  # 4
+    (5, TType.STRING, 'partName', 'UTF8', None, ),  # 5
     (6, TType.I32, 'type', None, None, ),  # 6
     (7, TType.STRING, 'state', 'UTF8', None, ),  # 7
+    (8, TType.I64, 'limit', None, None, ),  # 8
+    (9, TType.STRING, 'order', 'UTF8', None, ),  # 9
 )
 all_structs.append(ShowCompactResponseElement)
 ShowCompactResponseElement.thrift_spec = (

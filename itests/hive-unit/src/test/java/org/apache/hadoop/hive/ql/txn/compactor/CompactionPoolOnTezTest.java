@@ -139,7 +139,7 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
     driver.getResults(results);
     Assert.assertEquals(3, results.size());
     Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time\tDuration(ms)" +
-       "\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\tHighest WriteID", results.get(0));
+       "\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\tHighest WriteId", results.get(0));
     Pattern p = Pattern.compile("(1|2)\tdefault\t(compaction_test|table2)\t --- \tMAJOR\tinitiated.*(pool1|default).*");
     for(int i = 1; i < results.size(); i++) {
       Assert.assertTrue(p.matcher(results.get(i).toString()).matches());
@@ -164,7 +164,7 @@ public class CompactionPoolOnTezTest extends CompactorOnTezTest {
     driver.getResults(results);
     Assert.assertEquals(2, results.size());
     Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time\tDuration(ms)" +
-       "\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\tHighest WriteID",
+       "\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\tHighest WriteId",
         results.get(0));
     Pattern p = Pattern.compile("1|2\tdefault\tcompaction_test\t --- \tMAJOR\tinitiated.*pool1.*");
     Assert.assertTrue(p.matcher(results.get(1).toString()).matches());
