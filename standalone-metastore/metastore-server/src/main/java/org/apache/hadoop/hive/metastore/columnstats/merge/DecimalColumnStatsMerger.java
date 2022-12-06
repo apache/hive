@@ -67,17 +67,9 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger {
       aggregateData.setNumDVs(ndv);
     }
 
-    if (aggregateData.getHistogramEstimator() != null && newData.getHistogramEstimator() != null) {
-      KllHistogramEstimator oldEst = aggregateData.getHistogramEstimator();
-      KllHistogramEstimator newEst = newData.getHistogramEstimator();
-      if (oldEst.canMerge(newEst)) {
-        LOG.trace("Merging old sketch {} with new sketch {}...", oldEst.getSketch(), newEst.getSketch());
-        oldEst.mergeEstimators(newEst);
-        aggregateData.setHistogramEstimator(oldEst);
-        LOG.trace("Resulting sketch is {}", oldEst.getSketch());
-      }
-      LOG.debug("Merging histograms of column {}", aggregateColStats.getColName());
-    }
+    KllHistogramEstimator oldEst = aggregateData.getHistogramEstimator();
+    KllHistogramEstimator newEst = newData.getHistogramEstimator();
+    aggregateData.setHistogramEstimator(mergeHistogramEstimator(aggregateColStats.getColName(), oldEst, newEst));
 
     aggregateColStats.getStatsData().setDecimalStats(aggregateData);
   }
