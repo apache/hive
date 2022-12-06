@@ -49,12 +49,12 @@ PREHOOK: query: select * from view_using_udf
 PREHOOK: type: QUERY
 PREHOOK: Input: default@base_table
 PREHOOK: Input: default@view_using_udf
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from view_using_udf
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base_table
 POSTHOOK: Input: default@view_using_udf
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: create function udf_lower as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower'
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: database:default
@@ -67,32 +67,32 @@ PREHOOK: query: select udf_lower(upper_city) from view_using_udf
 PREHOOK: type: QUERY
 PREHOOK: Input: default@base_table
 PREHOOK: Input: default@view_using_udf
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select udf_lower(upper_city) from view_using_udf
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base_table
 POSTHOOK: Input: default@view_using_udf
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: select * from view_using_udf
 PREHOOK: type: QUERY
 PREHOOK: Input: default@base_table
 PREHOOK: Input: default@view_using_udf
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from view_using_udf
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base_table
 POSTHOOK: Input: default@view_using_udf
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: select udf_lower(upper_city) from view_using_udf
 PREHOOK: type: QUERY
 PREHOOK: Input: default@base_table
 PREHOOK: Input: default@view_using_udf
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select udf_lower(upper_city) from view_using_udf
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base_table
 POSTHOOK: Input: default@view_using_udf
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: drop function udf_lower
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: database:default
