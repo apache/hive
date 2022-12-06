@@ -142,7 +142,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
-    checkInterval = 0;
     this.workerName = getWorkerId();
     setName(workerName);
   }

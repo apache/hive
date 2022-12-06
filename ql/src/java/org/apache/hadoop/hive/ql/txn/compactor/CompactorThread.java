@@ -65,9 +65,10 @@ public abstract class CompactorThread extends Thread implements Configurable {
   //In milliseconds:
   protected Integer MAX_WARN_LOG_TIME = 1200000; //20 min
 
-  protected long checkInterval;
+  protected long checkInterval = 0;
 
-  public enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
+  protected enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
+
   @Override
   public void setConf(Configuration configuration) {
     // TODO MS-SPLIT for now, keep a copy of HiveConf around as we need to call other methods with
