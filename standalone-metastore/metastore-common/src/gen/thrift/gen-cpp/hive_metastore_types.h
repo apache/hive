@@ -11155,14 +11155,16 @@ void swap(CompactionResponse &a, CompactionResponse &b);
 std::ostream& operator<<(std::ostream& out, const CompactionResponse& obj);
 
 typedef struct _ShowCompactRequest__isset {
-  _ShowCompactRequest__isset() : id(false), poolName(false), dbname(false), tablename(false), partitionname(false), type(false), state(false) {}
+  _ShowCompactRequest__isset() : id(false), poolName(false), dbName(false), tbName(false), partName(false), type(false), state(false), limit(false), order(false) {}
   bool id :1;
   bool poolName :1;
-  bool dbname :1;
-  bool tablename :1;
-  bool partitionname :1;
+  bool dbName :1;
+  bool tbName :1;
+  bool partName :1;
   bool type :1;
   bool state :1;
+  bool limit :1;
+  bool order :1;
 } _ShowCompactRequest__isset;
 
 class ShowCompactRequest : public virtual ::apache::thrift::TBase {
@@ -11173,25 +11175,29 @@ class ShowCompactRequest : public virtual ::apache::thrift::TBase {
   ShowCompactRequest() noexcept
                      : id(0),
                        poolName(),
-                       dbname(),
-                       tablename(),
-                       partitionname(),
+                       dbName(),
+                       tbName(),
+                       partName(),
                        type(static_cast<CompactionType::type>(0)),
-                       state() {
+                       state(),
+                       limit(0),
+                       order() {
   }
 
   virtual ~ShowCompactRequest() noexcept;
   int64_t id;
   std::string poolName;
-  std::string dbname;
-  std::string tablename;
-  std::string partitionname;
+  std::string dbName;
+  std::string tbName;
+  std::string partName;
   /**
    * 
    * @see CompactionType
    */
   CompactionType::type type;
   std::string state;
+  int64_t limit;
+  std::string order;
 
   _ShowCompactRequest__isset __isset;
 
@@ -11199,15 +11205,19 @@ class ShowCompactRequest : public virtual ::apache::thrift::TBase {
 
   void __set_poolName(const std::string& val);
 
-  void __set_dbname(const std::string& val);
+  void __set_dbName(const std::string& val);
 
-  void __set_tablename(const std::string& val);
+  void __set_tbName(const std::string& val);
 
-  void __set_partitionname(const std::string& val);
+  void __set_partName(const std::string& val);
 
   void __set_type(const CompactionType::type val);
 
   void __set_state(const std::string& val);
+
+  void __set_limit(const int64_t val);
+
+  void __set_order(const std::string& val);
 
   bool operator == (const ShowCompactRequest & rhs) const
   {
@@ -11219,17 +11229,17 @@ class ShowCompactRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.poolName && !(poolName == rhs.poolName))
       return false;
-    if (__isset.dbname != rhs.__isset.dbname)
+    if (__isset.dbName != rhs.__isset.dbName)
       return false;
-    else if (__isset.dbname && !(dbname == rhs.dbname))
+    else if (__isset.dbName && !(dbName == rhs.dbName))
       return false;
-    if (__isset.tablename != rhs.__isset.tablename)
+    if (__isset.tbName != rhs.__isset.tbName)
       return false;
-    else if (__isset.tablename && !(tablename == rhs.tablename))
+    else if (__isset.tbName && !(tbName == rhs.tbName))
       return false;
-    if (__isset.partitionname != rhs.__isset.partitionname)
+    if (__isset.partName != rhs.__isset.partName)
       return false;
-    else if (__isset.partitionname && !(partitionname == rhs.partitionname))
+    else if (__isset.partName && !(partName == rhs.partName))
       return false;
     if (__isset.type != rhs.__isset.type)
       return false;
@@ -11238,6 +11248,14 @@ class ShowCompactRequest : public virtual ::apache::thrift::TBase {
     if (__isset.state != rhs.__isset.state)
       return false;
     else if (__isset.state && !(state == rhs.state))
+      return false;
+    if (__isset.limit != rhs.__isset.limit)
+      return false;
+    else if (__isset.limit && !(limit == rhs.limit))
+      return false;
+    if (__isset.order != rhs.__isset.order)
+      return false;
+    else if (__isset.order && !(order == rhs.order))
       return false;
     return true;
   }

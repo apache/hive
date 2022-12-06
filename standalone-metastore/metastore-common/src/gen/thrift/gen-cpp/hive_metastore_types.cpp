@@ -28129,19 +28129,19 @@ void ShowCompactRequest::__set_poolName(const std::string& val) {
 __isset.poolName = true;
 }
 
-void ShowCompactRequest::__set_dbname(const std::string& val) {
-  this->dbname = val;
-__isset.dbname = true;
+void ShowCompactRequest::__set_dbName(const std::string& val) {
+  this->dbName = val;
+__isset.dbName = true;
 }
 
-void ShowCompactRequest::__set_tablename(const std::string& val) {
-  this->tablename = val;
-__isset.tablename = true;
+void ShowCompactRequest::__set_tbName(const std::string& val) {
+  this->tbName = val;
+__isset.tbName = true;
 }
 
-void ShowCompactRequest::__set_partitionname(const std::string& val) {
-  this->partitionname = val;
-__isset.partitionname = true;
+void ShowCompactRequest::__set_partName(const std::string& val) {
+  this->partName = val;
+__isset.partName = true;
 }
 
 void ShowCompactRequest::__set_type(const CompactionType::type val) {
@@ -28152,6 +28152,16 @@ __isset.type = true;
 void ShowCompactRequest::__set_state(const std::string& val) {
   this->state = val;
 __isset.state = true;
+}
+
+void ShowCompactRequest::__set_limit(const int64_t val) {
+  this->limit = val;
+__isset.limit = true;
+}
+
+void ShowCompactRequest::__set_order(const std::string& val) {
+  this->order = val;
+__isset.order = true;
 }
 std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj)
 {
@@ -28199,24 +28209,24 @@ uint32_t ShowCompactRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->dbname);
-          this->__isset.dbname = true;
+          xfer += iprot->readString(this->dbName);
+          this->__isset.dbName = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->tablename);
-          this->__isset.tablename = true;
+          xfer += iprot->readString(this->tbName);
+          this->__isset.tbName = true;
         } else {
           xfer += iprot->skip(ftype);
         }
         break;
       case 5:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->partitionname);
-          this->__isset.partitionname = true;
+          xfer += iprot->readString(this->partName);
+          this->__isset.partName = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -28235,6 +28245,22 @@ uint32_t ShowCompactRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->state);
           this->__isset.state = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 8:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->limit);
+          this->__isset.limit = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->order);
+          this->__isset.order = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -28266,19 +28292,19 @@ uint32_t ShowCompactRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeString(this->poolName);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.dbname) {
-    xfer += oprot->writeFieldBegin("dbname", ::apache::thrift::protocol::T_STRING, 3);
-    xfer += oprot->writeString(this->dbname);
+  if (this->__isset.dbName) {
+    xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 3);
+    xfer += oprot->writeString(this->dbName);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.tablename) {
-    xfer += oprot->writeFieldBegin("tablename", ::apache::thrift::protocol::T_STRING, 4);
-    xfer += oprot->writeString(this->tablename);
+  if (this->__isset.tbName) {
+    xfer += oprot->writeFieldBegin("tbName", ::apache::thrift::protocol::T_STRING, 4);
+    xfer += oprot->writeString(this->tbName);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.partitionname) {
-    xfer += oprot->writeFieldBegin("partitionname", ::apache::thrift::protocol::T_STRING, 5);
-    xfer += oprot->writeString(this->partitionname);
+  if (this->__isset.partName) {
+    xfer += oprot->writeFieldBegin("partName", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->partName);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.type) {
@@ -28291,6 +28317,16 @@ uint32_t ShowCompactRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeString(this->state);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.limit) {
+    xfer += oprot->writeFieldBegin("limit", ::apache::thrift::protocol::T_I64, 8);
+    xfer += oprot->writeI64(this->limit);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.order) {
+    xfer += oprot->writeFieldBegin("order", ::apache::thrift::protocol::T_STRING, 9);
+    xfer += oprot->writeString(this->order);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -28300,32 +28336,38 @@ void swap(ShowCompactRequest &a, ShowCompactRequest &b) {
   using ::std::swap;
   swap(a.id, b.id);
   swap(a.poolName, b.poolName);
-  swap(a.dbname, b.dbname);
-  swap(a.tablename, b.tablename);
-  swap(a.partitionname, b.partitionname);
+  swap(a.dbName, b.dbName);
+  swap(a.tbName, b.tbName);
+  swap(a.partName, b.partName);
   swap(a.type, b.type);
   swap(a.state, b.state);
+  swap(a.limit, b.limit);
+  swap(a.order, b.order);
   swap(a.__isset, b.__isset);
 }
 
 ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other996) {
   id = other996.id;
   poolName = other996.poolName;
-  dbname = other996.dbname;
-  tablename = other996.tablename;
-  partitionname = other996.partitionname;
+  dbName = other996.dbName;
+  tbName = other996.tbName;
+  partName = other996.partName;
   type = other996.type;
   state = other996.state;
+  limit = other996.limit;
+  order = other996.order;
   __isset = other996.__isset;
 }
 ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& other997) {
   id = other997.id;
   poolName = other997.poolName;
-  dbname = other997.dbname;
-  tablename = other997.tablename;
-  partitionname = other997.partitionname;
+  dbName = other997.dbName;
+  tbName = other997.tbName;
+  partName = other997.partName;
   type = other997.type;
   state = other997.state;
+  limit = other997.limit;
+  order = other997.order;
   __isset = other997.__isset;
   return *this;
 }
@@ -28334,11 +28376,13 @@ void ShowCompactRequest::printTo(std::ostream& out) const {
   out << "ShowCompactRequest(";
   out << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ", " << "poolName="; (__isset.poolName ? (out << to_string(poolName)) : (out << "<null>"));
-  out << ", " << "dbname="; (__isset.dbname ? (out << to_string(dbname)) : (out << "<null>"));
-  out << ", " << "tablename="; (__isset.tablename ? (out << to_string(tablename)) : (out << "<null>"));
-  out << ", " << "partitionname="; (__isset.partitionname ? (out << to_string(partitionname)) : (out << "<null>"));
+  out << ", " << "dbName="; (__isset.dbName ? (out << to_string(dbName)) : (out << "<null>"));
+  out << ", " << "tbName="; (__isset.tbName ? (out << to_string(tbName)) : (out << "<null>"));
+  out << ", " << "partName="; (__isset.partName ? (out << to_string(partName)) : (out << "<null>"));
   out << ", " << "type="; (__isset.type ? (out << to_string(type)) : (out << "<null>"));
   out << ", " << "state="; (__isset.state ? (out << to_string(state)) : (out << "<null>"));
+  out << ", " << "limit="; (__isset.limit ? (out << to_string(limit)) : (out << "<null>"));
+  out << ", " << "order="; (__isset.order ? (out << to_string(order)) : (out << "<null>"));
   out << ")";
 }
 

@@ -116,6 +116,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_FIRST;
+import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_LAST;
+import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.ASC;
+import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.DESC;
+
 /**
  * BaseSemanticAnalyzer.
  *
@@ -1982,6 +1987,29 @@ public abstract class BaseSemanticAnalyzer {
 
   public ParseContext getParseContext() {
     return pCtx;
+  }
+
+  public PTFInvocationSpec.OrderSpec processOrderSpec(ASTNode sortNode) {
+    PTFInvocationSpec.OrderSpec oSpec = new PTFInvocationSpec.OrderSpec();
+    int exprCnt = sortNode.getChildCount();
+    for (int i = 0; i < exprCnt; i++) {
+      PTFInvocationSpec.OrderExpression exprSpec = new PTFInvocationSpec.OrderExpression();
+      ASTNode orderSpec = (ASTNode) sortNode.getChild(i);
+      ASTNode nullOrderSpec = (ASTNode) orderSpec.getChild(0);
+      exprSpec.setExpression((ASTNode) nullOrderSpec.getChild(0));
+      if (orderSpec.getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
+        exprSpec.setOrder(ASC);
+      } else {
+        exprSpec.setOrder(DESC);
+      }
+      if (nullOrderSpec.getType() == HiveParser.TOK_NULLS_FIRST) {
+        exprSpec.setNullOrder(NULLS_FIRST);
+      } else {
+        exprSpec.setNullOrder(NULLS_LAST);
+      }
+      oSpec.addExpression(exprSpec);
+    }
+    return oSpec;
   }
 
 }
