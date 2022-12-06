@@ -7291,29 +7291,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       checkImmutableTable(qb, destinationTable, destinationPath, false);
 
-      // check for partition
-      List<FieldSchema> parts = destinationTable.getPartitionKeys();
-      if (parts != null && parts.size() > 0) { // table is partitioned
-        if (partSpec == null || partSpec.size() == 0) { // user did NOT specify partition
-          throw new SemanticException(generateErrorMessage(
-              qb.getParseInfo().getDestForClause(dest),
-              ErrorMsg.NEED_PARTITION_ERROR.getMsg()));
-        }
-        dpCtx = qbm.getDPCtx(dest);
-        if (dpCtx == null) {
-          destinationTable.validatePartColumnNames(partSpec, false);
-          dpCtx = new DynamicPartitionCtx(partSpec,
-              conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
-              conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
-          qbm.setDPCtx(dest, dpCtx);
-        }
-      }
-
       // Check for dynamic partitions.
       dpCtx = checkDynPart(qb, qbm, destinationTable, partSpec, dest);
-      if (dpCtx != null && dpCtx.getSPPath() != null) {
-        destinationPath = new Path(destinationTable.getPath(), dpCtx.getSPPath());
-      }
 
       isNonNativeTable = destinationTable.isNonNative();
       isMmTable = AcidUtils.isInsertOnlyTable(destinationTable.getParameters());
@@ -7328,7 +7307,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOp);
       acidOperation = acidOp;
-      queryTmpdir = getTmpDir(isNonNativeTable, isMmTable, isDirectInsert, destinationPath);
+      queryTmpdir = getTmpDir(isNonNativeTable, isMmTable, isDirectInsert, destinationPath, dpCtx);
       moveTaskId = getMoveTaskId();
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("create filesink w/DEST_TABLE specifying " + queryTmpdir
@@ -7343,7 +7322,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       input = genConstraintsPlan(dest, qb, input);
 
       if (!qb.getIsQuery()) {
-        input = genConversionSelectOperator(dest, qb, input, destinationTable.getDeserializer(), dpCtx, parts, destinationTable);
+        input = genConversionSelectOperator(dest, qb, input, destinationTable.getDeserializer(),
+            dpCtx, destinationTable.getPartitionKeys(), destinationTable);
       }
 
       if (destinationTable.isMaterializedView() &&
@@ -7479,7 +7459,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOp);
       acidOperation = acidOp;
-      queryTmpdir = getTmpDir(isNonNativeTable, isMmTable, isDirectInsert, destinationPath);
+      queryTmpdir = getTmpDir(isNonNativeTable, isMmTable, isDirectInsert, destinationPath, null);
       moveTaskId = getMoveTaskId();
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("create filesink w/DEST_PARTITION specifying "
@@ -7674,27 +7654,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      if (isLocal) {
-        assert !isMmTable;
-        // for local directory - we always write to map-red intermediate
-        // store and then copy to local fs
-        queryTmpdir = ctx.getMRTmpPath();
-      } else {
-        // otherwise write to the file system implied by the directory
-        // no copy is required. we may want to revisit this policy in future
-        try {
-          Path qPath = FileUtils.makeQualified(destinationPath, conf);
-          queryTmpdir = isMmTable || isDirectInsert ? qPath : ctx.getTempDirForFinalJobPath(qPath);
-          if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-            Utilities.FILE_OP_LOGGER.trace("Setting query directory " + queryTmpdir
-                + " from " + destinationPath + " (" + isMmTable + ")");
-          }
-        } catch (Exception e) {
-          throw new SemanticException("Error creating temporary folder on: "
-              + destinationPath, e);
-        }
-      }
-
       // Check for dynamic partitions.
       final String cols, colTypes;
       final boolean isPartitioned;
@@ -7711,8 +7670,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
             conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
         qbm.setDPCtx(dest, dpCtx);
-        // set the root of the temporary path where dynamic partition columns will populate
-        dpCtx.setRootPath(queryTmpdir);
         isPartitioned = true;
       } else {
         ColsAndTypes ct = deriveFileSinkColTypes(
@@ -7721,6 +7678,35 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         cols = ct.cols;
         colTypes = ct.colTypes;
         isPartitioned = false;
+      }
+
+      if (isLocal) {
+        assert !isMmTable;
+        // for local directory - we always write to map-red intermediate
+        // store and then copy to local fs
+        queryTmpdir = ctx.getMRTmpPath();
+        if (dpCtx != null && dpCtx.getSPPath() != null) {
+          queryTmpdir = new Path(queryTmpdir, dpCtx.getSPPath());
+        }
+      } else {
+        // otherwise write to the file system implied by the directory
+        // no copy is required. we may want to revisit this policy in future
+        try {
+          Path qPath = FileUtils.makeQualified(destinationPath, conf);
+          queryTmpdir = getTmpDir(false, isMmTable, isDirectInsert, qPath, dpCtx);
+        } catch (Exception e) {
+          throw new SemanticException("Error creating "
+              + destinationPath, e);
+        }
+      }
+      // set the root of the temporary path where dynamic partition columns will populate
+      if (dpCtx != null) {
+        dpCtx.setRootPath(queryTmpdir);
+      }
+
+      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+        Utilities.FILE_OP_LOGGER.trace("Setting query directory " + queryTmpdir
+            + " from " + destinationPath + " (" + isMmTable + ")");
       }
 
       // update the create table descriptor with the resulting schema.
@@ -8072,18 +8058,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Path getTmpDir(boolean isNonNativeTable, boolean isMmTable, boolean isDirectInsert,
-      Path destinationPath) {
+      Path destinationPath, DynamicPartitionCtx dpCtx) {
     /**
      * We will directly insert to the final destination in the following cases:
      * 1. Non native table
      * 2. Micro-managed (insert only table)
      * 3. Full ACID table and operation type is INSERT
      */
+    Path destPath = null;
     if (isNonNativeTable || isMmTable || isDirectInsert) {
-      return destinationPath;
+      destPath = destinationPath;
+    } else if (HiveConf.getBoolVar(conf, ConfVars.HIVE_USE_SCRATCHDIR_FOR_STAGING)) {
+      destPath = ctx.getTempDirForInterimJobPath(destinationPath);
     } else {
-      return ctx.getTempDirForFinalJobPath(destinationPath);
+      destPath = ctx.getTempDirForFinalJobPath(destinationPath);
     }
+    if (dpCtx != null && dpCtx.getSPPath() != null) {
+      return new Path(destPath, dpCtx.getSPPath());
+    }
+    return destPath;
   }
 
   private String getMoveTaskId() {
