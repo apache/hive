@@ -707,14 +707,14 @@ public class TestCachedStoreUpdateUsingEvents {
     Assert.assertEquals(colStats.getColName(), colName);
     ColumnStatisticsData expectedColStats = new ColStatsBuilder<>(double.class).numNulls(NUM_NULLS).numDVs(NUM_DVS)
         .low(LOW_VALUE).high(highValue).hll(1.1, 2.2, 3.3).kll(1.1, 2.2, 3.3).build();
-    assertEqualStatistics(expectedColStats, colStats.getStatsData());
+    Assert.assertEquals(expectedColStats, colStats.getStatsData());
   }
 
   private void verifyStatString(ColumnStatisticsObj colStats, String colName, double avgColLen) {
     Assert.assertEquals(colName, colStats.getColName());
     ColumnStatisticsData expectedColStats = new ColStatsBuilder<>(String.class).numNulls(NUM_NULLS).numDVs(NUM_DVS)
         .avgColLen(avgColLen).maxColLen(MAX_COL_LEN).hll("1.1", "2.2", "3.3").build();
-    assertEqualStatistics(expectedColStats, colStats.getStatsData());
+    Assert.assertEquals(expectedColStats, colStats.getStatsData());
   }
 
   private void verifyStat(List<ColumnStatisticsObj> colStats, String[] colName, double highValue, double avgColLen) {

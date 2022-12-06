@@ -40,6 +40,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 
+/**
+ * Provides utility methods for writing test around statistics.
+ * WARNING: Due to shading and relocation from the "hive-exec" module of the KllFloatSketch class,
+ * it is not safe to use this class outside the "standalone-metastore/metastore-server" module.
+ */
 public class StatisticsTestUtils {
 
   public static final String HIVE_ENGINE = "hive";
