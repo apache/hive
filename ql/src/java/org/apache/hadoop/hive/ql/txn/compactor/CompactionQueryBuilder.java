@@ -303,8 +303,8 @@ class CompactionQueryBuilder {
                 + "ROW__ID.writeId, ROW__ID.bucketId, ROW__ID.rowId, ROW__ID.writeId, "
                 + "NAMED_STRUCT(");
         for (int i = 0; i < cols.size(); ++i) {
-          query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', ")
-              .append(cols.get(i).getName());
+          query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', `")
+              .append(cols.get(i).getName()).append("`");
         }
         query.append(") ");
       } else { //minor
