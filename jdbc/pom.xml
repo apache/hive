@@ -212,6 +212,12 @@
                         <exclude>static/</exclude>
                       </excludes>
                     </filter>
+                    <filter>
+                      <artifact>com.zaxxer:HikariCP</artifact>
+                      <excludes>
+                        <exclude>META-INF/versions/11/module-info.class</exclude>
+                      </excludes>
+                    </filter>
                   </filters>
                   <artifactSet>
                     <excludes>
