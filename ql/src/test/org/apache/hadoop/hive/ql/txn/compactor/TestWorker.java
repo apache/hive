@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -93,68 +92,6 @@ public class TestWorker extends CompactorTest {
     // survival test.
     startWorker();
   }
-
-  @Test
-  public void stringableMap() throws Exception {
-    // Empty map case
-    StringableMap m = new StringableMap(new HashMap<String, String>());
-    String s = m.toString();
-    Assert.assertEquals("0:", s);
-    m = new StringableMap(s);
-    Assert.assertEquals(0, m.size());
-
-    Map<String, String> base = new HashMap<String, String>();
-    base.put("mary", "poppins");
-    base.put("bert", null);
-    base.put(null, "banks");
-    m = new StringableMap(base);
-    s = m.toString();
-    m = new StringableMap(s);
-    Assert.assertEquals(3, m.size());
-    Map<String, Boolean> saw = new HashMap<String, Boolean>(3);
-    saw.put("mary", false);
-    saw.put("bert", false);
-    saw.put(null, false);
-    for (Map.Entry<String, String> e : m.entrySet()) {
-      saw.put(e.getKey(), true);
-      if ("mary".equals(e.getKey())) Assert.assertEquals("poppins", e.getValue());
-      else if ("bert".equals(e.getKey())) Assert.assertNull(e.getValue());
-      else if (null == e.getKey()) Assert.assertEquals("banks", e.getValue());
-      else Assert.fail("Unexpected value " + e.getKey());
-    }
-    Assert.assertEquals(3, saw.size());
-    Assert.assertTrue(saw.get("mary"));
-    Assert.assertTrue(saw.get("bert"));
-    Assert.assertTrue(saw.get(null));
-   }
-
-  @Test
-  public void stringableList() throws Exception {
-    // Empty list case
-    CompactorMR.StringableList ls = new CompactorMR.StringableList();
-    String s = ls.toString();
-    Assert.assertEquals("0:", s);
-    ls = new CompactorMR.StringableList(s);
-    Assert.assertEquals(0, ls.size());
-
-    ls = new CompactorMR.StringableList();
-    ls.add(new Path("/tmp"));
-    ls.add(new Path("/usr"));
-    s = ls.toString();
-    Assert.assertTrue("Expected 2:4:/tmp4:/usr or 2:4:/usr4:/tmp, got " + s,
-        "2:4:/tmp4:/usr".equals(s) || "2:4:/usr4:/tmp".equals(s));
-    ls = new CompactorMR.StringableList(s);
-    Assert.assertEquals(2, ls.size());
-    boolean sawTmp = false, sawUsr = false;
-    for (Path p : ls) {
-      if ("/tmp".equals(p.toString())) sawTmp = true;
-      else if ("/usr".equals(p.toString())) sawUsr = true;
-      else Assert.fail("Unexpected path " + p.toString());
-    }
-    Assert.assertTrue(sawTmp);
-    Assert.assertTrue(sawUsr);
-  }
-
   @Test
   public void inputSplit() throws Exception {
     String basename = "/warehouse/foo/base_1";
