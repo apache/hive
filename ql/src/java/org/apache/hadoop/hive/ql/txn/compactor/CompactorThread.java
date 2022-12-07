@@ -63,11 +63,11 @@ public abstract class CompactorThread extends Thread implements Configurable {
 
   //Time threshold for compactor thread log
   //In milliseconds:
-  protected Integer MAX_WARN_LOG_TIME = 1200000; //20 min
+  private static final Integer MAX_WARN_LOG_TIME = 1200000; //20 min
 
   protected long checkInterval = 0;
 
-  protected enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
+  enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
 
   @Override
   public void setConf(Configuration configuration) {
