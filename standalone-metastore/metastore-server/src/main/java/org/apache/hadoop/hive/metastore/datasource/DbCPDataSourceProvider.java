@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.datasource;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -114,7 +115,7 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
 
     String stmt = dbProduct.getPrepareTxnStmt();
     if (stmt != null) {
-      poolableConnFactory.setValidationQuery(stmt);
+      poolableConnFactory.setConnectionInitSql(Arrays.asList(stmt));
     }
     return new PoolingDataSource(objectPool);
   }
