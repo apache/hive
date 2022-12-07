@@ -1,0 +1,264 @@
+PREHOOK: query: CREATE TABLE t_test1(
+  id int,
+  int_col int,
+  year int,
+  month int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_test1
+POSTHOOK: query: CREATE TABLE t_test1(
+  id int,
+  int_col int,
+  year int,
+  month int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_test1
+PREHOOK: query: CREATE TABLE t_test2(
+  id int,
+  int_col int,
+  year int,
+  month int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_test2
+POSTHOOK: query: CREATE TABLE t_test2(
+  id int,
+  int_col int,
+  year int,
+  month int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_test2
+PREHOOK: query: CREATE TABLE t_test3(
+  id int,
+  int_col int,
+  year int,
+  month int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_test3
+POSTHOOK: query: CREATE TABLE t_test3(
+  id int,
+  int_col int,
+  year int,
+  month int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_test3
+PREHOOK: query: CREATE TABLE t_test4(
+  id int,
+  int_col int,
+  year int,
+  month int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_test4
+POSTHOOK: query: CREATE TABLE t_test4(
+  id int,
+  int_col int,
+  year int,
+  month int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_test4
+PREHOOK: query: CREATE TABLE dummy (
+  id int
+) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy
+POSTHOOK: query: CREATE TABLE dummy (
+  id int
+) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dummy
+PREHOOK: query: CREATE MATERIALIZED VIEW need_a_mat_view_in_registry AS
+SELECT * FROM dummy where id > 5
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@dummy
+PREHOOK: Output: database:default
+PREHOOK: Output: default@need_a_mat_view_in_registry
+POSTHOOK: query: CREATE MATERIALIZED VIEW need_a_mat_view_in_registry AS
+SELECT * FROM dummy where id > 5
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@dummy
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@need_a_mat_view_in_registry
+POSTHOOK: Lineage: need_a_mat_view_in_registry.id SIMPLE [(dummy)dummy.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: INSERT INTO t_test1 VALUES (1, 1, 2009, 1), (10,0, 2009, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_test1
+POSTHOOK: query: INSERT INTO t_test1 VALUES (1, 1, 2009, 1), (10,0, 2009, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_test1
+POSTHOOK: Lineage: t_test1.id SCRIPT []
+POSTHOOK: Lineage: t_test1.int_col SCRIPT []
+POSTHOOK: Lineage: t_test1.month SCRIPT []
+POSTHOOK: Lineage: t_test1.year SCRIPT []
+PREHOOK: query: INSERT INTO t_test2 VALUES (1, 1, 2009, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_test2
+POSTHOOK: query: INSERT INTO t_test2 VALUES (1, 1, 2009, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_test2
+POSTHOOK: Lineage: t_test2.id SCRIPT []
+POSTHOOK: Lineage: t_test2.int_col SCRIPT []
+POSTHOOK: Lineage: t_test2.month SCRIPT []
+POSTHOOK: Lineage: t_test2.year SCRIPT []
+PREHOOK: query: INSERT INTO t_test3 VALUES (1, 1, 2009, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_test3
+POSTHOOK: query: INSERT INTO t_test3 VALUES (1, 1, 2009, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_test3
+POSTHOOK: Lineage: t_test3.id SCRIPT []
+POSTHOOK: Lineage: t_test3.int_col SCRIPT []
+POSTHOOK: Lineage: t_test3.month SCRIPT []
+POSTHOOK: Lineage: t_test3.year SCRIPT []
+PREHOOK: query: INSERT INTO t_test4 VALUES (1, 1, 2009, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_test4
+POSTHOOK: query: INSERT INTO t_test4 VALUES (1, 1, 2009, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_test4
+POSTHOOK: Lineage: t_test4.id SCRIPT []
+POSTHOOK: Lineage: t_test4.int_col SCRIPT []
+POSTHOOK: Lineage: t_test4.month SCRIPT []
+POSTHOOK: Lineage: t_test4.year SCRIPT []
+PREHOOK: query: select id, int_col, year, month from t_test1 s where s.int_col = (select count(*) from t_test2 t where s.id = t.id) order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test1
+PREHOOK: Input: default@t_test2
+#### A masked pattern was here ####
+POSTHOOK: query: select id, int_col, year, month from t_test1 s where s.int_col = (select count(*) from t_test2 t where s.id = t.id) order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test1
+POSTHOOK: Input: default@t_test2
+#### A masked pattern was here ####
+1	1	2009	1
+10	0	2009	1
+PREHOOK: query: explain cbo select id, int_col, year, month from t_test1 s where s.int_col = (select count(*) from t_test2 t where s.id = t.id) order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test1
+PREHOOK: Input: default@t_test2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select id, int_col, year, month from t_test1 s where s.int_col = (select count(*) from t_test2 t where s.id = t.id) order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test1
+POSTHOOK: Input: default@t_test2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], dir0=[ASC])
+  HiveProject(id=[$0], int_col=[$1], year=[$2], month=[$3])
+    HiveFilter(condition=[=(CAST($1):BIGINT, CASE(IS NULL($5), 0:BIGINT, $4))])
+      HiveJoin(condition=[=($0, $6)], joinType=[left], algorithm=[none], cost=[not available])
+        HiveProject(id=[$0], int_col=[$1], year=[$2], month=[$3])
+          HiveTableScan(table=[[default, t_test1]], table:alias=[s])
+        HiveProject(_o__c0=[$1], trueLiteral=[true], id=[$0])
+          HiveAggregate(group=[{0}], agg#0=[count()])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[default, t_test2]], table:alias=[t])
+
+PREHOOK: query: explain cbo
+select id, int_col, year, month from t_test2 s where not (
+  s.int_col in (select count(*) from t_test3 t2 where s.id = t2.id) and
+  s.int_col in (select count(*) from t_test4 t3 where s.id = t3.id)
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test2
+PREHOOK: Input: default@t_test3
+PREHOOK: Input: default@t_test4
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select id, int_col, year, month from t_test2 s where not (
+  s.int_col in (select count(*) from t_test3 t2 where s.id = t2.id) and
+  s.int_col in (select count(*) from t_test4 t3 where s.id = t3.id)
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test2
+POSTHOOK: Input: default@t_test3
+POSTHOOK: Input: default@t_test4
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(id=[$0], int_col=[$1], year=[$2], month=[$3])
+  HiveFilter(condition=[OR(IS NULL($4), IS NULL($8), =($4, 0), =($8, 0), IS NOT TRUE(OR(IS NOT NULL($6), IS NULL($1), <($5, $4))), IS NOT TRUE(OR(IS NOT NULL($11), IS NULL($1), <($9, $8))))])
+    HiveProject(id=[$0], int_col=[$1], year=[$2], month=[$3], c=[$5], ck=[$6], literalTrue=[$8], id0=[$11], c0=[$12], ck0=[$13], _o__c0=[$14], literalTrue0=[$15], id1=[$16])
+      HiveJoin(condition=[AND(=($0, $16), =($1, $14))], joinType=[left], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[=($0, $11)], joinType=[left], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($0, $10)], joinType=[left], algorithm=[none], cost=[not available])
+            HiveJoin(condition=[AND(=($0, $9), =($1, $7))], joinType=[left], algorithm=[none], cost=[not available])
+              HiveJoin(condition=[=($0, $4)], joinType=[left], algorithm=[none], cost=[not available])
+                HiveProject(id=[$0], int_col=[$1], year=[$2], month=[$3])
+                  HiveFilter(condition=[CASE(IS NULL($5), sq_count_check(0:BIGINT, true), sq_count_check($5, true))])
+                    HiveJoin(condition=[=($0, $4)], joinType=[left], algorithm=[none], cost=[not available])
+                      HiveProject(id=[$0], int_col=[$1], year=[$2], month=[$3])
+                        HiveTableScan(table=[[default, t_test2]], table:alias=[s])
+                      HiveProject(id=[$0], cnt_in=[$1])
+                        HiveAggregate(group=[{0}], cnt_in=[COUNT()])
+                          HiveProject(id=[$0])
+                            HiveAggregate(group=[{0}])
+                              HiveFilter(condition=[IS NOT NULL($0)])
+                                HiveTableScan(table=[[default, t_test3]], table:alias=[t2])
+                HiveProject(id=[$0], c=[$1], ck=[$2])
+                  HiveAggregate(group=[{0}], c=[COUNT()], ck=[COUNT($1)])
+                    HiveProject(id=[$0], $f1=[$1])
+                      HiveAggregate(group=[{0}], agg#0=[count()])
+                        HiveFilter(condition=[IS NOT NULL($0)])
+                          HiveTableScan(table=[[default, t_test3]], table:alias=[t2])
+              HiveProject(_o__c0=[$1], literalTrue=[true], id=[$0])
+                HiveFilter(condition=[IS NOT NULL($1)])
+                  HiveAggregate(group=[{0}], agg#0=[count()])
+                    HiveFilter(condition=[IS NOT NULL($0)])
+                      HiveTableScan(table=[[default, t_test3]], table:alias=[t2])
+            HiveProject(id=[$0])
+              HiveAggregate(group=[{0}])
+                HiveFilter(condition=[IS NOT NULL($0)])
+                  HiveTableScan(table=[[default, t_test4]], table:alias=[t3])
+          HiveProject(id=[$0], c=[$1], ck=[$2])
+            HiveAggregate(group=[{0}], c=[COUNT()], ck=[COUNT($1)])
+              HiveProject(id=[$0], $f1=[$1])
+                HiveAggregate(group=[{0}], agg#0=[count()])
+                  HiveFilter(condition=[IS NOT NULL($0)])
+                    HiveTableScan(table=[[default, t_test4]], table:alias=[t3])
+        HiveProject(_o__c0=[$1], literalTrue=[true], id=[$0])
+          HiveFilter(condition=[IS NOT NULL($1)])
+            HiveAggregate(group=[{0}], agg#0=[count()])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableScan(table=[[default, t_test4]], table:alias=[t3])
+
+PREHOOK: query: select id, int_col, year, month from t_test2 s where not (
+  s.int_col in (select count(*) from t_test3 t2 where s.id = t2.id) and
+  s.int_col in (select count(*) from t_test4 t3 where s.id = t3.id)
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test2
+PREHOOK: Input: default@t_test3
+PREHOOK: Input: default@t_test4
+#### A masked pattern was here ####
+POSTHOOK: query: select id, int_col, year, month from t_test2 s where not (
+  s.int_col in (select count(*) from t_test3 t2 where s.id = t2.id) and
+  s.int_col in (select count(*) from t_test4 t3 where s.id = t3.id)
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test2
+POSTHOOK: Input: default@t_test3
+POSTHOOK: Input: default@t_test4
+#### A masked pattern was here ####

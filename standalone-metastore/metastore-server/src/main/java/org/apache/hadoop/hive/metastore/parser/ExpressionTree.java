@@ -456,7 +456,8 @@ public class ExpressionTree {
       boolean isIntegralSupported = canPushDownIntegral && canJdoUseStringsWithIntegral();
       String colType = partitionKeys.get(partColIndex).getType();
       // Can only support partitions whose types are string, or maybe integers
-      if (!colType.equals(ColumnType.STRING_TYPE_NAME)
+      // Date data type value is considered as string hence pushing down to JDO.
+      if (!colType.equals(ColumnType.STRING_TYPE_NAME) && !colType.equals(ColumnType.DATE_TYPE_NAME)
           && (!isIntegralSupported || !ColumnType.IntegralTypes.contains(colType))) {
         filterBuilder.setError("Filtering is supported only on partition keys of type " +
             "string" + (isIntegralSupported ? ", or integral types" : ""));

@@ -1347,11 +1347,13 @@ struct CompactionResponse {
 struct ShowCompactRequest {
     1: optional i64 id,
     2: optional string poolName,
-    3: optional string dbname,
-    4: optional string tablename,
-    5: optional string partitionname,
+    3: optional string dbName,
+    4: optional string tbName,
+    5: optional string partName,
     6: optional CompactionType type,
-    7: optional string state
+    7: optional string state,
+    8: optional i64 limit,
+    9: optional string order
 }
 
 struct ShowCompactResponseElement {

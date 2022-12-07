@@ -2544,4 +2544,69 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       }
     }
   }
+
+  @Test
+  public void testCompactionShouldNotFailOnKeywordField() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    String dbName = "default";
+    String tblName = "compact_hive_aggregated_data";
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    TestDataProvider testDP = new TestDataProvider();
+
+    // Create test table
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(`sessionid` string,`row` int,`timeofoccurrence` bigint)" +
+            "STORED AS ORC TBLPROPERTIES('transactional'='true')", driver);
+
+    // Insert test data into test table
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+            " values (\"abcd\",300,21111111111)",driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName +
+            " values (\"abcd\",300,21111111111)",driver);
+
+    // Find the location of the table
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+    FileSystem fs = FileSystem.get(conf);
+    // Verify deltas (delta_0000001_0000001_0000, delta_0000002_0000002_0000) are present
+    Assert.assertEquals("Delta directories does not match before compaction",
+            Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000"),
+            CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
+
+    // Get all data before compaction is run
+    List<String> expectedData = testDP.getAllData(tblName);
+
+    //Do a compaction directly and wait for it to finish
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
+    CompactionResponse resp = txnHandler.compact(rqst);
+    runWorker(conf);
+
+    CompactorTestUtil.runCleaner(conf);
+
+    //Check if the compaction succeed
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals("Expecting 1 rows and found " + compacts.size(), 1, compacts.size());
+    Assert.assertEquals("Expecting compaction state 'succeeded' and found:" + compacts.get(0).getState(),
+            "succeeded", compacts.get(0).getState());
+    // Should contain only one base directory now
+    FileStatus[] status = fs.listStatus(new Path(table.getSd().getLocation()));
+    int inputFileCount = 0;
+    for(FileStatus file: status) {
+      inputFileCount++;
+    }
+    Assert.assertEquals("Expecting 1 file and found "+ inputFileCount, 1, inputFileCount);
+
+    // Check bucket file name
+    List<String> baseDir = CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null);
+    List<String> expectedBucketFiles = Arrays.asList("bucket_00000");
+    Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
+            CompactorTestUtil
+                    .getBucketFileNames(fs, table, null, baseDir.get(0)));
+
+    // Verify all contents
+    List<String> actualData = testDP.getAllData(tblName);
+    Assert.assertEquals(expectedData, actualData);
+  }
 }
