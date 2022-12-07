@@ -1,9 +1,7 @@
--- Mask random uuid
---! qt:replace:/(\s+'uuid'=')\S+('\s*)/$1#Masked#$2/
-
+-- SORT_QUERY_RESULTS
 set hive.optimize.shared.work.merge.ts.schema=true;
 
-CREATE TABLE calls (
+CREATE EXTERNAL TABLE calls (
   s_key bigint, 
   year int
 ) PARTITIONED BY SPEC (year)  
@@ -13,7 +11,7 @@ TBLPROPERTIES ('format-version'='2');
 INSERT INTO calls (s_key, year) VALUES (1090969, 2022);
 
 
-CREATE TABLE display (                   
+CREATE EXTERNAL TABLE display (                   
   skey bigint,                                   
   hierarchy_number string,                       
   hierarchy_name string,                         
@@ -63,6 +61,9 @@ WHEN MATCHED THEN
   UPDATE SET hierarchy_display = concat(sub.display, '-mergeupdated1') 
 WHEN NOT MATCHED THEN 
   INSERT (skey, language_id, hierarchy_display) values (sub.display_skey, 3, concat(sub.orig_display, '-mergenew1'));
+
+
+SELECT * FROM display;
     
 -- clean up    
 DROP TABLE calls;
