@@ -159,6 +159,8 @@ public class TestObjectStore {
 
     // Events that get cleaned happen in batches of 1 to exercise batching code
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS, 1L);
+    MetastoreConf.setBoolVar(conf, ConfVars.STATS_FETCH_BITVECTOR, true);
+    MetastoreConf.setBoolVar(conf, ConfVars.STATS_FETCH_KLL, true);
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
@@ -711,8 +713,8 @@ public class TestObjectStore {
     List<List<ColumnStatistics>> stat;
     try (AutoCloseable c = deadline()) {
       stat = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-              Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
-              Arrays.asList("test_part_col"));
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+          Collections.singletonList("test_part_col"));
     }
 
     Assert.assertEquals(1, stat.size());
@@ -722,7 +724,7 @@ public class TestObjectStore {
 
     ColumnStatisticsData computedStats = stat.get(0).get(0).getStatsObj().get(0).getStatsData();
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2)
-        .low(3L).high(4L).hll(3, 4).build();
+        .low(3L).high(4L).hll(3, 4).kll(3, 4).build();
     assertEqualStatistics(expectedStats, computedStats);
   }
 
@@ -807,7 +809,7 @@ public class TestObjectStore {
         stats.setEngine(ENGINE);
 
         ColumnStatisticsData data = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2)
-            .low(3L).high(4L).hll(3, 4).build();
+            .low(3L).high(4L).hll(3, 4).kll(3, 4).build();
 
         ColumnStatisticsObj partStats = new ColumnStatisticsObj("test_part_col", "int", data);
         statsObjList.add(partStats);
