@@ -1805,8 +1805,8 @@ public class Hive {
            * See: HIVE-1707 and HIVE-2117 for background
            */
           FileSystem oldPartPathFS = oldPartPath.getFileSystem(getConf());
-          FileSystem loadPathFS = loadPath.getFileSystem(getConf());
-          if (FileUtils.equalsFileSystem(oldPartPathFS,loadPathFS)) {
+          FileSystem tblPathFS = tblDataLocationPath.getFileSystem(getConf());
+          if (FileUtils.equalsFileSystem(oldPartPathFS, tblPathFS)) {
             newPartPath = oldPartPath;
           }
         }
@@ -4313,6 +4313,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       PathFilter pathFilter, HiveConf conf, boolean purge, boolean isNeedRecycle) throws IOException, HiveException {
     if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
       recycleDirToCmPath(path, purge);
+    }
+    if (!fs.exists(path)) {
+      return;
     }
     FileStatus[] statuses = fs.listStatus(path, pathFilter);
     if (statuses == null || statuses.length == 0) {
