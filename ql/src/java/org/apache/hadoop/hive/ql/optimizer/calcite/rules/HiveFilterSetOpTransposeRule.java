@@ -68,34 +68,4 @@ public class HiveFilterSetOpTransposeRule extends FilterSetOpTransposeRule {
 
     return super.matches(call);
   }
-
-
-  //~ Methods ----------------------------------------------------------------
-
-  @Override
-  public void onMatch(RelOptRuleCall call) {
-    final Filter filterRel = call.rel(0);
-    final SetOp setOp = call.rel(1);
-
-    final RexNode condition = filterRel.getCondition();
-
-    // create filters on top of each setop child, modifying the filter
-    // condition to reference each setop child
-    final RexBuilder rexBuilder = filterRel.getCluster().getRexBuilder();
-    final RelBuilder relBuilder = call.builder();
-    final List<RelDataTypeField> origFields = setOp.getRowType().getFieldList();
-    final int[] adjustments = new int[origFields.size()];
-    final List<RelNode> newSetOpInputs = new ArrayList<>();
-
-    for (int index = 0; index < setOp.getInputs().size(); index++) {
-      RelNode input = setOp.getInput(index);
-      RexNode newCondition = condition.accept(new RelOptUtil.RexInputConverter(rexBuilder,
-          origFields, input.getRowType().getFieldList(), adjustments));
-      newSetOpInputs.add(relBuilder.push(input).filter(newCondition).build());
-    }
-
-    // create a new setop whose children are the filters created above
-    SetOp newSetOp = setOp.copy(setOp.getTraitSet(), newSetOpInputs);
-    call.transformTo(newSetOp);
-  }
 }
