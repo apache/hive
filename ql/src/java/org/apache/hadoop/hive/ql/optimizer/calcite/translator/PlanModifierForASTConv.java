@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.RelOptUtil;
@@ -42,6 +43,7 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -71,7 +73,10 @@ public class PlanModifierForASTConv {
   public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema, boolean alignColumns)
       throws CalciteSemanticException {
     if (rel instanceof HiveValues) {
-      return rel;
+      RelDataTypeFactory typeFactory = rel.getCluster().getTypeFactory();
+      List<String> fieldNames = resultSchema.stream().map(FieldSchema::getName).collect(Collectors.toList());
+      fieldNames = SqlValidatorUtil.uniquify(fieldNames, typeFactory.getTypeSystem().isSchemaCaseSensitive());
+      return ((HiveValues) rel).copy(fieldNames);
     }
 
     RelNode newTopNode = rel;
