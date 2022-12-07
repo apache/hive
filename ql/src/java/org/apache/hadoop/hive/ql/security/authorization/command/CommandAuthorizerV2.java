@@ -140,9 +140,12 @@ final class CommandAuthorizerV2 {
       }
 
       if (privObject.getTyp() == Type.FUNCTION && !HiveConf.getBoolVar(SessionState.get().getConf(),
-              HiveConf.ConfVars.HIVE_AUTHORIZATION_FUNCTIONS_IN_VIEW) && hiveOpType == HiveOperationType.QUERY &&
-              !sem.getUserSuppliedFunctions().contains(privObject.getFunctionName())) {
-        continue;
+              HiveConf.ConfVars.HIVE_AUTHORIZATION_FUNCTIONS_IN_VIEW) && hiveOpType == HiveOperationType.QUERY) {
+        String[] qualifiedFunctionName = new String[]{privObject.getDatabase() != null ?
+                privObject.getDatabase().getName() :  null, privObject.getFunctionName()};
+        if (!sem.getUserSuppliedFunctions().contains(qualifiedFunctionName[0] + "." + qualifiedFunctionName[1])) {
+          continue;
+        }
       }
 
       addHivePrivObject(privObject, tableName2Cols, hivePrivobjs, hiveOpType);

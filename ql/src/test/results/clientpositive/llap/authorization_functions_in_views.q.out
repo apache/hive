@@ -18,6 +18,10 @@ PREHOOK: query: drop view if exists view_using_udf
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view if exists view_using_udf
 POSTHOOK: type: DROPVIEW
+PREHOOK: query: drop database if exists test
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists test
+POSTHOOK: type: DROPDATABASE
 PREHOOK: query: create function udf_upper as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: database:default
@@ -73,6 +77,30 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base_table
 POSTHOOK: Input: default@view_using_udf
 #### A masked pattern was here ####
+PREHOOK: query: create database test
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test
+POSTHOOK: query: create database test
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test
+PREHOOK: query: create function test.UDF_upper as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: database:test
+PREHOOK: Output: test.udf_upper
+POSTHOOK: query: create function test.UDF_upper as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: database:test
+POSTHOOK: Output: test.udf_upper
+PREHOOK: query: select test.UDF_Upper(upper_city) from view_using_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@base_table
+PREHOOK: Input: default@view_using_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select test.UDF_Upper(upper_city) from view_using_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@base_table
+POSTHOOK: Input: default@view_using_udf
+#### A masked pattern was here ####
 PREHOOK: query: select * from view_using_udf
 PREHOOK: type: QUERY
 PREHOOK: Input: default@base_table
@@ -93,6 +121,32 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base_table
 POSTHOOK: Input: default@view_using_udf
 #### A masked pattern was here ####
+PREHOOK: query: select test.UDF_Upper(upper_city) from view_using_udf
+PREHOOK: type: QUERY
+PREHOOK: Input: default@base_table
+PREHOOK: Input: default@view_using_udf
+#### A masked pattern was here ####
+POSTHOOK: query: select test.UDF_Upper(upper_city) from view_using_udf
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@base_table
+POSTHOOK: Input: default@view_using_udf
+#### A masked pattern was here ####
+PREHOOK: query: drop function test.UDF_Upper
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: database:test
+PREHOOK: Output: test.UDF_Upper
+POSTHOOK: query: drop function test.UDF_Upper
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: database:test
+POSTHOOK: Output: test.UDF_Upper
+PREHOOK: query: drop database test
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test
+PREHOOK: Output: database:test
+POSTHOOK: query: drop database test
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test
+POSTHOOK: Output: database:test
 PREHOOK: query: drop function udf_lower
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: database:default

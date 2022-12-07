@@ -136,6 +136,7 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
@@ -12543,13 +12544,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  void gatherUserSuppliedFunctions(ASTNode ast) {
+  void gatherUserSuppliedFunctions(ASTNode ast) throws SemanticException {
     int tokenType = ast.getToken().getType();
     if (tokenType == HiveParser.TOK_FUNCTION ||
             tokenType == HiveParser.TOK_FUNCTIONDI ||
             tokenType == HiveParser.TOK_FUNCTIONSTAR) {
       if (ast.getChild(0).getType() == HiveParser.Identifier) {
-        this.userSuppliedFunctions.add(unescapeIdentifier(ast.getChild(0).getText()));
+        try {
+          String functionName = unescapeIdentifier(ast.getChild(0).getText()).toLowerCase();
+          String[] qualifiedFunctionName = FunctionUtils.getQualifiedFunctionNameParts(functionName);
+          this.userSuppliedFunctions.add(qualifiedFunctionName[0]+"."+qualifiedFunctionName[1]);
+        } catch (HiveException ex) {
+          throw new SemanticException(ex.getMessage(), ex);
+        }
       }
     }
     for (int i = 0; i < ast.getChildCount();i++) {

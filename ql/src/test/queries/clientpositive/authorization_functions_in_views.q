@@ -15,6 +15,8 @@ drop table if exists base_table;
 
 drop view if exists view_using_udf;
 
+drop database if exists test;
+
 create function udf_upper as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper';
 
 create table base_table(city string);
@@ -27,11 +29,23 @@ create function udf_lower as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFLo
 
 select udf_lower(upper_city) from view_using_udf;
 
+create database test;
+
+create function test.UDF_upper as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper';
+
+select test.UDF_Upper(upper_city) from view_using_udf;
+
 set hive.security.authorization.functions.in.view=false;
 
 select * from view_using_udf;
 
 select udf_lower(upper_city) from view_using_udf;
+
+select test.UDF_Upper(upper_city) from view_using_udf;
+
+drop function test.UDF_Upper;
+
+drop database test;
 
 drop function udf_lower;
 
