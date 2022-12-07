@@ -69,7 +69,7 @@ public final class StatsUpdater {
                 sb.append(")");
             }
             sb.append(" compute statistics");
-            if (ci.isMinorCompaction()) {
+            if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
                 sb.append(" noscan");
             }
             LOG.info(ci + ": running '" + sb + "'");
