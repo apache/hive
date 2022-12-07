@@ -95,6 +95,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     ExecutorService executor = getTimeoutHandlingExecutor();
     try {
       do {
+        long startedAt = System.currentTimeMillis();
         Future<Boolean> singleRun = executor.submit(() -> findNextCompactionAndExecute(genericStats, mrStats));
         try {
           launchedJob = singleRun.get(timeout, TimeUnit.MILLISECONDS);
@@ -123,8 +124,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           } catch (InterruptedException e) {
           }
         }
-        LOG.info("Worker thread finished one loop.");
+        long elapsedTime = System.currentTimeMillis() - startedAt;
+        doPostLoopActions(elapsedTime, CompactorThreadType.WORKER);
       } while (!stop.get());
+    } catch (Throwable t) {
+      LOG.error("Caught an exception in the main loop of compactor worker, exiting.", t);
     } finally {
       if (executor != null) {
         executor.shutdownNow();

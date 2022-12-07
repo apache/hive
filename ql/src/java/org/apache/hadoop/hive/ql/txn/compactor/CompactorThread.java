@@ -61,6 +61,14 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected String hostName;
   protected String runtimeVersion;
 
+  //Time threshold for compactor thread log
+  //In milliseconds:
+  private static final Integer MAX_WARN_LOG_TIME = 1200000; //20 min
+
+  protected long checkInterval = 0;
+
+  enum CompactorThreadType {INITIATOR, WORKER, CLEANER}
+
   @Override
   public void setConf(Configuration configuration) {
     // TODO MS-SPLIT for now, keep a copy of HiveConf around as we need to call other methods with
@@ -196,7 +204,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected String getRuntimeVersion() {
     return this.getClass().getPackage().getImplementationVersion();
   }
-  
+
   protected LockRequest createLockRequest(CompactionInfo ci, long txnId, LockType lockType, DataOperationType opType) {
     String agentInfo = Thread.currentThread().getName();
     LockRequestBuilder requestBuilder = new LockRequestBuilder(agentInfo);
@@ -218,5 +226,19 @@ public abstract class CompactorThread extends Thread implements Configurable {
     requestBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
       !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
     return requestBuilder.build();
+  }
+
+  protected void doPostLoopActions(long elapsedTime, CompactorThreadType type) throws InterruptedException {
+    String threadTypeName = type.name();
+    if (elapsedTime < checkInterval && !stop.get()) {
+      Thread.sleep(checkInterval - elapsedTime);
+    }
+
+    if (elapsedTime < MAX_WARN_LOG_TIME) {
+      LOG.debug("{} loop took {} seconds to finish.", threadTypeName, elapsedTime/1000);
+    } else {
+      LOG.warn("Possible {} slowdown, loop took {} seconds to finish.", threadTypeName, elapsedTime/1000);
+    }
+
   }
 }
