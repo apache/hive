@@ -411,11 +411,14 @@ public class TestStatsRulesProcFactory {
 
   @Test
   public void testLiteralExtractionFailures() {
-    // if we fail at parsing the boundary value, make sure the correct exception is raised so that we can
-    // default to standard computation
+    // make sure the correct exceptions are raised so that we can default to standard computation
     String[] types = {"int", "tinyint", "smallint", "bigint", "date", "timestamp", "float", "double"};
     for (String type : types) {
+      // check we throw the correct exception when the boundary value parsing fails
       assertThrows(IllegalArgumentException.class, () -> extractFloatFromLiteralValue(type, "abc"));
+      // check we throw the correct exception (NullPointerException for some, NumberFormatException for others,
+      // so we use their common parent RuntimeException) when a null value provided
+      assertThrows(RuntimeException.class, () -> extractFloatFromLiteralValue(type, null));
     }
 
     // check we throw the correct exception when an unsupported type is provided

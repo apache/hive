@@ -844,6 +844,11 @@ public class StatsRulesProcFactory {
         return currNumRows;
       }
 
+      final String leftValueString = leftExpression instanceof ExprNodeConstantDesc
+          ? ((ExprNodeConstantDesc) leftExpression).getValue().toString() : leftExpression.getExprString();
+      final String rightValueString = rightExpression instanceof ExprNodeConstantDesc
+          ? ((ExprNodeConstantDesc) rightExpression).getValue().toString() : rightExpression.getExprString();
+
       try {
         if (comparisonExpression instanceof ExprNodeColumnDesc) {
           final ExprNodeColumnDesc columnDesc = (ExprNodeColumnDesc) comparisonExpression;
@@ -851,10 +856,6 @@ public class StatsRulesProcFactory {
           if (FilterSelectivityEstimator.isHistogramAvailable(cs)) {
             final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(cs.getHistogram()));
             final String colTypeLowerCase = columnDesc.getTypeString().toLowerCase();
-            final String leftValueString = leftExpression instanceof ExprNodeConstantDesc
-                ? ((ExprNodeConstantDesc) leftExpression).getValue().toString() : leftExpression.getExprString();
-            final String rightValueString = rightExpression instanceof ExprNodeConstantDesc
-                ? ((ExprNodeConstantDesc) rightExpression).getValue().toString() : rightExpression.getExprString();
             final float leftValue = extractFloatFromLiteralValue(colTypeLowerCase, leftValueString);
             final float rightValue = extractFloatFromLiteralValue(colTypeLowerCase, rightValueString);
             if (invert) {
@@ -870,8 +871,9 @@ public class StatsRulesProcFactory {
             }
           }
         }
-      } catch(IllegalArgumentException e) {
-        // we failed to parse the boundary value, use default computation
+      } catch(RuntimeException e) {
+        LOG.debug("Selectivity computation using histogram failed to parse the left ({}) or the right ({}) "
+            + "boundary value, using the generic computation strategy", leftValueString, rightValueString, e);
       }
 
       ExprNodeDesc newExpression = rewriteBetweenToIn(comparisonExpression, leftExpression, rightExpression, invert);
@@ -1304,9 +1306,9 @@ public class StatsRulesProcFactory {
         return 0;
       }
 
-      try {
-        final float value = extractFloatFromLiteralValue(colTypeLowerCase, boundValue);
+      final float value = extractFloatFromLiteralValue(colTypeLowerCase, boundValue);
 
+      try {
         // kll ignores null values (i.e., kll.getN() + numNulls = currNumRows), we therefore need to use kll.getN()
         // instead of currNumRows since the CDF is expressed as a fraction of kll.getN(), not currNumRows
         if (upperBound) {
@@ -1316,8 +1318,9 @@ public class StatsRulesProcFactory {
           return Math.round(kll.getN() * (closedBound ?
               greaterThanOrEqualSelectivity(kll, value) : greaterThanSelectivity(kll, value)));
         }
-      } catch (IllegalArgumentException e) {
-        // we failed to parse the boundary value, use default computation
+      } catch (RuntimeException e) {
+        LOG.debug("Selectivity computation using histogram failed to parse the boundary value ({}), "
+            + ", using the generic computation strategy", value, e);
         return currNumRows / 3;
       }
     }
