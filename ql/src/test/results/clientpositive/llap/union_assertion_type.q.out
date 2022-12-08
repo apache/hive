@@ -66,6 +66,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: union_table_test_n0
+          filterExpr: (column3 < '5') (type: boolean)
           Filter Operator
             predicate: (column3 < '5') (type: boolean)
             Select Operator

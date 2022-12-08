@@ -130,7 +130,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zza
+                reduceColumnNullOrder: aaa
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -181,7 +181,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -237,11 +237,11 @@ a	b	_c2
 2	2	1
 2	3	1
 2	NULL	2
-3	2	1
 3	NULL	1
-5	2	1
-5	NULL	1
-8	1	1
+NULL	1	2
+NULL	2	3
+NULL	3	1
+NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM T1_n110 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) order by a, b LIMIT 10
 PREHOOK: type: QUERY
@@ -344,7 +344,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zza
+                reduceColumnNullOrder: aaa
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -395,7 +395,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -451,11 +451,11 @@ a	b	_c2
 2	2	1
 2	3	1
 2	NULL	2
-3	2	1
 3	NULL	1
-5	2	1
-5	NULL	1
-8	1	1
+NULL	1	2
+NULL	2	3
+NULL	3	1
+NULL	NULL	6
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a, b, count(*) FROM T1_n110 GROUP BY a, b GROUPING SETS (a, (a, b)) order by a, b LIMIT 10
 PREHOOK: type: QUERY
@@ -558,7 +558,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zza
+                reduceColumnNullOrder: aaa
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -609,7 +609,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -669,7 +669,7 @@ a	b	_c2
 3	NULL	1
 5	2	1
 5	NULL	1
-8	1	1
+8	NULL	1
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT a FROM T1_n110 GROUP BY a, b, c GROUPING SETS (a, b, c) order by a LIMIT 10
 PREHOOK: type: QUERY
@@ -769,7 +769,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zaaa
+                reduceColumnNullOrder: aaaa
                 reduceColumnSortOrder: ++++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -817,7 +817,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: z
+                reduceColumnNullOrder: a
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -869,10 +869,10 @@ POSTHOOK: Input: default@t1_n110
 #### A masked pattern was here ####
 a
 1
-2
-3
-5
-8
+NULL
+NULL
+NULL
+NULL
 NULL
 NULL
 NULL
@@ -977,7 +977,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: z
+                reduceColumnNullOrder: a
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1016,7 +1016,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: z
+                reduceColumnNullOrder: a
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1175,7 +1175,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: z
+                reduceColumnNullOrder: a
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -1217,7 +1217,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: z
+                reduceColumnNullOrder: a
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false

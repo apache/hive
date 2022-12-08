@@ -237,10 +237,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_part_n0
-          Select Operator
-            expressions: empid (type: int)
-            outputColumnNames: _col0
-            ListSink
+          Filter Operator
+            predicate: (deptno >= 20) (type: boolean)
+            Select Operator
+              expressions: empid (type: int)
+              outputColumnNames: _col0
+              ListSink
 
 PREHOOK: query: select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
@@ -334,10 +336,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_part_n0
-          Select Operator
-            expressions: empid (type: int)
-            outputColumnNames: _col0
-            ListSink
+          Filter Operator
+            predicate: (empid >= 20) (type: boolean)
+            Select Operator
+              expressions: deptno (type: int)
+              outputColumnNames: _col0
+              ListSink
 
 PREHOOK: query: select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20
@@ -431,10 +435,12 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.mv1_part_n0
-          Select Operator
-            expressions: empid (type: int)
-            outputColumnNames: _col0
-            ListSink
+          Filter Operator
+            predicate: (deptno >= 20) (type: boolean)
+            Select Operator
+              expressions: empid (type: int)
+              outputColumnNames: _col0
+              ListSink
 
 PREHOOK: query: select empid from emps_n00
 join depts_n00 using (deptno) where depts_n00.deptno >= 20

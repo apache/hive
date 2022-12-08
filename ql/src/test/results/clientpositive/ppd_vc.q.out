@@ -699,7 +699,7 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col2 (type: string), _col3 (type: string), _col4 (type: bigint)
-              null sort order: zzz
+              null sort order: aaa
               sort order: +++
               Statistics: Num rows: 732 Data size: 7782 Basic stats: COMPLETE Column stats: NONE
               tag: -1

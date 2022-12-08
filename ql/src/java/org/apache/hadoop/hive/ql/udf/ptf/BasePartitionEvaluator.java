@@ -54,7 +54,6 @@ public class BasePartitionEvaluator {
   protected final PTFPartition partition;
   protected final List<PTFExpressionDef> parameters;
   protected final ObjectInspector outputOI;
-  protected final boolean nullsLast;
 
   /**
    * Internal class to represent a window range in a partition by searching the
@@ -182,14 +181,12 @@ public class BasePartitionEvaluator {
       WindowFrameDef winFrame,
       PTFPartition partition,
       List<PTFExpressionDef> parameters,
-      ObjectInspector outputOI,
-      boolean nullsLast) {
+      ObjectInspector outputOI) {
     this.wrappedEvaluator = wrappedEvaluator;
     this.winFrame = winFrame;
     this.partition = partition;
     this.parameters = parameters;
     this.outputOI = outputOI;
-    this.nullsLast = nullsLast;
   }
 
   /**
@@ -203,15 +200,23 @@ public class BasePartitionEvaluator {
     return calcFunctionValue(partition.iterator(), null);
   }
 
-  /**
-   * Given the current row, get the aggregation for the window
-   *
-   * @throws HiveException
-   */
-  public Object iterate(int currentRow, LeadLagInfo leadLagInfo) throws HiveException {
-    Range range = getRange(winFrame, currentRow, partition, nullsLast);
-    PTFPartitionIterator<Object> pItr = range.iterator();
-    return calcFunctionValue(pItr, leadLagInfo);
+  protected static Range getRange(WindowFrameDef winFrame, int currRow, PTFPartition p)
+      throws HiveException {
+    BoundaryDef startB = winFrame.getStart();
+    BoundaryDef endB = winFrame.getEnd();
+
+    int start, end;
+    if (winFrame.getWindowType() == WindowType.ROWS) {
+      start = getRowBoundaryStart(startB, currRow);
+      end = getRowBoundaryEnd(endB, currRow, p);
+    } else {
+      ValueBoundaryScanner vbs = ValueBoundaryScanner.getScanner(winFrame);
+      start = vbs.computeStart(currRow, p);
+      end = vbs.computeEnd(currRow, p);
+    }
+    start = start < 0 ? 0 : start;
+    end = end > p.size() ? p.size() : end;
+    return new Range(start, end, p);
   }
 
   /**
@@ -245,23 +250,15 @@ public class BasePartitionEvaluator {
     return ObjectInspectorUtils.copyToStandardObject(wrappedEvaluator.evaluate(aggBuffer), outputOI);
   }
 
-  protected static Range getRange(WindowFrameDef winFrame, int currRow, PTFPartition p,
-      boolean nullsLast) throws HiveException {
-    BoundaryDef startB = winFrame.getStart();
-    BoundaryDef endB = winFrame.getEnd();
-
-    int start, end;
-    if (winFrame.getWindowType() == WindowType.ROWS) {
-      start = getRowBoundaryStart(startB, currRow);
-      end = getRowBoundaryEnd(endB, currRow, p);
-    } else {
-      ValueBoundaryScanner vbs = ValueBoundaryScanner.getScanner(winFrame, nullsLast);
-      start = vbs.computeStart(currRow, p);
-      end = vbs.computeEnd(currRow, p);
-    }
-    start = start < 0 ? 0 : start;
-    end = end > p.size() ? p.size() : end;
-    return new Range(start, end, p);
+  /**
+   * Given the current row, get the aggregation for the window
+   *
+   * @throws HiveException
+   */
+  public Object iterate(int currentRow, LeadLagInfo leadLagInfo) throws HiveException {
+    Range range = getRange(winFrame, currentRow, partition);
+    PTFPartitionIterator<Object> pItr = range.iterator();
+    return calcFunctionValue(pItr, leadLagInfo);
   }
 
   private static int getRowBoundaryStart(BoundaryDef b, int currRow) throws HiveException {
@@ -326,9 +323,8 @@ public class BasePartitionEvaluator {
         WindowFrameDef winFrame,
         PTFPartition partition,
         List<PTFExpressionDef> parameters,
-        ObjectInspector outputOI,
-        boolean nullsLast) {
-      super(wrappedEvaluator, winFrame, partition, parameters, outputOI, nullsLast);
+        ObjectInspector outputOI) {
+      super(wrappedEvaluator, winFrame, partition, parameters, outputOI);
       sumAgg = new WindowSumAgg<ResultType>();
     }
 
@@ -340,7 +336,7 @@ public class BasePartitionEvaluator {
         return super.iterate(currentRow, leadLagInfo);
       }
 
-      Range currentRange = getRange(winFrame, currentRow, partition, nullsLast);
+      Range currentRange = getRange(winFrame, currentRow, partition);
       ResultType result;
       if (currentRow == 0 ||  // Reset for the new partition
           sumAgg.prevRange == null ||
@@ -369,8 +365,8 @@ public class BasePartitionEvaluator {
   public static class SumPartitionDoubleEvaluator extends SumPartitionEvaluator<DoubleWritable> {
     public SumPartitionDoubleEvaluator(GenericUDAFEvaluator wrappedEvaluator,
         WindowFrameDef winFrame, PTFPartition partition,
-        List<PTFExpressionDef> parameters, ObjectInspector outputOI, boolean nullsLast) {
-      super(wrappedEvaluator, winFrame, partition, parameters, outputOI, nullsLast);
+        List<PTFExpressionDef> parameters, ObjectInspector outputOI) {
+      super(wrappedEvaluator, winFrame, partition, parameters, outputOI);
       this.typeOperation = new TypeOperationDoubleWritable();
     }
   }
@@ -378,8 +374,8 @@ public class BasePartitionEvaluator {
   public static class SumPartitionLongEvaluator extends SumPartitionEvaluator<LongWritable> {
     public SumPartitionLongEvaluator(GenericUDAFEvaluator wrappedEvaluator,
         WindowFrameDef winFrame, PTFPartition partition,
-        List<PTFExpressionDef> parameters, ObjectInspector outputOI, boolean nullsLast) {
-      super(wrappedEvaluator, winFrame, partition, parameters, outputOI, nullsLast);
+        List<PTFExpressionDef> parameters, ObjectInspector outputOI) {
+      super(wrappedEvaluator, winFrame, partition, parameters, outputOI);
       this.typeOperation = new TypeOperationLongWritable();
     }
   }
@@ -387,8 +383,8 @@ public class BasePartitionEvaluator {
   public static class SumPartitionHiveDecimalEvaluator extends SumPartitionEvaluator<HiveDecimalWritable> {
     public SumPartitionHiveDecimalEvaluator(GenericUDAFEvaluator wrappedEvaluator,
         WindowFrameDef winFrame, PTFPartition partition,
-        List<PTFExpressionDef> parameters, ObjectInspector outputOI, boolean nullsLast) {
-      super(wrappedEvaluator, winFrame, partition, parameters, outputOI, nullsLast);
+        List<PTFExpressionDef> parameters, ObjectInspector outputOI) {
+      super(wrappedEvaluator, winFrame, partition, parameters, outputOI);
       this.typeOperation = new TypeOperationHiveDecimalWritable();
     }
   }
@@ -415,9 +411,8 @@ public class BasePartitionEvaluator {
         WindowFrameDef winFrame,
         PTFPartition partition,
         List<PTFExpressionDef> parameters,
-        ObjectInspector outputOI,
-        boolean nullsLast) {
-      super(wrappedEvaluator, winFrame, partition, parameters, outputOI, nullsLast);
+        ObjectInspector outputOI) {
+      super(wrappedEvaluator, winFrame, partition, parameters, outputOI);
     }
 
     /**
@@ -458,7 +453,7 @@ public class BasePartitionEvaluator {
         return super.iterate(currentRow, leadLagInfo);
       }
 
-      Range currentRange = getRange(winFrame, currentRow, partition, nullsLast);
+      Range currentRange = getRange(winFrame, currentRow, partition);
       if (currentRow == 0 ||  // Reset for the new partition
           avgAgg.prevRange == null ||
           currentRange.getSize() <= currentRange.getDiff(avgAgg.prevRange)) {
@@ -490,9 +485,8 @@ public class BasePartitionEvaluator {
 
     public AvgPartitionDoubleEvaluator(GenericUDAFEvaluator wrappedEvaluator,
         WindowFrameDef winFrame, PTFPartition partition,
-        List<PTFExpressionDef> parameters, ObjectInspector inputOI, ObjectInspector outputOI,
-        boolean nullsLast) throws HiveException {
-      super(wrappedEvaluator, winFrame, partition, parameters, outputOI, nullsLast);
+        List<PTFExpressionDef> parameters, ObjectInspector inputOI, ObjectInspector outputOI) throws HiveException {
+      super(wrappedEvaluator, winFrame, partition, parameters, outputOI);
       this.typeOperation = new TypeOperationDoubleWritable();
     }
   }
@@ -501,9 +495,8 @@ public class BasePartitionEvaluator {
 
     public AvgPartitionHiveDecimalEvaluator(GenericUDAFEvaluator wrappedEvaluator,
         WindowFrameDef winFrame, PTFPartition partition,
-        List<PTFExpressionDef> parameters, ObjectInspector inputOI, ObjectInspector outputOI,
-        boolean nullsLast) throws HiveException {
-      super(wrappedEvaluator, winFrame, partition, parameters, outputOI, nullsLast);
+        List<PTFExpressionDef> parameters, ObjectInspector inputOI, ObjectInspector outputOI) throws HiveException {
+      super(wrappedEvaluator, winFrame, partition, parameters, outputOI);
       this.typeOperation = new TypeOperationHiveDecimalWritable();
     }
   }

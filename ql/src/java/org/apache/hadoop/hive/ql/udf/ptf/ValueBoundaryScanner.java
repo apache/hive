@@ -36,28 +36,24 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 
 public abstract class ValueBoundaryScanner {
   BoundaryDef start, end;
-  protected final boolean nullsLast;
 
-  public ValueBoundaryScanner(BoundaryDef start, BoundaryDef end, boolean nullsLast) {
+  public ValueBoundaryScanner(BoundaryDef start, BoundaryDef end) {
     this.start = start;
     this.end = end;
-    this.nullsLast = nullsLast;
   }
 
   public abstract int computeStart(int rowIdx, PTFPartition p) throws HiveException;
 
   public abstract int computeEnd(int rowIdx, PTFPartition p) throws HiveException;
 
-  public static ValueBoundaryScanner getScanner(WindowFrameDef winFrameDef, boolean nullsLast)
+  public static ValueBoundaryScanner getScanner(WindowFrameDef winFrameDef)
       throws HiveException {
     OrderDef orderDef = winFrameDef.getOrderDef();
     int numOrders = orderDef.getExpressions().size();
     if (numOrders != 1) {
-      return new MultiValueBoundaryScanner(winFrameDef.getStart(), winFrameDef.getEnd(), orderDef,
-          nullsLast);
+      return new MultiValueBoundaryScanner(winFrameDef.getStart(), winFrameDef.getEnd(), orderDef);
     } else {
-      return SingleValueBoundaryScanner.getScanner(winFrameDef.getStart(), winFrameDef.getEnd(),
-          orderDef, nullsLast);
+      return SingleValueBoundaryScanner.getScanner(winFrameDef.getStart(), winFrameDef.getEnd(), orderDef);
     }
   }
 }
@@ -69,9 +65,8 @@ public abstract class ValueBoundaryScanner {
 abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
   OrderExpressionDef expressionDef;
 
-  public SingleValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
-      OrderExpressionDef expressionDef, boolean nullsLast) {
-    super(start, end, nullsLast);
+  public SingleValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+    super(start, end);
     this.expressionDef = expressionDef;
   }
 
@@ -121,54 +116,38 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     }
   }
 
-  protected int computeStartPreceding(int rowIdx, PTFPartition p) throws HiveException {
-    int amt = start.getAmt();
-    // Use Case 1.
-    if ( amt == BoundarySpec.UNBOUNDED_AMOUNT ) {
-      return 0;
+  @SuppressWarnings("incomplete-switch")
+  public static SingleValueBoundaryScanner getScanner(BoundaryDef start, BoundaryDef end, OrderDef orderDef)
+      throws HiveException {
+    if (orderDef.getExpressions().size() != 1) {
+      throw new HiveException("Internal error: initializing SingleValueBoundaryScanner with"
+              + " multiple expression for sorting");
     }
-    Object sortKey = computeValue(p.getAt(rowIdx));
-
-    if ( sortKey == null ) {
-      // Use Case 3.
-      if (nullsLast || expressionDef.getOrder() == Order.DESC) {
-        while ( sortKey == null && rowIdx >= 0 ) {
-          --rowIdx;
-          if ( rowIdx >= 0 ) {
-            sortKey = computeValue(p.getAt(rowIdx));
-          }
-        }
-        return rowIdx+1;
-      }
-      else { // Use Case 2.
-        if ( expressionDef.getOrder() == Order.ASC ) {
-          return 0;
-        }
-      }
+    OrderExpressionDef exprDef = orderDef.getExpressions().get(0);
+    PrimitiveObjectInspector pOI = (PrimitiveObjectInspector) exprDef.getOI();
+    switch(pOI.getPrimitiveCategory()) {
+    case BYTE:
+    case INT:
+    case LONG:
+    case SHORT:
+      return new LongValueBoundaryScanner(start, end, exprDef);
+    case TIMESTAMP:
+      return new TimestampValueBoundaryScanner(start, end, exprDef);
+    case TIMESTAMPLOCALTZ:
+      return new TimestampLocalTZValueBoundaryScanner(start, end, exprDef);
+    case DOUBLE:
+    case FLOAT:
+      return new DoubleValueBoundaryScanner(start, end, exprDef);
+    case DECIMAL:
+      return new HiveDecimalValueBoundaryScanner(start, end, exprDef);
+    case DATE:
+      return new DateValueBoundaryScanner(start, end, exprDef);
+    case STRING:
+      return new StringValueBoundaryScanner(start, end, exprDef);
     }
-
-    Object rowVal = sortKey;
-    int r = rowIdx;
-
-    // Use Case 4.
-    if ( expressionDef.getOrder() == Order.DESC ) {
-      while (r >= 0 && !isDistanceGreater(rowVal, sortKey, amt) ) {
-        r--;
-        if ( r >= 0 ) {
-          rowVal = computeValue(p.getAt(r));
-        }
-      }
-      return r + 1;
-    }
-    else { // Use Case 5.
-      while (r >= 0 && !isDistanceGreater(sortKey, rowVal, amt) ) {
-        r--;
-        if ( r >= 0 ) {
-          rowVal = computeValue(p.getAt(r));
-        }
-      }
-      return r + 1;
-    }
+    throw new HiveException(
+        String.format("Internal Error: attempt to setup a Window for datatype %s",
+            pOI.getPrimitiveCategory()));
   }
 
   protected int computeStartCurrentRow(int rowIdx, PTFPartition p) throws HiveException {
@@ -198,47 +177,51 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     return r + 1;
   }
 
-  protected int computeStartFollowing(int rowIdx, PTFPartition p) throws HiveException {
+  protected int computeStartPreceding(int rowIdx, PTFPartition p) throws HiveException {
     int amt = start.getAmt();
+    // Use Case 1.
+    if ( amt == BoundarySpec.UNBOUNDED_AMOUNT ) {
+      return 0;
+    }
     Object sortKey = computeValue(p.getAt(rowIdx));
+
+    if ( sortKey == null ) {
+      // Use Case 2.
+      if ( expressionDef.getOrder() == Order.ASC ) {
+        return 0;
+      }
+      else { // Use Case 3.
+        while ( sortKey == null && rowIdx >= 0 ) {
+          --rowIdx;
+          if ( rowIdx >= 0 ) {
+            sortKey = computeValue(p.getAt(rowIdx));
+          }
+        }
+        return rowIdx+1;
+      }
+    }
 
     Object rowVal = sortKey;
     int r = rowIdx;
 
-    if ( sortKey == null ) {
-      // Use Case 9.
-      if (nullsLast || expressionDef.getOrder() == Order.DESC) {
-        return p.size();
-      }
-      else { // Use Case 10.
-        while (r < p.size() && rowVal == null ) {
-          r++;
-          if ( r < p.size() ) {
-            rowVal = computeValue(p.getAt(r));
-          }
-        }
-        return r;
-      }
-    }
-
-    // Use Case 11.
-    if ( expressionDef.getOrder() == Order.DESC) {
-      while (r < p.size() && !isDistanceGreater(sortKey, rowVal, amt) ) {
-        r++;
-        if ( r < p.size() ) {
+    // Use Case 4.
+    if ( expressionDef.getOrder() == Order.DESC ) {
+      while (r >= 0 && !isDistanceGreater(rowVal, sortKey, amt) ) {
+        r--;
+        if ( r >= 0 ) {
           rowVal = computeValue(p.getAt(r));
         }
       }
-      return r;
+      return r + 1;
     }
-    else { // Use Case 12.
-      while (r < p.size() && !isDistanceGreater(rowVal, sortKey, amt) ) {
-        r++;
-        if ( r < p.size() ) {
+    else { // Use Case 5.
+      while (r >= 0 && !isDistanceGreater(sortKey, rowVal, amt) ) {
+        r--;
+        if ( r >= 0 ) {
           rowVal = computeValue(p.getAt(r));
         }
       }
-      return r;
+      return r + 1;
     }
   }
 
@@ -287,81 +270,8 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     }
   }
 
-  protected int computeEndPreceding(int rowIdx, PTFPartition p) throws HiveException {
-    int amt = end.getAmt();
-    // Use Case 1.
-    // amt == UNBOUNDED, is caught during translation
-
-    Object sortKey = computeValue(p.getAt(rowIdx));
-
-    if ( sortKey == null ) {
-      // Use Case 2.
-      if (nullsLast || expressionDef.getOrder() == Order.DESC ) {
-        return p.size();
-      }
-      else { // Use Case 3.
-        return 0;
-      }
-    }
-
-    Object rowVal = sortKey;
-    int r = rowIdx;
-
-    // Use Case 4.
-    if ( expressionDef.getOrder() == Order.DESC ) {
-      while (r >= 0 && !isDistanceGreater(rowVal, sortKey, amt) ) {
-        r--;
-        if ( r >= 0 ) {
-          rowVal = computeValue(p.getAt(r));
-        }
-      }
-      return r + 1;
-    }
-    else { // Use Case 5.
-      while (r >= 0 && !isDistanceGreater(sortKey, rowVal, amt) ) {
-        r--;
-        if ( r >= 0 ) {
-          rowVal = computeValue(p.getAt(r));
-        }
-      }
-      return r + 1;
-    }
-  }
-
-  protected int computeEndCurrentRow(int rowIdx, PTFPartition p) throws HiveException {
-    Object sortKey = computeValue(p.getAt(rowIdx));
-
-    // Use Case 6.
-    if ( sortKey == null ) {
-      while ( sortKey == null && rowIdx < p.size() ) {
-        ++rowIdx;
-        if ( rowIdx < p.size() ) {
-          sortKey = computeValue(p.getAt(rowIdx));
-        }
-      }
-      return rowIdx;
-    }
-
-    Object rowVal = sortKey;
-    int r = rowIdx;
-
-    // Use Case 7.
-    while (r < p.size() && isEqual(sortKey, rowVal) ) {
-      r++;
-      if ( r < p.size() ) {
-        rowVal = computeValue(p.getAt(r));
-      }
-    }
-    return r;
-  }
-
-  protected int computeEndFollowing(int rowIdx, PTFPartition p) throws HiveException {
-    int amt = end.getAmt();
-
-    // Use Case 8.
-    if ( amt == BoundarySpec.UNBOUNDED_AMOUNT ) {
-      return p.size();
-    }
+  protected int computeStartFollowing(int rowIdx, PTFPartition p) throws HiveException {
+    int amt = start.getAmt();
     Object sortKey = computeValue(p.getAt(rowIdx));
 
     Object rowVal = sortKey;
@@ -369,7 +279,7 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
 
     if ( sortKey == null ) {
       // Use Case 9.
-      if (nullsLast || expressionDef.getOrder() == Order.DESC) {
+      if ( expressionDef.getOrder() == Order.DESC) {
         return p.size();
       }
       else { // Use Case 10.
@@ -404,6 +314,74 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     }
   }
 
+  protected int computeEndCurrentRow(int rowIdx, PTFPartition p) throws HiveException {
+    Object sortKey = computeValue(p.getAt(rowIdx));
+
+    // Use Case 6.
+    if ( sortKey == null ) {
+      while ( sortKey == null && rowIdx < p.size() ) {
+        ++rowIdx;
+        if ( rowIdx < p.size() ) {
+          sortKey = computeValue(p.getAt(rowIdx));
+        }
+      }
+      return rowIdx;
+    }
+
+    Object rowVal = sortKey;
+    int r = rowIdx;
+
+    // Use Case 7.
+    while (r < p.size() && isEqual(sortKey, rowVal) ) {
+      r++;
+      if ( r < p.size() ) {
+        rowVal = computeValue(p.getAt(r));
+      }
+    }
+    return r;
+  }
+
+  protected int computeEndPreceding(int rowIdx, PTFPartition p) throws HiveException {
+    int amt = end.getAmt();
+    // Use Case 1.
+    // amt == UNBOUNDED, is caught during translation
+
+    Object sortKey = computeValue(p.getAt(rowIdx));
+
+    if ( sortKey == null ) {
+      // Use Case 2.
+      if ( expressionDef.getOrder() == Order.DESC ) {
+        return p.size();
+      }
+      else { // Use Case 3.
+        return 0;
+      }
+    }
+
+    Object rowVal = sortKey;
+    int r = rowIdx;
+
+    // Use Case 4.
+    if ( expressionDef.getOrder() == Order.DESC ) {
+      while (r >= 0 && !isDistanceGreater(rowVal, sortKey, amt) ) {
+        r--;
+        if ( r >= 0 ) {
+          rowVal = computeValue(p.getAt(r));
+        }
+      }
+      return r + 1;
+    }
+    else { // Use Case 5.
+      while (r >= 0 && !isDistanceGreater(sortKey, rowVal, amt) ) {
+        r--;
+        if ( r >= 0 ) {
+          rowVal = computeValue(p.getAt(r));
+        }
+      }
+      return r + 1;
+    }
+  }
+
   public Object computeValue(Object row) throws HiveException {
     Object o = expressionDef.getExprEvaluator().evaluate(row);
     return ObjectInspectorUtils.copyToStandardObject(o, expressionDef.getOI());
@@ -421,46 +399,59 @@ abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
    */
   public abstract boolean isEqual(Object v1, Object v2);
 
+  protected int computeEndFollowing(int rowIdx, PTFPartition p) throws HiveException {
+    int amt = end.getAmt();
 
-  @SuppressWarnings("incomplete-switch")
-  public static SingleValueBoundaryScanner getScanner(BoundaryDef start, BoundaryDef end,
-      OrderDef orderDef, boolean nullsLast) throws HiveException {
-    if (orderDef.getExpressions().size() != 1) {
-      throw new HiveException("Internal error: initializing SingleValueBoundaryScanner with"
-              + " multiple expression for sorting");
+    // Use Case 8.
+    if ( amt == BoundarySpec.UNBOUNDED_AMOUNT ) {
+      return p.size();
     }
-    OrderExpressionDef exprDef = orderDef.getExpressions().get(0);
-    PrimitiveObjectInspector pOI = (PrimitiveObjectInspector) exprDef.getOI();
-    switch(pOI.getPrimitiveCategory()) {
-    case BYTE:
-    case INT:
-    case LONG:
-    case SHORT:
-      return new LongValueBoundaryScanner(start, end, exprDef, nullsLast);
-    case TIMESTAMP:
-      return new TimestampValueBoundaryScanner(start, end, exprDef, nullsLast);
-    case TIMESTAMPLOCALTZ:
-      return new TimestampLocalTZValueBoundaryScanner(start, end, exprDef, nullsLast);
-    case DOUBLE:
-    case FLOAT:
-      return new DoubleValueBoundaryScanner(start, end, exprDef, nullsLast);
-    case DECIMAL:
-      return new HiveDecimalValueBoundaryScanner(start, end, exprDef, nullsLast);
-    case DATE:
-      return new DateValueBoundaryScanner(start, end, exprDef, nullsLast);
-    case STRING:
-      return new StringValueBoundaryScanner(start, end, exprDef, nullsLast);
+    Object sortKey = computeValue(p.getAt(rowIdx));
+
+    Object rowVal = sortKey;
+    int r = rowIdx;
+
+    if ( sortKey == null ) {
+      // Use Case 9.
+      if ( expressionDef.getOrder() == Order.DESC) {
+        return p.size();
+      }
+      else { // Use Case 10.
+        while (r < p.size() && rowVal == null ) {
+          r++;
+          if ( r < p.size() ) {
+            rowVal = computeValue(p.getAt(r));
+          }
+        }
+        return r;
+      }
     }
-    throw new HiveException(
-        String.format("Internal Error: attempt to setup a Window for datatype %s",
-            pOI.getPrimitiveCategory()));
+
+    // Use Case 11.
+    if ( expressionDef.getOrder() == Order.DESC) {
+      while (r < p.size() && !isDistanceGreater(sortKey, rowVal, amt) ) {
+        r++;
+        if ( r < p.size() ) {
+          rowVal = computeValue(p.getAt(r));
+        }
+      }
+      return r;
+    }
+    else { // Use Case 12.
+      while (r < p.size() && !isDistanceGreater(rowVal, sortKey, amt) ) {
+        r++;
+        if ( r < p.size() ) {
+          rowVal = computeValue(p.getAt(r));
+        }
+      }
+      return r;
+    }
   }
 }
 
 class LongValueBoundaryScanner extends SingleValueBoundaryScanner {
-  public LongValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
-      OrderExpressionDef expressionDef, boolean nullsLast) {
-    super(start, end, expressionDef, nullsLast);
+  public LongValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+    super(start, end,expressionDef);
   }
 
   @Override
@@ -491,9 +482,8 @@ class LongValueBoundaryScanner extends SingleValueBoundaryScanner {
 }
 
 class DoubleValueBoundaryScanner extends SingleValueBoundaryScanner {
-  public DoubleValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
-      OrderExpressionDef expressionDef, boolean nullsLast) {
-    super(start, end, expressionDef, nullsLast);
+  public DoubleValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+    super(start, end,expressionDef);
   }
 
   @Override
@@ -524,9 +514,8 @@ class DoubleValueBoundaryScanner extends SingleValueBoundaryScanner {
 }
 
 class HiveDecimalValueBoundaryScanner extends SingleValueBoundaryScanner {
-  public HiveDecimalValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
-      OrderExpressionDef expressionDef, boolean nullsLast) {
-    super(start, end, expressionDef, nullsLast);
+  public HiveDecimalValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+    super(start, end,expressionDef);
   }
 
   @Override
@@ -557,9 +546,8 @@ class HiveDecimalValueBoundaryScanner extends SingleValueBoundaryScanner {
 }
 
 class DateValueBoundaryScanner extends SingleValueBoundaryScanner {
-  public DateValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
-      OrderExpressionDef expressionDef, boolean nullsLast) {
-    super(start, end, expressionDef, nullsLast);
+  public DateValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+    super(start, end,expressionDef);
   }
 
   @Override
@@ -585,9 +573,8 @@ class DateValueBoundaryScanner extends SingleValueBoundaryScanner {
 }
 
 class TimestampValueBoundaryScanner extends SingleValueBoundaryScanner {
-  public TimestampValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
-      OrderExpressionDef expressionDef, boolean nullsLast) {
-    super(start, end,expressionDef, nullsLast);
+  public TimestampValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+    super(start, end,expressionDef);
   }
 
   @Override
@@ -616,9 +603,8 @@ class TimestampValueBoundaryScanner extends SingleValueBoundaryScanner {
 }
 
 class TimestampLocalTZValueBoundaryScanner extends SingleValueBoundaryScanner {
-  public TimestampLocalTZValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
-      OrderExpressionDef expressionDef, boolean nullsLast) {
-    super(start, end, expressionDef, nullsLast);
+  public TimestampLocalTZValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+    super(start, end,expressionDef);
   }
 
   @Override
@@ -647,9 +633,8 @@ class TimestampLocalTZValueBoundaryScanner extends SingleValueBoundaryScanner {
 }
 
 class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
-  public StringValueBoundaryScanner(BoundaryDef start, BoundaryDef end,
-      OrderExpressionDef expressionDef, boolean nullsLast) {
-    super(start, end, expressionDef, nullsLast);
+  public StringValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+    super(start, end,expressionDef);
   }
 
   @Override
@@ -676,9 +661,8 @@ class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
  class MultiValueBoundaryScanner extends ValueBoundaryScanner {
   OrderDef orderDef;
 
-  public MultiValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderDef orderDef,
-      boolean nullsLast) {
-    super(start, end, nullsLast);
+  public MultiValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderDef orderDef) {
+    super(start, end);
     this.orderDef = orderDef;
   }
 

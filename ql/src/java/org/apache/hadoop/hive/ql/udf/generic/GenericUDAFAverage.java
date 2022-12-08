@@ -235,13 +235,11 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
         WindowFrameDef winFrame,
         PTFPartition partition,
         List<PTFExpressionDef> parameters,
-        ObjectInspector outputOI,
-        boolean nullsLast) {
+        ObjectInspector outputOI) {
       try {
-        return new BasePartitionEvaluator.AvgPartitionDoubleEvaluator(this, winFrame, partition,
-            parameters, inputOI, outputOI, nullsLast);
+        return new BasePartitionEvaluator.AvgPartitionDoubleEvaluator(this, winFrame, partition, parameters, inputOI, outputOI);
       } catch(HiveException e) {
-        return super.createPartitionEvaluator(winFrame, partition, parameters, outputOI, nullsLast);
+        return super.createPartitionEvaluator(winFrame, partition, parameters, outputOI);
       }
     }
   }
@@ -395,13 +393,11 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
         WindowFrameDef winFrame,
         PTFPartition partition,
         List<PTFExpressionDef> parameters,
-        ObjectInspector outputOI,
-        boolean nullsLast) {
+        ObjectInspector outputOI) {
       try {
-        return new BasePartitionEvaluator.AvgPartitionHiveDecimalEvaluator(this, winFrame,
-            partition, parameters, inputOI, outputOI, nullsLast);
+        return new BasePartitionEvaluator.AvgPartitionHiveDecimalEvaluator(this, winFrame, partition, parameters, inputOI, outputOI);
       } catch(HiveException e) {
-        return super.createPartitionEvaluator(winFrame, partition, parameters, outputOI, nullsLast);
+        return super.createPartitionEvaluator(winFrame, partition, parameters, outputOI);
       }
     }
   }

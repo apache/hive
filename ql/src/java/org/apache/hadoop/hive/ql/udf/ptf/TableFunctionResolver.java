@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.udf.ptf;
 
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -72,19 +71,17 @@ public abstract class TableFunctionResolver {
     evaluator.setTransformsRawInput(transformsRawInput());
     evaluator.setTableDef(tDef);
     evaluator.setQueryDef(ptfDesc);
-    evaluator.setNullsLast(HiveConf.getBoolVar(cfg, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST));
   }
 
   /*
    * called during deserialization of a QueryDef during runtime.
    */
-  public void initialize(Configuration cfg, PTFDesc ptfDesc, PartitionedTableFunctionDef tDef, TableFunctionEvaluator evaluator)
+  public void initialize(PTFDesc ptfDesc, PartitionedTableFunctionDef tDef, TableFunctionEvaluator evaluator)
       throws HiveException {
     this.evaluator = evaluator;
     this.ptfDesc = ptfDesc;
     evaluator.setTableDef(tDef);
     evaluator.setQueryDef(ptfDesc);
-    evaluator.setNullsLast(HiveConf.getBoolVar(cfg, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST));
   }
 
   public TableFunctionEvaluator getEvaluator() {

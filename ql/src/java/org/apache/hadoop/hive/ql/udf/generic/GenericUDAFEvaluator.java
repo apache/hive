@@ -304,7 +304,6 @@ public abstract class GenericUDAFEvaluator implements Closeable {
    * @param partition   the partition data
    * @param parameters  the list of the expressions in the function
    * @param outputOI    the output object inspector
-   * @param nullsLast   the nulls last configuration
    * @return            the evaluator, default to BasePartitionEvaluator which
    *                    implements the naive approach
    */
@@ -312,10 +311,9 @@ public abstract class GenericUDAFEvaluator implements Closeable {
       WindowFrameDef winFrame,
       PTFPartition partition,
       List<PTFExpressionDef> parameters,
-      ObjectInspector outputOI, boolean nullsLast) {
+      ObjectInspector outputOI) {
     if (partitionEvaluator == null) {
-      partitionEvaluator = createPartitionEvaluator(winFrame, partition, parameters, outputOI,
-          nullsLast);
+      partitionEvaluator = createPartitionEvaluator(winFrame, partition, parameters, outputOI);
     }
 
     return partitionEvaluator;
@@ -329,8 +327,7 @@ public abstract class GenericUDAFEvaluator implements Closeable {
       WindowFrameDef winFrame,
       PTFPartition partition,
       List<PTFExpressionDef> parameters,
-      ObjectInspector outputOI,
-      boolean nullsLast) {
-    return new BasePartitionEvaluator(this, winFrame, partition, parameters, outputOI, nullsLast);
+      ObjectInspector outputOI) {
+    return new BasePartitionEvaluator(this, winFrame, partition, parameters, outputOI);
   }
 }

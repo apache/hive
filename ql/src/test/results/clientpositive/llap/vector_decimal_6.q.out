@@ -180,7 +180,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -224,6 +224,11 @@ POSTHOOK: query: SELECT * FROM DECIMAL_6_1 ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_6_1
 #### A masked pattern was here ####
+NULL	-1234567890
+NULL	0
+NULL	3
+NULL	4
+NULL	1234567890
 -4400.00000	4400
 -1255.49000	-1255
 -1.12200	-11
@@ -246,11 +251,6 @@ POSTHOOK: Input: default@decimal_6_1
 124.00000	124
 125.20000	125
 23232.23435	2
-NULL	-1234567890
-NULL	0
-NULL	3
-NULL	4
-NULL	1234567890
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT * FROM DECIMAL_6_2 ORDER BY key, value
 PREHOOK: type: QUERY
@@ -325,7 +325,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -369,6 +369,7 @@ POSTHOOK: query: SELECT * FROM DECIMAL_6_2 ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_6_2
 #### A masked pattern was here ####
+NULL	0
 -1234567890.1235	-1234567890
 -4400.0000	4400
 -1255.4900	-1255
@@ -395,7 +396,6 @@ POSTHOOK: Input: default@decimal_6_2
 2389432.2375	3
 2389432.2375	4
 1234567890.1235	1234567890
-NULL	0
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT T.key from (
   SELECT key, value from DECIMAL_6_1
@@ -527,7 +527,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: z
+                reduceColumnNullOrder: a
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -583,6 +583,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_6_1
 POSTHOOK: Input: default@decimal_6_2
 #### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
 -1234567890.12350
 -4400.00000
 -4400.00000
@@ -631,12 +637,6 @@ POSTHOOK: Input: default@decimal_6_2
 2389432.23750
 2389432.23750
 1234567890.12350
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 CREATE TABLE DECIMAL_6_3 STORED AS ORC AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1 ORDER BY v
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -718,7 +718,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: z
+                reduceColumnNullOrder: a
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -799,6 +799,11 @@ POSTHOOK: query: SELECT * FROM DECIMAL_6_3 ORDER BY k, v
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_6_3
 #### A masked pattern was here ####
+NULL	-695344902
+NULL	0
+NULL	33
+NULL	44
+NULL	695344902
 -4394.50000	48400
 -1249.99000	-13805
 4.37800	-121
@@ -821,8 +826,3 @@ POSTHOOK: Input: default@decimal_6_3
 129.50000	1364
 130.70000	1375
 23237.73435	22
-NULL	-695344902
-NULL	0
-NULL	33
-NULL	44
-NULL	695344902

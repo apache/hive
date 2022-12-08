@@ -1326,8 +1326,13 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode child = (ASTNode) ast.getChild(i);
       if (child.getToken().getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
         child = (ASTNode) child.getChild(0);
-        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
-            HIVE_COLUMN_ORDER_ASC));
+        if (child.getToken().getType() == HiveParser.TOK_NULLS_FIRST) {
+          colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()).toLowerCase(),
+              HIVE_COLUMN_ORDER_ASC));
+        } else {
+          throw new SemanticException("create/alter table: "
+                  + "not supported NULLS LAST for ORDER BY in ASC order");
+        }
       } else {
         child = (ASTNode) child.getChild(0);
         if (child.getToken().getType() == HiveParser.TOK_NULLS_LAST) {

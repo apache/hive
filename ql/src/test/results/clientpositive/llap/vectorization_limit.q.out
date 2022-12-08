@@ -181,7 +181,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zzz
+                reduceColumnNullOrder: aaa
                 reduceColumnSortOrder: +++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -393,7 +393,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -443,7 +443,6 @@ POSTHOOK: query: select ctinyint,avg(cdouble + 1) as cavg from alltypesorc group
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--45	326.44444444444446
 -46	3033.55
 -47	-574.6428571428571
 -48	1672.909090909091
@@ -463,6 +462,7 @@ POSTHOOK: Input: default@alltypesorc
 -62	245.69387755102042
 -63	2178.7272727272725
 -64	373.52941176470586
+NULL	9370.0945309795
 PREHOOK: query: explain vectorization detail
 select distinct(ctinyint) as cdistinct from alltypesorc order by cdistinct limit 20
 PREHOOK: type: QUERY
@@ -561,7 +561,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: z
+                reduceColumnNullOrder: a
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -615,7 +615,6 @@ POSTHOOK: query: select distinct(ctinyint) as cdistinct from alltypesorc order b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--45
 -46
 -47
 -48
@@ -635,6 +634,7 @@ POSTHOOK: Input: default@alltypesorc
 -62
 -63
 -64
+NULL
 PREHOOK: query: explain vectorization detail
 select ctinyint, count(distinct(cdouble)) as count_distinct from alltypesorc group by ctinyint order by ctinyint, count_distinct limit 20
 PREHOOK: type: QUERY
@@ -777,7 +777,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -827,7 +827,6 @@ POSTHOOK: query: select ctinyint, count(distinct(cdouble)) as count_distinct fro
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--45	24
 -46	24
 -47	22
 -48	29
@@ -847,6 +846,7 @@ POSTHOOK: Input: default@alltypesorc
 -62	27
 -63	19
 -64	24
+NULL	2932
 PREHOOK: query: explain vectorization detail
 select ctinyint,cdouble from alltypesorc order by ctinyint,cdouble limit 0
 PREHOOK: type: QUERY
@@ -1010,7 +1010,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false

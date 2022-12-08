@@ -92,7 +92,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -300,7 +300,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -511,7 +511,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -675,7 +675,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: az
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -703,7 +703,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -889,7 +889,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1094,7 +1094,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1349,7 +1349,7 @@ STAGE PLANS:
                       Partition table definition
                         input alias: abc
                         name: noop
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         output shape: _col0: int, _col1: string, _col2: string, _col5: int, _col7: double
                         partition by: _col2
                         raw input shape:
@@ -1401,7 +1401,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1593,7 +1593,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST, _col5 DESC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST, _col5 DESC NULLS LAST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1756,7 +1756,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -1936,7 +1936,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -2118,7 +2118,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -2312,7 +2312,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: 'Manufacturer#3'
                         raw input shape:
                         window functions:
@@ -2482,7 +2482,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -2636,7 +2636,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: az
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -2664,7 +2664,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -2875,7 +2875,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -2976,7 +2976,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col12 ASC NULLS LAST, _col11 ASC NULLS LAST
+                        order by: _col12 ASC NULLS FIRST, _col11 ASC NULLS FIRST
                         partition by: _col12
                         raw input shape:
                         window functions:
@@ -3170,7 +3170,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -3233,7 +3233,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col9 ASC NULLS LAST
+                        order by: _col9 ASC NULLS FIRST
                         partition by: _col6
                         raw input shape:
                         window functions:
@@ -3275,7 +3275,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col7 ASC NULLS LAST, _col6 ASC NULLS LAST
+                        order by: _col7 ASC NULLS FIRST, _col6 ASC NULLS FIRST
                         partition by: _col7
                         raw input shape:
                         window functions:
@@ -3436,7 +3436,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: az
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -3464,7 +3464,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -3536,7 +3536,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col4 ASC NULLS LAST, _col3 ASC NULLS LAST
+                        order by: _col4 ASC NULLS FIRST, _col3 ASC NULLS FIRST
                         partition by: _col4
                         raw input shape:
                         window functions:
@@ -3708,7 +3708,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -3968,7 +3968,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST, _col0 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST, _col0 ASC NULLS FIRST
                         partition by: _col1
                         raw input shape:
                         window functions:
@@ -4153,7 +4153,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -4353,7 +4353,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -4634,7 +4634,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col0 ASC NULLS LAST
+                        order by: _col0 ASC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -4659,7 +4659,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: zz
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -4925,7 +4925,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -5095,7 +5095,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS LAST, _col4 ASC NULLS LAST
+                        order by: _col2 ASC NULLS FIRST, _col4 ASC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -5471,7 +5471,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -5562,7 +5562,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -5619,7 +5619,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col8 ASC NULLS LAST
+                        order by: _col8 ASC NULLS FIRST
                         partition by: _col5
                         raw input shape:
                         window functions:
@@ -5661,7 +5661,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col6 ASC NULLS LAST, _col5 ASC NULLS LAST
+                        order by: _col6 ASC NULLS FIRST, _col5 ASC NULLS FIRST
                         partition by: _col6
                         raw input shape:
                         window functions:
@@ -5722,7 +5722,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: az
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -5750,7 +5750,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -5822,7 +5822,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col4 ASC NULLS LAST, _col3 ASC NULLS LAST
+                        order by: _col4 ASC NULLS FIRST, _col3 ASC NULLS FIRST
                         partition by: _col4
                         raw input shape:
                         window functions:
@@ -6213,7 +6213,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -6397,7 +6397,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS LAST
+                        order by: _col5 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -6565,7 +6565,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -6725,7 +6725,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -6891,7 +6891,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -7067,7 +7067,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -7237,7 +7237,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -7417,7 +7417,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -7601,7 +7601,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -7784,7 +7784,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -7969,7 +7969,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: az
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -7997,7 +7997,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -8123,7 +8123,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -8169,16 +8168,16 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: z
+                reduceColumnNullOrder: a
                 reduceColumnSortOrder: +
-                allNative: true
+                allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
                     dataColumns: KEY.reducesinkkey0:string, VALUE._col6:double
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double]
+                    scratchColumnTypeNames: [double, double, double, double, bigint, double, double]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col6 (type: double)
@@ -8197,7 +8196,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS LAST
+                        order by: _col2 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -8208,121 +8207,50 @@ STAGE PLANS:
                               window function: GenericUDAFSumDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                             window function definition
+                              alias: min_window_1
+                              arguments: _col7
+                              name: min
+                              window function: GenericUDAFMinEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                            window function definition
                               alias: max_window_2
                               arguments: _col7
                               name: max
                               window function: GenericUDAFMaxEvaluator
                               window frame: RANGE PRECEDING(MAX)~CURRENT
-                  PTF Vectorization:
-                      className: VectorPTFOperator
-                      evaluatorClasses: [VectorPTFEvaluatorDoubleSum, VectorPTFEvaluatorDoubleMax]
-                      functionInputExpressions: [col 1:double, col 1:double]
-                      functionNames: [sum, max]
-                      keyInputColumns: [0]
-                      native: true
-                      nonKeyInputColumns: [1]
-                      orderExpressions: [col 0:string]
-                      outputColumns: [2, 3, 0, 1]
-                      outputTypes: [double, double, string, double]
-                      streamingColumns: []
-                  Statistics: Num rows: 26 Data size: 9724 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: sum_window_0 (type: double), max_window_2 (type: double), _col2 (type: string), _col7 (type: double)
-                    outputColumnNames: sum_window_0, max_window_2, _col2, _col7
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [2, 3, 0, 1]
-                    Statistics: Num rows: 26 Data size: 9724 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col2 (type: string)
-                      sort order: +
-                      Map-reduce partition columns: _col2 (type: string)
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [0]
-                          native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          partitionColumnNums: [0]
-                          valueColumnNums: [2, 3, 1]
-                      Statistics: Num rows: 26 Data size: 9724 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: sum_window_0 (type: double), max_window_2 (type: double), _col7 (type: double)
-        Reducer 3 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
-                reduceColumnSortOrder: +
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:string, VALUE._col0:double, VALUE._col1:double, VALUE._col8:double
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, double, bigint, double, double]
-            Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: double), VALUE._col1 (type: double), KEY.reducesinkkey0 (type: string), VALUE._col8 (type: double)
-                outputColumnNames: _col0, _col1, _col4, _col9
-                Select Vectorization:
-                    className: VectorSelectOperator
-                    native: true
-                    projectedOutputColumnNums: [1, 2, 0, 3]
-                Statistics: Num rows: 26 Data size: 10140 Basic stats: COMPLETE Column stats: COMPLETE
-                PTF Operator
-                  Function definitions:
-                      Input definition
-                        input alias: ptf_0
-                        output shape: _col0: double, _col1: double, _col4: string, _col9: double
-                        type: WINDOWING
-                      Windowing table definition
-                        input alias: ptf_1
-                        name: windowingtablefunction
-                        order by: _col4 ASC NULLS FIRST
-                        partition by: _col4
-                        raw input shape:
-                        window functions:
-                            window function definition
-                              alias: min_window_1
-                              arguments: _col9
-                              name: min
-                              window function: GenericUDAFMinEvaluator
-                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                             window function definition
                               alias: avg_window_3
-                              arguments: _col9
+                              arguments: _col7
                               name: avg
                               window function: GenericUDAFAverageEvaluatorDouble
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                             window function definition
                               alias: count_window_4
-                              arguments: _col9
+                              arguments: _col7
                               name: count
                               window function: GenericUDAFCountEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                   PTF Vectorization:
                       className: VectorPTFOperator
-                      evaluatorClasses: [VectorPTFEvaluatorDoubleMin, VectorPTFEvaluatorDoubleAvg, VectorPTFEvaluatorCount]
-                      functionInputExpressions: [col 3:double, col 3:double, col 3:double]
-                      functionNames: [min, avg, count]
+                      evaluatorClasses: [VectorPTFEvaluatorDoubleSum, VectorPTFEvaluatorDoubleMin, VectorPTFEvaluatorDoubleMax, VectorPTFEvaluatorDoubleAvg, VectorPTFEvaluatorCount]
+                      functionInputExpressions: [col 1:double, col 1:double, col 1:double, col 1:double, col 1:double]
+                      functionNames: [sum, min, max, avg, count]
                       keyInputColumns: [0]
                       native: true
-                      nonKeyInputColumns: [1, 2, 3]
+                      nonKeyInputColumns: [1]
                       orderExpressions: [col 0:string]
-                      outputColumns: [4, 5, 6, 1, 2, 0, 3]
-                      outputTypes: [double, double, bigint, double, double, string, double]
+                      outputColumns: [2, 3, 4, 5, 6, 0, 1]
+                      outputTypes: [double, double, double, double, bigint, string, double]
                       streamingColumns: []
-                  Statistics: Num rows: 26 Data size: 10140 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 26 Data size: 9724 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col4 (type: string), round(_col0, 2) (type: double), min_window_1 (type: double), _col1 (type: double), round(avg_window_3, 2) (type: double), count_window_4 (type: bigint)
+                    expressions: _col2 (type: string), round(sum_window_0, 2) (type: double), min_window_1 (type: double), max_window_2 (type: double), round(avg_window_3, 2) (type: double), count_window_4 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 7, 4, 2, 8, 6]
-                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 1, decimalPlaces 2) -> 7:double, RoundWithNumDigitsDoubleToDouble(col 5, decimalPlaces 2) -> 8:double
+                        projectedOutputColumnNums: [0, 7, 3, 4, 8, 6]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 2, decimalPlaces 2) -> 7:double, RoundWithNumDigitsDoubleToDouble(col 5, decimalPlaces 2) -> 8:double
                     Statistics: Num rows: 26 Data size: 3588 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
@@ -8483,7 +8411,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 ASC NULLS LAST, _col1 ASC NULLS LAST
+                        order by: _col2 ASC NULLS FIRST, _col1 ASC NULLS FIRST
                         partition by: _col2, _col1
                         raw input shape:
                         window functions:
@@ -8515,7 +8443,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: az
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -8543,7 +8471,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col3 ASC NULLS LAST
+                        order by: _col3 ASC NULLS FIRST
                         partition by: _col4, _col3
                         raw input shape:
                         window functions:
@@ -8711,7 +8639,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: az
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -8739,7 +8667,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: substr(_col4, 2) ASC NULLS LAST
+                        order by: substr(_col4, 2) ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -8919,7 +8847,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -9061,7 +8989,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: az
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: ++
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -9089,7 +9017,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS LAST
+                        order by: _col5 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -9268,7 +9196,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -9426,7 +9354,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS LAST
+                        order by: _col5 ASC NULLS FIRST
                         partition by: _col2
                         raw input shape:
                         window functions:
@@ -9648,7 +9576,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: z
+                reduceColumnNullOrder: a
                 reduceColumnSortOrder: +
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -9824,7 +9752,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col5 ASC NULLS LAST
+                        order by: _col5 ASC NULLS FIRST
                         partition by: 'Manufacturer#6'
                         raw input shape:
                         window functions:
@@ -9968,7 +9896,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col1 ASC NULLS LAST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: 'Manufacturer#1'
                         raw input shape:
                         window functions:

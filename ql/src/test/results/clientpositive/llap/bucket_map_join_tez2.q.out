@@ -2346,6 +2346,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: my_fact
+                  filterExpr: ((fiscal_year = '2015') and (UDFToDouble(accounting_period) = 10.0D) and join_col is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 736 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
@@ -2371,6 +2372,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: my_dim
+                  filterExpr: ((filter_col) IN ('VAL1', 'VAL2') and join_col is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator

@@ -71,7 +71,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 3 (PARTITION-LEVEL SORT, 4)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -148,12 +148,12 @@ PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table3_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id where table1_n10.val = 't1val01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table3_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	t1val01	val101
 3	t1val01	val104
 3	t1val01	val106
@@ -177,8 +177,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
-        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 4), Reducer 2 (PARTITION-LEVEL SORT, 4)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -291,13 +291,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table2_n6
 PREHOOK: Input: default@table3_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id left semi join table3_n0 on table1_n10.dimid = table3_n0.id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table2_n6
 POSTHOOK: Input: default@table3_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	t1val01	t2val201
 3	t1val01	t2val203
 3	t1val01	t2val203
@@ -321,8 +321,8 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 4 (PARTITION-LEVEL SORT, 4)
-        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 4), Reducer 2 (PARTITION-LEVEL SORT, 4)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 4 (PARTITION-LEVEL SORT, 2)
+        Reducer 3 <- Map 5 (PARTITION-LEVEL SORT, 2), Reducer 2 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -434,13 +434,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table2_n6
 PREHOOK: Input: default@table3_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select table1_n10.id, table1_n10.val, table2_n6.val2 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id inner join table2_n6 on table1_n10.val = 't1val01' and table1_n10.id = table2_n6.id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table2_n6
 POSTHOOK: Input: default@table3_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	t1val01	t2val201
 3	t1val01	t2val203
 3	t1val01	t2val203
@@ -462,7 +462,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 3 (PARTITION-LEVEL SORT, 4)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -537,12 +537,12 @@ PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table3_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid <> 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table3_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  IN (100,200)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1_n10
@@ -561,7 +561,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 3 (PARTITION-LEVEL SORT, 4)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -634,12 +634,12 @@ PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table3_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  IN (100,200)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table3_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	t1val01	val101
 3	t1val01	val104
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 200
@@ -660,7 +660,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 3 (PARTITION-LEVEL SORT, 4)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -735,12 +735,12 @@ PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table3_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 200
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table3_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1_n10
@@ -759,7 +759,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 3 (PARTITION-LEVEL SORT, 4)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -832,12 +832,12 @@ PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table3_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100 where table1_n10.dimid  = 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table3_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	t1val01	val101
 3	t1val01	val104
 PREHOOK: query: explain select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100
@@ -858,7 +858,7 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 3 (PARTITION-LEVEL SORT, 4)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -931,11 +931,11 @@ PREHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1_n10
 PREHOOK: Input: default@table3_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select table1_n10.id, table1_n10.val, table1_n10.val1 from table1_n10 left semi join table3_n0 on table1_n10.dimid = table3_n0.id and table3_n0.id = 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1_n10
 POSTHOOK: Input: default@table3_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	t1val01	val101
 3	t1val01	val104
