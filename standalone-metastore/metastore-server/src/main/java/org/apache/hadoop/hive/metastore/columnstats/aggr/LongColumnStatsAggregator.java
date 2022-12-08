@@ -72,13 +72,15 @@ public class LongColumnStatsAggregator extends ColumnStatsAggregator implements
       // check if we can merge NDV estimators
       if (columnStatsData.getNdvEstimator() == null) {
         areAllNDVEstimatorsMergeable = false;
-      } else if (areAllNDVEstimatorsMergeable) {
+        break;
+      } else {
         NumDistinctValueEstimator estimator = columnStatsData.getNdvEstimator();
         if (ndvEstimator == null) {
           ndvEstimator = estimator;
         } else {
           if (!ndvEstimator.canMerge(estimator)) {
             areAllNDVEstimatorsMergeable = false;
+            break;
           }
         }
       }
