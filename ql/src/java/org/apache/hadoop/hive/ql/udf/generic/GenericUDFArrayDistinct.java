@@ -22,7 +22,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,32 +32,27 @@ import java.util.stream.Collectors;
  *
  * @see org.apache.hadoop.hive.ql.udf.generic.GenericUDF
  */
-@Description(name = "array_distinct",
-        value = "_FUNC_(array(obj1, obj2,...)) - "
-                + "The function returns an array of the same type as the input array with distinct values.",
-        extended = "Example:\n"
-                + "  > SELECT _FUNC_(array('b', 'd', 'd', 'a')) FROM src LIMIT 1;\n"
-                + "  ['b', 'd', 'a']")
-public class GenericUDFArrayDistinct extends AbstractGenericUDFArrayBase {
+@Description(name = "array_distinct", value = "_FUNC_(array(obj1, obj2,...)) - "
+    + "The function returns an array of the same type as the input array with distinct values.", extended = "Example:\n"
+    + "  > SELECT _FUNC_(array('b', 'd', 'd', 'a')) FROM src LIMIT 1;\n"
+    + "  ['b', 'd', 'a']") public class GenericUDFArrayDistinct extends AbstractGenericUDFArrayBase {
 
-    public GenericUDFArrayDistinct() {
-        super("ARRAY_DISTINCT", 1, 1, ObjectInspector.Category.LIST);
+  public GenericUDFArrayDistinct() {
+    super("ARRAY_DISTINCT", 1, 1, ObjectInspector.Category.LIST);
+  }
+
+  @Override public Object evaluate(DeferredObject[] arguments) throws HiveException {
+
+    Object array = arguments[ARRAY_IDX].get();
+
+    // If the array is empty, then there are no duplicates, return back the empty array
+    if (arrayOI.getListLength(array) == 0) {
+      return Collections.emptyList();
+    } else if (arrayOI.getListLength(array) < 0) {
+      return null;
     }
 
-    @Override
-    public Object evaluate(DeferredObject[] arguments) throws HiveException {
-
-        Object array = arguments[ARRAY_IDX].get();
-
-
-        // If the array is empty, then there are no duplicates, return back the empty array
-        if (arrayOI.getListLength(array) == 0) {
-            return Collections.emptyList();
-        } else if (arrayOI.getListLength(array) < 0) {
-            return null;
-        }
-
-        List<?> retArray = ((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array);
-        return retArray.stream().distinct().map(o->converter.convert(o)).collect(Collectors.toList());
-    }
+    List<?> retArray = ((ListObjectInspector) argumentOIs[ARRAY_IDX]).getList(array);
+    return retArray.stream().distinct().map(o -> converter.convert(o)).collect(Collectors.toList());
+  }
 }

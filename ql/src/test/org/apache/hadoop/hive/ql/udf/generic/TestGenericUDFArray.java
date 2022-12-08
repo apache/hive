@@ -28,29 +28,26 @@ import org.junit.Test;
 import java.util.List;
 
 public class TestGenericUDFArray {
-    protected AbstractGenericUDFArrayBase udf = null;
-    protected void runAndVerify(List<Object> actual, List<Object> expected)
-            throws HiveException {
-        GenericUDF.DeferredJavaObject[] args = { new GenericUDF.DeferredJavaObject(actual) };
-        if (udf != null ) {
-            List<?> result = (List<?>) udf.evaluate(args);
-            if ((null == actual)) {
-                Assert.assertEquals(actual, result);
-            } else {
-                Assert.assertArrayEquals("Check content", expected.toArray(), result.toArray());
-            }
-        }
-    }
+  protected AbstractGenericUDFArrayBase udf = null;
 
-    @Test
-    public void testNullAndEmptyArray() throws HiveException {
-        ObjectInspector[] inputOIs = {
-                ObjectInspectorFactory.getStandardListObjectInspector(
-                        PrimitiveObjectInspectorFactory.writableVoidObjectInspector)
-        };
-        if (udf != null ) {
-            udf.initialize(inputOIs);
-        }
-        runAndVerify(null,null);
+  protected void runAndVerify(List<Object> actual, List<Object> expected) throws HiveException {
+    GenericUDF.DeferredJavaObject[] args = { new GenericUDF.DeferredJavaObject(actual) };
+    if (udf != null) {
+      List<?> result = (List<?>) udf.evaluate(args);
+      if ((null == actual)) {
+        Assert.assertEquals(actual, result);
+      } else {
+        Assert.assertArrayEquals("Check content", expected.toArray(), result.toArray());
+      }
     }
+  }
+
+  @Test public void testNullAndEmptyArray() throws HiveException {
+    ObjectInspector[] inputOIs = { ObjectInspectorFactory.getStandardListObjectInspector(
+        PrimitiveObjectInspectorFactory.writableVoidObjectInspector) };
+    if (udf != null) {
+      udf.initialize(inputOIs);
+    }
+    runAndVerify(null, null);
+  }
 }
