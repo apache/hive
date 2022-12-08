@@ -73,9 +73,7 @@ public class PlanModifierForASTConv {
   public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema, boolean alignColumns)
       throws CalciteSemanticException {
     if (rel instanceof HiveValues) {
-      RelDataTypeFactory typeFactory = rel.getCluster().getTypeFactory();
       List<String> fieldNames = resultSchema.stream().map(FieldSchema::getName).collect(Collectors.toList());
-      fieldNames = SqlValidatorUtil.uniquify(fieldNames, typeFactory.getTypeSystem().isSchemaCaseSensitive());
       return ((HiveValues) rel).copy(fieldNames);
     }
 

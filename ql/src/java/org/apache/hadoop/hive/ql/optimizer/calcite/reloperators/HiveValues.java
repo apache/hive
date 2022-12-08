@@ -57,6 +57,6 @@ public class HiveValues extends Values implements HiveRelNode {
       builder.add(newColumnNames.get(i), getRowType().getFieldList().get(i).getType());
     }
 
-    return new HiveValues(getCluster(), builder.build(), tuples, getTraitSet());
+    return new HiveValues(getCluster(), builder.uniquify().build(), tuples, getTraitSet());
   }
 }
