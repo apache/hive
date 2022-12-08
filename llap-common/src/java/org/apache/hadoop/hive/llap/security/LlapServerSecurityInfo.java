@@ -57,8 +57,8 @@ public class LlapServerSecurityInfo extends SecurityInfo {
   @Override
   public TokenInfo getTokenInfo(Class<?> protocol, Configuration conf) {
     LOG.debug("Trying to get TokenInfo for {}", protocol);
-    // Tokens cannot be used for the management protocol (for now).
-    if (!LlapProtocolBlockingPB.class.isAssignableFrom(protocol)) return null;
+    if (!LlapProtocolBlockingPB.class.isAssignableFrom(protocol)
+        && !LlapManagementProtocolPB.class.isAssignableFrom(protocol)) return null;
     return new TokenInfo() {
       @Override
       public Class<? extends Annotation> annotationType() {

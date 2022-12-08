@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.llap.security;
 
 import java.io.IOException;
 
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.token.Token;
 import org.slf4j.Logger;
@@ -36,17 +35,14 @@ public class LlapTokenLocalClientImpl implements LlapTokenLocalClient {
   }
 
   @Override
-  public Token<LlapTokenIdentifier> createToken(
-      String appId, String user, boolean isSignatureRequired) throws IOException {
+  public Token<LlapTokenIdentifier> createToken(String appId, String user, boolean isSignatureRequired)
+      throws IOException {
     try {
-      Token<LlapTokenIdentifier> token = secretManager.createLlapToken(
-          appId, user, isSignatureRequired);
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Created a LLAP delegation token locally: " + token);
-      }
+      Token<LlapTokenIdentifier> token = secretManager.createLlapToken(appId, user, isSignatureRequired);
+      LOG.info("Created a LLAP delegation token locally: {}", token);
       return token;
     } catch (Exception ex) {
-      throw (ex instanceof IOException) ? (IOException)ex : new IOException(ex);
+      throw (ex instanceof IOException) ? (IOException) ex : new IOException(ex);
     }
   }
 

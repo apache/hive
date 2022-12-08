@@ -41,6 +41,7 @@ import javax.net.SocketFactory;
 
 import com.google.protobuf.ServiceException;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 // TODO: LlapNodeId is just a host+port pair; we could make this class more generic.
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.retry.RetryPolicies;
@@ -80,8 +81,8 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
   private final SocketFactory socketFactory;
   private final ListeningExecutorService requestManagerExecutor;
   private volatile ListenableFuture<Void> requestManagerFuture;
-  private final Token<TokenType> token;
-  private final String tokenUser;
+  protected Token<TokenType> token;
+  protected String tokenUser;
 
   @VisibleForTesting
   public static class RequestManager implements Callable<Void> {
@@ -516,20 +517,11 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
     }
     this.hostProxies = cb.build();
     this.socketFactory = NetUtils.getDefaultSocketFactory(conf);
-    this.token = token;
-    if (token != null) {
-      String tokenUser = getTokenUser(token);
-      if (tokenUser == null) {
-        try {
-          tokenUser = UserGroupInformation.getCurrentUser().getShortUserName();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-        LOG.warn("Cannot determine token user from the token; using {}", tokenUser);
-      }
-      this.tokenUser = tokenUser;
-    } else {
-      this.tokenUser = null;
+
+    try {
+      setToken(token);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
 
     this.retryPolicy = RetryPolicies.retryUpToMaximumTimeWithFixedSleep(
@@ -544,6 +536,41 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
         "numThreads=" + numThreads +
         "retryTime(millis)=" + connectionTimeoutMs +
         "retrySleep(millis)=" + retrySleepMs);
+  }
+
+  protected void setToken(Token<TokenType> newToken) throws IOException {
+    if (tokensAreEqual(newToken)) {
+      return;
+    }
+    LOG.info("Setting new token as it's not equal to the old one, new token is: {}", newToken);
+    // clear cache to make proxies use the new token
+    hostProxies.invalidateAll();
+
+    this.token = newToken;
+    if (token != null) {
+      String tokenUser = getTokenUser(token);
+      if (tokenUser == null) {
+        try {
+          tokenUser = UserGroupInformation.getCurrentUser().getShortUserName();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+        LOG.warn("Cannot determine token user from the token; using {}", tokenUser);
+      }
+      this.tokenUser = tokenUser;
+    } else {
+      this.tokenUser = null;
+    }
+  }
+
+  protected boolean tokensAreEqual(Token<TokenType> otherToken) throws IOException {
+    int oldSeqNumber =
+        this.token == null ? -1 : ((LlapTokenIdentifier) this.token.decodeIdentifier()).getSequenceNumber();
+    int newSeqNumber =
+        otherToken == null ? -1 : ((LlapTokenIdentifier) otherToken.decodeIdentifier()).getSequenceNumber();
+
+    LOG.debug("Check token equality be sequenceNumber: {} <-> {}", oldSeqNumber, newSeqNumber);
+    return oldSeqNumber == newSeqNumber;
   }
 
   /**

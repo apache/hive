@@ -5060,10 +5060,13 @@ public class HiveConf extends Configuration {
         "cluster by setting it to true or 'except_llap_owner' (the latter returns such tokens\n" +
         "to everyone except the user LLAP cluster is authenticating under)."),
 
-    // Hadoop DelegationTokenManager default is 1 week.
     LLAP_DELEGATION_TOKEN_LIFETIME("hive.llap.daemon.delegation.token.lifetime", "14d",
          new TimeValidator(TimeUnit.SECONDS),
         "LLAP delegation token lifetime, in seconds if specified without a unit."),
+    LLAP_DELEGATION_TOKEN_RENEW_INTERVAL("hive.llap.daemon.delegation.token.renew.interval", "1d",
+        new TimeValidator(TimeUnit.SECONDS),
+        "LLAP delegation token renew interval, in seconds if specified without a unit."
+            + "Tokens are typically renewed in the LlapDaemons by LlapTokenManager currently."),
     LLAP_MANAGEMENT_RPC_PORT("hive.llap.management.rpc.port", 15004,
         "RPC port for LLAP daemon management service."),
     LLAP_WEB_AUTO_AUTH("hive.llap.auto.auth", false,
