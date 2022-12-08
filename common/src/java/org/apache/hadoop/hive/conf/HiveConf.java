@@ -5066,7 +5066,7 @@ public class HiveConf extends Configuration {
     LLAP_DELEGATION_TOKEN_RENEW_INTERVAL("hive.llap.daemon.delegation.token.renew.interval", "1d",
         new TimeValidator(TimeUnit.SECONDS),
         "LLAP delegation token renew interval, in seconds if specified without a unit."
-            + "Tokens are typically renewed in the LlapDaemons by LlapTokenOwner currently."),
+            + "Tokens are typically renewed in the LlapDaemons by LlapTokenManager currently."),
     LLAP_MANAGEMENT_RPC_PORT("hive.llap.management.rpc.port", 15004,
         "RPC port for LLAP daemon management service."),
     LLAP_WEB_AUTO_AUTH("hive.llap.auto.auth", false,
