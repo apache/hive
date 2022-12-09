@@ -143,7 +143,7 @@ public class SimpleFetchOptimizer extends Transform {
     if (fetch != null && checkThreshold(fetch, limit, pctx)) {
       FetchWork fetchWork = fetch.convertToWork();
       FetchTask fetchTask = (FetchTask) TaskFactory.get(fetchWork);
-      fetchWork.setCachingEnabled(HiveConf.getBoolVar(pctx.getConf(),
+      fetchTask.setCachingEnabled(HiveConf.getBoolVar(pctx.getConf(),
               HiveConf.ConfVars.HIVEFETCHTASKCACHING));
       fetchWork.setSink(fetch.completed(pctx, fetchWork));
       fetchWork.setSource(source);

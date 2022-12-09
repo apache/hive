@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -55,6 +54,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   private int totalRows;
   private static final Logger LOG = LoggerFactory.getLogger(FetchTask.class);
   JobConf job = null;
+  private boolean cachingEnabled = false;
 
   public FetchTask() {
     super();
@@ -91,7 +91,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
 
   @Override
   public int execute() {
-    if (work.isCachingEnabled()) {
+    if (cachingEnabled) {
       executeInner(fetchedData);
     }
     return 0;
@@ -119,7 +119,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   }
 
   public boolean fetch(List res) {
-    if (work.isCachingEnabled()) {
+    if (cachingEnabled) {
       if (currentRow >= fetchedData.size()) {
         return false;
       }
@@ -159,7 +159,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   }
 
   public void resetFetch() throws HiveException {
-    if (work.isCachingEnabled()) {
+    if (cachingEnabled) {
       currentRow = 0;
     } else {
       clearFetch();
@@ -175,7 +175,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   private boolean executeInner(List target) {
     sink.reset(target);
     int rowsRet;
-    if (work.isCachingEnabled()) {
+    if (cachingEnabled) {
       rowsRet = work.getLimit() >= 0 ? work.getLimit() : Integer.MAX_VALUE;
     } else {
       rowsRet = work.getLeastNumRows();
@@ -231,5 +231,13 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     source.initialize(conf, new ObjectInspector[]{ fetch.getOutputObjectInspector() });
     totalRows = 0;
     ExecMapper.setDone(false);
+  }
+
+  public void setCachingEnabled(boolean cachingEnabled) {
+    this.cachingEnabled = cachingEnabled;
+  }
+
+  public boolean isCachingEnabled() {
+    return cachingEnabled;
   }
 }

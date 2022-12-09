@@ -2511,14 +2511,14 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEFETCHTASKCACHING, true);
     hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
     d.run("select * from fetch_task_table");
-    Assert.assertFalse(d.getFetchTask().getWork().isCachingEnabled());
+    Assert.assertFalse(d.getFetchTask().isCachingEnabled());
     d.getFetchTask().fetch(actualRes);
     Assert.assertEquals(actualRes, expectedRes);
     actualRes.clear();
 
     hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "more");
     d.run("select * from fetch_task_table");
-    Assert.assertTrue(d.getFetchTask().getWork().isCachingEnabled());
+    Assert.assertTrue(d.getFetchTask().isCachingEnabled());
     d.getFetchTask().fetch(actualRes);
     Assert.assertEquals(actualRes, expectedRes);
   }
