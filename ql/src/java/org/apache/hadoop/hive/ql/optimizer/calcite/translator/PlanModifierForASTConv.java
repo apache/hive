@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.RelOptUtil;
@@ -71,7 +72,8 @@ public class PlanModifierForASTConv {
   public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema, boolean alignColumns)
       throws CalciteSemanticException {
     if (rel instanceof HiveValues) {
-      return rel;
+      List<String> fieldNames = resultSchema.stream().map(FieldSchema::getName).collect(Collectors.toList());
+      return ((HiveValues) rel).copy(fieldNames);
     }
 
     RelNode newTopNode = rel;
