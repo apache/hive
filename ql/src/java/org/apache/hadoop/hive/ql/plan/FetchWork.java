@@ -84,6 +84,11 @@ public class FetchWork implements Serializable {
 
   private Set<FileStatus> filesToFetch = null;
 
+  /**
+   * Whether this FetchWork should enable cache
+   */
+  private boolean cachingEnabled = false;
+
   public boolean isHiveServerQuery() {
 	return isHiveServerQuery;
   }
@@ -396,5 +401,13 @@ public class FetchWork implements Serializable {
 
   public Set<FileStatus> getFilesToFetch() {
     return filesToFetch;
+  }
+
+  public boolean isCachingEnabled() {
+    return cachingEnabled;
+  }
+
+  public void setCachingEnabled(boolean cachingEnabled) {
+    this.cachingEnabled = cachingEnabled;
   }
 }
