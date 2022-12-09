@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
