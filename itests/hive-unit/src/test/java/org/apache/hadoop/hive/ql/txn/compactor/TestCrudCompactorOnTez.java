@@ -1044,7 +1044,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> actualBasesAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null);
     Assert.assertEquals("Base directory does not match after compaction",
-        Collections.singletonList("base_0000008_v0000038"), actualBasesAfterComp);
+        Collections.singletonList("base_0000008_v0000039"), actualBasesAfterComp);
     // Verify bucket files in delta dirs
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil.getBucketFileNames(fs, table, null, actualBasesAfterComp.get(0)));
@@ -1396,11 +1396,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> actualDeltasAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null);
     Assert.assertEquals("Delta directories does not match after compaction",
-        Collections.singletonList("delta_0000001_0000015_v0000044"), actualDeltasAfterComp);
+        Collections.singletonList("delta_0000001_0000015_v0000046"), actualDeltasAfterComp);
     List<String> actualDeleteDeltasAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null);
     Assert.assertEquals("Delete delta directories does not match after compaction",
-        Collections.singletonList("delete_delta_0000001_0000015_v0000044"), actualDeleteDeltasAfterComp);
+        Collections.singletonList("delete_delta_0000001_0000015_v0000046"), actualDeleteDeltasAfterComp);
 
     CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
         conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE),
@@ -1581,7 +1581,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     verifySuccessfulCompaction(2);
     // Verify base directory after compaction
     Assert.assertEquals("Base directory does not match after major compaction",
-        Collections.singletonList("base_0000010_v0000029"),
+        Collections.singletonList("base_0000010_v0000030"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
     // Verify all contents
     actualData = dataProvider.getAllData(tableName);
@@ -1931,7 +1931,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // 2 compactions should be in the response queue with succeeded state
     verifySuccessfulCompaction(2);
     // Should contain only one base directory now
-    String expectedBase = "base_0000006_v0000023";
+    String expectedBase = "base_0000006_v0000024";
     Assert.assertEquals("Base directory does not match after major compaction",
         Collections.singletonList(expectedBase),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
@@ -2056,12 +2056,12 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> actualDeltasAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null);
     Assert.assertEquals("Delta directory does not match after compaction",
-        Collections.singletonList("delta_0000001_0000004_v0000032"), actualDeltasAfterComp);
+        Collections.singletonList("delta_0000001_0000004_v0000033"), actualDeltasAfterComp);
 
     List<String> actualDeleteDeltasAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null);
     Assert.assertEquals("Delete delta directory does not match after compaction",
-        Collections.singletonList("delete_delta_0000001_0000004_v0000032"), actualDeleteDeltasAfterComp);
+        Collections.singletonList("delete_delta_0000001_0000004_v0000033"), actualDeleteDeltasAfterComp);
 
     // Verify bucket files in delta dirs
     List<String> expectedBucketFiles = Collections.singletonList("bucket_00000");
