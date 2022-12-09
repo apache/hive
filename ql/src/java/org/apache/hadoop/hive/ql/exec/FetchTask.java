@@ -55,7 +55,6 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   private int totalRows;
   private static final Logger LOG = LoggerFactory.getLogger(FetchTask.class);
   JobConf job = null;
-  private boolean cachingEnabled;
 
   public FetchTask() {
     super();
@@ -69,8 +68,6 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
     super.initialize(queryState, queryPlan, taskQueue, context);
     work.initializeForFetch(context.getOpContext());
-
-    cachingEnabled = work.isCachingEnabled();
     fetchedData = new ArrayList<>();
 
     try {
@@ -94,7 +91,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
 
   @Override
   public int execute() {
-    if (cachingEnabled) {
+    if (work.isCachingEnabled()) {
       executeInner(fetchedData);
     }
     return 0;
@@ -122,7 +119,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   }
 
   public boolean fetch(List res) {
-    if (cachingEnabled) {
+    if (work.isCachingEnabled()) {
       if (currentRow >= fetchedData.size()) {
         return false;
       }
@@ -162,7 +159,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   }
 
   public void resetFetch() throws HiveException {
-    if (cachingEnabled) {
+    if (work.isCachingEnabled()) {
       currentRow = 0;
     } else {
       clearFetch();
@@ -178,7 +175,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   private boolean executeInner(List target) {
     sink.reset(target);
     int rowsRet;
-    if (cachingEnabled) {
+    if (work.isCachingEnabled()) {
       rowsRet = work.getLimit() >= 0 ? work.getLimit() : Integer.MAX_VALUE;
     } else {
       rowsRet = work.getLeastNumRows();
@@ -234,10 +231,5 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     source.initialize(conf, new ObjectInspector[]{ fetch.getOutputObjectInspector() });
     totalRows = 0;
     ExecMapper.setDone(false);
-  }
-
-  @VisibleForTesting
-  public boolean isCachingEnabled() {
-    return cachingEnabled;
   }
 }
