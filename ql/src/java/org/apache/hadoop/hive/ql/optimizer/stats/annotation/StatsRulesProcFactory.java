@@ -1306,9 +1306,9 @@ public class StatsRulesProcFactory {
         return 0;
       }
 
-      final float value = extractFloatFromLiteralValue(colTypeLowerCase, boundValue);
-
       try {
+        final float value = extractFloatFromLiteralValue(colTypeLowerCase, boundValue);
+
         // kll ignores null values (i.e., kll.getN() + numNulls = currNumRows), we therefore need to use kll.getN()
         // instead of currNumRows since the CDF is expressed as a fraction of kll.getN(), not currNumRows
         if (upperBound) {
@@ -1320,7 +1320,7 @@ public class StatsRulesProcFactory {
         }
       } catch (RuntimeException e) {
         LOG.debug("Selectivity computation using histogram failed to parse the boundary value ({}), "
-            + ", using the generic computation strategy", value, e);
+            + ", using the generic computation strategy", boundValue, e);
         return currNumRows / 3;
       }
     }

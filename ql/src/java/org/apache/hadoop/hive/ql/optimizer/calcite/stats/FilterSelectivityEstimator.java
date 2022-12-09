@@ -203,8 +203,21 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
           selectivity = closedBound ? greaterThanOrEqualSelectivity(kll, value) : greaterThanSelectivity(kll, value);
         }
 
-        // selectivity does not account for null values, we multiply for the number of non-null values (getN) and we
-        // divide by the total (non-null + null values) to get the overall selectivity
+        // selectivity does not account for null values, we multiply for the number of non-null values (getN)
+        // and we divide by the total (non-null + null values) to get the overall selectivity.
+        //
+        // Example: consider a filter "col < 3", and the following table rows:
+        //  _____
+        // | col |
+        // |_____|
+        // |1    |
+        // |null |
+        // |null |
+        // |3    |
+        // |4    |
+        // -------
+        // kll.getN() would be 3, selectivity 1/3, t.getTable().getRowCount() 5
+        // so the final result would be 3 * 1/3 / 5 = 1/5, as expected.
         return kll.getN() * selectivity / t.getTable().getRowCount();
       }
     }
