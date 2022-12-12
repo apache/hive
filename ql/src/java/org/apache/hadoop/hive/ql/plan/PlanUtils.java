@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_LOCATION;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hive.common.util.HiveStringUtils.quoteComments;
 
@@ -355,6 +357,9 @@ public final class PlanUtils {
         properties.setProperty(
                 org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
                 crtTblDesc.getStorageHandler());
+        if (isNotBlank(crtTblDesc.getLocation())) {
+          properties.setProperty(META_TABLE_LOCATION, crtTblDesc.getLocation());
+        }
       }
 
       if (crtTblDesc.getCollItemDelim() != null) {
@@ -452,6 +457,9 @@ public final class PlanUtils {
         properties.setProperty(
                 org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
                 crtViewDesc.getStorageHandler());
+        if (isNotBlank(crtViewDesc.getLocation())) {
+          ret.getProperties().setProperty(META_TABLE_LOCATION, crtViewDesc.getLocation());
+        }
       }
 
       if (crtViewDesc.getViewName() != null) {
