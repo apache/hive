@@ -6977,7 +6977,7 @@ public class HiveConf extends Configuration {
   }
 
   public static String generateIgnoredConfigWarning(String key) {
-    return String.format("Configuration {} is ignored and may not be set during runtime.", key);
+    return String.format("Configuration %s is ignored and cannot be set during runtime.", key);
   }
 
   public static String generateMrDeprecationWarning() {
