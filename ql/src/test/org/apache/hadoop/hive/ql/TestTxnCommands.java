@@ -2498,4 +2498,28 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table "+dbName+"."+tbName+" PARTITION (" +partition+") compact '"+compactiontype + "'" );
     TestTxnCommands2.runWorker(hiveConf);
   }
+
+  @Test
+  public void testFetchTaskCachingWithConversion() throws Exception {
+    dropTable(new String[]{"fetch_task_table"});
+    List actualRes = new ArrayList<>();
+    runStatementOnDriver("create table fetch_task_table (a INT, b INT) stored as orc" +
+            " tblproperties ('transactional'='true')");
+    runStatementOnDriver("insert into table fetch_task_table values (1,2), (3,4), (5,6)");
+    List expectedRes = runStatementOnDriver("select * from fetch_task_table");
+
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEFETCHTASKCACHING, true);
+    hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    d.run("select * from fetch_task_table");
+    Assert.assertFalse(d.getFetchTask().isCachingEnabled());
+    d.getFetchTask().fetch(actualRes);
+    Assert.assertEquals(actualRes, expectedRes);
+    actualRes.clear();
+
+    hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "more");
+    d.run("select * from fetch_task_table");
+    Assert.assertTrue(d.getFetchTask().isCachingEnabled());
+    d.getFetchTask().fetch(actualRes);
+    Assert.assertEquals(actualRes, expectedRes);
+  }
 }

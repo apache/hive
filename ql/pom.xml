@@ -1113,6 +1113,12 @@
                     <exclude>META-INF/licenses/slf4j*/**</exclude>
                   </excludes>
                 </filter>
+                <filter>
+                  <artifact>com.zaxxer:HikariCP</artifact>
+                  <excludes>
+                    <exclude>META-INF/versions/11/module-info.class</exclude>
+                  </excludes>
+                </filter>
               </filters>
               <relocations>
                 <relocation>

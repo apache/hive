@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.SourceTable;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -237,9 +237,15 @@ public class CreateMaterializedViewDesc implements DDLDesc, Serializable {
     this.tblProps = tblProps;
   }
 
-  @Explain(displayName = "table properties")
   public Map<String, String> getTblProps() {
     return tblProps;
+  }
+
+  @Explain(displayName = "table properties")
+  public Map<String, String> getTblPropsExplain() { // only for displaying plan
+    return PlanUtils.getPropertiesForExplain(tblProps,
+            hive_metastoreConstants.TABLE_IS_CTAS,
+            hive_metastoreConstants.TABLE_BUCKETING_VERSION);
   }
 
   @Explain(displayName = "if not exists", displayOnlyOnTrue = true)
