@@ -1024,7 +1024,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         }
       }
 
-      if (visitedOps.add(operator)) {
+      if (!visitedOps.contains(operator) || !isLogical) {
+        visitedOps.add(operator);
         if (operator.getChildOperators() != null) {
           int cindent = jsonOutput ? 0 : indent + 2;
           for (Operator<? extends OperatorDesc> op : operator.getChildOperators()) {
