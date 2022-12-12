@@ -313,6 +313,7 @@ public class TestFilterHooks {
     testFilterForTables(true);
     testFilterForPartition(true);
     testFilterForCompaction();
+    testFilterForDataConnector();
   }
 
   /**
