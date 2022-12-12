@@ -2824,7 +2824,7 @@ public class HiveConf extends Configuration {
                     "higher compute cost. (NDV means the number of distinct values.). It only affects the FM-Sketch \n" +
                     "(not the HLL algorithm which is the default), where it computes the number of necessary\n" +
                     " bitvectors to achieve the accuracy."),
-    HIVE_STATS_KLL_K("hive.stats.kll.k", 200,
+    HIVE_STATS_KLL_K_PARAM("hive.stats.kll.k.param", 200,
         "The parameter k affects the accuracy and the size of KLL sketches.\n"
             + "Larger values of k result in smaller values of normalized rank error.\n"
             + "The default of 200 yields approximately an error of 1.65%."),

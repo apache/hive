@@ -221,6 +221,7 @@ public final class ShowUtils {
     return writableValue.toString();
   }
 
+  // converts the histogram from its serialization to a string representing its quantiles
   private static String convertHistogram(byte[] buffer, ColumnStatisticsData._Fields field) {
     if (buffer == null || buffer.length == 0) {
       return "";

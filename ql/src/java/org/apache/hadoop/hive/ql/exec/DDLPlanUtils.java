@@ -404,6 +404,11 @@ public class DDLPlanUtils {
     ls.add(lowValue + dc.getLowValue() + "'");
   }
 
+  /**
+   * Checks whether the column statistics data stores histogram statistics, and returns its base64 encoding if so.
+   * @param cd the column statistics data
+   * @return the base64 encoding of the histogram statistics if existing, null otherwise.
+   */
   public String checkHistogram(ColumnStatisticsData cd) {
     byte[] buffer = null;
 

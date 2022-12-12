@@ -87,10 +87,10 @@ public class HiveStatsUtils {
   }
 
   public static int getKParamForKllSketch(Configuration conf) {
-    int k = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_KLL_K);
+    int k = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_KLL_K_PARAM);
 
     if (k < 8 || k > 65535) {
-      throw new IllegalArgumentException(HiveConf.ConfVars.HIVE_STATS_KLL_K.varname +
+      throw new IllegalArgumentException(HiveConf.ConfVars.HIVE_STATS_KLL_K_PARAM.varname +
           " must be in the range [8, 65535], got " + k);
     }
     return k;
