@@ -138,9 +138,15 @@ public final class ShowUtils {
     }
   }
 
-
+  // kept for backward compatibility since it's a public static method
+  @SuppressWarnings("unused")
   public static String[] extractColumnValues(FieldSchema column, boolean isColumnStatsAvailable,
       ColumnStatisticsObj columnStatisticsObj) {
+    return extractColumnValues(column, isColumnStatsAvailable, columnStatisticsObj, false);
+  }
+
+  public static String[] extractColumnValues(FieldSchema column, boolean isColumnStatsAvailable,
+      ColumnStatisticsObj columnStatisticsObj, boolean histogramEnabled) {
     List<String> values = new ArrayList<>();
     values.add(column.getName());
     values.add(column.getType());
@@ -152,54 +158,76 @@ public final class ShowUtils {
           BinaryColumnStatsData binaryStats = statsData.getBinaryStats();
           values.addAll(Lists.newArrayList("", "", "" + binaryStats.getNumNulls(), "",
               "" + binaryStats.getAvgColLen(), "" + binaryStats.getMaxColLen(), "", "",
-              convertToString(binaryStats.getBitVectors()), ""));
+              convertToString(binaryStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add("");
+          }
         } else if (statsData.isSetStringStats()) {
           StringColumnStatsData stringStats = statsData.getStringStats();
           values.addAll(Lists.newArrayList("", "", "" + stringStats.getNumNulls(), "" + stringStats.getNumDVs(),
               "" + stringStats.getAvgColLen(), "" + stringStats.getMaxColLen(), "", "",
-              convertToString(stringStats.getBitVectors()), ""));
+              convertToString(stringStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add("");
+          }
         } else if (statsData.isSetBooleanStats()) {
           BooleanColumnStatsData booleanStats = statsData.getBooleanStats();
           values.addAll(Lists.newArrayList("", "", "" + booleanStats.getNumNulls(), "", "", "",
               "" + booleanStats.getNumTrues(), "" + booleanStats.getNumFalses(),
-              convertToString(booleanStats.getBitVectors()), ""));
+              convertToString(booleanStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add("");
+          }
         } else if (statsData.isSetDecimalStats()) {
           DecimalColumnStatsData decimalStats = statsData.getDecimalStats();
           values.addAll(Lists.newArrayList(convertToString(decimalStats.getLowValue()),
               convertToString(decimalStats.getHighValue()), "" + decimalStats.getNumNulls(),
-              "" + decimalStats.getNumDVs(), "", "", "", "", convertToString(decimalStats.getBitVectors()),
-              convertHistogram(statsData.getDecimalStats().getHistogram(), statsData.getSetField())));
+              "" + decimalStats.getNumDVs(), "", "", "", "", convertToString(decimalStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add(convertHistogram(statsData.getDecimalStats().getHistogram(), statsData.getSetField()));
+          }
         } else if (statsData.isSetDoubleStats()) {
           DoubleColumnStatsData doubleStats = statsData.getDoubleStats();
           values.addAll(Lists.newArrayList("" + doubleStats.getLowValue(), "" + doubleStats.getHighValue(),
               "" + doubleStats.getNumNulls(), "" + doubleStats.getNumDVs(), "", "", "", "",
-              convertToString(doubleStats.getBitVectors()),
-              convertHistogram(statsData.getDoubleStats().getHistogram(), statsData.getSetField())));
+              convertToString(doubleStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add(convertHistogram(statsData.getDoubleStats().getHistogram(), statsData.getSetField()));
+          }
         } else if (statsData.isSetLongStats()) {
           LongColumnStatsData longStats = statsData.getLongStats();
           values.addAll(Lists.newArrayList("" + longStats.getLowValue(), "" + longStats.getHighValue(),
               "" + longStats.getNumNulls(), "" + longStats.getNumDVs(), "", "", "", "",
-              convertToString(longStats.getBitVectors()),
-              convertHistogram(statsData.getLongStats().getHistogram(), statsData.getSetField())));
+              convertToString(longStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add(convertHistogram(statsData.getLongStats().getHistogram(), statsData.getSetField()));
+          }
         } else if (statsData.isSetDateStats()) {
           DateColumnStatsData dateStats = statsData.getDateStats();
           values.addAll(Lists.newArrayList(convertToString(dateStats.getLowValue()),
               convertToString(dateStats.getHighValue()), "" + dateStats.getNumNulls(), "" + dateStats.getNumDVs(),
-              "", "", "", "", convertToString(dateStats.getBitVectors()),
-              convertHistogram(statsData.getDateStats().getHistogram(), statsData.getSetField())));
+              "", "", "", "", convertToString(dateStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add(convertHistogram(statsData.getDateStats().getHistogram(), statsData.getSetField()));
+          }
         } else if (statsData.isSetTimestampStats()) {
           TimestampColumnStatsData timestampStats = statsData.getTimestampStats();
           values.addAll(Lists.newArrayList(convertToString(timestampStats.getLowValue()),
               convertToString(timestampStats.getHighValue()), "" + timestampStats.getNumNulls(),
-              "" + timestampStats.getNumDVs(), "", "", "", "", convertToString(timestampStats.getBitVectors()),
-              convertHistogram(statsData.getTimestampStats().getHistogram(), statsData.getSetField())));
+              "" + timestampStats.getNumDVs(), "", "", "", "", convertToString(timestampStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add(convertHistogram(statsData.getTimestampStats().getHistogram(), statsData.getSetField()));
+          }
         }
       } else {
-        values.addAll(Lists.newArrayList("", "", "", "", "", "", "", "", "", ""));
+        values.addAll(Lists.newArrayList("", "", "", "", "", "", "", "", ""));
+        if (histogramEnabled) {
+          values.add("");
+        }
       }
     }
 
-    values.add(column.getComment() != null ? column.getComment() : "");
+    values.add(column.getComment() == null ? "" : column.getComment());
     return values.toArray(new String[0]);
   }
 
