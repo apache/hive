@@ -91,7 +91,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d_n2 partition(year=2001) locid
 PREHOOK: type: DESCTABLE
@@ -110,7 +109,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted loc_orc_1d_n2 locid
 PREHOOK: type: DESCTABLE
@@ -129,7 +127,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
 PREHOOK: query: describe formatted loc_orc_1d_n2 locid
@@ -149,7 +146,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
 PREHOOK: query: describe formatted loc_orc_1d_n2 locid
@@ -169,7 +165,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
 PREHOOK: query: create table if not exists loc_orc_2d_n2 (
@@ -279,7 +274,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
 PREHOOK: query: describe formatted loc_orc_2d_n2 locid
@@ -299,7 +293,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
 PREHOOK: query: describe formatted loc_orc_2d_n2 locid
@@ -319,6 +312,5 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}

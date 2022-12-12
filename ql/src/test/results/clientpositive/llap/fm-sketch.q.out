@@ -114,7 +114,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	FM                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: create table i_n1(key int)
@@ -233,7 +232,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	FM                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: drop table i_n1
@@ -288,7 +286,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	FM                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: drop table i_n1
@@ -343,7 +340,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	FM                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: drop table i_n1
@@ -434,6 +430,5 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	FM                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}

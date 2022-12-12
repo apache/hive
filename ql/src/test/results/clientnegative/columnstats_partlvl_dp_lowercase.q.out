@@ -52,6 +52,5 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 FAILED: SemanticException [Error 10006]: Partition not found {employeesalary=2000.0, country=usa}

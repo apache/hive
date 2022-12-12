@@ -680,7 +680,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted Employee_Part partition (employeeSalary=2000.0) employeeName
 PREHOOK: type: DESCTABLE
@@ -699,7 +698,6 @@ max_col_len         	6
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: explain 
 analyze table Employee_Part  compute statistics for columns
@@ -822,7 +820,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted Employee_Part partition(employeeSalary=4000.0) employeeID
 PREHOOK: type: DESCTABLE
@@ -841,7 +838,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: explain 
 analyze table Employee_Part  compute statistics for columns
@@ -960,7 +956,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}
 PREHOOK: query: create database if not exists dummydb
@@ -1006,7 +1001,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}
 PREHOOK: query: analyze table default.Employee_Part  compute statistics for columns

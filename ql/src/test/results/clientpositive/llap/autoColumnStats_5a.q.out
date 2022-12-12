@@ -699,5 +699,4 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   

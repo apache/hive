@@ -117,7 +117,6 @@ max_col_len
 num_trues	
 num_falses	
 bit_vector	HL
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 i
@@ -137,7 +136,6 @@ max_col_len
 num_trues	
 num_falses	
 bit_vector	HL
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 b
@@ -157,7 +155,6 @@ max_col_len
 num_trues	
 num_falses	
 bit_vector	HL
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 f
@@ -177,7 +174,6 @@ max_col_len
 num_trues	
 num_falses	
 bit_vector	HL
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 d
@@ -197,7 +193,6 @@ max_col_len
 num_trues	
 num_falses	
 bit_vector	HL
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 dem
@@ -217,7 +212,6 @@ max_col_len
 num_trues	
 num_falses	
 bit_vector	HL
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 ts
@@ -237,7 +231,6 @@ max_col_len
 num_trues	
 num_falses	
 bit_vector	HL
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 dt
@@ -257,7 +250,6 @@ max_col_len
 num_trues	
 num_falses	
 bit_vector	HL
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 str
@@ -277,7 +269,6 @@ max_col_len	17
 num_trues	
 num_falses	
 bit_vector	HL
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 v
@@ -297,7 +288,6 @@ max_col_len	5
 num_trues	
 num_falses	
 bit_vector	HL
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 c
@@ -317,7 +307,6 @@ max_col_len	4
 num_trues	
 num_falses	
 bit_vector	HL
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 bl
@@ -337,7 +326,6 @@ max_col_len
 num_trues	1
 num_falses	1
 bit_vector	
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 bin
@@ -357,7 +345,6 @@ max_col_len	3
 num_trues	
 num_falses	
 bit_vector	
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 t
@@ -377,7 +364,6 @@ max_col_len
 num_trues	
 num_falses	
 bit_vector	HL
-histogram	
 comment	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bl\":\"true\",\"c\":\"true\",\"d\":\"true\",\"dem\":\"true\",\"dt\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"str\":\"true\",\"t\":\"true\",\"ts\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0

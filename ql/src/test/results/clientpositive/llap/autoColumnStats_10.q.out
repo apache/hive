@@ -155,7 +155,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
 PREHOOK: query: desc formatted p_n1 c1
@@ -175,7 +174,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
 PREHOOK: query: insert into p_n1 values (2,11,111)
@@ -243,7 +241,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
 PREHOOK: query: desc formatted p_n1 c1
@@ -263,7 +260,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
 PREHOOK: query: drop table p_n1
@@ -427,7 +423,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 PREHOOK: query: desc formatted p_n1 c1
@@ -447,7 +442,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 PREHOOK: query: insert into p_n1 values (2,11,111)
@@ -515,7 +509,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 PREHOOK: query: desc formatted p_n1 c1
@@ -535,6 +528,5 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}

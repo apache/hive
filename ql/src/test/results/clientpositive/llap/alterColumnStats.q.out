@@ -155,7 +155,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}
 PREHOOK: query: desc formatted p_n0 c2
@@ -175,6 +174,5 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"insert_num\":\"true\"}}

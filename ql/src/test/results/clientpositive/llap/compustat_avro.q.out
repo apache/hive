@@ -41,7 +41,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\",\"col4\":\"true\",\"col5\":\"true\",\"col6\":\"true\"}}
 PREHOOK: query: analyze table testAvro compute statistics for columns col1,col3
@@ -71,7 +70,6 @@ max_col_len         	0
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\",\"col4\":\"true\",\"col5\":\"true\",\"col6\":\"true\"}}
 #### A masked pattern was here ####

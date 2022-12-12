@@ -257,7 +257,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: INSERT INTO FinancialPart partition (country) values
  (
@@ -333,7 +332,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: desc formatted FinancialPart partition(country='country3') SK_CompanyID
 PREHOOK: type: DESCTABLE
@@ -352,7 +350,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 WARNING: Comparing char(60) and bigint may result in loss of information.
 WARNING: Comparing char(60) and bigint may result in loss of information.
@@ -505,7 +502,6 @@ max_col_len         	0
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean\":\"true\",\"cdecimal\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cid\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"ctimestamp\":\"true\",\"ctinyint\":\"true\",\"fi_qtr\":\"true\",\"fi_qtr_start_date\":\"true\",\"fi_year\":\"true\",\"sk_companyid\":\"true\"}}
 PREHOOK: query: INSERT INTO Financial values
@@ -579,6 +575,5 @@ max_col_len         	6
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean\":\"true\",\"cdecimal\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cid\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"ctimestamp\":\"true\",\"ctinyint\":\"true\",\"fi_qtr\":\"true\",\"fi_qtr_start_date\":\"true\",\"fi_year\":\"true\",\"sk_companyid\":\"true\"}}

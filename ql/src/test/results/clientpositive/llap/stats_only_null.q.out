@@ -445,7 +445,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: drop table stats_null
 PREHOOK: type: DROPTABLE

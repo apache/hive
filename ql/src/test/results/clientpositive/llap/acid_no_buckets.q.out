@@ -364,7 +364,6 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: analyze table srcpart_acid PARTITION(ds, hr) compute statistics
@@ -475,7 +474,6 @@ max_col_len         	4
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: explain delete from srcpart_acid where key in( '1001', '213', '43')

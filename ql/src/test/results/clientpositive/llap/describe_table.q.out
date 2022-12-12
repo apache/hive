@@ -212,7 +212,6 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: describe formatted srcpart PARTITION(ds='2008-04-08', hr='12')
@@ -311,7 +310,6 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"key\":\"true\"}}
 PREHOOK: query: describe formatted `srcpart` PARTITION(ds='2008-04-08', hr='12')
@@ -369,7 +367,6 @@ max_col_len         	100
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ds\":\"true\"}}
 PREHOOK: query: describe formatted `srcpart` `hr`
@@ -389,7 +386,6 @@ max_col_len         	100
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"hr\":\"true\"}}
 PREHOOK: query: create table srcpart_serdeprops like srcpart

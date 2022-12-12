@@ -399,7 +399,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1
 PREHOOK: type: DESCTABLE
@@ -418,7 +417,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1
 PREHOOK: type: DESCTABLE
@@ -437,7 +435,6 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts
 PREHOOK: type: DESCTABLE
@@ -456,7 +453,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid
 PREHOOK: type: DESCTABLE
@@ -475,7 +471,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1
 PREHOOK: type: DESCTABLE
@@ -494,7 +489,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1
 PREHOOK: type: DESCTABLE
@@ -513,7 +507,6 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts
 PREHOOK: type: DESCTABLE
@@ -532,7 +525,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
 PREHOOK: type: QUERY
@@ -619,7 +611,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1
 PREHOOK: type: DESCTABLE
@@ -638,7 +629,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1
 PREHOOK: type: DESCTABLE
@@ -657,7 +647,6 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts
 PREHOOK: type: DESCTABLE
@@ -676,7 +665,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid
 PREHOOK: type: DESCTABLE
@@ -695,7 +683,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1
 PREHOOK: type: DESCTABLE
@@ -714,7 +701,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1
 PREHOOK: type: DESCTABLE
@@ -733,7 +719,6 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts
 PREHOOK: type: DESCTABLE
@@ -752,7 +737,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
 PREHOOK: type: QUERY
@@ -865,7 +849,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1
 PREHOOK: type: DESCTABLE
@@ -884,7 +867,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1
 PREHOOK: type: DESCTABLE
@@ -903,7 +885,6 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts
 PREHOOK: type: DESCTABLE
@@ -922,7 +903,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid
 PREHOOK: type: DESCTABLE
@@ -941,7 +921,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1
 PREHOOK: type: DESCTABLE
@@ -960,7 +939,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1
 PREHOOK: type: DESCTABLE
@@ -979,7 +957,6 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts
 PREHOOK: type: DESCTABLE
@@ -998,7 +975,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: explain alter table orc_merge5a_n1 partition(year="2000",hour=24) concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE
@@ -1139,7 +1115,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1
 PREHOOK: type: DESCTABLE
@@ -1158,7 +1133,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1
 PREHOOK: type: DESCTABLE
@@ -1177,7 +1151,6 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts
 PREHOOK: type: DESCTABLE
@@ -1196,7 +1169,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid
 PREHOOK: type: DESCTABLE
@@ -1215,7 +1187,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1
 PREHOOK: type: DESCTABLE
@@ -1234,7 +1205,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1
 PREHOOK: type: DESCTABLE
@@ -1253,7 +1223,6 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts
 PREHOOK: type: DESCTABLE
@@ -1272,5 +1241,4 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   

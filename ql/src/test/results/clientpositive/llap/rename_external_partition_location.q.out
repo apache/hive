@@ -174,7 +174,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part1') value
 PREHOOK: type: DESCTABLE
@@ -193,7 +192,6 @@ max_col_len         	5
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: ALTER TABLE ex_table PARTITION (part='part1') RENAME TO PARTITION (part='part2')
 PREHOOK: type: ALTERTABLE_RENAMEPART
@@ -339,7 +337,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: DESCRIBE FORMATTED ex_table PARTITION (part='part2') value
 PREHOOK: type: DESCTABLE
@@ -358,5 +355,4 @@ max_col_len         	5
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   

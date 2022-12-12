@@ -151,7 +151,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: explain
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
@@ -438,7 +437,6 @@ max_col_len         	13
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}
 PREHOOK: query: desc formatted UserVisits_web_text_none avgTimeOnSite
@@ -458,7 +456,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}
 PREHOOK: query: desc formatted UserVisits_web_text_none adRevenue
@@ -478,7 +475,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}
 PREHOOK: query: CREATE TEMPORARY TABLE empty_tab(
@@ -518,7 +514,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}
 PREHOOK: query: explain
@@ -622,7 +617,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}
 PREHOOK: query: desc formatted empty_tab b
@@ -642,7 +636,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\"}}
 PREHOOK: query: CREATE DATABASE test
@@ -732,7 +725,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: desc formatted test.UserVisits_web_text_none sourceIP
 PREHOOK: type: DESCTABLE
@@ -751,7 +743,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 PREHOOK: query: desc formatted default.UserVisits_web_text_none sourceIP
 PREHOOK: type: DESCTABLE
@@ -770,7 +761,6 @@ max_col_len         	13
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}
 PREHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sKeyword
@@ -808,7 +798,6 @@ max_col_len         	19
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sKeyword\":\"true\"}}
 PREHOOK: query: desc formatted test.UserVisits_web_text_none sKeyword
@@ -828,6 +817,5 @@ max_col_len         	19
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sKeyword\":\"true\"}}

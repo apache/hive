@@ -59,7 +59,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t\":\"true\",\"u\":\"true\",\"v\":\"true\"}}
 PREHOOK: query: explain select * from decimal_1_n1 order by t limit 100

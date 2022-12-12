@@ -95,7 +95,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"s\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 i
@@ -115,7 +114,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 b
@@ -135,7 +133,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"b\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 f
@@ -155,7 +152,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"f\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 d
@@ -175,7 +171,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"d\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 dem
@@ -195,7 +190,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"dem\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 ts
@@ -215,7 +209,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ts\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 dt
@@ -235,7 +228,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"dt\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 str
@@ -255,7 +247,6 @@ max_col_len         	17
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"str\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 v
@@ -275,7 +266,6 @@ max_col_len         	5
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 c
@@ -295,7 +285,6 @@ max_col_len         	4
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"c\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 bl
@@ -315,7 +304,6 @@ max_col_len
 num_trues           	1                   
 num_falses          	0                   
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bl\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 bin
@@ -335,7 +323,6 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bin\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 t
@@ -355,7 +342,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"t\":\"true\"}}
 PREHOOK: query: INSERT INTO datatype_stats_n0 values(2, 44, 455, 45454.3, 454.6564, 2354, '2012-01-01 01:02:02', '2011-12-31', 'update_statistic', 'stat', 'hi', 'false', 'bi', 1)
@@ -397,7 +383,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"s\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 i
@@ -417,7 +402,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 b
@@ -437,7 +421,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"b\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 f
@@ -457,7 +440,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"f\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 d
@@ -477,7 +459,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"d\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 dem
@@ -497,7 +478,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"dem\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 ts
@@ -517,7 +497,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ts\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 dt
@@ -537,7 +516,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"dt\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 str
@@ -557,7 +535,6 @@ max_col_len         	17
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"str\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 v
@@ -577,7 +554,6 @@ max_col_len         	5
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 c
@@ -597,7 +573,6 @@ max_col_len         	4
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"c\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 bl
@@ -617,7 +592,6 @@ max_col_len
 num_trues           	1                   
 num_falses          	1                   
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bl\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 bin
@@ -637,7 +611,6 @@ max_col_len         	3
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bin\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 t
@@ -657,7 +630,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"t\":\"true\"}}
 PREHOOK: query: INSERT INTO datatype_stats_n0 values(4, 46, 457, 45454.5, 454.6566, 2356, '2012-01-01 01:02:04', '2012-01-02', 'update_statisticsss', 'statsss', 'hiveee', 'true', 'binnn', 4)
@@ -699,7 +671,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"s\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 i
@@ -719,7 +690,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 b
@@ -739,7 +709,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"b\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 f
@@ -759,7 +728,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"f\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 d
@@ -779,7 +747,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"d\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 dem
@@ -799,7 +766,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"dem\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 ts
@@ -819,7 +785,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ts\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 dt
@@ -839,7 +804,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"dt\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 str
@@ -859,7 +823,6 @@ max_col_len         	19
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"str\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 v
@@ -879,7 +842,6 @@ max_col_len         	7
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 c
@@ -899,7 +861,6 @@ max_col_len         	5
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"c\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 bl
@@ -919,7 +880,6 @@ max_col_len
 num_trues           	2                   
 num_falses          	1                   
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bl\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 bin
@@ -939,7 +899,6 @@ max_col_len         	5
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bin\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 t
@@ -959,7 +918,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"t\":\"true\"}}
 PREHOOK: query: ANALYZE TABLE datatype_stats_n0 PARTITION(t) COMPUTE STATISTICS FOR COLUMNS
@@ -1005,7 +963,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"s\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 i
@@ -1025,7 +982,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"i\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 b
@@ -1045,7 +1001,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"b\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 f
@@ -1065,7 +1020,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"f\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 d
@@ -1085,7 +1039,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"d\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 dem
@@ -1105,7 +1058,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"dem\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 ts
@@ -1125,7 +1077,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ts\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 dt
@@ -1145,7 +1096,6 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"dt\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 str
@@ -1165,7 +1115,6 @@ max_col_len         	19
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"str\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 v
@@ -1185,7 +1134,6 @@ max_col_len         	7
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"v\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 c
@@ -1205,7 +1153,6 @@ max_col_len         	5
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"c\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 bl
@@ -1225,7 +1172,6 @@ max_col_len
 num_trues           	2                   
 num_falses          	1                   
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bl\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 bin
@@ -1245,7 +1191,6 @@ max_col_len         	5
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"bin\":\"true\"}}
 PREHOOK: query: DESC FORMATTED datatype_stats_n0 t
@@ -1265,6 +1210,5 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	                    
-histogram           	                    
 comment             	                    
 COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"t\":\"true\"}}
