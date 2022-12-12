@@ -367,7 +367,7 @@
     </property>
     <property>
         <name>hive.stats.fetch.kll</name>
-        <value>true</value>
+        <value>false</value>
     </property>
 
     <property>
