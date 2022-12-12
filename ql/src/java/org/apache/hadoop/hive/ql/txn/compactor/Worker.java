@@ -60,6 +60,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -248,6 +249,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     }
 
+    List<String> columnList = null;
     try (CompactionTxn compactionTxn = new CompactionTxn()) {
 
       FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
@@ -428,6 +430,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
         AcidMetricService.updateMetricsFromWorker(ci.dbname, ci.tableName, ci.partName, ci.type,
             dir.getCurrentDirectories().size(), dir.getDeleteDeltas().size(), conf, msc);
+
+        // Get columns with stats at the end.
+        // This will save computations if compaction has failed.
+        columnList = msc.findColumnsWithStats(CompactionInfo.compactionInfoToStruct(ci));
+
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
             ". Marking failed to avoid repeated failures", e);
@@ -472,8 +479,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
 
     if (computeStats) {
-       statsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : t1.getOwner(),
-              CompactorUtil.getCompactorJobQueueName(conf, ci, t1));
+      statsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : t1.getOwner(),
+              CompactorUtil.getCompactorJobQueueName(conf, ci, t1), columnList);
     }
     return true;
   }

@@ -320,6 +320,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     //as of (8/27/2014) Hive 0.14, ACID/Orc requires HiveInputFormat
     String dbName = "default";
     String tblName = "compaction_test";
+    List<String> colNames = Arrays.asList("a", "b");
     executeStatementOnDriver("drop table if exists " + tblName, driver);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
             " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
@@ -337,7 +338,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
     new StatsUpdater().gatherStats(ci, conf,
-            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
+            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table), colNames);
 
     //Check basic stats are collected
     Map<String, String> parameters = Hive.get().getTable(tblName).getParameters();
@@ -2624,6 +2625,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, isQueryBased);
     String dbName = "default";
     String tblName = "minor_compaction_test";
+    List<String> colNames = Arrays.asList("a", "b");
     executeStatementOnDriver("drop table if exists " + tblName, driver);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
             " PARTITIONED BY(bkt INT)" +
@@ -2646,7 +2648,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=1", CompactionType.MINOR);
     new StatsUpdater().gatherStats(ci, conf,
-            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
+            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table), colNames);
 
     //Check basic stats are collected
     org.apache.hadoop.hive.ql.metadata.Table hiveTable = Hive.get().getTable(tblName);

@@ -28,6 +28,7 @@ import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,7 +51,8 @@ public final class StatsUpdater {
      * @param userName The user to run the statistic collection with
      * @param compactionQueueName The name of the compaction queue
      */
-    public void gatherStats(CompactionInfo ci, HiveConf conf, String userName, String compactionQueueName) {
+    public void gatherStats(CompactionInfo ci, HiveConf conf, String userName, String compactionQueueName,
+                            List<String> columnList) {
         try {
             HiveConf statusUpdaterConf = new HiveConf(conf);
             statusUpdaterConf.unset(ValidTxnList.VALID_TXNS_KEY);
@@ -69,7 +71,17 @@ public final class StatsUpdater {
                 sb.append(")");
             }
             sb.append(" compute statistics");
-            if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+            if (!conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER) && ci.isMajorCompaction()) {
+                if (columnList == null || columnList.isEmpty()) {
+                    LOG.debug("{} : No existing stats found.  Will not run analyze.", ci);
+                    return;
+                }
+                sb.append(" for columns ");
+                for (String colName : columnList) {
+                    sb.append(colName).append(",");
+                }
+                sb.setLength(sb.length() - 1); //remove trailing ,
+            } else {
                 sb.append(" noscan");
             }
             LOG.info(ci + ": running '" + sb + "'");
