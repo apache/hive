@@ -73,6 +73,7 @@ public class SyntheticJoinPredicate extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
+
     boolean enabled = false;
     String queryEngine = pctx.getConf().getVar(ConfVars.HIVE_EXECUTION_ENGINE);
 
@@ -101,6 +102,7 @@ public class SyntheticJoinPredicate extends Transform {
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getTopOps().values());
     ogw.startWalking(topNodes, null);
+
     return pctx;
   }
 
