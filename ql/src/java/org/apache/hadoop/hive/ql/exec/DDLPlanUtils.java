@@ -213,14 +213,23 @@ public class DDLPlanUtils {
     "> <" + COL_TYPE + "> CONSTRAINT <" + CONSTRAINT_NAME + "> DEFAULT <" + DEFAULT_VALUE + "> <"
     + ENABLE + "> <" + VALIDATE + "> <" + RELY + ">;";
 
-  private final String EXIST_BIT_VECTORS = "-- BIT VECTORS PRESENT FOR <" + DATABASE_NAME + ">.<" + TABLE_NAME + "> " +
-    "FOR COLUMN <" + COLUMN_NAME + "> BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS <" +
-    BASE_64_VALUE + "> ";
+  private final String EXIST_BIT_VECTORS = "-- BIT VECTORS PRESENT FOR <" + DATABASE_NAME + ">.<" + TABLE_NAME + "> "
+      + "FOR COLUMN <" + COLUMN_NAME + "> BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS <"
+      + BASE_64_VALUE + "> ";
 
-  private final String EXIST_BIT_VECTORS_PARTITIONED = "-- BIT VECTORS PRESENT FOR <" + DATABASE_NAME + ">.<" +
-    TABLE_NAME + "> PARTITION <" + PARTITION_NAME + "> FOR COLUMN <"
-    + COLUMN_NAME + "> BUT THEY ARE NOT SUPPORTED YET.THE BASE64 VALUE FOR THE BITVECTOR IS <" +
-    BASE_64_VALUE + "> ";
+  private final String EXIST_BIT_VECTORS_PARTITIONED = "-- BIT VECTORS PRESENT FOR <" + DATABASE_NAME + ">.<"
+      + TABLE_NAME + "> PARTITION <" + PARTITION_NAME + "> FOR COLUMN <"
+      + COLUMN_NAME + "> BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS <"
+      + BASE_64_VALUE + "> ";
+
+  private final String EXIST_HISTOGRAM = "-- HISTOGRAM PRESENT FOR <" + DATABASE_NAME + ">.<" + TABLE_NAME + "> "
+      + "FOR COLUMN <" + COLUMN_NAME + "> BUT IT IS NOT SUPPORTED YET. THE BASE64 VALUE FOR THE HISTOGRAM IS <"
+      + BASE_64_VALUE + "> ";
+
+  private final String EXIST_HISTOGRAM_PARTITIONED = "-- HISTOGRAM PRESENT FOR <" + DATABASE_NAME + ">.<"
+      + TABLE_NAME + "> PARTITION <" + PARTITION_NAME + "> FOR COLUMN <"
+      + COLUMN_NAME + "> BUT IT IS NOT SUPPORTED YET. THE BASE64 VALUE FOR THE HISTOGRAM IS <"
+      + BASE_64_VALUE + "> ";
 
   /**
    * Returns the create database query for a give database name.
@@ -395,29 +404,59 @@ public class DDLPlanUtils {
     ls.add(lowValue + dc.getLowValue() + "'");
   }
 
+  /**
+   * Checks whether the column statistics data stores histogram statistics, and returns its base64 encoding if so.
+   * @param cd the column statistics data
+   * @return the base64 encoding of the histogram statistics if existing, null otherwise.
+   */
+  public String checkHistogram(ColumnStatisticsData cd) {
+    byte[] buffer = null;
+
+    if (cd.isSetDateStats() && cd.getDateStats().isSetHistogram()) {
+      buffer = cd.getDateStats().getHistogram();
+    } else if (cd.isSetDoubleStats() && cd.getDoubleStats().isSetHistogram()) {
+      buffer = cd.getDoubleStats().getHistogram();
+    } else if (cd.isSetDecimalStats() && cd.getDecimalStats().isSetHistogram()) {
+      buffer = cd.getDecimalStats().getHistogram();
+    } else if (cd.isSetLongStats() && cd.getLongStats().isSetHistogram()) {
+      buffer = cd.getLongStats().getHistogram();
+    } else if (cd.isSetTimestampStats() && cd.getTimestampStats().isSetHistogram()) {
+      buffer = cd.getTimestampStats().getHistogram();
+    }
+
+    return encodeBytes(buffer);
+  }
+
   public String checkBitVectors(ColumnStatisticsData cd) {
+    byte[] buffer = null;
+
     if (cd.isSetDoubleStats() && cd.getDoubleStats().isSetBitVectors()) {
-      return Base64.getEncoder().encodeToString(cd.getDoubleStats().getBitVectors());
+      buffer = cd.getDoubleStats().getBitVectors();
     }
     if (cd.isSetBinaryStats() && cd.getBinaryStats().isSetBitVectors()) {
-      return Base64.getEncoder().encodeToString(cd.getBinaryStats().getBitVectors());
+      buffer = cd.getBinaryStats().getBitVectors();
     }
     if (cd.isSetStringStats() && cd.getStringStats().isSetBitVectors()) {
-      return Base64.getEncoder().encodeToString(cd.getStringStats().getBitVectors());
+      buffer = cd.getStringStats().getBitVectors();
     }
     if (cd.isSetDateStats() && cd.getDateStats().isSetBitVectors()) {
-      return Base64.getEncoder().encodeToString(cd.getDateStats().getBitVectors());
+      buffer = cd.getDateStats().getBitVectors();
     }
     if (cd.isSetLongStats() && cd.getLongStats().isSetBitVectors()) {
-      return Base64.getEncoder().encodeToString(cd.getLongStats().getBitVectors());
+      buffer = cd.getLongStats().getBitVectors();
     }
     if (cd.isSetDecimalStats() && cd.getDecimalStats().isSetBitVectors()) {
-      return Base64.getEncoder().encodeToString(cd.getDecimalStats().getBitVectors());
+      buffer = cd.getDecimalStats().getBitVectors();
     }
-    if (cd.isSetDoubleStats() && cd.getBooleanStats().isSetBitVectors()) {
-      return Base64.getEncoder().encodeToString(cd.getBooleanStats().getBitVectors());
+    if (cd.isSetBooleanStats() && cd.getBooleanStats().isSetBitVectors()) {
+      buffer = cd.getBooleanStats().getBitVectors();
     }
-    return null;
+
+    return encodeBytes(buffer);
+  }
+
+  private String encodeBytes(byte[] buffer) {
+    return buffer == null ? null : Base64.getEncoder().encodeToString(buffer);
   }
 
   public String addAllColStats(ColumnStatisticsData columnStatisticsData) {
@@ -458,24 +497,32 @@ public class DDLPlanUtils {
    */
   public List<String> getAlterTableStmtTableStatsColsAll(Table tbl)
     throws HiveException {
-    List<String> alterTblStmt = new ArrayList<String>();
+    List<String> alterTblStmt = new ArrayList<>();
     List<String> accessedColumns = getTableColumnNames(tbl);
     List<ColumnStatisticsObj> tableColumnStatistics = Hive.get().getTableColumnStatistics(tbl.getDbName(),
       tbl.getTableName(),
       accessedColumns,
       true);
     ColumnStatisticsObj[] columnStatisticsObj = tableColumnStatistics.toArray(new ColumnStatisticsObj[0]);
-    for (int i = 0; i < columnStatisticsObj.length; i++) {
-      alterTblStmt.add(getAlterTableStmtCol(columnStatisticsObj[i].getStatsData(),
-        columnStatisticsObj[i].getColName(),
-        tbl.getTableName(), tbl.getDbName()));
-      String base64 = checkBitVectors(columnStatisticsObj[i].getStatsData());
-      if (base64 != null) {
+    for (ColumnStatisticsObj statisticsObj : columnStatisticsObj) {
+      alterTblStmt.add(getAlterTableStmtCol(
+          statisticsObj.getStatsData(), statisticsObj.getColName(), tbl.getTableName(), tbl.getDbName()));
+      String base64BitVector = checkBitVectors(statisticsObj.getStatsData());
+      if (base64BitVector != null) {
         ST command = new ST(EXIST_BIT_VECTORS);
         command.add(DATABASE_NAME, tbl.getDbName());
         command.add(TABLE_NAME, tbl.getTableName());
-        command.add(COLUMN_NAME, columnStatisticsObj[i].getColName());
-        command.add(BASE_64_VALUE, base64);
+        command.add(COLUMN_NAME, statisticsObj.getColName());
+        command.add(BASE_64_VALUE, base64BitVector);
+        alterTblStmt.add(command.render());
+      }
+      String base64Histogram = checkHistogram(statisticsObj.getStatsData());
+      if (base64Histogram != null) {
+        ST command = new ST(EXIST_HISTOGRAM);
+        command.add(DATABASE_NAME, tbl.getDbName());
+        command.add(TABLE_NAME, tbl.getTableName());
+        command.add(COLUMN_NAME, statisticsObj.getColName());
+        command.add(BASE_64_VALUE, base64Histogram);
         alterTblStmt.add(command.render());
       }
     }
@@ -521,20 +568,27 @@ public class DDLPlanUtils {
                                                              String dbName) {
     List<String> alterTableStmt = new ArrayList<String>();
     ColumnStatisticsObj[] columnStatisticsObj = columnStatisticsObjList.toArray(new ColumnStatisticsObj[0]);
-    for (int i = 0; i < columnStatisticsObj.length; i++) {
-      alterTableStmt.add(getAlterTableStmtPartitionColStat(columnStatisticsObj[i].getStatsData(),
-        columnStatisticsObj[i].getColName(),
-        tblName,
-        ptName,
-        dbName));
-      String base64 = checkBitVectors(columnStatisticsObj[i].getStatsData());
-      if (base64 != null) {
+    for (ColumnStatisticsObj statisticsObj : columnStatisticsObj) {
+      alterTableStmt.add(getAlterTableStmtPartitionColStat(
+          statisticsObj.getStatsData(), statisticsObj.getColName(), tblName, ptName, dbName));
+      String base64BitVectors = checkBitVectors(statisticsObj.getStatsData());
+      if (base64BitVectors != null) {
         ST command = new ST(EXIST_BIT_VECTORS_PARTITIONED);
         command.add(DATABASE_NAME, dbName);
         command.add(TABLE_NAME, tblName);
         command.add(PARTITION_NAME, ptName);
-        command.add(COLUMN_NAME, columnStatisticsObj[i].getColName());
-        command.add(BASE_64_VALUE, base64);
+        command.add(COLUMN_NAME, statisticsObj.getColName());
+        command.add(BASE_64_VALUE, base64BitVectors);
+        alterTableStmt.add(command.render());
+      }
+      String base64Histogram = checkHistogram(statisticsObj.getStatsData());
+      if (base64Histogram != null) {
+        ST command = new ST(EXIST_HISTOGRAM_PARTITIONED);
+        command.add(DATABASE_NAME, dbName);
+        command.add(TABLE_NAME, tblName);
+        command.add(PARTITION_NAME, ptName);
+        command.add(COLUMN_NAME, statisticsObj.getColName());
+        command.add(BASE_64_VALUE, base64Histogram);
         alterTableStmt.add(command.render());
       }
     }

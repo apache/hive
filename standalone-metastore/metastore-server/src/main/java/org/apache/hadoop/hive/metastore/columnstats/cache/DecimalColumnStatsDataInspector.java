@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.metastore.columnstats.cache;
 
 import java.nio.ByteBuffer;
 
+import org.apache.hadoop.hive.common.histogram.KllHistogramEstimator;
+import org.apache.hadoop.hive.common.histogram.KllHistogramEstimatorFactory;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
@@ -27,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 public class DecimalColumnStatsDataInspector extends DecimalColumnStatsData {
 
   private NumDistinctValueEstimator ndvEstimator;
+  private KllHistogramEstimator histogramEstimator;
 
   public DecimalColumnStatsDataInspector() {
     super();
@@ -40,6 +43,9 @@ public class DecimalColumnStatsDataInspector extends DecimalColumnStatsData {
     super(other);
     if (other.ndvEstimator != null) {
       super.setBitVectors(ndvEstimator.serialize());
+    }
+    if (other.histogramEstimator != null) {
+      super.setHistogram(histogramEstimator.serialize());
     }
   }
 
@@ -61,11 +67,27 @@ public class DecimalColumnStatsDataInspector extends DecimalColumnStatsData {
   }
 
   @Override
+  public byte[] getHistogram() {
+    if (histogramEstimator != null) {
+      updateHistogram();
+    }
+    return super.getHistogram();
+  }
+
+  @Override
   public ByteBuffer bufferForBitVectors() {
     if (ndvEstimator != null) {
       updateBitVectors();
     }
     return super.bufferForBitVectors();
+  }
+
+  @Override
+  public ByteBuffer bufferForHistogram() {
+    if (histogramEstimator != null) {
+      updateHistogram();
+    }
+    return super.bufferForHistogram();
   }
 
   @Override
@@ -81,9 +103,27 @@ public class DecimalColumnStatsDataInspector extends DecimalColumnStatsData {
   }
 
   @Override
+  public void setHistogram(byte[] stats) {
+    super.setHistogram(stats);
+    this.histogramEstimator = null;
+  }
+
+  @Override
+  public void setHistogram(ByteBuffer stats) {
+    super.setHistogram(stats);
+    this.histogramEstimator = null;
+  }
+
+  @Override
   public void unsetBitVectors() {
     super.unsetBitVectors();
     this.ndvEstimator = null;
+  }
+
+  @Override
+  public void unsetHistogram() {
+    super.unsetHistogram();
+    this.histogramEstimator = null;
   }
 
   @Override
@@ -95,11 +135,27 @@ public class DecimalColumnStatsDataInspector extends DecimalColumnStatsData {
   }
 
   @Override
+  public boolean isSetHistogram() {
+    if (histogramEstimator != null) {
+      updateHistogram();
+    }
+    return super.isSetHistogram();
+  }
+
+  @Override
   public void setBitVectorsIsSet(boolean value) {
     if (ndvEstimator != null) {
       updateBitVectors();
     }
     super.setBitVectorsIsSet(value);
+  }
+
+  @Override
+  public void setHistogramIsSet(boolean value) {
+    if (histogramEstimator != null) {
+      updateHistogram();
+    }
+    super.setHistogramIsSet(value);
   }
 
   public NumDistinctValueEstimator getNdvEstimator() {
@@ -109,14 +165,31 @@ public class DecimalColumnStatsDataInspector extends DecimalColumnStatsData {
     return ndvEstimator;
   }
 
+  public KllHistogramEstimator getHistogramEstimator() {
+    if (histogramEstimator == null && isSetHistogram() && getHistogram().length != 0) {
+      updateHistogramEstimator();
+    }
+    return histogramEstimator;
+  }
+
   public void setNdvEstimator(NumDistinctValueEstimator ndvEstimator) {
     super.unsetBitVectors();
     this.ndvEstimator = ndvEstimator;
   }
 
+  public void setHistogramEstimator(KllHistogramEstimator histogramEstimator) {
+    super.unsetHistogram();
+    this.histogramEstimator = histogramEstimator;
+  }
+
   private void updateBitVectors() {
     super.setBitVectors(ndvEstimator.serialize());
     this.ndvEstimator = null;
+  }
+
+  private void updateHistogram() {
+    super.setHistogram(histogramEstimator.serialize());
+    this.histogramEstimator = null;
   }
 
   private void updateNdvEstimator() {
@@ -125,4 +198,9 @@ public class DecimalColumnStatsDataInspector extends DecimalColumnStatsData {
     super.unsetBitVectors();
   }
 
+  private void updateHistogramEstimator() {
+    this.histogramEstimator = KllHistogramEstimatorFactory
+        .getKllHistogramEstimator(super.getHistogram());
+    super.unsetHistogram();
+  }
 }

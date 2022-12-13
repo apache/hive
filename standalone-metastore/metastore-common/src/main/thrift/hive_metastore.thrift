@@ -169,7 +169,7 @@ enum PartitionEventType {
   LOAD_DONE = 1,
 }
 
-// Enums for transaction and lock management 
+// Enums for transaction and lock management
 enum TxnState {
     COMMITTED = 1,
     ABORTED = 2,
@@ -480,7 +480,8 @@ struct DoubleColumnStatsData {
 2: optional double highValue,
 3: required i64 numNulls,
 4: required i64 numDVs,
-5: optional binary bitVectors
+5: optional binary bitVectors,
+6: optional binary histogram
 }
 
 struct LongColumnStatsData {
@@ -488,7 +489,8 @@ struct LongColumnStatsData {
 2: optional i64 highValue,
 3: required i64 numNulls,
 4: required i64 numDVs,
-5: optional binary bitVectors
+5: optional binary bitVectors,
+6: optional binary histogram
 }
 
 struct StringColumnStatsData {
@@ -517,7 +519,8 @@ struct DecimalColumnStatsData {
 2: optional Decimal highValue,
 3: required i64 numNulls,
 4: required i64 numDVs,
-5: optional binary bitVectors
+5: optional binary bitVectors,
+6: optional binary histogram
 }
 
 struct Date {
@@ -529,7 +532,8 @@ struct DateColumnStatsData {
 2: optional Date highValue,
 3: required i64 numNulls,
 4: required i64 numDVs,
-5: optional binary bitVectors
+5: optional binary bitVectors,
+6: optional binary histogram
 }
 
 struct Timestamp {
@@ -541,7 +545,8 @@ struct TimestampColumnStatsData {
 2: optional Timestamp highValue,
 3: required i64 numNulls,
 4: required i64 numDVs,
-5: optional binary bitVectors
+5: optional binary bitVectors,
+6: optional binary histogram
 }
 
 union ColumnStatisticsData {
@@ -1703,7 +1708,7 @@ struct DropDatabaseRequest {
   7: optional i64 txnId=0,
   8: optional bool deleteManagedDir=true
 }
-  
+
 // Request type for cm_recycle
 struct CmRecycleRequest {
   1: required string dataPath,
@@ -3180,7 +3185,7 @@ const string PARTITION_TRANSFORM_SPEC = "partition_transform_spec",
 const string NO_CLEANUP = "no_cleanup",
 const string CTAS_LEGACY_CONFIG = "create_table_as_external",
 const string DEFAULT_TABLE_TYPE = "defaultTableType",
-  
+
 // ACID
 const string TXN_ID = "txnId",
 const string WRITE_ID = "writeId",

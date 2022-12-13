@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.metastore.columnstats.merge;
 
+import org.apache.hadoop.hive.common.histogram.KllHistogramEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
@@ -45,7 +46,7 @@ public class DoubleColumnStatsMerger extends ColumnStatsMerger {
     } else {
       NumDistinctValueEstimator oldEst = aggregateData.getNdvEstimator();
       NumDistinctValueEstimator newEst = newData.getNdvEstimator();
-      long ndv = -1;
+      long ndv;
       if (oldEst.canMerge(newEst)) {
         oldEst.mergeEstimators(newEst);
         ndv = oldEst.estimateNumDistinctValues();
@@ -53,10 +54,14 @@ public class DoubleColumnStatsMerger extends ColumnStatsMerger {
       } else {
         ndv = Math.max(aggregateData.getNumDVs(), newData.getNumDVs());
       }
-      LOG.debug("Use bitvector to merge column " + aggregateColStats.getColName() + "'s ndvs of "
-          + aggregateData.getNumDVs() + " and " + newData.getNumDVs() + " to be " + ndv);
+      LOG.debug("Use bitvector to merge column {}'s ndvs of {} and {} to be {}",
+          aggregateColStats.getColName(), aggregateData.getNumDVs(), newData.getNumDVs(),  ndv);
       aggregateData.setNumDVs(ndv);
     }
+
+    KllHistogramEstimator oldEst = aggregateData.getHistogramEstimator();
+    KllHistogramEstimator newEst = newData.getHistogramEstimator();
+    aggregateData.setHistogramEstimator(mergeHistogramEstimator(aggregateColStats.getColName(), oldEst, newEst));
 
     aggregateColStats.getStatsData().setDoubleStats(aggregateData);
   }
