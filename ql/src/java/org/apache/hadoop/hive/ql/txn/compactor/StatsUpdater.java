@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.DriverUtils;
@@ -51,8 +52,8 @@ public final class StatsUpdater {
      * @param userName The user to run the statistic collection with
      * @param compactionQueueName The name of the compaction queue
      */
-    public void gatherStats(CompactionInfo ci, HiveConf conf, String userName, String compactionQueueName,
-                            List<String> columnList) {
+    public void gatherStats(IMetaStoreClient msc, CompactionInfo ci, HiveConf conf,
+                            String userName, String compactionQueueName) {
         try {
             HiveConf statusUpdaterConf = new HiveConf(conf);
             statusUpdaterConf.unset(ValidTxnList.VALID_TXNS_KEY);
@@ -72,15 +73,16 @@ public final class StatsUpdater {
             }
             sb.append(" compute statistics");
             if (!conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER) && ci.isMajorCompaction()) {
-                if (columnList == null || columnList.isEmpty()) {
-                    LOG.debug("{} : No existing stats found.  Will not run analyze.", ci);
-                    return;
+                if (msc != null) {
+                    List<String> columnList = msc.findColumnsWithStats(CompactionInfo.compactionInfoToStruct(ci));
+                    if (!columnList.isEmpty()) {
+                        sb.append(" for columns ");
+                        for (String colName : columnList) {
+                            sb.append(colName).append(",");
+                        }
+                        sb.setLength(sb.length() - 1); //remove trailing ,
+                    }
                 }
-                sb.append(" for columns ");
-                for (String colName : columnList) {
-                    sb.append(colName).append(",");
-                }
-                sb.setLength(sb.length() - 1); //remove trailing ,
             } else {
                 sb.append(" noscan");
             }

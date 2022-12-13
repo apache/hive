@@ -336,6 +336,7 @@ public class TestCompactor extends TestCompactorBase {
     String dbName = "default";
     String tblName = "compaction_test";
     List<String> colNames = Arrays.asList("a", "b");
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     executeStatementOnDriver("drop table if exists " + tblName, driver);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
       " PARTITIONED BY(bkt INT)" +
@@ -373,11 +374,11 @@ public class TestCompactor extends TestCompactorBase {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=0", CompactionType.MAJOR);
-    statsUpdater.gatherStats(ci, conf,
-            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table), colNames);
+    statsUpdater.gatherStats(msClient, ci, conf,
+            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
     ci = new CompactionInfo(dbName, tblName, "bkt=1", CompactionType.MAJOR);
-    statsUpdater.gatherStats(ci, conf,
-            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table), colNames);
+    statsUpdater.gatherStats(msClient, ci, conf,
+            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
 
     //Check basic stats are collected
     org.apache.hadoop.hive.ql.metadata.Table hiveTable = Hive.get().getTable(tblName);
@@ -454,7 +455,7 @@ public class TestCompactor extends TestCompactorBase {
     //as of (8/27/2014) Hive 0.14, ACID/Orc requires HiveInputFormat
     String dbName = "default";
     String tblName = "compaction_test";
-    List<String> colNames = Arrays.asList("a", "b");
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     executeStatementOnDriver("drop table if exists " + tblName, driver);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
             " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
@@ -471,8 +472,8 @@ public class TestCompactor extends TestCompactorBase {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
-    statsUpdater.gatherStats(ci, conf,
-            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table), colNames);
+    statsUpdater.gatherStats(msClient, ci, conf,
+            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
 
     //Check basic stats are collected
     Map<String, String> parameters = Hive.get().getTable(tblName).getParameters();
