@@ -108,6 +108,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final String CBO_PLAN_JSON_LABEL = "CBOPlan";
   private static final String CBO_PLAN_TEXT_LABEL = "CBO PLAN:";
   private final Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
+  private final Map<Operator<?>, Integer> visitedCnt = new HashMap<>();
   private boolean isLogical = false;
 
   /*
@@ -1004,6 +1005,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     if (work instanceof Operator) {
       Operator<? extends OperatorDesc> operator =
         (Operator<? extends OperatorDesc>) work;
+      visitedCnt.merge(operator, 1, Integer::sum);
+      int threshold = conf.getIntVar(ConfVars.HIVE_EXPLAIN_VISIT_THRESHOLD);
+      if (visitedCnt.get(operator) > threshold) {
+        throw new IllegalStateException(
+            operator + " exceeded " + ConfVars.HIVE_EXPLAIN_VISIT_THRESHOLD.varname + "(" + threshold + ")");
+      }
       if (operator.getConf() != null) {
         String appender = isLogical ? " (" + operator.getOperatorId() + ")" : "";
         JSONObject jsonOut = outputPlan(operator.getConf(), out, extended,
