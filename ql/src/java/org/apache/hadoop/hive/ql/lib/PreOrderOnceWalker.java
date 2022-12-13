@@ -65,6 +65,14 @@ public class PreOrderOnceWalker extends PreOrderWalker {
     opStack.pop();
   }
 
+  /**
+   * Excludes the nodes with the specified type from the graph traversal.
+   * <p>
+   * The traversal of a path will stop if it encounters a node with an excluded type.
+   * </p>
+   *
+   * @param type the type of the nodes to exclude from the graph traversal.
+   */
   public void excludeNode(Class<? extends Node> type) {
     excludeNodes.add(type);
   }
