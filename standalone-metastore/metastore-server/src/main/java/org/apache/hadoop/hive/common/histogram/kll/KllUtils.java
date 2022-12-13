@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf.datasketches.kll;
+package org.apache.hadoop.hive.common.histogram.kll;
 
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
@@ -82,6 +82,15 @@ public class KllUtils {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * This function deserializes the serialized KLL sketch from a byte array.
+   * @param buf to deserialize
+   * @return KLL sketch
+   */
+  public static KllFloatsSketch deserializeKll(final byte[] buf) {
+    return deserializeKll(buf, 0, buf.length);
   }
 
   /**

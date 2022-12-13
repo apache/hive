@@ -43,7 +43,6 @@ import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
-import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -71,6 +70,7 @@ import org.apache.hadoop.hive.metastore.client.builder.HiveObjectPrivilegeBuilde
 import org.apache.hadoop.hive.metastore.client.builder.HiveObjectRefBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PrivilegeGrantInfoBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
+import org.apache.hadoop.hive.metastore.columnstats.ColStatsBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
@@ -118,6 +118,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
+import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertEqualStatistics;
 import static org.apache.hadoop.hive.metastore.TestHiveMetaStore.createSourceTable;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -158,6 +159,8 @@ public class TestObjectStore {
 
     // Events that get cleaned happen in batches of 1 to exercise batching code
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.EVENT_CLEAN_MAX_EVENTS, 1L);
+    MetastoreConf.setBoolVar(conf, ConfVars.STATS_FETCH_BITVECTOR, true);
+    MetastoreConf.setBoolVar(conf, ConfVars.STATS_FETCH_KLL, true);
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
@@ -710,19 +713,19 @@ public class TestObjectStore {
     List<List<ColumnStatistics>> stat;
     try (AutoCloseable c = deadline()) {
       stat = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-              Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
-              Arrays.asList("test_part_col"));
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+          Collections.singletonList("test_part_col"));
     }
 
     Assert.assertEquals(1, stat.size());
     Assert.assertEquals(3, stat.get(0).size());
     Assert.assertEquals(ENGINE, stat.get(0).get(0).getEngine());
     Assert.assertEquals(1, stat.get(0).get(0).getStatsObj().size());
-    Assert.assertTrue(stat.get(0).get(0).getStatsObj().get(0).getStatsData().isSetLongStats());
-    Assert.assertEquals(1, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getNumNulls());
-    Assert.assertEquals(2, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getNumDVs());
-    Assert.assertEquals(3, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getLowValue());
-    Assert.assertEquals(4, stat.get(0).get(0).getStatsObj().get(0).getStatsData().getLongStats().getHighValue());
+
+    ColumnStatisticsData computedStats = stat.get(0).get(0).getStatsObj().get(0).getStatsData();
+    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2)
+        .low(3L).high(4L).hll(3, 4).kll(3, 4).build();
+    assertEqualStatistics(expectedStats, computedStats);
   }
 
   /**
@@ -805,13 +808,8 @@ public class TestObjectStore {
         stats.setStatsObj(statsObjList);
         stats.setEngine(ENGINE);
 
-        ColumnStatisticsData data = new ColumnStatisticsData();
-        LongColumnStatsData longStats = new LongColumnStatsData();
-        longStats.setNumNulls(1);
-        longStats.setNumDVs(2);
-        longStats.setLowValue(3);
-        longStats.setHighValue(4);
-        data.setLongStats(longStats);
+        ColumnStatisticsData data = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2)
+            .low(3L).high(4L).hll(3, 4).kll(3, 4).build();
 
         ColumnStatisticsObj partStats = new ColumnStatisticsObj("test_part_col", "int", data);
         statsObjList.add(partStats);

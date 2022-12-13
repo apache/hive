@@ -18,6 +18,7 @@
  */
 package org.apache.hadoop.hive.metastore.columnstats.aggr;
 
+import com.google.common.primitives.Longs;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -28,7 +29,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Timestamp;
 import org.apache.hadoop.hive.metastore.columnstats.ColStatsBuilder;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertEqualStatistics;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createStatsWithInfo;
 
 @Category(MetastoreUnitTest.class)
@@ -60,15 +61,16 @@ public class TimestampColumnStatsAggregatorTest {
   public void testAggregateSingleStat() throws MetaException {
     List<String> partitions = Collections.singletonList("part1");
 
+    long[] values = { TS_1.getSecondsSinceEpoch(), TS_3.getSecondsSinceEpoch() };
     ColumnStatisticsData data1 = new ColStatsBuilder<>(Timestamp.class).numNulls(1).numDVs(2).low(TS_1)
-        .high(TS_3).hll(TS_1.getSecondsSinceEpoch(), TS_3.getSecondsSinceEpoch()).build();
+        .high(TS_3).hll(values).kll(values).build();
     List<ColStatsObjWithSourceInfo> statsList =
         Collections.singletonList(createStatsWithInfo(data1, TABLE, COL, partitions.get(0)));
 
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
 
-    Assert.assertEquals(data1, computedStatsObj.getStatsData());
+    assertEqualStatistics(data1, computedStatsObj.getStatsData());
   }
 
   @Test
@@ -82,17 +84,17 @@ public class TimestampColumnStatsAggregatorTest {
     TimestampColumnStatsAggregator aggregator = new TimestampColumnStatsAggregator();
 
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    Assert.assertEquals(data1, computedStatsObj.getStatsData());
+    assertEqualStatistics(data1, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    Assert.assertEquals(data1, computedStatsObj.getStatsData());
+    assertEqualStatistics(data1, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     aggregator.ndvTuner = 1;
     // ndv tuner does not have any effect because min numDVs and max numDVs coincide (we have a single stats)
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    Assert.assertEquals(data1, computedStatsObj.getStatsData());
+    assertEqualStatistics(data1, computedStatsObj.getStatsData());
   }
 
   @Test
@@ -101,7 +103,7 @@ public class TimestampColumnStatsAggregatorTest {
 
     long[] values1 = { TS_1.getSecondsSinceEpoch(), TS_2.getSecondsSinceEpoch() };
     ColumnStatisticsData data1 = new ColStatsBuilder<>(Timestamp.class).numNulls(1).numDVs(2)
-        .low(TS_1).high(TS_2).hll(values1).build();
+        .low(TS_1).high(TS_2).hll(values1).kll(values1).build();
     ColumnStatisticsData data2 = new ColStatsBuilder<>(Timestamp.class).numNulls(2).numDVs(3).build();
 
     List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
@@ -112,21 +114,21 @@ public class TimestampColumnStatsAggregatorTest {
 
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Timestamp.class).numNulls(3).numDVs(3)
-        .low(TS_1).high(TS_2).hll(values1).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+        .low(TS_1).high(TS_2).hll(values1).kll(values1).build();
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
     expectedStats = new ColStatsBuilder<>(Timestamp.class).numNulls(3).numDVs(4)
-        .low(TS_1).high(TS_2).hll(values1).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+        .low(TS_1).high(TS_2).hll(values1).kll(values1).build();
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     aggregator.ndvTuner = 1;
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
     expectedStats = new ColStatsBuilder<>(Timestamp.class).numNulls(3).numDVs(5)
-        .low(TS_1).high(TS_2).hll(values1).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+        .low(TS_1).high(TS_2).hll(values1).kll(values1).build();
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
   }
 
   @Test
@@ -135,15 +137,15 @@ public class TimestampColumnStatsAggregatorTest {
 
     long[] values1 = { TS_1.getSecondsSinceEpoch(), TS_2.getSecondsSinceEpoch(), TS_3.getSecondsSinceEpoch() };
     ColumnStatisticsData data1 = new ColStatsBuilder<>(Timestamp.class).numNulls(1).numDVs(2)
-        .low(TS_1).high(TS_3).hll(values1).build();
+        .low(TS_1).high(TS_3).hll(values1).kll(values1).build();
 
     long[] values2 = { TS_3.getSecondsSinceEpoch(), TS_4.getSecondsSinceEpoch(), TS_5.getSecondsSinceEpoch() };
     ColumnStatisticsData data2 = new ColStatsBuilder<>(Timestamp.class).numNulls(2).numDVs(3)
-        .low(TS_3).high(TS_5).hll(values2).build();
+        .low(TS_3).high(TS_5).hll(values2).kll(values1).build();
 
     long[] values3 = { TS_6.getSecondsSinceEpoch(), TS_7.getSecondsSinceEpoch() };
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Timestamp.class).numNulls(3).numDVs(2)
-        .low(TS_6).high(TS_7).hll(values3).build();
+        .low(TS_6).high(TS_7).hll(values3).kll(values3).build();
 
     List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
         createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
@@ -156,9 +158,9 @@ public class TimestampColumnStatsAggregatorTest {
     // the aggregation does not update hll, only numDVs is, it keeps the first hll
     // notice that numDVs is computed by using HLL, it can detect that 'TS_3' appears twice
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Timestamp.class).numNulls(6).numDVs(7)
-        .low(TS_1).high(TS_7).hll(values1).build();
+        .low(TS_1).high(TS_7).hll(values1).kll(Longs.concat(values1, values2, values3)).build();
 
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
   }
 
   @Test
@@ -167,16 +169,16 @@ public class TimestampColumnStatsAggregatorTest {
 
     long[] values1 = { TS_1.getSecondsSinceEpoch(), TS_2.getSecondsSinceEpoch(), TS_3.getSecondsSinceEpoch() };
     ColumnStatisticsData data1 = new ColStatsBuilder<>(Timestamp.class).numNulls(1).numDVs(3)
-        .low(TS_1).high(TS_3).fmSketch(values1).build();
+        .low(TS_1).high(TS_3).fmSketch(values1).kll(values1).build();
 
     long[] values2 = { TS_3.getSecondsSinceEpoch(), TS_4.getSecondsSinceEpoch(), TS_5.getSecondsSinceEpoch() };
     ColumnStatisticsData data2 = new ColStatsBuilder<>(Timestamp.class).numNulls(2).numDVs(3).low(TS_3).high(TS_5)
-        .hll(values2).build();
+        .hll(values2).kll(values2).build();
 
     long[] values3 = { TS_1.getSecondsSinceEpoch(), TS_2.getSecondsSinceEpoch(), TS_6.getSecondsSinceEpoch(),
         TS_8.getSecondsSinceEpoch() };
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Timestamp.class).numNulls(3).numDVs(4).low(TS_1)
-        .high(TS_8).hll(values3).build();
+        .high(TS_8).hll(values3).kll(values3).build();
 
     List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
         createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
@@ -189,15 +191,15 @@ public class TimestampColumnStatsAggregatorTest {
     // the aggregation does not update the bitvector, only numDVs is, it keeps the first bitvector;
     // numDVs is set to the maximum among all stats when non-mergeable bitvectors are detected
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Timestamp.class).numNulls(6).numDVs(4).low(TS_1)
-        .high(TS_8).fmSketch(values1).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+        .high(TS_8).fmSketch(values1).kll(Longs.concat(values1, values2, values3)).build();
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
     // the use of the density function leads to a different estimation for numNDV
     expectedStats = new ColStatsBuilder<>(Timestamp.class).numNulls(6).numDVs(6).low(TS_1).high(TS_8)
-        .fmSketch(values1).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+        .fmSketch(values1).kll(Longs.concat(values1, values2, values3)).build();
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     double[] tunerValues = new double[] { 0, 0.5, 0.75, 1 };
@@ -206,8 +208,9 @@ public class TimestampColumnStatsAggregatorTest {
       aggregator.ndvTuner = tunerValues[i];
       computedStatsObj = aggregator.aggregate(statsList, partitions, true);
       expectedStats = new ColStatsBuilder<>(Timestamp.class).numNulls(6).numDVs(expectedDVs[i])
-          .low(TS_1).high(TS_8).fmSketch(values1).build();
-      Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+          .low(TS_1).high(TS_8).fmSketch(values1).kll(Longs.concat(values1, values2, values3))
+          .build();
+      assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
     }
   }
 
@@ -217,14 +220,15 @@ public class TimestampColumnStatsAggregatorTest {
 
     long[] values1 = { TS_1.getSecondsSinceEpoch(), TS_2.getSecondsSinceEpoch(), TS_3.getSecondsSinceEpoch() };
     ColumnStatisticsData data1 = new ColStatsBuilder<>(Timestamp.class).numNulls(1).numDVs(3)
-        .low(TS_1).high(TS_3).hll(values1).build();
+        .low(TS_1).high(TS_3).hll(values1).kll(values1).build();
 
+    long[] values3 = { TS_7.getSecondsSinceEpoch() };
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Timestamp.class).numNulls(3).numDVs(1)
-        .low(TS_7).high(TS_7).hll(TS_7.getSecondsSinceEpoch()).build();
+        .low(TS_7).high(TS_7).hll(values3).kll(values3).build();
 
     long[] values4 = { TS_3.getSecondsSinceEpoch(), TS_4.getSecondsSinceEpoch(), TS_5.getSecondsSinceEpoch() };
     ColumnStatisticsData data4 = new ColStatsBuilder<>(Timestamp.class).numNulls(2).numDVs(3).low(TS_3).high(TS_5)
-        .hll(values4).build();
+        .hll(values4).kll(values4).build();
 
     List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
         createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
@@ -236,8 +240,8 @@ public class TimestampColumnStatsAggregatorTest {
 
     // hll in case of missing stats is left as null, only numDVs is updated
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Timestamp.class).numNulls(8).numDVs(4).low(TS_1)
-        .high(TS_9).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+        .high(TS_9).kll(Longs.concat(values1, values3, values4)).build();
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
   }
 
   @Test
@@ -246,10 +250,11 @@ public class TimestampColumnStatsAggregatorTest {
 
     long[] values1 = { TS_1.getSecondsSinceEpoch(), TS_2.getSecondsSinceEpoch(), TS_6.getSecondsSinceEpoch() };
     ColumnStatisticsData data1 = new ColStatsBuilder<>(Timestamp.class).numNulls(1).numDVs(3)
-        .low(TS_1).high(TS_6).hll(values1).build();
+        .low(TS_1).high(TS_6).hll(values1).kll(values1).build();
 
+    long[] values3 = { TS_7.getSecondsSinceEpoch() };
     ColumnStatisticsData data3 = new ColStatsBuilder<>(Timestamp.class).numNulls(3).numDVs(1)
-        .low(TS_7).high(TS_7).hll(TS_7.getSecondsSinceEpoch()).build();
+        .low(TS_7).high(TS_7).hll(values3).kll(values3).build();
 
     List<ColStatsObjWithSourceInfo> statsList = Arrays.asList(
         createStatsWithInfo(data1, TABLE, COL, partitions.get(0)),
@@ -260,14 +265,14 @@ public class TimestampColumnStatsAggregatorTest {
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, false);
     // hll in case of missing stats is left as null, only numDVs is updated
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Timestamp.class).numNulls(6).numDVs(3).low(TS_1)
-        .high(TS_7).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+        .high(TS_7).kll(Longs.concat(values1, values3)).build();
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
     // the use of the density function leads to a different estimation for numNDV
     expectedStats = new ColStatsBuilder<>(Timestamp.class).numNulls(6).numDVs(4).low(TS_1)
-        .high(TS_7).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+        .high(TS_7).kll(Longs.concat(values1, values3)).build();
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
   }
 }

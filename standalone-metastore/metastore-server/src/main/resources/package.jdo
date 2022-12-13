@@ -1031,6 +1031,9 @@
       <field name="bitVector">
         <column name="BIT_VECTOR" jdbc-type="BLOB" allows-null="true"/>
       </field>
+      <field name="histogram">
+        <column name="HISTOGRAM" jdbc-type="BLOB" allows-null="true"/>
+      </field>
       <field name="avgColLen">
         <column name="AVG_COL_LEN" jdbc-type="DOUBLE" allows-null="true"/>
       </field>
@@ -1104,6 +1107,9 @@
       </field>
       <field name="bitVector">
         <column name="BIT_VECTOR" jdbc-type="BLOB" allows-null="true"/>
+      </field>
+      <field name="histogram">
+        <column name="HISTOGRAM" jdbc-type="BLOB" allows-null="true"/>
       </field>
       <field name="avgColLen">
         <column name="AVG_COL_LEN" jdbc-type="DOUBLE" allows-null="true"/>

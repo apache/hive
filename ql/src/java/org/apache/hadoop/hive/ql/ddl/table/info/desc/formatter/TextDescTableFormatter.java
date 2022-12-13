@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.ddl.table.info.desc.DescTableDesc;
@@ -83,7 +84,7 @@ class TextDescTableFormatter extends DescTableFormatter {
       Partition partition, List<FieldSchema> columns, boolean isFormatted, boolean isExtended, boolean isOutputPadded,
       List<ColumnStatisticsObj> columnStats) throws HiveException {
     try {
-      addStatsData(out, columnPath, columns, isFormatted, columnStats, isOutputPadded);
+      addStatsData(out, conf, columnPath, columns, isFormatted, columnStats, isOutputPadded);
       addPartitionData(out, conf, columnPath, table, isFormatted, isOutputPadded);
 
       boolean isIcebergMetaTable = table.getMetaTable() != null;
@@ -131,21 +132,22 @@ class TextDescTableFormatter extends DescTableFormatter {
     out.write(partitionTransformOutput.getBytes(StandardCharsets.UTF_8));
   }
 
-  private void addStatsData(DataOutputStream out, String columnPath, List<FieldSchema> columns, boolean isFormatted,
-      List<ColumnStatisticsObj> columnStats, boolean isOutputPadded) throws IOException {
+  private void addStatsData(DataOutputStream out, HiveConf conf, String columnPath, List<FieldSchema> columns,
+      boolean isFormatted, List<ColumnStatisticsObj> columnStats, boolean isOutputPadded) throws IOException {
     String statsData = "";
     
     TextMetaDataTable metaDataTable = new TextMetaDataTable();
     boolean needColStats = isFormatted && columnPath != null;
+    boolean histogramEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
     if (needColStats) {
-      metaDataTable.addRow(DescTableDesc.COLUMN_STATISTICS_HEADERS.toArray(new String[0]));
+      metaDataTable.addRow(DescTableDesc.getColumnStatisticsHeaders(histogramEnabled).toArray(new String[0]));
     } else if (isFormatted && !SessionState.get().isHiveServerQuery()) {
       statsData += "# ";
       metaDataTable.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
     }
     for (FieldSchema column : columns) {
       metaDataTable.addRow(ShowUtils.extractColumnValues(column, needColStats,
-          getColumnStatisticsObject(column.getName(), column.getType(), columnStats)));
+          getColumnStatisticsObject(column.getName(), column.getType(), columnStats), histogramEnabled));
     }
     if (needColStats) {
       metaDataTable.transpose();
@@ -175,10 +177,12 @@ class TextDescTableFormatter extends DescTableFormatter {
       if (CollectionUtils.isNotEmpty(partitionColumns) &&
           conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY)) {
         TextMetaDataTable metaDataTable = new TextMetaDataTable();
+        boolean histogramEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
         partitionData += LINE_DELIM + "# Partition Information" + LINE_DELIM + "# ";
         metaDataTable.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
         for (FieldSchema partitionColumn : partitionColumns) {
-          metaDataTable.addRow(ShowUtils.extractColumnValues(partitionColumn, false, null));
+          metaDataTable.addRow(ShowUtils.extractColumnValues(
+              partitionColumn, false, null, histogramEnabled));
         }
         partitionData += metaDataTable.renderTable(isOutputPadded);
       }

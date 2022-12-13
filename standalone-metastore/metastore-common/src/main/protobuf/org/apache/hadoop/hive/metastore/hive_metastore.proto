@@ -365,6 +365,7 @@ message DoubleColumnStatsData {
   int64 num_nulls = 3;
   int64 num_dvs = 4;
   bytes bit_vectors = 5;
+  bytes histogram = 6;
 }
 
 message LongColumnStatsData {
@@ -373,6 +374,7 @@ message LongColumnStatsData {
   int64 num_nulls = 3;
   int64 num_dvs = 4;
   bytes bit_vectors = 5;
+  bytes histogram = 6;
 }
 
 message StringColumnStatsData {
@@ -401,6 +403,7 @@ message DecimalColumnStatsData {
   int64 num_nulls = 3;
   int64 num_dvs = 4;
   bytes bit_vectors = 5;
+  bytes histogram = 6;
 }
 
 message Date {
@@ -413,6 +416,7 @@ message DateColumnStatsData {
   int64 num_nulls = 3;
   int64 num_dvs = 4;
   bytes bit_vectors = 5;
+  bytes histogram = 6;
 }
 
 message TimestampColumnStatsData {
@@ -421,6 +425,7 @@ message TimestampColumnStatsData {
   int64 num_nulls = 3;
   int64 num_dvs = 4;
   bytes bit_vectors = 5;
+  bytes histogram = 6;
 }
 
 message ColumnStatisticsData {
