@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
-import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.slf4j.Logger;
@@ -74,12 +73,6 @@ public class SyntheticJoinPredicate extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    try {
-      OperatorGraph g = new OperatorGraph(pctx);
-      g.toDot(new File("target"+File.separator+"SyntheticJoinPredicate-" + System.currentTimeMillis() + ".dot"));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
     boolean enabled = false;
     String queryEngine = pctx.getConf().getVar(ConfVars.HIVE_EXECUTION_ENGINE);
 
