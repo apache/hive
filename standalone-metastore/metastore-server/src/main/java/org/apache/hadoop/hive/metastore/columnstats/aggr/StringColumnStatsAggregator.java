@@ -90,7 +90,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
           .getEmptyNumDistinctValueEstimator(ndvEstimator);
     }
     LOG.debug("all of the bit vectors can merge for " + colName + " is " + (ndvEstimator != null));
-    ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
+    ColumnStatisticsData columnStatisticsData = initColumnStatisticsData();
     if (doAllPartitionContainStats || colStatsWithSourceInfo.size() < 2) {
       StringColumnStatsDataInspector aggregateData = null;
       for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
@@ -120,6 +120,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
       }
       columnStatisticsData.setStringStats(aggregateData);
     } else {
+      // TODO: bail out if missing stats are over a certain threshold
       // we need extrapolation
       LOG.debug("start extrapolation for " + colName);
 
@@ -205,6 +206,15 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
         colStatsWithSourceInfo.size());
     statsObj.setStatsData(columnStatisticsData);
     return statsObj;
+  }
+
+  @Override protected ColumnStatisticsData initColumnStatisticsData() {
+    ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
+    // init stats internal data if missing, re-use if existing
+    if (!columnStatisticsData.isSetStringStats()) {
+      columnStatisticsData.setStringStats(new StringColumnStatsData());
+    }
+    return columnStatisticsData;
   }
 
   @Override

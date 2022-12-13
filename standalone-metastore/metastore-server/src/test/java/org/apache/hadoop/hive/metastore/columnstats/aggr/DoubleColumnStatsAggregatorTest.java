@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.columnstats.ColStatsBuilder;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -35,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertEqualStatistics;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.createStatsWithInfo;
 
 @Category(MetastoreUnitTest.class)
@@ -57,7 +57,7 @@ public class DoubleColumnStatsAggregatorTest {
     DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
 
-    Assert.assertEquals(data1, computedStatsObj.getStatsData());
+    assertEqualStatistics(data1, computedStatsObj.getStatsData());
   }
 
   @Test
@@ -70,17 +70,17 @@ public class DoubleColumnStatsAggregatorTest {
     DoubleColumnStatsAggregator aggregator = new DoubleColumnStatsAggregator();
 
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    Assert.assertEquals(data1, computedStatsObj.getStatsData());
+    assertEqualStatistics(data1, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    Assert.assertEquals(data1, computedStatsObj.getStatsData());
+    assertEqualStatistics(data1, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     aggregator.ndvTuner = 1;
     // ndv tuner does not have any effect because min numDVs and max numDVs coincide (we have a single stats)
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
-    Assert.assertEquals(data1, computedStatsObj.getStatsData());
+    assertEqualStatistics(data1, computedStatsObj.getStatsData());
   }
 
   @Test
@@ -100,20 +100,20 @@ public class DoubleColumnStatsAggregatorTest {
     ColumnStatisticsObj computedStatsObj = aggregator.aggregate(statsList, partitions, true);
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(double.class).numNulls(3).numDVs(3)
         .low(1d).high(2d).hll(1, 2).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
     expectedStats = new ColStatsBuilder<>(double.class).numNulls(3).numDVs(4)
         .low(1d).high(2d).hll(1, 2).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     aggregator.ndvTuner = 1;
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
     expectedStats = new ColStatsBuilder<>(double.class).numNulls(3).numDVs(5)
         .low(1d).high(2d).hll(1, 2).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
   }
 
   @Test
@@ -139,7 +139,7 @@ public class DoubleColumnStatsAggregatorTest {
     // notice that numDVs is computed by using HLL, it can detect that '3' appears twice
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(double.class).numNulls(6).numDVs(7)
         .low(1d).high(7d).hll(1, 2, 3).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
   }
 
   @Test
@@ -165,14 +165,14 @@ public class DoubleColumnStatsAggregatorTest {
     // numDVs is set to the maximum among all stats when non-mergeable bitvectors are detected
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(double.class).numNulls(6).numDVs(4)
         .low(1d).high(8d).fmSketch(1, 2, 3).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitions, true);
     // the use of the density function leads to a different estimation for numNDV
     expectedStats = new ColStatsBuilder<>(double.class).numNulls(6).numDVs(6)
         .low(1d).high(8d).fmSketch(1, 2, 3).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = false;
     double[] tunerValues = new double[] { 0, 0.5, 0.75, 1 };
@@ -182,7 +182,7 @@ public class DoubleColumnStatsAggregatorTest {
       computedStatsObj = aggregator.aggregate(statsList, partitions, true);
       expectedStats = new ColStatsBuilder<>(double.class).numNulls(6).numDVs(expectedDVs[i])
           .low(1d).high(8d).fmSketch(1, 2, 3).build();
-      Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());  
+      assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());  
     }
   }
 
@@ -208,7 +208,7 @@ public class DoubleColumnStatsAggregatorTest {
     // hll in case of missing stats is left as null, only numDVs is updated
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(double.class).numNulls(8).numDVs(4)
         .low(1d).high(9.4).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
   }
 
   @Test
@@ -230,13 +230,13 @@ public class DoubleColumnStatsAggregatorTest {
     // hll in case of missing stats is left as null, only numDVs is updated
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(double.class).numNulls(6).numDVs(3)
         .low(1d).high(7.5).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
 
     aggregator.useDensityFunctionForNDVEstimation = true;
     computedStatsObj = aggregator.aggregate(statsList, partitions, false);
     // the use of the density function leads to a different estimation for numNDV
     expectedStats = new ColStatsBuilder<>(double.class).numNulls(6).numDVs(4)
         .low(1d).high(7.5).build();
-    Assert.assertEquals(expectedStats, computedStatsObj.getStatsData());
+    assertEqualStatistics(expectedStats, computedStatsObj.getStatsData());
   }
 }

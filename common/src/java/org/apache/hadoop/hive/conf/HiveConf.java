@@ -2824,6 +2824,12 @@ public class HiveConf extends Configuration {
                     "higher compute cost. (NDV means the number of distinct values.). It only affects the FM-Sketch \n" +
                     "(not the HLL algorithm which is the default), where it computes the number of necessary\n" +
                     " bitvectors to achieve the accuracy."),
+    HIVE_STATS_KLL_K_PARAM("hive.stats.kll.k.param", 200,
+        "The parameter k affects the accuracy and the size of KLL sketches.\n"
+            + "Larger values of k result in smaller values of normalized rank error.\n"
+            + "The default of 200 yields approximately an error of 1.65%."),
+    HIVE_STATS_KLL_ENABLE("hive.stats.kll.enable", false,
+        "Whether to compute KLL sketches to enable histogram statistics."),
     HIVE_STATS_ESTIMATORS_ENABLE("hive.stats.estimators.enable", true,
         "Estimators are able to provide more accurate column statistic infos for UDF results."),
 
@@ -3599,6 +3605,9 @@ public class HiveConf extends Configuration {
     HIVE_AUTHORIZATION_TABLES_ON_STORAGEHANDLERS("hive.security.authorization.tables.on.storagehandlers", true,
         "Enables authorization on tables with custom storage handlers as implemented by HIVE-24705. " +
         "Default setting is true. Useful for turning the feature off if the corresponding ranger patch is missing."),
+    HIVE_AUTHORIZATION_FUNCTIONS_IN_VIEW("hive.security.authorization.functions.in.view", true,
+            "Enable authorization on functions/udfs used within a TABLE/VIEW during a select query. Default " +
+         "setting is true When set to false, the udf used in the table/view will not be autiozed during the select query"),
 
     // if this is not set default value is set during config initialization
     // Default value can't be set in this constructor as it would refer names in other ConfVars

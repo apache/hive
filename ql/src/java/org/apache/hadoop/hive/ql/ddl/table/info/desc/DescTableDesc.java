@@ -40,10 +40,18 @@ public class DescTableDesc implements DDLDesc, Serializable {
   public static final String SCHEMA = "col_name,data_type,comment#string:string:string";
   public static final String COLUMN_STATISTICS_SCHEMA = "column_property,value#string:string";
   public static final String PARTITION_TRANSFORM_SPEC_SCHEMA = "col_name,transform_type#string:string";
-  public static final List<String> COLUMN_STATISTICS_HEADERS = ImmutableList.of(
-      "col_name", "data_type", "min", "max", "num_nulls", "distinct_count", "avg_col_len", "max_col_len", "num_trues",
-      "num_falses", "bit_vector", "comment"
+  private static final List<String> PURE_STATISTICS_HEADERS = ImmutableList.of(
+      "min", "max", "num_nulls", "distinct_count", "avg_col_len", "max_col_len", "num_trues",
+      "num_falses", "bit_vector"
   );
+  // keeping this around for backward compatibility, use "getColumnStatisticsHeaders" instead
+  @SuppressWarnings("unused")
+  public static final List<String> COLUMN_STATISTICS_HEADERS = ImmutableList.<String>builder()
+      .add("col_name")
+      .add("data_type")
+      .addAll(PURE_STATISTICS_HEADERS)
+      .add("comment")
+      .build();
 
   private final String resFile;
   private final TableName tableName;
@@ -95,5 +103,19 @@ public class DescTableDesc implements DDLDesc, Serializable {
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isFormatted() {
     return isFormatted;
+  }
+
+  public static List<String> getColumnStatisticsHeaders(boolean histogramEnabled) {
+    ImmutableList.Builder<String> builder = ImmutableList.<String>builder()
+        .add("col_name")
+        .add("data_type")
+        .addAll(PURE_STATISTICS_HEADERS);
+
+    if (histogramEnabled) {
+      builder.add("histogram");
+    }
+
+    builder.add("comment");
+    return builder.build();
   }
 }
