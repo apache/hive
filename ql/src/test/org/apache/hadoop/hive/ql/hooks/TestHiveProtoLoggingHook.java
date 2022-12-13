@@ -22,8 +22,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -165,7 +165,9 @@ public class TestHiveProtoLoggingHook {
 
     evtLogger.shutdown();
 
-    ProtoMessageReader<HiveHookEventProto> reader = getTestReader(conf, tmpFolder);
+    List<ProtoMessageReader<HiveHookEventProto>> readers = getTestReader(conf, tmpFolder);
+    Assert.assertEquals(readers.size(), 1);
+    ProtoMessageReader<HiveHookEventProto> reader = readers.get(0);
 
     HiveHookEventProto event = reader.readEvent();
     Assert.assertNotNull(event);
@@ -193,7 +195,9 @@ public class TestHiveProtoLoggingHook {
     evtLogger.handle(context);
     evtLogger.handle(context);
     evtLogger.shutdown();
-    ProtoMessageReader<HiveHookEventProto> reader = getTestReader(conf, tmpFolder);
+    List<ProtoMessageReader<HiveHookEventProto>> readers = getTestReader(conf, tmpFolder);
+    Assert.assertEquals(readers.size(), 1);
+    ProtoMessageReader<HiveHookEventProto> reader = readers.get(0);
     reader.readEvent();
     reader.readEvent();
     reader.readEvent();
@@ -212,7 +216,9 @@ public class TestHiveProtoLoggingHook {
     evtLogger.handle(context);
     evtLogger.shutdown();
 
-    ProtoMessageReader<HiveHookEventProto> reader = getTestReader(conf, tmpFolder);
+    List<ProtoMessageReader<HiveHookEventProto>> readers = getTestReader(conf, tmpFolder);
+    Assert.assertEquals(readers.size(), 1);
+    ProtoMessageReader<HiveHookEventProto> reader = readers.get(0);
     HiveHookEventProto event = reader.readEvent();
     Assert.assertNotNull("Pre hook event not found", event);
     Assert.assertEquals(EventType.QUERY_SUBMITTED.name(), event.getEventType());
@@ -302,21 +308,26 @@ public class TestHiveProtoLoggingHook {
     Assert.assertEquals(2, statusLen);
   }
 
-  public static ProtoMessageReader<HiveHookEventProto> getTestReader(HiveConf conf, String tmpFolder)
+  public static List<ProtoMessageReader<HiveHookEventProto>> getTestReader(HiveConf conf, String tmpFolder)
       throws IOException {
     Path path = new Path(tmpFolder);
     FileSystem fs = path.getFileSystem(conf);
-    FileStatus[] status = fs.listStatus(path);
-    Assert.assertEquals(1, status.length);
-    status = fs.listStatus(status[0].getPath());
-    Assert.assertEquals(1, status.length);
+    FileStatus[] folderStatuses = fs.listStatus(path);
     DatePartitionedLogger<HiveHookEventProto> logger = new DatePartitionedLogger<>(
         HiveHookEventProto.PARSER, path, conf, SystemClock.getInstance());
-    return logger.getReader(status[0].getPath());
+    List<ProtoMessageReader<HiveHookEventProto>> readers = new ArrayList<>();
+    for (FileStatus folderStatus : folderStatuses) {
+      FileStatus[] status = fs.listStatus(folderStatus.getPath());
+      Assert.assertEquals(1, status.length);
+      readers.add(logger.getReader(status[0].getPath()));
+    }
+    return readers;
   }
 
   private HiveHookEventProto loadEvent(HiveConf conf, String tmpFolder) throws IOException {
-    ProtoMessageReader<HiveHookEventProto> reader = getTestReader(conf, tmpFolder);
+    List<ProtoMessageReader<HiveHookEventProto>> readers = getTestReader(conf, tmpFolder);
+    Assert.assertEquals(readers.size(), 1);
+    ProtoMessageReader<HiveHookEventProto> reader = readers.get(0);
     HiveHookEventProto event = reader.readEvent();
     Assert.assertNotNull(event);
     return event;
