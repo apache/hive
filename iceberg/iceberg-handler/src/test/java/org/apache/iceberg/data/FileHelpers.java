@@ -33,6 +33,7 @@ import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.parquet.GenericParquetWriter;
 import org.apache.iceberg.deletes.EqualityDeleteWriter;
+import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.deletes.PositionDeleteWriter;
 import org.apache.iceberg.io.FileAppender;
 import org.apache.iceberg.io.OutputFile;
@@ -53,7 +54,7 @@ public class FileHelpers {
   public static Pair<DeleteFile, Set<CharSequence>> writeDeleteFile(Table table, OutputFile out, StructLike partition,
                                                                     List<Pair<CharSequence, Long>> deletes)
       throws IOException {
-    PositionDeleteWriter<?> writer = Parquet.writeDeletes(out)
+    PositionDeleteWriter<Record> writer = Parquet.writeDeletes(out)
         .withSpec(table.spec())
         .setAll(table.properties())
         .metricsConfig(MetricsConfig.forTable(table))
@@ -63,7 +64,8 @@ public class FileHelpers {
 
     try (Closeable toClose = writer) {
       for (Pair<CharSequence, Long> delete : deletes) {
-        writer.delete(delete.first(), delete.second());
+        PositionDelete<Record> posDelete = PositionDelete.create();
+        writer.write(posDelete.set(delete.first(), delete.second(), null));
       }
     }
 
@@ -87,7 +89,7 @@ public class FileHelpers {
         .buildEqualityWriter();
 
     try (Closeable toClose = writer) {
-      writer.deleteAll(deletes);
+      writer.write(deletes);
     }
 
     return writer.toDeleteFile();

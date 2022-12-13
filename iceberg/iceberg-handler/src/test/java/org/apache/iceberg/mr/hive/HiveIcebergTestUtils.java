@@ -353,7 +353,7 @@ public class HiveIcebergTestUtils {
     part.partition(rowsToDelete.get(0));
     EqualityDeleteWriter<Record> eqWriter = appenderFactory.newEqDeleteWriter(outputFile, fileFormat, part);
     try (EqualityDeleteWriter<Record> writer = eqWriter) {
-      writer.deleteAll(rowsToDelete);
+      writer.write(rowsToDelete);
     }
     return eqWriter.toDeleteFile();
   }
@@ -386,7 +386,8 @@ public class HiveIcebergTestUtils {
 
     PositionDeleteWriter<Record> posWriter = appenderFactory.newPosDeleteWriter(outputFile, fileFormat, partitionKey);
     try (PositionDeleteWriter<Record> writer = posWriter) {
-      deletes.forEach(del -> writer.delete(del.path(), del.pos(), del.row()));
+      PositionDelete<Record> posDelete = PositionDelete.create();
+      deletes.forEach(del -> writer.write(posDelete.set(del.path(), del.pos(), del.row())));
     }
     return posWriter.toDeleteFile();
   }
