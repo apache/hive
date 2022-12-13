@@ -580,7 +580,8 @@ CREATE TABLE "TAB_COL_STATS" (
  "NUM_TRUES" bigint,
  "NUM_FALSES" bigint,
  "LAST_ANALYZED" bigint NOT NULL,
- "ENGINE" character varying(128) NOT NULL
+ "ENGINE" character varying(128) NOT NULL,
+ "HISTOGRAM" bytea
 );
 
 --
@@ -619,7 +620,8 @@ CREATE TABLE "PART_COL_STATS" (
  "NUM_TRUES" bigint,
  "NUM_FALSES" bigint,
  "LAST_ANALYZED" bigint NOT NULL,
- "ENGINE" character varying(128) NOT NULL
+ "ENGINE" character varying(128) NOT NULL,
+ "HISTOGRAM" bytea
 );
 
 --

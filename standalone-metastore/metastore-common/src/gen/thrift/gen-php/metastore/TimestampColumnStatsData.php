@@ -48,6 +48,11 @@ class TimestampColumnStatsData
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        6 => array(
+            'var' => 'histogram',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -70,6 +75,10 @@ class TimestampColumnStatsData
      * @var string
      */
     public $bitVectors = null;
+    /**
+     * @var string
+     */
+    public $histogram = null;
 
     public function __construct($vals = null)
     {
@@ -88,6 +97,9 @@ class TimestampColumnStatsData
             }
             if (isset($vals['bitVectors'])) {
                 $this->bitVectors = $vals['bitVectors'];
+            }
+            if (isset($vals['histogram'])) {
+                $this->histogram = $vals['histogram'];
             }
         }
     }
@@ -148,6 +160,13 @@ class TimestampColumnStatsData
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 6:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->histogram);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -191,6 +210,11 @@ class TimestampColumnStatsData
         if ($this->bitVectors !== null) {
             $xfer += $output->writeFieldBegin('bitVectors', TType::STRING, 5);
             $xfer += $output->writeString($this->bitVectors);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->histogram !== null) {
+            $xfer += $output->writeFieldBegin('histogram', TType::STRING, 6);
+            $xfer += $output->writeString($this->histogram);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

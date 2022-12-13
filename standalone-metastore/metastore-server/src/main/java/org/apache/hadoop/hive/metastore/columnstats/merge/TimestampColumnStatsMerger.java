@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.columnstats.merge;
 import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.timestampInspectorFromStats;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.hadoop.hive.common.histogram.KllHistogramEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Timestamp;
@@ -62,6 +63,10 @@ public class TimestampColumnStatsMerger extends ColumnStatsMerger {
           aggregateData.getNumDVs(), newData.getNumDVs(), ndv);
       aggregateData.setNumDVs(ndv);
     }
+
+    KllHistogramEstimator oldEst = aggregateData.getHistogramEstimator();
+    KllHistogramEstimator newEst = newData.getHistogramEstimator();
+    aggregateData.setHistogramEstimator(mergeHistogramEstimator(aggregateColStats.getColName(), oldEst, newEst));
 
     aggregateColStats.getStatsData().setTimestampStats(aggregateData);
   }
