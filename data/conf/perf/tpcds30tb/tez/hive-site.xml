@@ -134,10 +134,6 @@
         <value>true</value>
     </property>
     <property>
-        <name>hive.stats.fetch.kll</name>
-        <value>false</value>
-    </property>
-    <property>
         <name>hive.convert.join.bucket.mapjoin.tez</name>
         <value>false</value>
     </property>
