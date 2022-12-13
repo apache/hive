@@ -142,6 +142,9 @@ public abstract class BaseSemanticAnalyzer {
   protected QueryProperties queryProperties;
   ParseContext pCtx = null;
 
+  //user defined functions in query
+  protected Set<String> userSuppliedFunctions;
+
   /**
    * A set of FileSinkOperators being written to in an ACID compliant way.  We need to remember
    * them here because when we build them we don't yet know the write id.  We need to go
@@ -286,6 +289,7 @@ public abstract class BaseSemanticAnalyzer {
       inputs = new LinkedHashSet<ReadEntity>();
       outputs = new LinkedHashSet<WriteEntity>();
       txnManager = queryState.getTxnManager();
+      userSuppliedFunctions = new HashSet<>();
     } catch (Exception e) {
       throw new SemanticException(e);
     }
@@ -1441,6 +1445,16 @@ public abstract class BaseSemanticAnalyzer {
 
   public void setUpdateColumnAccessInfo(ColumnAccessInfo updateColumnAccessInfo) {
     this.updateColumnAccessInfo = updateColumnAccessInfo;
+  }
+
+  /**
+   * Gets the user supplied functions.
+   * Note 1: This list only accumulates UDFs explicitly mentioned in the query
+   * Note 2: This list will not include UDFs defined with views/tables
+   * @return List of String with names of UDFs.
+   */
+  public Set<String> getUserSuppliedFunctions() {
+    return userSuppliedFunctions;
   }
 
   /**

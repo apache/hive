@@ -136,6 +136,7 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
@@ -12539,6 +12540,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  void gatherUserSuppliedFunctions(ASTNode ast) throws SemanticException {
+    int tokenType = ast.getToken().getType();
+    if (tokenType == HiveParser.TOK_FUNCTION ||
+            tokenType == HiveParser.TOK_FUNCTIONDI ||
+            tokenType == HiveParser.TOK_FUNCTIONSTAR) {
+      if (ast.getChild(0).getType() == HiveParser.Identifier) {
+        try {
+          String functionName = unescapeIdentifier(ast.getChild(0).getText()).toLowerCase();
+          String[] qualifiedFunctionName = FunctionUtils.getQualifiedFunctionNameParts(functionName);
+          this.userSuppliedFunctions.add(qualifiedFunctionName[0]+"."+qualifiedFunctionName[1]);
+        } catch (HiveException ex) {
+          throw new SemanticException(ex.getMessage(), ex);
+        }
+      }
+    }
+    for (int i = 0; i < ast.getChildCount();i++) {
+      gatherUserSuppliedFunctions((ASTNode) ast.getChild(i));
+    }
+  }
+
   boolean genResolvedParseTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
     ASTNode child = ast;
     this.ast = ast;
@@ -12600,6 +12621,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // masking and filtering should be created here
     // the basic idea is similar to unparseTranslator.
     tableMask = new TableMask(this, conf, ctx.isSkipTableMasking());
+
+    // Gather UDFs referenced in query before VIEW expansion. This is used to
+    // determine if authorization checks need to occur on the UDFs.
+    gatherUserSuppliedFunctions(child);
 
     // 4. continue analyzing from the child ASTNode.
     Phase1Ctx ctx_1 = initPhase1Ctx();
