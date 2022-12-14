@@ -1127,6 +1127,8 @@ public class MetastoreConf {
       "command should handle partition retention. If enabled, and if a specific partition's age exceeded\n" +
       "retention period the partition will be dropped along with data"),
 
+    MATERIALIZED_VIEW_ENABLED("metastore.materialized.view.enabled", "metastore.materialized.view.enabled",true, "if " +
+        "disabled the materialized views can't be created"),
 
     // Partition management task params
     PARTITION_MANAGEMENT_TASK_FREQUENCY("metastore.partition.management.task.frequency",

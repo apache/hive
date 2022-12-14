@@ -100,7 +100,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
 
@@ -302,6 +301,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       }
     }
+    isMaterializedViewsSupported = MetastoreConf.getBoolVar(conf, ConfVars.MATERIALIZED_VIEW_ENABLED);
   }
 
   /**
@@ -324,6 +324,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   private Pattern partitionValidationPattern;
   private final boolean isInTest;
+
+  private final boolean isMaterializedViewsSupported;
 
   @Override
   public List<TransactionalMetaStoreEventListener> getTransactionalListeners() {
@@ -2237,6 +2239,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       InvalidObjectException, NoSuchObjectException, InvalidInputException {
     ColumnStatistics colStats = null;
     Table tbl = req.getTable();
+    checkMaterializedViewSupport(tbl);
     EnvironmentContext envContext = req.getEnvContext();
     SQLAllTableConstraints constraints = new SQLAllTableConstraints();
     constraints.setPrimaryKeys(req.getPrimaryKeys());
@@ -10759,6 +10762,13 @@ public Package find_package(GetPackageRequest request) throws MetaException, NoS
       throw e;
     } finally {
       endFunction("get_all_write_event_info", ex == null, ex);
+    }
+  }
+
+  private void checkMaterializedViewSupport(Table tbl) throws MetaException {
+    if (!isMaterializedViewsSupported && MetaStoreUtils.isMaterializedViewTable(tbl)) {
+      throw new MetaException(
+          "Creation of MATERIALIZED_VIEW is disabled via " + ConfVars.MATERIALIZED_VIEW_ENABLED.getVarname());
     }
   }
 }
