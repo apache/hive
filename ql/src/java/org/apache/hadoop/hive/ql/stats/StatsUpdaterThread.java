@@ -159,6 +159,7 @@ public class StatsUpdaterThread extends Thread implements MetaStoreThread {
         return;
       }
     }
+    stopWorkers();
     LOG.info("Stats updater thread was stopped and will now exit");
   }
 
