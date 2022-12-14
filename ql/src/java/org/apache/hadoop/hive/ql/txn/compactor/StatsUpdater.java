@@ -72,16 +72,14 @@ public final class StatsUpdater {
                 sb.append(")");
             }
             sb.append(" compute statistics");
-            if (!conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER) && ci.isMajorCompaction()) {
-                if (msc != null) {
-                    List<String> columnList = msc.findColumnsWithStats(CompactionInfo.compactionInfoToStruct(ci));
-                    if (!columnList.isEmpty()) {
-                        sb.append(" for columns ");
-                        for (String colName : columnList) {
-                            sb.append(colName).append(",");
-                        }
-                        sb.setLength(sb.length() - 1); //remove trailing ,
+            if (!conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER) && ci.isMajorCompaction() && msc != null) {
+                List<String> columnList = msc.findColumnsWithStats(CompactionInfo.compactionInfoToStruct(ci));
+                if (!columnList.isEmpty()) {
+                    sb.append(" for columns ");
+                    for (String colName : columnList) {
+                        sb.append(colName).append(",");
                     }
+                    sb.setLength(sb.length() - 1); //remove trailing ,
                 }
             } else {
                 sb.append(" noscan");
