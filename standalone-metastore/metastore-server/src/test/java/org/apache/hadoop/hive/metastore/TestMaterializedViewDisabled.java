@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.thrift.TException;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +40,7 @@ import java.util.List;
 import java.util.Set;
 
 @Category(MetastoreUnitTest.class)
-public class TestMaterialisedViewDisabled {
+public class TestMaterializedViewDisabled {
   private Configuration conf;
   private HiveMetaStoreClient client;
 
@@ -52,6 +53,11 @@ public class TestMaterialisedViewDisabled {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
     client = new HiveMetaStoreClient(conf);
+  }
+
+  @After
+  public void tearDown() {
+    client.close();
   }
 
   @Test
@@ -69,7 +75,7 @@ public class TestMaterialisedViewDisabled {
         MetaException.class, () -> createMaterializedView(dbName, "mv1", tablesUsed));
   }
 
-   Table createTable(String dbName, String tableName) throws TException {
+  private Table createTable(String dbName, String tableName) throws TException {
     return new TableBuilder()
         .setDbName(dbName)
         .setTableName(tableName)
@@ -94,7 +100,7 @@ public class TestMaterialisedViewDisabled {
         .create(client, conf);
   }
 
-  public static SourceTable createSourceTable(Table table) {
+  private static SourceTable createSourceTable(Table table) {
     SourceTable sourceTable = new SourceTable();
     sourceTable.setTable(table);
     sourceTable.setInsertedCount(0L);
