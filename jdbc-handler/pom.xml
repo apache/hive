@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>2.3.9</version>
+    <version>2.3.9-6si-1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -29,6 +29,7 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
+    <commons-dbcp.version>1.4</commons-dbcp.version>
   </properties>
 
   <dependencies>
@@ -120,6 +121,12 @@
       <artifactId>h2</artifactId>
       <version>${h2database.version}</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-dbcp</groupId>
+      <artifactId>commons-dbcp</artifactId>
+      <version>${commons-dbcp.version}</version>
     </dependency>
 
   </dependencies>

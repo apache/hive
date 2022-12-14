@@ -1,4 +1,4 @@
-Release Notes - Hive - Version 2.3.9
+Release Notes - Hive - Version 2.3.9-6si-1
 
 
 
