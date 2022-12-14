@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.EdgeType;
@@ -216,7 +215,7 @@ public class SharedWorkOptimizer extends Transform {
 
     }
 
-    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE)) {
+    if(pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE)) {
       // Try to reuse cache for broadcast side in mapjoin operators that
       // share same input.
       // First we group together all the mapjoin operators that share same
@@ -679,11 +678,6 @@ public class SharedWorkOptimizer extends Transform {
     for (String col : discardableTsOp.getConf().getNeededColumns()) {
       if (!retainableTsOp.getConf().getNeededColumns().contains(col)) {
         retainableTsOp.getConf().getNeededColumns().add(col);
-      }
-    }
-    for (VirtualColumn col : discardableTsOp.getConf().getVirtualCols()) {
-      if (!retainableTsOp.getConf().getVirtualCols().contains(col)) {
-        retainableTsOp.getConf().getVirtualCols().add(col);
       }
     }
   }
