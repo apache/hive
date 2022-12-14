@@ -40,6 +40,7 @@
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <junit.vintage.version>5.6.2</junit.vintage.version>
+    <maven.setversion.plugin.version>2.13.0</maven.setversion.plugin.version>
     <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
   </properties>
   <modules>
@@ -56,6 +57,11 @@
           <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>${maven.setversion.plugin.version}</version>
       </plugin>
     </plugins>
   </build>
