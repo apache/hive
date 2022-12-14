@@ -77,7 +77,7 @@ public class ReplChangeManager {
   private static final String URI_FRAGMENT_SEPARATOR = "#";
   public static final String SOURCE_OF_REPLICATION = ReplConst.SOURCE_OF_REPLICATION;
   private static final String TXN_WRITE_EVENT_FILE_SEPARATOR = "]";
-  static final String CM_THREAD_NAME_PREFIX = "cmclearer-";
+  public static final String CM_THREAD_NAME_PREFIX = "cmclearer-";
   private static final String NO_ENCRYPTION = "noEncryption";
   private static String cmRootDir;
   private static String encryptedCmRootDir;
@@ -470,10 +470,16 @@ public class ReplChangeManager {
   /**
    * Thread to clear old files of cmroot recursively
    */
-  static class CMClearer implements Runnable {
+  public static class CMClearer implements Runnable {
     private Map<String, String> encryptionZones;
     private long secRetain;
     private Configuration conf;
+
+    public CMClearer(long secRetain, Configuration conf) {
+      this.encryptionZones = encryptionZoneToCmrootMapping;
+      this.secRetain = secRetain;
+      this.conf = conf;
+    }
 
     CMClearer(Map<String, String> encryptionZones, long secRetain, Configuration conf) {
       this.encryptionZones = encryptionZones;
@@ -530,8 +536,7 @@ public class ReplChangeManager {
           .namingPattern(CM_THREAD_NAME_PREFIX + "%d")
           .daemon(true)
           .build());
-      executor.scheduleAtFixedRate(new CMClearer(encryptionZoneToCmrootMapping,
-                      MetastoreConf.getTimeVar(conf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), conf),
+      executor.scheduleAtFixedRate(new CMClearer(MetastoreConf.getTimeVar(conf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), conf),
               0, MetastoreConf.getTimeVar(conf, ConfVars.REPLCMINTERVAL, TimeUnit.SECONDS), TimeUnit.SECONDS);
     }
   }
