@@ -23,12 +23,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FutureDataInputStreamBuilder;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.util.functional.FutureIO;
 import org.apache.iceberg.encryption.NativeFileCryptoParameters;
 import org.apache.iceberg.encryption.NativelyEncryptedFile;
 import org.apache.iceberg.exceptions.NotFoundException;
@@ -180,12 +181,17 @@ public class HadoopInputFile implements InputFile, NativelyEncryptedFile {
   @Override
   public SeekableInputStream newStream() {
     try {
-      return HadoopStreams.wrap(
-          FutureIO.awaitFuture(fs.openFile(path).opt("fs.s3a.experimental.input.fadvise", "normal").build()));
+      FutureDataInputStreamBuilder fsBuilder = fs.openFile(path);
+      if (length != null) {
+        fsBuilder.opt("fs.option.openfile.length", length);
+      }
+      return HadoopStreams.wrap(fsBuilder.opt("fs.s3a.experimental.input.fadvise", "normal").build().get());
     } catch (FileNotFoundException e) {
       throw new NotFoundException(e, "Failed to open input stream for file: %s", path);
     } catch (IOException e) {
       throw new RuntimeIOException(e, "Failed to open input stream for file: %s", path);
+    } catch (ExecutionException | InterruptedException e) {
+      throw new RuntimeException(e);
     }
   }
 
