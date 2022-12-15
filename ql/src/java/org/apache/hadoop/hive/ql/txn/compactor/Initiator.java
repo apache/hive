@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
@@ -61,7 +59,6 @@ import org.apache.hadoop.hive.ql.io.AcidUtils.ParsedDirectory;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.Ref;
-import org.apache.thrift.TBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,10 +72,7 @@ import java.util.List;
 import java.util.LongSummaryStatistics;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -101,7 +95,7 @@ public class Initiator extends MetaStoreCompactorThread {
   static final private String COMPACTORTHRESHOLD_PREFIX = "compactorthreshold.";
 
   private ExecutorService compactionExecutor;
-  private Optional<Cache<String, TBase>> metaCache = Optional.empty();
+
   private boolean metricsEnabled;
 
   @Override
@@ -156,7 +150,7 @@ public class Initiator extends MetaStoreCompactorThread {
 
           // Currently we invalidate all entries after each cycle, because the bootstrap replication is marked via
           // table property hive.repl.first.inc.pending which would be cached.
-          metaCache.ifPresent(Cache::invalidateAll);
+          invalidateMetaCache();
           Set<String> skipDBs = Sets.newConcurrentHashSet();
           Set<String> skipTables = Sets.newConcurrentHashSet();
 
@@ -293,16 +287,6 @@ public class Initiator extends MetaStoreCompactorThread {
     return poolName;
   }
 
-  private <T extends TBase<T,?>> T computeIfAbsent(String key, Callable<T> callable) throws Exception {
-    if (metaCache.isPresent()) {
-      try {
-        return (T) metaCache.get().get(key, callable);
-      } catch (ExecutionException e) {
-        throw (Exception) e.getCause();
-      }
-    }
-    return callable.call();
-  }
 
   private Database resolveDatabase(CompactionInfo ci) throws MetaException, NoSuchObjectException {
     try {
@@ -348,9 +332,7 @@ public class Initiator extends MetaStoreCompactorThread {
             COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
     boolean tableCacheOn = MetastoreConf.getBoolVar(conf,
         MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLECACHE_ON);
-    if (tableCacheOn) {
-      metaCache = Optional.of(CacheBuilder.newBuilder().softValues().build());
-    }
+    initializeCache(tableCacheOn);
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
   }
