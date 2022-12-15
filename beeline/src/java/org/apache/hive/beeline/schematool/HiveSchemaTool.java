@@ -75,8 +75,9 @@ public class HiveSchemaTool extends MetastoreSchemaTool {
     // write out the buffer into a file. Add beeline commands for autocommit and close
     FileWriter fstream = new FileWriter(tmpFile.getPath());
     BufferedWriter out = new BufferedWriter(fstream);
-    out.write("!autocommit on" + System.getProperty("line.separator"));
+    out.write("!autocommit off" + System.getProperty("line.separator"));
     out.write(sqlCommands);
+    out.write("!commit" + System.getProperty("line.separator"));
     out.write("!closeall" + System.getProperty("line.separator"));
     out.close();
     execSql(tmpFile.getPath());
