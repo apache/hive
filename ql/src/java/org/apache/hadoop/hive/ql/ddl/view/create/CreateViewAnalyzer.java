@@ -93,7 +93,7 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
 
     List<FieldSchema> partitionColumns = getPartitionColumns(imposedSchema, select, viewName,
         partitionColumnNames);
-
+    setColumnAccessInfo(analyzer.getColumnAccessInfo());
     CreateViewDesc desc = new CreateViewDesc(fqViewName, schema, comment, properties, partitionColumnNames,
         ifNotExists, orReplace, originalText, expandedText, partitionColumns);
     validateCreateView(desc, analyzer);
