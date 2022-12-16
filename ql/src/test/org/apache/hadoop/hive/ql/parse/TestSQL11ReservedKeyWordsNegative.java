@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -80,7 +79,7 @@ public class TestSQL11ReservedKeyWordsNegative {
           { "BY" }, { "CONSTRAINT" }, { "CREATE" }, { "CUBE" }, { "CURRENT_DATE" },
           { "CURRENT_TIMESTAMP" }, { "CURSOR" }, { "DATE" }, { "DECIMAL" }, { "DELETE" },
           { "DESCRIBE" }, { "DOUBLE" }, { "DROP" }, { "EXISTS" }, { "EXTERNAL" }, { "FALSE" },
-          { "FETCH" }, { "FLOAT" }, { "REAL" }, { "FOR" }, { "FOREIGN" }, { "FULL" }, { "GRANT" },
+          { "FETCH" }, { "FLOAT" }, { "FOR" }, { "FOREIGN" }, { "FULL" }, { "GRANT" },
           { "GROUP" }, { "GROUPING" }, { "IMPORT" }, { "IN" }, { "INNER" }, { "INSERT" }, { "INT" },
           { "INTERSECT" }, { "INTO" }, { "IS" }, { "LATERAL" }, { "LEFT" }, { "LIKE" }, { "LOCAL" },
           { "MINUS" }, { "NONE" }, { "NULL" }, { "OF" }, { "ORDER" }, { "OUT" }, { "OUTER" },
