@@ -52,9 +52,14 @@ public final class StatsUpdater {
      * @param userName The user to run the statistic collection with
      * @param compactionQueueName The name of the compaction queue
      */
-    public void gatherStats(IMetaStoreClient msc, CompactionInfo ci, HiveConf conf,
-                            String userName, String compactionQueueName) {
+    public void gatherStats(CompactionInfo ci, HiveConf conf,
+                            String userName, String compactionQueueName,
+                            IMetaStoreClient msc) {
         try {
+            if (msc == null) {
+                throw new IllegalArgumentException("Metastore client is missing");
+            }
+
             HiveConf statusUpdaterConf = new HiveConf(conf);
             statusUpdaterConf.unset(ValidTxnList.VALID_TXNS_KEY);
 
@@ -72,14 +77,10 @@ public final class StatsUpdater {
                 sb.append(")");
             }
             sb.append(" compute statistics");
-            if (!conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER) && ci.isMajorCompaction() && msc != null) {
+            if (!conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER) && ci.isMajorCompaction()) {
                 List<String> columnList = msc.findColumnsWithStats(CompactionInfo.compactionInfoToStruct(ci));
                 if (!columnList.isEmpty()) {
-                    sb.append(" for columns ");
-                    for (String colName : columnList) {
-                        sb.append(colName).append(",");
-                    }
-                    sb.setLength(sb.length() - 1); //remove trailing ,
+                    sb.append(" for columns ").append(String.join(",", columnList));
                 }
             } else {
                 sb.append(" noscan");

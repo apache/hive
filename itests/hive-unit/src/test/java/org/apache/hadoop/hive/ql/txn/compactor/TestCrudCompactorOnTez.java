@@ -337,8 +337,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
-    new StatsUpdater().gatherStats(msClient, ci, conf,
-            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
+    new StatsUpdater().gatherStats(ci, conf, System.getProperty("user.name"),
+            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
     //Check basic stats are collected
     Map<String, String> parameters = Hive.get().getTable(tblName).getParameters();
@@ -2612,17 +2612,21 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test
-  public void testStatsAfterMinorCompactionPartTblForMRCompaction() throws Exception {
-    testStatsAfterMinorCompactionPartTbl(false);
+  public void testStatsAfterCompactionPartTblForMRCompaction() throws Exception {
+    testStatsAfterCompactionPartTbl(false, true, CompactionType.MINOR);
+    testStatsAfterCompactionPartTbl(false, false, CompactionType.MAJOR);
   }
 
   @Test
-  public void testStatsAfterMinorCompactionPartTblForQueryBasedCompaction() throws Exception {
-    testStatsAfterMinorCompactionPartTbl(true);
+  public void testStatsAfterCompactionPartTblForQueryBasedCompaction() throws Exception {
+    testStatsAfterCompactionPartTbl(true, true, CompactionType.MINOR);
+    testStatsAfterCompactionPartTbl(true, false, CompactionType.MAJOR);
   }
 
-  public void testStatsAfterMinorCompactionPartTbl(boolean isQueryBased) throws Exception {
+  public void testStatsAfterCompactionPartTbl(boolean isQueryBased, boolean isAutoGatherStats,
+                                              CompactionType compactionType) throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, isQueryBased);
+    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, isAutoGatherStats);
     String dbName = "default";
     String tblName = "minor_compaction_test";
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
@@ -2646,9 +2650,9 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Table table = msClient.getTable(dbName, tblName);
 
     //compute stats before compaction
-    CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=1", CompactionType.MINOR);
-    new StatsUpdater().gatherStats(msClient, ci, conf,
-            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
+    CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=1", compactionType);
+    new StatsUpdater().gatherStats(ci, conf, System.getProperty("user.name"),
+            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
     //Check basic stats are collected
     org.apache.hadoop.hive.ql.metadata.Table hiveTable = Hive.get().getTable(tblName);
@@ -2663,7 +2667,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
 
     //Do a minor compaction
-    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, compactionType);
     rqst.setPartitionname("bkt=1");
     txnHandler.compact(rqst);
     runWorker(conf);
@@ -2683,7 +2687,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
             .findFirst()
             .orElseThrow(() -> new RuntimeException("Could not get Partition"))
             .getParameters();
-    Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
+    if (compactionType == CompactionType.MINOR) {
+      Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
+    } else {
+      Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
+    }
     Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
     executeStatementOnDriver("drop table if exists " + tblName, driver);
   }
