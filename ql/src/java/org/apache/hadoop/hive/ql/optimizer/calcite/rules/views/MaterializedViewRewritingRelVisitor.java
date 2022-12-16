@@ -54,11 +54,13 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
 
 
   private boolean containsAggregate;
+  private boolean fullAcidView;
   private boolean rewritingAllowed;
   private int countIndex;
 
   public MaterializedViewRewritingRelVisitor() {
     this.containsAggregate = false;
+    this.fullAcidView = false;
     this.rewritingAllowed = false;
     this.countIndex = -1;
   }
@@ -127,7 +129,8 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
             // If it is not a materialized view, we do not rewrite it
             throw new ReturnedValue(false);
           }
-          if (containsAggregate && !AcidUtils.isFullAcidTable(hiveTable.getHiveTableMD())) {
+          fullAcidView = AcidUtils.isFullAcidTable(hiveTable.getHiveTableMD());
+          if (containsAggregate && !fullAcidView) {
             // If it contains an aggregate and it is not a full acid table,
             // we do not rewrite it (we need MERGE support)
             throw new ReturnedValue(false);
@@ -159,6 +162,10 @@ public class MaterializedViewRewritingRelVisitor extends RelVisitor {
 
   public boolean isContainsAggregate() {
     return containsAggregate;
+  }
+
+  public boolean isFullAcidView() {
+    return fullAcidView;
   }
 
   public boolean isRewritingAllowed() {

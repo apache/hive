@@ -296,7 +296,14 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       MaterializedViewRewritingRelVisitor visitor = new MaterializedViewRewritingRelVisitor();
       visitor.go(basePlan);
       if (visitor.isRewritingAllowed()) {
-        if (materialization.isSourceTablesUpdateDeleteModified()) {
+        if (!materialization.isSourceTablesUpdateDeleteModified()) {
+          // Trigger rewriting to remove UNION branch with MV
+          if (visitor.isContainsAggregate()) {
+            return applyAggregateInsertIncremental(basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan);
+          } else {
+            return applyJoinInsertIncremental(basePlan, mdProvider, executorProvider);
+          }
+        } else if (visitor.isFullAcidView()) {
           if (visitor.isContainsAggregate()) {
             if (visitor.getCountIndex() < 0) {
               // count(*) is necessary for determine which rows should be deleted from the view
@@ -309,12 +316,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
                     basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan);
           }
         } else {
-          // Trigger rewriting to remove UNION branch with MV
-          if (visitor.isContainsAggregate()) {
-            return applyAggregateInsertIncremental(basePlan, mdProvider, executorProvider, optCluster, calcitePreMVRewritingPlan);
-          } else {
-            return applyJoinInsertIncremental(basePlan, mdProvider, executorProvider);
-          }
+          return calcitePreMVRewritingPlan;
         }
       } else if (materialization.isSourceTablesUpdateDeleteModified()) {
         // calcitePreMVRewritingPlan is already got the optimizations by applyPreJoinOrderingTransforms prior calling
