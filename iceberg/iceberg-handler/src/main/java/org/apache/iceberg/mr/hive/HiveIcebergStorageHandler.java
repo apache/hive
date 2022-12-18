@@ -582,6 +582,11 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     HiveStorageHandler.super.validateSinkDesc(sinkDesc);
     if (sinkDesc.getInsertOverwrite()) {
       Table table = IcebergTableUtil.getTable(conf, sinkDesc.getTableInfo().getProperties());
+      if (table.currentSnapshot() != null &&
+          "0" .equalsIgnoreCase(table.currentSnapshot().summary().get(SnapshotSummary.TOTAL_RECORDS_PROP))) {
+        // If the table is empty we don't have any danger that some data can get lost.
+        return;
+      }
       if (IcebergTableUtil.isBucketed(table)) {
         throw new SemanticException("Cannot perform insert overwrite query on bucket partitioned Iceberg table.");
       }
@@ -590,7 +595,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
             .anyMatch(id -> id < table.spec().specId())) {
           throw new SemanticException(
               "Cannot perform insert overwrite query on Iceberg table where partition evolution happened. In order " +
-              "to succesfully carry out any insert overwrite operation on this table, the data has to be rewritten " +
+              "to successfully carry out any insert overwrite operation on this table, the data has to be rewritten " +
               "conforming to the latest spec. ");
         }
       }
