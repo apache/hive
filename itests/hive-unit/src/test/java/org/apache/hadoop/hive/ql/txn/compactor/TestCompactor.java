@@ -2100,10 +2100,10 @@ public class TestCompactor extends TestCompactorBase {
 
     txnHandler.compact(new CompactionRequest(dbName, tableName, CompactionType.MAJOR));
     runWorker(conf);
-    // Make sure the statistics is NOT updated for the table (compaction triggers only a basic stats gathering)
+    // Make sure the statistics is updated for the table
     colStats = msClient.getTableColumnStatistics(dbName, tableName, colNames, Constants.HIVE_ENGINE);
     assertEquals("Stats should be there", 1, colStats.size());
-    assertEquals("Value should contain new data", 1, colStats.get(0).getStatsData().getLongStats().getHighValue());
+    assertEquals("Value should contain new data", 2, colStats.get(0).getStatsData().getLongStats().getHighValue());
     assertEquals("Value should contain new data", 1, colStats.get(0).getStatsData().getLongStats().getLowValue());
   }
 
