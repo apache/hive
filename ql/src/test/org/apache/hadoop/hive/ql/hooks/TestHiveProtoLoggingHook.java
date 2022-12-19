@@ -166,7 +166,7 @@ public class TestHiveProtoLoggingHook {
     evtLogger.shutdown();
 
     List<ProtoMessageReader<HiveHookEventProto>> readers = getTestReader(conf, tmpFolder);
-    Assert.assertEquals(readers.size(), 1);
+    Assert.assertEquals(1, readers.size());
     ProtoMessageReader<HiveHookEventProto> reader = readers.get(0);
 
     HiveHookEventProto event = reader.readEvent();
@@ -196,7 +196,7 @@ public class TestHiveProtoLoggingHook {
     evtLogger.handle(context);
     evtLogger.shutdown();
     List<ProtoMessageReader<HiveHookEventProto>> readers = getTestReader(conf, tmpFolder);
-    Assert.assertEquals(readers.size(), 1);
+    Assert.assertEquals(1, readers.size());
     ProtoMessageReader<HiveHookEventProto> reader = readers.get(0);
     reader.readEvent();
     reader.readEvent();
@@ -217,7 +217,7 @@ public class TestHiveProtoLoggingHook {
     evtLogger.shutdown();
 
     List<ProtoMessageReader<HiveHookEventProto>> readers = getTestReader(conf, tmpFolder);
-    Assert.assertEquals(readers.size(), 1);
+    Assert.assertEquals(1, readers.size());
     ProtoMessageReader<HiveHookEventProto> reader = readers.get(0);
     HiveHookEventProto event = reader.readEvent();
     Assert.assertNotNull("Pre hook event not found", event);
@@ -326,7 +326,7 @@ public class TestHiveProtoLoggingHook {
 
   private HiveHookEventProto loadEvent(HiveConf conf, String tmpFolder) throws IOException {
     List<ProtoMessageReader<HiveHookEventProto>> readers = getTestReader(conf, tmpFolder);
-    Assert.assertEquals(readers.size(), 1);
+    Assert.assertEquals(1, readers.size());
     ProtoMessageReader<HiveHookEventProto> reader = readers.get(0);
     HiveHookEventProto event = reader.readEvent();
     Assert.assertNotNull(event);
