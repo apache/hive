@@ -247,6 +247,14 @@ public class DatabaseProduct implements Configurable {
     }
   }
 
+  protected String toTimestamp(String tableValue) {
+    if (isORACLE()) {
+      return "TO_TIMESTAMP(" + tableValue + ", 'YYYY-MM-DD HH:mm:ss')";
+    } else {
+      return "cast(" + tableValue + " as TIMESTAMP)";
+    }
+  }
+
   /**
    * Returns db-specific logic to be executed at the beginning of a transaction.
    * Used in pooled connections.
