@@ -21,11 +21,20 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.commons.lang3.StringUtils.normalizeSpace;
 import static org.apache.commons.lang3.StringUtils.repeat;
+import static org.apache.hadoop.hive.metastore.ColumnType.BIGINT_TYPE_NAME;
+import static org.apache.hadoop.hive.metastore.ColumnType.DATE_TYPE_NAME;
+import static org.apache.hadoop.hive.metastore.ColumnType.INT_TYPE_NAME;
+import static org.apache.hadoop.hive.metastore.ColumnType.SMALLINT_TYPE_NAME;
+import static org.apache.hadoop.hive.metastore.ColumnType.STRING_TYPE_NAME;
+import static org.apache.hadoop.hive.metastore.ColumnType.TIMESTAMP_TYPE_NAME;
+import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.ParseException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,6 +54,7 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -553,6 +563,8 @@ class MetaStoreDirectSql {
           PartitionFilterGenerator.FilterType.fromType(colType);
       if (type == PartitionFilterGenerator.FilterType.Date) {
       	tableValue = dbType.toDate(tableValue);
+      } else if (type == PartitionFilterGenerator.FilterType.Timestamp) {
+        tableValue = dbType.toTimestamp(tableValue);
       } else if (type == PartitionFilterGenerator.FilterType.Integral) {
         tableValue = "CAST(" + tableColumn + " AS decimal(21,0))";
       }
@@ -1248,30 +1260,43 @@ class MetaStoreDirectSql {
     }
 
     private static enum FilterType {
-      Integral,
-      String,
-      Date,
+      Integral(ImmutableSet.of(TINYINT_TYPE_NAME, SMALLINT_TYPE_NAME, INT_TYPE_NAME, BIGINT_TYPE_NAME), Long.class),
+      String(ImmutableSet.of(STRING_TYPE_NAME), String.class),
+      Date(ImmutableSet.of(DATE_TYPE_NAME), java.sql.Date.class),
+      Timestamp(ImmutableSet.of(TIMESTAMP_TYPE_NAME), java.sql.Timestamp.class),
 
-      Invalid;
+      Invalid(Collections.emptySet(), Void.class);
 
-      static FilterType fromType(String colTypeStr) {
-        if (colTypeStr.equals(ColumnType.STRING_TYPE_NAME)) {
-          return FilterType.String;
-        } else if (colTypeStr.equals(ColumnType.DATE_TYPE_NAME)) {
-          return FilterType.Date;
-        } else if (ColumnType.IntegralTypes.contains(colTypeStr)) {
-          return FilterType.Integral;
+      private final Set<String> colTypes;
+      private final Class<?> clazz;
+
+      FilterType(Set<String> colTypes, Class<?> clazz) {
+        this.colTypes = colTypes;
+        this.clazz = clazz;
+      }
+
+      public Set<String> getType() {
+        return colTypes;
+      }
+
+      public Class<?> getClazz() {
+        return clazz;
+      }
+
+      public static FilterType fromType(String colTypeStr) {
+        for (FilterType filterType : FilterType.values()) {
+          if (filterType.colTypes.contains(colTypeStr)) {
+            return filterType;
+          }
         }
         return FilterType.Invalid;
       }
 
-      public static FilterType fromClass(Object value) {
-        if (value instanceof String) {
-          return FilterType.String;
-        } else if (value instanceof Long) {
-          return FilterType.Integral;
-        } else if (value instanceof java.sql.Date) {
-          return FilterType.Date;
+      public static FilterType fromClass(Object value){
+        for (FilterType filterType : FilterType.values()) {
+          if (filterType.clazz.isInstance(value)) {
+            return filterType;
+          }
         }
         return FilterType.Invalid;
       }
@@ -1309,10 +1334,19 @@ class MetaStoreDirectSql {
         }
       }
 
+      if (colType == FilterType.Timestamp && valType == FilterType.String) {
+        nodeValue = Timestamp.valueOf(LocalDateTime.from(
+            MetaStoreUtils.PARTITION_TIMESTAMP_FORMAT.get().parse((String)nodeValue)));
+        valType = FilterType.Timestamp;
+      }
+
       // We format it so we are sure we are getting the right value
       if (valType == FilterType.Date) {
         // Format
         nodeValue = MetaStoreUtils.PARTITION_DATE_FORMAT.get().format(nodeValue);
+      } else if (valType == FilterType.Timestamp) {
+        //format
+        nodeValue = MetaStoreUtils.PARTITION_TIMESTAMP_FORMAT.get().format(((Timestamp) nodeValue).toLocalDateTime());
       }
 
       boolean isDefaultPartition = (valType == FilterType.String) && defaultPartName.equals(nodeValue);
@@ -1353,6 +1387,8 @@ class MetaStoreDirectSql {
           tableValue = "cast(" + tableValue + " as decimal(21,0))";
         } else if (colType == FilterType.Date) {
         	tableValue = dbType.toDate(tableValue);
+        } else if (colType == FilterType.Timestamp) {
+          tableValue = dbType.toTimestamp(tableValue);
         }
 
         // Workaround for HIVE_DEFAULT_PARTITION - ignore it like JDO does, for now.
@@ -1374,6 +1410,8 @@ class MetaStoreDirectSql {
 
         if (valType == FilterType.Date) {
         	tableValue = dbType.toDate(tableValue);
+        } else if (valType == FilterType.Timestamp) {
+          tableValue = dbType.toTimestamp(tableValue);
         }
       }
       if (!node.isReverseOrder) {
