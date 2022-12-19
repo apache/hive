@@ -36,6 +36,9 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
 package org.apache.hadoop.hive.metastore.parser;
 
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
@@ -47,6 +50,8 @@ import java.util.regex.Pattern;
   public String errorMsg;
 
   private static final Pattern datePattern = Pattern.compile(".*(\\d\\d\\d\\d-\\d\\d-\\d\\d).*");
+  private static final Pattern timestampPattern =
+      Pattern.compile(".*(\\d\\d\\d\\d-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d).*");
   private static final ThreadLocal<SimpleDateFormat> dateFormat =
        new ThreadLocal<SimpleDateFormat>() {
     @Override
@@ -57,8 +62,17 @@ import java.util.regex.Pattern;
       return val;
     };
   };
+  private static final ThreadLocal<DateTimeFormatter> timestampFormat =
+       new ThreadLocal<DateTimeFormatter>() {
+    @Override
+    protected DateTimeFormatter initialValue() {
+      DateTimeFormatter val = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+          .withZone(TimeZone.getTimeZone("UTC").toZoneId());
+      return val;
+    };
+  };
 
-  public static java.sql.Date ExtractDate (String input) {
+  public static java.sql.Date extractDate(String input) {
     Matcher m = datePattern.matcher(input);
     if (!m.matches()) {
       return null;
@@ -66,6 +80,19 @@ import java.util.regex.Pattern;
     try {
       return new java.sql.Date(dateFormat.get().parse(m.group(1)).getTime());
     } catch (ParseException pe) {
+      return null;
+    }
+  }
+
+  public static java.sql.Timestamp extractTimestamp(String input) {
+    Matcher m = timestampPattern.matcher(input);
+    if (!m.matches()) {
+      return null;
+    }
+    try {
+       LocalDateTime val = LocalDateTime.from(timestampFormat.get().parse(m.group(1)));
+       return Timestamp.valueOf(val);
+    } catch (Exception ex) {
       return null;
     }
   }
@@ -142,7 +169,13 @@ binOpExpression
          (key = Identifier op = operator  value = DateLiteral)
          |
          (value = DateLiteral  op = operator key = Identifier) { isReverseOrder = true; }
-       ) { val = FilterLexer.ExtractDate(value.getText()); }
+       ) { val = FilterLexer.extractDate(value.getText()); }
+       |
+       (
+         (key = Identifier op = operator  value = TimestampLiteral)
+         |
+         (value = TimestampLiteral  op = operator key = Identifier) { isReverseOrder = true; }
+       ) { val = FilterLexer.extractTimestamp(value.getText()); }
        |
        (
          (key = Identifier op = operator  value = StringLiteral)
@@ -184,8 +217,13 @@ betweenExpression
        key = Identifier (KW_NOT { isPositive = false; } )? BETWEEN
        (
          (left = DateLiteral KW_AND right = DateLiteral) {
-            leftV = FilterLexer.ExtractDate(left.getText());
-            rightV = FilterLexer.ExtractDate(right.getText());
+            leftV = FilterLexer.extractDate(left.getText());
+            rightV = FilterLexer.extractDate(right.getText());
+         }
+         |
+         (left = TimestampLiteral KW_AND right = TimestampLiteral) {
+            leftV = FilterLexer.extractTimestamp(left.getText());
+            rightV = FilterLexer.extractTimestamp(right.getText());
          }
          |
          (left = StringLiteral KW_AND right = StringLiteral) { leftV = TrimQuotes(left.getText());
@@ -222,17 +260,32 @@ inExpression
             (
                 constant = DateLiteral
                 {
-                    constantV = FilterLexer.ExtractDate(constant.getText());
+                    constantV = FilterLexer.extractDate(constant.getText());
                     constants.add(constantV);
                 }
                 (
                     COMMA constant = DateLiteral
                     {
-                        constantV = FilterLexer.ExtractDate(constant.getText());
+                        constantV = FilterLexer.extractDate(constant.getText());
                         constants.add(constantV);
                     }
                 )*
             )
+            |
+            (
+                constant = TimestampLiteral
+                {
+                    constantV = FilterLexer.extractTimestamp(constant.getText());
+                    constants.add(constantV);
+                }
+                (
+                    COMMA constant = TimestampLiteral
+                    {
+                        constantV = FilterLexer.extractTimestamp(constant.getText());
+                        constants.add(constantV);
+                    }
+                )*
+             )
             |
             (
                 constant = StringLiteral
@@ -311,7 +364,12 @@ multiColInExpression
         (
             constant = DateLiteral
             {
-                constantV = FilterLexer.ExtractDate(constant.getText());
+                constantV = FilterLexer.extractDate(constant.getText());
+                partialConstants.add(constantV);
+            }
+            | constant = TimestampLiteral
+            {
+                constantV = FilterLexer.extractTimestamp(constant.getText());
                 partialConstants.add(constantV);
             }
             | constant = StringLiteral
@@ -330,7 +388,12 @@ multiColInExpression
             (
                 constant = DateLiteral
                 {
-                    constantV = FilterLexer.ExtractDate(constant.getText());
+                    constantV = FilterLexer.extractDate(constant.getText());
+                    partialConstants.add(constantV);
+                }
+                | constant = TimestampLiteral
+                {
+                    constantV = FilterLexer.extractTimestamp(constant.getText());
                     partialConstants.add(constantV);
                 }
                 | constant = StringLiteral
@@ -357,7 +420,12 @@ multiColInExpression
             (
                 constant = DateLiteral
                 {
-                    constantV = FilterLexer.ExtractDate(constant.getText());
+                    constantV = FilterLexer.extractDate(constant.getText());
+                    partialConstants.add(constantV);
+                }
+                | constant = TimestampLiteral
+                {
+                    constantV = FilterLexer.extractTimestamp(constant.getText());
                     partialConstants.add(constantV);
                 }
                 | constant = StringLiteral
@@ -376,7 +444,12 @@ multiColInExpression
                 (
                     constant = DateLiteral
                     {
-                        constantV = FilterLexer.ExtractDate(constant.getText());
+                        constantV = FilterLexer.extractDate(constant.getText());
+                        partialConstants.add(constantV);
+                    }
+                    | constant = TimestampLiteral
+                    {
+                        constantV = FilterLexer.extractTimestamp(constant.getText());
                         partialConstants.add(constantV);
                     }
                     | constant = StringLiteral
@@ -425,6 +498,7 @@ KW_AND : 'AND';
 KW_OR : 'OR';
 KW_LIKE : 'LIKE';
 KW_DATE : ('DATE'|'date');
+KW_TIMESTAMP : ('TIMESTAMP'|'timestamp');
 KW_CONST : 'CONST';
 KW_STRUCT : 'STRUCT';
 
@@ -458,13 +532,24 @@ fragment DateString
     (Digit)(Digit)(Digit)(Digit) '-' (Digit)(Digit) '-' (Digit)(Digit)
     ;
 
+fragment TimestampString
+    :
+    (Digit)(Digit)(Digit)(Digit) '-' (Digit)(Digit) '-' (Digit)(Digit) ' ' (Digit)(Digit) ':' (Digit)(Digit) ':' (Digit)(Digit)
+    ;
+
 /* When I figure out how to make lexer backtrack after validating predicate, dates would be able 
 to support single quotes [( '\'' DateString '\'' ) |]. For now, what we do instead is have a hack
 to parse the string in metastore code from StringLiteral. */
 DateLiteral
     :
-    KW_DATE '\'' DateString '\'' { ExtractDate(getText()) != null }?
-    | DateString { ExtractDate(getText()) != null }?
+    KW_DATE '\'' DateString '\'' { extractDate(getText()) != null }?
+    | DateString { extractDate(getText()) != null }?
+    ;
+
+TimestampLiteral
+    :
+    KW_TIMESTAMP '\'' TimestampString '\'' { extractTimestamp(getText()) != null }?
+    | TimestampString { extractTimestamp(getText()) != null }?
     ;
 
 StringLiteral
