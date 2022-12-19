@@ -385,14 +385,14 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'minor'");
     runWorker(hiveConf);
     /*
-    at this point delta_0000001_0000003_v0000022 is visible to everyone
+    at this point delta_0000001_0000003_v0000023 is visible to everyone
     so cleaner removes all files shadowed by it (which is everything in this case)
     */
     runCleaner(hiveConf);
     runCleaner(hiveConf);
 
     expectedList = new String[] {
-        "/t/delta_0000001_0000003_v0000022"
+        "/t/delta_0000001_0000003_v0000023"
     };
     actualList = fs.listStatus(new Path(warehousePath + "/t"),
         FileUtils.HIDDEN_FILES_PATH_FILTER);

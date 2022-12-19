@@ -1573,8 +1573,8 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     status = fs.listStatus(new Path(getWarehouseDir() + "/" + tblName.toLowerCase()),
         FileUtils.HIDDEN_FILES_PATH_FILTER);
     expectedDeltas = new HashSet<>();
-    expectedDeltas.add("delete_delta_0000001_0000004_v0000025");
-    expectedDeltas.add("delta_0000001_0000004_v0000025");
+    expectedDeltas.add("delete_delta_0000001_0000004_v0000026");
+    expectedDeltas.add("delta_0000001_0000004_v0000026");
     actualDeltas = new HashSet<>();
     for(FileStatus file : status) {
       actualDeltas.add(file.getPath().getName());
@@ -3334,7 +3334,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     String oldDelta4 = "delta_0000004_0000004_0000";
 
     String expectedDelta1 = p1 + "/delta_0000001_0000002_v0000021";
-    String expectedDelta2 = p2 + "/delta_0000003_0000004_v0000022";
+    String expectedDelta2 = p2 + "/delta_0000003_0000004_v0000023";
 
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p1') (a,b) values(1,2)");
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p1') (a,b) values(3,4)");

@@ -320,6 +320,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     //as of (8/27/2014) Hive 0.14, ACID/Orc requires HiveInputFormat
     String dbName = "default";
     String tblName = "compaction_test";
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     executeStatementOnDriver("drop table if exists " + tblName, driver);
     executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
             " CLUSTERED BY(a) INTO 4 BUCKETS" + //currently ACID requires table to be bucketed
@@ -336,8 +337,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     //compute stats before compaction
     CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
-    new StatsUpdater().gatherStats(ci, conf,
-            System.getProperty("user.name"), CompactorUtil.getCompactorJobQueueName(conf, ci, table));
+    new StatsUpdater().gatherStats(ci, conf, System.getProperty("user.name"),
+            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
     //Check basic stats are collected
     Map<String, String> parameters = Hive.get().getTable(tblName).getParameters();
@@ -1044,7 +1045,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> actualBasesAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null);
     Assert.assertEquals("Base directory does not match after compaction",
-        Collections.singletonList("base_0000008_v0000038"), actualBasesAfterComp);
+        Collections.singletonList("base_0000008_v0000039"), actualBasesAfterComp);
     // Verify bucket files in delta dirs
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil.getBucketFileNames(fs, table, null, actualBasesAfterComp.get(0)));
@@ -1396,11 +1397,11 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> actualDeltasAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null);
     Assert.assertEquals("Delta directories does not match after compaction",
-        Collections.singletonList("delta_0000001_0000015_v0000044"), actualDeltasAfterComp);
+        Collections.singletonList("delta_0000001_0000015_v0000046"), actualDeltasAfterComp);
     List<String> actualDeleteDeltasAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null);
     Assert.assertEquals("Delete delta directories does not match after compaction",
-        Collections.singletonList("delete_delta_0000001_0000015_v0000044"), actualDeleteDeltasAfterComp);
+        Collections.singletonList("delete_delta_0000001_0000015_v0000046"), actualDeleteDeltasAfterComp);
 
     CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs,
         conf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE),
@@ -1581,7 +1582,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     verifySuccessfulCompaction(2);
     // Verify base directory after compaction
     Assert.assertEquals("Base directory does not match after major compaction",
-        Collections.singletonList("base_0000010_v0000029"),
+        Collections.singletonList("base_0000010_v0000030"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
     // Verify all contents
     actualData = dataProvider.getAllData(tableName);
@@ -1931,7 +1932,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // 2 compactions should be in the response queue with succeeded state
     verifySuccessfulCompaction(2);
     // Should contain only one base directory now
-    String expectedBase = "base_0000006_v0000023";
+    String expectedBase = "base_0000006_v0000024";
     Assert.assertEquals("Base directory does not match after major compaction",
         Collections.singletonList(expectedBase),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
@@ -2056,12 +2057,12 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> actualDeltasAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null);
     Assert.assertEquals("Delta directory does not match after compaction",
-        Collections.singletonList("delta_0000001_0000004_v0000032"), actualDeltasAfterComp);
+        Collections.singletonList("delta_0000001_0000004_v0000033"), actualDeltasAfterComp);
 
     List<String> actualDeleteDeltasAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deleteEventDeltaDirFilter, table, null);
     Assert.assertEquals("Delete delta directory does not match after compaction",
-        Collections.singletonList("delete_delta_0000001_0000004_v0000032"), actualDeleteDeltasAfterComp);
+        Collections.singletonList("delete_delta_0000001_0000004_v0000033"), actualDeleteDeltasAfterComp);
 
     // Verify bucket files in delta dirs
     List<String> expectedBucketFiles = Collections.singletonList("bucket_00000");
@@ -2608,5 +2609,90 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     // Verify all contents
     List<String> actualData = testDP.getAllData(tblName);
     Assert.assertEquals(expectedData, actualData);
+  }
+
+  @Test
+  public void testStatsAfterCompactionPartTblForMRCompaction() throws Exception {
+    testStatsAfterCompactionPartTbl(false, true, CompactionType.MINOR);
+    testStatsAfterCompactionPartTbl(false, false, CompactionType.MAJOR);
+  }
+
+  @Test
+  public void testStatsAfterCompactionPartTblForQueryBasedCompaction() throws Exception {
+    testStatsAfterCompactionPartTbl(true, true, CompactionType.MINOR);
+    testStatsAfterCompactionPartTbl(true, false, CompactionType.MAJOR);
+  }
+
+  public void testStatsAfterCompactionPartTbl(boolean isQueryBased, boolean isAutoGatherStats,
+                                              CompactionType compactionType) throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, isQueryBased);
+    conf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, isAutoGatherStats);
+    String dbName = "default";
+    String tblName = "minor_compaction_test";
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a INT, b STRING) " +
+            " PARTITIONED BY(bkt INT)" +
+            " STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
+            " values(57, 'Budapest')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
+            " values(58, 'Milano')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
+            " values(59, 'Bangalore')", driver);
+    executeStatementOnDriver("INSERT INTO TABLE " + tblName + " PARTITION(bkt=1)" +
+            " values(60, 'New York')", driver);
+    executeStatementOnDriver("DELETE FROM " + tblName + " WHERE a = 57", driver);
+    executeStatementOnDriver("DELETE FROM " + tblName + " WHERE a = 58", driver);
+
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    Table table = msClient.getTable(dbName, tblName);
+
+    //compute stats before compaction
+    CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=1", compactionType);
+    new StatsUpdater().gatherStats(ci, conf, System.getProperty("user.name"),
+            CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
+
+    //Check basic stats are collected
+    org.apache.hadoop.hive.ql.metadata.Table hiveTable = Hive.get().getTable(tblName);
+    List<org.apache.hadoop.hive.ql.metadata.Partition> partitions = Hive.get().getPartitions(hiveTable);
+    Map<String, String> parameters = partitions
+            .stream()
+            .filter(p -> p.getName().equals("bkt=1"))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Could not get Partition"))
+            .getParameters();
+    Assert.assertEquals("The number of files is differing from the expected", "6", parameters.get("numFiles"));
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+
+    //Do a minor compaction
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, compactionType);
+    rqst.setPartitionname("bkt=1");
+    txnHandler.compact(rqst);
+    runWorker(conf);
+    CompactorTestUtil.runCleaner(conf);
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    if (1 != compacts.size()) {
+      Assert.fail("Expecting 1 compaction and found " + compacts.size() + " compactions " + compacts);
+    }
+    Assert.assertEquals("succeeded", compacts.get(0).getState());
+
+    partitions = Hive.get().getPartitions(hiveTable);
+    parameters = partitions
+            .stream()
+            .filter(p -> p.getName().equals("bkt=1"))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Could not get Partition"))
+            .getParameters();
+    if (compactionType == CompactionType.MINOR) {
+      Assert.assertEquals("The number of files is differing from the expected", "2", parameters.get("numFiles"));
+    } else {
+      Assert.assertEquals("The number of files is differing from the expected", "1", parameters.get("numFiles"));
+    }
+    Assert.assertEquals("The number of rows is differing from the expected", "2", parameters.get("numRows"));
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
   }
 }
