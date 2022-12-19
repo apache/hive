@@ -472,8 +472,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
 
     if (computeStats) {
-       statsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : t1.getOwner(),
-              CompactorUtil.getCompactorJobQueueName(conf, ci, t1));
+      statsUpdater.gatherStats(ci, conf, runJobAsSelf(ci.runAs) ? ci.runAs : t1.getOwner(),
+              CompactorUtil.getCompactorJobQueueName(conf, ci, t1), msc);
     }
     return true;
   }
