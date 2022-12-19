@@ -1381,7 +1381,7 @@ public final class FileUtils {
 
   /**
    * Checks whether the filesystem are equal, if they are equal and belongs to ozone then check if they belong to
-   * same bucket & volume.
+   * same bucket and volume.
    * @param srcFs source filesystem
    * @param destFs target filesystem
    * @param src source path
