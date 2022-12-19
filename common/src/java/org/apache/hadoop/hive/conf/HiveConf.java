@@ -6674,7 +6674,7 @@ public class HiveConf extends Configuration {
     "tez\\.task\\..*",
     "tez\\.runtime\\..*",
     "tez\\.queue\\.name",
-
+    "iceberg\\.mr\\..*"
   };
 
   //Take care of conf overrides.
