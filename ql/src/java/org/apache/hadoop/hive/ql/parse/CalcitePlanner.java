@@ -4825,7 +4825,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
            * - distinct: input RR belongs to an Aggregate which contains only the select expressions AST string
            * representations
           */
-          originalRR = appendInputColumns(srcRel, columnList, outputRR, inputRR);
+          originalRR = outputRR.duplicate();
           for (int i = 0; i < inputRR.getColumnInfos().size(); i++) {
             ColumnInfo colInfo = new ColumnInfo(inputRR.getColumnInfos().get(i));
             String internalName = SemanticAnalyzer.getColumnInternalName(outputRR.getColumnInfos()
