@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,11 +40,6 @@ public class TestSQL11ReservedKeyWordsNegative {
   private static HiveConf conf = new HiveConf(SemanticAnalyzer.class);
   private static ParseDriver pd = new ParseDriver();
 
-  @BeforeClass
-  public static void initialize() {
-    SessionState.start(conf);
-  }
-
   private static ASTNode parse(String query) throws ParseException {
     ASTNode nd = null;
     try {
@@ -57,6 +51,12 @@ public class TestSQL11ReservedKeyWordsNegative {
   }
 
   public static class TestSQL11ReservedKeyWordsNegativeMisc {
+
+    @BeforeClass
+    public static void initialize() {
+      SessionState.start(conf);
+    }
+
     @Test
     public void testSQL11ReservedKeyWords_KILL() {
       try {
@@ -73,6 +73,11 @@ public class TestSQL11ReservedKeyWordsNegative {
   @RunWith(Parameterized.class)
   public static class TestSQL11ReservedKeyWordsNegativeParametrized {
 
+    @BeforeClass
+    public static void initialize() {
+      SessionState.start(conf);
+    }
+
     @Parameters(name = "{0}")
     public static Collection<String[]> data() {
       return Arrays.asList(new String[][] { { "ALL" }, { "ALTER" }, { "ARRAY" }, { "AS" },
@@ -80,7 +85,7 @@ public class TestSQL11ReservedKeyWordsNegative {
           { "BY" }, { "CONSTRAINT" }, { "CREATE" }, { "CUBE" }, { "CURRENT_DATE" },
           { "CURRENT_TIMESTAMP" }, { "CURSOR" }, { "DATE" }, { "DECIMAL" }, { "DELETE" },
           { "DESCRIBE" }, { "DOUBLE" }, { "DROP" }, { "EXISTS" }, { "EXTERNAL" }, { "FALSE" },
-          { "FETCH" }, { "FLOAT" }, { "REAL" }, { "FOR" }, { "FOREIGN" }, { "FULL" }, { "GRANT" },
+          { "FETCH" }, { "FLOAT" }, { "FOR" }, { "FOREIGN" }, { "FULL" }, { "GRANT" },
           { "GROUP" }, { "GROUPING" }, { "IMPORT" }, { "IN" }, { "INNER" }, { "INSERT" }, { "INT" },
           { "INTERSECT" }, { "INTO" }, { "IS" }, { "LATERAL" }, { "LEFT" }, { "LIKE" }, { "LOCAL" },
           { "MINUS" }, { "NONE" }, { "NULL" }, { "OF" }, { "ORDER" }, { "OUT" }, { "OUTER" },
