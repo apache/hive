@@ -294,10 +294,6 @@ public class Driver implements IDriver {
             driverContext.getTxnManager().clearCaches();
           }
           driverContext.setRetrial(true);
-          driverContext.getBackupContext().addSubContext(context);
-          driverContext.getBackupContext().setHiveLocks(context.getHiveLocks());
-          context = driverContext.getBackupContext();
-
           driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
               driverContext.getTxnManager().getValidTxns().toString());
 
@@ -555,7 +551,14 @@ public class Driver implements IDriver {
     String originalCboInfo = context != null ? context.cboInfo : null;
     if (context != null && context.getExplainAnalyze() != AnalyzeState.RUNNING) {
       // close the existing ctx etc before compiling a new query, but does not destroy driver
-      closeInProcess(false);
+      if (!driverContext.isRetrial()) {
+        closeInProcess(false);
+      } else {
+        // On retrail we need to maintain information from the prior context. Such
+        // as the currently held locks.
+        context = new Context(context);
+        releaseResources();
+      }
     }
 
     if (context == null) {
