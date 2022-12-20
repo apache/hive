@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.Row;
 import org.apache.hadoop.io.NullWritable;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 import org.junit.AfterClass;
 import org.junit.Test;
