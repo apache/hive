@@ -413,7 +413,7 @@ public abstract class MetaStoreEventListener implements Configurable {
 
   /**
    * This will be called to reload table/partition
-   * @param ReloadEvent event to be processed
+   * @param reloadEvent event to be processed
    * @throws MetaException
    */
   public void onReload(ReloadEvent reloadEvent)
