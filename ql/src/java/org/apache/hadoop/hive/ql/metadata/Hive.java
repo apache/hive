@@ -2609,7 +2609,7 @@ public class Hive {
            */
           FileSystem oldPartPathFS = oldPartPath.getFileSystem(getConf());
           FileSystem tblPathFS = tblDataLocationPath.getFileSystem(getConf());
-          if (FileUtils.equalsFileSystem(oldPartPathFS, tblPathFS)) {
+          if (FileUtils.isEqualFileSystemAndSameOzoneBucket(oldPartPathFS, tblPathFS, oldPartPath, tblDataLocationPath)) {
             newPartPath = oldPartPath;
           }
         }
@@ -4987,7 +4987,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   static private boolean needToCopy(final HiveConf conf, Path srcf, Path destf, FileSystem srcFs,
                                       FileSystem destFs, String configuredOwner, boolean isManaged) throws HiveException {
     //Check if different FileSystems
-    if (!FileUtils.equalsFileSystem(srcFs, destFs)) {
+    if (!FileUtils.isEqualFileSystemAndSameOzoneBucket(srcFs, destFs, srcf, destf)) {
       return true;
     }
 
