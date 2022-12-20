@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -52,6 +53,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.ComparisonFailure;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.mockito.internal.util.reflection.FieldSetter;
@@ -61,6 +63,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
 
@@ -2463,6 +2466,113 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.getFetchTask().fetch(res);
     Assert.assertEquals(2, res.size());
     Assert.assertTrue("Lost Update", isEqualCollection(res, asList("earl\t10", "amy\t10")));
+  }
+
+  // The intent of this test is to cause multiple conflicts to the same query to test the conflict retry functionality.
+  @Test
+  public void testConcurrentConflictRetry() throws Exception {
+    dropTable(new String[]{"target"});
+
+    driver2.getConf().setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+    driver.run("create table target(i int) stored as orc tblproperties ('transactional'='true')");
+    driver.run("insert into target values (1),(1)");
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    // Start a query on driver2
+    driver2.compileAndRespond("update target set i = 1 where i = 1");
+
+    swapTxnManager(txnMgr);
+    // this should cause a conflict which should cause driver2.run to invoke its conflict lambda
+    driver.run("update target set i = 1 where i = 1");
+    swapTxnManager(txnMgr2);
+
+    // This run should conflict with the above query and cause the "conflict lambda" to be execute,
+    // which will then also conflict with the driver2 query and cause it to retry.
+    AtomicInteger conflictCount = new AtomicInteger();
+    driver2.run(() -> {
+      conflictCount.getAndIncrement();
+      // on first conflict,
+      // we execute another query to cause an additional conflict
+      if (conflictCount.get() == 1) {
+        swapTxnManager(txnMgr);
+        // this should cause a conflict
+        try {
+          driver.run("update target set i = 1 where i = 1");
+        } catch (Exception e) {
+          // do nothing
+        }
+        swapTxnManager(txnMgr2);
+      }
+    });
+
+    // we expected two conflicts
+    Assert.assertEquals(2, conflictCount.get());
+    swapTxnManager(txnMgr);
+    // we expect two rows
+    driver.run("select * from target");
+    List<String> res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals(2, res.size());
+  }
+
+  @Rule
+  public ExpectedException exceptionRule = ExpectedException.none();
+
+  @Test
+  public void testConcurrentConflictMaxRetryCount() throws Exception {
+    dropTable(new String[]{"target"});
+
+    driver2.getConf().setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+
+    final int maxRetries = 4;
+    driver2.getConf().setIntVar(HiveConf.ConfVars.HIVE_TXN_MAX_RETRYSNAPSHOT_COUNT, maxRetries);
+
+    driver.run("create table target(i int) stored as orc tblproperties ('transactional'='true')");
+    driver.run("insert into target values (1),(1)");
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    // Start a query on driver2, we expect this query to never execute because of HIVE_TXN_MAX_RETRYSNAPSHOT_COUNT.
+    // We verify that it is never executed by counting the number of rows returned that have i = 1.
+    driver2.compileAndRespond("update target set i = 2 where i = 1");
+
+    swapTxnManager(txnMgr);
+    // this should cause a conflict which should cause driver2.run to invoke its conflict lambda
+    driver.run("update target set i = 1 where i = 1");
+    swapTxnManager(txnMgr2);
+
+    // This run should conflict with the above query and cause the "conflict lambda" to be execute,
+    // which will then also conflict with the driver2 query and cause it to retry. The intent here is
+    // to cause driver2's query to exceed HIVE_TXN_MAX_RETRYSNAPSHOT_COUNT and throw exception.
+    AtomicInteger conflictCount = new AtomicInteger();
+    exceptionRule.expect(CommandProcessorException.class);
+    exceptionRule.expectMessage("Operation could not be executed, snapshot was outdated when locks were acquired.");
+    driver2.run(() -> {
+      conflictCount.getAndIncrement();
+      // on first conflict,
+      // we execute another query to cause an additional conflict
+      if (conflictCount.get() <= maxRetries) {
+        swapTxnManager(txnMgr);
+        // this should cause a conflict
+        try {
+          // we use update here, to force a conflict but not create additional rows
+          driver.run("update target set i = 1 where i = 1");
+        } catch (Exception e) {
+          // do nothing
+        }
+        swapTxnManager(txnMgr2);
+      }
+    });
+
+    // We expect maxRetries+1 conflicts 
+    Assert.assertEquals(maxRetries+1, conflictCount.get());
+    swapTxnManager(txnMgr);
+    // we expect two rows
+    driver.run("select * from target where i = 1");
+    List<String> res = new ArrayList<>();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals(2, res.size());
   }
 
   @Test
