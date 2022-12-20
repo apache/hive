@@ -311,6 +311,23 @@ public class TestFileUtils {
     assertEquals(path, FileUtils.unescapePathName(FileUtils.escapePathName(path)));
   }
 
+  @Test
+  public void testOzoneSameBucket() {
+    assertTrue(FileUtils.isSameOzoneBucket(new Path("ofs://ozone1/vol1/bucket1/dir1"),
+        new Path("ofs://ozone1/vol1/bucket1/dir2/file1")));
+    assertTrue(FileUtils.isSameOzoneBucket(new Path("ofs://ozone1/vol1/bucket1/"),
+        new Path("ofs://ozone1/vol1/bucket1/dir2/file1")));
+
+    assertFalse(
+        FileUtils.isSameOzoneBucket(new Path("ofs://ozone1/vol1/"), new Path("ofs://ozone1/vol1/bucket1/dir2/file1")));
+
+    assertFalse(FileUtils.isSameOzoneBucket(new Path("ofs://ozone1/vol1/bucket1/"),
+        new Path("ofs://ozone1/vol2/bucket1/dir2/file1")));
+
+    assertFalse(FileUtils.isSameOzoneBucket(new Path("ofs://ozone1/vol1/bucket1/"),
+        new Path("ofs://ozone1/vol1/bucket2/dir2/file1")));
+  }
+
   private int assertExpectedFilePaths(RemoteIterator<? extends FileStatus> lfs, List<String> expectedPaths)
       throws Exception {
     int count = 0;

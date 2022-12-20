@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
@@ -1376,5 +1377,47 @@ public final class FileUtils {
         throws IOException {
     return RemoteIterators.filteringRemoteIterator(fs.listFiles(path, recursive),
         status -> filter.accept(status.getPath()));
+  }
+
+  /**
+   * Checks whether the filesystem are equal, if they are equal and belongs to ozone then check if they belong to
+   * same bucket and volume.
+   * @param srcFs source filesystem
+   * @param destFs target filesystem
+   * @param src source path
+   * @param dest target path
+   * @return true if filesystems are equal, if Ozone fs, then the path belongs to same bucket-volume.
+   */
+  public static boolean isEqualFileSystemAndSameOzoneBucket(FileSystem srcFs, FileSystem destFs, Path src, Path dest) {
+    if (!equalsFileSystem(srcFs, destFs)) {
+      return false;
+    }
+    if (srcFs.getScheme().equalsIgnoreCase("ofs") || srcFs.getScheme().equalsIgnoreCase("o3fs")) {
+      return isSameOzoneBucket(src, dest);
+    }
+    return true;
+  }
+
+  public static boolean isSameOzoneBucket(Path src, Path dst) {
+    String[] src1 = getVolumeAndBucket(src);
+    String[] dst1 = getVolumeAndBucket(dst);
+
+    return ((src1[0] == null && dst1[0] == null) || (src1[0] != null && src1[0].equalsIgnoreCase(dst1[0]))) &&
+        ((src1[1] == null && dst1[1] == null) || (src1[1] != null && src1[1].equalsIgnoreCase(dst1[1])));
+  }
+
+  private static String[] getVolumeAndBucket(Path path) {
+    URI uri = path.toUri();
+    final String pathStr = uri.getPath();
+    StringTokenizer token = new StringTokenizer(pathStr, "/");
+    int numToken = token.countTokens();
+
+    if (numToken >= 2) {
+      return new String[] { token.nextToken(), token.nextToken() };
+    } else if (numToken == 1) {
+      return new String[] { token.nextToken(), null };
+    } else {
+      return new String[] { null, null };
+    }
   }
 }

@@ -663,7 +663,7 @@ public class HiveStrictManagedMigration {
           FileSystem curWhRootFs = targetPath.getFileSystem(conf);
           oldWhRootPath = oldWhRootFs.makeQualified(oldWhRootPath);
           targetPath = curWhRootFs.makeQualified(targetPath);
-          if (!FileUtils.equalsFileSystem(oldWhRootFs, curWhRootFs)) {
+          if (!FileUtils.isEqualFileSystemAndSameOzoneBucket(oldWhRootFs, curWhRootFs, oldWhRootPath, targetPath)) {
             LOG.info("oldWarehouseRoot {} has a different FS than the target path {}."
                 + " Disabling shouldModifyManagedTableLocation and shouldMoveExternal",
               runOptions.oldWarehouseRoot, currentPathString);
