@@ -107,7 +107,9 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     testDataProvider.dropTable(tableName);
 
     if (isTez(conf)) {
-      ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+      List<ProtoMessageReader<HiveHookEvents.HiveHookEventProto>> readers = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+      Assert.assertEquals(1, readers.size());
+      ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = readers.get(0);
       HiveHookEvents.HiveHookEventProto event = reader.readEvent();
       while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
         event = reader.readEvent();
