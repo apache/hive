@@ -171,21 +171,26 @@ public abstract class CompactorOnTezTest {
   }
 
   protected HiveHookEvents.HiveHookEventProto getRelatedTezEvent(String dbTableName) throws Exception {
-    ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
-    HiveHookEvents.HiveHookEventProto event = reader.readEvent();
-    boolean getRelatedEvent = false;
-    while (!getRelatedEvent) {
-      while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
-        event = reader.readEvent();
+    List<ProtoMessageReader<HiveHookEvents.HiveHookEventProto>> readers = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+    for (ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader : readers) {
+      HiveHookEvents.HiveHookEventProto event = reader.readEvent();
+      boolean getRelatedEvent = false;
+      while (!getRelatedEvent) {
+        while (event != null && ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
+          event = reader.readEvent();
+        }
+        // Tables read is the table picked for compaction.
+        if (event.getTablesReadCount() > 0 && dbTableName.equalsIgnoreCase(event.getTablesRead(0))) {
+          getRelatedEvent = true;
+        } else {
+          event = reader.readEvent();
+        }
       }
-      // Tables read is the table picked for compaction.
-      if (event.getTablesReadCount() > 0 && dbTableName.equalsIgnoreCase(event.getTablesRead(0))) {
-        getRelatedEvent = true;
-      } else {
-        event = reader.readEvent();
+      if (getRelatedEvent) {
+        return event;
       }
     }
-    return event;
+    return null;
   }
 
   protected class TestDataProvider {
