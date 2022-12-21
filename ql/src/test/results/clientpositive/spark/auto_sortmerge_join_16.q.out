@@ -4,7 +4,6 @@ key BIGINT,
 value STRING
 )
 PARTITIONED BY (file_tag STRING)
-TBLPROPERTIES('bucketing_version'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@stage_bucket_big_n17
@@ -14,7 +13,6 @@ key BIGINT,
 value STRING
 )
 PARTITIONED BY (file_tag STRING)
-TBLPROPERTIES('bucketing_version'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stage_bucket_big_n17
@@ -46,7 +44,6 @@ key BIGINT,
 value string
 )
 PARTITIONED BY (file_tag STRING)
-TBLPROPERTIES('bucketing_version'='1')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@stage_bucket_small_n17
@@ -56,7 +53,6 @@ key BIGINT,
 value string
 )
 PARTITIONED BY (file_tag STRING)
-TBLPROPERTIES('bucketing_version'='1')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stage_bucket_small_n17
