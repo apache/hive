@@ -173,9 +173,9 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'major'");
     TestTxnCommands2.runWorker(hiveConf);
     String[][] expected6 = new String[][]{
-        {"{\"writeid\":7,\"bucketid\":536870913,\"rowid\":0}\t1\t17", "t/base_0000009_v0000048/bucket_00000"},
-        {"{\"writeid\":7,\"bucketid\":536936449,\"rowid\":0}\t1\t17", "t/base_0000009_v0000048/bucket_00001"},
-        {"{\"writeid\":9,\"bucketid\":536870912,\"rowid\":0}\t2\t2", "t/base_0000009_v0000048/bucket_00000"}
+        {"{\"writeid\":7,\"bucketid\":536870913,\"rowid\":0}\t1\t17", "t/base_0000009_v0000049/bucket_00000"},
+        {"{\"writeid\":7,\"bucketid\":536936449,\"rowid\":0}\t1\t17", "t/base_0000009_v0000049/bucket_00001"},
+        {"{\"writeid\":9,\"bucketid\":536870912,\"rowid\":0}\t2\t2", "t/base_0000009_v0000049/bucket_00000"}
     };
     checkResult(expected6, testQuery, isVectorized, "load data inpath compact major");
   }
@@ -222,11 +222,11 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'major'");
     TestTxnCommands2.runWorker(hiveConf);
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t2", "t/base_0000003_v0000030/bucket_00000"},
-        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t0\t4", "t/base_0000003_v0000030/bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/base_0000003_v0000030/bucket_00000"},
-        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/base_0000003_v0000030/bucket_00000"},
-        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\t2", "t/base_0000003_v0000030/bucket_00000"}
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t2", "t/base_0000003_v0000031/bucket_00000"},
+        {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t0\t4", "t/base_0000003_v0000031/bucket_00000"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/base_0000003_v0000031/bucket_00000"},
+        {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/base_0000003_v0000031/bucket_00000"},
+        {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\t2", "t/base_0000003_v0000031/bucket_00000"}
     };
     checkResult(expected2, testQuery, isVectorized, "load data inpath (major)");
 
@@ -244,9 +244,9 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'major'");
     TestTxnCommands2.runWorker(hiveConf);
     String[][] expected4 = new String[][] {
-        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t5\t6", "t/base_0000005_v0000040/bucket_00000"},
-        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\t7\t8", "t/base_0000005_v0000040/bucket_00000"},
-        {"{\"writeid\":5,\"bucketid\":536870912,\"rowid\":0}\t6\t6", "t/base_0000005_v0000040/bucket_00000"}};
+        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":0}\t5\t6", "t/base_0000005_v0000041/bucket_00000"},
+        {"{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\t7\t8", "t/base_0000005_v0000041/bucket_00000"},
+        {"{\"writeid\":5,\"bucketid\":536870912,\"rowid\":0}\t6\t6", "t/base_0000005_v0000041/bucket_00000"}};
     checkResult(expected4, testQuery, isVectorized, "load data inpath overwrite (major)");
   }
   /**

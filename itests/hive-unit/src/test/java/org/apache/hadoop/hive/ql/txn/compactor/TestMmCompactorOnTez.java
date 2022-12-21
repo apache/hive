@@ -107,7 +107,9 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     testDataProvider.dropTable(tableName);
 
     if (isTez(conf)) {
-      ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+      List<ProtoMessageReader<HiveHookEvents.HiveHookEventProto>> readers = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+      Assert.assertEquals(1, readers.size());
+      ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader = readers.get(0);
       HiveHookEvents.HiveHookEventProto event = reader.readEvent();
       while (ExecutionMode.TEZ != ExecutionMode.valueOf(event.getExecutionMode())) {
         event = reader.readEvent();
@@ -350,7 +352,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     List<String> actualDeltasAfterComp =
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null);
     Assert.assertEquals("Delta directories does not match after compaction",
-        Collections.singletonList("delta_0000001_0000009_v0000026"), actualDeltasAfterComp);
+        Collections.singletonList("delta_0000001_0000009_v0000028"), actualDeltasAfterComp);
 
   }
 
@@ -388,7 +390,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     verifySuccessulTxn(2);
     // Verify base directory after compaction
     Assert.assertEquals("Base directory does not match after major compaction",
-        Collections.singletonList("base_0000006_v0000019"),
+        Collections.singletonList("base_0000006_v0000020"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
     actualData = dataProvider.getAllData(tableName);
     Assert.assertEquals(expectedData, actualData);
