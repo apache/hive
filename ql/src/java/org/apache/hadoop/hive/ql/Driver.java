@@ -138,7 +138,7 @@ public class Driver implements IDriver {
    */
   @Override
   public CommandProcessorResponse run(String command) throws CommandProcessorException {
-    return run(command, false, null);
+    return run(command, false);
   }
 
   /**
@@ -146,23 +146,12 @@ public class Driver implements IDriver {
    */
   @Override
   public CommandProcessorResponse run() throws CommandProcessorException {
-    return run(null, true, null);
+    return run(null, true);
   }
 
-  @VisibleForTesting
-  public interface SnapshotConflictCallback {
-    void run();
-  }
-
-  @VisibleForTesting
-  public CommandProcessorResponse run(SnapshotConflictCallback testConflictCB) throws CommandProcessorException {
-    return run(null, true, testConflictCB);
-  }
-
-  private CommandProcessorResponse run(String command, boolean alreadyCompiled, SnapshotConflictCallback testConflictCB)
-      throws CommandProcessorException {
+  private CommandProcessorResponse run(String command, boolean alreadyCompiled) throws CommandProcessorException {
     try {
-      runInternal(command, alreadyCompiled, testConflictCB);
+      runInternal(command, alreadyCompiled);
       return new CommandProcessorResponse(getSchema(), null);
     } catch (CommandProcessorException cpe) {
       processRunException(cpe);
@@ -170,8 +159,7 @@ public class Driver implements IDriver {
     }
   }
 
-  private void runInternal(String command, boolean alreadyCompiled, SnapshotConflictCallback testConflictCB)
-      throws CommandProcessorException {
+  private void runInternal(String command, boolean alreadyCompiled) throws CommandProcessorException {
     DriverState.setDriverState(driverState);
 
     QueryPlan plan = driverContext.getPlan();
@@ -208,7 +196,7 @@ public class Driver implements IDriver {
 
       lockAndRespond();
 
-      if (validateTxnList(testConflictCB)) {
+      if (validateTxnList()) {
         // the reason that we set the txn manager for the cxt here is because each query has its own ctx object.
         // The txn mgr is shared across the same instance of Driver, which can run multiple queries.
         context.setHiveTxnManager(driverContext.getTxnManager());
@@ -247,10 +235,9 @@ public class Driver implements IDriver {
   }
 
   /**
-   * @param testConflictCB is intended to be used by tests to easily generate conflicting transactions.
    * @return If the txn manager should be set.
    */
-  private boolean validateTxnList(SnapshotConflictCallback testConflictCB) throws CommandProcessorException {
+  private boolean validateTxnList() throws CommandProcessorException {
     int retryShapshotCount = 0;
     int maxRetrySnapshotCount = HiveConf.getIntVar(driverContext.getConf(),
         HiveConf.ConfVars.HIVE_TXN_MAX_RETRYSNAPSHOT_COUNT);
@@ -274,8 +261,6 @@ public class Driver implements IDriver {
 
             String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
             driverContext.getTxnManager().openTxn(context, userFromUGI, driverContext.getTxnType());
-            // this is used by the test framework to more easily generate conflicting transactions
-            if (testConflictCB != null) testConflictCB.run();
             lockAndRespond();
           } else {
             // We need to clear the possibly cached writeIds for the prior transaction, so new writeIds
@@ -554,7 +539,7 @@ public class Driver implements IDriver {
       if (!driverContext.isRetrial()) {
         closeInProcess(false);
       } else {
-        // On retrail we need to maintain information from the prior context. Such
+        // On retrial we need to maintain information from the prior context. Such
         // as the currently held locks.
         context = new Context(context);
         releaseResources();
