@@ -383,7 +383,6 @@ public interface TxnStore extends Configurable {
    * @return
    * @throws NoSuchCompactionException
    * @throws MetaException
-   * @throws CompactionAbortedException
    */
   @RetrySemantics.Idempotent
   AbortCompactResponse abortCompactions(AbortCompactionRequest rqst) throws NoSuchCompactionException, MetaException;
