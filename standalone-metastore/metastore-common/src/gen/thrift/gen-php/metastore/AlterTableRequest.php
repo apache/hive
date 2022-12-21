@@ -72,6 +72,16 @@ class AlterTableRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        10 => array(
+            'var' => 'expectedParameterKey',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        11 => array(
+            'var' => 'expectedParameterValue',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -110,6 +120,14 @@ class AlterTableRequest
      * @var string
      */
     public $processorIdentifier = null;
+    /**
+     * @var string
+     */
+    public $expectedParameterKey = null;
+    /**
+     * @var string
+     */
+    public $expectedParameterValue = null;
 
     public function __construct($vals = null)
     {
@@ -140,6 +158,12 @@ class AlterTableRequest
             }
             if (isset($vals['processorIdentifier'])) {
                 $this->processorIdentifier = $vals['processorIdentifier'];
+            }
+            if (isset($vals['expectedParameterKey'])) {
+                $this->expectedParameterKey = $vals['expectedParameterKey'];
+            }
+            if (isset($vals['expectedParameterValue'])) {
+                $this->expectedParameterValue = $vals['expectedParameterValue'];
             }
         }
     }
@@ -237,6 +261,20 @@ class AlterTableRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 10:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->expectedParameterKey);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 11:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->expectedParameterValue);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -307,6 +345,16 @@ class AlterTableRequest
         if ($this->processorIdentifier !== null) {
             $xfer += $output->writeFieldBegin('processorIdentifier', TType::STRING, 9);
             $xfer += $output->writeString($this->processorIdentifier);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->expectedParameterKey !== null) {
+            $xfer += $output->writeFieldBegin('expectedParameterKey', TType::STRING, 10);
+            $xfer += $output->writeString($this->expectedParameterKey);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->expectedParameterValue !== null) {
+            $xfer += $output->writeFieldBegin('expectedParameterValue', TType::STRING, 11);
+            $xfer += $output->writeString($this->expectedParameterValue);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

@@ -73,9 +73,6 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String JDBC_CONFIG_PREFIX = "hive.sql.";
 
-  /**
-   * Table is created via create table as select or create materialized view statement
-   */
   public static final java.lang.String TABLE_IS_CTAS = "created_with_ctas";
 
   public static final java.lang.String TABLE_IS_CTLT = "created_with_ctlt";
@@ -91,5 +88,9 @@ package org.apache.hadoop.hive.metastore.api;
   public static final java.lang.String TXN_ID = "txnId";
 
   public static final java.lang.String WRITE_ID = "writeId";
+
+  public static final java.lang.String EXPECTED_PARAMETER_KEY = "expected_parameter_key";
+
+  public static final java.lang.String EXPECTED_PARAMETER_VALUE = "expected_parameter_value";
 
 }

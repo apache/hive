@@ -26077,11 +26077,13 @@ class AlterTableRequest(object):
      - validWriteIdList
      - processorCapabilities
      - processorIdentifier
+     - expectedParameterKey
+     - expectedParameterValue
 
     """
 
 
-    def __init__(self, catName=None, dbName=None, tableName=None, table=None, environmentContext=None, writeId=-1, validWriteIdList=None, processorCapabilities=None, processorIdentifier=None,):
+    def __init__(self, catName=None, dbName=None, tableName=None, table=None, environmentContext=None, writeId=-1, validWriteIdList=None, processorCapabilities=None, processorIdentifier=None, expectedParameterKey=None, expectedParameterValue=None,):
         self.catName = catName
         self.dbName = dbName
         self.tableName = tableName
@@ -26091,6 +26093,8 @@ class AlterTableRequest(object):
         self.validWriteIdList = validWriteIdList
         self.processorCapabilities = processorCapabilities
         self.processorIdentifier = processorIdentifier
+        self.expectedParameterKey = expectedParameterKey
+        self.expectedParameterValue = expectedParameterValue
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -26153,6 +26157,16 @@ class AlterTableRequest(object):
                     self.processorIdentifier = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.STRING:
+                    self.expectedParameterKey = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 11:
+                if ftype == TType.STRING:
+                    self.expectedParameterValue = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -26201,6 +26215,14 @@ class AlterTableRequest(object):
         if self.processorIdentifier is not None:
             oprot.writeFieldBegin('processorIdentifier', TType.STRING, 9)
             oprot.writeString(self.processorIdentifier.encode('utf-8') if sys.version_info[0] == 2 else self.processorIdentifier)
+            oprot.writeFieldEnd()
+        if self.expectedParameterKey is not None:
+            oprot.writeFieldBegin('expectedParameterKey', TType.STRING, 10)
+            oprot.writeString(self.expectedParameterKey.encode('utf-8') if sys.version_info[0] == 2 else self.expectedParameterKey)
+            oprot.writeFieldEnd()
+        if self.expectedParameterValue is not None:
+            oprot.writeFieldBegin('expectedParameterValue', TType.STRING, 11)
+            oprot.writeString(self.expectedParameterValue.encode('utf-8') if sys.version_info[0] == 2 else self.expectedParameterValue)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -32080,6 +32102,8 @@ AlterTableRequest.thrift_spec = (
     (7, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 7
     (8, TType.LIST, 'processorCapabilities', (TType.STRING, 'UTF8', False), None, ),  # 8
     (9, TType.STRING, 'processorIdentifier', 'UTF8', None, ),  # 9
+    (10, TType.STRING, 'expectedParameterKey', 'UTF8', None, ),  # 10
+    (11, TType.STRING, 'expectedParameterValue', 'UTF8', None, ),  # 11
 )
 all_structs.append(AlterTableResponse)
 AlterTableResponse.thrift_spec = (

@@ -187,6 +187,16 @@ public class HiveAlterHandler implements AlterHandler {
             TableName.getQualified(catName, dbname, name) + " doesn't exist");
       }
 
+      String expectedKey = environmentContext != null && environmentContext.getProperties() != null ?
+              environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_KEY) : null;
+      String expectedValue = environmentContext != null && environmentContext.getProperties() != null ?
+              environmentContext.getProperties().get(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE) : null;
+      if (expectedKey != null && expectedValue != null
+              && !expectedValue.equals(oldt.getParameters().get(expectedKey))) {
+        throw new MetaException("The table has been modified. The parameter value for key '" + expectedKey + "' is '"
+                + oldt.getParameters().get(expectedKey) + "'. The expected was value was '" + expectedValue + "'");
+      }
+
       validateTableChangesOnReplSource(olddb, oldt, newt, environmentContext);
 
       // On a replica this alter table will be executed only if old and new both the databases are

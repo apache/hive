@@ -2165,7 +2165,9 @@ struct AlterTableRequest {
   6: optional i64 writeId=-1,
   7: optional string validWriteIdList
   8: optional list<string> processorCapabilities,
-  9: optional string processorIdentifier
+  9: optional string processorIdentifier,
+  10: optional string expectedParameterKey,
+  11: optional string expectedParameterValue
 // TODO: also add cascade here, out of envCtx
 }
 
@@ -3189,3 +3191,7 @@ const string DEFAULT_TABLE_TYPE = "defaultTableType",
 // ACID
 const string TXN_ID = "txnId",
 const string WRITE_ID = "writeId",
+
+// Keys for alter table environment context parameters
+const string EXPECTED_PARAMETER_KEY = "expected_parameter_key",
+const string EXPECTED_PARAMETER_VALUE = "expected_parameter_value",

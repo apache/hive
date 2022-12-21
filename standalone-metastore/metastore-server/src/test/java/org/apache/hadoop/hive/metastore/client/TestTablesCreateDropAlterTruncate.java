@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -1181,6 +1182,31 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     } catch (InvalidOperationException exception) {
       // Expected exception
     }
+  }
+
+  @Test
+  public void testAlterTableExpectedPropertyMatch() throws Exception {
+    Table originalTable = testTables[0];
+
+    EnvironmentContext context = new EnvironmentContext();
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, "transient_lastDdlTime");
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE,
+            originalTable.getParameters().get("transient_lastDdlTime"));
+
+    client.alter_table(originalTable.getCatName(), originalTable.getDbName(), originalTable.getTableName(),
+            originalTable, context);
+  }
+
+  @Test(expected = MetaException.class)
+  public void testAlterTableExpectedPropertyDifferent() throws Exception {
+    Table originalTable = testTables[0];
+
+    EnvironmentContext context = new EnvironmentContext();
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, "transient_lastDdlTime");
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE, "alma");
+
+    client.alter_table(originalTable.getCatName(), originalTable.getDbName(), originalTable.getTableName(),
+            originalTable, context);
   }
 
   @Test
