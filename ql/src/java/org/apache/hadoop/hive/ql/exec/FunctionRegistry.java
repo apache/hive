@@ -602,6 +602,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("array_contains", GenericUDFArrayContains.class);
     system.registerGenericUDF("array_min", GenericUDFArrayMin.class);
     system.registerGenericUDF("array_max", GenericUDFArrayMax.class);
+    system.registerGenericUDF("array_distinct", GenericUDFArrayDistinct.class);
     system.registerGenericUDF("deserialize", GenericUDFDeserialize.class);
     system.registerGenericUDF("sentences", GenericUDFSentences.class);
     system.registerGenericUDF("map_keys", GenericUDFMapKeys.class);
