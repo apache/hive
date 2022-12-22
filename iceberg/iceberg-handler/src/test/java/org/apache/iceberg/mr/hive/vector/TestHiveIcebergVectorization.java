@@ -21,10 +21,12 @@ package org.apache.iceberg.mr.hive.vector;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -53,6 +55,7 @@ import org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerWithEngineBase;
 import org.apache.iceberg.mr.hive.TestTables;
 import org.apache.iceberg.mr.hive.serde.objectinspector.IcebergObjectInspector;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -186,6 +189,55 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
     shell.executeStatement("DELETE FROM vectordelete WHERE customer_id >= 5000");
     // 500 fewer rows as the above statement removed all even rows between 5000 and 6000 that were there previously
     validation.apply(1501);
+  }
+
+  @Test
+  public void testHiveDeleteFilterWithFilteredParquetBlock() {
+    Assume.assumeTrue(
+        isVectorized && testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.PARQUET);
+
+    Schema schema = new Schema(
+        optional(1, "customer_id", Types.LongType.get()),
+        optional(2, "customer_age", Types.IntegerType.get()),
+        optional(3, "date_col", Types.DateType.get())
+    );
+
+    // Generate 10600 records so that we end up with multiple batches to work with during the read.
+    List<Record> records = TestHelper.generateRandomRecords(schema, 10600, 0L);
+
+    // Fill id and date column with deterministic values
+    for (int i = 0; i < records.size(); ++i) {
+      records.get(i).setField("customer_id", (long) i);
+      if (i % 3 == 0) {
+        records.get(i).setField("date_col", Date.valueOf("2022-04-28"));
+      } else if (i % 3 == 1) {
+        records.get(i).setField("date_col", Date.valueOf("2022-04-29"));
+      } else {
+        records.get(i).setField("date_col", Date.valueOf("2022-04-30"));
+      }
+    }
+    Map<String, String> props = Maps.newHashMap();
+    props.put("parquet.block.size", "8192");
+    testTables.createTable(shell, "vectordelete", schema, PartitionSpec.unpartitioned(), fileFormat, records, 2, props);
+
+    // Check there is some rows before we do an update
+    List<Object[]> results = shell.executeStatement("select * from vectordelete where date_col=date'2022-04-29'");
+
+    Assert.assertNotEquals(0, results.size());
+
+    // Capture the number of entries with both column, to validate after update value
+    List<Object[]> postUpdateResult = shell.executeStatement(
+        "select * from vectordelete where date_col=date'2022-04-29' OR date_col=date'2022-04-30'");
+
+    Assert.assertNotEquals(0, results.size());
+
+    // Do an update on the column, and check if the count is 0, since we changed the value for that column
+    shell.executeStatement("update vectordelete set date_col=date'2022-04-30' where date_col=date'2022-04-29'");
+    results = shell.executeStatement("select * from vectordelete where date_col=date'2022-04-29'");
+    Assert.assertEquals(0, results.size());
+
+    results = shell.executeStatement("select * from vectordelete where date_col=date'2022-04-30'");
+    Assert.assertEquals(postUpdateResult.size(), results.size());
   }
 
   /**
