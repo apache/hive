@@ -229,7 +229,7 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
     List<Object[]> postUpdateResult = shell.executeStatement(
         "select * from vectordelete where date_col=date'2022-04-29' OR date_col=date'2022-04-30'");
 
-    Assert.assertNotEquals(0, results.size());
+    Assert.assertNotEquals(0, postUpdateResult.size());
 
     // Do an update on the column, and check if the count is 0, since we changed the value for that column
     shell.executeStatement("update vectordelete set date_col=date'2022-04-30' where date_col=date'2022-04-29'");
