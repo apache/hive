@@ -315,6 +315,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFInline;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -4795,7 +4796,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // columns, and in fact adding all columns would change the behavior of
         // DISTINCT, so we bypass this logic.
         if ((obAST != null || sbAST != null)
-            && selExprList.getToken().getType() != HiveParser.TOK_SELECTDI
+            && !(selForWindow != null && selExprList.getToken().getType() == HiveParser.TOK_SELECTDI)
             && !isAllColRefRewrite) {
           // 1. OB Expr sanity test
           // in strict mode, in the presence of order by, limit must be
@@ -4807,7 +4808,33 @@ public class CalcitePlanner extends SemanticAnalyzer {
               throw new SemanticException(SemanticAnalyzer.generateErrorMessage(obAST, error));
             }
           }
+
           originalRR = appendInputColumns(srcRel, columnList, outputRR, inputRR);
+
+          ASTNode obOrSbAST = obAST != null ? obAST : sbAST;
+          for (int i = 0; i < obOrSbAST.getChildCount(); ++i) {
+            ASTNode obExprAST = (ASTNode) obOrSbAST.getChild(i);
+            ASTNode nullObASTExpr = (ASTNode) obExprAST.getChild(0);
+            ASTNode ref = (ASTNode) nullObASTExpr.getChild(0);
+            RexNode obRex;
+            try {
+              Map<ASTNode, RexNode> astToExprNDescMap = genAllRexNode(ref, inputRR, cluster.getRexBuilder());
+              obRex = astToExprNDescMap.get(ref);
+            } catch (SemanticException ex) {
+              continue;
+            }
+            if (obRex instanceof RexInputRef && ref.getType() == HiveParser.TOK_TABLE_OR_COL) {
+              // Order by key is a projected column reference
+              continue;
+            }
+            columnList.add(obRex);
+
+            String field = getColumnInternalName(outputRR.getColumnInfos().size());
+            ObjectInspector oi = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
+                    TypeConverter.convert(obRex.getType()));
+            outputRR.putExpression(ref, new ColumnInfo(field, oi, "", false));
+          }
+
           outputRel = genSelectRelNode(columnList, outputRR, srcRel);
           // outputRel is the generated augmented select with extra unselected
           // columns, and originalRR is the original generated select
@@ -4836,11 +4863,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
         outputRel = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
               outputRel, groupSet, null, new ArrayList<AggregateCall>());
         RowResolver groupByOutputRowResolver = new RowResolver();
+        List<ASTNode> gbyKeyExpressions = getGroupByForClause(qbp, selClauseName);
         for (int i = 0; i < outputRR.getColumnInfos().size(); i++) {
           ColumnInfo colInfo = outputRR.getColumnInfos().get(i);
           ColumnInfo newColInfo = new ColumnInfo(colInfo.getInternalName(),
               colInfo.getType(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
           groupByOutputRowResolver.put(colInfo.getTabAlias(), colInfo.getAlias(), newColInfo);
+          if (gbyKeyExpressions != null && gbyKeyExpressions.size() == outputRR.getColumnInfos().size()) {
+            groupByOutputRowResolver.putExpression(gbyKeyExpressions.get(i), colInfo);
+          }
         }
         relToHiveColNameCalcitePosMap.put(outputRel, buildHiveToCalciteColumnMap(groupByOutputRowResolver));
         this.relToHiveRR.put(outputRel, groupByOutputRowResolver);
@@ -4853,17 +4884,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RowResolver appendInputColumns(RelNode srcRel, List<RexNode> columnList, RowResolver outputRR, RowResolver inputRR) throws SemanticException {
       RowResolver originalRR;
       List<RexNode> originalInputRefs = Lists.transform(srcRel.getRowType().getFieldList(),
-          new Function<RelDataTypeField, RexNode>() {
-            @Override
-            public RexNode apply(RelDataTypeField input) {
-              return new RexInputRef(input.getIndex(), input.getType());
-            }
-          });
+              input -> new RexInputRef(input.getIndex(), input.getType()));
       originalRR = outputRR.duplicate();
       for (int i = 0; i < inputRR.getColumnInfos().size(); i++) {
         ColumnInfo colInfo = new ColumnInfo(inputRR.getColumnInfos().get(i));
-        String internalName = SemanticAnalyzer.getColumnInternalName(outputRR.getColumnInfos()
-            .size() + i);
+        String internalName = SemanticAnalyzer.getColumnInternalName(outputRR.getColumnInfos().size());
         colInfo.setInternalName(internalName);
         // if there is any confict, then we do not generate it in the new select
         // otherwise, we add it into the calciteColLst and generate the new select
