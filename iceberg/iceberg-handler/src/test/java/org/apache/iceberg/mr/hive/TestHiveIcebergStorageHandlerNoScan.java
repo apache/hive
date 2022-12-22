@@ -253,12 +253,13 @@ public class TestHiveIcebergStorageHandlerNoScan {
         "day(day_field))");
 
     spec = PartitionSpec.builderFor(schema)
-        .withSpecId(1)
-        .year("year_field")
+        .withSpecId(2)
+        .alwaysNull("year_field", "year_field_year_1000")
         .alwaysNull("hour_field", "hour_field_hour")
         .alwaysNull("truncate_field", "truncate_field_trunc")
         .alwaysNull("bucket_field", "bucket_field_bucket")
         .alwaysNull("identity_field", "identity_field")
+        .year("year_field")
         .month("month_field")
         .day("day_field")
         .build();

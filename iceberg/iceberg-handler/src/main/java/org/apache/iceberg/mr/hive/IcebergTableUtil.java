@@ -172,8 +172,12 @@ public class IcebergTableUtil {
     }
 
     // delete every field from the old partition spec
+    UpdatePartitionSpec updatePartitionSpecOld = table.updateSpec().caseSensitive(false);
+    table.spec().fields().forEach(field -> updatePartitionSpecOld.removeField(field.name()));
+    // todo revert this change once https://github.com/apache/iceberg/pull/6482 is fixed
+    updatePartitionSpecOld.commit();
+
     UpdatePartitionSpec updatePartitionSpec = table.updateSpec().caseSensitive(false);
-    table.spec().fields().forEach(field -> updatePartitionSpec.removeField(field.name()));
 
     List<TransformSpec> partitionTransformSpecList = SessionStateUtil
         .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
