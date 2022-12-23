@@ -233,11 +233,11 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     long allRowsInFile = 0;
     int blockIndex = 0;
     for (BlockMetaData block : parquetMetadata.getBlocks()) {
-      rowGroupNumToRowPos.put(blockIndex++, allRowsInFile);
-      allRowsInFile += block.getRowCount();
       if (offsets.contains(block.getStartingPos())) {
+        rowGroupNumToRowPos.put(blockIndex++, allRowsInFile);
         blocks.add(block);
       }
+      allRowsInFile += block.getRowCount();
     }
     // verify we found them all
     if (blocks.size() != rowGroupOffsets.length) {
