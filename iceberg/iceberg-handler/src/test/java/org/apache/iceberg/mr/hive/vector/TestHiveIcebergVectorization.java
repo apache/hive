@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive.vector;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -137,7 +138,19 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
    * Tests HiveDeleteFilter implementation correctly filtering rows from VRBs.
    */
   @Test
+  public void testHiveDeleteFilterWithEmptyBatches() {
+    Map<String, String> props = Maps.newHashMap();
+    props.put("parquet.block.size", "8192");
+    props.put("parquet.page.row.count.limit", "20");
+    testVectorizedReadWithDeleteFilter(props);
+  }
+
+  @Test
   public void testHiveDeleteFilter() {
+    testVectorizedReadWithDeleteFilter(Collections.emptyMap());
+  }
+
+  private void testVectorizedReadWithDeleteFilter(Map<String, String> props) {
     // The Avro "vectorized" case should actually serve as compareTo scenario to non-vectorized reading, because
     // there's no vectorization for Avro and it falls back to the non-vectorized implementation
     Assume.assumeTrue(isVectorized && testTableType == TestTables.TestTableType.HIVE_CATALOG);
@@ -158,8 +171,8 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
     for (int i = 0; i < records.size(); ++i) {
       records.get(i).setField("customer_id", (long) i);
     }
-    testTables.createTable(shell, "vectordelete", schema,
-        PartitionSpec.unpartitioned(), fileFormat, records, 2);
+
+    testTables.createTable(shell, "vectordelete", schema, PartitionSpec.unpartitioned(), fileFormat, records, 2, props);
 
     // Delete every odd row until 6000
     shell.executeStatement("DELETE FROM vectordelete WHERE customer_id % 2 = 1 and customer_id < 6000");
