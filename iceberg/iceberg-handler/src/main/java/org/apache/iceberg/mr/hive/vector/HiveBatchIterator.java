@@ -65,7 +65,7 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
           batch.size = 0;
         }
 
-        if (recordReader instanceof RowPositionAwareVectorizedRecordReader) {
+        if (batch.size != 0 && recordReader instanceof RowPositionAwareVectorizedRecordReader) {
           rowOffset = ((RowPositionAwareVectorizedRecordReader) recordReader).getRowNumber();
         }
 
