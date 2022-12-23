@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.Row;
 import org.apache.hadoop.io.NullWritable;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 /**
  * TestJdbcWithMiniLlap for Arrow format
  */
+@Ignore("unstable HIVE-23549")
 public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
 
   private static MiniHS2 miniHS2 = null;
