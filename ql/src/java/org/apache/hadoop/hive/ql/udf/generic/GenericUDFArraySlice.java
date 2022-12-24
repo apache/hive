@@ -37,8 +37,8 @@ import java.util.stream.Collectors;
     + "  3,4")
 public class GenericUDFArraySlice extends AbstractGenericUDFArrayBase {
   private static final String FUNC_NAME = "ARRAY_SLICE";
-  private static final int START_IDX = 2;
-  private static final int LENGTH_IDX = 3;
+  private static final int START_IDX = 1;
+  private static final int LENGTH_IDX = 2;
 
   public GenericUDFArraySlice() {
     super(FUNC_NAME, 3, 3, ObjectInspector.Category.LIST);
