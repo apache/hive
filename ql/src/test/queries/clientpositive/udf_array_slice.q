@@ -8,19 +8,19 @@ DESCRIBE FUNCTION array_slice;
 DESCRIBE FUNCTION EXTENDED array_slice;
 
 -- evalutes function for array of primitives
-SELECT array_slice(array(1, 2, 3, null,3,4)) FROM src tablesample (1 rows);
+SELECT array_slice(array(1, 2, 3, null,3,4),2,2) FROM src tablesample (1 rows);
 
-SELECT array_slice(array()) FROM src tablesample (1 rows);
+SELECT array_slice(array(),1,1) FROM src tablesample (1 rows);
 
-SELECT array_slice(array(null)) FROM src tablesample (1 rows);
+SELECT array_slice(array(null),1,1) FROM src tablesample (1 rows);
 
-SELECT array_slice(array(1.12, 2.23, 3.34, null,1.11,1.12,2.9)) FROM src tablesample (1 rows);
+SELECT array_slice(array(1.12, 2.23, 3.34, null,1.11,1.12,2.9),3,2) FROM src tablesample (1 rows);
 
-SELECT array_slice(array(1.1234567890, 2.234567890, 3.34567890, null, 3.3456789, 2.234567,1.1234567890)) FROM src tablesample (1 rows);
+SELECT array_slice(array(1.1234567890, 2.234567890, 3.34567890, null, 3.3456789, 2.234567,1.1234567890),3,3) FROM src tablesample (1 rows);
 
-SELECT array_slice(array(11234567890, 2234567890, 334567890, null, 11234567890, 2234567890, 334567890, null)) FROM src tablesample (1 rows);
+SELECT array_slice(array(11234567890, 2234567890, 334567890, null, 11234567890, 2234567890, 334567890, null),2,1) FROM src tablesample (1 rows);
 
-SELECT array_slice(array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null,array("e","a","b","c","d"))) FROM src tablesample (1 rows);
+SELECT array_slice(array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null,array("e","a","b","c","d")),2,2) FROM src tablesample (1 rows);
 
 # handle null array cases
 
@@ -33,6 +33,6 @@ create external table test_null_array (id int, value Array<String>) ROW FORMAT D
 
 select value from test_null_array;
 
-select array_slice(value) from test_null_array;
+select array_slice(value,1,1) from test_null_array;
 
 dfs -rm -r ${system:test.tmp.dir}/test_null_array;
