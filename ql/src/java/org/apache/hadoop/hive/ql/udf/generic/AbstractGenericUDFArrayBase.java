@@ -91,7 +91,7 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
         }
     }
 
-    void checkArgIntPrimitiveCategory(PrimitiveObjectInspector objectInspector, String function_name, int idx)
+    void checkArgIntPrimitiveCategory(PrimitiveObjectInspector objectInspector, String functionName, int idx)
         throws UDFArgumentTypeException {
       switch (objectInspector.getPrimitiveCategory()) {
       case SHORT:
@@ -100,7 +100,7 @@ public abstract class AbstractGenericUDFArrayBase extends GenericUDF {
         break;
       default:
         throw new UDFArgumentTypeException(0,
-            "Argument " + idx + " of function " + function_name + " must be \"" + serdeConstants.SMALLINT_TYPE_NAME + "\""
+            "Argument " + idx + " of function " + functionName + " must be \"" + serdeConstants.SMALLINT_TYPE_NAME + "\""
                 + " or \"" + serdeConstants.INT_TYPE_NAME + "\"" + " or \"" + serdeConstants.BIGINT_TYPE_NAME
                 + "\", but \"" + objectInspector.getTypeName() + "\" was found.");
       }
