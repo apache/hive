@@ -582,6 +582,9 @@ public class Context {
             throw new RuntimeException("Cannot make directory: "
                 + dirPath.toString());
           }
+          if (!fsPermission.equals(fsPermission.applyUMask(FsPermission.getUMask(conf)))) {
+            fs.setPermission(dirPath, fsPermission);
+          }
           if (isHDFSCleanup) {
             fs.deleteOnExit(dirPath);
           }

@@ -796,6 +796,9 @@ public class TezSessionState {
     FileSystem fs = tezDir.getFileSystem(conf);
     FsPermission fsPermission = new FsPermission(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION));
     fs.mkdirs(tezDir, fsPermission);
+    if (!fsPermission.equals(fsPermission.applyUMask(FsPermission.getUMask(conf)))) {
+       fs.setPermission(tezDir, fsPermission);
+    }
     // Make sure the path is normalized (we expect validation to pass since we just created it).
     tezDir = DagUtils.validateTargetDir(tezDir, conf).getPath();
 

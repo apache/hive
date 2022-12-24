@@ -853,6 +853,9 @@ public class SessionState implements ISessionAuthState{
       if (!fs.mkdirs(path, fsPermission)) {
         throw new IOException("Failed to create directory " + path + " on fs " + fs.getUri());
       }
+      if (!fsPermission.equals(fsPermission.applyUMask(FsPermission.getUMask(conf)))) {
+        fs.setPermission(path, fsPermission);
+      }
       String dirType = isLocal ? "local" : "HDFS";
       LOG.info("Created " + dirType + " directory: " + path.toString());
     }
