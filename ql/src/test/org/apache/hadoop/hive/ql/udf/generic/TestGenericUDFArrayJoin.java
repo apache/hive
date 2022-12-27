@@ -67,7 +67,7 @@ public class TestGenericUDFArrayJoin {
     GenericUDF.DeferredJavaObject[] args = { new GenericUDF.DeferredJavaObject(actual),
         new GenericUDF.DeferredJavaObject(separator != null ? new Text(separator) : null),
         new GenericUDF.DeferredJavaObject(replaceNull != null ? new Text(replaceNull) : null) };
-    String result = (String) udf.evaluate(args);
-    Assert.assertTrue("Not equal", expected.equals(result));
+    Text result = (Text) udf.evaluate(args);
+    Assert.assertTrue("Not equal", expected.equals(result.toString()));
   }
 }
