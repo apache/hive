@@ -55,10 +55,10 @@ public class TestGenericUDFArrayJoin {
     runAndVerify(asList(i1, null, i2, i3, null, i4), ",", ":", i1 + ",:," + i2 + "," + i3 + ",:," + i4);
 
     i1 = new Text("aa1");
-    i1 = new Text("aa2");
-    i1 = new Text("aa3");
-    i1 = new Text("aa4");
-    runAndVerify(asList(i1, null, i2, i3, null, i4), ",", null, i1 + "," + i2 + "," + i3 + "," + i4);
+    i2 = new Text("aa2");
+    i3 = new Text("aa3");
+    i4 = new Text("aa4");
+    runAndVerify(asList(i1, null, i2, i3, null, i4), ":", null, i1 + ":" + i2 + ":" + i3 + ":" + i4);
 
   }
 
@@ -68,6 +68,7 @@ public class TestGenericUDFArrayJoin {
         new GenericUDF.DeferredJavaObject(separator != null ? new Text(separator) : null),
         new GenericUDF.DeferredJavaObject(replaceNull != null ? new Text(replaceNull) : null) };
     Text result = (Text) udf.evaluate(args);
-    Assert.assertTrue("Not equal", expected.equals(result.toString()));
+    Assert.assertEquals("Not equal", expected, result.toString());
   }
 }
+
