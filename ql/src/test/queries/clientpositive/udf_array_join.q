@@ -22,6 +22,8 @@ SELECT array_join(array(11234567890, 2234567890, 334567890, null, 11234567890, 2
 
 SELECT array_join(array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null,array("e","a","b","c","d")),',',':') FROM src tablesample (1 rows);
 
+SELECT array_join(array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null,array("e","a","b","c","d",null)),',',':') FROM src tablesample (1 rows);
+
 # handle null array cases
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/test_null_array;
