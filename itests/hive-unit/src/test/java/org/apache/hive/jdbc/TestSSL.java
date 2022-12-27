@@ -386,6 +386,7 @@ public class TestSSL {
    * Opening a new connection with this wrong certificate should fail
    * @throws Exception
    */
+  @Ignore
   @Test
   public void testConnectionWrongCertCN() throws Exception {
     // This call sets the default ssl params including the correct keystore in the server config
