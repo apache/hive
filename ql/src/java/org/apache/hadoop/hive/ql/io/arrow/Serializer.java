@@ -58,12 +58,14 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAssignRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -75,6 +77,7 @@ import org.apache.arrow.memory.BufferAllocator;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ARROW_BATCH_SIZE;
@@ -92,6 +95,7 @@ import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils.getTypeInfoFr
 
 public class Serializer {
   private final int MAX_BUFFERED_ROWS;
+  private final static byte[] EMPTY_BYTES = new byte[0];
 
   // Hive columns
   private final VectorizedRowBatch vectorizedRowBatch;
@@ -393,7 +397,7 @@ public class Serializer {
     case BOOLEAN:
     {
       if(isNative) {
-      writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, boolNullSetter, boolValueSetter);
+      writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, boolNullSetter, boolValueSetter, typeInfo);
         return;
       }
       final BitVector bitVector = (BitVector) arrowVector;
@@ -401,7 +405,7 @@ public class Serializer {
         if (hiveVector.isNull[i]) {
           boolNullSetter.accept(i, arrowVector, hiveVector);
         } else {
-          boolValueSetter.accept(i, i, arrowVector, hiveVector);
+          boolValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
       }
     }
@@ -409,7 +413,7 @@ public class Serializer {
     case BYTE:
     {
       if(isNative) {
-        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, byteNullSetter, byteValueSetter);
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, byteNullSetter, byteValueSetter, typeInfo);
         return;
       }
       final TinyIntVector tinyIntVector = (TinyIntVector) arrowVector;
@@ -417,7 +421,7 @@ public class Serializer {
         if (hiveVector.isNull[i]) {
           byteNullSetter.accept(i, arrowVector, hiveVector);
         } else {
-          byteValueSetter.accept(i, i, arrowVector, hiveVector);
+          byteValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
       }
     }
@@ -425,7 +429,7 @@ public class Serializer {
     case SHORT:
     {
       if(isNative) {
-        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, shortNullSetter, shortValueSetter);
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, shortNullSetter, shortValueSetter, typeInfo);
         return;
       }
       final SmallIntVector smallIntVector = (SmallIntVector) arrowVector;
@@ -433,7 +437,7 @@ public class Serializer {
         if (hiveVector.isNull[i]) {
           shortNullSetter.accept(i, arrowVector, hiveVector);
         } else {
-          shortValueSetter.accept(i, i, arrowVector, hiveVector);
+          shortValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
       }
     }
@@ -441,14 +445,14 @@ public class Serializer {
     case INT:
     {
       if(isNative) {
-        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, intNullSetter, intValueSetter);
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, intNullSetter, intValueSetter, typeInfo);
         return;
       }
       for (int i = 0; i < size; i++) {
         if (hiveVector.isNull[i]) {
           intNullSetter.accept(i, arrowVector, hiveVector);
         } else {
-          intValueSetter.accept(i, i, arrowVector, hiveVector);
+          intValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
       }
     }
@@ -456,7 +460,7 @@ public class Serializer {
     case LONG:
     {
       if(isNative) {
-        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, longNullSetter, longValueSetter);
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, longNullSetter, longValueSetter, typeInfo);
         return;
       }
       final BigIntVector bigIntVector = (BigIntVector) arrowVector;
@@ -464,7 +468,7 @@ public class Serializer {
         if (hiveVector.isNull[i]) {
           longNullSetter.accept(i, arrowVector, hiveVector);
         } else {
-          longValueSetter.accept(i, i, arrowVector, hiveVector);
+          longValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
       }
     }
@@ -472,14 +476,14 @@ public class Serializer {
     case FLOAT:
     {
       if(isNative) {
-        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, floatNullSetter, floatValueSetter);
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, floatNullSetter, floatValueSetter, typeInfo);
         return;
       }
       for (int i = 0; i < size; i++) {
         if (hiveVector.isNull[i]) {
           floatNullSetter.accept(i, arrowVector, hiveVector);
         } else {
-          floatValueSetter.accept(i, i, arrowVector, hiveVector);
+          floatValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
       }
     }
@@ -487,7 +491,7 @@ public class Serializer {
     case DOUBLE:
     {
       if(isNative) {
-        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, doubleNullSetter, doubleValueSetter);
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, doubleNullSetter, doubleValueSetter, typeInfo);
         return;
       }
       final Float8Vector float8Vector = (Float8Vector) arrowVector;
@@ -495,25 +499,38 @@ public class Serializer {
         if (hiveVector.isNull[i]) {
           doubleNullSetter.accept(i, arrowVector, hiveVector);
         } else {
-          doubleValueSetter.accept(i, i, arrowVector, hiveVector);
+          doubleValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
       }
     }
     break;
-    //TODO Add CHAR padding conversion
-    case STRING:
-    case VARCHAR:
     case CHAR:
     {
       if(isNative) {
-        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, stringNullSetter, stringValueSetter);
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, charNullSetter, charValueSetter, typeInfo);
+        return;
+      }
+      for (int i = 0; i < size; i++) {
+        if (hiveVector.isNull[i]) {
+          charNullSetter.accept(i, arrowVector, hiveVector);
+        } else {
+          charValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
+        }
+      }
+    }
+    break;
+    case STRING:
+    case VARCHAR:
+    {
+      if(isNative) {
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, stringNullSetter, stringValueSetter, typeInfo);
         return;
       }
       for (int i = 0; i < size; i++) {
         if (hiveVector.isNull[i]) {
           stringNullSetter.accept(i, arrowVector, hiveVector);
         } else {
-          stringValueSetter.accept(i, i, arrowVector, hiveVector);
+          stringValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
       }
     }
@@ -521,14 +538,14 @@ public class Serializer {
     case DATE:
     {
       if(isNative) {
-        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, dateNullSetter, dateValueSetter);
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, dateNullSetter, dateValueSetter, typeInfo);
         return;
       }
       for (int i = 0; i < size; i++) {
         if (hiveVector.isNull[i]) {
           dateNullSetter.accept(i, arrowVector, hiveVector);
         } else {
-          dateValueSetter.accept(i, i, arrowVector, hiveVector);
+          dateValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
       }
     }
@@ -536,14 +553,14 @@ public class Serializer {
     case TIMESTAMP:
     {
       if(isNative) {
-        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, timestampNullSetter, timestampValueSetter);
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, timestampNullSetter, timestampValueSetter, typeInfo);
         return;
       }
       for (int i = 0; i < size; i++) {
         if (hiveVector.isNull[i]) {
           timestampNullSetter.accept(i, arrowVector, hiveVector);
         } else {
-          timestampValueSetter.accept(i, i, arrowVector, hiveVector);
+          timestampValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
       }
     }
@@ -551,14 +568,14 @@ public class Serializer {
     case BINARY:
     {
       if(isNative) {
-        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, binaryNullSetter, binaryValueSetter);
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, binaryNullSetter, binaryValueSetter, typeInfo);
         return;
       }
       for (int i = 0; i < size; i++) {
         if (hiveVector.isNull[i]) {
           binaryNullSetter.accept(i, arrowVector, hiveVector);
         } else {
-          binaryValueSetter.accept(i, i, arrowVector, hiveVector);
+          binaryValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
       }
     }
@@ -567,9 +584,9 @@ public class Serializer {
     {
       if(isNative) {
         if(hiveVector instanceof DecimalColumnVector) {
-          writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, decimalNullSetter, decimalValueSetter);
+          writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, decimalNullSetter, decimalValueSetter, typeInfo);
         } else {
-          writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, decimalNullSetter, decimal64ValueSetter);
+          writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, decimalNullSetter, decimal64ValueSetter, typeInfo);
         }
         return;
       }
@@ -577,9 +594,9 @@ public class Serializer {
         if (hiveVector.isNull[i]) {
           decimalNullSetter.accept(i, arrowVector, hiveVector);
         } else if(hiveVector instanceof DecimalColumnVector) {
-          decimalValueSetter.accept(i, i, arrowVector, hiveVector);
+          decimalValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         } else if(hiveVector instanceof Decimal64ColumnVector) {
-          decimal64ValueSetter.accept(i, i, arrowVector, hiveVector);
+          decimal64ValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         } else {
           throw new IllegalArgumentException("Unsupported vector column type: " + hiveVector.getClass().getName());
         }
@@ -589,14 +606,14 @@ public class Serializer {
     case INTERVAL_YEAR_MONTH:
     {
       if(isNative) {
-       writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, intervalYearMonthNullSetter, intervalYearMonthValueSetter);
+       writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, intervalYearMonthNullSetter, intervalYearMonthValueSetter, typeInfo);
         return;
       }
       for (int i = 0; i < size; i++) {
         if (hiveVector.isNull[i]) {
           intervalYearMonthNullSetter.accept(i, arrowVector, hiveVector);
         } else {
-          intervalYearMonthValueSetter.accept(i, i, arrowVector, hiveVector);
+          intervalYearMonthValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
       }
     }
@@ -604,14 +621,14 @@ public class Serializer {
     case INTERVAL_DAY_TIME:
     {
       if(isNative) {
-        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, intervalDayTimeNullSetter, intervalDayTimeValueSetter);
+        writeGeneric(arrowVector, hiveVector, size, vectorizedRowBatch.selectedInUse, vectorizedRowBatch.selected, intervalDayTimeNullSetter, intervalDayTimeValueSetter, typeInfo);
         return;
       }
       for (int i = 0; i < size; i++) {
         if (hiveVector.isNull[i]) {
           intervalDayTimeNullSetter.accept(i, arrowVector, hiveVector);
         } else {
-          intervalDayTimeValueSetter.accept(i, i, arrowVector, hiveVector);
+          intervalDayTimeValueSetter.accept(i, i, arrowVector, hiveVector, typeInfo);
         }
       }
     }
@@ -644,7 +661,7 @@ public class Serializer {
 
  //Use a provided nullSetter and valueSetter function to populate
  //fieldVector from hiveVector
- private static void writeGeneric(final FieldVector fieldVector, final ColumnVector hiveVector, final int size, final boolean selectedInUse, final int[] selected, final IntAndVectorsConsumer nullSetter, final IntIntAndVectorsConsumer valueSetter)
+ private static void writeGeneric(final FieldVector fieldVector, final ColumnVector hiveVector, final int size, final boolean selectedInUse, final int[] selected, final IntAndVectorsConsumer nullSetter, final IntIntAndVectorsConsumer valueSetter, TypeInfo typeInfo)
   {
      final boolean[] inputIsNull = hiveVector.isNull;
      final int[] sel = selected;
@@ -653,7 +670,7 @@ public class Serializer {
        if (hiveVector.noNulls || !inputIsNull[0]) {
          for(int i = 0; i < size; i++) {
            //Fill n rows with value in row 0
-           valueSetter.accept(i, 0, fieldVector, hiveVector);
+           valueSetter.accept(i, 0, fieldVector, hiveVector, typeInfo);
          }
        } else {
          for(int i = 0; i < size; i++) {
@@ -669,12 +686,12 @@ public class Serializer {
          for(int logical = 0; logical < size; logical++) {
            final int batchIndex = sel[logical];
            //Add row batchIndex
-           valueSetter.accept(logical, batchIndex, fieldVector, hiveVector);
+           valueSetter.accept(logical, batchIndex, fieldVector, hiveVector, typeInfo);
          }
        } else {
          for(int batchIndex = 0; batchIndex < size; batchIndex++) {
            //Add row batchIndex
-           valueSetter.accept(batchIndex, batchIndex, fieldVector, hiveVector);
+           valueSetter.accept(batchIndex, batchIndex, fieldVector, hiveVector, typeInfo);
          }
        }
      } else {
@@ -686,7 +703,7 @@ public class Serializer {
              nullSetter.accept(batchIndex, fieldVector, hiveVector);
            } else {
              //Add row batchIndex
-             valueSetter.accept(logical, batchIndex, fieldVector, hiveVector);
+             valueSetter.accept(logical, batchIndex, fieldVector, hiveVector, typeInfo);
           }
         }
        } else {
@@ -696,7 +713,7 @@ public class Serializer {
              nullSetter.accept(batchIndex, fieldVector, hiveVector);
            } else {
              //Add row batchIndex
-             valueSetter.accept(batchIndex, batchIndex, fieldVector, hiveVector);
+             valueSetter.accept(batchIndex, batchIndex, fieldVector, hiveVector, typeInfo);
          }
        }
      }
@@ -708,74 +725,87 @@ public class Serializer {
   //bool
   private static final IntAndVectorsConsumer boolNullSetter = (i, arrowVector, hiveVector)
       -> ((BitVector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer boolValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer boolValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> ((BitVector) arrowVector).set(i, (int) ((LongColumnVector) hiveVector).vector[j]);
 
   //byte
   private static final IntAndVectorsConsumer byteNullSetter = (i, arrowVector, hiveVector)
       -> ((TinyIntVector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer byteValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer byteValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> ((TinyIntVector) arrowVector).set(i, (byte) ((LongColumnVector) hiveVector).vector[j]);
 
   //short
   private static final IntAndVectorsConsumer shortNullSetter = (i, arrowVector, hiveVector)
       -> ((SmallIntVector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer shortValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer shortValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> ((SmallIntVector) arrowVector).set(i, (short) ((LongColumnVector) hiveVector).vector[j]);
 
   //int
   private static final IntAndVectorsConsumer intNullSetter = (i, arrowVector, hiveVector)
       -> ((IntVector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer intValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer intValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> ((IntVector) arrowVector).set(i, (int) ((LongColumnVector) hiveVector).vector[j]);
 
   //long
   private static final IntAndVectorsConsumer longNullSetter = (i, arrowVector, hiveVector)
       -> ((BigIntVector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer longValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer longValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> ((BigIntVector) arrowVector).set(i, ((LongColumnVector) hiveVector).vector[j]);
 
   //float
   private static final IntAndVectorsConsumer floatNullSetter = (i, arrowVector, hiveVector)
       -> ((Float4Vector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer floatValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer floatValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> ((Float4Vector) arrowVector).set(i, (float) ((DoubleColumnVector) hiveVector).vector[j]);
 
   //double
   private static final IntAndVectorsConsumer doubleNullSetter = (i, arrowVector, hiveVector)
       -> ((Float8Vector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer doubleValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer doubleValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> ((Float8Vector) arrowVector).set(i, ((DoubleColumnVector) hiveVector).vector[j]);
 
   //string/varchar
   private static final IntAndVectorsConsumer stringNullSetter = (i, arrowVector, hiveVector)
       -> ((VarCharVector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer stringValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer stringValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> {
     BytesColumnVector bytesVector = (BytesColumnVector) hiveVector;
     ((VarCharVector) arrowVector).setSafe(i, bytesVector.vector[j], bytesVector.start[j], bytesVector.length[j]);
   };
 
   //fixed-length CHAR
-  //TODO Add padding conversion
   private static final IntAndVectorsConsumer charNullSetter = (i, arrowVector, hiveVector)
       -> ((VarCharVector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer charValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer charValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> {
     BytesColumnVector bytesVector = (BytesColumnVector) hiveVector;
-    ((VarCharVector) arrowVector).setSafe(i, bytesVector.vector[j], bytesVector.start[j], bytesVector.length[j]);
+    VarCharVector varCharVector = (VarCharVector) arrowVector;
+    byte[] bytes = bytesVector.vector[j];
+    int length = bytesVector.length[j];
+    int start = bytesVector.start[j];
+
+    if (bytes == null) {
+      bytes = EMPTY_BYTES;
+      start = 0;
+      length = 0;
+    }
+
+    final CharTypeInfo charTypeInfo = (CharTypeInfo) typeInfo;
+    final int paddedLength = charTypeInfo.getLength();
+    final byte[] paddedBytes = StringExpr.padRight(bytes, start, length, paddedLength);
+    varCharVector.setSafe(i, paddedBytes, 0, paddedBytes.length);
   };
 
   //date
   private static final IntAndVectorsConsumer dateNullSetter = (i, arrowVector, hiveVector)
       -> ((DateDayVector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer dateValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer dateValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> ((DateDayVector) arrowVector).set(i, (int) ((LongColumnVector) hiveVector).vector[j]);
 
   //timestamp
   private static final IntAndVectorsConsumer timestampNullSetter = (i, arrowVector, hiveVector)
       -> ((TimeStampMicroTZVector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer timestampValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer timestampValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> {
     final TimeStampMicroTZVector timeStampMicroTZVector = (TimeStampMicroTZVector) arrowVector;
     final TimestampColumnVector timestampColumnVector = (TimestampColumnVector) hiveVector;
@@ -794,7 +824,7 @@ public class Serializer {
   //binary
   private static final IntAndVectorsConsumer binaryNullSetter = (i, arrowVector, hiveVector)
       -> ((VarBinaryVector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer binaryValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer binaryValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> {
     BytesColumnVector bytesVector = (BytesColumnVector) hiveVector;
     ((VarBinaryVector) arrowVector).setSafe(i, bytesVector.vector[j], bytesVector.start[j], bytesVector.length[j]);
@@ -803,13 +833,13 @@ public class Serializer {
   //decimal and decimal64
   private static final IntAndVectorsConsumer decimalNullSetter = (i, arrowVector, hiveVector)
       -> ((DecimalVector) arrowVector).setNull(i);
-  private static final IntIntAndVectorsConsumer decimalValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer decimalValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> {
     final DecimalVector decimalVector = (DecimalVector) arrowVector;
     final int scale = decimalVector.getScale();
     decimalVector.set(i, ((DecimalColumnVector) hiveVector).vector[j].getHiveDecimal().bigDecimalValue().setScale(scale));
   };
-  private static final IntIntAndVectorsConsumer decimal64ValueSetter = (i, j, arrowVector, hiveVector)
+  private static final IntIntAndVectorsConsumer decimal64ValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> {
     final DecimalVector decimalVector = (DecimalVector) arrowVector;
     final int scale = decimalVector.getScale();
@@ -821,13 +851,13 @@ public class Serializer {
   //interval year
   private static final IntAndVectorsConsumer intervalYearMonthNullSetter = (i, arrowVector, hiveVector)
       -> ((IntervalYearVector) arrowVector).setNull(i);
-  private static IntIntAndVectorsConsumer intervalYearMonthValueSetter = (i, j, arrowVector, hiveVector)
+  private static IntIntAndVectorsConsumer intervalYearMonthValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> ((IntervalYearVector) arrowVector).set(i, (int) ((LongColumnVector) hiveVector).vector[j]);
 
   //interval day
   private static final IntAndVectorsConsumer intervalDayTimeNullSetter = (i, arrowVector, hiveVector)
       -> ((IntervalDayVector) arrowVector).setNull(i);
-  private static IntIntAndVectorsConsumer intervalDayTimeValueSetter = (i, j, arrowVector, hiveVector)
+  private static IntIntAndVectorsConsumer intervalDayTimeValueSetter = (i, j, arrowVector, hiveVector, typeInfo)
       -> {
     final IntervalDayVector intervalDayVector = (IntervalDayVector) arrowVector;
     final IntervalDayTimeColumnVector intervalDayTimeColumnVector =
@@ -848,7 +878,7 @@ public class Serializer {
   //Used to copy value from hiveVector[j] -> arrowVector[i]
   //since hiveVector might be referenced through vector.selected
   private interface IntIntAndVectorsConsumer {
-    void accept(int i, int j, FieldVector arrowVector, ColumnVector hiveVector);
+    void accept(int i, int j, FieldVector arrowVector, ColumnVector hiveVector, TypeInfo typeInfo);
   }
 
 }
