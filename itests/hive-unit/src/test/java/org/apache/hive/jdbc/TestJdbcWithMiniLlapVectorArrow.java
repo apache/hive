@@ -35,15 +35,16 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.hive.llap.LlapArrowRowInputFormat;
 
 /**
- * TestJdbcWithMiniLlap for Arrow format
+ * TestJdbcWithMiniLlap for Arrow format with vectorized output sink
  */
-public class TestJdbcWithMiniLlapArrow extends BaseJdbcWithMiniLlap {
+public class TestJdbcWithMiniLlapVectorArrow extends BaseJdbcWithMiniLlap {
 
 
   @BeforeClass
   public static void beforeTest() throws Exception {
     HiveConf conf = defaultConf();
     conf.setBoolVar(ConfVars.LLAP_OUTPUT_FORMAT_ARROW, true);
+    conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_FILESINK_ARROW_NATIVE_ENABLED, true);
     BaseJdbcWithMiniLlap.beforeTest(conf);
   }
 
