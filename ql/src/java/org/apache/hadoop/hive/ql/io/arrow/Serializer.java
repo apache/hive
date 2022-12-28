@@ -36,8 +36,8 @@ import org.apache.arrow.vector.VarBinaryVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.complex.ListVector;
-import org.apache.arrow.vector.complex.MapVector;
-import org.apache.arrow.vector.complex.NullableMapVector;
+import org.apache.arrow.vector.complex.NonNullableStructVector;
+import org.apache.arrow.vector.complex.StructVector;
 import org.apache.arrow.vector.holders.DecimalHolder;
 import org.apache.arrow.vector.types.TimeUnit;
 import org.apache.arrow.vector.types.Types;
@@ -110,7 +110,7 @@ public class Serializer {
   private List<String> fieldNames;
   private int fieldSize;
 
-  private final NullableMapVector rootVector;
+  private final StructVector rootVector;
   private final DecimalHolder decimalHolder = new DecimalHolder();
 
   //Constructor for non-serde serialization
@@ -125,7 +125,7 @@ public class Serializer {
         attemptId,
         childAllocatorReservation,
         childAllocatorLimit);
-    rootVector = NullableMapVector.empty(null, allocator);
+    rootVector = StructVector.empty(null, allocator);
     //These last fields are unused in non-serde usage
     vectorizedRowBatch = null;
     vectorAssignRow = null;
@@ -151,7 +151,7 @@ public class Serializer {
     fieldNames = structTypeInfo.getAllStructFieldNames();
     fieldSize = fieldTypeInfos.size();
     // Init Arrow stuffs
-    rootVector = NullableMapVector.empty(null, allocator);
+    rootVector = StructVector.empty(null, allocator);
 
     // Init Hive stuffs
     vectorizedRowBatch = new VectorizedRowBatch(fieldSize);
@@ -292,7 +292,7 @@ public class Serializer {
         writeList((ListVector) arrowVector, (ListColumnVector) hiveVector, (ListTypeInfo) typeInfo, size, vectorizedRowBatch, isNative);
         break;
       case STRUCT:
-        writeStruct((MapVector) arrowVector, (StructColumnVector) hiveVector, (StructTypeInfo) typeInfo, size, vectorizedRowBatch, isNative);
+        writeStruct((NonNullableStructVector) arrowVector, (StructColumnVector) hiveVector, (StructTypeInfo) typeInfo, size, vectorizedRowBatch, isNative);
         break;
       case UNION:
         writeUnion(arrowVector, hiveVector, typeInfo, size, vectorizedRowBatch, isNative);
@@ -336,7 +336,7 @@ public class Serializer {
     write(arrowVector, hiveObjectVector, objectTypeInfo, size, vectorizedRowBatch, isNative);
   }
 
-  private void writeStruct(MapVector arrowVector, StructColumnVector hiveVector,
+  private void writeStruct(NonNullableStructVector arrowVector, StructColumnVector hiveVector,
       StructTypeInfo typeInfo, int size, VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
     final List<String> fieldNames = typeInfo.getAllStructFieldNames();
     final List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
