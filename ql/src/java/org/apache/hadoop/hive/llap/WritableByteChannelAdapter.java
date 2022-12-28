@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.llap;
 
-import org.apache.hadoop.hive.ql.io.arrow.RootAllocatorFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -26,6 +25,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.concurrent.Semaphore;
+import org.apache.arrow.memory.BufferAllocator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +49,7 @@ public class WritableByteChannelAdapter implements WritableByteChannel {
   private final Semaphore writeResources;
   private boolean closed = false;
   private final String id;
-  private long allocatorMax;
+  private BufferAllocator allocator;
 
   private ChannelFutureListener writeListener = new ChannelFutureListener() {
     @Override
@@ -77,12 +77,15 @@ public class WritableByteChannelAdapter implements WritableByteChannel {
     }
   };
 
-  public WritableByteChannelAdapter(ChannelHandlerContext chc, int maxPendingWrites, String id, long allocatorMax) {
+  public WritableByteChannelAdapter(ChannelHandlerContext chc, int maxPendingWrites, String id) {
     this.chc = chc;
     this.maxPendingWrites = maxPendingWrites;
     this.writeResources = new Semaphore(maxPendingWrites);
     this.id = id;
-    this.allocatorMax = allocatorMax;
+  }
+
+  public void setAllocator(BufferAllocator allocator) {
+    this.allocator = allocator;
   }
 
   @Override
@@ -90,7 +93,7 @@ public class WritableByteChannelAdapter implements WritableByteChannel {
     int size = src.remaining();
     //Down the semaphore or block until available
     takeWriteResources(1);
-    ByteBuf buf = RootAllocatorFactory.INSTANCE.getOrCreateRootAllocator(allocatorMax).buffer(size);
+    ByteBuf buf = allocator.buffer(size);
     buf.writeBytes(src);
     chc.writeAndFlush(buf).addListener(writeListener);
     return size;

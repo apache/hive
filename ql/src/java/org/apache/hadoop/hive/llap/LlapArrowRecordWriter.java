@@ -20,11 +20,12 @@ package org.apache.hadoop.hive.llap;
 
 import java.io.IOException;
 
+import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
+import org.apache.arrow.vector.complex.NullableMapVector;
 import org.apache.hadoop.io.Writable;
-import java.nio.channels.WritableByteChannel;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.slf4j.Logger;
@@ -47,15 +48,28 @@ public class LlapArrowRecordWriter<K extends Writable, V extends Writable>
   public static final Logger LOG = LoggerFactory.getLogger(LlapArrowRecordWriter.class);
 
   ArrowStreamWriter arrowStreamWriter;
-  WritableByteChannel out;
+  WritableByteChannelAdapter out;
+  BufferAllocator allocator;
+  NullableMapVector rootVector;
 
-  public LlapArrowRecordWriter(WritableByteChannel out) {
+  public LlapArrowRecordWriter(WritableByteChannelAdapter out) {
     this.out = out;
   }
 
   @Override
   public void close(Reporter reporter) throws IOException {
-    arrowStreamWriter.close();
+    try {
+      arrowStreamWriter.close();
+    } finally {
+      rootVector.close();
+      //bytesLeaked should always be 0
+      long bytesLeaked = allocator.getAllocatedMemory();
+      if(bytesLeaked != 0) {
+        LOG.error("Arrow memory leaked bytes: {}", bytesLeaked);
+        throw new IllegalStateException("Arrow memory leaked bytes:" + bytesLeaked);
+      }
+      allocator.close();
+    }
   }
 
   @Override
@@ -64,6 +78,9 @@ public class LlapArrowRecordWriter<K extends Writable, V extends Writable>
     if (arrowStreamWriter == null) {
       VectorSchemaRoot vectorSchemaRoot = arrowWrapperWritable.getVectorSchemaRoot();
       arrowStreamWriter = new ArrowStreamWriter(vectorSchemaRoot, null, out);
+      allocator = arrowWrapperWritable.getAllocator();
+      this.out.setAllocator(allocator);
+      rootVector = arrowWrapperWritable.getRootVector();
     }
     arrowStreamWriter.writeBatch();
   }

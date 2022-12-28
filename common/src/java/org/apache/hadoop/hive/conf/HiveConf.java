@@ -2677,6 +2677,8 @@ public class HiveConf extends Configuration {
     // For Arrow SerDe
     HIVE_ARROW_ROOT_ALLOCATOR_LIMIT("hive.arrow.root.allocator.limit", Long.MAX_VALUE,
         "Arrow root allocator memory size limitation in bytes."),
+    HIVE_ARROW_BATCH_ALLOCATOR_LIMIT("hive.arrow.batch.allocator.limit", 10_000_000_000L,
+        "Max bytes per arrow batch. This is a threshold, the memory is not pre-allocated."),
     HIVE_ARROW_BATCH_SIZE("hive.arrow.batch.size", 1000, "The number of rows sent in one Arrow batch."),
 
     // For Druid storage handler

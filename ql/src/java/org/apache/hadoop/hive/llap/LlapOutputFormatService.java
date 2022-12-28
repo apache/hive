@@ -199,12 +199,10 @@ public class LlapOutputFormatService {
       int maxPendingWrites = HiveConf.getIntVar(conf,
           HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_MAX_PENDING_WRITES);
       boolean useArrow = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW);
-      long allocatorMax = HiveConf.getLongVar(conf,
-          HiveConf.ConfVars.HIVE_ARROW_ROOT_ALLOCATOR_LIMIT);
       @SuppressWarnings("rawtypes")
       RecordWriter writer = null;
       if(useArrow) {
-        writer = new LlapArrowRecordWriter(new WritableByteChannelAdapter(ctx, maxPendingWrites, id, allocatorMax));
+        writer = new LlapArrowRecordWriter(new WritableByteChannelAdapter(ctx, maxPendingWrites, id));
       } else {
         writer = new LlapRecordWriter(id,
           new ChunkedOutputStream(
