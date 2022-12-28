@@ -527,6 +527,31 @@ public class TestArrowColumnarBatchSerDe {
   }
 
   @Test
+  public void testRandomPrimitiveDecimal() throws SerDeException {
+    String[][] schema = {
+        {"decimal1", "decimal(38,10)"},
+    };
+
+    int size = 1000;
+    Object[][] randomDecimals = new Object[size][];
+    Random random = new Random();
+    for (int i = 0; i < size; i++) {
+      StringBuilder builder = new StringBuilder();
+      builder.append(random.nextBoolean() ? '+' : '-');
+      for (int j = 0; j < 28 ; j++) {
+        builder.append(random.nextInt(10));
+      }
+      builder.append('.');
+      for (int j = 0; j < 10; j++) {
+        builder.append(random.nextInt(10));
+      }
+      randomDecimals[i] = new Object[] {decimalW(HiveDecimal.create(builder.toString()))};
+    }
+
+    initAndSerializeAndDeserialize(schema, randomDecimals);
+  }
+
+  @Test
   public void testPrimitiveBoolean() throws SerDeException {
     String[][] schema = {
         {"boolean1", "boolean"},
