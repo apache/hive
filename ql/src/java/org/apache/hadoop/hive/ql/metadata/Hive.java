@@ -4960,7 +4960,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // If we're moving files around for an ACID write then the rules and paths are all different.
     // You can blame this on Owen.
     if (isAcidIUD) {
-      moveAcidFiles(srcFs, srcs, destf, newFiles);
+      moveAcidFiles(srcFs, conf, srcs, destf, newFiles);
     } else {
       // For ACID non-bucketed case, the filenames have to be in the format consistent with INSERT/UPDATE/DELETE Ops,
       // i.e, like 000000_0, 000001_0_copy_1, 000002_0.gz etc.
@@ -4970,7 +4970,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public static void moveAcidFiles(FileSystem fs, FileStatus[] stats, Path dst,
+  public static void moveAcidFiles(FileSystem fs, HiveConf conf, FileStatus[] stats, Path dst,
                                     List<Path> newFiles) throws HiveException {
     // The layout for ACID files is table|partname/base|delta|delete_delta/bucket
     // We will always only be writing delta files ( except IOW which writes base_X/ ).
@@ -5032,20 +5032,21 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for (FileStatus origBucketStat : origBucketStats) {
         Path origBucketPath = origBucketStat.getPath();
         moveAcidFiles(AcidUtils.DELTA_PREFIX, AcidUtils.deltaFileFilter,
-                fs, dst, origBucketPath, createdDeltaDirs, newFiles);
+                fs, conf, dst, origBucketPath, createdDeltaDirs, newFiles);
         moveAcidFiles(AcidUtils.DELETE_DELTA_PREFIX, AcidUtils.deleteEventDeltaDirFilter,
-                fs, dst,origBucketPath, createdDeltaDirs, newFiles);
+                fs, conf, dst,origBucketPath, createdDeltaDirs, newFiles);
         moveAcidFiles(AcidUtils.BASE_PREFIX, AcidUtils.baseFileFilter,//for Insert Overwrite
-                fs, dst, origBucketPath, createdDeltaDirs, newFiles);
+                fs, conf, dst, origBucketPath, createdDeltaDirs, newFiles);
       }
     }
   }
 
-  private static void moveAcidFiles(String deltaFileType, PathFilter pathFilter, FileSystem fs,
+  private static void moveAcidFiles(String deltaFileType, PathFilter pathFilter, FileSystem fs, HiveConf conf,
                                     Path dst, Path origBucketPath, Set<Path> createdDeltaDirs,
                                     List<Path> newFiles) throws HiveException {
     LOG.debug("Acid move looking for " + deltaFileType + " files in bucket " + origBucketPath);
 
+    String configuredOwner = HiveConf.getVar(conf, ConfVars.HIVE_LOAD_DATA_OWNER);
     FileStatus[] deltaStats = null;
     try {
       deltaStats = fs.listStatus(origBucketPath, pathFilter);
@@ -5063,17 +5064,32 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // harder to make race condition proof.
       Path deltaDest = new Path(dst, deltaPath.getName());
       try {
+        FileSystem destFs = deltaDest.getFileSystem(conf);
         if (!createdDeltaDirs.contains(deltaDest)) {
           try {
-            if(fs.mkdirs(deltaDest)) {
-              try {
-                fs.rename(AcidUtils.OrcAcidVersion.getVersionFilePath(deltaStat.getPath()),
-                    AcidUtils.OrcAcidVersion.getVersionFilePath(deltaDest));
-              } catch (FileNotFoundException fnf) {
-                // There might be no side file. Skip in this case.
-              }
-            }
-            createdDeltaDirs.add(deltaDest);
+               // Check if the src and dest filesystems are same or not
+               // if the src and dest filesystems are different, then we need to do copy, instead of rename
+               if (needToCopy(conf, deltaStat.getPath(), deltaDest, fs, destFs, configuredOwner, true)) {
+                 //copy if across file system or encryption zones.
+                 LOG.debug("Copying source " + deltaStat.getPath() + " to " + deltaDest + " because HDFS encryption zones are different.");
+                 FileUtils.copy(fs, AcidUtils.OrcAcidVersion.getVersionFilePath(deltaStat.getPath()),
+                      destFs, AcidUtils.OrcAcidVersion.getVersionFilePath(deltaDest),
+                      true,    // delete source
+                      true, // overwrite destination
+                      conf);
+               } else {
+                 // do the rename
+                 try {
+                   if(destFs.mkdirs(deltaDest)) {
+                     destFs.rename(AcidUtils.OrcAcidVersion.getVersionFilePath(deltaStat.getPath()),
+                             AcidUtils.OrcAcidVersion.getVersionFilePath(deltaDest));
+                   }
+                 }
+                 catch (FileNotFoundException fnf) {
+                   // There might be no side file. Skip in this case.
+                 }
+               }
+               createdDeltaDirs.add(deltaDest);
           } catch (IOException swallowIt) {
             // Don't worry about this, as it likely just means it's already been created.
             LOG.info("Unable to create " + deltaFileType + " directory " + deltaDest +
@@ -5085,12 +5101,25 @@ private void constructOneLBLocationMap(FileStatus fSta,
         for (FileStatus bucketStat : bucketStats) {
           Path bucketSrc = bucketStat.getPath();
           Path bucketDest = new Path(deltaDest, bucketSrc.getName());
+	  FileSystem bucketDestFs = bucketDest.getFileSystem(conf);
           final String msg = "Unable to move source " + bucketSrc + " to destination " +
               bucketDest;
           LOG.info("Moving bucket " + bucketSrc.toUri().toString() + " to " +
               bucketDest.toUri().toString());
           try {
-            fs.rename(bucketSrc, bucketDest);
+            // Check if the src and dest filesystems are same or not
+            // if the src and dest filesystems are different, then we need to do copy, instead of rename
+            if (needToCopy(conf, bucketSrc, bucketDest, fs, bucketDestFs, configuredOwner, true)) {
+              //copy if across file system or encryption zones.
+              LOG.debug("Copying source " + bucketSrc + " to " + bucketDest + " because HDFS encryption zones are different.");
+              FileUtils.copy(fs, bucketSrc, bucketDestFs, bucketDest,
+                   true,    // delete source
+                   true, // overwrite destination
+                   conf);
+            } else {
+                // do the rename
+                bucketDestFs.rename(bucketSrc, bucketDest);
+            }
             if (newFiles != null) {
               newFiles.add(bucketDest);
             }

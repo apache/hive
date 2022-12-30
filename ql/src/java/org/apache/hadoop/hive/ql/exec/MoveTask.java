@@ -344,8 +344,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             FileSystem srcFs = sourcePath.getFileSystem(conf);
             FileStatus[] srcs = srcFs.globStatus(sourcePath);
             if(srcs != null) {
-              List<Path> newFiles = new ArrayList<>();
-              Hive.moveAcidFiles(srcFs, srcs, targetPath, newFiles);
+              Hive.moveAcidFiles(srcFs, conf, srcs, targetPath, null);
             } else {
               LOG.debug("No files found to move from " + sourcePath + " to " + targetPath);
             }
