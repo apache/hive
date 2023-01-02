@@ -583,7 +583,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     if (sinkDesc.getInsertOverwrite()) {
       Table table = IcebergTableUtil.getTable(conf, sinkDesc.getTableInfo().getProperties());
       if (table.currentSnapshot() != null &&
-          "0" .equalsIgnoreCase(table.currentSnapshot().summary().get(SnapshotSummary.TOTAL_RECORDS_PROP))) {
+          Long.parseLong(table.currentSnapshot().summary().get(SnapshotSummary.TOTAL_RECORDS_PROP)) == 0) {
         // If the table is empty we don't have any danger that some data can get lost.
         return;
       }
