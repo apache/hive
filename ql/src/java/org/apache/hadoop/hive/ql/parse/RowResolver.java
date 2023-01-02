@@ -481,7 +481,9 @@ public class RowResolver implements Serializable{
   public RowResolver duplicate() {
     RowResolver resolver = new RowResolver();
     resolver.rowSchema = new RowSchema(rowSchema);
-    resolver.rslvMap.putAll(rslvMap);
+    for (Map.Entry<String, Map<String, ColumnInfo>> entry : rslvMap.entrySet()) {
+      resolver.rslvMap.put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
+    }
     resolver.invRslvMap.putAll(invRslvMap);
     resolver.altInvRslvMap.putAll(altInvRslvMap);
     resolver.expressionMap.putAll(expressionMap);

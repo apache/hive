@@ -4809,7 +4809,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
             }
           }
 
-          originalRR = appendInputColumns(srcRel, columnList, outputRR, inputRR);
+          originalRR = outputRR.duplicate();
+          appendInputColumns(srcRel, columnList, outputRR, inputRR);
 
           ASTNode obOrSbAST = obAST != null ? obAST : sbAST;
           for (int i = 0; i < obOrSbAST.getChildCount(); ++i) {
@@ -4842,7 +4843,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         } else {
           if (qbp.getQualifyExprForClause(dest) != null) {
             int originalColumnListSize = columnList.size();
-            originalRR = appendInputColumns(srcRel, columnList, outputRR, inputRR);
+            originalRR = outputRR.duplicate();
+            appendInputColumns(srcRel, columnList, outputRR, inputRR);
             RelNode combinedProject = genSelectRelNode(columnList, outputRR, srcRel);
             RelNode qualifyRel = genQualifyLogicalPlan(qb, combinedProject);
             List<RexNode> topProjectColumnList = new ArrayList<>(originalColumnListSize);
@@ -4881,17 +4883,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return new Pair<>(outputRel, outputRR);
     }
 
-    private RowResolver appendInputColumns(RelNode srcRel, List<RexNode> columnList, RowResolver outputRR, RowResolver inputRR) throws SemanticException {
-      RowResolver originalRR;
+    private void appendInputColumns(
+            RelNode srcRel, List<RexNode> columnList, RowResolver outputRR, RowResolver inputRR)
+            throws SemanticException {
       List<RexNode> originalInputRefs = Lists.transform(srcRel.getRowType().getFieldList(),
               input -> new RexInputRef(input.getIndex(), input.getType()));
-      originalRR = outputRR.duplicate();
       for (int i = 0; i < inputRR.getColumnInfos().size(); i++) {
         ColumnInfo colInfo = new ColumnInfo(inputRR.getColumnInfos().get(i));
         String internalName = SemanticAnalyzer.getColumnInternalName(outputRR.getColumnInfos().size());
         colInfo.setInternalName(internalName);
-        // if there is any confict, then we do not generate it in the new select
-        // otherwise, we add it into the calciteColLst and generate the new select
+        // if there is any conflict, then we do not generate it in the new select
+        // otherwise we add it into the calciteColLst and generate the new select
         if (!outputRR.putWithCheck(colInfo.getTabAlias(), colInfo.getAlias(), internalName,
             colInfo)) {
           LOG.trace("Column already present in RR. skipping.");
@@ -4899,7 +4901,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           columnList.add(originalInputRefs.get(i));
         }
       }
-      return originalRR;
     }
 
     Integer genRexNodeRegex(String colRegex, String tabAlias, ASTNode sel,
