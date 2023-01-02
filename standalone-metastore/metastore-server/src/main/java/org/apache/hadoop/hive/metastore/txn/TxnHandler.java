@@ -6291,48 +6291,45 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @RetrySemantics.SafeToRetry
   public AbortCompactionResponseElement abortCompaction(Long compId) throws MetaException {
     try {
-      Connection dbConn = null;
-      PreparedStatement pStmt = null;
       AbortCompactionResponseElement responseEle = new AbortCompactionResponseElement();
       responseEle.setCompactionIds(compId);
-      try {
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolMutex);
+      try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED, connPoolMutex)) {
         Optional<CompactionInfo> compactionInfo = getCompactionByCompId(dbConn, compId);
         if (compactionInfo.isPresent()) {
-          pStmt = dbConn.prepareStatement("INSERT INTO \"COMPLETED_COMPACTIONS\" "
-                  + "(\"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", "
-                  + "\"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", \"CC_START\", \"CC_END\", \"CC_RUN_AS\", "
-                  + "\"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", \"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", "
-                  + "\"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\","
-                  + "\"CC_NEXT_TXN_ID\", \"CC_TXN_ID\", \"CC_COMMIT_TIME\", \"CC_POOL_NAME\") "
-                  + "VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?,?,?,?,?,?,?,?)");
-          CompactionInfo ci = compactionInfo.get();
-          ci.errorMessage = "Compaction aborted by user";
-          ci.state = TxnStore.ABORTED_STATE;
-          CompactionInfo.insertIntoCompletedCompactions(pStmt, ci, getDbTime(dbConn));
-          int updCount = pStmt.executeUpdate();
-          LOG.debug("Inserted {} entries into COMPLETED_COMPACTIONS", updCount);
-          String s = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
-          pStmt = dbConn.prepareStatement(s);
-          pStmt.setLong(1, ci.id);
-          LOG.debug("Going to execute update on COMPACTION_QUEUE <{}>", s);
-          pStmt.executeUpdate();
-          responseEle.setMessage("Successfully Aborted Compaction ");
-          responseEle.setStatus("Success");
-          closeStmt(pStmt);
-          dbConn.commit();
+          try (PreparedStatement pStmt = dbConn.prepareStatement(TxnQueries.INSERT_INTO_COMPLETED_COMPACTION)) {
+            CompactionInfo ci = compactionInfo.get();
+            ci.errorMessage = "Compaction aborted by user";
+            ci.state = TxnStore.ABORTED_STATE;
+            CompactionInfo.insertIntoCompletedCompactions(pStmt, ci, getDbTime(dbConn));
+            int updCount = pStmt.executeUpdate();
+            if (updCount != 1) {
+              LOG.error("Unable to update compaction record: {}. updCnt={}", ci, updCount);
+              dbConn.rollback();
+            }
+            LOG.debug("Inserted {} entries into COMPLETED_COMPACTIONS", updCount);
+            try (PreparedStatement stmt = dbConn.prepareStatement("DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?")) {
+              stmt.setLong(1, ci.id);
+              LOG.debug("Going to execute update on COMPACTION_QUEUE <{}>");
+              updCount = stmt.executeUpdate();
+              if (updCount != 1) {
+                LOG.error("Unable to update compaction record: {}. updCnt={}", ci, updCount);
+                dbConn.rollback();
+              } else {
+                responseEle.setMessage("Successfully Aborted Compaction ");
+                responseEle.setStatus("Success");
+                dbConn.commit();
+              }
+            }
+          }
         } else {
           responseEle.setMessage("Compaction element not eligible for cancellation");
           responseEle.setStatus("Error");
         }
       } catch (SQLException e) {
         LOG.error("Failed to abort compaction request");
-        rollbackDBConn(dbConn);
         checkRetryable(e, "abortCompaction(" + compId + ")");
         responseEle.setMessage("Error while aborting compaction");
         responseEle.setStatus("Error");
-      } finally {
-        close(null, pStmt, dbConn);
       }
       return responseEle;
     } catch (RetryException e) {
