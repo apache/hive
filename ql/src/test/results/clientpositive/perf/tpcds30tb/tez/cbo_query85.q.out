@@ -1,7 +1,7 @@
 CBO PLAN:
 HiveProject(_o__c0=[$0], _o__c1=[$1], _o__c2=[$2], _o__c3=[$3])
-  HiveSortLimit(sort0=[$4], sort1=[$5], sort2=[$6], sort3=[$7], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
-    HiveProject(_o__c0=[substr($0, 1, 20)], _o__c1=[/(CAST($1):DOUBLE, $2)], _o__c2=[CAST(/($3, $4)):DECIMAL(11, 6)], _o__c3=[CAST(/($5, $6)):DECIMAL(11, 6)], (tok_function substr (tok_table_or_col r_reason_desc) 1 20)=[substr($0, 1, 20)], (tok_function avg (tok_table_or_col ws_quantity))1=[/(CAST($1):DOUBLE, $2)], (tok_function avg (tok_table_or_col wr_refunded_cash))1=[CAST(/($3, $4)):DECIMAL(11, 6)], (tok_function avg (tok_table_or_col wr_fee))1=[CAST(/($5, $6)):DECIMAL(11, 6)])
+  HiveSortLimit(sort0=[$7], sort1=[$4], sort2=[$5], sort3=[$6], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
+    HiveProject(_o__c0=[substr($0, 1, 20)], _o__c1=[/(CAST($1):DOUBLE, $2)], _o__c2=[CAST(/($3, $4)):DECIMAL(11, 6)], _o__c3=[CAST(/($5, $6)):DECIMAL(11, 6)], (tok_function avg (tok_table_or_col ws_quantity))=[/(CAST($1):DOUBLE, $2)], (tok_function avg (tok_table_or_col wr_refunded_cash))=[CAST(/($3, $4)):DECIMAL(11, 6)], (tok_function avg (tok_table_or_col wr_fee))=[CAST(/($5, $6)):DECIMAL(11, 6)], (tok_function substr (tok_table_or_col r_reason_desc) 1 20)=[substr($0, 1, 20)])
       HiveAggregate(group=[{36}], agg#0=[sum($2)], agg#1=[count($2)], agg#2=[sum($18)], agg#3=[count($18)], agg#4=[sum($17)], agg#5=[count($17)])
         HiveJoin(condition=[=($35, $15)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveJoin(condition=[AND(=($0, $11), =($1, $16), OR(AND($29, $30, $7), AND($31, $32, $8), AND($33, $34, $9)), OR(AND($20, $4), AND($21, $5), AND($22, $6)))], joinType=[inner], algorithm=[none], cost=[not available])

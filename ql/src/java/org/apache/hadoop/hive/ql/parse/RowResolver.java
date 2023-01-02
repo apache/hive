@@ -81,7 +81,10 @@ public class RowResolver implements Serializable{
   public void putExpression(ASTNode node, ColumnInfo colInfo) {
     String treeAsString = node.toStringTree();
     expressionMap.put(treeAsString, node);
-    put("", treeAsString, colInfo);
+    if (!putInternal("", treeAsString, colInfo)) {
+      return;
+    }
+    colInfo.setAlias(treeAsString);
   }
 
   /**
@@ -101,17 +104,25 @@ public class RowResolver implements Serializable{
   }
 
   public void put(String tab_alias, String col_alias, ColumnInfo colInfo) {
+    if (!putInternal(tab_alias, col_alias, colInfo)) {
+      return;
+    }
+    if (col_alias != null) {
+      colInfo.setAlias(col_alias.toLowerCase());
+    }
+  }
+
+  public boolean putInternal(String tab_alias, String col_alias, ColumnInfo colInfo) {
     if (!addMappingOnly(tab_alias, col_alias, colInfo)) {
       //Make sure that the table alias and column alias are stored
       //in the column info
       if (tab_alias != null) {
         colInfo.setTabAlias(tab_alias.toLowerCase());
       }
-      if (col_alias != null) {
-        colInfo.setAlias(col_alias.toLowerCase());
-      }
       rowSchema.getSignature().add(colInfo);
+      return true;
     }
+    return false;
   }
 
   private void keepAmbiguousInfo(String col_alias, String tab_alias) {

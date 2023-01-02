@@ -4824,7 +4824,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             } catch (SemanticException ex) {
               continue;
             }
-            if (obRex instanceof RexInputRef && ref.getType() == HiveParser.TOK_TABLE_OR_COL) {
+            if (obRex instanceof RexInputRef) {
               // Order by key is a projected column reference
               continue;
             }
