@@ -90,6 +90,22 @@ import static org.mockito.Mockito.*;
 public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
+  public void testParquetRead() throws Exception {
+    conf.set("tez.grouping.min-size", "10000000");
+    conf.set("tez.grouping.max-size", "80000000");
+    conf.set("hive.vectorized.execution.enabled", "false");
+    driver = new Driver(conf);
+
+    String dbName = "default";
+    String tblName = "parq_test";
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("create transactional table " + tblName + " (a int, b int) stored as PARQUET", driver);
+    executeStatementOnDriver("insert into " + tblName + " values(1,2),(1,3),(1,4),(2,2),(2,3),(2,4)", driver);
+    executeStatementOnDriver("insert into " + tblName + " values(3,2),(3,3),(3,4),(4,2),(4,3),(4,4)", driver);
+    executeStatementOnDriver("select * from " + tblName + " where b = 2", driver);
+  }
+
+  @Test
   public void testRebalanceCompactionOfNotPartitionedImplicitlyBucketedTable() throws Exception {
     conf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
