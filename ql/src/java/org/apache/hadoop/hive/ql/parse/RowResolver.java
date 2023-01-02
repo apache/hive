@@ -482,12 +482,19 @@ public class RowResolver implements Serializable{
     RowResolver resolver = new RowResolver();
     resolver.rowSchema = new RowSchema(rowSchema);
     for (Map.Entry<String, Map<String, ColumnInfo>> entry : rslvMap.entrySet()) {
-      resolver.rslvMap.put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
+      LinkedHashMap<String, ColumnInfo> fieldMap = new LinkedHashMap<>();
+      for (Map.Entry<String, ColumnInfo> fieldMapEntry : entry.getValue().entrySet()) {
+        fieldMap.put(fieldMapEntry.getKey(), new ColumnInfo(fieldMapEntry.getValue()));
+      }
+      resolver.rslvMap.put(entry.getKey(), fieldMap);
     }
     resolver.invRslvMap.putAll(invRslvMap);
     resolver.altInvRslvMap.putAll(altInvRslvMap);
     resolver.expressionMap.putAll(expressionMap);
     resolver.isExprResolver = isExprResolver;
+    for (Map.Entry<String, Map<String, String>> entry : ambiguousColumns.entrySet()) {
+      resolver.ambiguousColumns.put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
+    }
     resolver.ambiguousColumns.putAll(ambiguousColumns);
     resolver.checkForAmbiguity = checkForAmbiguity;
     return resolver;
