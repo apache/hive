@@ -113,6 +113,14 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     objectPool.setSoftMinEvictableIdleTimeMillis(softMinEvictableIdleTimeMillis);
     objectPool.setLifo(lifo);
 
+    if ("mutex".equalsIgnoreCase(poolName)) {
+      if (timeBetweenEvictionRuns < 0) {
+        objectPool.setTimeBetweenEvictionRunsMillis(30 * 1000);
+      }
+      if (softMinEvictableIdleTimeMillis < 0) {
+        objectPool.setSoftMinEvictableIdleTimeMillis(600 * 1000);
+      }
+    }
     String stmt = dbProduct.getPrepareTxnStmt();
     if (stmt != null) {
       poolableConnFactory.setConnectionInitSql(Arrays.asList(stmt));
