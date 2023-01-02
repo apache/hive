@@ -1,7 +1,7 @@
 CBO PLAN:
 HiveProject(d_year=[CAST(1998):INTEGER], i_category_id=[$0], i_category=[$1], _o__c3=[$2])
   HiveSortLimit(sort0=[$3], sort1=[$0], sort2=[$1], dir0=[DESC], dir1=[ASC], dir2=[ASC], fetch=[100])
-    HiveProject(i_category_id=[$0], i_category=[$1], _o__c3=[$2], (tok_function sum (tok_table_or_col ss_ext_sales_price))=[$2])
+    HiveProject(i_category_id=[$0], i_category=[$1], _o__c3=[$2], (tok_function sum (tok_table_or_col ss_ext_sales_price))1=[$2])
       HiveAggregate(group=[{5, 6}], agg#0=[sum($1)])
         HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveJoin(condition=[=($3, $2)], joinType=[inner], algorithm=[none], cost=[not available])

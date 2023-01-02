@@ -296,11 +296,11 @@ STAGE PLANS:
                   Statistics: Num rows: 71 Data size: 25063 Basic stats: COMPLETE Column stats: COMPLETE
                   top n: 100
                   Select Operator
-                    expressions: (UDFToDouble(_col1) / _col2) (type: double), CAST( (_col3 / _col4) AS decimal(11,6)) (type: decimal(11,6)), CAST( (_col5 / _col6) AS decimal(11,6)) (type: decimal(11,6)), substr(_col0, 1, 20) (type: string)
+                    expressions: substr(_col0, 1, 20) (type: string), (UDFToDouble(_col1) / _col2) (type: double), CAST( (_col3 / _col4) AS decimal(11,6)) (type: decimal(11,6)), CAST( (_col5 / _col6) AS decimal(11,6)) (type: decimal(11,6))
                     outputColumnNames: _col4, _col5, _col6, _col7
                     Statistics: Num rows: 71 Data size: 23288 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col7 (type: string), _col4 (type: double), _col5 (type: decimal(11,6)), _col6 (type: decimal(11,6))
+                      key expressions: _col4 (type: string), _col5 (type: double), _col6 (type: decimal(11,6)), _col7 (type: decimal(11,6))
                       null sort order: zzzz
                       sort order: ++++
                       Statistics: Num rows: 71 Data size: 23288 Basic stats: COMPLETE Column stats: COMPLETE
