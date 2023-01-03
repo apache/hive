@@ -648,6 +648,13 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  private void reInstateTransaction() {
+    int openTransactionCount = openTrasactionCalls;
+    rollbackTransaction();
+    openTransaction();
+    openTrasactionCalls = openTransactionCount;
+  }
+
   @Override
   public void createCatalog(Catalog cat) throws MetaException {
     LOG.debug("Creating catalog {}", cat);
@@ -2607,6 +2614,9 @@ public class ObjectStore implements RawStore, Configurable {
         tabColumnGrants = this.listTableAllColumnGrants(catName, dbName, tblName);
       }
       List<Object> toPersist = new ArrayList<>();
+      List<MPartition> mParts = new ArrayList<>();
+      List<List<MPartitionPrivilege>> mPartPrivilegesList = new ArrayList<>();
+      List<List<MPartitionColumnPrivilege>> mPartColPrivilegesList = new ArrayList<>();
       for (Partition part : parts) {
         if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
           throw new MetaException("Partition does not belong to target table "
@@ -2615,30 +2625,60 @@ public class ObjectStore implements RawStore, Configurable {
         MPartition mpart = convertToMPart(part, table, true);
 
         toPersist.add(mpart);
+        mParts.add(mpart);
         int now = (int) (System.currentTimeMillis() / 1000);
+        List<MPartitionPrivilege> mPartPrivileges = new ArrayList<>();
         if (tabGrants != null) {
           for (MTablePrivilege tab: tabGrants) {
-            toPersist.add(new MPartitionPrivilege(tab.getPrincipalName(),
-                tab.getPrincipalType(), mpart, tab.getPrivilege(), now,
-                tab.getGrantor(), tab.getGrantorType(), tab.getGrantOption(),
-                tab.getAuthorizer()));
+            MPartitionPrivilege mPartPrivilege = new MPartitionPrivilege(tab.getPrincipalName(), tab.getPrincipalType(),
+                mpart, tab.getPrivilege(), now, tab.getGrantor(), tab.getGrantorType(), tab.getGrantOption(),
+                tab.getAuthorizer());
+            toPersist.add(mPartPrivilege);
+            mPartPrivileges.add(mPartPrivilege);
           }
         }
 
+        List<MPartitionColumnPrivilege> mPartColumnPrivileges = new ArrayList<>();
         if (tabColumnGrants != null) {
           for (MTableColumnPrivilege col : tabColumnGrants) {
-            toPersist.add(new MPartitionColumnPrivilege(col.getPrincipalName(),
-                col.getPrincipalType(), mpart, col.getColumnName(), col.getPrivilege(),
-                now, col.getGrantor(), col.getGrantorType(), col.getGrantOption(),
-                col.getAuthorizer()));
+            MPartitionColumnPrivilege mPartColumnPrivilege = new MPartitionColumnPrivilege(col.getPrincipalName(),
+                col.getPrincipalType(), mpart, col.getColumnName(), col.getPrivilege(), now, col.getGrantor(),
+                col.getGrantorType(), col.getGrantOption(), col.getAuthorizer());
+            toPersist.add(mPartColumnPrivilege);
+            mPartColumnPrivileges.add(mPartColumnPrivilege);
           }
         }
+        mPartPrivilegesList.add(mPartPrivileges);
+        mPartColPrivilegesList.add(mPartColumnPrivileges);
       }
       if (CollectionUtils.isNotEmpty(toPersist)) {
-        pm.makePersistentAll(toPersist);
-        pm.flush();
-      }
+        GetHelper<Void> helper = new GetHelper<Void>(null, null, null, true,
+            true) {
+          @Override
+          protected Void getSqlResult(GetHelper<Void> ctx) throws MetaException {
+            directSql.addPartitions(mParts, mPartPrivilegesList, mPartColPrivilegesList);
+            return null;
+          }
 
+          @Override
+          protected Void getJdoResult(GetHelper<Void> ctx) {
+            reInstateTransaction();
+            pm.makePersistentAll(toPersist);
+            pm.flush();
+            return null;
+          }
+
+          @Override
+          protected String describeResult() {
+            return "add partitions";
+          }
+        };
+        try {
+          helper.run(false);
+        } catch (NoSuchObjectException e) {
+          throw new MetaException(e.getMessage());
+        }
+      }
       success = commitTransaction();
     } finally {
       if (!success) {
