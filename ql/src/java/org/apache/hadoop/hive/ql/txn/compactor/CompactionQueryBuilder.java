@@ -354,8 +354,8 @@ class CompactionQueryBuilder {
     }
     for (int i = 0; i < cols.size(); ++i) {
       if (alias) {
-        query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', ")
-            .append(cols.get(i).getName());
+        query.append(i == 0 ? "'" : ", '").append(cols.get(i).getName()).append("', `")
+            .append(cols.get(i).getName()).append("`");
       } else {
         query.append(i == 0 ? "`" : ", `").append(cols.get(i).getName()).append("`");
       }
