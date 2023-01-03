@@ -493,11 +493,7 @@ public class RowResolver implements Serializable{
     RowResolver resolver = new RowResolver();
     resolver.rowSchema = new RowSchema(rowSchema);
     for (Map.Entry<String, Map<String, ColumnInfo>> entry : rslvMap.entrySet()) {
-      LinkedHashMap<String, ColumnInfo> fieldMap = new LinkedHashMap<>();
-      for (Map.Entry<String, ColumnInfo> fieldMapEntry : entry.getValue().entrySet()) {
-        fieldMap.put(fieldMapEntry.getKey(), new ColumnInfo(fieldMapEntry.getValue()));
-      }
-      resolver.rslvMap.put(entry.getKey(), fieldMap);
+      resolver.rslvMap.put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
     }
     resolver.invRslvMap.putAll(invRslvMap);
     resolver.altInvRslvMap.putAll(altInvRslvMap);
