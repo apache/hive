@@ -22027,6 +22027,11 @@ AbortTxnsRequest::~AbortTxnsRequest() noexcept {
 void AbortTxnsRequest::__set_txn_ids(const std::vector<int64_t> & val) {
   this->txn_ids = val;
 }
+
+void AbortTxnsRequest::__set_errorCode(const int64_t val) {
+  this->errorCode = val;
+__isset.errorCode = true;
+}
 std::ostream& operator<<(std::ostream& out, const AbortTxnsRequest& obj)
 {
   obj.printTo(out);
@@ -22076,6 +22081,14 @@ uint32_t AbortTxnsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->errorCode);
+          this->__isset.errorCode = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -22107,6 +22120,11 @@ uint32_t AbortTxnsRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
   }
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.errorCode) {
+    xfer += oprot->writeFieldBegin("errorCode", ::apache::thrift::protocol::T_I64, 2);
+    xfer += oprot->writeI64(this->errorCode);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -22115,19 +22133,26 @@ uint32_t AbortTxnsRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
 void swap(AbortTxnsRequest &a, AbortTxnsRequest &b) {
   using ::std::swap;
   swap(a.txn_ids, b.txn_ids);
+  swap(a.errorCode, b.errorCode);
+  swap(a.__isset, b.__isset);
 }
 
 AbortTxnsRequest::AbortTxnsRequest(const AbortTxnsRequest& other826) {
   txn_ids = other826.txn_ids;
+  errorCode = other826.errorCode;
+  __isset = other826.__isset;
 }
 AbortTxnsRequest& AbortTxnsRequest::operator=(const AbortTxnsRequest& other827) {
   txn_ids = other827.txn_ids;
+  errorCode = other827.errorCode;
+  __isset = other827.__isset;
   return *this;
 }
 void AbortTxnsRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "AbortTxnsRequest(";
   out << "txn_ids=" << to_string(txn_ids);
+  out << ", " << "errorCode="; (__isset.errorCode ? (out << to_string(errorCode)) : (out << "<null>"));
   out << ")";
 }
 

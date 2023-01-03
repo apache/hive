@@ -5940,9 +5940,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public void abortTransactions(List<Long> txnids) throws HiveException {
+  public void abortTransactions(List<Long> txnids, long errorCode) throws HiveException {
     try {
-      getMSC().abortTxns(txnids);
+      getMSC().abortTxns(txnids, errorCode);
     } catch (Exception e) {
       LOG.error("Failed abortTransactions", e);
       throw new HiveException(e);

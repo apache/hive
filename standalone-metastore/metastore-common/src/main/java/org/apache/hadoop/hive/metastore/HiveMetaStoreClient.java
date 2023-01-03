@@ -4049,6 +4049,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public void abortTxns(List<Long> txnids, long errorCode) throws NoSuchTxnException, TException {
+    AbortTxnsRequest abortTxnsRequest = new AbortTxnsRequest(txnids);
+    abortTxnsRequest.setErrorCode(errorCode);
+    client.abort_txns(abortTxnsRequest);
+  }
+
+  @Override
   public void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
           throws TException {
     String user;

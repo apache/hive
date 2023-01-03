@@ -1973,6 +1973,7 @@ message AbortTxnResponse {
 
 message AbortTxnsRequest {
   repeated int64 txn_ids = 1;
+  int64 errorCode = 2;
 }
 
 message AbortTxnsResponse {

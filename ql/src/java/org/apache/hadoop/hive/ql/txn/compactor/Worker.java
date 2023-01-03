@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -659,7 +660,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
      */
     private void abort() throws TException {
       if (status == TxnStatus.OPEN) {
-        msc.abortTxns(Collections.singletonList(txnId));
+        msc.abortTxns(Collections.singletonList(txnId), TxnErrorMsg.ABORT_COMPACTION_TXN.getErrorCode());
         status = TxnStatus.ABORTED;
       }
     }

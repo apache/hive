@@ -1080,6 +1080,7 @@ struct AbortTxnRequest {
 
 struct AbortTxnsRequest {
     1: required list<i64> txn_ids,
+    2: optional i64 errorCode,
 }
 
 struct CommitTxnKeyValue {

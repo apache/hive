@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -302,7 +303,7 @@ public class Msck {
     } else {
       try {
         LOG.info("txnId: {} failed. Aborting..", txnId);
-        getMsc().abortTxns(Lists.newArrayList(txnId));
+        getMsc().abortTxns(Lists.newArrayList(txnId), TxnErrorMsg.ABORT_MSCK_TXN.getErrorCode());
       } catch (Exception e) {
         LOG.error("Error while aborting txnId: {} for table: {}", txnId, qualifiedTableName, e);
         ret = false;

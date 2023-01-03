@@ -3228,6 +3228,15 @@ public interface IMetaStoreClient {
   void abortTxns(List<Long> txnids) throws TException;
 
   /**
+   * Abort a list of transactions with additional information of
+   * errorcodes as defined in TxnErrorMsg.java.
+   * @param txnids List of transaction ids
+   * @param errorCode Error code specifying the reason for abort.
+   * @throws TException
+   */
+  void abortTxns(List<Long> txnids, long errorCode) throws TException;
+
+  /**
    * Allocate a per table write ID and associate it with the given transaction.
    * @param txnId id of transaction to which the allocated write ID to be associated.
    * @param dbName name of DB in which the table belongs.

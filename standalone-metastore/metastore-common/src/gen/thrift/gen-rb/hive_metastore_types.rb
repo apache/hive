@@ -3768,9 +3768,11 @@ end
 class AbortTxnsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXN_IDS = 1
+  ERRORCODE = 2
 
   FIELDS = {
-    TXN_IDS => {:type => ::Thrift::Types::LIST, :name => 'txn_ids', :element => {:type => ::Thrift::Types::I64}}
+    TXN_IDS => {:type => ::Thrift::Types::LIST, :name => 'txn_ids', :element => {:type => ::Thrift::Types::I64}},
+    ERRORCODE => {:type => ::Thrift::Types::I64, :name => 'errorCode', :optional => true}
   }
 
   def struct_fields; FIELDS; end
