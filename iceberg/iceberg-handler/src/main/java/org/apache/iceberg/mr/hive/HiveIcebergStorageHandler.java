@@ -1168,6 +1168,7 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return props;
   }
 
+<<<<<<< HEAD
   @Override
   public boolean shouldOverwrite(org.apache.hadoop.hive.ql.metadata.Table mTable, String operationName) {
     String mode = null;
@@ -1180,14 +1181,13 @@ public class HiveIcebergStorageHandler implements HiveStoragePredicateHandler, H
     return COPY_ON_WRITE.equalsIgnoreCase(mode);
   }
 
-  public Boolean hasDeleteOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String sinceSnapshotText) {
-    SnapshotKey sinceSnapshot = SnapshotKey.fromJson(sinceSnapshotText);
+  public Boolean hasDeleteOperation(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());
     boolean foundSince = false;
     for (Snapshot snapshot : table.snapshots()) {
       if (!foundSince) {
-        if (snapshot.snapshotId() == sinceSnapshot.snapshotId) {
+        if (snapshot.snapshotId() == since.getSnapshotId()) {
           foundSince = true;
         }
       } else {

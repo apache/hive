@@ -30,6 +30,7 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -57,10 +58,10 @@ public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
 
   private final RexBuilder rexBuilder;
   private final Set<RelNode> visited;
-  private final Map<String, String> storedSnapshot;
+  private final Map<String, SnapshotContext> storedSnapshot;
 
   public HiveAugmentIcebergMaterializationRule(
-          RexBuilder rexBuilder, Map<String, String> storedSnapshot) {
+          RexBuilder rexBuilder, Map<String, SnapshotContext> storedSnapshot) {
     super(operand(TableScan.class, any()),
         HiveRelFactories.HIVE_BUILDER, "HiveAugmentMaterializationRule");
     this.rexBuilder = rexBuilder;
@@ -79,8 +80,8 @@ public class HiveAugmentIcebergMaterializationRule extends RelOptRule {
     RelOptHiveTable hiveTable = (RelOptHiveTable) tableScan.getTable();
     Table table = hiveTable.getHiveTableMD();
 
-    String tableSnapshot = storedSnapshot.get(table.getFullyQualifiedName());
-    if (table.getStorageHandler().isCurrentSnapshot(table, tableSnapshot)) {
+    SnapshotContext tableSnapshot = storedSnapshot.get(table.getFullyQualifiedName());
+    if (table.getStorageHandler().getCurrentSnapshotContext(table).getSnapshotId() == tableSnapshot.getSnapshotId()) {
       return;
     }
 
