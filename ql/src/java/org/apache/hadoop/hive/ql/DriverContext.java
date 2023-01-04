@@ -72,7 +72,6 @@ public class DriverContext {
   private long compactorTxnId = 0;
   private long analyzeTableWriteId = 0;
 
-  private Context backupContext = null;
   private boolean retrial = false;
 
   private DataInput resStream;
@@ -223,14 +222,6 @@ public class DriverContext {
 
   public void setAnalyzeTableWriteId(long analyzeTableWriteId) {
     this.analyzeTableWriteId = analyzeTableWriteId;
-  }
-
-  public Context getBackupContext() {
-    return backupContext;
-  }
-
-  public void setBackupContext(Context backupContext) {
-    this.backupContext = backupContext;
   }
 
   public boolean isRetrial() {
