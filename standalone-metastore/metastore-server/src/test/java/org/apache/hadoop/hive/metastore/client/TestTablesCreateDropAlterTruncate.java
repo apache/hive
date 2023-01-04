@@ -1229,40 +1229,49 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   public void testAlterTableExpectedPropertyConcurrent() throws Exception {
     Table originalTable = testTables[0];
 
-    originalTable.getParameters().put("snapshot", "1");
+    originalTable.getParameters().put("snapshot", "0");
     client.alter_table(originalTable.getCatName(), originalTable.getDbName(), originalTable.getTableName(),
             originalTable, null);
 
-    EnvironmentContext context = new EnvironmentContext();
-    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, "snapshot");
-    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE, "1");
+    ExecutorService threads = null;
+    try {
+      threads = Executors.newFixedThreadPool(2);
+      for (int i = 0; i < 3; i++) {
+        EnvironmentContext context = new EnvironmentContext();
+        context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, "snapshot");
+        context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE, String.valueOf(i));
 
-    Table newTable = originalTable.deepCopy();
-    newTable.getParameters().put("snapshot", "2");
+        Table newTable = originalTable.deepCopy();
+        newTable.getParameters().put("snapshot", String.valueOf(i + 1));
 
-    IMetaStoreClient client1 = metaStore.getClient();
-    IMetaStoreClient client2 = metaStore.getClient();
+        IMetaStoreClient client1 = metaStore.getClient();
+        IMetaStoreClient client2 = metaStore.getClient();
 
-    ExecutorService threads = Executors.newFixedThreadPool(2);
-    Collection<Callable<Boolean>> concurrentTasks = new ArrayList<>(2);
-    concurrentTasks.add(alterTask(client1, newTable, context));
-    concurrentTasks.add(alterTask(client2, newTable, context));
+        Collection<Callable<Boolean>> concurrentTasks = new ArrayList<>(2);
+        concurrentTasks.add(alterTask(client1, newTable, context));
+        concurrentTasks.add(alterTask(client2, newTable, context));
 
-    Collection<Future<Boolean>> results = threads.invokeAll(concurrentTasks);
+        Collection<Future<Boolean>> results = threads.invokeAll(concurrentTasks);
 
-    boolean foundSuccess = false;
-    boolean foundFailure = false;
+        boolean foundSuccess = false;
+        boolean foundFailure = false;
 
-    for (Future<Boolean> result: results) {
-      if (result.get()) {
-        foundSuccess = true;
-      } else {
-        foundFailure = true;
+        for (Future<Boolean> result : results) {
+          if (result.get()) {
+            foundSuccess = true;
+          } else {
+            foundFailure = true;
+          }
+        }
+
+        assertTrue("At least one success is expected", foundSuccess);
+        assertTrue("At least one failure is expected", foundFailure);
+      }
+    } finally {
+      if (threads != null) {
+        threads.shutdown();
       }
     }
-
-    assertTrue("At least one success is expected", foundSuccess);
-    assertTrue("At least one failure is expected", foundFailure);
   }
 
   private Callable<Boolean> alterTask(IMetaStoreClient hmsClient, Table newTable, EnvironmentContext context) {
