@@ -70,8 +70,9 @@ end
 module CompactionType
   MINOR = 1
   MAJOR = 2
-  VALUE_MAP = {1 => "MINOR", 2 => "MAJOR"}
-  VALID_VALUES = Set.new([MINOR, MAJOR]).freeze
+  REBALANCE = 3
+  VALUE_MAP = {1 => "MINOR", 2 => "MAJOR", 3 => "REBALANCE"}
+  VALID_VALUES = Set.new([MINOR, MAJOR, REBALANCE]).freeze
 end
 
 module GrantRevokeType
