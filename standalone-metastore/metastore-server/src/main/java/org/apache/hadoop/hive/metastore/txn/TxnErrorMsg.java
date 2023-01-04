@@ -22,8 +22,8 @@ package org.apache.hadoop.hive.metastore.txn;
  * The following class represents all the error messages that are handled for aborts.
  */
 public enum TxnErrorMsg {
-    // 50000 to 59999: Txn Errors Codes.
-    // Query runtime aborts
+    // Txn Errors Codes: 50000 - 59999.
+    // Query runtime aborts - 50000-50999
     NONE(50000, "None"),
     ABORT_QUERY(50001, " Txn aborted by Abort Query Command"),
     ABORT_CONCURRENT(50002, " Txn aborted due to concurrent committed transaction"),
@@ -34,18 +34,18 @@ public enum TxnErrorMsg {
     ABORT_MSCK_TXN(50007, "Msck txn is aborted"),
     ABORT_MIGRATION_TXN(50008, "Managed Migration transaction is aborted"),
 
-    // Replication related aborts
-    ABORT_DEFAULT_REPL_TXN(50009, " Replication:" +
+    // Replication related aborts - 51000 - 51099
+    ABORT_DEFAULT_REPL_TXN(51000, " Replication:" +
             "Abort default replication transaction"),
-    ABORT_REPLAYED_REPL_TXN(50010, " Replication:" +
+    ABORT_REPLAYED_REPL_TXN(51001, " Replication:" +
             "Abort replayed replication transaction"),
-    ABORT_REPL_WRITEID_TXN(50011, " Replication:" +
+    ABORT_REPL_WRITEID_TXN(51002, " Replication:" +
             "Abort all the allocated txns so that the mapped write ids are referred as aborted ones."),
-    ABORT_FETCH_FAILOVER_METADATA(50012, " Replication:" +
+    ABORT_FETCH_FAILOVER_METADATA(51003, " Replication:" +
             "Abort all transactions while trying to fetch failover metadata."),
-    ABORT_WRITE_TXN_AFTER_TIMEOUT(50013, " Replication:" +
+    ABORT_WRITE_TXN_AFTER_TIMEOUT(51004, " Replication:" +
             "Abort only write transactions for the db under replication"),
-    ABORT_ONGOING_TXN_FOR_TARGET_DB(50014, " Replication:" +
+    ABORT_ONGOING_TXN_FOR_TARGET_DB(51005, " Replication:" +
             "Abort the ongoing transactions(opened prior to failover) for the target database.");
 
     private final long errorCode;
@@ -58,10 +58,6 @@ public enum TxnErrorMsg {
 
     public long getErrorCode() {
         return errorCode;
-    }
-
-    public String getTxnErrorMsg() {
-        return txnErrorMsg;
     }
 
     @Override
