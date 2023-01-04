@@ -5197,6 +5197,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private static void moveAcidFiles(String deltaFileType, PathFilter pathFilter, FileSystem fs,
                                     Path dst, Path origBucketPath, Set<Path> createdDeltaDirs,
                                     List<Path> newFiles, HiveConf conf) throws HiveException {
+
     try{
       LOG.debug("Acid move looking for " + deltaFileType + " files in bucket " + origBucketPath);
 
