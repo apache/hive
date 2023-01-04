@@ -43,6 +43,7 @@ import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -162,10 +163,7 @@ abstract class QueryCompactor implements Compactor {
   private void removeResultDirs(List<Path> resultDirPaths, HiveConf conf) throws IOException {
     for (Path path : resultDirPaths) {
       LOG.info("Compaction failed, removing directory: " + path.toString());
-      FileSystem fs = path.getFileSystem(conf);
-      if (!fs.listFiles(path, false).hasNext()) {
-        fs.delete(path, true);
-      }
+      Util.cleanupEmptyDir(conf, path);
     }
   }
 
@@ -245,16 +243,32 @@ abstract class QueryCompactor implements Compactor {
      * @throws IOException the directory cannot be deleted
      * @throws HiveException the table is not found
      */
-    static void cleanupEmptyDir(HiveConf conf, String tmpTableName) throws IOException, HiveException {
+    static void cleanupEmptyTableDir(HiveConf conf, String tmpTableName)
+        throws IOException, HiveException {
       org.apache.hadoop.hive.ql.metadata.Table tmpTable = Hive.get().getTable(tmpTableName);
       if (tmpTable != null) {
-        Path path = new Path(tmpTable.getSd().getLocation());
-        FileSystem fs = path.getFileSystem(conf);
+        cleanupEmptyDir(conf, new Path(tmpTable.getSd().getLocation()));
+      }
+    }
+
+    /**
+     * Remove the directory if it's empty.
+     * @param conf the Hive configuration
+     * @param path path of the directory
+     * @throws IOException if any IO error occurs
+     */
+    static void cleanupEmptyDir(HiveConf conf, Path path) throws IOException {
+      FileSystem fs = path.getFileSystem(conf);
+      try {
         if (!fs.listFiles(path, false).hasNext()) {
           fs.delete(path, true);
         }
+      } catch (FileNotFoundException e) {
+        // Ignore the case when the dir was already removed
+        LOG.warn("Ignored exception during cleanup {}", path, e);
       }
     }
+
     /**
      * Remove the delta directories of aborted transactions.
      */
