@@ -5194,7 +5194,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  private static void moveAcidFiles(String deltaFileType, PathFilter pathFilter, FileSystem fs, HiveConf conf,
+  private static void moveAcidFiles(String deltaFileType, PathFilter pathFilter, FileSystem fs,
                                     Path dst, Path origBucketPath, Set<Path> createdDeltaDirs,
                                     List<Path> newFiles, HiveConf conf) throws HiveException {
     try{
@@ -5219,13 +5219,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for (FileStatus deltaStat : deltaStats) {
 
         if (null == pool) {
-          moveAcidFilesForDelta(deltaFileType, fs, dst, createdDeltaDirsSync, newFiles, deltaStat);
+          moveAcidFilesForDelta(deltaFileType, fs, dst, createdDeltaDirsSync, newFiles, deltaStat, conf);
         } else {
           futures.add(pool.submit(new Callable<Void>() {
             @Override
             public Void call() throws HiveException {
               try {
-                moveAcidFilesForDelta(deltaFileType, fs, dst, createdDeltaDirsSync, newFiles, deltaStat);
+                moveAcidFilesForDelta(deltaFileType, fs, dst, createdDeltaDirsSync, newFiles, deltaStat, conf);
               } catch (Exception e) {
                 final String poolMsg =
                         "Unable to move source " + deltaStat.getPath().getName() + " to destination " + dst.getName();
@@ -5262,7 +5262,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   private static void moveAcidFilesForDelta(String deltaFileType, FileSystem fs,
                                             Path dst, Set<Path> createdDeltaDirs,
-                                            List<Path> newFiles, FileStatus deltaStat) throws HiveException {
+                                            List<Path> newFiles, FileStatus deltaStat, HiveConf conf) throws HiveException {
     String configuredOwner = HiveConf.getVar(conf, ConfVars.HIVE_LOAD_DATA_OWNER);
     Path deltaPath = deltaStat.getPath();
     // Create the delta directory.  Don't worry if it already exists,
