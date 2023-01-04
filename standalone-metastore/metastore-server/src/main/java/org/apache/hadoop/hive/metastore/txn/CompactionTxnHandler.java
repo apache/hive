@@ -277,6 +277,7 @@ class CompactionTxnHandler extends TxnHandler {
           info.type = TxnUtils.dbCompactionType2ThriftType(rs.getString(5).charAt(0));
           info.poolName = rs.getString(6);
           info.properties = rs.getString(7);
+          info.workerId = rqst.getWorkerId();
 
           String workerId = rqst.getWorkerId();
           String workerVersion = rqst.getWorkerVersion();

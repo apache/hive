@@ -155,15 +155,18 @@ class LockType(object):
 class CompactionType(object):
     MINOR = 1
     MAJOR = 2
+    REBALANCE = 3
 
     _VALUES_TO_NAMES = {
         1: "MINOR",
         2: "MAJOR",
+        3: "REBALANCE",
     }
 
     _NAMES_TO_VALUES = {
         "MINOR": 1,
         "MAJOR": 2,
+        "REBALANCE": 3,
     }
 
 

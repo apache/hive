@@ -22,9 +22,12 @@ final class CompactionType
 
     const MAJOR = 2;
 
+    const REBALANCE = 3;
+
     static public $__names = array(
         1 => 'MINOR',
         2 => 'MAJOR',
+        3 => 'REBALANCE',
     );
 }
 

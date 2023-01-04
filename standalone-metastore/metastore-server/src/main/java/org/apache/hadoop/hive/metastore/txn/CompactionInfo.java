@@ -133,8 +133,13 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     }
     return fullTableName;
   }
+
   public boolean isMajorCompaction() {
     return CompactionType.MAJOR == type;
+  }
+
+  public boolean isRebalanceCompaction() {
+    return CompactionType.REBALANCE == type;
   }
 
   @Override

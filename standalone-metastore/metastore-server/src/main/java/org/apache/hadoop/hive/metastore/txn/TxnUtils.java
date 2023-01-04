@@ -573,6 +573,8 @@ public class TxnUtils {
         return CompactionType.MAJOR;
       case TxnStore.MINOR_TYPE:
         return CompactionType.MINOR;
+      case TxnStore.REBALANCE_TYPE:
+        return CompactionType.REBALANCE;
       default:
         throw new MetaException("Unexpected compaction type " + dbValue);
     }
@@ -584,6 +586,8 @@ public class TxnUtils {
         return TxnStore.MAJOR_TYPE;
       case MINOR:
         return TxnStore.MINOR_TYPE;
+      case REBALANCE:
+        return TxnStore.REBALANCE_TYPE;
       default:
         throw new MetaException("Unexpected compaction type " + ct);
     }

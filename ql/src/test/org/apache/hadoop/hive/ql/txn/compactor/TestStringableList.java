@@ -28,19 +28,19 @@ public class TestStringableList {
   @Test
   public void stringableList() throws Exception {
     // Empty list case
-    CompactorMR.StringableList ls = new CompactorMR.StringableList();
+    MRCompactor.StringableList ls = new MRCompactor.StringableList();
     String s = ls.toString();
     Assert.assertEquals("0:", s);
-    ls = new CompactorMR.StringableList(s);
+    ls = new MRCompactor.StringableList(s);
     Assert.assertEquals(0, ls.size());
 
-    ls = new CompactorMR.StringableList();
+    ls = new MRCompactor.StringableList();
     ls.add(new Path("/tmp"));
     ls.add(new Path("/usr"));
     s = ls.toString();
     Assert.assertTrue("Expected 2:4:/tmp4:/usr or 2:4:/usr4:/tmp, got " + s,
         "2:4:/tmp4:/usr".equals(s) || "2:4:/usr4:/tmp".equals(s));
-    ls = new CompactorMR.StringableList(s);
+    ls = new MRCompactor.StringableList(s);
     Assert.assertEquals(2, ls.size());
     boolean sawTmp = false, sawUsr = false;
     for (Path p : ls) {

@@ -43,16 +43,16 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Tests for {@link CompactorMR#createBaseJobConf(HiveConf, String, Table, StorageDescriptor, ValidWriteIdList, CompactionInfo)}.
+ * Tests for {@link MRCompactor#createBaseJobConf(HiveConf, String, Table, StorageDescriptor, ValidWriteIdList, CompactionInfo)}.
  */
-public class TestCompactorMRJobQueueConfiguration {
+public class TestMRCompactorJobQueueConfiguration {
 
   @ParameterizedTest
   @MethodSource("generateBaseJobConfSetup")
   void testCreateBaseJobConfHasCorrectJobQueue(ConfSetup input) {
     Table tbl = createPersonTable();
     tbl.setParameters(input.tableProperties);
-    CompactorMR compactor = new CompactorMR();
+    MRCompactor compactor = new MRCompactor(null);
     CompactionInfo ci = new CompactionInfo(tbl.getDbName(), tbl.getTableName(), null, CompactionType.MAJOR);
     ci.properties = new StringableMap(input.compactionProperties).toString();
     HiveConf conf = new HiveConf();
